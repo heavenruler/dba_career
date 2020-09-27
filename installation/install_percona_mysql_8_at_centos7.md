@@ -45,7 +45,6 @@ Server version: 8.0.20-11
 ```
 mysql> alter user 'root'@'localhost' identified by 'Qassw0rd999$%^'; flush privileges;
 Query OK, 0 rows affected (0.01 sec)
-
 Query OK, 0 rows affected (0.00 sec)
 ```
 
