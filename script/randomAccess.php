@@ -1,6 +1,7 @@
 #!/usr/bin/php
 <?php
-$url = 'https://blog.wnlin.org/post-sitemap.xml';
+#$url = 'https://blog.wnlin.org/post-sitemap.xml';
+$url = 'https://regretless.live/post-sitemap.xml';
 $curlCommand = "curl -s -L -o /dev/null -w '%{http_code}' ";
 
 $urls = array();
