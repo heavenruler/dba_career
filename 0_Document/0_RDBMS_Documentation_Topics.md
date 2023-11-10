@@ -1,6 +1,9 @@
 # RDBMS Documentation Topics
 (Include MySQL & MariaDB)
 
+- [MySQL Documentation](https://dev.mysql.com/doc/)
+- [MariaDB Documentation](https://mariadb.com/docs/server/)
+
 - **Database Design**
     - General Information # 整體資料庫設計和架構的基本信息
     - Language Structure # 資料庫語言結構的核心元素
