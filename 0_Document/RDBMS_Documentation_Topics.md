@@ -1,4 +1,4 @@
-# RDBMS Documentation Topics
+# RDBMS Documentation Topics (Include MySQL & MariaDB)
 
 | Topic                   | Contents                                                                                             |
 |-------------------------|------------------------------------------------------------------------------------------------------|
@@ -13,8 +13,9 @@
 | Data Population         | - Functions and Operators # 資料庫函數與運算子                                                       |
 |                         | - SQL Statements # SQL語句的構造和應用                                                              |
 |                         | - Stored Objects # 存儲的數據庫對象，如過程和函數                                                    |
-| Creating Relationships  | - MySQL Server Administration # MySQL伺服器的管理和維護                                              |
-|                         | - Replication # 數據複製技術和策略                                                                  |
+| Server Administration   | - MySQL Server Administration # MySQL伺服器的管理和維護                                              |
+|                         | - MariaDB service instructions. # MariaDB服務管理指南                                                |
+| Replication and Clustering | - Replication # 數據複製技術和策略                                                                  |
 |                         | - Group Replication # MySQL群組複製功能                                                             |
 |                         | - InnoDB Cluster # InnoDB集群配置和管理                                                              |
 |                         | - InnoDB ReplicaSet # InnoDB副本集管理                                                               |
@@ -23,6 +24,8 @@
 |                         | - MySQL Programs # MySQL相關程序和工具                                                              |
 |                         | - Optimization # 數據庫查詢優化技巧                                                                 |
 |                         | - Connectors and APIs # 數據庫連接器和API的使用                                                     |
+|                         | - Connection guidance for MariaDB. # MariaDB連線指導                                                 |
+|                         | - Via C, C++, Java, etc. # 透過C, C++, Java等語言                                                    |
 | User Interface          | - MySQL Workbench # MySQL的圖形化工作台                                                              |
 |                         | - MySQL Shell # MySQL命令行介面                                                                      |
 |                         | - MySQL on the OCI Marketplace # 在OCI市場上使用MySQL的指南                                          |
@@ -30,17 +33,15 @@
 |                         | - MySQL Enterprise Edition # MySQL企業版的特點和應用                                                |
 |                         | - MySQL 8.0 Frequently Asked Questions # MySQL 8.0常見問題解答                                      |
 |                         | - Error Messages and Common Problems # 常見錯誤信息和問題解決                                       |
+|                         | - MariaDB deployment procedures. # MariaDB部署步驟                                                   |
 | Backup and Security     | - Security # 資料庫的安全性問題和解決方案                                                            |
 |                         | - Backup and Recovery # 數據備份和恢復策略                                                          |
 |                         | - Using MySQL as a Document Store # 將MySQL作為文檔存儲的方法                                       |
-| Data Operations         | - Indexes # 索引的創建和管理                                                                        |
-| Deployment              | - MariaDB deployment procedures. # MariaDB部署步驟                                                   |
-| Service Management      | - MariaDB service instructions. # MariaDB服務管理指南                                                |
-| Connect and Query       | - Connection guidance for MariaDB. # MariaDB連線指導                                                 |
-|                         | - Via C, C++, Java, etc. # 透過C, C++, Java等語言                                                    |
-| Storage Engines         | - MariaDB storage engines for optimization. # MariaDB存儲引擎優化                                   |
-| Security                | - MariaDB GRC and infosec features. # MariaDB企業治理與資訊安全特性                                 |
+|                         | - MariaDB GRC and infosec features. # MariaDB企業治理與資訊安全特性                                 |
 |                         | - Includes encryption, hardening. # 包括加密和系統加固                                               |
-| SQL Reference           | - SQL reference for MariaDB. # MariaDB的SQL參考                                                      |
-| Architecture            | - MariaDB architecture info. # MariaDB架構資訊                                                       |
+| Data Operations         | - Indexes # 索引的創建和管理                                                                        |
+| Storage Engines         | - MySQL and MariaDB storage engines for optimization. # MySQL與MariaDB存儲引擎優化                   |
+| SQL Reference           | - Detailed SQL reference for MySQL and MariaDB. # MySQL與MariaDB的SQL參考                            |
+| Architecture            | - Architecture information for MySQL and MariaDB. # MySQL與MariaDB架構資訊                           |
 |-------------------------|------------------------------------------------------------------------------------------------------|
+
