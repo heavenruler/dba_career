@@ -9,8 +9,6 @@
     - Reference: 
         - [Ansible Galaxy](https://galaxy.ansible.com/ui/)
 
-
-
 - Terraform
 
 - [CSDN](https://www.csdn.net/)
