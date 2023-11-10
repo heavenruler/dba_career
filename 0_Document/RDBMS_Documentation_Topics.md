@@ -43,5 +43,4 @@
 | Storage Engines         | - MySQL and MariaDB storage engines for optimization. # MySQL與MariaDB存儲引擎優化                   |
 | SQL Reference           | - Detailed SQL reference for MySQL and MariaDB. # MySQL與MariaDB的SQL參考                            |
 | Architecture            | - Architecture information for MySQL and MariaDB. # MySQL與MariaDB架構資訊                           |
-|-------------------------|------------------------------------------------------------------------------------------------------|
 
