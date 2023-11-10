@@ -5,7 +5,7 @@
 
 - [MySQL Documentation](https://dev.mysql.com/doc/)
 - [MariaDB Documentation](https://mariadb.com/docs/server/)
-- [Taobao PolarDB 数据库内核月报](http://mysql.taobao.org/monthly/)
+- [Taobao PolarDB 資料庫內核月報](http://mysql.taobao.org/monthly/)
 
 ## Topic
 
