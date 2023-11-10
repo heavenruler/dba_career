@@ -34,5 +34,13 @@
 |                         | - Backup and Recovery # 數據備份和恢復策略                                                          |
 |                         | - Using MySQL as a Document Store # 將MySQL作為文檔存儲的方法                                       |
 | Data Operations         | - Indexes # 索引的創建和管理                                                                        |
+| Deployment              | - MariaDB deployment procedures. # MariaDB部署步驟                                                   |
+| Service Management      | - MariaDB service instructions. # MariaDB服務管理指南                                                |
+| Connect and Query       | - Connection guidance for MariaDB. # MariaDB連線指導                                                 |
+|                         | - Via C, C++, Java, etc. # 透過C, C++, Java等語言                                                    |
+| Storage Engines         | - MariaDB storage engines for optimization. # MariaDB存儲引擎優化                                   |
+| Security                | - MariaDB GRC and infosec features. # MariaDB企業治理與資訊安全特性                                 |
+|                         | - Includes encryption, hardening. # 包括加密和系統加固                                               |
+| SQL Reference           | - SQL reference for MariaDB. # MariaDB的SQL參考                                                      |
+| Architecture            | - MariaDB architecture info. # MariaDB架構資訊                                                       |
 |-------------------------|------------------------------------------------------------------------------------------------------|
-
