@@ -45,3 +45,11 @@
 
 - Database Toolkits
     - [輸入SQL，輸出索引最佳化建議 Repo: SQLAdvisor](https://github.com/Meituan-Dianping/SQLAdvisor)
+    - [RDBMS 建模工具](https://gitee.com/robergroup/pdmaner)
+    - [SQL 审核查询平台](https://gitee.com/rtttte/Archery)
+    - [Yearning Mysql SQL审核平台](https://gitee.com/cookieYe/Yearning)
+    - [DBSyncer middleware](https://gitee.com/ghi/dbsyncer)
+    - [Porter db sync middleware](https://gitee.com/sxfad/porter)
+    - [异构数据库迁移同步工具](https://gitee.com/inrgihc/dbswitch)
+    - [数据库表结构对比工具](https://gitee.com/yisin/DBCompare)
+    - [数据库同步工具](https://gitee.com/xwintop/x-RdbmsSyncTool)
