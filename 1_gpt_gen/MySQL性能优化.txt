@@ -1,0 +1,292 @@
+MySql性能优化
+4.系统级查询语句
+查询系统支持的存储引擎
+SHOW ENGINES;
+查询默认的存储引擎
+SHOW VARIABLES LIKE '%storage_engine%'
+最大连接数
+show VARIABLES like '%max_connections%'
+设置最大连接数
+set GLOBAL max_connections = 200
+是否开启缓存
+SHOW VARIABLES LIKE '%query_cache_type%'
+设置缓存大小
+SET GLOBAL query_cache_size = 4000
+查询是否开启innodb独立表空间
+show VARIABLES like 'innodb_file_per_table'
+设置独立表空间开启关闭
+set global innodb_file_per_table=off
+查询innodb的redo日志缓存大小
+show VARIABLES like 'innodb_log_buffer_size'
+查询innodb日志存放多少个
+show VARIABLES like 'innodb_log_files_in_group'
+查询innodb日志每个大小最大多少
+SHOW VARIABLES LIKE 'innodb_log_file_size'
+显示memory引擎的存储大小
+show VARIABLES like 'max_heap_table_size'
+5.测试mysql性能
+官方工具mysqlslap
+测试内容
+创建数据库、表、测试数据
+运行负载测试，并发测试
+测试环境清理，删除创建数据、表、断开连接等
+测试参数
+--create-schema=name
+数据库名
+--engine=name
+引擎名，可指定多个值
+--concurrency=N
+模拟多个客户端执行，多个值逗号
+--number-of-queries=N
+测试查询次数，如果是100，客户端10，则每个10
+--iterations=N
+迭代执行测试次数
+--commit=N
+执行N条DML后提交一次
+--auto-generate-sql
+自动生成sql脚本测试
+--atuo-generate-sql-load-type=name
+测试sql的类型，read/write/key/update/mixed,默认混合
+--auto-generate-sql-add-auto-increment
+自增列
+--number-int-cols=name
+测试生成的列包含int类型的列的个数
+--number-char-cols=name
+测试生成的列包含char类型的列的个数
+--debug-info
+打印内存和CPU信息
+1 MySql架构与存储引擎
+Mysql逻辑架构介绍
+Connectors连接层
+1.收到用户连接请求
+2.授权认证
+服务层
+1.查询缓存
+2.解析sql
+1.解析器
+2.解析树
+3.预处理
+4.新解析树
+3.查询优化器
+比如优化where1=1，则优化为没有where查询
+优化不为空的列查询，也没有where语句
+4.执行计划
+5.查询执行引擎
+6.API接口查询
+存储引擎
+MyISAM 5.5前默认
+存储结构
+1.frm文件，存储表结构
+2.myd文件，存储表数据
+3.myi文件，存储表索引
+特性
+并发性
+表级别锁
+全文检索
+支持数据压缩
+相关命令
+数据压缩： .\myisampack.exe -b -f .MYI
+数据修复 :  .\myisamchk.exe -b -f .MYI
+sql检查表：CHECK table product_info
+sql修复表：REPAIR table product_info
+适应场景
+非事务应用（数据仓库，报表，日志）
+只读应用
+空间应用gis，空间函数，坐标等
+Innodb 5.5后默认
+存储结构
+1.自动在mysqldata下创建ibdata1为10M的自动扩展数据文件，以及两个名为ib_logfile0和ib_logfile1的5MB大小的日志文件，系统表空间
+2..frm文件，存储表结构
+3. .ibd文件，存储索引及表数据，独立表空间
+特性
+有独立表空间和系统表空间的切换
+系统表空间无法简单压缩，且会有IO瓶颈
+独立表空间可以同时向多个表刷新数据，OPTIMIZE TABLE xx可以压缩数据
+有事务
+支持事务的ACID特性
+Redolog 和 UndoLog
+行级锁定，并发高
+使用场景
+适用于大多的OLTP应用
+CSV
+存储结构
+1. .CSV文件存储内容
+2. .CSM文件存储表的元数据，如表状态和数据量
+3. frm表结构
+特性
+以CSV格式存储，所有列不能为null
+不支持索引，不适合在线处理，适合存放数据
+可以对数据文件直接编辑，执行完后flush tables;
+Archive
+存储结构
+1. frm表结构
+2. ARZ数据存储
+特性
+只支持插入和查询
+只允许在自增上加索引
+用zlib对表数据压缩，磁盘IO更少
+使用场景
+日志和数据采集应用
+Memory
+存储结构
+1. frm表结构
+2,.数据在内存中
+特性
+最大大小由max_heap_table_size设置，默认16MB
+表锁
+不支持Blog和Text大字段
+字段长度固定 varchar(10)=char(10)
+支持HASH索引和Btree索引
+也成HEAP存储引擎，存储在内存
+使用场景
+hash索引用于查找或者是映射表，邮编和地区的对应表
+保存数据分析产生的中间表
+缓存周期性的聚合数据的结果表
+创建方式：create temporary table
+Federated
+存储结构
+1. frm表结构
+2.数据在远程服务器相同结构的表上
+特性
+提供了访问远程mysql的方法
+本地不存储数据，数据都放在服务器上
+本地存储表结构和远程服务器的链接信息
+使用场景
+偶尔的统计分析和手工查询
+如何使用
+默认禁止，开启需要输出
+innodb和myisam比较
+存储层
+2.业务设计
+锁
+什么是锁
+锁的种类
+表锁
+行锁
+页面锁
+存储引擎
+InnoDB
+行锁
+行锁实现方式
+排它锁X（写锁）
+共享锁S（读锁）
+意向共享锁（IS）
+意向排他锁（IX）
+InnoDB行锁模式兼容性列表
+间隙锁（Next-Key锁）
+表锁
+使用表锁的情况
+表锁开启的条件
+MyISAM
+表共享锁（Table Read Lock）
+表独占写锁（Table Write Lock）
+并发锁
+逻辑结构修改
+锁表
+解决办法
+解决思路
+pt-online-schema-change
+事务
+什么叫事务ACID
+特性
+原子性（Actomicity）
+一致性（Consistent）
+隔离性（Isolation）
+持久性（Durable）
+事务带来的问题
+更新丢失（Lost Update）
+脏读（Dirty Reads）
+不可重复读（Non-Repeatable Reads）
+幻读（Phantom Reads）
+隔离性级别
+未提交读
+以提交读
+可重复读
+可串行化
+逻辑设计
+范式设计
+反范式设计
+物理设计
+命名规范
+存储引擎选择
+数据类型选择
+3.查询以及索引
+慢查询
+慢查询配置
+ slow_query_log
+ slow_query_log_file
+ long_query_time
+ log_queries_not_using_indexes
+ log_output
+慢查询分析工具
+mysqldumpslow自带
+pt-query-digest
+慢查询记录哪些sql
+ 查询语句
+ 数据修改语句
+ 已经回滚得SQL
+慢查询结果分析
+#User@Host: root[root] @localhost [127.0.0.1] Id:10
+# Query_time:0.0005
+#Lock_Time:0.1212
+#Rows_sent:2
+#Rows_examined:2
+SET timestamp=1535462721
+Select * from table
+索引
+索引是什么
+索引的作用
+BTree与B+Tree
+优缺点
+分类
+单值索引
+唯一索引
+复合索引
+聚簇索引(聚集索引)
+非聚簇索引
+语法
+创建
+删除
+查看
+执行计划
+什么是执行计划
+具体作用
+表的读取顺序
+数据读取操作的操作类型
+哪些索引可以使用
+哪些索引被实际使用
+表之间的引用
+每张表有多少行被优化器查询
+语法
+字段详解
+id
+select_type
+table
+type
+System
+const
+eq_ref
+Ref
+Range
+Index
+ALL
+possible_keys
+key
+key_len
+ref
+rows
+Extra
+Sql优化
+策略
+尽量全值匹配
+最佳左前缀法则
+不在索引列上做任何操作
+范围条件放最后
+覆盖索引尽量用
+不等于要甚用
+Null/Not 有影响
+Like查询要当心
+字符类型加引号
+OR改UNION效率高
+总结
+批量导入
