@@ -170,7 +170,10 @@
             "雲原生可觀測領域的半壁江山，這次被 Grafana 和 Cilium 給拿下了","https://blog.csdn.net/alex_yangchuansheng/article/details/128681290",
             "B站前端錯誤監控實踐","https://mp.weixin.qq.com/s/S-MydbfRdT94z-FhvAbFCA",
             "基於 Prometheus、Thanos 與 Grafana 的監控體系詳解","https://juejin.cn/post/7416562712023334966",
-            "可觀測性與傳統監控的區別和聯繫","https://my.oschina.net/morflameblog/blog/15316524"
+            "可觀測性與傳統監控的區別和聯繫","https://my.oschina.net/morflameblog/blog/15316524",
+            "A Modern Guide to MySQL Performance Monitoring","https://www.metricfire.com/blog/a-modern-guide-to-mysql-performance-monitoring/",
+            "Top key metrics for monitoring MySQL","https://sysdig.com/blog/mysql-monitoring/",
+            "MySQL 性能監控全掌握，快來 get 關鍵指標及采集方法！","https://developer.aliyun.com/article/1207546"
         ],
         "分佈式系統": [
             "再談 Raft 一致性算法","https://juejin.cn/post/7393606971927248911",
@@ -192,8 +195,7 @@
         ],
         "業務架構設計": [
             "關於業務架構基礎知識的二三事兒：業務能力","https://www.infoq.cn/article/aFguYFcA85GN3fcMrv7i",
-            "中小銀行如何構建智能風控體系？明確業務需求比盲目求新更重要","https://www.infoq.cn/article/a1uk0eGDAxBQN8F8AcFY",
-            "關於業務架構基礎知識的二三事兒：業務能力","https://www.infoq.cn/article/aFguYFcA85GN3fcMrv7i"
+            "中小銀行如何構建智能風控體系？明確業務需求比盲目求新更重要","https://www.infoq.cn/article/a1uk0eGDAxBQN8F8AcFY"
         ],
         "數據治理": [
             "業務數據治理體系化思考與實踐","https://tech.meituan.com/2022/05/12/business-data-governance.html",
@@ -204,7 +206,8 @@
             "如何熟悉一個陌生系統","https://juejin.cn/post/7357957809072406562"
         ],
         "設計模式": [
-            "提升用戶體驗的 UUID 設計策略","https://mp.weixin.qq.com/s/m0IMJY_F4CcFFJ2KNIO15A"
+            "提升用戶體驗的 UUID 設計策略","https://mp.weixin.qq.com/s/m0IMJY_F4CcFFJ2KNIO15A",
+            "time zone 這些 BUG，防不勝防","https://juejin.cn/post/7350142836622819391"
         ],
         "消息隊列設計": [
             "Why Do We Need a Message Queue?","https://blog.bytebytego.com/p/why-do-we-need-a-message-queue"
@@ -313,7 +316,8 @@
             "CentOS-Stream9 上安裝 PostgreSQL 17 from Source Code","https://www.modb.pro/db/1843469275967881216",
             "從 MySQL 遷移到 PostgreSQL 經驗總結","https://juejin.cn/post/7460410854775455794",
             "一鍵啟動 Oracle Database 23c Free","https://www.modb.pro/db/1772307167801085952",
-            "Oracle Database 23ai 体验","https://www.modb.pro/db/1786585474910998528"
+            "Oracle Database 23ai 体验","https://www.modb.pro/db/1786585474910998528",
+            "使用 podman 搭建 MySQL 8.0 主從避坑指北","https://juejin.cn/post/7397028381974331401"
         ],
         "中間件": [
             "MySQL ProxySQL 在深入信息獲取和信息輸出","https://cloud.tencent.com/developer/article/1695487"
@@ -404,10 +408,17 @@
         ],
         "SQL 優化": [
             "複雜 SQL 治理實踐 | 京東物流技術團隊","https://juejin.cn/post/7328603400304033803",
-            "奇思妙想的 SQL｜兼顧性能的數據傾斜處理新姿勢","https://mp.weixin.qq.com/s/VGgT1faRKGnUuQ-HHQ3Q5g"
+            "奇思妙想的 SQL｜兼顧性能的數據傾斜處理新姿勢","https://mp.weixin.qq.com/s/VGgT1faRKGnUuQ-HHQ3Q5g",
+            "PostgreSQL 打破認知幻像：你寫的 SQL 是否如你心意？","https://www.modb.pro/db/1788830043766067200"
         ],
-        "性能優化": [
-            "MySQL 性能優化：從普通程序員的角度出發","https://juejin.cn/post/7461587929447301139"
+        "MySQL 性能優化": [
+            "MySQL 性能優化：從普通程序員的角度出發","https://juejin.cn/post/7461587929447301139",
+            "用蜜蜂 (eBPF) 來追蹤海豚 (MySQL)，性能追得上嗎","https://www.modb.pro/db/1799008894466478080",
+            "MySQL 8.0.35 企業版比社區版性能高出 25%？","https://juejin.cn/post/7339892484334059557",
+            "MySQL 中的 SQL 調優設計","https://juejin.cn/post/7358109207994712075"
+        ],
+        "資料庫安全與權限管理": [
+            "PostgreSQL 權限管控，還可以再簡單點","https://www.modb.pro/db/1794373113622368256"
         ],
         "數據一致性": [
             "探索 Redis 與 MySQL 的雙寫問題","https://developer.aliyun.com/article/1347071"
@@ -417,7 +428,8 @@
             "從一個故障案例談資料庫運維中的數字化分析之路","https://www.modb.pro/db/1858344140996620288",
             "MySQL 內存為什麼不斷增高，怎麼讓它釋放","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653938861&idx=1&sn=2de853dd9120693b85d91c78330249f2&chksm=bd3b7ec78a4cf7d1a95fe21ad7cff60d61c8f913f75269eec931c671e6959aa852d9525e8858&scene=178&cur_album_id=1337959503719137280#rd",
             "MySQL 8.0 不再擔心被垃圾 SQL 搞爆內存","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939777&idx=1&sn=da6b97b8d302b0b910fa52147e0f6854&scene=21#wechat_redirect",
-            "MySQL ProxySQL 由於漏洞掃描導致的 PROXYSQL CPU 超高","https://cloud.tencent.com/developer/article/1706112"
+            "MySQL ProxySQL 由於漏洞掃描導致的 PROXYSQL CPU 超高","https://cloud.tencent.com/developer/article/1706112",
+            "資料庫異常智能分析與診斷","https://tech.meituan.com/2022/05/05/meituan-database-autonomy-service.html"
         ]
     },
     "作業系統研究": {
