@@ -77,6 +77,16 @@
         ]
     },
     "系統架構": {
+        "項目管理": [
+            "一文聊聊我理解的技術 PM","https://mp.weixin.qq.com/s/0yhC1VRy_0C2gw0xWZ5Akg"
+        ],
+        "技術領導力": [
+            "從工程師到技術 leader 的思維升級","https://testerhome.com/articles/39339"
+        ],
+        "容器化與微服務": [
+            "在 Kubernetes 上跑資料庫，真的沒有意義麼？","https://www.modb.pro/db/430650",
+            "雲資料庫 RDS MySQL Serverless 已來","https://mp.weixin.qq.com/s?__biz=MzIxNTQ0MDQxNg==&mid=2247510738&idx=1&sn=75067ceadf0492bebca6167d8caa63b5&chksm=979aa79da0ed2e8b4e796411c30a9949203e39a4c4b2cf1ecabbd3572682c83f2e56e59dfd61&scene=21#wechat_redirect"
+        ],
         "架構設計": [
             "一文详解架构设计的本质","https://mp.weixin.qq.com/s/DexGYBRJzlur5iNecD4Y3Q?poc_token=HLhQiWejLhg-XRol2rZEo8OK8mzcBNTdGi9mZ22E",
             "架构提效的矛盾和矛盾的主要方面","https://mp.weixin.qq.com/s/mEIVt4lkkDdr9O0xWSlCiQ",
@@ -214,7 +224,8 @@
             "圖靈獎資料庫大師 Stonebraker 師徒對資料庫近 20 年發展與展望的 2 萬字論文","https://mp.weixin.qq.com/s/E3cvL7H-VZNw-q89nofjLg",
             "10 種資料庫技術的發展歷程與現狀","https://mp.weixin.qq.com/s/AAxlJzX_S_-ScJRtUktm4g",
             "五年沉澱，微信全平台終端資料庫 WCDB 歡迎重大升級","https://mp.weixin.qq.com/s/RWCqLD0M_WGCrCcz0oQIcQ",
-            "2.8萬字總結：OceanBase 資料庫在金融核心系統升級路徑與場景實踐","https://www.modb.pro/db/1795327113104019456"
+            "2.8萬字總結：OceanBase 資料庫在金融核心系統升級路徑與場景實踐","https://www.modb.pro/db/1795327113104019456",
+            "黃東旭：“向量資料庫”還是“向量搜索插件 + SQL 資料庫”？丨我對 2024 年資料庫發展趨勢的思考","https://www.modb.pro/db/1757838903222554624"
         ],
         "Buffer Pool 深度剖析": [
             "数据库性能优化之道: Buffer Pool 深度剖析（一）","https://juejin.cn/post/7459285932069797898",
@@ -321,10 +332,17 @@
             "資料庫內核工程師必讀論文清單","https://mp.weixin.qq.com/s?__biz=MzI2NDU4OTExOQ==&mid=2247677031&idx=1&sn=a5d627c47d987bd8fe8f53ab27d8ed81&chksm=eaa62e37ddd1a721c300ac30d3a9c75b9dca023d3b32a6582a09799cf1084d2cf69e2e7d73b5&scene=178&cur_album_id=2650119358723145730#rd",
             "Oracle DBA 必備的 101 道面試題","https://www.modb.pro/db/1873906690463121408",
             "MySQL 自治平台建設的內核原理及實踐（上）","https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-01.html",
-            "MySQL 自治平台建設的內核原理及實踐（下）","https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-02.html"
+            "MySQL 自治平台建設的內核原理及實踐（下）","https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-02.html",
+            "DBA 計劃外工作的一點思考","https://cloud.tencent.com/developer/article/1422966",
+            "資料庫產品選型測試 集中式與分佈式","https://www.modb.pro/db/1753305412787064832",
+            "DBA 不僅僅是管理資料庫--也要管理好需求","https://www.modb.pro/db/1754839133021360128",
+            "DBA 不僅僅是管理資料庫--也要管理中間件","https://www.modb.pro/db/1754509205180600320",
+            "DBA 的前景怎樣？","https://www.modb.pro/db/1695003964748156928",
+            "MySQL OCP 認證考試你知道嗎？","https://www.modb.pro/db/53492"
         ],
         "SQL 優化": [
-            "複雜 SQL 治理實踐 | 京東物流技術團隊","https://juejin.cn/post/7328603400304033803"
+            "複雜 SQL 治理實踐 | 京東物流技術團隊","https://juejin.cn/post/7328603400304033803",
+            "奇思妙想的 SQL｜兼顧性能的數據傾斜處理新姿勢","https://mp.weixin.qq.com/s/VGgT1faRKGnUuQ-HHQ3Q5g"
         ],
         "性能優化": [
             "MySQL 性能優化：從普通程序員的角度出發","https://juejin.cn/post/7461587929447301139"
@@ -336,7 +354,8 @@
             "数据库常见性能故障应急场景","https://www.modb.pro/db/1863488822995075072",
             "從一個故障案例談資料庫運維中的數字化分析之路","https://www.modb.pro/db/1858344140996620288",
             "MySQL 內存為什麼不斷增高，怎麼讓它釋放","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653938861&idx=1&sn=2de853dd9120693b85d91c78330249f2&chksm=bd3b7ec78a4cf7d1a95fe21ad7cff60d61c8f913f75269eec931c671e6959aa852d9525e8858&scene=178&cur_album_id=1337959503719137280#rd",
-            "MySQL 8.0 不再擔心被垃圾 SQL 搞爆內存","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939777&idx=1&sn=da6b97b8d302b0b910fa52147e0f6854&scene=21#wechat_redirect"
+            "MySQL 8.0 不再擔心被垃圾 SQL 搞爆內存","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939777&idx=1&sn=da6b97b8d302b0b910fa52147e0f6854&scene=21#wechat_redirect",
+            "MySQL ProxySQL 由於漏洞掃描導致的 PROXYSQL CPU 超高","https://cloud.tencent.com/developer/article/1706112"
         ]
     },
     "Application/Toolkit": {
@@ -344,7 +363,7 @@
             "stock 股票. 获取股票数据, 计算股票指标, 筹码分布, 识别股票形态, 综合选股, 选股策略, 股票验证回测, 股票自动交易, 支持PC及移动设备","https://github.com/myhhub/stock"
         ],
         "監控工具": [
-            "開源全方位運維監控工具：HertzBeat","https://juejin.cn/post/7358691823545663523"
+            "開源全方位運維監控工具：HertzBeat","https://juejin.cn/post/7358691823545663523",
             "The path to learn observability following Grafana LGTM stack","https://github.com/grafanafans/club",
             "Say Hello to Grafana OnCall","https://medium.com/@magstherdev/say-hello-to-grafana-oncall-e78f548b2227"
         ],
