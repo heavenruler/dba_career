@@ -262,12 +262,14 @@
         "double write機制": [
             "MySQL 8.0后的double write有什么变化","https://www.modb.pro/db/1871454243706646528"
         ],
-        "事務管理": [
+        "事務管理與隔離級別": [
             "学习 MySQL 必须了解的几个 Undo 概念","https://juejin.cn/post/7446981141453324315",
             "MySQL 的默認隔離級別為什麼是 RR, 而不是 RC","https://juejin.cn/post/7422848805049040896",
             "MySQL 數據加密原理和解析","https://www.modb.pro/db/1839571466908610560",
             "MySQL DATETIME 毫秒坑","https://juejin.cn/post/7460418134312255514",
-            "PG vs MySQL MVCC 機制實現的異同","https://www.modb.pro/db/1879802616004227072"
+            "PG vs MySQL MVCC 機制實現的異同","https://www.modb.pro/db/1879802616004227072",
+            "複習資料庫的 Isolation Level 與圖解五個常見的 Race Conditions","https://medium.com/@chester.yw.chu/%E8%A4%87%E7%BF%92%E8%B3%87%E6%96%99%E5%BA%93%E7%9A%84-isolation-level-%E8%88%87%E5%B8%B8%E8%A6%8B%E7%9A%84%E4%BA%94%E5%80%8B-race-conditions-%E5%9C%96%E8%A7%A3-16e8d472a25c",
+            "你真的理解 MySQL 的事務隔離嗎？","https://mp.weixin.qq.com/s?__biz=MzI1NTQwNDU4MA==&mid=2247483774&idx=1&sn=6e9636ff66bd644db2ac46fad3df4228&chksm=ea373e35dd40b7235881e349f4c0425df99513995e9d2f83ab02432b5f4151549743fc1bd845&scene=132#wechat_redirect"
         ],
         "分佈式資料庫": [
             "談談分佈式資料庫的分片鍵選擇準則和數據重分布的思考","https://www.modb.pro/db/1827055525554642944"
@@ -321,6 +323,18 @@
         ],
         "中間件": [
             "MySQL ProxySQL 在深入信息獲取和信息輸出","https://cloud.tencent.com/developer/article/1695487"
+        ],
+        "MySQL 存儲引擎": [
+            "詳細解讀 InnoDB 存儲引擎","https://blog.csdn.net/cyl101816/article/details/115794170",
+            "關於 MySQL checkpoint","https://www.cnblogs.com/DataArt/p/10236642.html",
+            "MySQL Binlog 源碼入門","http://mysql.taobao.org/monthly/2023/01/04/",
+            "MySQL 底層解析——緩存，InnoDB_buffer_pool，包括連接、解析、緩存、引擎、存儲","https://cloud.tencent.com/developer/article/1508324"
+        ],
+        "MySQL 設計與實踐": [
+            "詳解 MySQL 字符集和 Collation","https://developer.aliyun.com/article/1462909"
+        ],
+        "MySQL 資料庫管理": [
+            "GRANT 之後為什麼要 FLUSH PRIVILEGES","https://blog.csdn.net/MariaOzawa/article/details/107003386"
         ],
         "Redis 設計與實踐": [
             "從一個事故中理解 Redis（幾乎）所有知識點","https://mp.weixin.qq.com/s/39Q5-vvIBmlmRVW8tzdjyA",
@@ -404,18 +418,32 @@
             "DBA 不僅僅是管理資料庫--也要管理好需求","https://www.modb.pro/db/1754839133021360128",
             "DBA 不僅僅是管理資料庫--也要管理中間件","https://www.modb.pro/db/1754509205180600320",
             "DBA 的前景怎樣？","https://www.modb.pro/db/1695003964748156928",
-            "MySQL OCP 認證考試你知道嗎？","https://www.modb.pro/db/53492"
+            "MySQL OCP 認證考試你知道嗎？","https://www.modb.pro/db/53492",
+            "資料庫設計 (MySQL) 避坑指南","https://www.modb.pro/db/1762011570709229568"
         ],
-        "SQL 優化": [
+        "SQL 優化與調優": [
             "複雜 SQL 治理實踐 | 京東物流技術團隊","https://juejin.cn/post/7328603400304033803",
             "奇思妙想的 SQL｜兼顧性能的數據傾斜處理新姿勢","https://mp.weixin.qq.com/s/VGgT1faRKGnUuQ-HHQ3Q5g",
-            "PostgreSQL 打破認知幻像：你寫的 SQL 是否如你心意？","https://www.modb.pro/db/1788830043766067200"
+            "PostgreSQL 打破認知幻像：你寫的 SQL 是否如你心意？","https://www.modb.pro/db/1788830043766067200",
+            "基於代價的慢查詢優化建議","https://tech.meituan.com/2022/04/21/slow-query-optimized-advice-driven-by-cost-model.html",
+            "SQL 語句 Cost 花費判斷","https://www.modb.pro/db/624887",
+            "這句簡單的 SQL，如何加索引？顛覆了我多年的認知","https://juejin.cn/post/6844903927821893646",
+            "高級 SQL 優化系列之外連接優化","https://mp.weixin.qq.com/s?__biz=MzkyODM0NzE1Ng==&mid=2247483813&idx=1&sn=18ecaef134a1c847a2c115d739efa86e&chksm=c21b64def56cedc8eb5d4bdb438085e3771851fa964dca7ba58c113f6f43b2bfa2c1e454a4af&scene=132#wechat_redirect"
         ],
         "MySQL 性能優化": [
             "MySQL 性能優化：從普通程序員的角度出發","https://juejin.cn/post/7461587929447301139",
             "用蜜蜂 (eBPF) 來追蹤海豚 (MySQL)，性能追得上嗎","https://www.modb.pro/db/1799008894466478080",
             "MySQL 8.0.35 企業版比社區版性能高出 25%？","https://juejin.cn/post/7339892484334059557",
-            "MySQL 中的 SQL 調優設計","https://juejin.cn/post/7358109207994712075"
+            "MySQL 中的 SQL 調優設計","https://juejin.cn/post/7358109207994712075",
+            "DBCP 一個配置，浪費了 MySQL 50% 的性能！","https://juejin.cn/post/7350214909056483366",
+            "淺析 MySQL 代價估計器","https://developer.aliyun.com/article/1450053",
+            "MySQL 高階調優，一文讓你從入門到精通！","https://www.modb.pro/db/1734824646452256768",
+            "搞懂 MySQL 中的優化器與成本模型","https://blog.csdn.net/weixin_44829930/article/details/121658314",
+            "MySQL 中的 InnoDB Buffer Pool","https://blog.csdn.net/wzngzaixiaomantou/article/details/121064577"
+        ],
+        "MariaDB 性能優化": [
+            "The Optimizer Cost Model from MariaDB 11.0",
+            "https://mariadb.com/kb/en/the-optimizer-cost-model-from-mariadb-11-0/"
         ],
         "資料庫安全與權限管理": [
             "PostgreSQL 權限管控，還可以再簡單點","https://www.modb.pro/db/1794373113622368256"
