@@ -80,6 +80,19 @@
         "項目管理": [
             "一文聊聊我理解的技術 PM","https://mp.weixin.qq.com/s/0yhC1VRy_0C2gw0xWZ5Akg"
         ],
+        "自動化與 DevOps": [
+            "自動化的 10 項準備工作","https://testerhome.com/articles/38867"
+        ],
+        "基礎設施自動化 (IaC)": [
+            "選擇 IaC 工具是多選題，而不是單選題","https://blog.pichuang.com.tw/20230301-iac-personal-experiences.html",
+            "Terraform — Best Practices","https://medium.com/devops-mojo/terraform-best-practices-top-best-practices-for-terraform-configuration-style-formatting-structure-66b8d938f00c"
+        ],
+        "配置管理": [
+            "一次“詭異”的 Ansible 密碼問題排查，最後的“真相”竟是這樣","https://blog.51cto.com/u_15576159/5868439"
+        ],
+        "標準化與流程設計": [
+            "如何做標準化？| 京東雲技術團隊","https://testerhome.com/column_channels/38873"
+        ],
         "技術領導力": [
             "從工程師到技術 leader 的思維升級","https://testerhome.com/articles/39339"
         ],
@@ -174,7 +187,8 @@
         ],
         "性能優化": [
             "後端架構師必備：提升系統性能的 6 大核心優化策略","https://juejin.cn/post/7416529648417488948",
-            "提升資源利用率與保障服務質量，魚與熊掌不可兼得？","https://tech.meituan.com/2022/08/11/load-auto-regulator.html"
+            "提升資源利用率與保障服務質量，魚與熊掌不可兼得？","https://tech.meituan.com/2022/08/11/load-auto-regulator.html",
+            "高並發 Linux 內核參數調優","https://www.cnblogs.com/louwj/p/17162891.html"
         ],
         "業務架構設計": [
             "關於業務架構基礎知識的二三事兒：業務能力","https://www.infoq.cn/article/aFguYFcA85GN3fcMrv7i",
@@ -301,6 +315,9 @@
             "一鍵啟動 Oracle Database 23c Free","https://www.modb.pro/db/1772307167801085952",
             "Oracle Database 23ai 体验","https://www.modb.pro/db/1786585474910998528"
         ],
+        "中間件": [
+            "MySQL ProxySQL 在深入信息獲取和信息輸出","https://cloud.tencent.com/developer/article/1695487"
+        ],
         "調試與排查": [
             "從零開始學習 MySQL 調試跟踪（1）","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939856&idx=1&sn=7103a8215ec2b8c6278f94c3cc011c0a&chksm=bd3b72fa8a4cfbec8b8584ba04f6ec980e59826bbbf29c30e699121b91871c2fbe24307fdb97&scene=178&cur_album_id=1337959503719137280#rd",
             "從零開始學習 MySQL 調試跟踪（2）","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939868&idx=1&sn=117b3ec4105203d206a6eac31c327533&chksm=bd3b72f68a4cfbe0c15b25136e57f49001702457e50f1ec559c5b4aeb46be6b663343b5d04aa&scene=178&cur_album_id=1337959503719137280#rd"
@@ -356,6 +373,14 @@
             "MySQL 內存為什麼不斷增高，怎麼讓它釋放","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653938861&idx=1&sn=2de853dd9120693b85d91c78330249f2&chksm=bd3b7ec78a4cf7d1a95fe21ad7cff60d61c8f913f75269eec931c671e6959aa852d9525e8858&scene=178&cur_album_id=1337959503719137280#rd",
             "MySQL 8.0 不再擔心被垃圾 SQL 搞爆內存","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939777&idx=1&sn=da6b97b8d302b0b910fa52147e0f6854&scene=21#wechat_redirect",
             "MySQL ProxySQL 由於漏洞掃描導致的 PROXYSQL CPU 超高","https://cloud.tencent.com/developer/article/1706112"
+        ]
+    },
+    "作業系統研究": {
+        "線程與資源管理": [
+            "別再糾結線程池池大小、線程數量了，哪有什麼固定公式 | 京東雲技術團隊","https://juejin.cn/post/7280429214608146490"
+        ],
+        "進程管理": [
+            "Linux 進程管理和啟動流程","https://blog.51cto.com/u_13245823/9202174"
         ]
     },
     "Application/Toolkit": {
