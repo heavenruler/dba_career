@@ -8,6 +8,7 @@
         ],
         "架構設計": [
             "TiDB 整體架構","https://docs.pingcap.com/zh/tidb/stable/tidb-architecture",
+            "7000+字的 TiDB 保姆級簡介","https://juejin.cn/post/7213956241613684797",
             "TiDB 中的自增主鍵有哪些使用限制，應該如何避免？","https://juejin.cn/post/7416272705513111561",
             "分庫分表已成為過去式，使用分佈式資料庫才是未來","https://juejin.cn/post/7329413905028579340",
             "How a new database architecture supports scale and reliability in TiDB","https://www.infoworld.com/article/2336288/how-a-new-database-architecture-supports-scale-and-reliability-in-tidb.html#:~:text=TiDB%20automatically%20scales%20out%20to,data%20and%20user%20demands%20increase"
@@ -61,7 +62,8 @@
             "探索 TiDB Serverless 在新能源、跨境電商領域的應用","https://www.modb.pro/db/1770994779207307264",
             "月活超 1.1 億，用户超 4 億，你也在用的「知乎」是如何在超大規模 TiDB 集群上玩轉多雲多活的？","https://tidb.net/blog/ae59475c",
             "TiDB 資料庫在某省婦幼業務系統應用","https://tidb.net/blog/04f1c28f",
-            "從資料庫架構選型看 TiDB 常見應用場景","https://tidb.net/book/db-selection/database%20infrastructure"
+            "從資料庫架構選型看 TiDB 常見應用場景","https://tidb.net/book/db-selection/database%20infrastructure",
+            "網易互娛的資料庫選型和 TiDB 應用實踐","https://juejin.cn/post/6844903975813120007"
         ],
         "新版本發布": [
             "TiDB 8.5 LTS 发版——支持无限扩展，开启 AI 就绪新时代","https://mp.weixin.qq.com/s/Q4bAEZgzK_usZNswDiOH6g",
@@ -106,7 +108,11 @@
             "人人都是架構師-清晰架構 | 京東物流技術團隊","https://juejin.cn/post/7337533680239231030",
             "架構演變史：從建築學到架構設計","https://juejin.cn/post/7360535023915991090",
             "介紹了那麼多，技術中架構到底什麼？","https://juejin.cn/post/7360990621853138970",
-            "系統設計中 跨時區問題 解決方案","https://juejin.cn/post/7362722064069869605"
+            "系統設計中 跨時區問題 解決方案","https://juejin.cn/post/7362722064069869605",
+            "如何將技術債務納入路線圖","https://www.infoq.cn/article/yNcE04ykpAlHTcoAdum6",
+            "你的架構決策記錄是否失去了它的目的？","https://www.infoq.cn/article/B6vpwhb9BYBuGhzwzw7Q",
+            "亞馬遜 CTO 20 年架構經驗之道：儉約架構師的七大黃金法則！","https://www.infoq.cn/article/09TYeIY7K1hcFuu7tik0",
+            "軟件架構，一切盡在權衡","https://juejin.cn/post/7380579033547685925"
         ],
         "雲架構設計": [
             "雲計算與企業 IT 成本治理","https://juejin.cn/post/7381660102476546048"
@@ -117,7 +123,8 @@
             "基於主動元數據構建智能數據治理體系 | 京東零售技術實踐","https://mp.weixin.qq.com/s/E-WFkKoExKyEFHfwe6bMqw",
             "遠程開發和 CI 一回事","https://mp.weixin.qq.com/s/kLL0uH1CAZdCGGVMOv2fwQ",
             "愛奇藝大數據多 AZ 統一調度架構","https://mp.weixin.qq.com/s/Hmpe7cgVEfWRBfMvFFkGPw",
-            "廣告系統的平臺架構與交互流程","https://neoremind.com/2020/01/ad_system_architecture/%20%E5%B9%BF%E5%91%8A%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%B9%B3%E5%8F%B0%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B"
+            "廣告系統的平臺架構與交互流程","https://neoremind.com/2020/01/ad_system_architecture/%20%E5%B9%BF%E5%91%8A%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%B9%B3%E5%8F%B0%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B",
+            "淘寶信息流融合混排服務升級","https://mp.weixin.qq.com/s/J0ut6xuy1e2GyEbELlq9QA"
         ],
         "緩存設計": [
             "如何高效实现缓存预热？一文了解九大方法","https://juejin.cn/post/7459021463329865728",
@@ -130,16 +137,30 @@
         "監控系統設計": [
             "高性能！易用友好的开源实时监控系统！","https://juejin.cn/post/7443353905477959718",
             "雲監控的盲點: 用戶視角","https://juejin.cn/post/7460404339564560418",
-            "監控系統中的 95 分位，90 分位，是什麼？","https://juejin.cn/post/7381407777598160948"
+            "監控系統中的 95 分位，90 分位，是什麼？","https://juejin.cn/post/7381407777598160948",
+            "告警平台：給告警一個膠帶","https://mp.weixin.qq.com/s?__biz=Mzg3Njc0NTgwMg==&mid=2247496204&idx=1&sn=9738c7048008cc5f869e1ac50180480c&chksm=cf2f3729f858be3f790c49155566d40f63dffccaa4d52594277b1c1857ac070c00e87aa73f17&scene=178&cur_album_id=3289447926347317252#",
+            "可觀測性宇宙的第一天 - Grafana LGTM 全家桶的起點","https://ithelp.ithome.com.tw/articles/10319012",
+            "Build a lab scale end-to-end Observability Platform","https://github.com/blueswen/observability-workshop-101",
+            "技術 011 - 《My Philosophy on Alerting》- 監控報警的哲學","https://zhuanlan.zhihu.com/p/266870885",
+            "Prometheus 如何監控指標，快速定位故障","https://www.yunweipai.com/44575.html",
+            "基於 Grafana LGTM 可觀測性平台的快速構建","https://xie.infoq.cn/article/a86a5daed44bc363abb392203",
+            "雲原生可觀測領域的半壁江山，這次被 Grafana 和 Cilium 給拿下了","https://blog.csdn.net/alex_yangchuansheng/article/details/128681290",
+            "B站前端錯誤監控實踐","https://mp.weixin.qq.com/s/S-MydbfRdT94z-FhvAbFCA",
+            "基於 Prometheus、Thanos 與 Grafana 的監控體系詳解","https://juejin.cn/post/7416562712023334966",
+            "可觀測性與傳統監控的區別和聯繫","https://my.oschina.net/morflameblog/blog/15316524"
         ],
         "分佈式系統": [
             "再談 Raft 一致性算法","https://juejin.cn/post/7393606971927248911",
-            "Raft 一致性算法","https://juejin.cn/post/7390188606256840704"
+            "Raft 一致性算法","https://juejin.cn/post/7390188606256840704",
+            "一文看懂微服務世界性技術難題——分佈式事務","https://mp.weixin.qq.com/s?__biz=MzI2NDU4OTExOQ==&mid=2247676257&idx=1&sn=bb106c9d1f7c1a3dbd3f75b362c9d041&chksm=eaa62b31ddd1a227f6d861c5ef59e5f6c4301995327cbd5e2aa8b62b35ae23818b74debccc5b&scene=178&cur_album_id=2650119358723145730#rd"
         ],
         "高效能設計": [
             "為什麼高手都要用非阻塞 IO？","https://juejin.cn/post/7381752542982520886",
             "如何設計一個秒殺系統","https://juejin.cn/post/7380604196032495679",
-            "看看你的應用系統用了哪些高並發技術？","https://testerhome.com/column_channels/39568"
+            "看看你的應用系統用了哪些高並發技術？","https://testerhome.com/column_channels/39568",
+            "千萬級高性能長連接 Go 服務架構實踐","https://mp.weixin.qq.com/s/E8rO4uBkFpcLAb_LsBOphw",
+            "高性能無鎖並發框架 Disruptor","https://juejin.cn/post/7325684511253839898",
+            "揭秘 10 億+ 高並發應用如何實現高效穩定的開發和運維","https://juejin.cn/post/7381362667719917619"
         ],
         "性能優化": [
             "後端架構師必備：提升系統性能的 6 大核心優化策略","https://juejin.cn/post/7416529648417488948",
@@ -147,17 +168,28 @@
         ],
         "業務架構設計": [
             "關於業務架構基礎知識的二三事兒：業務能力","https://www.infoq.cn/article/aFguYFcA85GN3fcMrv7i",
-            "中小銀行如何構建智能風控體系？明確業務需求比盲目求新更重要","https://www.infoq.cn/article/a1uk0eGDAxBQN8F8AcFY"
+            "中小銀行如何構建智能風控體系？明確業務需求比盲目求新更重要","https://www.infoq.cn/article/a1uk0eGDAxBQN8F8AcFY",
+            "關於業務架構基礎知識的二三事兒：業務能力","https://www.infoq.cn/article/aFguYFcA85GN3fcMrv7i"
         ],
         "數據治理": [
             "業務數據治理體系化思考與實踐","https://tech.meituan.com/2022/05/12/business-data-governance.html",
-            "數據指標體系搭建實踐","https://mp.weixin.qq.com/s/l_9CJGsdKjV9pIOgkqncsQ"
+            "數據指標體系搭建實踐","https://mp.weixin.qq.com/s/l_9CJGsdKjV9pIOgkqncsQ",
+            "數據質量和數據治理的關係 | 京東雲技術團隊","https://juejin.cn/post/7329448423327875111"
         ],
         "系統設計": [
             "如何熟悉一個陌生系統","https://juejin.cn/post/7357957809072406562"
         ],
         "設計模式": [
             "提升用戶體驗的 UUID 設計策略","https://mp.weixin.qq.com/s/m0IMJY_F4CcFFJ2KNIO15A"
+        ],
+        "消息隊列設計": [
+            "Why Do We Need a Message Queue?","https://blog.bytebytego.com/p/why-do-we-need-a-message-queue"
+        ],
+        "故障處理與預防": [
+            "Google 工程師如何在實踐中避免和處理故障","https://juejin.cn/post/7412836534237544489"
+        ],
+        "可靠性設計": [
+            "前任開發在代碼裡下毒，支付下單居然沒加幂等","https://mp.weixin.qq.com/s/b3dOUC24Erbz4JAAtXLkMQ"
         ],
         "可用性設計": [
             "什么是系统可用性？如何提升可用性？","https://juejin.cn/post/7401176351057903625",
@@ -173,10 +205,17 @@
             "超大規模資料庫集群保穩系列之三：美團資料庫容災體系建設實踐","https://tech.meituan.com/2023/06/09/meituan-database-recovery-system.html",
             "從項目風險管理角度探討系統穩定性","https://juejin.cn/post/7348762390387556392",
             "穩定性方法論：可灰度 & 可監控 & 可回滾","https://juejin.cn/post/7349002962867896320",
-            "穩定性建設之依賴設計","https://juejin.cn/post/7348363874964045824"
+            "穩定性建設之依賴設計","https://juejin.cn/post/7348363874964045824",
+            "爆發式增長業務的高可用架構優化之路","https://www.infoq.cn/article/g0AHX9q7whjA3XxMv1do"
         ]
     },
     "資料庫原理": {
+        "發展與趨勢": [
+            "圖靈獎資料庫大師 Stonebraker 師徒對資料庫近 20 年發展與展望的 2 萬字論文","https://mp.weixin.qq.com/s/E3cvL7H-VZNw-q89nofjLg",
+            "10 種資料庫技術的發展歷程與現狀","https://mp.weixin.qq.com/s/AAxlJzX_S_-ScJRtUktm4g",
+            "五年沉澱，微信全平台終端資料庫 WCDB 歡迎重大升級","https://mp.weixin.qq.com/s/RWCqLD0M_WGCrCcz0oQIcQ",
+            "2.8萬字總結：OceanBase 資料庫在金融核心系統升級路徑與場景實踐","https://www.modb.pro/db/1795327113104019456"
+        ],
         "Buffer Pool 深度剖析": [
             "数据库性能优化之道: Buffer Pool 深度剖析（一）","https://juejin.cn/post/7459285932069797898",
             "数据库性能优化之道: Buffer Pool 深度剖析（二）","https://juejin.cn/post/7459286686830215205",
@@ -201,6 +240,13 @@
             "MySQL 數據加密原理和解析","https://www.modb.pro/db/1839571466908610560",
             "MySQL DATETIME 毫秒坑","https://juejin.cn/post/7460418134312255514",
             "PG vs MySQL MVCC 機制實現的異同","https://www.modb.pro/db/1879802616004227072"
+        ],
+        "分佈式資料庫": [
+            "談談分佈式資料庫的分片鍵選擇準則和數據重分布的思考","https://www.modb.pro/db/1827055525554642944"
+        ],
+        "資料庫學習資源": [
+            "Oracle 官方文檔整理以及閱讀指南","https://www.modb.pro/db/1830801976084488192",
+            "YashanDB 資料庫概念手冊正式發布","https://www.modb.pro/db/1792374336438489088"
         ]
     },
     "資料庫優化": {
@@ -256,6 +302,12 @@
         "監控系統設計": [
             "MySQL 運行時的可觀測性","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653940337&idx=1&sn=c6d88bea92069d4b9347939a6c8c2615&chksm=bd3b701b8a4cf90d066b9a62036d37a04f13379cf4042c64a6909e11c7c2fa0d3a2b5bad5434&scene=178&cur_album_id=1337959503719137280#rd"
         ],
+        "OLTP 系統設計": [
+            "GBASE 南大通用專家訪談：走進深水區，核心系統需要什麼樣的（OLTP）資料庫？","https://www.modb.pro/db/1780138236219822080"
+        ],
+        "圖資料庫設計": [
+            "圖資料庫採購 | 做好三大問題的前置思考","https://www.modb.pro/db/1783376071580258304"
+        ],
         "MySQL 新版本": [
             "该开始关注 MySQL 8.4 了","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653941503&idx=1&sn=1dfcf3599797c0ea0d83fa6595e597c4&chksm=bd3b74958a4cfd838db0885e9aa1866c05c3e77a04dd96ea00d0882ed8982f08e1fb45c453c1&scene=178&cur_album_id=1337959503719137280#rd",
             "技術譯文 | MySQL 8.4.3 和 9.1.0: 顯著提升性能！","https://mp.weixin.qq.com/s/IEbamb9-OzMFCS9lh0sRvA",
@@ -271,8 +323,14 @@
             "MySQL 自治平台建設的內核原理及實踐（上）","https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-01.html",
             "MySQL 自治平台建設的內核原理及實踐（下）","https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-02.html"
         ],
+        "SQL 優化": [
+            "複雜 SQL 治理實踐 | 京東物流技術團隊","https://juejin.cn/post/7328603400304033803"
+        ],
         "性能優化": [
             "MySQL 性能優化：從普通程序員的角度出發","https://juejin.cn/post/7461587929447301139"
+        ],
+        "數據一致性": [
+            "探索 Redis 與 MySQL 的雙寫問題","https://developer.aliyun.com/article/1347071"
         ],
         "性能故障應急": [
             "数据库常见性能故障应急场景","https://www.modb.pro/db/1863488822995075072",
@@ -287,6 +345,8 @@
         ],
         "監控工具": [
             "開源全方位運維監控工具：HertzBeat","https://juejin.cn/post/7358691823545663523"
+            "The path to learn observability following Grafana LGTM stack","https://github.com/grafanafans/club",
+            "Say Hello to Grafana OnCall","https://medium.com/@magstherdev/say-hello-to-grafana-oncall-e78f548b2227"
         ],
         "安全工具": [
             "滲透測試報告一鍵生成工具","https://www.yunweipai.com/46853.html",
@@ -304,7 +364,8 @@
         ],
         "平台管理": [
             "NineData 是集成了資料庫 DevOps、數據複製、數據備份、數據對比多個模塊的雲服務","https://docs.ninedata.cloud/",
-            "sqle - 一个支持多种不同类型数据库，覆盖事前控制、事后监督、标准发布场景，帮助您建立质量规范的 SQL 全生命周期质量管理平台","https://github.com/actiontech/sqle"
+            "sqle - 一个支持多种不同类型数据库，覆盖事前控制、事后监督、标准发布场景，帮助您建立质量规范的 SQL 全生命周期质量管理平台","https://github.com/actiontech/sqle",
+            "Yearning - A most popular SQL audit platform for MySQL","https://github.com/cookieY/Yearning"
         ],
         "開發資源": [
             "GitHub Actions 入坑指南","https://juejin.cn/post/6960126908180725773",
