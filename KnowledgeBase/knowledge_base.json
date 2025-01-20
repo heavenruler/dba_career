@@ -118,6 +118,7 @@
             "缓存预热怎么选？九大场景对号入座！","https://juejin.cn/post/7458943861266481204",
             "在 Netflix 構建全球緩存系統: 深入了解全局複製","https://mp.weixin.qq.com/s/pYTzgXcWYYpruj7BwU8GDA",
             "分布式系統架構 7: 本地緩存","https://juejin.cn/post/7460602380917325887",
+            "分佈式系統架構 8：分佈式緩存","https://juejin.cn/post/7461631499374100516",
             "二級緩存架構極致提升系統性能","https://mp.weixin.qq.com/s/R_Qg0N46OkFm_eLAq_UZLw"
         ],
         "監控系統設計": [
@@ -185,7 +186,8 @@
             "学习 MySQL 必须了解的几个 Undo 概念","https://juejin.cn/post/7446981141453324315",
             "MySQL 的默認隔離級別為什麼是 RR, 而不是 RC","https://juejin.cn/post/7422848805049040896",
             "MySQL 數據加密原理和解析","https://www.modb.pro/db/1839571466908610560",
-            "MySQL DATETIME 毫秒坑","https://juejin.cn/post/7460418134312255514"
+            "MySQL DATETIME 毫秒坑","https://juejin.cn/post/7460418134312255514",
+            "PG vs MySQL MVCC 機制實現的異同","https://www.modb.pro/db/1879802616004227072"
         ]
     },
     "資料庫優化": {
@@ -229,14 +231,22 @@
             "一鍵啟動 Oracle Database 23c Free","https://www.modb.pro/db/1772307167801085952",
             "Oracle Database 23ai 体验","https://www.modb.pro/db/1786585474910998528"
         ],
+        "調試與排查": [
+            "從零開始學習 MySQL 調試跟踪（1）","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939856&idx=1&sn=7103a8215ec2b8c6278f94c3cc011c0a&chksm=bd3b72fa8a4cfbec8b8584ba04f6ec980e59826bbbf29c30e699121b91871c2fbe24307fdb97&scene=178&cur_album_id=1337959503719137280#rd",
+            "從零開始學習 MySQL 調試跟踪（2）","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939868&idx=1&sn=117b3ec4105203d206a6eac31c327533&chksm=bd3b72f68a4cfbe0c15b25136e57f49001702457e50f1ec559c5b4aeb46be6b663343b5d04aa&scene=178&cur_album_id=1337959503719137280#rd"
+        ],
         "自動化工具": [
             "MySQL数据库巡检报告，一条命令搞定，省心又省力！","https://mp.weixin.qq.com/s?__biz=MzI3MzE5Mjg1Mg==&mid=2247484697&idx=1&sn=39416398dfba9e8f9fa0b3f300d2dbae&chksm=eb2647e2dc51cef4da5e4ec87b17743c6cb51aab1cf36d28d418be891cb65d966671b3bcf50b&cur_album_id=3470107659469307906&scene=189#wechat_redirect",
             "MySQL一条命令生成数据库巡检报告进阶-生成更好看更美观的报告","https://mp.weixin.qq.com/s/NwUdE9S-6hvxqRD88nB5Fw",
             "近期客戶需求巡檢自己編寫整理的 SQL","https://www.modb.pro/db/1844285953962246144"
         ],
+        "監控系統設計": [
+            "MySQL 運行時的可觀測性","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653940337&idx=1&sn=c6d88bea92069d4b9347939a6c8c2615&chksm=bd3b701b8a4cf90d066b9a62036d37a04f13379cf4042c64a6909e11c7c2fa0d3a2b5bad5434&scene=178&cur_album_id=1337959503719137280#rd"
+        ],
         "MySQL 新版本": [
             "该开始关注 MySQL 8.4 了","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653941503&idx=1&sn=1dfcf3599797c0ea0d83fa6595e597c4&chksm=bd3b74958a4cfd838db0885e9aa1866c05c3e77a04dd96ea00d0882ed8982f08e1fb45c453c1&scene=178&cur_album_id=1337959503719137280#rd",
-            "技術譯文 | MySQL 8.4.3 和 9.1.0: 顯著提升性能！","https://mp.weixin.qq.com/s/IEbamb9-OzMFCS9lh0sRvA"
+            "技術譯文 | MySQL 8.4.3 和 9.1.0: 顯著提升性能！","https://mp.weixin.qq.com/s/IEbamb9-OzMFCS9lh0sRvA",
+            "MySQL 好玩新特性：離線模式","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939795&idx=1&sn=09fb7a57c221b1a33d1cb102c4118a0c&chksm=bd3b72398a4cfb2f840faac4c435a23b9f4d32892653e5a728595901fc5003111a1d5b13fed3&scene=178&cur_album_id=1337959503719137280#rd"
         ],
         "MySQL DBA 指南": [
             "MySQL DBA 防坑指南","https://mp.weixin.qq.com/s/iy9mAwahHWo4V3tyYGm6jw",
@@ -248,9 +258,14 @@
             "MySQL 自治平台建設的內核原理及實踐（上）","https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-01.html",
             "MySQL 自治平台建設的內核原理及實踐（下）","https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-02.html"
         ],
+        "性能優化": [
+            "MySQL 性能優化：從普通程序員的角度出發","https://juejin.cn/post/7461587929447301139"
+        ],
         "性能故障應急": [
             "数据库常见性能故障应急场景","https://www.modb.pro/db/1863488822995075072",
-            "從一個故障案例談資料庫運維中的數字化分析之路","https://www.modb.pro/db/1858344140996620288"
+            "從一個故障案例談資料庫運維中的數字化分析之路","https://www.modb.pro/db/1858344140996620288",
+            "MySQL 內存為什麼不斷增高，怎麼讓它釋放","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653938861&idx=1&sn=2de853dd9120693b85d91c78330249f2&chksm=bd3b7ec78a4cf7d1a95fe21ad7cff60d61c8f913f75269eec931c671e6959aa852d9525e8858&scene=178&cur_album_id=1337959503719137280#rd",
+            "MySQL 8.0 不再擔心被垃圾 SQL 搞爆內存","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939777&idx=1&sn=da6b97b8d302b0b910fa52147e0f6854&scene=21#wechat_redirect"
         ]
     },
     "Application/Toolkit": {
