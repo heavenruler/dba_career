@@ -64,6 +64,10 @@
         ],
         "安裝部署及管理": [
             [
+                "定制化 MySQL 8.2.0 編譯選項",
+                "https://www.modb.pro/db/1722794246820945920"
+            ],
+            [
                 "離線部署 TiDB 8.1.0 集群",
                 "https://www.modb.pro/db/1794004852519014400"
             ],
@@ -726,6 +730,12 @@
         ]
     },
     "資料庫原理": {
+        "高效能設計": [
+            [
+                "十年後資料庫還是無法擁抱 NUMA？",
+                "https://zhuanlan.zhihu.com/p/387117470"
+            ]
+        ],
         "發展與趨勢": [
             [
                 "圖靈獎資料庫大師 Stonebraker 師徒對資料庫近 20 年發展與展望的 2 萬字論文",
@@ -872,6 +882,10 @@
         ],
         "SQL 優化技巧": [
             [
+                "重現一條簡單 SQL 的優化過程",
+                "https://cloud.tencent.com/developer/article/2321910"
+            ],
+            [
                 "一个不可思议的SQL优化过程及扩展几个需掌握的几个知识点",
                 "https://www.modb.pro/db/1869200405658349568"
             ],
@@ -882,6 +896,10 @@
             [
                 "MySQL JOIN 的高階使用",
                 "https://juejin.cn/post/7460354454832496679"
+            ],
+            [
+                "MySQL 全文索引",
+                "https://mp.weixin.qq.com/s/GhnX4zLBYfIL7UCsLKvZpg"
             ]
         ],
         "性能分析工具": [
@@ -894,6 +912,10 @@
             [
                 "InnoDB 索引与 Online DDL 的结合: 业务不中断的优化秘诀",
                 "https://juejin.cn/post/7459359268521836570"
+            ],
+            [
+                "InnoDB 的覆蓋索引實踐",
+                "https://www.modb.pro/db/1759522060955111424"
             ]
         ]
     },
@@ -916,7 +938,33 @@
         ]
     },
     "資料庫管理": {
+        "高可用與分佈式數據庫": [
+            [
+                "Galera Cluster 不存在同步延遲？不，Galera Cluster 到處都是同步延遲",
+                "https://www.sre-devops.info/galera-cluster-sync/"
+            ],
+            [
+                "Galera Cluster 一致性問題",
+                "https://juejin.cn/post/6961245441136525320"
+            ]    
+        ],
         "安裝部署及管理": [
+            [
+                "MySQL 在線開啟 GTID 的每個階段是要做什麼",
+                "https://www.cnblogs.com/zhenxing/p/15612793.html"
+            ],
+            [
+                "MySQL 8.0 參數配置不生效問題排查診斷",
+                "https://www.modb.pro/db/1774722559522705408"
+            ],
+            [
+                "Upgrading GitHub.com to MySQL 8.0",
+                "https://github.blog/engineering/upgrading-github-com-to-mysql-8-0"
+            ],
+            [
+                "使用 Blue-Green Deploy 把 MySQL 5.7 升級到 8.0",
+                "https://justinhollly.medium.com/%E4%BD%BF%E7%94%A8-blue-green-deploy-%E6%8A%8A-mysql-5-7-%E5%8D%87%E7%B4%9A%E5%88%B0-8-0-4272eacc7ffc"
+            ],
             [
                 "MySQL 8.0.40 MGR 集群安裝部署及管理",
                 "https://www.modb.pro/db/1871362852146135040"
@@ -980,14 +1028,56 @@
         ],
         "MySQL 設計與實踐": [
             [
+                "MySQL 外鍵約束的刪除和更新總結",
+                "https://blog.csdn.net/Aileenvov/article/details/136119265"
+            ],
+            [
                 "詳解 MySQL 字符集和 Collation",
                 "https://developer.aliyun.com/article/1462909"
+            ],
+            [
+                "MySQL 數據結構設計及開發規範",
+                "https://github.com/wanfangdata/guide/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%A7%84%E8%8C%83/Mysql%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1%E5%8F%8A%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83.md"
+            ]
+        ],
+        "MySQL 安全與審計": [
+            [
+                "MySQL 數據庫審計采集技術調研之 Packetbeat，eBPF",
+                "https://developer.aliyun.com/article/852651"
             ]
         ],
         "MySQL 資料庫管理": [
             [
+                "實戰過程記錄：瀕臨宕機的業務系統僅優化 1 個 SQL 即恢復！",
+                "https://www.modb.pro/db/1758418439165267968"
+            ],
+            [
+                "安裝部署 MySQL 8.2.0 並使用 changer master 傳統方式搭建部署一主一從操作記錄",
+                "https://www.modb.pro/db/1759486743346761728"
+            ],
+            [
+                "xtrabackup 8.0 如何恢復單表",
+                "https://cloud.tencent.com/developer/article/1970574"
+            ],
+            [
+                "MySQL 複製中 slave 延遲監控",
+                "https://cloud.tencent.com/developer/article/2185089"
+            ],
+            [
                 "GRANT 之後為什麼要 FLUSH PRIVILEGES",
                 "https://blog.csdn.net/MariaOzawa/article/details/107003386"
+            ],
+            [
+                "三歪連 MySQL 大表怎麼 DDL 變更都不懂",
+                "https://ost.51cto.com/posts/11578"
+            ],
+            [
+                "意想不到的 MySQL 複製延遲原因",
+                "https://cloud.tencent.com/developer/article/2185088"
+            ],
+            [
+                "全網最詳細之 pt-osc 處理 MySQL 外鍵表流程分析",
+                "https://blog.51cto.com/wujianwei/4934461"
             ]
         ],
         "Redis 設計與實踐": [
@@ -1204,6 +1294,14 @@
         ],
         "MySQL DBA 指南": [
             [
+                "MySQL 數據庫面試題總結",
+                "https://blog.csdn.net/adminpd/article/details/122910606"
+            ],
+            [
+                "這些年背過的面試題——MySQL 篇",
+                "https://mp.weixin.qq.com/s/L26rI11OV8hrfJVy5Yu78g"
+            ],
+            [
                 "MySQL DBA 防坑指南",
                 "https://mp.weixin.qq.com/s/iy9mAwahHWo4V3tyYGm6jw"
             ],
@@ -1212,8 +1310,24 @@
                 "https://www.modb.pro/db/1858459514144567296"
             ],
             [
+                "運維實踐｜MySQL 命令之 perror",
+                "https://www.modb.pro/db/1762038265985699840"
+            ],
+            [
+                "資料庫運維的 N 條建議",
+                "https://www.modb.pro/db/654692"
+            ],
+            [
+                "MySQL 運維高危操作",
+                "https://www.modb.pro/db/401284"
+            ],
+            [
                 "MySQL 運維",
                 "https://juejin.cn/post/7423106025195028507"
+            ],
+            [
+                "MySQL 運維實踐｜稀里糊塗的解決了 MySQL 子帳號過期、密鑰問題",
+                "https://www.modb.pro/db/1881545691021979648"
             ],
             [
                 "MySQL 資料庫認證考試介紹（2024 版）",
@@ -1266,6 +1380,30 @@
         ],
         "SQL 優化與調優": [
             [
+                "千萬級數據深分頁查詢 SQL 性能優化實踐",
+                "https://testerhome.com/column_channels/38863"
+            ],
+            [
+                "MySQL 為什麼「錯誤」選擇代價更大的索引",
+                "https://cloud.tencent.com/developer/article/1922139"
+            ],
+            [
+                "MySQL 查詢為什麼選擇使用這個索引？——基於 MySQL 8.0.22 索引成本計算",
+                "https://blog.csdn.net/qq_34115899/article/details/120217907"
+            ],
+            [
+                "MySQL-extra 常見的額外信息",
+                "https://www.modb.pro/db/1772429352336166912"
+            ],
+            [
+                "運維實踐｜淺談 explain 的使用",
+                "https://www.modb.pro/db/1774424140342169600"
+            ],
+            [
+                "索引下推，這個點你肯定不知道！",
+                "https://segmentfault.com/a/1190000040592410"
+            ],
+            [
                 "複雜 SQL 治理實踐 | 京東物流技術團隊",
                 "https://juejin.cn/post/7328603400304033803"
             ],
@@ -1295,6 +1433,54 @@
             ]
         ],
         "MySQL 性能優化": [
+            [
+                "MySQL 唯一鍵衝突與解決衝突時的死鎖風險",
+                "https://cloud.tencent.com/developer/article/2031570"
+            ],
+            [
+                "如何精確監控 DB 響應延時",
+                "https://cloud.tencent.com/developer/article/1868221"
+            ],
+            [
+                "執行 analyze table 意外導致 waiting for table flush",
+                "https://cloud.tencent.com/developer/article/1791573"
+            ],
+            [
+                "profiling 中要關注哪些信息",
+                "https://www.kancloud.cn/thinkphp/mysql-faq/47449"
+            ],
+            [
+                "processlist 中哪些狀態要引起關注",
+                "https://www.kancloud.cn/thinkphp/mysql-faq/47446"
+            ],
+            [
+                "如何閱讀 MySQL 死鎖日誌",
+                "https://cloud.tencent.com/developer/article/2185083"
+            ],
+            [
+                "如何使用 bcc 工具觀測 MySQL 延遲",
+                "https://opensource.actionsky.com/20200324-mysql/"
+            ],
+            [
+                "MySQL 性能診斷實踐之系統觀測工具",
+                "https://zhuanlan.zhihu.com/p/43219451"
+            ],
+            [
+                "性能運維 -- 借助 pstack + strace 排查 SQL 性能問題",
+                "https://www.modb.pro/db/1764818856233734144"
+            ],
+            [
+                "高性能 MySQL 讀書計劃",
+                "https://mp.weixin.qq.com/mp/appmsgalbum?__biz=Mzg2OTg5MzE5OQ==&action=getalbum&album_id=3059216334183645189#wechat_redirect"
+            ],
+            [
+                "我說 MySQL 每張表最好不超過 2000 萬數據",
+                "https://juejin.cn/post/7165689453124517896"
+            ],
+            [
+                "為什麼說 MySQL 單表行數不要超過 2000w？",
+                "https://www.51cto.com/article/721621.html"
+            ],
             [
                 "MySQL 性能優化：從普通程序員的角度出發",
                 "https://juejin.cn/post/7461587929447301139"
@@ -1330,6 +1516,16 @@
             [
                 "MySQL 中的 InnoDB Buffer Pool",
                 "https://blog.csdn.net/wzngzaixiaomantou/article/details/121064577"
+            ],
+            [
+                "MySQL 如何加速讀寫速度？來看看 Buffer Pool",
+                "https://juejin.cn/post/7461825527058546726"
+            ]
+        ],
+        "MariaDB 設計與實踐": [
+            [
+                "使用 MariaDB Thread Pool 實現 DB 端的連接池",
+                "https://www.sre-devops.info/mariadb-thread-pool/"
             ]
         ],
         "MariaDB 性能優化": [
@@ -1376,6 +1572,10 @@
             [
                 "資料庫異常智能分析與診斷",
                 "https://tech.meituan.com/2022/05/05/meituan-database-autonomy-service.html"
+            ],
+            [
+                "天啊，這個 MySQL 故障定位方法太好用了！",
+                "https://www.easemob.com/news/6560"
             ]
         ]
     },
