@@ -1,510 +1,1498 @@
 {
     "TiDB 實踐": {
         "核心組件": [
-            "TiDB 的高可用實踐: 一文了解代理組件 TiProxy 的原理與應用","https://mp.weixin.qq.com/s/g_ma7dOaWRP8hacsCCJ6fA",
-            "TiDB 介紹及設計原理","https://juejin.cn/post/7415672130191556608",
-            "TiDB 底層存儲結構 LSM 樹原理介紹","https://juejin.cn/post/7187222825819144250",
-            "TiDB 的列式存儲引擎是如何實現的？","https://cn.pingcap.com/blog/how-tidb-implements-columnar-storage-engine/"
+            [
+                "TiDB 的高可用實踐: 一文了解代理組件 TiProxy 的原理與應用",
+                "https://mp.weixin.qq.com/s/g_ma7dOaWRP8hacsCCJ6fA"
+            ],
+            [
+                "TiDB 介紹及設計原理",
+                "https://juejin.cn/post/7415672130191556608"
+            ],
+            [
+                "TiDB 底層存儲結構 LSM 樹原理介紹",
+                "https://juejin.cn/post/7187222825819144250"
+            ],
+            [
+                "TiDB 的列式存儲引擎是如何實現的？",
+                "https://cn.pingcap.com/blog/how-tidb-implements-columnar-storage-engine/"
+            ]
         ],
         "架構設計": [
-            "TiDB 整體架構","https://docs.pingcap.com/zh/tidb/stable/tidb-architecture",
-            "7000+字的 TiDB 保姆級簡介","https://juejin.cn/post/7213956241613684797",
-            "TiDB 中的自增主鍵有哪些使用限制，應該如何避免？","https://juejin.cn/post/7416272705513111561",
-            "分庫分表已成為過去式，使用分佈式資料庫才是未來","https://juejin.cn/post/7329413905028579340",
-            "How a new database architecture supports scale and reliability in TiDB","https://www.infoworld.com/article/2336288/how-a-new-database-architecture-supports-scale-and-reliability-in-tidb.html#:~:text=TiDB%20automatically%20scales%20out%20to,data%20and%20user%20demands%20increase"
+            [
+                "TiDB 整體架構",
+                "https://docs.pingcap.com/zh/tidb/stable/tidb-architecture"
+            ],
+            [
+                "7000+字的 TiDB 保姆級簡介",
+                "https://juejin.cn/post/7213956241613684797"
+            ],
+            [
+                "TiDB 中的自增主鍵有哪些使用限制，應該如何避免？",
+                "https://juejin.cn/post/7416272705513111561"
+            ],
+            [
+                "分庫分表已成為過去式，使用分佈式資料庫才是未來",
+                "https://juejin.cn/post/7329413905028579340"
+            ],
+            [
+                "How a new database architecture supports scale and reliability in TiDB",
+                "https://www.infoworld.com/article/2336288/how-a-new-database-architecture-supports-scale-and-reliability-in-tidb.html#:~:text=TiDB%20automatically%20scales%20out%20to,data%20and%20user%20demands%20increase"
+            ]
         ],
         "高可用性設計": [
-            "Cross-DC Deployment Solutions","https://docs-archive.pingcap.com/tidb/v3.0/geo-redundancy-deployment",
-            "TiDB 與 MySQL 在備份容災體系的衡量對比","https://tidb.net/blog/8788eb77",
-            "國產資料庫『同城兩中心』容災方案對比，TiDB 表現優秀","https://tidb.net/blog/af773cb8",
-            "TiDB 三中心『腦裂』場景探討","https://tidb.net/blog/07b42ec0",
-            "為什麼說 TiDB 在線擴容對業務幾乎沒有影響","https://tidb.net/blog/e82b2c5f"
+            [
+                "Cross-DC Deployment Solutions",
+                "https://docs-archive.pingcap.com/tidb/v3.0/geo-redundancy-deployment"
+            ],
+            [
+                "TiDB 與 MySQL 在備份容災體系的衡量對比",
+                "https://tidb.net/blog/8788eb77"
+            ],
+            [
+                "國產資料庫『同城兩中心』容災方案對比，TiDB 表現優秀",
+                "https://tidb.net/blog/af773cb8"
+            ],
+            [
+                "TiDB 三中心『腦裂』場景探討",
+                "https://tidb.net/blog/07b42ec0"
+            ],
+            [
+                "為什麼說 TiDB 在線擴容對業務幾乎沒有影響",
+                "https://tidb.net/blog/e82b2c5f"
+            ]
         ],
         "安裝部署及管理": [
-            "離線部署 TiDB 8.1.0 集群","https://www.modb.pro/db/1794004852519014400",
-            "TiDB 在單機上模擬部署生產環境集群","https://www.modb.pro/db/1793938829178130432",
-            "TiDB 學習之路從部署開始","https://www.modb.pro/db/1788935978215870464",
-            "使用 TiUP 部署 TiDB 集群","https://docs.pingcap.com/zh/tidb/stable/production-deployment-using-tiup"
+            [
+                "離線部署 TiDB 8.1.0 集群",
+                "https://www.modb.pro/db/1794004852519014400"
+            ],
+            [
+                "TiDB 在單機上模擬部署生產環境集群",
+                "https://www.modb.pro/db/1793938829178130432"
+            ],
+            [
+                "TiDB 學習之路從部署開始",
+                "https://www.modb.pro/db/1788935978215870464"
+            ],
+            [
+                "使用 TiUP 部署 TiDB 集群",
+                "https://docs.pingcap.com/zh/tidb/stable/production-deployment-using-tiup"
+            ]
         ],
         "維運管理": [
-            "TiDB 相關 SQL 腳本大全","https://cn.pingcap.com/blog/tidb-related-sql-script-collection/"
+            [
+                "TiDB 相關 SQL 腳本大全",
+                "https://cn.pingcap.com/blog/tidb-related-sql-script-collection/"
+            ]
         ],
         "工具與技術": [
-            "TiDB 的數據對比工具 sync-diff-inspector","https://tidb.net/blog/23f49fc7"
+            [
+                "TiDB 的數據對比工具 sync-diff-inspector",
+                "https://tidb.net/blog/23f49fc7"
+            ]
         ],
         "資源隔離": [
-            "你需要什么样的资源隔离？丨TiDB 资源隔离最佳实践","https://juejin.cn/post/7460215684438818850"
+            [
+                "你需要什么样的资源隔离？丨TiDB 资源隔离最佳实践",
+                "https://juejin.cn/post/7460215684438818850"
+            ]
         ],
         "性能優化": [
-            "狂飙 50 倍丨TiDB DDL 框架优化深度解析","https://mp.weixin.qq.com/s/vhgat9oHRsBpAaN2j6vBwQ",
-            "TiDB 優化器丨執行計劃和 SQL 算子解讀最佳實踐","https://juejin.cn/post/7423288346123993115",
-            "TiDB 资源管控的对撞测试以及最佳实践架构","https://juejin.cn/post/7387568946339774516",
-            "如何在 TiDB 上高效運行序列號生成服務","https://cn.pingcap.com/blog/how-to-run-the-serial-number-generation-service-efficiently-on-tidb/",
-            "TiDB 在個推丨掌握這兩個調優技巧，讓 TiDB 性能提速千倍！","https://cn.pingcap.com/blog/tidb-in-getui/",
-            "一文概述 TiDB 中的索引類型","https://tidb.net/blog/d2e54cba"
+            [
+                "狂飙 50 倍丨TiDB DDL 框架优化深度解析",
+                "https://mp.weixin.qq.com/s/vhgat9oHRsBpAaN2j6vBwQ"
+            ],
+            [
+                "TiDB 優化器丨執行計劃和 SQL 算子解讀最佳實踐",
+                "https://juejin.cn/post/7423288346123993115"
+            ],
+            [
+                "TiDB 资源管控的对撞测试以及最佳实践架构",
+                "https://juejin.cn/post/7387568946339774516"
+            ],
+            [
+                "如何在 TiDB 上高效運行序列號生成服務",
+                "https://cn.pingcap.com/blog/how-to-run-the-serial-number-generation-service-efficiently-on-tidb/"
+            ],
+            [
+                "TiDB 在個推丨掌握這兩個調優技巧，讓 TiDB 性能提速千倍！",
+                "https://cn.pingcap.com/blog/tidb-in-getui/"
+            ],
+            [
+                "一文概述 TiDB 中的索引類型",
+                "https://tidb.net/blog/d2e54cba"
+            ]
         ],
         "案例研究": [
-            "数据规模超 1PB ，揭秘网易游戏规模化 TiDB SaaS 服务建设实践","https://www.infoq.cn/article/JUuV6eTWSmijj8rFkGPI",
-            "Rakuten 乐天积分系统从 Cassandra 到 TiDB 的选型与实战","https://mp.weixin.qq.com/s/7iE0YK2zpovvEPsLKBEjyg",
-            "基于时间维度水平拆分的多 TiDB 集群统一数据路由/联邦查询技术的实践","https://mp.weixin.qq.com/s/r4hKZdRrQ9fVF7I2acs4-g",
-            "分布式資料庫的進度管理: TiDB 備份恢復工具 PiTR 的原理與實踐","https://juejin.cn/post/7423293748974698547",
-            "「合集」三年 50 篇，TiDB 幹貨全收錄","https://www.modb.pro/db/1842152043118686208",
-            "知乎 PB 級別 TiDB 數據庫在線遷移實踐","https://juejin.cn/post/7418412937607708708",
-            "瓜子二手車 x TiDB 丨平均耗時降低 30%，TiDB HTAP 在瓜子二手車財務中台結帳核心系統的深度實踐","https://juejin.cn/post/7418408493650362387",
-            "SHOPLINE x TiDB丨集群成本降低 50%！跨境電商 SHOPLINE 交易、商品管理等核心業務的資料庫升級之路","https://juejin.cn/post/7405153978139230234",
-            "唐劉：當 SaaS 愛上 TiDB（一）- 行業挑戰與 TiDB 的應對之道","https://juejin.cn/post/7390319475520225332",
-            "TiDB VS MySQL 場景選擇","https://tidb.net/blog/97548bb4",
-            "幹掉 DBA！產品經理運維 TiDB，用非技術手段攻克技術挑戰","https://tidb.net/blog/14f041fe",
-            "AmzTrends x TiDB Serverless：通過雲原生改造實現全局成本降低 80%","https://tidb.net/blog/4b000356",
-            "一名開發者眼中的 TiDB 與 MySQL 的選擇","https://cn.pingcap.com/blog/choice-between-tidb-and-mysql/",
-            "TiDB HTAP 深度解讀","https://zhuanlan.zhihu.com/p/205663113",
-            "TiDB Cloud 在金融、社交、智能風控領域的最佳實踐","https://www.modb.pro/db/616890",
-            "探索 TiDB Serverless 在新能源、跨境電商領域的應用","https://www.modb.pro/db/1770994779207307264",
-            "月活超 1.1 億，用户超 4 億，你也在用的「知乎」是如何在超大規模 TiDB 集群上玩轉多雲多活的？","https://tidb.net/blog/ae59475c",
-            "TiDB 資料庫在某省婦幼業務系統應用","https://tidb.net/blog/04f1c28f",
-            "從資料庫架構選型看 TiDB 常見應用場景","https://tidb.net/book/db-selection/database%20infrastructure",
-            "網易互娛的資料庫選型和 TiDB 應用實踐","https://juejin.cn/post/6844903975813120007"
+            [
+                "数据规模超 1PB ，揭秘网易游戏规模化 TiDB SaaS 服务建设实践",
+                "https://www.infoq.cn/article/JUuV6eTWSmijj8rFkGPI"
+            ],
+            [
+                "Rakuten 乐天积分系统从 Cassandra 到 TiDB 的选型与实战",
+                "https://mp.weixin.qq.com/s/7iE0YK2zpovvEPsLKBEjyg"
+            ],
+            [
+                "基于时间维度水平拆分的多 TiDB 集群统一数据路由/联邦查询技术的实践",
+                "https://mp.weixin.qq.com/s/r4hKZdRrQ9fVF7I2acs4-g"
+            ],
+            [
+                "分布式資料庫的進度管理: TiDB 備份恢復工具 PiTR 的原理與實踐",
+                "https://juejin.cn/post/7423293748974698547"
+            ],
+            [
+                "「合集」三年 50 篇，TiDB 幹貨全收錄",
+                "https://www.modb.pro/db/1842152043118686208"
+            ],
+            [
+                "知乎 PB 級別 TiDB 數據庫在線遷移實踐",
+                "https://juejin.cn/post/7418412937607708708"
+            ],
+            [
+                "瓜子二手車 x TiDB 丨平均耗時降低 30%，TiDB HTAP 在瓜子二手車財務中台結帳核心系統的深度實踐",
+                "https://juejin.cn/post/7418408493650362387"
+            ],
+            [
+                "SHOPLINE x TiDB丨集群成本降低 50%！跨境電商 SHOPLINE 交易、商品管理等核心業務的資料庫升級之路",
+                "https://juejin.cn/post/7405153978139230234"
+            ],
+            [
+                "唐劉：當 SaaS 愛上 TiDB（一）- 行業挑戰與 TiDB 的應對之道",
+                "https://juejin.cn/post/7390319475520225332"
+            ],
+            [
+                "TiDB VS MySQL 場景選擇",
+                "https://tidb.net/blog/97548bb4"
+            ],
+            [
+                "幹掉 DBA！產品經理運維 TiDB，用非技術手段攻克技術挑戰",
+                "https://tidb.net/blog/14f041fe"
+            ],
+            [
+                "AmzTrends x TiDB Serverless：通過雲原生改造實現全局成本降低 80%",
+                "https://tidb.net/blog/4b000356"
+            ],
+            [
+                "一名開發者眼中的 TiDB 與 MySQL 的選擇",
+                "https://cn.pingcap.com/blog/choice-between-tidb-and-mysql/"
+            ],
+            [
+                "TiDB HTAP 深度解讀",
+                "https://zhuanlan.zhihu.com/p/205663113"
+            ],
+            [
+                "TiDB Cloud 在金融、社交、智能風控領域的最佳實踐",
+                "https://www.modb.pro/db/616890"
+            ],
+            [
+                "探索 TiDB Serverless 在新能源、跨境電商領域的應用",
+                "https://www.modb.pro/db/1770994779207307264"
+            ],
+            [
+                "月活超 1.1 億，用户超 4 億，你也在用的「知乎」是如何在超大規模 TiDB 集群上玩轉多雲多活的？",
+                "https://tidb.net/blog/ae59475c"
+            ],
+            [
+                "TiDB 資料庫在某省婦幼業務系統應用",
+                "https://tidb.net/blog/04f1c28f"
+            ],
+            [
+                "從資料庫架構選型看 TiDB 常見應用場景",
+                "https://tidb.net/book/db-selection/database%20infrastructure"
+            ],
+            [
+                "網易互娛的資料庫選型和 TiDB 應用實踐",
+                "https://juejin.cn/post/6844903975813120007"
+            ]
         ],
         "新版本發布": [
-            "TiDB 8.5 LTS 发版——支持无限扩展，开启 AI 就绪新时代","https://mp.weixin.qq.com/s/Q4bAEZgzK_usZNswDiOH6g",
-            "TiDB 7.4 發版：正式兼容 MySQL 8.0","https://cn.pingcap.com/blog/tidb-7-4-release/",
-            "7.5 LTS 解讀 ｜ Runaway Queries 管理、高性能數據批處理方案、DDL 啟停特性","https://www.modb.pro/db/1767005807938441216"
+            [
+                "TiDB 8.5 LTS 发版——支持无限扩展，开启 AI 就绪新时代",
+                "https://mp.weixin.qq.com/s/Q4bAEZgzK_usZNswDiOH6g"
+            ],
+            [
+                "TiDB 7.4 發版：正式兼容 MySQL 8.0",
+                "https://cn.pingcap.com/blog/tidb-7-4-release/"
+            ],
+            [
+                "7.5 LTS 解讀 ｜ Runaway Queries 管理、高性能數據批處理方案、DDL 啟停特性",
+                "https://www.modb.pro/db/1767005807938441216"
+            ]
         ]
     },
     "開發流程與管理": {
         "團隊開發流程規範": [
-            "團隊開發流程規範","https://blog.xiayf.cn/2023/04/05/team-dev-process-std/"
+            [
+                "團隊開發流程規範",
+                "https://blog.xiayf.cn/2023/04/05/team-dev-process-std/"
+            ]
         ]
     },
     "系統架構": {
         "項目管理": [
-            "一文聊聊我理解的技術 PM","https://mp.weixin.qq.com/s/0yhC1VRy_0C2gw0xWZ5Akg"
+            [
+                "一文聊聊我理解的技術 PM",
+                "https://mp.weixin.qq.com/s/0yhC1VRy_0C2gw0xWZ5Akg"
+            ]
         ],
         "自動化與 DevOps": [
-            "自動化的 10 項準備工作","https://testerhome.com/articles/38867"
+            [
+                "自動化的 10 項準備工作",
+                "https://testerhome.com/articles/38867"
+            ]
         ],
         "基礎設施自動化 (IaC)": [
-            "選擇 IaC 工具是多選題，而不是單選題","https://blog.pichuang.com.tw/20230301-iac-personal-experiences.html",
-            "Terraform — Best Practices","https://medium.com/devops-mojo/terraform-best-practices-top-best-practices-for-terraform-configuration-style-formatting-structure-66b8d938f00c"
+            [
+                "選擇 IaC 工具是多選題，而不是單選題",
+                "https://blog.pichuang.com.tw/20230301-iac-personal-experiences.html"
+            ],
+            [
+                "Terraform — Best Practices",
+                "https://medium.com/devops-mojo/terraform-best-practices-top-best-practices-for-terraform-configuration-style-formatting-structure-66b8d938f00c"
+            ]
         ],
         "配置管理": [
-            "一次“詭異”的 Ansible 密碼問題排查，最後的“真相”竟是這樣","https://blog.51cto.com/u_15576159/5868439"
+            [
+                "一次“詭異”的 Ansible 密碼問題排查，最後的“真相”竟是這樣",
+                "https://blog.51cto.com/u_15576159/5868439"
+            ]
         ],
         "標準化與流程設計": [
-            "如何做標準化？| 京東雲技術團隊","https://testerhome.com/column_channels/38873"
+            [
+                "如何做標準化？| 京東雲技術團隊",
+                "https://testerhome.com/column_channels/38873"
+            ]
         ],
         "技術領導力": [
-            "從工程師到技術 leader 的思維升級","https://testerhome.com/articles/39339"
+            [
+                "從工程師到技術 leader 的思維升級",
+                "https://testerhome.com/articles/39339"
+            ]
         ],
         "容器化與微服務": [
-            "在 Kubernetes 上跑資料庫，真的沒有意義麼？","https://www.modb.pro/db/430650",
-            "雲資料庫 RDS MySQL Serverless 已來","https://mp.weixin.qq.com/s?__biz=MzIxNTQ0MDQxNg==&mid=2247510738&idx=1&sn=75067ceadf0492bebca6167d8caa63b5&chksm=979aa79da0ed2e8b4e796411c30a9949203e39a4c4b2cf1ecabbd3572682c83f2e56e59dfd61&scene=21#wechat_redirect"
+            [
+                "在 Kubernetes 上跑資料庫，真的沒有意義麼？",
+                "https://www.modb.pro/db/430650"
+            ],
+            [
+                "雲資料庫 RDS MySQL Serverless 已來",
+                "https://mp.weixin.qq.com/s?__biz=MzIxNTQ0MDQxNg==&mid=2247510738&idx=1&sn=75067ceadf0492bebca6167d8caa63b5&chksm=979aa79da0ed2e8b4e796411c30a9949203e39a4c4b2cf1ecabbd3572682c83f2e56e59dfd61&scene=21#wechat_redirect"
+            ]
         ],
         "架構設計": [
-            "一文详解架构设计的本质","https://mp.weixin.qq.com/s/DexGYBRJzlur5iNecD4Y3Q?poc_token=HLhQiWejLhg-XRol2rZEo8OK8mzcBNTdGi9mZ22E",
-            "架构提效的矛盾和矛盾的主要方面","https://mp.weixin.qq.com/s/mEIVt4lkkDdr9O0xWSlCiQ",
-            "什麼才是架構師的真內核？","https://mp.weixin.qq.com/s/v3F1pBdG444I9_3pi-718Q",
-            "單體架構和微服務架構到底哪個好？","https://mp.weixin.qq.com/s/XTHhcaHPcvu4qvgk6Gn8yg",
-            "架構師必備 10 大接口性能優化秘技，條條經典！","https://mp.weixin.qq.com/s/CQ-ePndjTSqCZ9l6YdwUUA",
-            "像架構師一樣去思考","https://www.infoq.cn/article/LNZVV3MHvlYAMvKFOmpD",
-            "彩虹橋架構演進之路-負載均衡篇｜得物技術","https://mp.weixin.qq.com/s/5q7XOs2bC55coE12wcHIbA",
-            "單元化架構在字節跳動的落地實踐","https://mp.weixin.qq.com/s/D01aZ5uNbuXCAjELMC1h3w",
-            "微服務與分布式系統設計看這篇就夠了！","https://mp.weixin.qq.com/s/wg_EkeogSkjGaChvsLsaVw",
-            "15 個系統設計權衡關鍵點: 構建高性能系統的黃金法則","https://juejin.cn/post/7460386228237254719",
-            "不可思議！平均執行耗時僅 1.5ms 的接口在超時時間 100ms 下成功率竟然還不到 5 個 9!!","https://juejin.cn/post/7459797004202508314",
-            "像架構師一樣去思考","https://www.infoq.cn/article/LNZVV3MHvlYAMvKFOmpD",
-            "什麼才是真正的架構設計？","https://mp.weixin.qq.com/s/7_SU77SKgI-GLyjMZeavsQ",
-            "整潔架構演進之路——京東廣告投放平台實戰","https://mp.weixin.qq.com/s/ZjV8_22eneWmdkI3bBi9tQ",
-            "如何畫好架構圖：7 種常用類型與示例","https://mp.weixin.qq.com/s/AQWckbTwamt3tISh-bKxxQ",
-            "架構師基本功：如何畫好一張 UML 用例圖？","https://mp.weixin.qq.com/s/lDOBj3se7RraeRVzsXNSrA",
-            "架構師必備底層邏輯：設計與建模","https://mp.weixin.qq.com/s/un3JRdel2qYuUuw0x7lpSA",
-            "過度設計的架構師們，應該拿去祭天","https://juejin.cn/post/7287144182967107638",
-            "你的 API 服務設計能力將再次進化！","https://juejin.cn/post/7389952503040933898",
-            "架構設計的悖論，復用是美好的還是邪惡的","https://mp.weixin.qq.com/s/0jNNTZZfw24Vv85XdwK-tQ",
-            "架構師必備底層邏輯：分層架構設計","https://mp.weixin.qq.com/s/t3tQbaAEAj-Uqclz0SSaMw",
-            "Software Architecture is Hard","https://medium.com/@ozanani/software-architecture-is-hard-71fe3ddafb60",
-            "如何畫好一張架構圖？","https://mp.weixin.qq.com/s?__biz=MzI2NDU4OTExOQ==&mid=2247669912&idx=1&sn=1bac1d9158eacf894dd43c0eed5b1bf9&chksm=ebd1bac443515acfc5d2d2a2ca9572b9b62ccf097d3cef224f4935105d771e02e930a352c7dd&scene=132&exptype=timeline_recommend_article_extendread_samebiz&show_related_article=1&subscene=0&scene=132#wechat_redirect",
-            "大型研發架構團隊的 AOM 實踐","https://time.geekbang.org/column/article/615813",
-            "DDD 落地指南-架構師眼中的餐廳","https://juejin.cn/post/7357957599844122624",
-            "系統技術規劃的幾點概要思路","https://juejin.cn/post/7347667834793738266",
-            "再聊對架構決策記錄的一些思考","https://juejin.cn/post/7344567669892595752",
-            "人人都是架構師-清晰架構 | 京東物流技術團隊","https://juejin.cn/post/7337533680239231030",
-            "架構演變史：從建築學到架構設計","https://juejin.cn/post/7360535023915991090",
-            "介紹了那麼多，技術中架構到底什麼？","https://juejin.cn/post/7360990621853138970",
-            "系統設計中 跨時區問題 解決方案","https://juejin.cn/post/7362722064069869605",
-            "如何將技術債務納入路線圖","https://www.infoq.cn/article/yNcE04ykpAlHTcoAdum6",
-            "你的架構決策記錄是否失去了它的目的？","https://www.infoq.cn/article/B6vpwhb9BYBuGhzwzw7Q",
-            "亞馬遜 CTO 20 年架構經驗之道：儉約架構師的七大黃金法則！","https://www.infoq.cn/article/09TYeIY7K1hcFuu7tik0",
-            "軟件架構，一切盡在權衡","https://juejin.cn/post/7380579033547685925"
+            [
+                "一文详解架构设计的本质",
+                "https://mp.weixin.qq.com/s/DexGYBRJzlur5iNecD4Y3Q?poc_token=HLhQiWejLhg-XRol2rZEo8OK8mzcBNTdGi9mZ22E"
+            ],
+            [
+                "架构提效的矛盾和矛盾的主要方面",
+                "https://mp.weixin.qq.com/s/mEIVt4lkkDdr9O0xWSlCiQ"
+            ],
+            [
+                "什麼才是架構師的真內核？",
+                "https://mp.weixin.qq.com/s/v3F1pBdG444I9_3pi-718Q"
+            ],
+            [
+                "單體架構和微服務架構到底哪個好？",
+                "https://mp.weixin.qq.com/s/XTHhcaHPcvu4qvgk6Gn8yg"
+            ],
+            [
+                "架構師必備 10 大接口性能優化秘技，條條經典！",
+                "https://mp.weixin.qq.com/s/CQ-ePndjTSqCZ9l6YdwUUA"
+            ],
+            [
+                "像架構師一樣去思考",
+                "https://www.infoq.cn/article/LNZVV3MHvlYAMvKFOmpD"
+            ],
+            [
+                "彩虹橋架構演進之路-負載均衡篇｜得物技術",
+                "https://mp.weixin.qq.com/s/5q7XOs2bC55coE12wcHIbA"
+            ],
+            [
+                "單元化架構在字節跳動的落地實踐",
+                "https://mp.weixin.qq.com/s/D01aZ5uNbuXCAjELMC1h3w"
+            ],
+            [
+                "微服務與分布式系統設計看這篇就夠了！",
+                "https://mp.weixin.qq.com/s/wg_EkeogSkjGaChvsLsaVw"
+            ],
+            [
+                "15 個系統設計權衡關鍵點: 構建高性能系統的黃金法則",
+                "https://juejin.cn/post/7460386228237254719"
+            ],
+            [
+                "不可思議！平均執行耗時僅 1.5ms 的接口在超時時間 100ms 下成功率竟然還不到 5 個 9!!",
+                "https://juejin.cn/post/7459797004202508314"
+            ],
+            [
+                "像架構師一樣去思考",
+                "https://www.infoq.cn/article/LNZVV3MHvlYAMvKFOmpD"
+            ],
+            [
+                "什麼才是真正的架構設計？",
+                "https://mp.weixin.qq.com/s/7_SU77SKgI-GLyjMZeavsQ"
+            ],
+            [
+                "整潔架構演進之路——京東廣告投放平台實戰",
+                "https://mp.weixin.qq.com/s/ZjV8_22eneWmdkI3bBi9tQ"
+            ],
+            [
+                "如何畫好架構圖：7 種常用類型與示例",
+                "https://mp.weixin.qq.com/s/AQWckbTwamt3tISh-bKxxQ"
+            ],
+            [
+                "架構師基本功：如何畫好一張 UML 用例圖？",
+                "https://mp.weixin.qq.com/s/lDOBj3se7RraeRVzsXNSrA"
+            ],
+            [
+                "架構師必備底層邏輯：設計與建模",
+                "https://mp.weixin.qq.com/s/un3JRdel2qYuUuw0x7lpSA"
+            ],
+            [
+                "過度設計的架構師們，應該拿去祭天",
+                "https://juejin.cn/post/7287144182967107638"
+            ],
+            [
+                "你的 API 服務設計能力將再次進化！",
+                "https://juejin.cn/post/7389952503040933898"
+            ],
+            [
+                "架構設計的悖論，復用是美好的還是邪惡的",
+                "https://mp.weixin.qq.com/s/0jNNTZZfw24Vv85XdwK-tQ"
+            ],
+            [
+                "架構師必備底層邏輯：分層架構設計",
+                "https://mp.weixin.qq.com/s/t3tQbaAEAj-Uqclz0SSaMw"
+            ],
+            [
+                "Software Architecture is Hard",
+                "https://medium.com/@ozanani/software-architecture-is-hard-71fe3ddafb60"
+            ],
+            [
+                "如何畫好一張架構圖？",
+                "https://mp.weixin.qq.com/s?__biz=MzI2NDU4OTExOQ==&mid=2247669912&idx=1&sn=1bac1d9158eacf894dd43c0eed5b1bf9&chksm=ebd1bac443515acfc5d2d2a2ca9572b9b62ccf097d3cef224f4935105d771e02e930a352c7dd&scene=132&exptype=timeline_recommend_article_extendread_samebiz&show_related_article=1&subscene=0&scene=132#wechat_redirect"
+            ],
+            [
+                "大型研發架構團隊的 AOM 實踐",
+                "https://time.geekbang.org/column/article/615813"
+            ],
+            [
+                "DDD 落地指南-架構師眼中的餐廳",
+                "https://juejin.cn/post/7357957599844122624"
+            ],
+            [
+                "系統技術規劃的幾點概要思路",
+                "https://juejin.cn/post/7347667834793738266"
+            ],
+            [
+                "再聊對架構決策記錄的一些思考",
+                "https://juejin.cn/post/7344567669892595752"
+            ],
+            [
+                "人人都是架構師-清晰架構 | 京東物流技術團隊",
+                "https://juejin.cn/post/7337533680239231030"
+            ],
+            [
+                "架構演變史：從建築學到架構設計",
+                "https://juejin.cn/post/7360535023915991090"
+            ],
+            [
+                "介紹了那麼多，技術中架構到底什麼？",
+                "https://juejin.cn/post/7360990621853138970"
+            ],
+            [
+                "系統設計中 跨時區問題 解決方案",
+                "https://juejin.cn/post/7362722064069869605"
+            ],
+            [
+                "如何將技術債務納入路線圖",
+                "https://www.infoq.cn/article/yNcE04ykpAlHTcoAdum6"
+            ],
+            [
+                "你的架構決策記錄是否失去了它的目的？",
+                "https://www.infoq.cn/article/B6vpwhb9BYBuGhzwzw7Q"
+            ],
+            [
+                "亞馬遜 CTO 20 年架構經驗之道：儉約架構師的七大黃金法則！",
+                "https://www.infoq.cn/article/09TYeIY7K1hcFuu7tik0"
+            ],
+            [
+                "軟件架構，一切盡在權衡",
+                "https://juejin.cn/post/7380579033547685925"
+            ]
         ],
         "雲架構設計": [
-            "雲計算與企業 IT 成本治理","https://juejin.cn/post/7381660102476546048"
+            [
+                "雲計算與企業 IT 成本治理",
+                "https://juejin.cn/post/7381660102476546048"
+            ]
         ],
         "平臺設計": [
-            "B站大数据平台故障自愈实践","https://mp.weixin.qq.com/s/Gd_YqiCwFuRkemofnom7lw",
-            "B站標籤系統建設實踐","https://mp.weixin.qq.com/s/fw7mfhsLo-l3VOXYZL_CCQ",
-            "基於主動元數據構建智能數據治理體系 | 京東零售技術實踐","https://mp.weixin.qq.com/s/E-WFkKoExKyEFHfwe6bMqw",
-            "遠程開發和 CI 一回事","https://mp.weixin.qq.com/s/kLL0uH1CAZdCGGVMOv2fwQ",
-            "愛奇藝大數據多 AZ 統一調度架構","https://mp.weixin.qq.com/s/Hmpe7cgVEfWRBfMvFFkGPw",
-            "廣告系統的平臺架構與交互流程","https://neoremind.com/2020/01/ad_system_architecture/%20%E5%B9%BF%E5%91%8A%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%B9%B3%E5%8F%B0%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B",
-            "淘寶信息流融合混排服務升級","https://mp.weixin.qq.com/s/J0ut6xuy1e2GyEbELlq9QA"
+            [
+                "B站大数据平台故障自愈实践",
+                "https://mp.weixin.qq.com/s/Gd_YqiCwFuRkemofnom7lw"
+            ],
+            [
+                "B站標籤系統建設實踐",
+                "https://mp.weixin.qq.com/s/fw7mfhsLo-l3VOXYZL_CCQ"
+            ],
+            [
+                "基於主動元數據構建智能數據治理體系 | 京東零售技術實踐",
+                "https://mp.weixin.qq.com/s/E-WFkKoExKyEFHfwe6bMqw"
+            ],
+            [
+                "遠程開發和 CI 一回事",
+                "https://mp.weixin.qq.com/s/kLL0uH1CAZdCGGVMOv2fwQ"
+            ],
+            [
+                "愛奇藝大數據多 AZ 統一調度架構",
+                "https://mp.weixin.qq.com/s/Hmpe7cgVEfWRBfMvFFkGPw"
+            ],
+            [
+                "廣告系統的平臺架構與交互流程",
+                "https://neoremind.com/2020/01/ad_system_architecture/%20%E5%B9%BF%E5%91%8A%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%B9%B3%E5%8F%B0%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B"
+            ],
+            [
+                "淘寶信息流融合混排服務升級",
+                "https://mp.weixin.qq.com/s/J0ut6xuy1e2GyEbELlq9QA"
+            ]
         ],
         "緩存設計": [
-            "如何高效实现缓存预热？一文了解九大方法","https://juejin.cn/post/7459021463329865728",
-            "缓存预热怎么选？九大场景对号入座！","https://juejin.cn/post/7458943861266481204",
-            "在 Netflix 構建全球緩存系統: 深入了解全局複製","https://mp.weixin.qq.com/s/pYTzgXcWYYpruj7BwU8GDA",
-            "分布式系統架構 7: 本地緩存","https://juejin.cn/post/7460602380917325887",
-            "分佈式系統架構 8：分佈式緩存","https://juejin.cn/post/7461631499374100516",
-            "二級緩存架構極致提升系統性能","https://mp.weixin.qq.com/s/R_Qg0N46OkFm_eLAq_UZLw"
+            [
+                "如何高效实现缓存预热？一文了解九大方法",
+                "https://juejin.cn/post/7459021463329865728"
+            ],
+            [
+                "缓存预热怎么选？九大场景对号入座！",
+                "https://juejin.cn/post/7458943861266481204"
+            ],
+            [
+                "在 Netflix 構建全球緩存系統: 深入了解全局複製",
+                "https://mp.weixin.qq.com/s/pYTzgXcWYYpruj7BwU8GDA"
+            ],
+            [
+                "分布式系統架構 7: 本地緩存",
+                "https://juejin.cn/post/7460602380917325887"
+            ],
+            [
+                "分佈式系統架構 8：分佈式緩存",
+                "https://juejin.cn/post/7461631499374100516"
+            ],
+            [
+                "二級緩存架構極致提升系統性能",
+                "https://mp.weixin.qq.com/s/R_Qg0N46OkFm_eLAq_UZLw"
+            ]
         ],
         "監控系統設計": [
-            "高性能！易用友好的开源实时监控系统！","https://juejin.cn/post/7443353905477959718",
-            "雲監控的盲點: 用戶視角","https://juejin.cn/post/7460404339564560418",
-            "監控系統中的 95 分位，90 分位，是什麼？","https://juejin.cn/post/7381407777598160948",
-            "告警平台：給告警一個膠帶","https://mp.weixin.qq.com/s?__biz=Mzg3Njc0NTgwMg==&mid=2247496204&idx=1&sn=9738c7048008cc5f869e1ac50180480c&chksm=cf2f3729f858be3f790c49155566d40f63dffccaa4d52594277b1c1857ac070c00e87aa73f17&scene=178&cur_album_id=3289447926347317252#",
-            "可觀測性宇宙的第一天 - Grafana LGTM 全家桶的起點","https://ithelp.ithome.com.tw/articles/10319012",
-            "Build a lab scale end-to-end Observability Platform","https://github.com/blueswen/observability-workshop-101",
-            "技術 011 - 《My Philosophy on Alerting》- 監控報警的哲學","https://zhuanlan.zhihu.com/p/266870885",
-            "Prometheus 如何監控指標，快速定位故障","https://www.yunweipai.com/44575.html",
-            "基於 Grafana LGTM 可觀測性平台的快速構建","https://xie.infoq.cn/article/a86a5daed44bc363abb392203",
-            "雲原生可觀測領域的半壁江山，這次被 Grafana 和 Cilium 給拿下了","https://blog.csdn.net/alex_yangchuansheng/article/details/128681290",
-            "B站前端錯誤監控實踐","https://mp.weixin.qq.com/s/S-MydbfRdT94z-FhvAbFCA",
-            "基於 Prometheus、Thanos 與 Grafana 的監控體系詳解","https://juejin.cn/post/7416562712023334966",
-            "可觀測性與傳統監控的區別和聯繫","https://my.oschina.net/morflameblog/blog/15316524",
-            "A Modern Guide to MySQL Performance Monitoring","https://www.metricfire.com/blog/a-modern-guide-to-mysql-performance-monitoring/",
-            "Top key metrics for monitoring MySQL","https://sysdig.com/blog/mysql-monitoring/",
-            "MySQL 性能監控全掌握，快來 get 關鍵指標及采集方法！","https://developer.aliyun.com/article/1207546"
+            [
+                "高性能！易用友好的开源实时监控系统！",
+                "https://juejin.cn/post/7443353905477959718"
+            ],
+            [
+                "雲監控的盲點: 用戶視角",
+                "https://juejin.cn/post/7460404339564560418"
+            ],
+            [
+                "監控系統中的 95 分位，90 分位，是什麼？",
+                "https://juejin.cn/post/7381407777598160948"
+            ],
+            [
+                "告警平台：給告警一個膠帶",
+                "https://mp.weixin.qq.com/s?__biz=Mzg3Njc0NTgwMg==&mid=2247496204&idx=1&sn=9738c7048008cc5f869e1ac50180480c&chksm=cf2f3729f858be3f790c49155566d40f63dffccaa4d52594277b1c1857ac070c00e87aa73f17&scene=178&cur_album_id=3289447926347317252#"
+            ],
+            [
+                "可觀測性宇宙的第一天 - Grafana LGTM 全家桶的起點",
+                "https://ithelp.ithome.com.tw/articles/10319012"
+            ],
+            [
+                "Build a lab scale end-to-end Observability Platform",
+                "https://github.com/blueswen/observability-workshop-101"
+            ],
+            [
+                "技術 011 - 《My Philosophy on Alerting》- 監控報警的哲學",
+                "https://zhuanlan.zhihu.com/p/266870885"
+            ],
+            [
+                "Prometheus 如何監控指標，快速定位故障",
+                "https://www.yunweipai.com/44575.html"
+            ],
+            [
+                "基於 Grafana LGTM 可觀測性平台的快速構建",
+                "https://xie.infoq.cn/article/a86a5daed44bc363abb392203"
+            ],
+            [
+                "雲原生可觀測領域的半壁江山，這次被 Grafana 和 Cilium 給拿下了",
+                "https://blog.csdn.net/alex_yangchuansheng/article/details/128681290"
+            ],
+            [
+                "B站前端錯誤監控實踐",
+                "https://mp.weixin.qq.com/s/S-MydbfRdT94z-FhvAbFCA"
+            ],
+            [
+                "基於 Prometheus、Thanos 與 Grafana 的監控體系詳解",
+                "https://juejin.cn/post/7416562712023334966"
+            ],
+            [
+                "可觀測性與傳統監控的區別和聯繫",
+                "https://my.oschina.net/morflameblog/blog/15316524"
+            ],
+            [
+                "A Modern Guide to MySQL Performance Monitoring",
+                "https://www.metricfire.com/blog/a-modern-guide-to-mysql-performance-monitoring/"
+            ],
+            [
+                "Top key metrics for monitoring MySQL",
+                "https://sysdig.com/blog/mysql-monitoring/"
+            ],
+            [
+                "MySQL 性能監控全掌握，快來 get 關鍵指標及采集方法！",
+                "https://developer.aliyun.com/article/1207546"
+            ]
         ],
         "分佈式系統": [
-            "再談 Raft 一致性算法","https://juejin.cn/post/7393606971927248911",
-            "Raft 一致性算法","https://juejin.cn/post/7390188606256840704",
-            "一文看懂微服務世界性技術難題——分佈式事務","https://mp.weixin.qq.com/s?__biz=MzI2NDU4OTExOQ==&mid=2247676257&idx=1&sn=bb106c9d1f7c1a3dbd3f75b362c9d041&chksm=eaa62b31ddd1a227f6d861c5ef59e5f6c4301995327cbd5e2aa8b62b35ae23818b74debccc5b&scene=178&cur_album_id=2650119358723145730#rd"
+            [
+                "再談 Raft 一致性算法",
+                "https://juejin.cn/post/7393606971927248911"
+            ],
+            [
+                "Raft 一致性算法",
+                "https://juejin.cn/post/7390188606256840704"
+            ],
+            [
+                "一文看懂微服務世界性技術難題——分佈式事務",
+                "https://mp.weixin.qq.com/s?__biz=MzI2NDU4OTExOQ==&mid=2247676257&idx=1&sn=bb106c9d1f7c1a3dbd3f75b362c9d041&chksm=eaa62b31ddd1a227f6d861c5ef59e5f6c4301995327cbd5e2aa8b62b35ae23818b74debccc5b&scene=178&cur_album_id=2650119358723145730#rd"
+            ]
         ],
         "高效能設計": [
-            "為什麼高手都要用非阻塞 IO？","https://juejin.cn/post/7381752542982520886",
-            "如何設計一個秒殺系統","https://juejin.cn/post/7380604196032495679",
-            "看看你的應用系統用了哪些高並發技術？","https://testerhome.com/column_channels/39568",
-            "千萬級高性能長連接 Go 服務架構實踐","https://mp.weixin.qq.com/s/E8rO4uBkFpcLAb_LsBOphw",
-            "高性能無鎖並發框架 Disruptor","https://juejin.cn/post/7325684511253839898",
-            "揭秘 10 億+ 高並發應用如何實現高效穩定的開發和運維","https://juejin.cn/post/7381362667719917619"
+            [
+                "為什麼高手都要用非阻塞 IO？",
+                "https://juejin.cn/post/7381752542982520886"
+            ],
+            [
+                "如何設計一個秒殺系統",
+                "https://juejin.cn/post/7380604196032495679"
+            ],
+            [
+                "看看你的應用系統用了哪些高並發技術？",
+                "https://testerhome.com/column_channels/39568"
+            ],
+            [
+                "千萬級高性能長連接 Go 服務架構實踐",
+                "https://mp.weixin.qq.com/s/E8rO4uBkFpcLAb_LsBOphw"
+            ],
+            [
+                "高性能無鎖並發框架 Disruptor",
+                "https://juejin.cn/post/7325684511253839898"
+            ],
+            [
+                "揭秘 10 億+ 高並發應用如何實現高效穩定的開發和運維",
+                "https://juejin.cn/post/7381362667719917619"
+            ]
         ],
         "性能優化": [
-            "後端架構師必備：提升系統性能的 6 大核心優化策略","https://juejin.cn/post/7416529648417488948",
-            "提升資源利用率與保障服務質量，魚與熊掌不可兼得？","https://tech.meituan.com/2022/08/11/load-auto-regulator.html",
-            "高並發 Linux 內核參數調優","https://www.cnblogs.com/louwj/p/17162891.html"
+            [
+                "後端架構師必備：提升系統性能的 6 大核心優化策略",
+                "https://juejin.cn/post/7416529648417488948"
+            ],
+            [
+                "提升資源利用率與保障服務質量，魚與熊掌不可兼得？",
+                "https://tech.meituan.com/2022/08/11/load-auto-regulator.html"
+            ],
+            [
+                "高並發 Linux 內核參數調優",
+                "https://www.cnblogs.com/louwj/p/17162891.html"
+            ]
         ],
         "業務架構設計": [
-            "關於業務架構基礎知識的二三事兒：業務能力","https://www.infoq.cn/article/aFguYFcA85GN3fcMrv7i",
-            "中小銀行如何構建智能風控體系？明確業務需求比盲目求新更重要","https://www.infoq.cn/article/a1uk0eGDAxBQN8F8AcFY"
+            [
+                "關於業務架構基礎知識的二三事兒：業務能力",
+                "https://www.infoq.cn/article/aFguYFcA85GN3fcMrv7i"
+            ],
+            [
+                "中小銀行如何構建智能風控體系？明確業務需求比盲目求新更重要",
+                "https://www.infoq.cn/article/a1uk0eGDAxBQN8F8AcFY"
+            ]
         ],
         "數據治理": [
-            "業務數據治理體系化思考與實踐","https://tech.meituan.com/2022/05/12/business-data-governance.html",
-            "數據指標體系搭建實踐","https://mp.weixin.qq.com/s/l_9CJGsdKjV9pIOgkqncsQ",
-            "數據質量和數據治理的關係 | 京東雲技術團隊","https://juejin.cn/post/7329448423327875111"
+            [
+                "業務數據治理體系化思考與實踐",
+                "https://tech.meituan.com/2022/05/12/business-data-governance.html"
+            ],
+            [
+                "數據指標體系搭建實踐",
+                "https://mp.weixin.qq.com/s/l_9CJGsdKjV9pIOgkqncsQ"
+            ],
+            [
+                "數據質量和數據治理的關係 | 京東雲技術團隊",
+                "https://juejin.cn/post/7329448423327875111"
+            ]
         ],
         "系統設計": [
-            "如何熟悉一個陌生系統","https://juejin.cn/post/7357957809072406562"
+            [
+                "如何熟悉一個陌生系統",
+                "https://juejin.cn/post/7357957809072406562"
+            ]
         ],
         "設計模式": [
-            "提升用戶體驗的 UUID 設計策略","https://mp.weixin.qq.com/s/m0IMJY_F4CcFFJ2KNIO15A",
-            "time zone 這些 BUG，防不勝防","https://juejin.cn/post/7350142836622819391"
+            [
+                "提升用戶體驗的 UUID 設計策略",
+                "https://mp.weixin.qq.com/s/m0IMJY_F4CcFFJ2KNIO15A"
+            ],
+            [
+                "time zone 這些 BUG，防不勝防",
+                "https://juejin.cn/post/7350142836622819391"
+            ]
         ],
         "消息隊列設計": [
-            "Why Do We Need a Message Queue?","https://blog.bytebytego.com/p/why-do-we-need-a-message-queue"
+            [
+                "Why Do We Need a Message Queue?",
+                "https://blog.bytebytego.com/p/why-do-we-need-a-message-queue"
+            ]
         ],
         "故障處理與預防": [
-            "Google 工程師如何在實踐中避免和處理故障","https://juejin.cn/post/7412836534237544489"
+            [
+                "Google 工程師如何在實踐中避免和處理故障",
+                "https://juejin.cn/post/7412836534237544489"
+            ]
         ],
         "可靠性設計": [
-            "前任開發在代碼裡下毒，支付下單居然沒加幂等","https://mp.weixin.qq.com/s/b3dOUC24Erbz4JAAtXLkMQ"
+            [
+                "前任開發在代碼裡下毒，支付下單居然沒加幂等",
+                "https://mp.weixin.qq.com/s/b3dOUC24Erbz4JAAtXLkMQ"
+            ]
         ],
         "可用性設計": [
-            "什么是系统可用性？如何提升可用性？","https://juejin.cn/post/7401176351057903625",
-            "B站直播 S14 保障全解析: 高效保障技術實踐","https://mp.weixin.qq.com/s/Qci7QYgUtpvwsP8l7n1fpw",
-            "異地多活架構進階: 如何解決寫後立即讀場景問題？","https://mp.weixin.qq.com/s/ymLxvExLhtW1ZqYVPnf3kg",
-            "B 站輕量級容災演練體系構建與業務實踐","https://mp.weixin.qq.com/s/nDD6ChSzzOdpOOWntTBasA",
-            "【穩定性】穩定性建設之變更管理","https://mp.weixin.qq.com/s/ymuPq2mFLDUbtzk7aw1_zg",
-            "關於『穩定性建設』的一些思考","https://mp.weixin.qq.com/s/BJGlXQ0se0g7CJvpiJ3ysw",
-            "淺談團隊如何做好系統穩定性","https://testerhome.com/column_channels/39520",
-            "如何從 0-1 的建設雲上穩定性？","https://mp.weixin.qq.com/s/D7oZKUO6_2y4joVQUke4ZQ",
-            "超大規模資料庫集群保穩系列之一：高可用系統","https://tech.meituan.com/2023/05/11/meituan-high-availability-system.html",
-            "超大規模資料庫集群保穩系列之二：資料庫攻防演練建設實踐","https://tech.meituan.com/2023/05/26/database-attack-and-defense-practice.html",
-            "超大規模資料庫集群保穩系列之三：美團資料庫容災體系建設實踐","https://tech.meituan.com/2023/06/09/meituan-database-recovery-system.html",
-            "從項目風險管理角度探討系統穩定性","https://juejin.cn/post/7348762390387556392",
-            "穩定性方法論：可灰度 & 可監控 & 可回滾","https://juejin.cn/post/7349002962867896320",
-            "穩定性建設之依賴設計","https://juejin.cn/post/7348363874964045824",
-            "爆發式增長業務的高可用架構優化之路","https://www.infoq.cn/article/g0AHX9q7whjA3XxMv1do"
+            [
+                "什么是系统可用性？如何提升可用性？",
+                "https://juejin.cn/post/7401176351057903625"
+            ],
+            [
+                "B站直播 S14 保障全解析: 高效保障技術實踐",
+                "https://mp.weixin.qq.com/s/Qci7QYgUtpvwsP8l7n1fpw"
+            ],
+            [
+                "異地多活架構進階: 如何解決寫後立即讀場景問題？",
+                "https://mp.weixin.qq.com/s/ymLxvExLhtW1ZqYVPnf3kg"
+            ],
+            [
+                "B 站輕量級容災演練體系構建與業務實踐",
+                "https://mp.weixin.qq.com/s/nDD6ChSzzOdpOOWntTBasA"
+            ],
+            [
+                "【穩定性】穩定性建設之變更管理",
+                "https://mp.weixin.qq.com/s/ymuPq2mFLDUbtzk7aw1_zg"
+            ],
+            [
+                "關於『穩定性建設』的一些思考",
+                "https://mp.weixin.qq.com/s/BJGlXQ0se0g7CJvpiJ3ysw"
+            ],
+            [
+                "淺談團隊如何做好系統穩定性",
+                "https://testerhome.com/column_channels/39520"
+            ],
+            [
+                "如何從 0-1 的建設雲上穩定性？",
+                "https://mp.weixin.qq.com/s/D7oZKUO6_2y4joVQUke4ZQ"
+            ],
+            [
+                "超大規模資料庫集群保穩系列之一：高可用系統",
+                "https://tech.meituan.com/2023/05/11/meituan-high-availability-system.html"
+            ],
+            [
+                "超大規模資料庫集群保穩系列之二：資料庫攻防演練建設實踐",
+                "https://tech.meituan.com/2023/05/26/database-attack-and-defense-practice.html"
+            ],
+            [
+                "超大規模資料庫集群保穩系列之三：美團資料庫容災體系建設實踐",
+                "https://tech.meituan.com/2023/06/09/meituan-database-recovery-system.html"
+            ],
+            [
+                "從項目風險管理角度探討系統穩定性",
+                "https://juejin.cn/post/7348762390387556392"
+            ],
+            [
+                "穩定性方法論：可灰度 & 可監控 & 可回滾",
+                "https://juejin.cn/post/7349002962867896320"
+            ],
+            [
+                "穩定性建設之依賴設計",
+                "https://juejin.cn/post/7348363874964045824"
+            ],
+            [
+                "爆發式增長業務的高可用架構優化之路",
+                "https://www.infoq.cn/article/g0AHX9q7whjA3XxMv1do"
+            ]
         ]
     },
     "資料庫原理": {
         "發展與趨勢": [
-            "圖靈獎資料庫大師 Stonebraker 師徒對資料庫近 20 年發展與展望的 2 萬字論文","https://mp.weixin.qq.com/s/E3cvL7H-VZNw-q89nofjLg",
-            "10 種資料庫技術的發展歷程與現狀","https://mp.weixin.qq.com/s/AAxlJzX_S_-ScJRtUktm4g",
-            "五年沉澱，微信全平台終端資料庫 WCDB 歡迎重大升級","https://mp.weixin.qq.com/s/RWCqLD0M_WGCrCcz0oQIcQ",
-            "2.8萬字總結：OceanBase 資料庫在金融核心系統升級路徑與場景實踐","https://www.modb.pro/db/1795327113104019456",
-            "黃東旭：“向量資料庫”還是“向量搜索插件 + SQL 資料庫”？丨我對 2024 年資料庫發展趨勢的思考","https://www.modb.pro/db/1757838903222554624"
+            [
+                "圖靈獎資料庫大師 Stonebraker 師徒對資料庫近 20 年發展與展望的 2 萬字論文",
+                "https://mp.weixin.qq.com/s/E3cvL7H-VZNw-q89nofjLg"
+            ],
+            [
+                "10 種資料庫技術的發展歷程與現狀",
+                "https://mp.weixin.qq.com/s/AAxlJzX_S_-ScJRtUktm4g"
+            ],
+            [
+                "五年沉澱，微信全平台終端資料庫 WCDB 歡迎重大升級",
+                "https://mp.weixin.qq.com/s/RWCqLD0M_WGCrCcz0oQIcQ"
+            ],
+            [
+                "2.8萬字總結：OceanBase 資料庫在金融核心系統升級路徑與場景實踐",
+                "https://www.modb.pro/db/1795327113104019456"
+            ],
+            [
+                "黃東旭：“向量資料庫”還是“向量搜索插件 + SQL 資料庫”？丨我對 2024 年資料庫發展趨勢的思考",
+                "https://www.modb.pro/db/1757838903222554624"
+            ]
         ],
         "Buffer Pool 深度剖析": [
-            "数据库性能优化之道: Buffer Pool 深度剖析（一）","https://juejin.cn/post/7459285932069797898",
-            "数据库性能优化之道: Buffer Pool 深度剖析（二）","https://juejin.cn/post/7459286686830215205",
-            "数据库性能优化之道: Buffer Pool 深度剖析（三）","https://juejin.cn/post/7459286862831845427"
+            [
+                "数据库性能优化之道: Buffer Pool 深度剖析（一）",
+                "https://juejin.cn/post/7459285932069797898"
+            ],
+            [
+                "数据库性能优化之道: Buffer Pool 深度剖析（二）",
+                "https://juejin.cn/post/7459286686830215205"
+            ],
+            [
+                "数据库性能优化之道: Buffer Pool 深度剖析（三）",
+                "https://juejin.cn/post/7459286862831845427"
+            ]
         ],
         "鎖機制": [
-            "多线程读写锁产生死锁的故障解决方案","https://mp.weixin.qq.com/s/m6JPAkwUdNivsOGft-lR8w",
-            "MySQL 是怎麼做並發控制的？","https://mp.weixin.qq.com/s/EjKtAj9H6KpuRlWAfoLYSA",
-            "MVCC 如何應對 MySQL 並發問題","https://juejin.cn/post/7460346925407240232"
+            [
+                "多线程读写锁产生死锁的故障解决方案",
+                "https://mp.weixin.qq.com/s/m6JPAkwUdNivsOGft-lR8w"
+            ],
+            [
+                "MySQL 是怎麼做並發控制的？",
+                "https://mp.weixin.qq.com/s/EjKtAj9H6KpuRlWAfoLYSA"
+            ],
+            [
+                "MVCC 如何應對 MySQL 並發問題",
+                "https://juejin.cn/post/7460346925407240232"
+            ]
         ],
         "Undo 日誌": [
-            "MySQL 如何插入记录的 Undo 日志？","https://juejin.cn/post/7456616263915257871",
-            "Undo 表空间分配回滚段","https://juejin.cn/post/7456613918410457103",
-            "MySQL 分配 Undo 段","https://juejin.cn/post/7456622508910067739"
+            [
+                "MySQL 如何插入记录的 Undo 日志？",
+                "https://juejin.cn/post/7456616263915257871"
+            ],
+            [
+                "Undo 表空间分配回滚段",
+                "https://juejin.cn/post/7456613918410457103"
+            ],
+            [
+                "MySQL 分配 Undo 段",
+                "https://juejin.cn/post/7456622508910067739"
+            ]
         ],
         "double write機制": [
-            "MySQL 8.0后的double write有什么变化","https://www.modb.pro/db/1871454243706646528"
+            [
+                "MySQL 8.0后的double write有什么变化",
+                "https://www.modb.pro/db/1871454243706646528"
+            ]
         ],
         "事務管理與隔離級別": [
-            "学习 MySQL 必须了解的几个 Undo 概念","https://juejin.cn/post/7446981141453324315",
-            "MySQL 的默認隔離級別為什麼是 RR, 而不是 RC","https://juejin.cn/post/7422848805049040896",
-            "MySQL 數據加密原理和解析","https://www.modb.pro/db/1839571466908610560",
-            "MySQL DATETIME 毫秒坑","https://juejin.cn/post/7460418134312255514",
-            "PG vs MySQL MVCC 機制實現的異同","https://www.modb.pro/db/1879802616004227072",
-            "複習資料庫的 Isolation Level 與圖解五個常見的 Race Conditions","https://medium.com/@chester.yw.chu/%E8%A4%87%E7%BF%92%E8%B3%87%E6%96%99%E5%BA%93%E7%9A%84-isolation-level-%E8%88%87%E5%B8%B8%E8%A6%8B%E7%9A%84%E4%BA%94%E5%80%8B-race-conditions-%E5%9C%96%E8%A7%A3-16e8d472a25c",
-            "你真的理解 MySQL 的事務隔離嗎？","https://mp.weixin.qq.com/s?__biz=MzI1NTQwNDU4MA==&mid=2247483774&idx=1&sn=6e9636ff66bd644db2ac46fad3df4228&chksm=ea373e35dd40b7235881e349f4c0425df99513995e9d2f83ab02432b5f4151549743fc1bd845&scene=132#wechat_redirect"
+            [
+                "学习 MySQL 必须了解的几个 Undo 概念",
+                "https://juejin.cn/post/7446981141453324315"
+            ],
+            [
+                "MySQL 的默認隔離級別為什麼是 RR, 而不是 RC",
+                "https://juejin.cn/post/7422848805049040896"
+            ],
+            [
+                "MySQL 數據加密原理和解析",
+                "https://www.modb.pro/db/1839571466908610560"
+            ],
+            [
+                "MySQL DATETIME 毫秒坑",
+                "https://juejin.cn/post/7460418134312255514"
+            ],
+            [
+                "PG vs MySQL MVCC 機制實現的異同",
+                "https://www.modb.pro/db/1879802616004227072"
+            ],
+            [
+                "複習資料庫的 Isolation Level 與圖解五個常見的 Race Conditions",
+                "https://medium.com/@chester.yw.chu/%E8%A4%87%E7%BF%92%E8%B3%87%E6%96%99%E5%BA%93%E7%9A%84-isolation-level-%E8%88%87%E5%B8%B8%E8%A6%8B%E7%9A%84%E4%BA%94%E5%80%8B-race-conditions-%E5%9C%96%E8%A7%A3-16e8d472a25c"
+            ],
+            [
+                "你真的理解 MySQL 的事務隔離嗎？",
+                "https://mp.weixin.qq.com/s?__biz=MzI1NTQwNDU4MA==&mid=2247483774&idx=1&sn=6e9636ff66bd644db2ac46fad3df4228&chksm=ea373e35dd40b7235881e349f4c0425df99513995e9d2f83ab02432b5f4151549743fc1bd845&scene=132#wechat_redirect"
+            ]
         ],
         "分佈式資料庫": [
-            "談談分佈式資料庫的分片鍵選擇準則和數據重分布的思考","https://www.modb.pro/db/1827055525554642944"
+            [
+                "談談分佈式資料庫的分片鍵選擇準則和數據重分布的思考",
+                "https://www.modb.pro/db/1827055525554642944"
+            ]
         ],
         "資料庫學習資源": [
-            "Oracle 官方文檔整理以及閱讀指南","https://www.modb.pro/db/1830801976084488192",
-            "YashanDB 資料庫概念手冊正式發布","https://www.modb.pro/db/1792374336438489088"
+            [
+                "Oracle 官方文檔整理以及閱讀指南",
+                "https://www.modb.pro/db/1830801976084488192"
+            ],
+            [
+                "YashanDB 資料庫概念手冊正式發布",
+                "https://www.modb.pro/db/1792374336438489088"
+            ]
         ]
     },
     "資料庫優化": {
         "查詢性能優化": [
-            "為何要小表驅動大表？","https://juejin.cn/post/7460125459046481920",
-            "EXPLAIN TYPE 列的 JOIN 常见场景详解（上）","https://juejin.cn/post/7456635153332731919",
-            "從MySQL索引下推看性能優化: 減少回表，提升查詢效率","https://juejin.cn/post/7442722732335628342",
-            "MySQL底層概述—7.優化原則及慢查詢","https://www.cnblogs.com/mjunz/p/18579992",
-            "SQL 調優實戰: 分頁語句中你真的了解 COUNT 索引嗎？SORT ORDER BY 的存在就一定很糟？","https://www.modb.pro/db/1856961890262462464",
-            "一文讓你對 MySQL 索引底層實現明明白白","https://juejin.cn/post/7460467888031514658"
+            [
+                "為何要小表驅動大表？",
+                "https://juejin.cn/post/7460125459046481920"
+            ],
+            [
+                "EXPLAIN TYPE 列的 JOIN 常见场景详解（上）",
+                "https://juejin.cn/post/7456635153332731919"
+            ],
+            [
+                "從MySQL索引下推看性能優化: 減少回表，提升查詢效率",
+                "https://juejin.cn/post/7442722732335628342"
+            ],
+            [
+                "MySQL底層概述—7.優化原則及慢查詢",
+                "https://www.cnblogs.com/mjunz/p/18579992"
+            ],
+            [
+                "SQL 調優實戰: 分頁語句中你真的了解 COUNT 索引嗎？SORT ORDER BY 的存在就一定很糟？",
+                "https://www.modb.pro/db/1856961890262462464"
+            ],
+            [
+                "一文讓你對 MySQL 索引底層實現明明白白",
+                "https://juejin.cn/post/7460467888031514658"
+            ]
         ],
         "SQL 優化技巧": [
-            "一个不可思议的SQL优化过程及扩展几个需掌握的几个知识点","https://www.modb.pro/db/1869200405658349568",
-            "從源碼分析，MySQL 優化器如何估算 SQL 語句的訪問行數","https://juejin.cn/post/7435664118186590259",
-            "MySQL JOIN 的高階使用","https://juejin.cn/post/7460354454832496679"
+            [
+                "一个不可思议的SQL优化过程及扩展几个需掌握的几个知识点",
+                "https://www.modb.pro/db/1869200405658349568"
+            ],
+            [
+                "從源碼分析，MySQL 優化器如何估算 SQL 語句的訪問行數",
+                "https://juejin.cn/post/7435664118186590259"
+            ],
+            [
+                "MySQL JOIN 的高階使用",
+                "https://juejin.cn/post/7460354454832496679"
+            ]
         ],
         "性能分析工具": [
-            "MySQL 优化利器 SHOW PROFILE 的实现原理","https://www.modb.pro/db/1870997338144124928"
+            [
+                "MySQL 优化利器 SHOW PROFILE 的实现原理",
+                "https://www.modb.pro/db/1870997338144124928"
+            ]
         ],
         "InnoDB 優化": [
-            "InnoDB 索引与 Online DDL 的结合: 业务不中断的优化秘诀","https://juejin.cn/post/7459359268521836570"
+            [
+                "InnoDB 索引与 Online DDL 的结合: 业务不中断的优化秘诀",
+                "https://juejin.cn/post/7459359268521836570"
+            ]
         ]
     },
     "資料庫工具": {
         "可視化工具": [
-            "直观且高效！一个 Redis 可视化工具！","https://juejin.cn/post/7460116391192363058",
-            "資料庫源碼學習調試利器之 CGDB","https://juejin.cn/post/7429591580799680549"
+            [
+                "直观且高效！一个 Redis 可视化工具！",
+                "https://juejin.cn/post/7460116391192363058"
+            ],
+            [
+                "資料庫源碼學習調試利器之 CGDB",
+                "https://juejin.cn/post/7429591580799680549"
+            ]
         ],
         "安裝部署工具": [
-            "2025 年宣布一件大事，Oracle 一键安装脚本开源了！","https://www.modb.pro/db/1878623781711785984"
+            [
+                "2025 年宣布一件大事，Oracle 一键安装脚本开源了！",
+                "https://www.modb.pro/db/1878623781711785984"
+            ]
         ]
     },
     "資料庫管理": {
         "安裝部署及管理": [
-            "MySQL 8.0.40 MGR 集群安裝部署及管理","https://www.modb.pro/db/1871362852146135040",
-            "Linux 8 快速安装 PostgreSQL 17.2","https://www.modb.pro/db/1869408088034394112",
-            "CentOS 7.9部署MySQL 8.4.3 LTS保姆级手册","https://www.modb.pro/db/1868256418189557760",
-            "mysql一键安装脚本分享","https://www.modb.pro/db/1869582557990367232",
-            "CentOS-Stream9 上安裝 PostgreSQL 17 from Source Code","https://www.modb.pro/db/1843469275967881216",
-            "從 MySQL 遷移到 PostgreSQL 經驗總結","https://juejin.cn/post/7460410854775455794",
-            "一鍵啟動 Oracle Database 23c Free","https://www.modb.pro/db/1772307167801085952",
-            "Oracle Database 23ai 体验","https://www.modb.pro/db/1786585474910998528",
-            "使用 podman 搭建 MySQL 8.0 主從避坑指北","https://juejin.cn/post/7397028381974331401"
+            [
+                "MySQL 8.0.40 MGR 集群安裝部署及管理",
+                "https://www.modb.pro/db/1871362852146135040"
+            ],
+            [
+                "Linux 8 快速安装 PostgreSQL 17.2",
+                "https://www.modb.pro/db/1869408088034394112"
+            ],
+            [
+                "CentOS 7.9部署MySQL 8.4.3 LTS保姆级手册",
+                "https://www.modb.pro/db/1868256418189557760"
+            ],
+            [
+                "mysql一键安装脚本分享",
+                "https://www.modb.pro/db/1869582557990367232"
+            ],
+            [
+                "CentOS-Stream9 上安裝 PostgreSQL 17 from Source Code",
+                "https://www.modb.pro/db/1843469275967881216"
+            ],
+            [
+                "從 MySQL 遷移到 PostgreSQL 經驗總結",
+                "https://juejin.cn/post/7460410854775455794"
+            ],
+            [
+                "一鍵啟動 Oracle Database 23c Free",
+                "https://www.modb.pro/db/1772307167801085952"
+            ],
+            [
+                "Oracle Database 23ai 体验",
+                "https://www.modb.pro/db/1786585474910998528"
+            ],
+            [
+                "使用 podman 搭建 MySQL 8.0 主從避坑指北",
+                "https://juejin.cn/post/7397028381974331401"
+            ]
         ],
         "中間件": [
-            "MySQL ProxySQL 在深入信息獲取和信息輸出","https://cloud.tencent.com/developer/article/1695487"
+            [
+                "MySQL ProxySQL 在深入信息獲取和信息輸出",
+                "https://cloud.tencent.com/developer/article/1695487"
+            ]
         ],
         "MySQL 存儲引擎": [
-            "詳細解讀 InnoDB 存儲引擎","https://blog.csdn.net/cyl101816/article/details/115794170",
-            "關於 MySQL checkpoint","https://www.cnblogs.com/DataArt/p/10236642.html",
-            "MySQL Binlog 源碼入門","http://mysql.taobao.org/monthly/2023/01/04/",
-            "MySQL 底層解析——緩存，InnoDB_buffer_pool，包括連接、解析、緩存、引擎、存儲","https://cloud.tencent.com/developer/article/1508324"
+            [
+                "詳細解讀 InnoDB 存儲引擎",
+                "https://blog.csdn.net/cyl101816/article/details/115794170"
+            ],
+            [
+                "關於 MySQL checkpoint",
+                "https://www.cnblogs.com/DataArt/p/10236642.html"
+            ],
+            [
+                "MySQL Binlog 源碼入門",
+                "http://mysql.taobao.org/monthly/2023/01/04/"
+            ],
+            [
+                "MySQL 底層解析——緩存，InnoDB_buffer_pool，包括連接、解析、緩存、引擎、存儲",
+                "https://cloud.tencent.com/developer/article/1508324"
+            ]
         ],
         "MySQL 設計與實踐": [
-            "詳解 MySQL 字符集和 Collation","https://developer.aliyun.com/article/1462909"
+            [
+                "詳解 MySQL 字符集和 Collation",
+                "https://developer.aliyun.com/article/1462909"
+            ]
         ],
         "MySQL 資料庫管理": [
-            "GRANT 之後為什麼要 FLUSH PRIVILEGES","https://blog.csdn.net/MariaOzawa/article/details/107003386"
+            [
+                "GRANT 之後為什麼要 FLUSH PRIVILEGES",
+                "https://blog.csdn.net/MariaOzawa/article/details/107003386"
+            ]
         ],
         "Redis 設計與實踐": [
-            "從一個事故中理解 Redis（幾乎）所有知識點","https://mp.weixin.qq.com/s/39Q5-vvIBmlmRVW8tzdjyA",
-            "Redis 高級特性與應用——發布訂閱、Stream、慢查詢、Pipeline、事務、Lua 腳本","https://juejin.cn/post/7412486021172248587",
-            "如何做到 Redis 毫秒級大 key 發現","https://juejin.cn/post/7416902555187216435",
-            "Redis 內存突增時，如何定量分析其內存使用情況","https://www.modb.pro/db/1838027438363865088",
-            "Redis 的 I/O 多路復用技術，它是如何工作的？","https://juejin.cn/post/7417746324387135539",
-            "得物自建 Redis 無人值守資源均衡調度設計與實現","https://juejin.cn/post/7416247734553067535",
-            "一次線上腦裂故障讓我徹底搞懂了 Redis 集群原理","https://juejin.cn/post/7411799494415663138",
-            "Redis 性能刺客，大 key","https://juejin.cn/post/7298989375370166298",
-            "Redis 基礎知識典藏版：架構設計、功能特性、應用場景、操作命令","https://mp.weixin.qq.com/s/H6cGiahUreVFh34wbkFF8g",
-            "美團二面: 如何解決 Redis 熱點 key 問題","https://juejin.cn/post/7411480128529137718",
-            "Redis 分布式鎖：實現與應用","https://juejin.cn/post/7411480128528973878",
-            "Redis 縮容導致線上大規模故障的慘痛經歷","https://juejin.cn/post/7409333772967526426",
-            "Redis 內存回收","https://juejin.cn/post/7405770868506492943",
-            "騰訊音樂：說說 Redis 腦裂問題？","https://juejin.cn/post/7358670107901886501",
-            "Redis 架構實戰 - Redis Request Routing/效能監控與調教","https://ithelp.ithome.com.tw/articles/10281889",
-            "Redis Sentinel - 深入淺出原理和實戰","https://www.51cto.com/article/634230.html",
-            "Redis 哨兵","https://suntw2015.github.io/2019/11/18/redis-sentinel/",
-            "真·Redis 緩存優化—97%的優化率你見過嘛？ | 京東雲技術團隊","https://juejin.cn/post/7283150465525137468",
-            "Redis 運維之內核參數調優","https://www.modb.pro/db/1724603991509245952",
-            "Redis 壓力測試工具 redis-benchmark","https://blog.csdn.net/bandaoyu/article/details/103143475",
-            "緩存有大 key？你得知道的一些手段","https://mp.weixin.qq.com/s/uM29jpkGlprQKIXho9w_AQ",
-            "Redis 系列（一）：認識 Redis","https://juejin.cn/post/7337298499820797987",
-            "Redis Explained","https://architecturenotes.co/p/redis",
-            "Redis 7.0 源碼調試環境搭建與源碼導讀技巧","https://www.51cto.com/article/741365.html",
-            "來來來，快速撸 Redis 一遍！","https://juejin.cn/post/7187322861550305341",
-            "Redis - 快取雪崩、擊穿、穿透","https://totoroliu.medium.com/redis-%E5%BF%AB%E5%8F%96%E9%9B%AA%E5%B4%A9-%E6%93%8A%E7%A9%BF-%E7%A9%BF%E9%80%8F-8bc02f09fe8f",
-            "Redis 快取擊穿（失效）、快取穿透、快取雪崩怎麼解決？","https://www.51cto.com/article/703396.html",
-            "Redis Multi-Threaded Network Model","https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/",
-            "詳解 Redis 分布式鎖的 5 種方案","https://cloud.tencent.com/developer/article/2321395",
-            "Redis 面試題集錦","https://juejin.cn/post/7323203575618076687",
-            "Redis LRU 算法和 LFU 算法","https://zhuanlan.zhihu.com/p/363750871"
+            [
+                "從一個事故中理解 Redis（幾乎）所有知識點",
+                "https://mp.weixin.qq.com/s/39Q5-vvIBmlmRVW8tzdjyA"
+            ],
+            [
+                "Redis 高級特性與應用——發布訂閱、Stream、慢查詢、Pipeline、事務、Lua 腳本",
+                "https://juejin.cn/post/7412486021172248587"
+            ],
+            [
+                "如何做到 Redis 毫秒級大 key 發現",
+                "https://juejin.cn/post/7416902555187216435"
+            ],
+            [
+                "Redis 內存突增時，如何定量分析其內存使用情況",
+                "https://www.modb.pro/db/1838027438363865088"
+            ],
+            [
+                "Redis 的 I/O 多路復用技術，它是如何工作的？",
+                "https://juejin.cn/post/7417746324387135539"
+            ],
+            [
+                "得物自建 Redis 無人值守資源均衡調度設計與實現",
+                "https://juejin.cn/post/7416247734553067535"
+            ],
+            [
+                "一次線上腦裂故障讓我徹底搞懂了 Redis 集群原理",
+                "https://juejin.cn/post/7411799494415663138"
+            ],
+            [
+                "Redis 性能刺客，大 key",
+                "https://juejin.cn/post/7298989375370166298"
+            ],
+            [
+                "Redis 基礎知識典藏版：架構設計、功能特性、應用場景、操作命令",
+                "https://mp.weixin.qq.com/s/H6cGiahUreVFh34wbkFF8g"
+            ],
+            [
+                "美團二面: 如何解決 Redis 熱點 key 問題",
+                "https://juejin.cn/post/7411480128529137718"
+            ],
+            [
+                "Redis 分布式鎖：實現與應用",
+                "https://juejin.cn/post/7411480128528973878"
+            ],
+            [
+                "Redis 縮容導致線上大規模故障的慘痛經歷",
+                "https://juejin.cn/post/7409333772967526426"
+            ],
+            [
+                "Redis 內存回收",
+                "https://juejin.cn/post/7405770868506492943"
+            ],
+            [
+                "騰訊音樂：說說 Redis 腦裂問題？",
+                "https://juejin.cn/post/7358670107901886501"
+            ],
+            [
+                "Redis 架構實戰 - Redis Request Routing/效能監控與調教",
+                "https://ithelp.ithome.com.tw/articles/10281889"
+            ],
+            [
+                "Redis Sentinel - 深入淺出原理和實戰",
+                "https://www.51cto.com/article/634230.html"
+            ],
+            [
+                "Redis 哨兵",
+                "https://suntw2015.github.io/2019/11/18/redis-sentinel/"
+            ],
+            [
+                "真·Redis 緩存優化—97%的優化率你見過嘛？ | 京東雲技術團隊",
+                "https://juejin.cn/post/7283150465525137468"
+            ],
+            [
+                "Redis 運維之內核參數調優",
+                "https://www.modb.pro/db/1724603991509245952"
+            ],
+            [
+                "Redis 壓力測試工具 redis-benchmark",
+                "https://blog.csdn.net/bandaoyu/article/details/103143475"
+            ],
+            [
+                "緩存有大 key？你得知道的一些手段",
+                "https://mp.weixin.qq.com/s/uM29jpkGlprQKIXho9w_AQ"
+            ],
+            [
+                "Redis 系列（一）：認識 Redis",
+                "https://juejin.cn/post/7337298499820797987"
+            ],
+            [
+                "Redis Explained",
+                "https://architecturenotes.co/p/redis"
+            ],
+            [
+                "Redis 7.0 源碼調試環境搭建與源碼導讀技巧",
+                "https://www.51cto.com/article/741365.html"
+            ],
+            [
+                "來來來，快速撸 Redis 一遍！",
+                "https://juejin.cn/post/7187322861550305341"
+            ],
+            [
+                "Redis - 快取雪崩、擊穿、穿透",
+                "https://totoroliu.medium.com/redis-%E5%BF%AB%E5%8F%96%E9%9B%AA%E5%B4%A9-%E6%93%8A%E7%A9%BF-%E7%A9%BF%E9%80%8F-8bc02f09fe8f"
+            ],
+            [
+                "Redis 快取擊穿（失效）、快取穿透、快取雪崩怎麼解決？",
+                "https://www.51cto.com/article/703396.html"
+            ],
+            [
+                "Redis Multi-Threaded Network Model",
+                "https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/"
+            ],
+            [
+                "詳解 Redis 分布式鎖的 5 種方案",
+                "https://cloud.tencent.com/developer/article/2321395"
+            ],
+            [
+                "Redis 面試題集錦",
+                "https://juejin.cn/post/7323203575618076687"
+            ],
+            [
+                "Redis LRU 算法和 LFU 算法",
+                "https://zhuanlan.zhihu.com/p/363750871"
+            ]
         ],
         "NoSQL 資料庫設計": [
-            "在 MongoDB 建模 1 對 N 關係的基本方法","https://www.modb.pro/db/1770628513246285824",
-            "MongoDB 寫安全 (Write Concern)","https://blog.csdn.net/leshami/article/details/52913705",
-            "MongoDB Schema Design: Data Modeling Best Practices","https://www.mongodb.com/developer/products/mongodb/mongodb-schema-design-best-practices/",
-            "MongoDB 提升效能的 18 原則（開發設計階段）","https://topic.alibabacloud.com/tc/a/18-principles-for-mongodb-boost-performance-development-design-phase_1_45_30001027.html"
+            [
+                "在 MongoDB 建模 1 對 N 關係的基本方法",
+                "https://www.modb.pro/db/1770628513246285824"
+            ],
+            [
+                "MongoDB 寫安全 (Write Concern)",
+                "https://blog.csdn.net/leshami/article/details/52913705"
+            ],
+            [
+                "MongoDB Schema Design: Data Modeling Best Practices",
+                "https://www.mongodb.com/developer/products/mongodb/mongodb-schema-design-best-practices/"
+            ],
+            [
+                "MongoDB 提升效能的 18 原則（開發設計階段）",
+                "https://topic.alibabacloud.com/tc/a/18-principles-for-mongodb-boost-performance-development-design-phase_1_45_30001027.html"
+            ]
         ],
         "NoSQL 資料庫工具": [
-            "MongoDB 集合結構分析工具 Variety","https://blog.51cto.com/ultrasql/1753896"
+            [
+                "MongoDB 集合結構分析工具 Variety",
+                "https://blog.51cto.com/ultrasql/1753896"
+            ]
         ],
         "NoSQL 資料庫維護": [
-            "MongoDB 磁碟清理那些事兒","https://xie.infoq.cn/article/d8cb871a7733646996f60641a"
+            [
+                "MongoDB 磁碟清理那些事兒",
+                "https://xie.infoq.cn/article/d8cb871a7733646996f60641a"
+            ]
         ],
         "調試與排查": [
-            "從零開始學習 MySQL 調試跟踪（1）","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939856&idx=1&sn=7103a8215ec2b8c6278f94c3cc011c0a&chksm=bd3b72fa8a4cfbec8b8584ba04f6ec980e59826bbbf29c30e699121b91871c2fbe24307fdb97&scene=178&cur_album_id=1337959503719137280#rd",
-            "從零開始學習 MySQL 調試跟踪（2）","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939868&idx=1&sn=117b3ec4105203d206a6eac31c327533&chksm=bd3b72f68a4cfbe0c15b25136e57f49001702457e50f1ec559c5b4aeb46be6b663343b5d04aa&scene=178&cur_album_id=1337959503719137280#rd"
+            [
+                "從零開始學習 MySQL 調試跟踪（1）",
+                "https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939856&idx=1&sn=7103a8215ec2b8c6278f94c3cc011c0a&chksm=bd3b72fa8a4cfbec8b8584ba04f6ec980e59826bbbf29c30e699121b91871c2fbe24307fdb97&scene=178&cur_album_id=1337959503719137280#rd"
+            ],
+            [
+                "從零開始學習 MySQL 調試跟踪（2）",
+                "https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939868&idx=1&sn=117b3ec4105203d206a6eac31c327533&chksm=bd3b72f68a4cfbe0c15b25136e57f49001702457e50f1ec559c5b4aeb46be6b663343b5d04aa&scene=178&cur_album_id=1337959503719137280#rd"
+            ]
         ],
         "自動化工具": [
-            "MySQL数据库巡检报告，一条命令搞定，省心又省力！","https://mp.weixin.qq.com/s?__biz=MzI3MzE5Mjg1Mg==&mid=2247484697&idx=1&sn=39416398dfba9e8f9fa0b3f300d2dbae&chksm=eb2647e2dc51cef4da5e4ec87b17743c6cb51aab1cf36d28d418be891cb65d966671b3bcf50b&cur_album_id=3470107659469307906&scene=189#wechat_redirect",
-            "MySQL一条命令生成数据库巡检报告进阶-生成更好看更美观的报告","https://mp.weixin.qq.com/s/NwUdE9S-6hvxqRD88nB5Fw",
-            "近期客戶需求巡檢自己編寫整理的 SQL","https://www.modb.pro/db/1844285953962246144"
+            [
+                "MySQL数据库巡检报告，一条命令搞定，省心又省力！",
+                "https://mp.weixin.qq.com/s?__biz=MzI3MzE5Mjg1Mg==&mid=2247484697&idx=1&sn=39416398dfba9e8f9fa0b3f300d2dbae&chksm=eb2647e2dc51cef4da5e4ec87b17743c6cb51aab1cf36d28d418be891cb65d966671b3bcf50b&cur_album_id=3470107659469307906&scene=189#wechat_redirect"
+            ],
+            [
+                "MySQL一条命令生成数据库巡检报告进阶-生成更好看更美观的报告",
+                "https://mp.weixin.qq.com/s/NwUdE9S-6hvxqRD88nB5Fw"
+            ],
+            [
+                "近期客戶需求巡檢自己編寫整理的 SQL",
+                "https://www.modb.pro/db/1844285953962246144"
+            ]
         ],
         "監控系統設計": [
-            "MySQL 運行時的可觀測性","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653940337&idx=1&sn=c6d88bea92069d4b9347939a6c8c2615&chksm=bd3b701b8a4cf90d066b9a62036d37a04f13379cf4042c64a6909e11c7c2fa0d3a2b5bad5434&scene=178&cur_album_id=1337959503719137280#rd"
+            [
+                "MySQL 運行時的可觀測性",
+                "https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653940337&idx=1&sn=c6d88bea92069d4b9347939a6c8c2615&chksm=bd3b701b8a4cf90d066b9a62036d37a04f13379cf4042c64a6909e11c7c2fa0d3a2b5bad5434&scene=178&cur_album_id=1337959503719137280#rd"
+            ]
         ],
         "OLTP 系統設計": [
-            "GBASE 南大通用專家訪談：走進深水區，核心系統需要什麼樣的（OLTP）資料庫？","https://www.modb.pro/db/1780138236219822080"
+            [
+                "GBASE 南大通用專家訪談：走進深水區，核心系統需要什麼樣的（OLTP）資料庫？",
+                "https://www.modb.pro/db/1780138236219822080"
+            ]
         ],
         "圖資料庫設計": [
-            "圖資料庫採購 | 做好三大問題的前置思考","https://www.modb.pro/db/1783376071580258304"
+            [
+                "圖資料庫採購 | 做好三大問題的前置思考",
+                "https://www.modb.pro/db/1783376071580258304"
+            ]
         ],
         "MySQL 新版本": [
-            "该开始关注 MySQL 8.4 了","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653941503&idx=1&sn=1dfcf3599797c0ea0d83fa6595e597c4&chksm=bd3b74958a4cfd838db0885e9aa1866c05c3e77a04dd96ea00d0882ed8982f08e1fb45c453c1&scene=178&cur_album_id=1337959503719137280#rd",
-            "技術譯文 | MySQL 8.4.3 和 9.1.0: 顯著提升性能！","https://mp.weixin.qq.com/s/IEbamb9-OzMFCS9lh0sRvA",
-            "MySQL 好玩新特性：離線模式","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939795&idx=1&sn=09fb7a57c221b1a33d1cb102c4118a0c&chksm=bd3b72398a4cfb2f840faac4c435a23b9f4d32892653e5a728595901fc5003111a1d5b13fed3&scene=178&cur_album_id=1337959503719137280#rd"
+            [
+                "该开始关注 MySQL 8.4 了",
+                "https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653941503&idx=1&sn=1dfcf3599797c0ea0d83fa6595e597c4&chksm=bd3b74958a4cfd838db0885e9aa1866c05c3e77a04dd96ea00d0882ed8982f08e1fb45c453c1&scene=178&cur_album_id=1337959503719137280#rd"
+            ],
+            [
+                "技術譯文 | MySQL 8.4.3 和 9.1.0: 顯著提升性能！",
+                "https://mp.weixin.qq.com/s/IEbamb9-OzMFCS9lh0sRvA"
+            ],
+            [
+                "MySQL 好玩新特性：離線模式",
+                "https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939795&idx=1&sn=09fb7a57c221b1a33d1cb102c4118a0c&chksm=bd3b72398a4cfb2f840faac4c435a23b9f4d32892653e5a728595901fc5003111a1d5b13fed3&scene=178&cur_album_id=1337959503719137280#rd"
+            ]
         ],
         "MySQL DBA 指南": [
-            "MySQL DBA 防坑指南","https://mp.weixin.qq.com/s/iy9mAwahHWo4V3tyYGm6jw",
-            "多年 DBA 實戰生涯有哪些經驗教訓","https://www.modb.pro/db/1858459514144567296",
-            "MySQL 運維","https://juejin.cn/post/7423106025195028507",
-            "MySQL 資料庫認證考試介紹（2024 版）","https://mp.weixin.qq.com/s?__biz=MzU5NzQ0ODU2Ng==&mid=2247484391&idx=1&sn=2687de6db8909bb67505e0dd85154305&chksm=fe5201fec92588e84c2f559ef9a22bfe4504d704e50841431f04b406f1208653cdf9df65e399&cur_album_id=3002610604030836737&scene=189#wechat_redirect",
-            "資料庫內核工程師必讀論文清單","https://mp.weixin.qq.com/s?__biz=MzI2NDU4OTExOQ==&mid=2247677031&idx=1&sn=a5d627c47d987bd8fe8f53ab27d8ed81&chksm=eaa62e37ddd1a721c300ac30d3a9c75b9dca023d3b32a6582a09799cf1084d2cf69e2e7d73b5&scene=178&cur_album_id=2650119358723145730#rd",
-            "Oracle DBA 必備的 101 道面試題","https://www.modb.pro/db/1873906690463121408",
-            "MySQL 自治平台建設的內核原理及實踐（上）","https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-01.html",
-            "MySQL 自治平台建設的內核原理及實踐（下）","https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-02.html",
-            "DBA 計劃外工作的一點思考","https://cloud.tencent.com/developer/article/1422966",
-            "資料庫產品選型測試 集中式與分佈式","https://www.modb.pro/db/1753305412787064832",
-            "DBA 不僅僅是管理資料庫--也要管理好需求","https://www.modb.pro/db/1754839133021360128",
-            "DBA 不僅僅是管理資料庫--也要管理中間件","https://www.modb.pro/db/1754509205180600320",
-            "DBA 的前景怎樣？","https://www.modb.pro/db/1695003964748156928",
-            "MySQL OCP 認證考試你知道嗎？","https://www.modb.pro/db/53492",
-            "資料庫設計 (MySQL) 避坑指南","https://www.modb.pro/db/1762011570709229568"
+            [
+                "MySQL DBA 防坑指南",
+                "https://mp.weixin.qq.com/s/iy9mAwahHWo4V3tyYGm6jw"
+            ],
+            [
+                "多年 DBA 實戰生涯有哪些經驗教訓",
+                "https://www.modb.pro/db/1858459514144567296"
+            ],
+            [
+                "MySQL 運維",
+                "https://juejin.cn/post/7423106025195028507"
+            ],
+            [
+                "MySQL 資料庫認證考試介紹（2024 版）",
+                "https://mp.weixin.qq.com/s?__biz=MzU5NzQ0ODU2Ng==&mid=2247484391&idx=1&sn=2687de6db8909bb67505e0dd85154305&chksm=fe5201fec92588e84c2f559ef9a22bfe4504d704e50841431f04b406f1208653cdf9df65e399&cur_album_id=3002610604030836737&scene=189#wechat_redirect"
+            ],
+            [
+                "資料庫內核工程師必讀論文清單",
+                "https://mp.weixin.qq.com/s?__biz=MzI2NDU4OTExOQ==&mid=2247677031&idx=1&sn=a5d627c47d987bd8fe8f53ab27d8ed81&chksm=eaa62e37ddd1a721c300ac30d3a9c75b9dca023d3b32a6582a09799cf1084d2cf69e2e7d73b5&scene=178&cur_album_id=2650119358723145730#rd"
+            ],
+            [
+                "Oracle DBA 必備的 101 道面試題",
+                "https://www.modb.pro/db/1873906690463121408"
+            ],
+            [
+                "MySQL 自治平台建設的內核原理及實踐（上）",
+                "https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-01.html"
+            ],
+            [
+                "MySQL 自治平台建設的內核原理及實踐（下）",
+                "https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-02.html"
+            ],
+            [
+                "DBA 計劃外工作的一點思考",
+                "https://cloud.tencent.com/developer/article/1422966"
+            ],
+            [
+                "資料庫產品選型測試 集中式與分佈式",
+                "https://www.modb.pro/db/1753305412787064832"
+            ],
+            [
+                "DBA 不僅僅是管理資料庫--也要管理好需求",
+                "https://www.modb.pro/db/1754839133021360128"
+            ],
+            [
+                "DBA 不僅僅是管理資料庫--也要管理中間件",
+                "https://www.modb.pro/db/1754509205180600320"
+            ],
+            [
+                "DBA 的前景怎樣？",
+                "https://www.modb.pro/db/1695003964748156928"
+            ],
+            [
+                "MySQL OCP 認證考試你知道嗎？",
+                "https://www.modb.pro/db/53492"
+            ],
+            [
+                "資料庫設計 (MySQL) 避坑指南",
+                "https://www.modb.pro/db/1762011570709229568"
+            ]
         ],
         "SQL 優化與調優": [
-            "複雜 SQL 治理實踐 | 京東物流技術團隊","https://juejin.cn/post/7328603400304033803",
-            "奇思妙想的 SQL｜兼顧性能的數據傾斜處理新姿勢","https://mp.weixin.qq.com/s/VGgT1faRKGnUuQ-HHQ3Q5g",
-            "PostgreSQL 打破認知幻像：你寫的 SQL 是否如你心意？","https://www.modb.pro/db/1788830043766067200",
-            "基於代價的慢查詢優化建議","https://tech.meituan.com/2022/04/21/slow-query-optimized-advice-driven-by-cost-model.html",
-            "SQL 語句 Cost 花費判斷","https://www.modb.pro/db/624887",
-            "這句簡單的 SQL，如何加索引？顛覆了我多年的認知","https://juejin.cn/post/6844903927821893646",
-            "高級 SQL 優化系列之外連接優化","https://mp.weixin.qq.com/s?__biz=MzkyODM0NzE1Ng==&mid=2247483813&idx=1&sn=18ecaef134a1c847a2c115d739efa86e&chksm=c21b64def56cedc8eb5d4bdb438085e3771851fa964dca7ba58c113f6f43b2bfa2c1e454a4af&scene=132#wechat_redirect"
+            [
+                "複雜 SQL 治理實踐 | 京東物流技術團隊",
+                "https://juejin.cn/post/7328603400304033803"
+            ],
+            [
+                "奇思妙想的 SQL｜兼顧性能的數據傾斜處理新姿勢",
+                "https://mp.weixin.qq.com/s/VGgT1faRKGnUuQ-HHQ3Q5g"
+            ],
+            [
+                "PostgreSQL 打破認知幻像：你寫的 SQL 是否如你心意？",
+                "https://www.modb.pro/db/1788830043766067200"
+            ],
+            [
+                "基於代價的慢查詢優化建議",
+                "https://tech.meituan.com/2022/04/21/slow-query-optimized-advice-driven-by-cost-model.html"
+            ],
+            [
+                "SQL 語句 Cost 花費判斷",
+                "https://www.modb.pro/db/624887"
+            ],
+            [
+                "這句簡單的 SQL，如何加索引？顛覆了我多年的認知",
+                "https://juejin.cn/post/6844903927821893646"
+            ],
+            [
+                "高級 SQL 優化系列之外連接優化",
+                "https://mp.weixin.qq.com/s?__biz=MzkyODM0NzE1Ng==&mid=2247483813&idx=1&sn=18ecaef134a1c847a2c115d739efa86e&chksm=c21b64def56cedc8eb5d4bdb438085e3771851fa964dca7ba58c113f6f43b2bfa2c1e454a4af&scene=132#wechat_redirect"
+            ]
         ],
         "MySQL 性能優化": [
-            "MySQL 性能優化：從普通程序員的角度出發","https://juejin.cn/post/7461587929447301139",
-            "用蜜蜂 (eBPF) 來追蹤海豚 (MySQL)，性能追得上嗎","https://www.modb.pro/db/1799008894466478080",
-            "MySQL 8.0.35 企業版比社區版性能高出 25%？","https://juejin.cn/post/7339892484334059557",
-            "MySQL 中的 SQL 調優設計","https://juejin.cn/post/7358109207994712075",
-            "DBCP 一個配置，浪費了 MySQL 50% 的性能！","https://juejin.cn/post/7350214909056483366",
-            "淺析 MySQL 代價估計器","https://developer.aliyun.com/article/1450053",
-            "MySQL 高階調優，一文讓你從入門到精通！","https://www.modb.pro/db/1734824646452256768",
-            "搞懂 MySQL 中的優化器與成本模型","https://blog.csdn.net/weixin_44829930/article/details/121658314",
-            "MySQL 中的 InnoDB Buffer Pool","https://blog.csdn.net/wzngzaixiaomantou/article/details/121064577"
+            [
+                "MySQL 性能優化：從普通程序員的角度出發",
+                "https://juejin.cn/post/7461587929447301139"
+            ],
+            [
+                "用蜜蜂 (eBPF) 來追蹤海豚 (MySQL)，性能追得上嗎",
+                "https://www.modb.pro/db/1799008894466478080"
+            ],
+            [
+                "MySQL 8.0.35 企業版比社區版性能高出 25%？",
+                "https://juejin.cn/post/7339892484334059557"
+            ],
+            [
+                "MySQL 中的 SQL 調優設計",
+                "https://juejin.cn/post/7358109207994712075"
+            ],
+            [
+                "DBCP 一個配置，浪費了 MySQL 50% 的性能！",
+                "https://juejin.cn/post/7350214909056483366"
+            ],
+            [
+                "淺析 MySQL 代價估計器",
+                "https://developer.aliyun.com/article/1450053"
+            ],
+            [
+                "MySQL 高階調優，一文讓你從入門到精通！",
+                "https://www.modb.pro/db/1734824646452256768"
+            ],
+            [
+                "搞懂 MySQL 中的優化器與成本模型",
+                "https://blog.csdn.net/weixin_44829930/article/details/121658314"
+            ],
+            [
+                "MySQL 中的 InnoDB Buffer Pool",
+                "https://blog.csdn.net/wzngzaixiaomantou/article/details/121064577"
+            ]
         ],
         "MariaDB 性能優化": [
-            "The Optimizer Cost Model from MariaDB 11.0",
-            "https://mariadb.com/kb/en/the-optimizer-cost-model-from-mariadb-11-0/"
+            [
+                "The Optimizer Cost Model from MariaDB 11.0"
+            ],
+            [
+                "https://mariadb.com/kb/en/the-optimizer-cost-model-from-mariadb-11-0/"
+            ]
         ],
         "資料庫安全與權限管理": [
-            "PostgreSQL 權限管控，還可以再簡單點","https://www.modb.pro/db/1794373113622368256"
+            [
+                "PostgreSQL 權限管控，還可以再簡單點",
+                "https://www.modb.pro/db/1794373113622368256"
+            ]
         ],
         "數據一致性": [
-            "探索 Redis 與 MySQL 的雙寫問題","https://developer.aliyun.com/article/1347071"
+            [
+                "探索 Redis 與 MySQL 的雙寫問題",
+                "https://developer.aliyun.com/article/1347071"
+            ]
         ],
         "性能故障應急": [
-            "数据库常见性能故障应急场景","https://www.modb.pro/db/1863488822995075072",
-            "從一個故障案例談資料庫運維中的數字化分析之路","https://www.modb.pro/db/1858344140996620288",
-            "MySQL 內存為什麼不斷增高，怎麼讓它釋放","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653938861&idx=1&sn=2de853dd9120693b85d91c78330249f2&chksm=bd3b7ec78a4cf7d1a95fe21ad7cff60d61c8f913f75269eec931c671e6959aa852d9525e8858&scene=178&cur_album_id=1337959503719137280#rd",
-            "MySQL 8.0 不再擔心被垃圾 SQL 搞爆內存","https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939777&idx=1&sn=da6b97b8d302b0b910fa52147e0f6854&scene=21#wechat_redirect",
-            "MySQL ProxySQL 由於漏洞掃描導致的 PROXYSQL CPU 超高","https://cloud.tencent.com/developer/article/1706112",
-            "資料庫異常智能分析與診斷","https://tech.meituan.com/2022/05/05/meituan-database-autonomy-service.html"
+            [
+                "数据库常见性能故障应急场景",
+                "https://www.modb.pro/db/1863488822995075072"
+            ],
+            [
+                "從一個故障案例談資料庫運維中的數字化分析之路",
+                "https://www.modb.pro/db/1858344140996620288"
+            ],
+            [
+                "MySQL 內存為什麼不斷增高，怎麼讓它釋放",
+                "https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653938861&idx=1&sn=2de853dd9120693b85d91c78330249f2&chksm=bd3b7ec78a4cf7d1a95fe21ad7cff60d61c8f913f75269eec931c671e6959aa852d9525e8858&scene=178&cur_album_id=1337959503719137280#rd"
+            ],
+            [
+                "MySQL 8.0 不再擔心被垃圾 SQL 搞爆內存",
+                "https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939777&idx=1&sn=da6b97b8d302b0b910fa52147e0f6854&scene=21#wechat_redirect"
+            ],
+            [
+                "MySQL ProxySQL 由於漏洞掃描導致的 PROXYSQL CPU 超高",
+                "https://cloud.tencent.com/developer/article/1706112"
+            ],
+            [
+                "資料庫異常智能分析與診斷",
+                "https://tech.meituan.com/2022/05/05/meituan-database-autonomy-service.html"
+            ]
         ]
     },
     "作業系統研究": {
         "線程與資源管理": [
-            "別再糾結線程池池大小、線程數量了，哪有什麼固定公式 | 京東雲技術團隊","https://juejin.cn/post/7280429214608146490"
+            [
+                "別再糾結線程池池大小、線程數量了，哪有什麼固定公式 | 京東雲技術團隊",
+                "https://juejin.cn/post/7280429214608146490"
+            ]
         ],
         "進程管理": [
-            "Linux 進程管理和啟動流程","https://blog.51cto.com/u_13245823/9202174"
+            [
+                "Linux 進程管理和啟動流程",
+                "https://blog.51cto.com/u_13245823/9202174"
+            ]
         ]
     },
     "Application/Toolkit": {
         "Github": [
-            "stock 股票. 获取股票数据, 计算股票指标, 筹码分布, 识别股票形态, 综合选股, 选股策略, 股票验证回测, 股票自动交易, 支持PC及移动设备","https://github.com/myhhub/stock"
+            [
+                "stock 股票. 获取股票数据, 计算股票指标, 筹码分布, 识别股票形态, 综合选股, 选股策略, 股票验证回测, 股票自动交易, 支持PC及移动设备",
+                "https://github.com/myhhub/stock"
+            ]
         ],
         "監控工具": [
-            "開源全方位運維監控工具：HertzBeat","https://juejin.cn/post/7358691823545663523",
-            "The path to learn observability following Grafana LGTM stack","https://github.com/grafanafans/club",
-            "Say Hello to Grafana OnCall","https://medium.com/@magstherdev/say-hello-to-grafana-oncall-e78f548b2227"
+            [
+                "開源全方位運維監控工具：HertzBeat",
+                "https://juejin.cn/post/7358691823545663523"
+            ],
+            [
+                "The path to learn observability following Grafana LGTM stack",
+                "https://github.com/grafanafans/club"
+            ],
+            [
+                "Say Hello to Grafana OnCall",
+                "https://medium.com/@magstherdev/say-hello-to-grafana-oncall-e78f548b2227"
+            ]
         ],
         "緩存工具": [
-            "Garnet 是一個來自 Microsoft Research 的遠程緩存存儲，提供強大的性能、可擴展性、存儲、恢復、集群分片、密鑰遷移和複制功能","https://github.com/microsoft/garnet",
-            "Dragonfly 是一種針對現代應用程序負荷需求而構建的內存資料庫","https://github.com/dragonflydb/dragonfly"
+            [
+                "Garnet 是一個來自 Microsoft Research 的遠程緩存存儲，提供強大的性能、可擴展性、存儲、恢復、集群分片、密鑰遷移和複制功能",
+                "https://github.com/microsoft/garnet"
+            ],
+            [
+                "Dragonfly 是一種針對現代應用程序負荷需求而構建的內存資料庫",
+                "https://github.com/dragonflydb/dragonfly"
+            ]
         ],
         "安全工具": [
-            "滲透測試報告一鍵生成工具","https://www.yunweipai.com/46853.html",
-            "sqlmap - Automatic SQL injection and database takeover tool","https://github.com/sqlmapproject/sqlmap",
-            "IPQuality - A script for IP quality detection","https://github.com/xykt/IPQuality"
+            [
+                "滲透測試報告一鍵生成工具",
+                "https://www.yunweipai.com/46853.html"
+            ],
+            [
+                "sqlmap - Automatic SQL injection and database takeover tool",
+                "https://github.com/sqlmapproject/sqlmap"
+            ],
+            [
+                "IPQuality - A script for IP quality detection",
+                "https://github.com/xykt/IPQuality"
+            ]
         ],
         "系統調整管理工具": [
-            "Tune - 系統調整","https://github.com/jerry048/Tune",
-            "sh - Linux 管理腳本","https://github.com/kejilion/sh"
+            [
+                "Tune - 系統調整",
+                "https://github.com/jerry048/Tune"
+            ],
+            [
+                "sh - Linux 管理腳本",
+                "https://github.com/kejilion/sh"
+            ]
         ],
         "數據管理": [
-            "Navicat","https://www.navicat.com/en/products",
-            "DBdoctor","https://dbdoctor.hisensecloud.com/",
-            "DBdoctor 產品體驗報告","https://www.modb.pro/db/1784496701532360704"
+            [
+                "Navicat",
+                "https://www.navicat.com/en/products"
+            ],
+            [
+                "DBdoctor",
+                "https://dbdoctor.hisensecloud.com/"
+            ],
+            [
+                "DBdoctor 產品體驗報告",
+                "https://www.modb.pro/db/1784496701532360704"
+            ]
         ],
         "平台管理": [
-            "NineData 是集成了資料庫 DevOps、數據複製、數據備份、數據對比多個模塊的雲服務","https://docs.ninedata.cloud/",
-            "sqle - 一个支持多种不同类型数据库，覆盖事前控制、事后监督、标准发布场景，帮助您建立质量规范的 SQL 全生命周期质量管理平台","https://github.com/actiontech/sqle",
-            "Yearning - A most popular SQL audit platform for MySQL","https://github.com/cookieY/Yearning"
+            [
+                "NineData 是集成了資料庫 DevOps、數據複製、數據備份、數據對比多個模塊的雲服務",
+                "https://docs.ninedata.cloud/"
+            ],
+            [
+                "sqle - 一个支持多种不同类型数据库，覆盖事前控制、事后监督、标准发布场景，帮助您建立质量规范的 SQL 全生命周期质量管理平台",
+                "https://github.com/actiontech/sqle"
+            ],
+            [
+                "Yearning - A most popular SQL audit platform for MySQL",
+                "https://github.com/cookieY/Yearning"
+            ]
         ],
         "開發資源": [
-            "GitHub Actions 入坑指南","https://juejin.cn/post/6960126908180725773",
-            "GitHub Action 是什麼？能幹什麼？怎麼做到的？如何開發一個 action","https://juejin.cn/post/7348653890587557925",
-            "通過 GitHub Action 自動發布博客文章","https://juejin.cn/post/7348703569053597733",
-            "部署更輕鬆了，GitHub Action 自動化部署 Hexo：代碼推送，雲伺服器自動部署","https://juejin.cn/post/7347958786050752563"
+            [
+                "GitHub Actions 入坑指南",
+                "https://juejin.cn/post/6960126908180725773"
+            ],
+            [
+                "GitHub Action 是什麼？能幹什麼？怎麼做到的？如何開發一個 action",
+                "https://juejin.cn/post/7348653890587557925"
+            ],
+            [
+                "通過 GitHub Action 自動發布博客文章",
+                "https://juejin.cn/post/7348703569053597733"
+            ],
+            [
+                "部署更輕鬆了，GitHub Action 自動化部署 Hexo：代碼推送，雲伺服器自動部署",
+                "https://juejin.cn/post/7347958786050752563"
+            ]
         ]
     }
 }
