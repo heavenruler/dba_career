@@ -1,214 +1,86 @@
 {
-    "資料庫原理": {
-        "資料庫比較": [],
-        "高效能設計": [],
-        "發展與趨勢": [],
-        "Buffer Pool 深度剖析": [],
-        "鎖機制": [],
-        "Undo 日誌": [],
-        "double write機制": [],
-        "事務管理與隔離級別": [],
-        "分佈式資料庫原理": []
-    },
-    "資料庫優化": {
-        "查詢性能優化": [],
-        "SQL 優化技巧": [],
-        "性能分析工具": [],
-        "InnoDB 優化": [],
-        "PostgreSQL 優化": [],
-        "TiDB 優化": []
-    },
-    "資料庫工具": {
-        "可視化工具": [],
-        "安裝部署工具": [],
-        "監控工具": []
-    },
-    "資料庫管理": {
-        "MySQL 資料庫管理": {
-            "安裝部署及管理": [],
-            "存儲引擎": [],
-            "設計與實踐": [],
-            "安全與審計": [],
-            "資料庫管理": [],
-            "性能優化": [],
-            "新版本": [],
-            "DBA 指南": []
-        },
-        "Redis 資料庫管理": {
-            "設計與實踐": [],
-            "性能優化": [],
-            "運維管理": []
-        },
-        "NoSQL 資料庫管理": {
-            "資料庫設計": [],
-            "資料庫工具": [],
-            "資料庫維護": []
-        },
-        "MariaDB 資料庫管理": {
-            "設計與實踐": [],
-            "性能優化": []
-        },
-        "Oracle 資料庫管理": {
-            "DBA 指南": []
-        },
-        "TiDB 資料庫管理": {
-        "安裝部署": [],
-        "集群管理": [],
-        "監控與維護": [],
-        "備份恢復": [],
-        "安全管理": []
-        },
-        "通用維運管理": {
-            "高可用與分佈式數據庫": [],
-            "中間件": [],
-            "調試與排查": [],
-            "自動化工具": [],
-            "監控系統設計": [],
-            "OLTP 系統設計": [],
-            "圖資料庫設計": [],
-            "SQL 優化與調優": [],
-            "資料庫安全與權限管理": [],
-            "數據一致性": [],
-            "性能故障應急": []
-        }
-    },
-    "作業系統研究": {
-        "線程與資源管理": [
-            [
-                "別再糾結線程池池大小、線程數量了，哪有什麼固定公式 | 京東雲技術團隊",
-                "https://juejin.cn/post/7280429214608146490",
-                "1d98657cac48cb47af146f250f965e3b"
-            ]        
+    "資料庫技術": {
+        "分布式數據庫(TiDB)": [
+            "核心架構與原理",
+            "高可用性設計", 
+            "部署與維運管理",
+            "性能優化與調優",
+            "企業實踐案例",
+            "版本更新與演進"
         ],
-        "進程管理": [
-            [
-                "Linux 進程管理和啟動流程",
-                "https://blog.51cto.com/u_13245823/9202174",
-                "26bd06e3f8f79d60d645c40bafe81cb0"
-            ],
-            [
-                "解锁Linux\"故障宝藏\"：Core Dump分析秘籍",
-                "https://mp.weixin.qq.com/s/mcMzYHzgHm22V93CPqORXg",
-                "45526cc680de3ac7e39e27e4f1ea82d6"
-            ]        
+        "關係型數據庫": [
+            "MySQL 核心原理",
+            "MySQL DBA 實務",
+            "MySQL 性能優化", 
+            "PostgreSQL 實踐",
+            "Oracle 應用管理",
+            "MariaDB 設計實踐"
+        ],
+        "NoSQL 數據庫": [
+            "Redis 設計與實踐",
+            "MongoDB 應用與優化",
+            "緩存架構設計",
+            "分布式存儲方案"
         ]
     },
-    "Application/Toolkit": {
-        "Github": [
-            [
-                "stock 股票. 获取股票数据, 计算股票指标, 筹码分布, 识别股票形态, 综合选股, 选股策略, 股票验证回测, 股票自动交易, 支持PC及移动设备",
-                "https://github.com/myhhub/stock",
-                "316046afa4a8a6b4d16334018c69e804"
-            ],
-            [
-                "20.1k star! 太强了，一个浏览器直接能跑20+种操作系统！",
-                "https://mp.weixin.qq.com/s/wn2KkWDnexTCk0HR-Y2A1w",
-                "82d9c578076157c35ced42d85a3e94d1"
-            ],
-            [
-                "34.5K star！又来一款全能开源笔记神器，超好用！",
-                "https://mp.weixin.qq.com/s/RZ2rGq7eZOh1fzdTNeLanA",
-                "c95827d768117332fbe12c185270d3c1"
-            ]        
+    "系統架構": {
+        "架構設計基礎": [
+            "架構設計原則",
+            "架構決策方法論",
+            "技術選型策略",
+            "架構文檔規範"
         ],
-        "監控工具": [
-            [
-                "開源全方位運維監控工具：HertzBeat",
-                "https://juejin.cn/post/7358691823545663523",
-                "99574e36ba022a0a02cf9b9545f7d55a"
-            ],
-            [
-                "The path to learn observability following Grafana LGTM stack",
-                "https://github.com/grafanafans/club",
-                "6326e10c25c00731fb010b2ae6feab55"
-            ],
-            [
-                "Say Hello to Grafana OnCall",
-                "https://medium.com/@magstherdev/say-hello-to-grafana-oncall-e78f548b2227",
-                "13c9a75a3b73f640e3b274638cd14d59"
-            ]        
+        "分布式系統": [
+            "一致性理論與實現",
+            "高可用架構設計",
+            "分布式事務處理", 
+            "服務降級與容錯"
         ],
-        "緩存工具": [
-            [
-                "Garnet 是一個來自 Microsoft Research 的遠程緩存存儲，提供強大的性能、可擴展性、存儲、恢復、集群分片、密鑰遷移和複制功能",
-                "https://github.com/microsoft/garnet",
-                "90b30a59a13f8100785328229e12c2f4"
-            ],
-            [
-                "Dragonfly 是一種針對現代應用程序負荷需求而構建的內存資料庫",
-                "https://github.com/dragonflydb/dragonfly",
-                "afecd65684d2f2a9566d8d83211a72e9"
-            ]        
+        "性能與可靠性": [
+            "性能優化策略",
+            "高併發處理方案",
+            "可靠性設計模式",
+            "故障預防與處理"
+        ]
+    },
+    "技術運維": {
+        "可觀測性": [
+            "監控系統設計",
+            "日誌管理方案",
+            "告警策略優化",
+            "性能診斷工具"
         ],
-        "安全工具": [
-            [
-                "滲透測試報告一鍵生成工具",
-                "https://www.yunweipai.com/46853.html",
-                "1159c05117645b15e71f1e88c68fd704"
-            ],
-            [
-                "sqlmap - Automatic SQL injection and database takeover tool",
-                "https://github.com/sqlmapproject/sqlmap",
-                "2001810f78059400d786baaaa6efa019"
-            ],
-            [
-                "IPQuality - A script for IP quality detection",
-                "https://github.com/xykt/IPQuality",
-                "a4bece0fd22b660823f13109f8c9c56d"
-            ]        
+        "自動化運維": [
+            "DevOps 實踐",
+            "CI/CD 流程",
+            "自動化測試",
+            "容器化部署"
         ],
-        "系統調整管理工具": [
-            [
-                "Tune - 系統調整",
-                "https://github.com/jerry048/Tune",
-                "83d996e5abc2f5d910e35c6f73dfa4f8"
-            ],
-            [
-                "sh - Linux 管理腳本",
-                "https://github.com/kejilion/sh",
-                "da9ec6ae216546915b14e556228aacf6"
-            ]        
+        "安全與治理": [
+            "數據安全管理",
+            "訪問控制策略",
+            "審計與合規",
+            "數據治理體系"
+        ]
+    },
+    "研發管理": {
+        "技術管理": [
+            "技術團隊建設",
+            "研發流程規範",
+            "技術評審流程",
+            "技術債務管理"
         ],
-        "數據管理": [
-            [
-                "史上最全數據倉庫建設指南",
-                "https://mp.weixin.qq.com/s/8TqZHMBl-Ag3dYyVwQ7qXQ",
-                "cec91dd30f4f20e3150f1ed4fe5d35c4"
-            ],
-            [
-                "從入門到精通，超詳細數倉建設指南，推薦收藏",
-                "https://mp.weixin.qq.com/s/KSiWu7xNZ0mFNCISPFKXSg",
-                "17f4c4ba6162f17b0e71802d59cd04f3"
-            ]        
+        "項目實踐": [
+            "項目管理方法",
+            "需求分析技巧",
+            "技術方案設計",
+            "風險控制策略"
         ],
-        "平台管理": [
-            [
-                "免费商用 共享软件中心",
-                "https://mp.weixin.qq.com/s/L6MZgrH7ZrJLIidj3NQLPA",
-                "04e9e5f02078f4d00e2adcd8ce45cb16"
-            ],
-            [
-                "Cloud Hosting Platform for Personal Use - 30+ Services Free Forever",
-                "https://github.com/Atarity/deploy-your-own-saas",
-                "50db5c4c5fc2e5d711e6f4ed49e3baa8"
-            ]        
-        ],
-        "開發資源": [
-            [
-                "Developer Roadmaps - roadmap.sh",
-                "https://roadmap.sh/",
-                "16772a48668b066b6ebbb68250dcd85a"
-            ],
-            [
-                "系統設計入門 - System Design 101",
-                "https://github.com/ByteByteGoHq/system-design-101",
-                "a62b363ff1c377758ad174825614ee9d"
-            ],
-            [
-                "科技資源導航站",
-                "https://wht.im/",
-                "9533fd0ce72d55a470bdeced22f978b2"
-            ]        
+        "工具與平台": [
+            "開發工具集成",
+            "效能分析工具",
+            "自動化平台",
+            "監控管理平台"
         ]
     }
 }
