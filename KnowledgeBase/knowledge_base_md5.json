@@ -1158,71 +1158,86 @@
     "資料庫優化": {
         "查詢性能優化": [
             [
-                "為何要小表驅動大表？",
+                " 為何要小表驅動大表？",
                 "https://juejin.cn/post/7460125459046481920",
                 "b15cea0e52bc2b147a982bd0d42b77f5"
             ],
             [
-                "EXPLAIN TYPE 列的 JOIN 常见场景详解（上）",
+                " EXPLAIN TYPE 列的 JOIN 常见场景详解（上）",
                 "https://juejin.cn/post/7456635153332731919",
                 "1059aadb9ba78b94ac181ac7b2f82d3d"
             ],
             [
-                "從MySQL索引下推看性能優化: 減少回表，提升查詢效率",
+                " 從MySQL索引下推看性能優化: 減少回表，提升查詢效率",
                 "https://juejin.cn/post/7442722732335628342",
                 "217028f183386f55576c92270b1185be"
             ],
             [
-                "MySQL底層概述—7.優化原則及慢查詢",
+                " MySQL底層概述—7.優化原則及慢查詢",
                 "https://www.cnblogs.com/mjunz/p/18579992",
                 "34608efa79dafe8421af5c2c7c9d3038"
             ],
             [
-                "SQL 調優實戰: 分頁語句中你真的了解 COUNT 索引嗎？SORT ORDER BY 的存在就一定很糟？",
+                " SQL 調優實戰: 分頁語句中你真的了解 COUNT 索引嗎？SORT ORDER BY 的存在就一定很糟？",
                 "https://www.modb.pro/db/1856961890262462464",
                 "f7a8df8b89aff3049775b4d17e41f7a7"
             ],
             [
-                "一文讓你對 MySQL 索引底層實現明明白白",
+                " 一文讓你對 MySQL 索引底層實現明明白白",
                 "https://juejin.cn/post/7460467888031514658",
                 "0c13009f75e503fc241380577e1e1714"
             ],
             [
-                "数据库优化",
+                " 数据库优化",
                 "https://mp.weixin.qq.com/s/Phlip5cYPfj5bsJ2WSI-gw",
                 "72ef824ce9b8942f1539498272bee9f4"
             ],
             [
-                "拒绝全表扫描！3个提升MySQL深度分页技巧！",
+                " 拒绝全表扫描！3个提升MySQL深度分页技巧！",
                 "https://juejin.cn/post/7471898162028167179",
                 "e1462e7727b76b3201c2f59f40b77572"
             ]
         ],
         "SQL 優化技巧": [
             [
-                "重現一條簡單 SQL 的優化過程",
+                " 重現一條簡單 SQL 的優化過程",
                 "https://cloud.tencent.com/developer/article/2321910",
                 "2521eca551359e30b8f64337d32bfc87"
             ],
             [
-                "一个不可思议的SQL优化过程及扩展几个需掌握的几个知识点",
+                " 一个不可思议的SQL优化过程及扩展几个需掌握的几个知识点",
                 "https://www.modb.pro/db/1869200405658349568",
                 "75be5e203e2525680ca0da0f0f670615"
             ],
             [
-                "從源碼分析，MySQL 優化器如何估算 SQL 語句的訪問行數",
+                " 從源碼分析，MySQL 優化器如何估算 SQL 語句的訪問行數",
                 "https://juejin.cn/post/7435664118186590259",
                 "58533fe1f1c6095cb0e2f3955e58159b"
             ],
             [
-                "MySQL JOIN 的高階使用",
+                " MySQL JOIN 的高階使用",
                 "https://juejin.cn/post/7460354454832496679",
                 "51c199aad1722448a7614d1775936198"
             ],
             [
-                "MySQL 全文索引",
+                " MySQL 全文索引",
                 "https://mp.weixin.qq.com/s/GhnX4zLBYfIL7UCsLKvZpg",
                 "1da8692fcd96135669d10058ee6ba62b"
+            ],
+            [
+                " MySQL8索引篇：性能提升了100%！！",
+                "https://cloud.tencent.com/developer/article/2023881",
+                "814120882b6dc79670eb6ef15d5d275d"
+            ],
+            [
+                " 《MySQL开发规范》过时了，视图的查询性能提升了一万倍",
+                "https://cloud.tencent.com/developer/article/2005391",
+                "dbfd739fa6148e81c1b1e24263eafbf3"
+            ],
+            [
+                " 技术分享 | MySQL 表空间碎片整理方法",
+                "https://cloud.tencent.com/developer/article/1848499",
+                "3aba28a31c245563bc6d4253665d9938"
             ]
         ],
         "性能分析工具": [
