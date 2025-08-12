@@ -14,3 +14,8 @@ md5_fix:
 reclassify:
 	@python3 scripts/reclassify.py
 	@echo "已重新分類知識庫內容"
+
+# 合併 knowledge_base_md5.json 到 knowledge_base.md
+merge_kb:
+	@python3 scripts/merge_kb.py
+	@echo "已合併 knowledge_base_md5.json 到 knowledge_base.md"
