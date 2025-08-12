@@ -19,3 +19,8 @@ reclassify:
 merge_kb:
 	@python3 scripts/merge_kb.py
 	@echo "已合併 knowledge_base_md5.json 到 knowledge_base.md"
+
+# 檢查缺失的 PDF 檔案
+check_pdfs:
+	@python3 scripts/check_missing_pdfs.py
+	@echo "已檢查缺失的 PDF 檔案"
