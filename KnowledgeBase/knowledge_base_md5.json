@@ -1407,123 +1407,118 @@
         ],
         "MySQL 存儲引擎": [
             [
-                "詳細解讀 InnoDB 存儲引擎",
+                " 詳細解讀 InnoDB 存儲引擎",
                 "https://blog.csdn.net/cyl101816/article/details/115794170",
                 "5e700227287ae6f14ad8d3a305c804ab"
             ],
             [
-                "關於 MySQL checkpoint",
+                " 關於 MySQL checkpoint",
                 "https://www.cnblogs.com/DataArt/p/10236642.html",
                 "098499a5822a1ebae8f2016ac0d796e4"
             ],
             [
-                "MySQL Binlog 源碼入門",
+                " MySQL Binlog 源碼入門",
                 "http://mysql.taobao.org/monthly/2023/01/04/",
                 "7506a36633e3bc12944c670f6319ebd6"
             ],
             [
-                "MySQL 底層解析——緩存，InnoDB_buffer_pool，包括連接、解析、緩存、引擎、存儲",
+                " MySQL 底層解析——緩存，InnoDB_buffer_pool，包括連接、解析、緩存、引擎、存儲",
                 "https://cloud.tencent.com/developer/article/1508324",
                 "0e9882cbb3c7917b26251aba1dd71df1"
             ]
         ],
         "MySQL 設計與實踐": [
             [
-                "MySQL 外鍵約束的刪除和更新總結",
-                "https://blog.csdn.net/Aileenvov/article/details/136119265",
-                "4d669cdecd99fd1a072b7343bc457f1a"
-            ],
-            [
-                "詳解 MySQL 字符集和 Collation",
+                " 詳解 MySQL 字符集和 Collation",
                 "https://developer.aliyun.com/article/1462909",
                 "70d6796cf7d059fc575ac8263506713b"
             ],
             [
-                "MySQL 數據結構設計及開發規範",
+                " MySQL 數據結構設計及開發規範",
                 "https://github.com/wanfangdata/guide/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%A7%84%E8%8C%83/Mysql%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1%E5%8F%8A%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83.md",
                 "d30f1d26fac1b8e04980a7f140c504c4"
             ],
             [
-                "故障分析 | 为什么 MySQL 8.0.13 要引入新参数 sql_require_primary_key？",
+                " 故障分析 | 为什么 MySQL 8.0.13 要引入新参数 sql_require_primary_key？",
                 "https://mp.weixin.qq.com/s/qZ7sMBMFfvKiIhErQAPqVQ",
                 "b99633e6d09d838bd40f4241534d131e"
             ],
             [
-                "MySQL 核心模块揭秘 | 51 期 | 开年暖场，回顾和展望",
+                " MySQL 核心模块揭秘 | 51 期 | 开年暖场，回顾和展望",
                 "https://mp.weixin.qq.com/s/53kGERLxnvDQVlsKY4WmIQ",
                 "1779f76e21a977df4b808288e4b2132a"
             ],
             [
-                "MySQL 的JSON类型违反第一范式吗？",
+                " MySQL 的JSON类型违反第一范式吗？",
                 "https://juejin.cn/post/7471150465453785129",
                 "66b76895904726f19c1fb184b1c8fc81"
             ]
         ],
         "MySQL 安全與審計": [
             [
-                "MySQL 數據庫審計采集技術調研之 Packetbeat，eBPF",
+                " MySQL 數據庫審計采集技術調研之 Packetbeat，eBPF",
                 "https://developer.aliyun.com/article/852651",
                 "c7fe39393f4a540c8962e2a8d7ef3ebe"
             ]
         ],
         "MySQL 資料庫管理": [
             [
-                "實戰過程記錄：瀕臨宕機的業務系統僅優化 1 個 SQL 即恢復！",
+                " 實戰過程記錄：瀕臨宕機的業務系統僅優化 1 個 SQL 即恢復！",
                 "https://www.modb.pro/db/1758418439165267968",
                 "5450d4d89dd0b48d368c766133e165a4"
             ],
             [
-                "安裝部署 MySQL 8.2.0 並使用 changer master 傳統方式搭建部署一主一從操作記錄",
+                " 安裝部署 MySQL 8.2.0 並使用 changer master 傳統方式搭建部署一主一從操作記錄",
                 "https://www.modb.pro/db/1759486743346761728",
                 "adff8ea24b970c9925d7421a9c0d0708"
             ],
             [
-                "xtrabackup 8.0 如何恢復單表",
+                " xtrabackup 8.0 如何恢復單表",
                 "https://cloud.tencent.com/developer/article/1970574",
                 "813c74ea2eee6595f183870c6c05af83"
             ],
             [
-                "MySQL 複製中 slave 延遲監控",
+                " MySQL 複製中 slave 延遲監控",
                 "https://cloud.tencent.com/developer/article/2185089",
                 "9793d273762077412ec1100458f4fee7"
             ],
             [
-                "GRANT 之後為什麼要 FLUSH PRIVILEGES",
+                " GRANT 之後為什麼要 FLUSH PRIVILEGES",
                 "https://blog.csdn.net/MariaOzawa/article/details/107003386",
                 "07a24e9e6324a0563f5cb3deff2b1f58"
             ],
             [
-                "三歪連 MySQL 大表怎麼 DDL 變更都不懂",
+                " 三歪連 MySQL 大表怎麼 DDL 變更都不懂",
                 "https://ost.51cto.com/posts/11578",
                 "747015c71672d076a19bf363ff9e7bc5"
             ],
             [
-                "意想不到的 MySQL 複製延遲原因",
+                " 意想不到的 MySQL 複製延遲原因",
                 "https://cloud.tencent.com/developer/article/2185088",
                 "681f331f41efc7e130c57fe0adb36cfd"
             ],
             [
-                "全網最詳細之 pt-osc 處理 MySQL 外鍵表流程分析",
+                " 全網最詳細之 pt-osc 處理 MySQL 外鍵表流程分析",
                 "https://blog.51cto.com/wujianwei/4934461",
                 "542079bda9492131b774e9eed82ebd01"
             ],
             [
-                "效率+100%: MySQL运维脚本大揭秘",
+                " 效率+100%: MySQL运维脚本大揭秘",
                 "https://mp.weixin.qq.com/s/QODPfuInGvwuompEIIzRLA",
                 "d2ba048e0f911a5cdd01fd9fa96b859c"
             ],
             [
-                "[MYSQL] 忘记root密码时, 不需要重启也能强制修改了!",
+                " [MYSQL] 忘记root密码时, 不需要重启也能强制修改了!",
                 "https://www.modb.pro/db/1887314304005844992",
                 "09e74f0a28f3954c6ffca5acac1d6de0"
             ],
             [
-                "MYSQL统计信息详解",
+                " MYSQL统计信息详解",
                 "https://mp.weixin.qq.com/s/VP2rPtMFIEYouGEy1QaHPA",
                 "367d191d3c04c078f0fbe3096c65c976"
             ],
             [
-                "MySQL数据库idb文件过大处理方法",
+                " MySQL数据库idb文件过大处理方法",
                 "https://mp.weixin.qq.com/s/F_neAD1Ujmi2WIKJQYZqBw",
                 "c1131b0454f0681cee2e3419ff02c5fe"
             ]
