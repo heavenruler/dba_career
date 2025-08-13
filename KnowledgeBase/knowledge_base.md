@@ -233,70 +233,70 @@
 ### 核心組件
 
 - [TiDB 的高可用實踐: 一文了解代理組件 TiProxy 的原理與應用](collector/28eb86116fab2803d090537fee290113.pdf)
-- [ TiDB 介紹及設計原理](collector/384e3ca8b05dbed3b6ca32222678ca7f.pdf)
-- [ TiDB 底層存儲結構 LSM 樹原理介紹](collector/1de9b7d1440ed70776bf9f305e14a986.pdf)
-- [ TiDB 的列式存儲引擎是如何實現的？](collector/156269ef29fe4a830a34022ba79f9974.pdf)
+- [TiDB 介紹及設計原理](collector/384e3ca8b05dbed3b6ca32222678ca7f.pdf)
+- [TiDB 底層存儲結構 LSM 樹原理介紹](collector/1de9b7d1440ed70776bf9f305e14a986.pdf)
+- [TiDB 的列式存儲引擎是如何實現的？](collector/156269ef29fe4a830a34022ba79f9974.pdf)
 
 ### 架構設計
 
-- [ TiDB 整體架構](collector/99ab36a846be3cd2bd2237ea2ff882da.pdf)
-- [ 7000+字的 TiDB 保姆級簡介](collector/c878673f99e69883937d54a6b5b740df.pdf)
-- [ TiDB 中的自增主鍵有哪些使用限制，應該如何避免？](collector/f24cbbd6a04f8ca036d5113ed745aab5.pdf)
-- [ 分庫分表已成為過去式，使用分佈式資料庫才是未來](collector/5341b6858256a0774fc3ae4e1b17768d.pdf)
-- [ How a new database architecture supports scale and reliability in TiDB](collector/8e431cf3f342da1daa965db08504102f.pdf)
+- [TiDB 整體架構](collector/99ab36a846be3cd2bd2237ea2ff882da.pdf)
+- [7000+字的 TiDB 保姆級簡介](collector/c878673f99e69883937d54a6b5b740df.pdf)
+- [TiDB 中的自增主鍵有哪些使用限制，應該如何避免？](collector/f24cbbd6a04f8ca036d5113ed745aab5.pdf)
+- [分庫分表已成為過去式，使用分佈式資料庫才是未來](collector/5341b6858256a0774fc3ae4e1b17768d.pdf)
+- [How a new database architecture supports scale and reliability in TiDB](collector/8e431cf3f342da1daa965db08504102f.pdf)
 
-- [ 一文详解架构设计的本质](collector/5cf669dc724cc9b8f13dc47ad1c764dd.pdf)
-- [ 架构提效的矛盾和矛盾的主要方面](collector/82ca5379bc881cf9c7fb9bcc7785428c.pdf)
-- [ 什麼才是架構師的真內核？](collector/29923a2ff3e48bb8fa82bdd2c75cd4ca.pdf)
-- [ 單體架構和微服務架構到底哪個好？](collector/7de0d091d91c88f84dcf3593a6f7462d.pdf)
-- [ 架構師必備 10 大接口性能優化秘技，條條經典！](collector/b0b7db4bb8f74dbe80c088d52dd5fa55.pdf)
-- [ 像架構師一樣去思考](collector/53834403bd0eb43fa85470bd5d81809d.pdf)
-- [ 彩虹橋架構演進之路-負載均衡篇｜得物技術](collector/cb41093a0ba5cf6f375f46b3e1e3ff96.pdf)
-- [ 單元化架構在字節跳動的落地實踐](collector/a7a153849277d6daeda5f742f7b4499c.pdf)
-- [ 微服務與分布式系統設計看這篇就夠了！](collector/47eb1dc6abbb4d9c6c213ae7755adae2.pdf)
-- [ 15 個系統設計權衡關鍵點: 構建高性能系統的黃金法則](collector/8b00523b7afd9201d9eba6bc4ceb6f1b.pdf)
-- [ 不可思議！平均執行耗時僅 1.5ms 的接口在超時時間 100ms 下成功率竟然還不到 5 個 9!!](collector/d878c8bd4435c697819401293e6cb373.pdf)
-- [ 什麼才是真正的架構設計？](collector/ff238e5e10abf4370f715e5e481a053f.pdf)
-- [ 整潔架構演進之路——京東廣告投放平台實戰](collector/0382a897347df4798d7e22baeca3dca9.pdf)
-- [ 如何畫好架構圖：7 種常用類型與示例](collector/0aafc5cc111c00e82970042bc8bcf339.pdf)
-- [ 架構師基本功：如何畫好一張 UML 用例圖？](collector/4a533f9955a7b50cb4596468c058eb7f.pdf)
-- [ 架構師必備底層邏輯：設計與建模](collector/25e668d98d19f77bb58ca2a397715405.pdf)
-- [ 過度設計的架構師們，應該拿去祭天](collector/cafa830ebf998bb3583c865eb01444cd.pdf)
-- [ 你的 API 服務設計能力將再次進化！](collector/1a4fa6e37f7eb683ca1f8496b00cb1f0.pdf)
-- [ 架構設計的悖論，復用是美好的還是邪惡的](collector/3398a6ca1b1c193f45e75fbf1aef8266.pdf)
-- [ 架構師必備底層邏輯：分層架構設計](collector/f6283fbfef4f7fcabb4815abf6dd5846.pdf)
-- [ Software Architecture is Hard](collector/359626bc5641e31d9fe81b2ac8e446bd.pdf)
-- [ 如何畫好一張架構圖？](collector/2e4744acfe6ffc0fec8a6937fb8689ee.pdf)
-- [ 大型研發架構團隊的 AOM 實踐](collector/276062bf162565814aa4e70e14b7db0d.pdf)
-- [ DDD 落地指南-架構師眼中的餐廳](collector/5f6455b1073443e92c1507c8d17a3872.pdf)
-- [ 系統技術規劃的幾點概要思路](collector/20b82eeff9bce51ccb1902caead3b6ce.pdf)
-- [ 再聊對架構決策記錄的一些思考](collector/acd99de92c32e4d3c54c7d710714ccd8.pdf)
-- [ 人人都是架構師-清晰架構 | 京東物流技術團隊](collector/2ac31a1732680e72a16f3f3c2b711d09.pdf)
-- [ 架構演變史：從建築學到架構設計](collector/8704c7ff9b9fa201451e5d17e8e1c243.pdf)
-- [ 介紹了那麼多，技術中架構到底什麼？](collector/cfd2624b5bcccd703547d420ed4ca6c1.pdf)
-- [ 系統設計中 跨時區問題 解決方案](collector/eac970515cc6b06b1b335d2273c954fd.pdf)
-- [ 如何將技術債務納入路線圖](collector/47b4511182e6e82b208a708e923a4ed1.pdf)
-- [ 你的架構決策記錄是否失去了它的目的？](collector/ef62f06e66fcf9730ad9361a0cacd20b.pdf)
-- [ 亞馬遜 CTO 20 年架構經驗之道：儉約架構師的七大黃金法則！](collector/e7a93957c877ec7aa35b668de07db479.pdf)
-- [ 軟件架構，一切盡在權衡](collector/29407d2fed04e0cb2684a676ffea3fa5.pdf)
+- [一文详解架构设计的本质](collector/5cf669dc724cc9b8f13dc47ad1c764dd.pdf)
+- [架构提效的矛盾和矛盾的主要方面](collector/82ca5379bc881cf9c7fb9bcc7785428c.pdf)
+- [什麼才是架構師的真內核？](collector/29923a2ff3e48bb8fa82bdd2c75cd4ca.pdf)
+- [單體架構和微服務架構到底哪個好？](collector/7de0d091d91c88f84dcf3593a6f7462d.pdf)
+- [架構師必備 10 大接口性能優化秘技，條條經典！](collector/b0b7db4bb8f74dbe80c088d52dd5fa55.pdf)
+- [像架構師一樣去思考](collector/53834403bd0eb43fa85470bd5d81809d.pdf)
+- [彩虹橋架構演進之路-負載均衡篇｜得物技術](collector/cb41093a0ba5cf6f375f46b3e1e3ff96.pdf)
+- [單元化架構在字節跳動的落地實踐](collector/a7a153849277d6daeda5f742f7b4499c.pdf)
+- [微服務與分布式系統設計看這篇就夠了！](collector/47eb1dc6abbb4d9c6c213ae7755adae2.pdf)
+- [15 個系統設計權衡關鍵點: 構建高性能系統的黃金法則](collector/8b00523b7afd9201d9eba6bc4ceb6f1b.pdf)
+- [不可思議！平均執行耗時僅 1.5ms 的接口在超時時間 100ms 下成功率竟然還不到 5 個 9!!](collector/d878c8bd4435c697819401293e6cb373.pdf)
+- [什麼才是真正的架構設計？](collector/ff238e5e10abf4370f715e5e481a053f.pdf)
+- [整潔架構演進之路——京東廣告投放平台實戰](collector/0382a897347df4798d7e22baeca3dca9.pdf)
+- [如何畫好架構圖：7 種常用類型與示例](collector/0aafc5cc111c00e82970042bc8bcf339.pdf)
+- [架構師基本功：如何畫好一張 UML 用例圖？](collector/4a533f9955a7b50cb4596468c058eb7f.pdf)
+- [架構師必備底層邏輯：設計與建模](collector/25e668d98d19f77bb58ca2a397715405.pdf)
+- [過度設計的架構師們，應該拿去祭天](collector/cafa830ebf998bb3583c865eb01444cd.pdf)
+- [你的 API 服務設計能力將再次進化！](collector/1a4fa6e37f7eb683ca1f8496b00cb1f0.pdf)
+- [架構設計的悖論，復用是美好的還是邪惡的](collector/3398a6ca1b1c193f45e75fbf1aef8266.pdf)
+- [架構師必備底層邏輯：分層架構設計](collector/f6283fbfef4f7fcabb4815abf6dd5846.pdf)
+- [Software Architecture is Hard](collector/359626bc5641e31d9fe81b2ac8e446bd.pdf)
+- [如何畫好一張架構圖？](collector/2e4744acfe6ffc0fec8a6937fb8689ee.pdf)
+- [大型研發架構團隊的 AOM 實踐](collector/276062bf162565814aa4e70e14b7db0d.pdf)
+- [DDD 落地指南-架構師眼中的餐廳](collector/5f6455b1073443e92c1507c8d17a3872.pdf)
+- [系統技術規劃的幾點概要思路](collector/20b82eeff9bce51ccb1902caead3b6ce.pdf)
+- [再聊對架構決策記錄的一些思考](collector/acd99de92c32e4d3c54c7d710714ccd8.pdf)
+- [人人都是架構師-清晰架構 | 京東物流技術團隊](collector/2ac31a1732680e72a16f3f3c2b711d09.pdf)
+- [架構演變史：從建築學到架構設計](collector/8704c7ff9b9fa201451e5d17e8e1c243.pdf)
+- [介紹了那麼多，技術中架構到底什麼？](collector/cfd2624b5bcccd703547d420ed4ca6c1.pdf)
+- [系統設計中 跨時區問題 解決方案](collector/eac970515cc6b06b1b335d2273c954fd.pdf)
+- [如何將技術債務納入路線圖](collector/47b4511182e6e82b208a708e923a4ed1.pdf)
+- [你的架構決策記錄是否失去了它的目的？](collector/ef62f06e66fcf9730ad9361a0cacd20b.pdf)
+- [亞馬遜 CTO 20 年架構經驗之道：儉約架構師的七大黃金法則！](collector/e7a93957c877ec7aa35b668de07db479.pdf)
+- [軟件架構，一切盡在權衡](collector/29407d2fed04e0cb2684a676ffea3fa5.pdf)
 ### 高可用性設計
 
-- [ Cross-DC Deployment Solutions](collector/71ad51e40af1dcc472d06992997d0516.pdf)
-- [ TiDB 與 MySQL 在備份容災體系的衡量對比](collector/11943de59bf565b7d958f82d5ef421cf.pdf)
-- [ 國產資料庫『同城兩中心』容災方案對比，TiDB 表現優秀](collector/2912766936bb510774c1551dd89fa3b9.pdf)
-- [ TiDB 三中心『腦裂』場景探討](collector/0c7834f8ba6b520d05f5d04933e9c78b.pdf)
-- [ 為什麼說 TiDB 在線擴容對業務幾乎沒有影響](collector/65a4c9cc26789c98e196bd0be9c0a1e3.pdf)
-- [ TiDB DR-Auto-Sync 同城双中心的原理与实践](collector/5d5b8506afba43b65c7fd1af35337f77.pdf)
-- [ DR Auto-Sync：TiDB 同城两中心自适应同步复制技术解析](collector/48561f1691da582df595307bd02a614b.pdf)
+- [Cross-DC Deployment Solutions](collector/71ad51e40af1dcc472d06992997d0516.pdf)
+- [TiDB 與 MySQL 在備份容災體系的衡量對比](collector/11943de59bf565b7d958f82d5ef421cf.pdf)
+- [國產資料庫『同城兩中心』容災方案對比，TiDB 表現優秀](collector/2912766936bb510774c1551dd89fa3b9.pdf)
+- [TiDB 三中心『腦裂』場景探討](collector/0c7834f8ba6b520d05f5d04933e9c78b.pdf)
+- [為什麼說 TiDB 在線擴容對業務幾乎沒有影響](collector/65a4c9cc26789c98e196bd0be9c0a1e3.pdf)
+- [TiDB DR-Auto-Sync 同城双中心的原理与实践](collector/5d5b8506afba43b65c7fd1af35337f77.pdf)
+- [DR Auto-Sync：TiDB 同城两中心自适应同步复制技术解析](collector/48561f1691da582df595307bd02a614b.pdf)
 
 ### 安裝部署及管理
 
-- [ 定制化 MySQL 8.2.0 編譯選項](collector/400140b9fdd43e06dc075915fd2384d1.pdf)
-- [ 離線部署 TiDB 8.1.0 集群](collector/ea385de9c0b44e5dd00d7baa05e5d0b7.pdf)
-- [ TiDB 在單機上模擬部署生產環境集群](collector/abd1e7518133ab15bc87e957a32b00b7.pdf)
-- [ TiDB 學習之路從部署開始](collector/0756a3aeba95614e8f995f77620e9a24.pdf)
-- [ 使用 TiUP 部署 TiDB 集群](collector/4c72c06d793ff8b0156e5dde9d646324.pdf)
-- [ 攻克多版本运维难题：爱奇艺百套 TiDB 集群升级至 v7.1.5 实战宝典来袭！](collector/9929353f479a3a7a23234d1e51b7376a.pdf)
+- [定制化 MySQL 8.2.0 編譯選項](collector/400140b9fdd43e06dc075915fd2384d1.pdf)
+- [離線部署 TiDB 8.1.0 集群](collector/ea385de9c0b44e5dd00d7baa05e5d0b7.pdf)
+- [TiDB 在單機上模擬部署生產環境集群](collector/abd1e7518133ab15bc87e957a32b00b7.pdf)
+- [TiDB 學習之路從部署開始](collector/0756a3aeba95614e8f995f77620e9a24.pdf)
+- [使用 TiUP 部署 TiDB 集群](collector/4c72c06d793ff8b0156e5dde9d646324.pdf)
+- [攻克多版本运维难题：爱奇艺百套 TiDB 集群升级至 v7.1.5 实战宝典来袭！](collector/9929353f479a3a7a23234d1e51b7376a.pdf)
 
 - [MySQL 在線開啟 GTID 的每個階段是要做什麼](collector/3f02310b7e8d40d8a61662a93f4fc153.pdf)
 - [MySQL 8.0 參數配置不生效問題排查診斷](collector/dc37e86fabf6151f7244030e5ad0f71f.pdf)
@@ -316,313 +316,313 @@
 - [用Docker-Compose / K8s 快速安装MySQL 和 Redis](collector/0a0365f5ed663011f439ecd86a77ace5.pdf)
 ### 維運管理
 
-- [ TiDB 相關 SQL 腳本大全](collector/d2b3ef56ccfd2ae6244fd35de8c7c8bd.pdf)
+- [TiDB 相關 SQL 腳本大全](collector/d2b3ef56ccfd2ae6244fd35de8c7c8bd.pdf)
 
 ### 工具與技術
 
-- [ TiDB 的數據對比工具 sync-diff-inspector](collector/dd56bb459d0f428afe156adecbfd2455.pdf)
-- [ 全新升级！TiCDC 新架构试用通道已开启，解锁 TiDB 数据同步新体验](collector/e39884e8aca3522cda02bf919f91f604.pdf)
+- [TiDB 的數據對比工具 sync-diff-inspector](collector/dd56bb459d0f428afe156adecbfd2455.pdf)
+- [全新升级！TiCDC 新架构试用通道已开启，解锁 TiDB 数据同步新体验](collector/e39884e8aca3522cda02bf919f91f604.pdf)
 
 ### 資源隔離
 
-- [ 你需要什么样的资源隔离？丨TiDB 资源隔离最佳实践](collector/af6b995ef368286d525216dce480e634.pdf)
+- [你需要什么样的资源隔离？丨TiDB 资源隔离最佳实践](collector/af6b995ef368286d525216dce480e634.pdf)
 
 ### 性能優化
 
-- [ 狂飙 50 倍丨TiDB DDL 框架优化深度解析](collector/5ed07e0d53e0bc8751e51c4f404aeebe.pdf)
-- [ TiDB 優化器丨執行計劃和 SQL 算子解讀最佳實踐](collector/6c32ebeee3402f4f05f5d5ab547357db.pdf)
-- [ TiDB 资源管控的对撞测试以及最佳实践架构](collector/bf72f910f228526b8a13ab54f5299b4c.pdf)
-- [ 如何在 TiDB 上高效運行序列號生成服務](collector/5a12b61dad7853075f20eae390ee29c2.pdf)
-- [ TiDB 在個推丨掌握這兩個調優技巧，讓 TiDB 性能提速千倍！](collector/ec20509e594012ab4e3a3bc4200fc1ab.pdf)
-- [ 一文概述 TiDB 中的索引類型](collector/a2deaba167d624726b75f88ce7683a87.pdf)
-- [ 53 倍性能提升！TiDB 全局索引如何优化分区表查询？](collector/f7f8b48dba959823223bde33edbe760d.pdf)
+- [狂飙 50 倍丨TiDB DDL 框架优化深度解析](collector/5ed07e0d53e0bc8751e51c4f404aeebe.pdf)
+- [TiDB 優化器丨執行計劃和 SQL 算子解讀最佳實踐](collector/6c32ebeee3402f4f05f5d5ab547357db.pdf)
+- [TiDB 资源管控的对撞测试以及最佳实践架构](collector/bf72f910f228526b8a13ab54f5299b4c.pdf)
+- [如何在 TiDB 上高效運行序列號生成服務](collector/5a12b61dad7853075f20eae390ee29c2.pdf)
+- [TiDB 在個推丨掌握這兩個調優技巧，讓 TiDB 性能提速千倍！](collector/ec20509e594012ab4e3a3bc4200fc1ab.pdf)
+- [一文概述 TiDB 中的索引類型](collector/a2deaba167d624726b75f88ce7683a87.pdf)
+- [53 倍性能提升！TiDB 全局索引如何优化分区表查询？](collector/f7f8b48dba959823223bde33edbe760d.pdf)
 
-- [ 後端架構師必備：提升系統性能的 6 大核心優化策略](collector/9425cd7265c2bc64e72af5ac5b1c551c.pdf)
-- [ 提升資源利用率與保障服務質量，魚與熊掌不可兼得？](collector/24d897b7785f2b5d7e54d6af153d3ac1.pdf)
-- [ 高並發 Linux 內核參數調優](collector/618c058a407fb5679ebedda83f6a9e02.pdf)
+- [後端架構師必備：提升系統性能的 6 大核心優化策略](collector/9425cd7265c2bc64e72af5ac5b1c551c.pdf)
+- [提升資源利用率與保障服務質量，魚與熊掌不可兼得？](collector/24d897b7785f2b5d7e54d6af153d3ac1.pdf)
+- [高並發 Linux 內核參數調優](collector/618c058a407fb5679ebedda83f6a9e02.pdf)
 ### 案例研究
 
-- [ 数据规模超 1PB ，揭秘网易游戏规模化 TiDB SaaS 服务建设实践](collector/58c1dbeba8e91e42b491ec2aa92ca656.pdf)
-- [ Rakuten 乐天积分系统从 Cassandra 到 TiDB 的选型与实战](collector/24a666bdd34b1551caf3ff2bdc6133e2.pdf)
-- [ 基于时间维度水平拆分的多 TiDB 集群统一数据路由/联邦查询技术的实践](collector/d4e783dc4c78c15bde1f58f19bcd1e21.pdf)
-- [ 分布式資料庫的進度管理: TiDB 備份恢復工具 PiTR 的原理與實踐](collector/1102319937fa39dcd53a9a6f556fedde.pdf)
-- [ 「合集」三年 50 篇，TiDB 幹貨全收錄](collector/310a7f3d66d1b7fd7cb120662fec10f0.pdf)
-- [ 知乎 PB 級別 TiDB 數據庫在線遷移實踐](collector/8b12c380d76b70ee02aeec4ff21f3d63.pdf)
-- [ 瓜子二手車 x TiDB 丨平均耗時降低 30%，TiDB HTAP 在瓜子二手車財務中台結帳核心系統的深度實踐](collector/994273e100bbe317b24d730c3600aa47.pdf)
-- [ SHOPLINE x TiDB丨集群成本降低 50%！跨境電商 SHOPLINE 交易、商品管理等核心業務的資料庫升級之路](collector/27e9099df9be2e5a232b1bb47113906b.pdf)
-- [ 唐劉：當 SaaS 愛上 TiDB（一）- 行業挑戰與 TiDB 的應對之道](collector/396492f261f31bd2daba732f62a2633b.pdf)
-- [ TiDB VS MySQL 場景選擇](collector/26d1287a6f77a08fffc38a6a01a1c9df.pdf)
-- [ 幹掉 DBA！產品經理運維 TiDB，用非技術手段攻克技術挑戰](collector/d386afd23ee5ad3fa31a559ace99110c.pdf)
-- [ AmzTrends x TiDB Serverless：通過雲原生改造實現全局成本降低 80%](collector/4518a11992998316304cb48a35f79dd6.pdf)
-- [ 一名開發者眼中的 TiDB 與 MySQL 的選擇](collector/952a764dbd7eedde0553cb5770b52c05.pdf)
-- [ TiDB HTAP 深度解讀](collector/6c436d6832ca311822f9cc006336ff54.pdf)
-- [ TiDB Cloud 在金融、社交、智能風控領域的最佳實踐](collector/d17e415e3ea9f029b01340b4871dd160.pdf)
-- [ 探索 TiDB Serverless 在新能源、跨境電商領域的應用](collector/7666e36cec2c5fd31b82eae21f936855.pdf)
-- [ 月活超 1.1 億，用户超 4 億，你也在用的「知乎」是如何在超大規模 TiDB 集群上玩轉多雲多活的？](collector/5048ef6006bc902710136f9d234bc350.pdf)
-- [ TiDB 資料庫在某省婦幼業務系統應用](collector/0af9a91eb4e5ff6d75d3b951a1a9b6e2.pdf)
-- [ 從資料庫架構選型看 TiDB 常見應用場景](collector/5f21306297f8c498e3fd82aa65287180.pdf)
-- [ 網易互娛的資料庫選型和 TiDB 應用實踐](collector/8366ac8078d401444ca48174d32e1197.pdf)
-- [ TiDB x DeepSeek 打造更好用的国产知识库问答系统解决方案](collector/ac58ca0b42a9832dd7b708c2c7f5a566.pdf)
-- [ Cutting over: Our journey from AWS Aurora MySQL to TiDB](collector/41446ccd753567640b5543201715fb85.pdf)
+- [数据规模超 1PB ，揭秘网易游戏规模化 TiDB SaaS 服务建设实践](collector/58c1dbeba8e91e42b491ec2aa92ca656.pdf)
+- [Rakuten 乐天积分系统从 Cassandra 到 TiDB 的选型与实战](collector/24a666bdd34b1551caf3ff2bdc6133e2.pdf)
+- [基于时间维度水平拆分的多 TiDB 集群统一数据路由/联邦查询技术的实践](collector/d4e783dc4c78c15bde1f58f19bcd1e21.pdf)
+- [分布式資料庫的進度管理: TiDB 備份恢復工具 PiTR 的原理與實踐](collector/1102319937fa39dcd53a9a6f556fedde.pdf)
+- [「合集」三年 50 篇，TiDB 幹貨全收錄](collector/310a7f3d66d1b7fd7cb120662fec10f0.pdf)
+- [知乎 PB 級別 TiDB 數據庫在線遷移實踐](collector/8b12c380d76b70ee02aeec4ff21f3d63.pdf)
+- [瓜子二手車 x TiDB 丨平均耗時降低 30%，TiDB HTAP 在瓜子二手車財務中台結帳核心系統的深度實踐](collector/994273e100bbe317b24d730c3600aa47.pdf)
+- [SHOPLINE x TiDB丨集群成本降低 50%！跨境電商 SHOPLINE 交易、商品管理等核心業務的資料庫升級之路](collector/27e9099df9be2e5a232b1bb47113906b.pdf)
+- [唐劉：當 SaaS 愛上 TiDB（一）- 行業挑戰與 TiDB 的應對之道](collector/396492f261f31bd2daba732f62a2633b.pdf)
+- [TiDB VS MySQL 場景選擇](collector/26d1287a6f77a08fffc38a6a01a1c9df.pdf)
+- [幹掉 DBA！產品經理運維 TiDB，用非技術手段攻克技術挑戰](collector/d386afd23ee5ad3fa31a559ace99110c.pdf)
+- [AmzTrends x TiDB Serverless：通過雲原生改造實現全局成本降低 80%](collector/4518a11992998316304cb48a35f79dd6.pdf)
+- [一名開發者眼中的 TiDB 與 MySQL 的選擇](collector/952a764dbd7eedde0553cb5770b52c05.pdf)
+- [TiDB HTAP 深度解讀](collector/6c436d6832ca311822f9cc006336ff54.pdf)
+- [TiDB Cloud 在金融、社交、智能風控領域的最佳實踐](collector/d17e415e3ea9f029b01340b4871dd160.pdf)
+- [探索 TiDB Serverless 在新能源、跨境電商領域的應用](collector/7666e36cec2c5fd31b82eae21f936855.pdf)
+- [月活超 1.1 億，用户超 4 億，你也在用的「知乎」是如何在超大規模 TiDB 集群上玩轉多雲多活的？](collector/5048ef6006bc902710136f9d234bc350.pdf)
+- [TiDB 資料庫在某省婦幼業務系統應用](collector/0af9a91eb4e5ff6d75d3b951a1a9b6e2.pdf)
+- [從資料庫架構選型看 TiDB 常見應用場景](collector/5f21306297f8c498e3fd82aa65287180.pdf)
+- [網易互娛的資料庫選型和 TiDB 應用實踐](collector/8366ac8078d401444ca48174d32e1197.pdf)
+- [TiDB x DeepSeek 打造更好用的国产知识库问答系统解决方案](collector/ac58ca0b42a9832dd7b708c2c7f5a566.pdf)
+- [Cutting over: Our journey from AWS Aurora MySQL to TiDB](collector/41446ccd753567640b5543201715fb85.pdf)
 
 ### 新版本發布
 
-- [ TiDB 8.5 LTS 发版——支持无限扩展，开启 AI 就绪新时代](collector/ae6616771df941ce874202bb047524f3.pdf)
-- [ TiDB 7.4 發版：正式兼容 MySQL 8.0](collector/798bbffe8d7f44758e997a633940616f.pdf)
-- [ 7.5 LTS 解讀 ｜ Runaway Queries 管理、高性能數據批處理方案、DDL 啟停特性](collector/798696a57435063e63ece1615aaf44b1.pdf)
+- [TiDB 8.5 LTS 发版——支持无限扩展，开启 AI 就绪新时代](collector/ae6616771df941ce874202bb047524f3.pdf)
+- [TiDB 7.4 發版：正式兼容 MySQL 8.0](collector/798bbffe8d7f44758e997a633940616f.pdf)
+- [7.5 LTS 解讀 ｜ Runaway Queries 管理、高性能數據批處理方案、DDL 啟停特性](collector/798696a57435063e63ece1615aaf44b1.pdf)
 
 ## 開發流程與管理
 
 ### 團隊開發流程規範
 
-- [ 團隊開發流程規範](collector/0ba61f00c841e9c8807906298c8adb3d.pdf)
+- [團隊開發流程規範](collector/0ba61f00c841e9c8807906298c8adb3d.pdf)
 
 ### 項目管理
 
-- [ 一文聊聊我理解的技術 PM](collector/6871c262dcc21d3c3b7ce4ec16a536e6.pdf)
+- [一文聊聊我理解的技術 PM](collector/6871c262dcc21d3c3b7ce4ec16a536e6.pdf)
 
 ### 自動化與 DevOps
 
-- [ 自動化的 10 項準備工作](collector/d3a854f925bc3e4c738bb5bd5481f95b.pdf)
-- [ ArgoCD 的雷 碰過的人就知道](collector/a9a45617eedb98682e148905278d00f1.pdf)
+- [自動化的 10 項準備工作](collector/d3a854f925bc3e4c738bb5bd5481f95b.pdf)
+- [ArgoCD 的雷 碰過的人就知道](collector/a9a45617eedb98682e148905278d00f1.pdf)
 
 ### 基礎設施自動化 (IaC)
 
-- [ 選擇 IaC 工具是多選題，而不是單選題](collector/d767729aa8c1ba344a005fd2c957e3a0.pdf)
-- [ Terraform — Best Practices](collector/92db090625bfc7b86caa1cf54d6814d2.pdf)
+- [選擇 IaC 工具是多選題，而不是單選題](collector/d767729aa8c1ba344a005fd2c957e3a0.pdf)
+- [Terraform — Best Practices](collector/92db090625bfc7b86caa1cf54d6814d2.pdf)
 
 ### 配置管理
 
-- [ 一次“詭異”的 Ansible 密碼問題排查，最後的“真相”竟是這樣](collector/a85522ecb488168b0df0394577ff026b.pdf)
+- [一次“詭異”的 Ansible 密碼問題排查，最後的“真相”竟是這樣](collector/a85522ecb488168b0df0394577ff026b.pdf)
 
 ### 標準化與流程設計
 
-- [ 如何做標準化？| 京東雲技術團隊](collector/a83ab541d88ff0e8ac0314cd43a161a1.pdf)
+- [如何做標準化？| 京東雲技術團隊](collector/a83ab541d88ff0e8ac0314cd43a161a1.pdf)
 
 ### 技術領導力
 
-- [ 從工程師到技術 leader 的思維升級](collector/71b2e5d43a3491634adaa66b8824b45f.pdf)
-- [ 程序员，当你意识到这一点，说明你成熟了](collector/887c7e2b69aa6bead1af5e79229cd57c.pdf)
+- [從工程師到技術 leader 的思維升級](collector/71b2e5d43a3491634adaa66b8824b45f.pdf)
+- [程序员，当你意识到这一点，说明你成熟了](collector/887c7e2b69aa6bead1af5e79229cd57c.pdf)
 
 ### 容器化與微服務
 
-- [ 在 Kubernetes 上跑資料庫，真的沒有意義麼？](collector/49d6d7ab28010ed561100dc3178b7872.pdf)
-- [ 雲資料庫 RDS MySQL Serverless 已來](collector/44d83d0f5a4348f978a8cea38026c881.pdf)
-- [ 运维加薪技术——微服务拆分规范](collector/5b4bc25279258c48724bcc837524acd5.pdf)
+- [在 Kubernetes 上跑資料庫，真的沒有意義麼？](collector/49d6d7ab28010ed561100dc3178b7872.pdf)
+- [雲資料庫 RDS MySQL Serverless 已來](collector/44d83d0f5a4348f978a8cea38026c881.pdf)
+- [运维加薪技术——微服务拆分规范](collector/5b4bc25279258c48724bcc837524acd5.pdf)
 
 ### 雲架構設計
 
-- [ 雲計算與企業 IT 成本治理](collector/4752cf81d989834ca56dd7677283b7c6.pdf)
+- [雲計算與企業 IT 成本治理](collector/4752cf81d989834ca56dd7677283b7c6.pdf)
 
 ### 平臺設計
 
-- [ B站大数据平台故障自愈实践](collector/de2791b620b63753c4bc05e868e8cbb9.pdf)
-- [ B站標籤系統建設實踐](collector/9398151483b56361b103e7ad85c07221.pdf)
-- [ 基於主動元數據構建智能數據治理體系 | 京東零售技術實踐](collector/30b2eb3f014c6499f0fada785c70fc9b.pdf)
-- [ 遠程開發和 CI 一回事](collector/d73fc36354cc01a508c070aa678423e5.pdf)
-- [ 愛奇藝大數據多 AZ 統一調度架構](collector/9a76ee763859f779a95930cd98f997d1.pdf)
-- [ 廣告系統的平臺架構與交互流程](collector/2296c5e7ce59cc0f3284c0606862789b.pdf)
-- [ 淘寶信息流融合混排服務升級](collector/48e5bb727a8d69b48b14d4e7cf1171d1.pdf)
+- [B站大数据平台故障自愈实践](collector/de2791b620b63753c4bc05e868e8cbb9.pdf)
+- [B站標籤系統建設實踐](collector/9398151483b56361b103e7ad85c07221.pdf)
+- [基於主動元數據構建智能數據治理體系 | 京東零售技術實踐](collector/30b2eb3f014c6499f0fada785c70fc9b.pdf)
+- [遠程開發和 CI 一回事](collector/d73fc36354cc01a508c070aa678423e5.pdf)
+- [愛奇藝大數據多 AZ 統一調度架構](collector/9a76ee763859f779a95930cd98f997d1.pdf)
+- [廣告系統的平臺架構與交互流程](collector/2296c5e7ce59cc0f3284c0606862789b.pdf)
+- [淘寶信息流融合混排服務升級](collector/48e5bb727a8d69b48b14d4e7cf1171d1.pdf)
 
 ### 緩存設計
 
-- [ 如何高效实现缓存预热？一文了解九大方法](collector/2e87ddfff75380625588a9e56566fd56.pdf)
-- [ 缓存预热怎么选？九大场景对号入座！](collector/71831de8268009bbe981d3081b1acc19.pdf)
-- [ 在 Netflix 構建全球緩存系統: 深入了解全局複製](collector/6b201bfea29e61bcdf3f42feadad8183.pdf)
-- [ 分布式系統架構 7: 本地緩存](collector/500d284589890b157a375d0716f15a67.pdf)
-- [ 分佈式系統架構 8：分佈式緩存](collector/e329d14d82af19f8c8732410e682d876.pdf)
-- [ 二級緩存架構極致提升系統性能](collector/04b541b98be61d1cc8ac33859a4d8a26.pdf)
+- [如何高效实现缓存预热？一文了解九大方法](collector/2e87ddfff75380625588a9e56566fd56.pdf)
+- [缓存预热怎么选？九大场景对号入座！](collector/71831de8268009bbe981d3081b1acc19.pdf)
+- [在 Netflix 構建全球緩存系統: 深入了解全局複製](collector/6b201bfea29e61bcdf3f42feadad8183.pdf)
+- [分布式系統架構 7: 本地緩存](collector/500d284589890b157a375d0716f15a67.pdf)
+- [分佈式系統架構 8：分佈式緩存](collector/e329d14d82af19f8c8732410e682d876.pdf)
+- [二級緩存架構極致提升系統性能](collector/04b541b98be61d1cc8ac33859a4d8a26.pdf)
 
 ### 監控系統設計
 
-- [ 高性能！易用友好的开源实时监控系统！](collector/e5a322b63e6589f1fba641056b49008d.pdf)
-- [ 雲監控的盲點: 用戶視角](collector/6c01c7f8685f78a5297bd600c889a0eb.pdf)
-- [ 監控系統中的 95 分位，90 分位，是什麼？](collector/59f0e31cba4c06395b7f87db795e44d2.pdf)
-- [ 告警平台：給告警一個膠帶](collector/6966be31852851e890b6396710a52af8.pdf)
-- [ 可觀測性宇宙的第一天 - Grafana LGTM 全家桶的起點](collector/3e173690a95f3a280107fad07829a712.pdf)
-- [ Build a lab scale end-to-end Observability Platform](collector/b49bd03601324599bb5aec4fbdd0835b.pdf)
-- [ 技術 011 - 《My Philosophy on Alerting》- 監控報警的哲學](collector/02581dc354de9f20ea6917d6e6764de8.pdf)
-- [ Prometheus 如何監控指標，快速定位故障](collector/a4321b7b5f8ee0884724922720b61595.pdf)
-- [ 基於 Grafana LGTM 可觀測性平台的快速構建](collector/539651cce16d117833dbb8af11c8046c.pdf)
-- [ 雲原生可觀測領域的半壁江山，這次被 Grafana 和 Cilium 給拿下了](collector/0044dc5ad4496e51b7de50f10b0273fa.pdf)
-- [ B站前端錯誤監控實踐](collector/749b755e560d76f0bc0411393ba9573c.pdf)
-- [ 基於 Prometheus、Thanos 與 Grafana 的監控體系詳解](collector/7d340f3f760b1d950f29747526397cbd.pdf)
-- [ 可觀測性與傳統監控的區別和聯繫](collector/57a54890436038bbdcc3abcd130d9785.pdf)
-- [ A Modern Guide to MySQL Performance Monitoring](collector/116d0744d4b5407d9e5c6eb9fc324405.pdf)
-- [ Top key metrics for monitoring MySQL](collector/b3172b34c930168aaa8f7c70759de72d.pdf)
-- [ MySQL 性能監控全掌握，快來 get 關鍵指標及采集方法！](collector/08bdb13c0f6e56c65e34f257e2361501.pdf)
-- [ 数据库指标集的设计思路](collector/d8d64e1cf5a12828ca30a9f84dce3ff6.pdf)
-- [ OceanBase在传统监控数据存储的应用](collector/371ee94759aab8f941c8e302145321f0.pdf)
-- [ 一次线上生产库的全流程切换完整方案](collector/dcda36a9b4a96a259d5f64f830720cd6.pdf)
-- [ 高频面题： 你们线上 QPS 多少？你 怎么知道的？](collector/c6d910c00e0be92213b9cc93886ca326.pdf)
-- [ 运维服务绩效考核指标V1.0](collector/08efda3a78c7dff8e52444546f14ed46.pdf)
-- [ 深夜网络故障秒解决！这个开源监控工具 (smartping) 让运维告别通宵](collector/4f0b91ec24b33fd77f9ee4c0bd56977f.pdf)
-- [ 暴揍ELK 痛打Loki - VictoriaLogs 搭建Syslog日志收集存储系统](collector/2331b3144809d3d7f9412ed9cd0d0341.pdf)
+- [高性能！易用友好的开源实时监控系统！](collector/e5a322b63e6589f1fba641056b49008d.pdf)
+- [雲監控的盲點: 用戶視角](collector/6c01c7f8685f78a5297bd600c889a0eb.pdf)
+- [監控系統中的 95 分位，90 分位，是什麼？](collector/59f0e31cba4c06395b7f87db795e44d2.pdf)
+- [告警平台：給告警一個膠帶](collector/6966be31852851e890b6396710a52af8.pdf)
+- [可觀測性宇宙的第一天 - Grafana LGTM 全家桶的起點](collector/3e173690a95f3a280107fad07829a712.pdf)
+- [Build a lab scale end-to-end Observability Platform](collector/b49bd03601324599bb5aec4fbdd0835b.pdf)
+- [技術 011 - 《My Philosophy on Alerting》- 監控報警的哲學](collector/02581dc354de9f20ea6917d6e6764de8.pdf)
+- [Prometheus 如何監控指標，快速定位故障](collector/a4321b7b5f8ee0884724922720b61595.pdf)
+- [基於 Grafana LGTM 可觀測性平台的快速構建](collector/539651cce16d117833dbb8af11c8046c.pdf)
+- [雲原生可觀測領域的半壁江山，這次被 Grafana 和 Cilium 給拿下了](collector/0044dc5ad4496e51b7de50f10b0273fa.pdf)
+- [B站前端錯誤監控實踐](collector/749b755e560d76f0bc0411393ba9573c.pdf)
+- [基於 Prometheus、Thanos 與 Grafana 的監控體系詳解](collector/7d340f3f760b1d950f29747526397cbd.pdf)
+- [可觀測性與傳統監控的區別和聯繫](collector/57a54890436038bbdcc3abcd130d9785.pdf)
+- [A Modern Guide to MySQL Performance Monitoring](collector/116d0744d4b5407d9e5c6eb9fc324405.pdf)
+- [Top key metrics for monitoring MySQL](collector/b3172b34c930168aaa8f7c70759de72d.pdf)
+- [MySQL 性能監控全掌握，快來 get 關鍵指標及采集方法！](collector/08bdb13c0f6e56c65e34f257e2361501.pdf)
+- [数据库指标集的设计思路](collector/d8d64e1cf5a12828ca30a9f84dce3ff6.pdf)
+- [OceanBase在传统监控数据存储的应用](collector/371ee94759aab8f941c8e302145321f0.pdf)
+- [一次线上生产库的全流程切换完整方案](collector/dcda36a9b4a96a259d5f64f830720cd6.pdf)
+- [高频面题： 你们线上 QPS 多少？你 怎么知道的？](collector/c6d910c00e0be92213b9cc93886ca326.pdf)
+- [运维服务绩效考核指标V1.0](collector/08efda3a78c7dff8e52444546f14ed46.pdf)
+- [深夜网络故障秒解决！这个开源监控工具 (smartping) 让运维告别通宵](collector/4f0b91ec24b33fd77f9ee4c0bd56977f.pdf)
+- [暴揍ELK 痛打Loki - VictoriaLogs 搭建Syslog日志收集存储系统](collector/2331b3144809d3d7f9412ed9cd0d0341.pdf)
 
 - [MySQL 運行時的可觀測性](collector/7a60dc31f53e71ff0b92421183087387.pdf)
 ### 分佈式系統
 
-- [ 再談 Raft 一致性算法](collector/a63b722e337c94c448469cbaeda2780a.pdf)
-- [ Raft 一致性算法](collector/de0b10ad6a3933d4997a21c64f7947d7.pdf)
-- [ 一文看懂微服務世界性技術難題——分佈式事務](collector/ebd1229c005d4aa71c1428465b0cf000.pdf)
-- [ 招行面试： 分布式调度 设计，要考虑 哪些问题？](collector/9de93ff7cc8284361c55959ed7b7b58a.pdf)
-- [ Multi-Region Distributed SQL Transaction Latency](collector/8feff8720c498d0cc1d51b5c453d23c9.pdf)
+- [再談 Raft 一致性算法](collector/a63b722e337c94c448469cbaeda2780a.pdf)
+- [Raft 一致性算法](collector/de0b10ad6a3933d4997a21c64f7947d7.pdf)
+- [一文看懂微服務世界性技術難題——分佈式事務](collector/ebd1229c005d4aa71c1428465b0cf000.pdf)
+- [招行面试： 分布式调度 设计，要考虑 哪些问题？](collector/9de93ff7cc8284361c55959ed7b7b58a.pdf)
+- [Multi-Region Distributed SQL Transaction Latency](collector/8feff8720c498d0cc1d51b5c453d23c9.pdf)
 
 ### 高效能設計
 
-- [ 為什麼高手都要用非阻塞 IO？](collector/c96f1895052b469c48c42ddb0c22b9a0.pdf)
-- [ 如何設計一個秒殺系統](collector/f400595a754aef9c556f00d1fc68154a.pdf)
-- [ 看看你的應用系統用了哪些高並發技術？](collector/5a3e9a95c25c9898938317a9e04aa65a.pdf)
-- [ 千萬級高性能長連接 Go 服務架構實踐](collector/7d56bd12f7ce4e49c7679dc0a74db7e0.pdf)
-- [ 高性能無鎖並發框架 Disruptor](collector/9ab508ea9d37ca7e68022a4d97c17d86.pdf)
-- [ 揭秘 10 億+ 高並發應用如何實現高效穩定的開發和運維](collector/29124bfed232ff376eac386866d868a4.pdf)
+- [為什麼高手都要用非阻塞 IO？](collector/c96f1895052b469c48c42ddb0c22b9a0.pdf)
+- [如何設計一個秒殺系統](collector/f400595a754aef9c556f00d1fc68154a.pdf)
+- [看看你的應用系統用了哪些高並發技術？](collector/5a3e9a95c25c9898938317a9e04aa65a.pdf)
+- [千萬級高性能長連接 Go 服務架構實踐](collector/7d56bd12f7ce4e49c7679dc0a74db7e0.pdf)
+- [高性能無鎖並發框架 Disruptor](collector/9ab508ea9d37ca7e68022a4d97c17d86.pdf)
+- [揭秘 10 億+ 高並發應用如何實現高效穩定的開發和運維](collector/29124bfed232ff376eac386866d868a4.pdf)
 
-- [ 十年後資料庫還是無法擁抱 NUMA？](collector/e70189e2613b25fdc54c24dd0bacdaf2.pdf)
+- [十年後資料庫還是無法擁抱 NUMA？](collector/e70189e2613b25fdc54c24dd0bacdaf2.pdf)
 ### 業務架構設計
 
-- [ 關於業務架構基礎知識的二三事兒：業務能力](collector/f28a6b0b0c287d980d0e6455bef1aa33.pdf)
-- [ 中小銀行如何構建智能風控體系？明確業務需求比盲目求新更重要](collector/8b0dc82c8bc537b2bfadc1194f6dda77.pdf)
+- [關於業務架構基礎知識的二三事兒：業務能力](collector/f28a6b0b0c287d980d0e6455bef1aa33.pdf)
+- [中小銀行如何構建智能風控體系？明確業務需求比盲目求新更重要](collector/8b0dc82c8bc537b2bfadc1194f6dda77.pdf)
 
 ### 數據治理
 
-- [ 業務數據治理體系化思考與實踐](collector/78aebc04d946bc99a8428426dfdc8163.pdf)
-- [ 數據指標體系搭建實踐](collector/bc1e1aaf502c59c8416a933e838f545e.pdf)
-- [ 數據質量和數據治理的關係 | 京東雲技術團隊](collector/792df6acaebabccdf938d861398e4a61.pdf)
+- [業務數據治理體系化思考與實踐](collector/78aebc04d946bc99a8428426dfdc8163.pdf)
+- [數據指標體系搭建實踐](collector/bc1e1aaf502c59c8416a933e838f545e.pdf)
+- [數據質量和數據治理的關係 | 京東雲技術團隊](collector/792df6acaebabccdf938d861398e4a61.pdf)
 
 ### 系統設計
 
-- [ 如何熟悉一個陌生系統](collector/107b1af0b7b25d9fbe7c070feba47834.pdf)
+- [如何熟悉一個陌生系統](collector/107b1af0b7b25d9fbe7c070feba47834.pdf)
 
 ### 設計模式
 
-- [ 提升用戶體驗的 UUID 設計策略](collector/89f733a8723e36f2f85fe570fbe1ce02.pdf)
-- [ time zone 這些 BUG，防不勝防](collector/44b0a9b336e6d445876bd777a34fb8b2.pdf)
+- [提升用戶體驗的 UUID 設計策略](collector/89f733a8723e36f2f85fe570fbe1ce02.pdf)
+- [time zone 這些 BUG，防不勝防](collector/44b0a9b336e6d445876bd777a34fb8b2.pdf)
 
 ### 消息隊列設計
 
-- [ Why Do We Need a Message Queue?](collector/2b72721c0360d3db80da67d933324c06.pdf)
+- [Why Do We Need a Message Queue?](collector/2b72721c0360d3db80da67d933324c06.pdf)
 
 ### 故障處理與預防
 
-- [ Google 工程師如何在實踐中避免和處理故障](collector/265e03c33a8abcd3cfe08219bf970788.pdf)
+- [Google 工程師如何在實踐中避免和處理故障](collector/265e03c33a8abcd3cfe08219bf970788.pdf)
 
 ### 可靠性設計
 
-- [ 前任開發在代碼裡下毒，支付下單居然沒加幂等](collector/2c0e221a4d2a3d0e11df8e9bcdd8514e.pdf)
+- [前任開發在代碼裡下毒，支付下單居然沒加幂等](collector/2c0e221a4d2a3d0e11df8e9bcdd8514e.pdf)
 
 ### 可用性設計
 
-- [ 什么是系统可用性？如何提升可用性？](collector/304d33ad22f32d52cc212a8465a01613.pdf)
-- [ B站直播 S14 保障全解析: 高效保障技術實踐](collector/919208eda3c2cbdf3d382535ea6588fe.pdf)
-- [ 異地多活架構進階: 如何解決寫後立即讀場景問題？](collector/81bdab7c9176334dde17b66f985af117.pdf)
-- [ B 站輕量級容災演練體系構建與業務實踐](collector/02005b363a530bfca0b776f7a0ccd481.pdf)
-- [ 【穩定性】穩定性建設之變更管理](collector/290705b8cfe5c418572d1f2f7d66a8f8.pdf)
-- [ 關於『穩定性建設』的一些思考](collector/1764f90c573a90e5562b3b781ab886db.pdf)
-- [ 淺談團隊如何做好系統穩定性](collector/03157529f9534b578a94fb57dc20c6a7.pdf)
-- [ 如何從 0-1 的建設雲上穩定性？](collector/ec9347a5eee122f836c568ffffb8a27e.pdf)
-- [ 超大規模資料庫集群保穩系列之一：高可用系統](collector/9a3c31cdbd7bcaaeb71c74d2758815c7.pdf)
-- [ 超大規模資料庫集群保穩系列之二：資料庫攻防演練建設實踐](collector/2363f83ac347c8e3e1c148804be7270a.pdf)
-- [ 超大規模資料庫集群保穩系列之三：美團資料庫容災體系建設實踐](collector/5c22c86cab79a213aa0f3e774fb65a44.pdf)
-- [ 從項目風險管理角度探討系統穩定性](collector/f26a1d7db8751248a9458210f4ee342e.pdf)
-- [ 穩定性方法論：可灰度 & 可監控 & 可回滾](collector/e48e705554489935651e667b574d3058.pdf)
-- [ 穩定性建設之依賴設計](collector/92d095e0a7ede211a14fbe4ef30812e3.pdf)
-- [ 爆發式增長業務的高可用架構優化之路](collector/b5c82627ea7a00b7d09324820dd309ac.pdf)
+- [什么是系统可用性？如何提升可用性？](collector/304d33ad22f32d52cc212a8465a01613.pdf)
+- [B站直播 S14 保障全解析: 高效保障技術實踐](collector/919208eda3c2cbdf3d382535ea6588fe.pdf)
+- [異地多活架構進階: 如何解決寫後立即讀場景問題？](collector/81bdab7c9176334dde17b66f985af117.pdf)
+- [B 站輕量級容災演練體系構建與業務實踐](collector/02005b363a530bfca0b776f7a0ccd481.pdf)
+- [【穩定性】穩定性建設之變更管理](collector/290705b8cfe5c418572d1f2f7d66a8f8.pdf)
+- [關於『穩定性建設』的一些思考](collector/1764f90c573a90e5562b3b781ab886db.pdf)
+- [淺談團隊如何做好系統穩定性](collector/03157529f9534b578a94fb57dc20c6a7.pdf)
+- [如何從 0-1 的建設雲上穩定性？](collector/ec9347a5eee122f836c568ffffb8a27e.pdf)
+- [超大規模資料庫集群保穩系列之一：高可用系統](collector/9a3c31cdbd7bcaaeb71c74d2758815c7.pdf)
+- [超大規模資料庫集群保穩系列之二：資料庫攻防演練建設實踐](collector/2363f83ac347c8e3e1c148804be7270a.pdf)
+- [超大規模資料庫集群保穩系列之三：美團資料庫容災體系建設實踐](collector/5c22c86cab79a213aa0f3e774fb65a44.pdf)
+- [從項目風險管理角度探討系統穩定性](collector/f26a1d7db8751248a9458210f4ee342e.pdf)
+- [穩定性方法論：可灰度 & 可監控 & 可回滾](collector/e48e705554489935651e667b574d3058.pdf)
+- [穩定性建設之依賴設計](collector/92d095e0a7ede211a14fbe4ef30812e3.pdf)
+- [爆發式增長業務的高可用架構優化之路](collector/b5c82627ea7a00b7d09324820dd309ac.pdf)
 
 ## 資料庫原理
 
 ### 資料庫比較
 
-- [ PG vs MySQL 统计信息收集的异同](collector/02222d3b5e103580e0ba3e888fcb3677.pdf)
-- [ MYSQL 8 VS MYSQL 5.7 在复杂查询中 到底好了多少](collector/a6a1c3c0e928e9f97c6e3fc32e91ce5d.pdf)
-- [ 默认配置下，为什么 MySQL 8.0 比 MySQL 5.7 慢？](collector/3417bbea01f3da303fe6587e9ec538f1.pdf)
+- [PG vs MySQL 统计信息收集的异同](collector/02222d3b5e103580e0ba3e888fcb3677.pdf)
+- [MYSQL 8 VS MYSQL 5.7 在复杂查询中 到底好了多少](collector/a6a1c3c0e928e9f97c6e3fc32e91ce5d.pdf)
+- [默认配置下，为什么 MySQL 8.0 比 MySQL 5.7 慢？](collector/3417bbea01f3da303fe6587e9ec538f1.pdf)
 
 ### 發展與趨勢
 
-- [ 圖靈獎資料庫大師 Stonebraker 師徒對資料庫近 20 年發展與展望的 2 萬字論文](collector/195a316902e2c6ebcb72754be0fec3b2.pdf)
-- [ 10 種資料庫技術的發展歷程與現狀](collector/3de90bfbaff6cd7491e37c7fb5714cd6.pdf)
-- [ 五年沉澱，微信全平台終端資料庫 WCDB 歡迎重大升級](collector/add7e8f0135831a046531de5ef1ef67b.pdf)
-- [ 2.8萬字總結：OceanBase 資料庫在金融核心系統升級路徑與場景實踐](collector/46dd0fd233797b1d5a31ea05b7a7c84b.pdf)
-- [ 黃東旭：“向量資料庫”還是“向量搜索插件 + SQL 資料庫”？丨我對 2024 年資料庫發展趨勢的思考](collector/86e6ff1f64f293b7dbda6ccc1fad65e3.pdf)
+- [圖靈獎資料庫大師 Stonebraker 師徒對資料庫近 20 年發展與展望的 2 萬字論文](collector/195a316902e2c6ebcb72754be0fec3b2.pdf)
+- [10 種資料庫技術的發展歷程與現狀](collector/3de90bfbaff6cd7491e37c7fb5714cd6.pdf)
+- [五年沉澱，微信全平台終端資料庫 WCDB 歡迎重大升級](collector/add7e8f0135831a046531de5ef1ef67b.pdf)
+- [2.8萬字總結：OceanBase 資料庫在金融核心系統升級路徑與場景實踐](collector/46dd0fd233797b1d5a31ea05b7a7c84b.pdf)
+- [黃東旭：“向量資料庫”還是“向量搜索插件 + SQL 資料庫”？丨我對 2024 年資料庫發展趨勢的思考](collector/86e6ff1f64f293b7dbda6ccc1fad65e3.pdf)
 
 ### Buffer Pool 深度剖析
 
-- [ 数据库性能优化之道: Buffer Pool 深度剖析（一）](collector/b0e035468657e143017813f07af2263f.pdf)
-- [ 数据库性能优化之道: Buffer Pool 深度剖析（二）](collector/30f14ae923d74b101276b457397c9e56.pdf)
-- [ 数据库性能优化之道: Buffer Pool 深度剖析（三）](collector/a341f53008e995783c31665b88ea62d8.pdf)
+- [数据库性能优化之道: Buffer Pool 深度剖析（一）](collector/b0e035468657e143017813f07af2263f.pdf)
+- [数据库性能优化之道: Buffer Pool 深度剖析（二）](collector/30f14ae923d74b101276b457397c9e56.pdf)
+- [数据库性能优化之道: Buffer Pool 深度剖析（三）](collector/a341f53008e995783c31665b88ea62d8.pdf)
 
 ### 鎖機制
 
-- [ 多线程读写锁产生死锁的故障解决方案](collector/e3635325a2d98d51abd3e0bd1e897305.pdf)
-- [ MySQL 是怎麼做並發控制的？](collector/e6737cbc96da2ff050b837cf2d0e665f.pdf)
-- [ MVCC 如何應對 MySQL 並發問題](collector/ca14bed799d35fc4adb9a0f62af1bd8a.pdf)
-- [ 学会这招轻松解决数据库分布式锁痛点](collector/860d10697bbb76c235fcd77274dab0fb.pdf)
+- [多线程读写锁产生死锁的故障解决方案](collector/e3635325a2d98d51abd3e0bd1e897305.pdf)
+- [MySQL 是怎麼做並發控制的？](collector/e6737cbc96da2ff050b837cf2d0e665f.pdf)
+- [MVCC 如何應對 MySQL 並發問題](collector/ca14bed799d35fc4adb9a0f62af1bd8a.pdf)
+- [学会这招轻松解决数据库分布式锁痛点](collector/860d10697bbb76c235fcd77274dab0fb.pdf)
 
 ### Undo 日誌
 
-- [ MySQL 如何插入记录的 Undo 日志？](collector/ae312ce915141a3b796a129cd7d7170b.pdf)
-- [ Undo 表空间分配回滚段](collector/bc6f838fdd36f9c671f80a91cab79951.pdf)
-- [ MySQL 分配 Undo 段](collector/dacc7b2ec50c463fd88b3c0f76cfad04.pdf)
+- [MySQL 如何插入记录的 Undo 日志？](collector/ae312ce915141a3b796a129cd7d7170b.pdf)
+- [Undo 表空间分配回滚段](collector/bc6f838fdd36f9c671f80a91cab79951.pdf)
+- [MySQL 分配 Undo 段](collector/dacc7b2ec50c463fd88b3c0f76cfad04.pdf)
 
 ### double write機制
 
-- [ MySQL 8.0后的double write有什么变化](collector/db466c72aba42f19b73eb86c22209606.pdf)
+- [MySQL 8.0后的double write有什么变化](collector/db466c72aba42f19b73eb86c22209606.pdf)
 
 ### 事務管理與隔離級別
 
-- [ 学习 MySQL 必须了解的几个 Undo 概念](collector/0d98d837392fad916ca0ec993690421e.pdf)
-- [ MySQL 的默認隔離級別為什麼是 RR, 而不是 RC](collector/0e1e0313ecb9fbd59e27a609cef0705f.pdf)
-- [ MySQL 數據加密原理和解析](collector/d1599c75c0446a7645889953a54ed234.pdf)
-- [ MySQL DATETIME 毫秒坑](collector/cde9a293df0148928f7f6abdb8d99c8e.pdf)
-- [ PG vs MySQL MVCC 機制實現的異同](collector/a2eba635f7a208fceb4b1753c6184b17.pdf)
-- [ 你真的理解 MySQL 的事務隔離嗎？](collector/085302eadb992a732a584739377a1221.pdf)
+- [学习 MySQL 必须了解的几个 Undo 概念](collector/0d98d837392fad916ca0ec993690421e.pdf)
+- [MySQL 的默認隔離級別為什麼是 RR, 而不是 RC](collector/0e1e0313ecb9fbd59e27a609cef0705f.pdf)
+- [MySQL 數據加密原理和解析](collector/d1599c75c0446a7645889953a54ed234.pdf)
+- [MySQL DATETIME 毫秒坑](collector/cde9a293df0148928f7f6abdb8d99c8e.pdf)
+- [PG vs MySQL MVCC 機制實現的異同](collector/a2eba635f7a208fceb4b1753c6184b17.pdf)
+- [你真的理解 MySQL 的事務隔離嗎？](collector/085302eadb992a732a584739377a1221.pdf)
 
 ### 分佈式資料庫
 
-- [ 談談分佈式資料庫的分片鍵選擇準則和數據重分布的思考](collector/b4b1abba675ec98a51ed46678dd748af.pdf)
-- [ 招行面试：高并发写，为什么不推荐关系数据？](collector/2be116ef3fe501312dc262e4bf18ed04.pdf)
+- [談談分佈式資料庫的分片鍵選擇準則和數據重分布的思考](collector/b4b1abba675ec98a51ed46678dd748af.pdf)
+- [招行面试：高并发写，为什么不推荐关系数据？](collector/2be116ef3fe501312dc262e4bf18ed04.pdf)
 
 ### 資料庫學習資源
 
-- [ Oracle 官方文檔整理以及閱讀指南](collector/e7eca656effbcb1f7a834641d6b4e66e.pdf)
-- [ YashanDB 資料庫概念手冊正式發布](collector/62a96627bcdda9e587dd92af4b4d623e.pdf)
+- [Oracle 官方文檔整理以及閱讀指南](collector/e7eca656effbcb1f7a834641d6b4e66e.pdf)
+- [YashanDB 資料庫概念手冊正式發布](collector/62a96627bcdda9e587dd92af4b4d623e.pdf)
 
 ## 資料庫優化
 
 ### 查詢性能優化
 
-- [ 為何要小表驅動大表？](collector/b15cea0e52bc2b147a982bd0d42b77f5.pdf)
-- [ EXPLAIN TYPE 列的 JOIN 常见场景详解（上）](collector/1059aadb9ba78b94ac181ac7b2f82d3d.pdf)
-- [ 從MySQL索引下推看性能優化: 減少回表，提升查詢效率](collector/217028f183386f55576c92270b1185be.pdf)
-- [ MySQL底層概述—7.優化原則及慢查詢](collector/34608efa79dafe8421af5c2c7c9d3038.pdf)
-- [ SQL 調優實戰: 分頁語句中你真的了解 COUNT 索引嗎？SORT ORDER BY 的存在就一定很糟？](collector/f7a8df8b89aff3049775b4d17e41f7a7.pdf)
-- [ 一文讓你對 MySQL 索引底層實現明明白白](collector/0c13009f75e503fc241380577e1e1714.pdf)
-- [ 数据库优化](collector/72ef824ce9b8942f1539498272bee9f4.pdf)
-- [ 拒绝全表扫描！3个提升MySQL深度分页技巧！](collector/e1462e7727b76b3201c2f59f40b77572.pdf)
+- [為何要小表驅動大表？](collector/b15cea0e52bc2b147a982bd0d42b77f5.pdf)
+- [EXPLAIN TYPE 列的 JOIN 常见场景详解（上）](collector/1059aadb9ba78b94ac181ac7b2f82d3d.pdf)
+- [從MySQL索引下推看性能優化: 減少回表，提升查詢效率](collector/217028f183386f55576c92270b1185be.pdf)
+- [MySQL底層概述—7.優化原則及慢查詢](collector/34608efa79dafe8421af5c2c7c9d3038.pdf)
+- [SQL 調優實戰: 分頁語句中你真的了解 COUNT 索引嗎？SORT ORDER BY 的存在就一定很糟？](collector/f7a8df8b89aff3049775b4d17e41f7a7.pdf)
+- [一文讓你對 MySQL 索引底層實現明明白白](collector/0c13009f75e503fc241380577e1e1714.pdf)
+- [数据库优化](collector/72ef824ce9b8942f1539498272bee9f4.pdf)
+- [拒绝全表扫描！3个提升MySQL深度分页技巧！](collector/e1462e7727b76b3201c2f59f40b77572.pdf)
 
 ### SQL 優化技巧
 
-- [ 重現一條簡單 SQL 的優化過程](collector/2521eca551359e30b8f64337d32bfc87.pdf)
-- [ 一个不可思议的SQL优化过程及扩展几个需掌握的几个知识点](collector/75be5e203e2525680ca0da0f0f670615.pdf)
-- [ 從源碼分析，MySQL 優化器如何估算 SQL 語句的訪問行數](collector/58533fe1f1c6095cb0e2f3955e58159b.pdf)
-- [ MySQL JOIN 的高階使用](collector/51c199aad1722448a7614d1775936198.pdf)
-- [ MySQL 全文索引](collector/1da8692fcd96135669d10058ee6ba62b.pdf)
-- [ MySQL8索引篇：性能提升了100%！！](collector/814120882b6dc79670eb6ef15d5d275d.pdf)
-- [ 《MySQL开发规范》过时了，视图的查询性能提升了一万倍](collector/dbfd739fa6148e81c1b1e24263eafbf3.pdf)
-- [ 技术分享 | MySQL 表空间碎片整理方法](collector/3aba28a31c245563bc6d4253665d9938.pdf)
+- [重現一條簡單 SQL 的優化過程](collector/2521eca551359e30b8f64337d32bfc87.pdf)
+- [一个不可思议的SQL优化过程及扩展几个需掌握的几个知识点](collector/75be5e203e2525680ca0da0f0f670615.pdf)
+- [從源碼分析，MySQL 優化器如何估算 SQL 語句的訪問行數](collector/58533fe1f1c6095cb0e2f3955e58159b.pdf)
+- [MySQL JOIN 的高階使用](collector/51c199aad1722448a7614d1775936198.pdf)
+- [MySQL 全文索引](collector/1da8692fcd96135669d10058ee6ba62b.pdf)
+- [MySQL8索引篇：性能提升了100%！！](collector/814120882b6dc79670eb6ef15d5d275d.pdf)
+- [《MySQL开发规范》过时了，视图的查询性能提升了一万倍](collector/dbfd739fa6148e81c1b1e24263eafbf3.pdf)
+- [技术分享 | MySQL 表空间碎片整理方法](collector/3aba28a31c245563bc6d4253665d9938.pdf)
 
 ### 性能分析工具
 
-- [ MySQL 优化利器 SHOW PROFILE 的实现原理](collector/4161c619d44a078a2cbebea93dd7a452.pdf)
-- [ MySQL性能分析的“秘密武器”，深度剖析SQL问题](collector/7bff90a70d31863b2836c1fa9e5c903e.pdf)
+- [MySQL 优化利器 SHOW PROFILE 的实现原理](collector/4161c619d44a078a2cbebea93dd7a452.pdf)
+- [MySQL性能分析的“秘密武器”，深度剖析SQL问题](collector/7bff90a70d31863b2836c1fa9e5c903e.pdf)
 
 ### InnoDB 優化
 
-- [ InnoDB 索引与 Online DDL 的结合: 业务不中断的优化秘诀](collector/0cc7ff4443fbb0cb3c90ca79bc6b9dcd.pdf)
-- [ InnoDB 的覆蓋索引實踐](collector/b79dbda815b5964f80e03209fc7b8e33.pdf)
+- [InnoDB 索引与 Online DDL 的结合: 业务不中断的优化秘诀](collector/0cc7ff4443fbb0cb3c90ca79bc6b9dcd.pdf)
+- [InnoDB 的覆蓋索引實踐](collector/b79dbda815b5964f80e03209fc7b8e33.pdf)
 
 ### PostgreSQL 優化
 
-- [ PostgreSQL SQL优化用兵法，优化后提高 140倍速度](collector/2d2497bf4c0c4b1f1e89aef13fecb77d.pdf)
+- [PostgreSQL SQL优化用兵法，优化后提高 140倍速度](collector/2d2497bf4c0c4b1f1e89aef13fecb77d.pdf)
 
 ## 資料庫工具
 
