@@ -656,7 +656,6 @@
 
 ### MySQL 設計與實踐
 
-- [MySQL 外鍵約束的刪除和更新總結](collector/4d669cdecd99fd1a072b7343bc457f1a.pdf)
 - [詳解 MySQL 字符集和 Collation](collector/70d6796cf7d059fc575ac8263506713b.pdf)
 - [MySQL 數據結構設計及開發規範](collector/d30f1d26fac1b8e04980a7f140c504c4.pdf)
 - [故障分析 | 为什么 MySQL 8.0.13 要引入新参数 sql_require_primary_key？](collector/b99633e6d09d838bd40f4241534d131e.pdf)
@@ -910,8 +909,6 @@
 
 ### 數據管理
 
-- [Navicat](collector/b7f164bb6838af6ee573d829fb035750.pdf)
-- [DBdoctor](collector/2efdd8e79f2455b839fe771f75f4898a.pdf)
 - [DBdoctor 產品體驗報告](collector/c21523ba09f0a9369ac170ed350c6716.pdf)
 
 ### 平台管理
