@@ -6,6 +6,7 @@
 
 - [Database Scalability and the Giant Flea: A Lesson in Complexity - The New Stack](collector/94fb63fc6db6864ca91e18cbbe282906.pdf)
 - [xtrabackup原理及实施](collector/ada26a457f24c63b95c3b4cd08ffc1d8.pdf)
+- [The Optimizer Cost Model from MariaDB 11.0](collector/9b85d8a7fc8e89c6fd28c45d4d15b9e1.pdf)
 
 ### 分散式資料庫概論
 
