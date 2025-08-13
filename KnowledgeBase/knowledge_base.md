@@ -819,7 +819,6 @@
 - [如何使用 bcc 工具觀測 MySQL 延遲](collector/f0bc01c71363634b79aaa1216000b41d.pdf)
 - [MySQL 性能診斷實踐之系統觀測工具](collector/0b815a98abff315fe50e653f5df3a6bb.pdf)
 - [性能運維 -- 借助 pstack + strace 排查 SQL 性能問題](collector/0f81bb5e9e927269f46f5dfa3b2bcbea.pdf)
-- [高性能 MySQL 讀書計劃](collector/edfcb5690a06dc0272f61a9a1ac58012.pdf)
 - [我說 MySQL 每張表最好不超過 2000 萬數據](collector/5b7666c86b5b31b53878096412a71aa2.pdf)
 - [為什麼說 MySQL 單表行數不要超過 2000w？](collector/3ce26dec621f56b972282463c68c3417.pdf)
 - [MySQL 性能優化：從普通程序員的角度出發](collector/0dee63158798f5b970a4b7475220948d.pdf)
