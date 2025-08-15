@@ -343,6 +343,67 @@ RocksDB 的空間放大效應。
 
 ## [你可能會有這些問題](https://docs.pingcap.com/zh/tidb/stable/faq-overview/)
 
+### [TiProxy 負載平衡策略](https://docs.pingcap.com/zh/tidb/stable/tiproxy-load-balance/)
+- 如何避免跨區存取
+
+- [TiProxy 支援哪些設定](https://docs.pingcap.com/zh/tidb/stable/tiproxy-configuration/)
+```
+workdir = '/data/tidb-deploy/tiproxy-6000/work'
+enable-traffic-replay = true
+
+[proxy]
+addr = '0.0.0.0:6000'
+advertise-addr = '172.24.40.17'
+pd-addrs = '10.160.152.21:2379,10.160.152.22:2379,172.24.40.17:2379,172.24.40.18:2379,172.24.40.19:2379'
+graceful-close-conn-timeout = 15
+
+[proxy.frontend-keepalive]
+enabled = true
+
+[proxy.backend-healthy-keepalive]
+enabled = true
+idle = 60000000000
+cnt = 5
+intvl = 3000000000
+timeout = 15000000000
+
+[proxy.backend-unhealthy-keepalive]
+enabled = true
+idle = 10000000000
+cnt = 5
+intvl = 1000000000
+timeout = 5000000000
+
+[api]
+addr = '0.0.0.0:6001'
+
+[security]
+[security.server-tls]
+min-tls-version = '1.2'
+
+[security.server-http-tls]
+min-tls-version = '1.2'
+
+[security.cluster-tls]
+min-tls-version = '1.2'
+
+[security.sql-tls]
+min-tls-version = '1.2'
+
+[log]
+encoder = 'tidb'
+level = 'info'
+
+[log.log-file]
+filename = '/data/tidb-deploy/tiproxy-6000/log/tiproxy.log'
+max-size = 300
+max-days = 3
+max-backups = 3
+
+[balance]
+policy = 'resource'
+```
+
 ---
 
 ## Benchmark Scenario Design
