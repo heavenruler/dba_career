@@ -1,5 +1,4 @@
-:set paste
-i# TiDB Intro for DBA #2
+# TiDB Intro for DBA #2
 
 ## Benchmark Architecture
 
