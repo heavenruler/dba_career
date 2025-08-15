@@ -345,9 +345,13 @@ RocksDB 的空間放大效應。
 
 ### [TiProxy 負載平衡策略](https://docs.pingcap.com/zh/tidb/stable/tiproxy-load-balance/)
 - 如何避免跨區存取
-
+- 確認 TiProxy metrics status
+```
+> curl http://172.24.40.17:6001/metrics/
+```
 - [TiProxy 支援哪些設定](https://docs.pingcap.com/zh/tidb/stable/tiproxy-configuration/)
 ```
+> curl http://172.24.40.17:6001/api/admin/config/
 workdir = '/data/tidb-deploy/tiproxy-6000/work'
 enable-traffic-replay = true
 
