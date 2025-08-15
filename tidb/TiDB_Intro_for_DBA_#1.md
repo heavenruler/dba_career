@@ -44,7 +44,7 @@
 
 - TiDB
 
-![](https://codimd.104.com.tw/image/s3/key/fqk4xqsisa38ru6a68suc21oc.png)
+![](ref/fqk4xqsisa38ru6a68suc21oc.png)
 
 ```
 +-----+
