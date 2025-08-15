@@ -417,7 +417,7 @@ Storage: NVMe 375GB
 
 - K8s Sandbox 目前尚未取得
     - TiDB Pod 資源換算 VM 對標
-    - ![](https://codimd.104.com.tw/image/s3/key/hlkruoc8a6qis38n5yvnz5ngm.png)
+    - ![](ref/hlkruoc8a6qis38n5yvnz5ngm.png)
 
 - 下個 Sprint 工項重點
     - AC-API 整合測試
