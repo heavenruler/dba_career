@@ -2241,15 +2241,54 @@ Total nodes: 4
 
 Benchmark from TiDB
 ```
+[root@l-monitor-labroom-1 benchmark-tidb]# date ; ./a_genReport.sh sysbench_results_#3_tidb
+Mon Aug 18 15:14:46 CST 2025
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        22.69                         18.79                 45.81                 12.63                 15965.8750               299.9827                         6811.74 per sec.    2399861.52          425.73 per sec.
+oltp_read_write       36.24                         30.66                 68.37                 19.83                 9784.0000                299.9893                         5217.79 per sec.    2399914.43          260.89 per sec.
+oltp_write_only       12.98                         9.89                  36.57                 4.51                  30334.5000               299.9666                         4853.39 per sec.    2399732.73          808.90 per sec.
+select_random_points  6.21                          3.52                  35.79                 1.04                  85323.7500               299.9262                         2275.27 per sec.    2399409.81          2275.27 per sec.
+select_random_ranges  4.74                          3.09                  23.51                 1.20                  97190.8750               299.9211                         2591.72 per sec.    2399368.65          2591.72 per sec.
 ```
 
 Benchmark from TiProxy
 ```
+[root@l-monitor-labroom-1 benchmark-tidb]# date ; ./a_genReport.sh sysbench_results_#3_tiproxy/
+Mon Aug 18 15:14:50 CST 2025
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        22.69                         18.72                 50.24                 12.09                 16024.2500               299.9796                         6836.67 per sec.    2399836.84          427.29 per sec.
+oltp_read_write       39.65                         32.02                 78.78                 20.42                 9368.6250                299.9907                         4996.25 per sec.    2399925.46          249.81 per sec.
+oltp_write_only       13.22                         10.05                 33.14                 4.25                  29833.8750               299.9644                         4773.30 per sec.    2399715.00          795.55 per sec.
+select_random_points  6.21                          3.65                  20.51                 1.08                  82276.3750               299.9278                         2194.00 per sec.    2399422.73          2194.00 per sec.
+select_random_ranges  5.09                          3.27                  25.38                 1.28                  91782.7500               299.9243                         2447.51 per sec.    2399394.01          2447.51 per sec.
 ```
 
 - GCP * 3
 Cluster Summary
 ```
+Mon Aug 18 15:32:31 CST 2025
+Cluster type:       tidb
+Cluster name:       tidb-demo
+Cluster version:    v8.5.2
+Deploy user:        root
+SSH type:           builtin
+Dashboard URL:      http://10.160.152.21:2379/dashboard
+Dashboard URLs:     http://10.160.152.21:2379/dashboard
+ID                   Role     Host           Ports        OS/Arch       Status   Data Dir                    Deploy Dir
+--                   ----     ----           -----        -------       ------   --------                    ----------
+10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|L|UI  /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+10.160.152.22:2379   pd       10.160.152.22  2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+10.160.152.23:2379   pd       10.160.152.23  2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
+10.160.152.22:4000   tidb     10.160.152.22  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
+10.160.152.23:4000   tidb     10.160.152.23  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
+10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+10.160.152.22:20160  tikv     10.160.152.22  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+10.160.152.23:20160  tikv     10.160.152.23  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
+10.160.152.22:6000   tiproxy  10.160.152.22  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
+10.160.152.23:6000   tiproxy  10.160.152.23  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
+Total nodes: 12
 ```
 
 Benchmark from TiDB
