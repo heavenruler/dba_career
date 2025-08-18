@@ -2131,7 +2131,11 @@ ID                  Role        Host          Ports        OS/Arch       Status 
 172.24.40.17:6000   tiproxy     172.24.40.17  6000/6001    linux/x86_64  Up       -                                /data/tidb-deploy/tiproxy-6000
 Total nodes: 6
 ```
-Benchmark
+Benchmark from TiDB
+```
+```
+
+Benchmark from TiProxy
 ```
 ```
 
