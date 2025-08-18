@@ -2107,12 +2107,19 @@ multi_thread_multi_conn   10000           19.633               0.00            2
 
 ## [Sysbench](https://docs.pingcap.com/zh/tidb/stable/benchmark-tidb-using-sysbench/)
 
+- Tuning
+    - TiDB
+        - log.level: "error"
+    - TiKV
+        - log.level: "error"
+        - storage.block-cache.capacity: "6GB"
+
 - IDC * 1
 Cluster Summary
 ```
 [root@l-k8s-labroom-1 ~]# make display
 date ; tiup cluster display tidb-demo
-Mon Aug 18 09:05:20 CST 2025
+Mon Aug 18 09:52:53 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
 Cluster version:    v8.5.2
@@ -2131,6 +2138,7 @@ ID                  Role        Host          Ports        OS/Arch       Status 
 172.24.40.17:6000   tiproxy     172.24.40.17  6000/6001    linux/x86_64  Up       -                                /data/tidb-deploy/tiproxy-6000
 Total nodes: 6
 ```
+
 Benchmark from TiDB
 ```
 ```
