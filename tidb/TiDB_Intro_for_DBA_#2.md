@@ -2110,6 +2110,26 @@ multi_thread_multi_conn   10000           19.633               0.00            2
 - IDC * 1
 Cluster Summary
 ```
+[root@l-k8s-labroom-1 ~]# make display
+date ; tiup cluster display tidb-demo
+Mon Aug 18 09:05:20 CST 2025
+Cluster type:       tidb
+Cluster name:       tidb-demo
+Cluster version:    v8.5.2
+Deploy user:        root
+SSH type:           builtin
+Dashboard URL:      http://172.24.40.17:2379/dashboard
+Dashboard URLs:     http://172.24.40.17:2379/dashboard
+Grafana URL:        http://172.24.40.20:3000
+ID                  Role        Host          Ports        OS/Arch       Status   Data Dir                         Deploy Dir
+--                  ----        ----          -----        -------       ------   --------                         ----------
+172.24.40.20:3000   grafana     172.24.40.20  3000         linux/x86_64  Up       -                                /data/tidb-deploy/grafana-3000
+172.24.40.17:2379   pd          172.24.40.17  2379/2380    linux/x86_64  Up|L|UI  /data/tidb-data/pd-2379          /data/tidb-deploy/pd-2379
+172.24.40.20:9090   prometheus  172.24.40.20  9090/12020   linux/x86_64  Up       /data/tidb-data/prometheus-9090  /data/tidb-deploy/prometheus-9090
+172.24.40.17:4000   tidb        172.24.40.17  4000/10080   linux/x86_64  Up       -                                /data/tidb-deploy/tidb-4000
+172.24.40.17:20160  tikv        172.24.40.17  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160       /data/tidb-deploy/tikv-20160
+172.24.40.17:6000   tiproxy     172.24.40.17  6000/6001    linux/x86_64  Up       -                                /data/tidb-deploy/tiproxy-6000
+Total nodes: 6
 ```
 Benchmark
 ```
