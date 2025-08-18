@@ -2222,6 +2222,7 @@ Benchmark
 ---
 
 ## TPC-C benchmark
+> 使用 Percona-Lab/tpcc-mysql ; 不使用 TiUP Bench ; toolchain 根據 TiDB 優化過?
 
 ### 只參照 sysbench 的問題
 - sysbench交易太單純 → 產能被高估
@@ -2237,8 +2238,8 @@ Benchmark
 - 併發擴展性：倉庫數量能調整，模擬使用者數成長時，觀察系統是否能隨規模放大而維持效能。
 - 與 sysbench 互補：sysbench 適合微調，TPC-C 則提供端到端 SLA 與產能 (tpmC) 評估。
 
-### 另外還需要注意
-> 使用 Percona-Lab/tpcc-mysql ; 不使用 TiUP Bench ; toolchain 根據 TiDB 優化過?
-
-- [範例數據解讀](https://blog.csdn.net/justlpf/article/details/127516283)
+### [TPC-C benchmark 需要關注哪些指標](https://blog.csdn.net/justlpf/article/details/127516283)
+- tpmC/TPS：越高代表系統能處理的交易產能越強。
+- 延遲 (P95、P99)：顯示交易響應時間分佈，評估 SLA 是否能在實務場景達成。
+- System Load 指標：判斷效能瓶頸主要在計算、記憶體，或磁碟 I/O。
 

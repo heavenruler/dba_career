@@ -343,8 +343,14 @@ RocksDB 的空間放大效應。
 
 ## [你可能會有這些問題](https://docs.pingcap.com/zh/tidb/stable/faq-overview/)
 
+### [ProxySQL 集成支援](https://docs.pingcap.com/zh/tidb/stable/dev-guide-proxysql-integration/)
+- 什麼情境需要 ProxySQL？
+- ProxySQL 能解決什麼問題？
+
 ### [TiProxy 負載平衡策略](https://docs.pingcap.com/zh/tidb/stable/tiproxy-load-balance/)
+
 - 如何避免跨區存取
+
 - 確認 TiProxy metrics status
 ```
 > curl http://172.24.40.17:6001/metrics/
