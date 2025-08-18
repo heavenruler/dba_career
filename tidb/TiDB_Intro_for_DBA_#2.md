@@ -2318,13 +2318,45 @@ select_random_ranges  2.66                          1.82                  15.72 
 - IDC * 1 + GCP * 2
 Cluster Summary
 ```
+date ; tiup cluster display tidb-demo
+Mon Aug 18 16:42:06 CST 2025
+Cluster type:       tidb
+Cluster name:       tidb-demo
+Cluster version:    v8.5.2
+Deploy user:        root
+SSH type:           builtin
+Dashboard URL:      http://10.160.152.21:2379/dashboard
+Dashboard URLs:     http://10.160.152.21:2379/dashboard
+ID                   Role     Host           Ports        OS/Arch       Status  Data Dir                    Deploy Dir
+--                   ----     ----           -----        -------       ------  --------                    ----------
+10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|UI   /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+10.160.152.22:2379   pd       10.160.152.22  2379/2380    linux/x86_64  Up|L    /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+172.24.40.17:2379    pd       172.24.40.17   2379/2380    linux/x86_64  Up      /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
+10.160.152.22:4000   tidb     10.160.152.22  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
+172.24.40.17:4000    tidb     172.24.40.17   4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
+10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+10.160.152.22:20160  tikv     10.160.152.22  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+172.24.40.17:20160   tikv     172.24.40.17   20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
+10.160.152.22:6000   tiproxy  10.160.152.22  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
+172.24.40.17:6000    tiproxy  172.24.40.17   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
+Total nodes: 12
 ```
 
-Benchmark from TiDB
+Benchmark from TiDB with IDC
 ```
 ```
 
-Benchmark from TiProxy
+Benchmark from TiProxy with IDC
+```
+```
+
+Benchmark from TiDB with GCP
+```
+```
+
+Benchmark from TiProxy with GCP
 ```
 ```
 
@@ -2333,11 +2365,19 @@ Cluster Summary
 ```
 ```
 
-Benchmark from TiDB
+Benchmark from TiDB with IDC
 ```
 ```
 
-Benchmark from TiProxy
+Benchmark from TiProxy with IDC
+```
+```
+
+Benchmark from TiDB with GCP
+```
+```
+
+Benchmark from TiProxy with GCP
 ```
 ```
 
@@ -2346,11 +2386,19 @@ Cluster Summary
 ```
 ```
 
-Benchmark from TiDB
+Benchmark from TiDB with IDC
 ```
 ```
 
-Benchmark from TiProxy
+Benchmark from TiProxy with IDC
+```
+```
+
+Benchmark from TiDB with GCP
+```
+```
+
+Benchmark from TiProxy with GCP
 ```
 ```
 
@@ -2359,11 +2407,19 @@ Cluster Summary
 ```
 ```
 
-Benchmark from TiDB
+Benchmark from TiDB with IDC
 ```
 ```
 
-Benchmark from TiProxy
+Benchmark from TiProxy with IDC
+```
+```
+
+Benchmark from TiDB with GCP
+```
+```
+
+Benchmark from TiProxy with GCP
 ```
 ```
 
@@ -2372,11 +2428,19 @@ Cluster Summary
 ```
 ```
 
-Benchmark from TiDB
+Benchmark from TiDB with IDC
 ```
 ```
 
-Benchmark from TiProxy
+Benchmark from TiProxy with IDC
+```
+```
+
+Benchmark from TiDB with GCP
+```
+```
+
+Benchmark from TiProxy with GCP
 ```
 ```
 
