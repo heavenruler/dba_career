@@ -2141,6 +2141,14 @@ Total nodes: 6
 
 Benchmark from TiDB
 ```
+[root@l-monitor-labroom-1 benchmark-tidb]# date ; ./a_genReport.sh sysbench_results_#1/
+Mon Aug 18 10:53:37 CST 2025
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        21.50                         16.79                 63.02                 9.84                  17864.6250               299.9722                         7621.74 per sec.    2399777.58          476.36 per sec.
+oltp_read_write       31.37                         25.42                 81.66                 15.41                 11798.8750               299.9862                         6292.23 per sec.    2399889.72          314.61 per sec.
+oltp_write_only       10.84                         8.19                  48.56                 3.26                  36628.2500               299.9501                         5860.25 per sec.    2399600.61          976.71 per sec.
+select_random_points  4.33                          2.60                  43.01                 0.73                  115160.2500              299.8759                         3070.88 per sec.    2399007.02          3070.88 per sec.
+select_random_ranges  3.49                          2.32                  27.84                 0.88                  129176.6250              299.8739                         3444.65 per sec.    2398991.52          3444.65 per sec.
 ```
 
 Benchmark from TiProxy
