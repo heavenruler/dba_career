@@ -2211,7 +2211,7 @@ Benchmark
 ```
 ```
 
-- IDC * 2 + GCP * 3 (兩機房同時執行 RPS 測試)
+- IDC * 2 + GCP * 3 (兩機房同時執行 Sysbench 測試)
 Cluster Summary
 ```
 ```
@@ -2221,8 +2221,23 @@ Benchmark
 
 ---
 
-## tpcc benchmark
+## TPC-C benchmark
 
+### 只參照 sysbench 的問題
+- sysbench交易太單純 → 產能被高估
+- 均勻存取 → 掩蓋熱點與鎖衝突
+- 忽略日誌/複寫 → 產品上線問題逐漸浮現
+
+### 為什麼需要 TPC-C
+- 交易真實性：涵蓋五種交易類型，比例固定，能模擬 ERP / 訂單系統的實際行為。
+- 複雜關聯：多表 JOIN、二級索引、外鍵依賴，能觸發行鎖、間隙鎖與死鎖情境。
+- 查詢計畫穩定性：選擇性變化與複合索引，能反映統計異動導致的計畫抖動。
+- HA/複寫檢驗：能觀察叢集提交延遲，驗證同步/半同步複寫下的 SLA。
+- 資料寫入壓力：TPC-C 有大量新增/更新，能真實測試系統「寫入資料」的穩定性與延遲，而不是只看讀取速度。
+- 併發擴展性：倉庫數量能調整，模擬使用者數成長時，觀察系統是否能隨規模放大而維持效能。
+- 與 sysbench 互補：sysbench 適合微調，TPC-C 則提供端到端 SLA 與產能 (tpmC) 評估。
+
+### 另外還需要注意
 > 使用 Percona-Lab/tpcc-mysql ; 不使用 TiUP Bench ; toolchain 根據 TiDB 優化過?
 
 - [範例數據解讀](https://blog.csdn.net/justlpf/article/details/127516283)
