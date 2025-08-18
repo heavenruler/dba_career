@@ -2532,12 +2532,27 @@ select_random_ranges  6.91                          2.27                  424.84
 
 Benchmark from TiDB with GCP
 ```
+Mon Aug 18 04:44:33 PM UTC 2025
+Combined report has been generated at sysbench_results_#10_tidb/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        94.10                         62.62                 1367.82               12.54                 4790.8750                300.0257                         2043.69 per sec.    2400205.40          127.73 per sec.
+oltp_read_write       127.81                        96.45                 1028.48               23.08                 3110.8750                300.0417                         1658.69 per sec.    2400333.97          82.93 per sec.
+oltp_write_only       43.39                         34.70                 727.86                13.83                 8645.3750                300.0073                         1383.11 per sec.    2400058.52          230.52 per sec.
+select_random_points  16.12                         12.36                 6524.75               5.70                  24275.2500               299.9827                         647.30 per sec.     2399861.98          647.30 per sec.
+select_random_ranges  16.12                         12.11                 306.81                6.23                  24765.7500               299.9850                         660.38 per sec.     2399880.38          660.38 per sec.
 ```
 
 Benchmark from TiProxy with GCP
 ```
+Mon Aug 18 04:44:33 PM UTC 2025
+Combined report has been generated at sysbench_results_#10_tiproxy/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        101.13                        66.45                 392.88                12.90                 4514.8750                300.0224                         1926.05 per sec.    2400179.48          120.38 per sec.
+oltp_read_write       132.49                        97.70                 1200.59               22.62                 3071.0000                300.0367                         1637.45 per sec.    2400293.96          81.87 per sec.
+oltp_write_only       48.34                         39.11                 1987.66               14.15                 7670.7500                300.0089                         1227.15 per sec.    2400071.09          204.53 per sec.
+select_random_points  24.38                         19.30                 3350.92               10.92                 15547.3750               299.9966                         414.57 per sec.     2399972.99          414.57 per sec.
+select_random_ranges  16.41                         15.73                 256.74                11.18                 19071.1250               299.9910                         508.53 per sec.     2399928.35          508.53 per sec.
 ```
-
 
 - IDC * 2 + GCP * 3
 Cluster Summary
