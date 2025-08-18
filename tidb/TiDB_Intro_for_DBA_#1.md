@@ -343,6 +343,8 @@ RocksDB 的空間放大效應。
 
 ## [你可能會有這些問題](https://docs.pingcap.com/zh/tidb/stable/faq-overview/)
 
+### [RAFT Leader 的控制手段 & 狀態確認手段](https://google.com)
+
 ### [ProxySQL 集成支援](https://docs.pingcap.com/zh/tidb/stable/dev-guide-proxysql-integration/)
 - 什麼情境需要 ProxySQL？
 - ProxySQL 能解決什麼問題？
