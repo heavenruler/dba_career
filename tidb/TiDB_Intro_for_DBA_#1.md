@@ -431,7 +431,9 @@ policy = 'resource'
 - Request per Second (RPS) by SELECT 1.
 - Concurrency Optimization Strategies.
 - Transactions Per Second (TPS) & Queries per second (QPS).
-
+- TPC-C
+  - 123
+  - 123
 
 ---
 
