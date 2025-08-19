@@ -471,20 +471,14 @@ Storage: NVMe 375GB
 
 - Single Threads 條件下，相同的 RPS 再經過 TiDB 與 TiProxy 的效能衰減不討論 ; 因為情境不會發生。
 
-- 經過 A10 NAT Load Balance 的 Error Rate 成因
+- 經過 A10 NAT Load Balance by TiDB 的 Error Rate 成因
     - 觸發 Error Rate 條件: select 1 超過 timeout 沒回應 & Exception catched .
 
-- 高併發的 RPS 經過 TiProxy 後的效能衰減
+- 高併發的 RPS 經過 TiProxy 後的效能衰減 ;  sysbench 驗證後期未發生 ; 僅 RPS 測試階段問題 ; 可確認 Exception Content
 
 - 高併發負載下的 Response Time 是需要關注的議題嗎？ (P95/P99 指標能量化這個疑慮嗎？)
 
 - [Cross IDC / GCP] 分散式資料庫架構下，跨專線的效能衰減
-
-- 提前 AC-API 在 TiDB 的整合環境測試
-    - Schema 匯入。
-    - 直接多地分散式架構測試。
-    - Connector Driver / ODBC 調適。
-    - PHP 對應 TiDB 的已知問題。
 
 - GCP Load Balance 的效能會因負載平衡形式 Target Pool 或 Managed Instance Group (MIG) 產生差異？
 
@@ -493,8 +487,10 @@ Storage: NVMe 375GB
     - ![](ref/hlkruoc8a6qis38n5yvnz5ngm.png)
 
 - 下個 Sprint 工項重點
-    - AC-API 整合測試
-        - 產品同步資訊: [PHP在TIDB上遇到的坑](https://yaoguais.github.io/article/php/tidb.html)
+    - 可提前 AC-API 在 TiDB 的整合環境測試
+        - Schema 匯入。
+        - 直接多地分散式架構測試。
+        - Connector Driver / ODBC 調適。
     - Benchmark compare
     - K8s 環境建置
 
@@ -512,10 +508,32 @@ Storage: NVMe 375GB
 ### Performance Impact Analysis
 
 #### 各部件 Scale-Out 要解決什麼問題？
+
 ##### TiProxy
+- 改善 連線數處理能力：支持更多客戶端 TCP Session，同時提供負載平衡。
+- 降低 連線熱點：避免所有 Session 都集中到單一 TiDB 或單一 Proxy。
+- 減少 連線管理延遲：縮短建立 / 維護連線時的延遲。
+
 ##### TiDB
+- 改善 SQL 執行效能：增加 SQL Parser / Optimizer / Executor 的總處理能力。
+- 提升 高併發查詢吞吐：支援更多 OLTP 短交易並行執行。
+- 減輕 單節點 CPU / Memory 壓力：降低單一節點 CPU 過高造成的排隊延遲。
+- 提高 查詢可用性：當部分 TiDB 負載過高時，能快速分攤到其他 TiDB。
+
 ##### PD
+- 增強 集群調度韌性：允許更多元件同時查詢 Region 分佈資訊。
+- 減少 TiKV Region / Leader 調度瓶頸：同時處理更多 metadata 請求。
+- 提升 Fault-tolerant 協調能力：避免單 PD 過載造成 metadata 存取延遲。
+
+> PD 本身水平擴充數量需要保持奇數，主要用於高可用與容錯，效能提升有限。
+
 ##### TiKV
+- 擴張 儲存容量：提供更大整體存放規模，降低單機壓力。
+- 分散 讀寫 I/O 負載：將 Region 分散在更多節點，提升整體吞吐量。
+- 調整 熱點分佈：可將熱門資料移動或切分至更多 TiKV，避免 I/O 或網路成為瓶頸。
+- 提升 交易一致性處理並行度：更多 Raft Group 同時處理寫入，提升寫入效能。
+
+---
 
 ### 驗證
 #### 如何 Scale-Out
@@ -533,6 +551,15 @@ tiproxy_servers:
 
 #### 如何 Scale-In
 > tiup cluster scale-in tidb-demo -N 172.24.40.17:6000
+
+---
+
+#### Benchmark 數據解讀
+
+
+
+
+
 
 ---
 
