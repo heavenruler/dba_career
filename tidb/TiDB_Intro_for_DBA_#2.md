@@ -2210,7 +2210,7 @@ select_random_points  4.41                          2.72                  33.28 
 select_random_ranges  3.55                          2.37                  27.49                 0.86                  126765.0000              299.8118                         3380.35 per sec.    2398494.43          3380.35 per sec.
 ```
 
-- IDC * 3
+- IDC * 3 (4vCPU 8GB Ram)
 Cluster Summary
 ```
 [root@l-k8s-labroom-1 ~]# make display
@@ -2262,6 +2262,19 @@ oltp_read_write       28.16                         22.79                 64.23 
 oltp_write_only       10.65                         8.32                  38.05                 4.38                  36065.1250               299.9151                         5770.23 per sec.    2399320.49          961.70 per sec.
 select_random_points  3.96                          2.28                  37.92                 0.75                  131615.3750              299.8247                         3509.69 per sec.    2398597.29          3509.69 per sec.
 select_random_ranges  3.19                          1.93                  19.37                 0.85                  155384.2500              299.8055                         4143.52 per sec.    2398444.19          4143.52 per sec.
+```
+
+- IDC * 3 (8vCPU 16GB Ram)
+Cluster Summary
+```
+```
+
+Benchmark from TiDB
+```
+```
+
+Benchmark from TiProxy
+```
 ```
 
 - GCP * 1
