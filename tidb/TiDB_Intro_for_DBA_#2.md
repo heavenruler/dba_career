@@ -2654,18 +2654,50 @@ select_random_ranges  92.42                         38.43                 1789.8
 
 Benchmark from TiDB with IDC # 離峰時段
 ```
+Tue Aug 19 23:23:49 CST 2025
+Combined report has been generated at sysbench_results_#11_tidb/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        89.16                         59.00                 1944.46               13.28                 2034.6250                120.0400                         2168.68 per sec.    960320.37           135.54 per sec.
+oltp_read_write       114.72                        78.52                 357.22                29.28                 1528.6250                120.0316                         2036.53 per sec.    960253.06           101.83 per sec.
+oltp_write_only       45.79                         37.00                 1362.43               15.54                 3243.7500                120.0031                         1297.15 per sec.    960024.92           216.19 per sec.
+select_random_points  22.28                         16.67                 474.16                5.81                  7196.3750                119.9900                         479.67 per sec.     959920.30           479.67 per sec.
+select_random_ranges  16.41                         13.32                 27.29                 5.97                  9007.8750                119.9858                         600.43 per sec.     959886.65           600.43 per sec.
 ```
 
 Benchmark from TiProxy with IDC # 離峰時段
 ```
+Tue Aug 19 23:23:50 CST 2025
+Combined report has been generated at sysbench_results_#11_tiproxy/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        95.81                         66.20                 359.64                15.94                 1813.3750                120.0412                         1932.81 per sec.    960329.25           120.80 per sec.
+oltp_read_write       125.52                        94.71                 634.43                34.15                 1267.3750                120.0322                         1688.62 per sec.    960257.21           84.43 per sec.
+oltp_write_only       50.11                         40.05                 612.84                17.48                 2996.7500                120.0057                         1198.31 per sec.    960045.45           199.72 per sec.
+select_random_points  22.28                         15.63                 740.13                6.15                  7674.6250                119.9822                         511.58 per sec.     959857.32           511.58 per sec.
+select_random_ranges  17.32                         13.12                 32.93                 6.22                  9142.2500                119.9841                         609.41 per sec.     959873.18           609.41 per sec.
 ```
 
 Benchmark from TiDB with GCP # 離峰時段
 ```
+Tue Aug 19 03:23:48 PM UTC 2025
+Combined report has been generated at sysbench_results_#12_tidb/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        80.03                         43.40                 1296.19               7.58                  2765.7500                120.0202                         2948.50 per sec.    960161.94           184.28 per sec.
+oltp_read_write       102.97                        66.46                 361.93                12.32                 1806.1250                120.0350                         2406.55 per sec.    960280.16           120.33 per sec.
+oltp_write_only       29.72                         18.72                 1127.70               3.39                  6410.5000                119.9968                         2563.91 per sec.    959974.03           427.32 per sec.
+select_random_points  6.91                          2.33                  956.38                0.83                  51542.2500               119.9663                         3435.86 per sec.    959730.39           3435.86 per sec.
+select_random_ranges  6.67                          2.23                  236.27                0.94                  53865.8750               119.9647                         3590.83 per sec.    959717.33           3590.83 per sec.
 ```
 
 Benchmark from TiProxy with GCP # 離峰時段
 ```
+Tue Aug 19 03:23:48 PM UTC 2025
+Combined report has been generated at sysbench_results_#12_tiproxy/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        179.94                        149.38                609.02                97.80                 804.0000                 120.1008                         856.46 per sec.     960806.25           53.53 per sec.
+oltp_read_write       223.34                        191.47                961.15                136.40                627.1250                 120.0780                         835.13 per sec.     960623.78           41.76 per sec.
+oltp_write_only       80.03                         69.62                 601.03                45.72                 1724.1250                120.0252                         689.31 per sec.     960201.59           114.89 per sec.
+select_random_points  27.66                         21.86                 858.60                11.20                 5490.6250                120.0040                         365.99 per sec.     960031.84           365.99 per sec.
+select_random_ranges  22.28                         18.49                 91.00                 11.15                 6488.5000                120.0007                         432.50 per sec.     960005.25           432.50 per sec.
 ```
 
 ---
