@@ -2420,6 +2420,36 @@ Benchmark from TiProxy with GCP
 - IDC * 3 + GCP * 2
 Cluster Summary
 ```
+Tue Aug 19 23:32:47 CST 2025
+Cluster type:       tidb
+Cluster name:       tidb-demo
+Cluster version:    v8.5.2
+Deploy user:        root
+SSH type:           builtin
+Dashboard URL:      http://10.160.152.21:2379/dashboard
+Dashboard URLs:     http://10.160.152.21:2379/dashboard
+ID                   Role     Host           Ports        OS/Arch       Status  Data Dir                    Deploy Dir
+--                   ----     ----           -----        -------       ------  --------                    ----------
+10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|UI   /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+10.160.152.22:2379   pd       10.160.152.22  2379/2380    linux/x86_64  Up      /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+172.24.40.17:2379    pd       172.24.40.17   2379/2380    linux/x86_64  Up      /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+172.24.40.18:2379    pd       172.24.40.18   2379/2380    linux/x86_64  Up      /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+172.24.40.19:2379    pd       172.24.40.19   2379/2380    linux/x86_64  Up|L    /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
+10.160.152.22:4000   tidb     10.160.152.22  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
+172.24.40.17:4000    tidb     172.24.40.17   4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
+172.24.40.18:4000    tidb     172.24.40.18   4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
+172.24.40.19:4000    tidb     172.24.40.19   4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
+10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+10.160.152.22:20160  tikv     10.160.152.22  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+172.24.40.17:20160   tikv     172.24.40.17   20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+172.24.40.18:20160   tikv     172.24.40.18   20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+172.24.40.19:20160   tikv     172.24.40.19   20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
+10.160.152.22:6000   tiproxy  10.160.152.22  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
+172.24.40.17:6000    tiproxy  172.24.40.17   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
+172.24.40.18:6000    tiproxy  172.24.40.18   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
+172.24.40.19:6000    tiproxy  172.24.40.19   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
 ```
 
 Benchmark from TiDB with IDC
@@ -2606,7 +2636,6 @@ ID                   Role     Host           Ports        OS/Arch       Status  
 Benchmark from TiDB with IDC # 上班時段
 ```
 Tue Aug 19 15:45:13 CST 2025
-Reports have been generated in the sysbench_results_#5_tidb/sysbench_results_report directory.
 Combined report has been generated at sysbench_results_#5_tidb/combined_report.txt
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
 oltp_read_only        104.84                        69.37                 1037.30               13.90                 1730.1250                120.0206                         1844.12 per sec.    960164.69           115.26 per sec.
