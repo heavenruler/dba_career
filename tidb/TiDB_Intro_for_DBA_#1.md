@@ -428,7 +428,9 @@ policy = 'resource'
 ## Benchmark Scenario Design
 
 ### [需要關注哪些系統容量指標](https://ganhua.wang/day-5-rpsqpstps)
+- Latency
 - Request per Second (RPS) by SELECT 1.
+- Latency 之於 RPS 的交互影響
 - Concurrency Optimization Strategies.
 - Transactions Per Second (TPS) & Queries per second (QPS).
 - TPC-C
