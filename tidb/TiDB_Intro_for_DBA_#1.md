@@ -343,6 +343,8 @@ RocksDB 的空間放大效應。
 
 ## [你可能會有這些問題](https://docs.pingcap.com/zh/tidb/stable/faq-overview/)
 
+### 所以現有 MySQL 資料表結構匯入 TIDB 的長相是什麼？
+
 ### [RAFT Leader 的控制手段 & 狀態確認手段](https://google.com)
 
 ### [ProxySQL 集成支援](https://docs.pingcap.com/zh/tidb/stable/dev-guide-proxysql-integration/)
@@ -353,10 +355,15 @@ RocksDB 的空間放大效應。
 
 - 如何避免跨區存取
 
+### Runtime config pattern
+
+- Ref: [TiDB / PD / TiKV 當前配置診斷](https://104cloud-my.sharepoint.com/personal/wn_lin_104_com_tw/Documents/Microsoft%20Teams%20%E8%81%8A%E5%A4%A9%E6%AA%94%E6%A1%88/TiDB%20Config.pdf)
+
 - 確認 TiProxy metrics status
 ```
 > curl http://172.24.40.17:6001/metrics/
 ```
+
 - [TiProxy 支援哪些設定](https://docs.pingcap.com/zh/tidb/stable/tiproxy-configuration/)
 ```
 > curl http://172.24.40.17:6001/api/admin/config/
@@ -829,10 +836,3 @@ grafana_servers:
   root_url: ""
   domain: ""
 ```
-
-### Runtime config pattern
-- Ref: [TiProxy / TiDB / PD / TiKV 當前配置診斷](https://104cloud-my.sharepoint.com/personal/wn_lin_104_com_tw/Documents/Microsoft%20Teams%20%E8%81%8A%E5%A4%A9%E6%AA%94%E6%A1%88/TiDB%20Config.pdf)
-
----
-
-## 所以現有 MySQL 資料表結構匯入 TIDB 的長相是什麼？
