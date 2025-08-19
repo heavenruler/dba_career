@@ -2452,19 +2452,35 @@ ID                   Role     Host           Ports        OS/Arch       Status  
 172.24.40.19:6000    tiproxy  172.24.40.19   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
 ```
 
-Benchmark from TiDB with IDC
+Benchmark from TiDB with IDC # 離峰
+```
+Wed Aug 20 00:00:01 CST 2025
+Combined report has been generated at sysbench_results_#13_tidb/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        78.60                         36.64                 921.44                8.33                  3275.5000                120.0212                         3491.61 per sec.    960169.26           218.23 per sec.
+oltp_read_write       112.67                        79.82                 1000.73               18.07                 1503.6250                120.0210                         2003.82 per sec.    960168.31           100.19 per sec.
+oltp_write_only       27.17                         17.72                 873.76                3.58                  6772.7500                119.9862                         2708.77 per sec.    959889.48           451.46 per sec.
+select_random_points  3.68                          2.09                  206.89                0.72                  57337.8750               119.9291                         3822.38 per sec.    959432.96           3822.38 per sec.
+select_random_ranges  6.43                          2.15                  842.92                0.75                  55697.3750               119.9344                         3712.91 per sec.    959475.22           3712.91 per sec.
+```
+
+Benchmark from TiProxy with IDC # 離峰
+```
+Wed Aug 20 00:00:01 CST 2025
+Combined report has been generated at sysbench_results_#13_tiproxy/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        81.48                         38.90                 1876.76               9.23                  3085.6250                120.0213                         3288.70 per sec.    960170.16           205.54 per sec.
+oltp_read_write       110.66                        71.90                 1190.23               17.19                 1669.2500                120.0272                         2224.53 per sec.    960217.34           111.23 per sec.
+oltp_write_only       31.37                         22.22                 1541.48               4.22                  5399.2500                119.9912                         2159.26 per sec.    959929.30           359.88 per sec.
+select_random_points  4.33                          2.39                  206.08                0.81                  50107.6250               119.9351                         3340.25 per sec.    959480.64           3340.25 per sec.
+select_random_ranges  3.13                          1.99                  211.58                0.84                  60294.2500               119.9248                         4019.43 per sec.    959398.08           4019.43 per sec.
+```
+
+Benchmark from TiDB with GCP # 離峰
 ```
 ```
 
-Benchmark from TiProxy with IDC
-```
-```
-
-Benchmark from TiDB with GCP
-```
-```
-
-Benchmark from TiProxy with GCP
+Benchmark from TiProxy with GCP # 離峰
 ```
 ```
 
