@@ -2378,22 +2378,78 @@ select_random_ranges  2.66                          1.82                  15.72 
 - IDC * 1 + GCP * 2
 Cluster Summary
 ```
+Wed Aug 20 00:39:43 CST 2025
+Cluster type:       tidb
+Cluster name:       tidb-demo
+Cluster version:    v8.5.2
+Deploy user:        root
+SSH type:           builtin
+Dashboard URL:      http://10.160.152.21:2379/dashboard
+Dashboard URLs:     http://10.160.152.21:2379/dashboard
+ID                   Role     Host           Ports        OS/Arch       Status  Data Dir                    Deploy Dir
+--                   ----     ----           -----        -------       ------  --------                    ----------
+10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|UI   /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+10.160.152.22:2379   pd       10.160.152.22  2379/2380    linux/x86_64  Up      /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+172.24.40.17:2379    pd       172.24.40.17   2379/2380    linux/x86_64  Up|L    /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
+10.160.152.22:4000   tidb     10.160.152.22  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
+172.24.40.17:4000    tidb     172.24.40.17   4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
+10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+10.160.152.22:20160  tikv     10.160.152.22  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+172.24.40.17:20160   tikv     172.24.40.17   20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
+10.160.152.22:6000   tiproxy  10.160.152.22  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
+172.24.40.17:6000    tiproxy  172.24.40.17   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
 ```
 
 Benchmark from TiDB with IDC
 ```
+Wed Aug 20 01:12:27 CST 2025
+Combined report has been generated at sysbench_results_#15_tidb/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        86.00                         58.41                 290.04                8.17                  2055.0000                120.0240                         2190.60 per sec.    960192.14           136.91 per sec.
+oltp_read_write       110.66                        83.32                 333.02                20.01                 1440.6250                120.0274                         1919.40 per sec.    960218.88           95.97 per sec.
+oltp_write_only       27.17                         21.54                 256.09                8.50                  5570.6250                119.9932                         2227.79 per sec.    959945.90           371.30 per sec.
+select_random_points  5.37                          2.76                  205.66                0.76                  43532.2500               119.9335                         2902.03 per sec.    959467.70           2902.03 per sec.
+select_random_ranges  6.67                          2.81                  223.80                0.91                  42640.6250               119.9312                         2842.59 per sec.    959449.60           2842.59 per sec.
 ```
 
 Benchmark from TiProxy with IDC
 ```
+Wed Aug 20 01:12:27 CST 2025
+Combined report has been generated at sysbench_results_#15_tiproxy/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        94.10                         66.79                 309.54                10.00                 1797.0000                120.0272                         1915.71 per sec.    960217.87           119.73 per sec.
+oltp_read_write       123.28                        87.39                 327.31                20.53                 1373.7500                120.0453                         1830.36 per sec.    960362.39           91.52 per sec.
+oltp_write_only       27.66                         21.93                 271.56                8.70                  5472.1250                119.9968                         2188.36 per sec.    959974.15           364.73 per sec.
+select_random_points  12.98                         7.48                  43.22                 0.72                  16048.7500               119.9723                         1069.80 per sec.    959778.23           1069.80 per sec.
+select_random_ranges  7.56                          4.87                  238.79                0.82                  24632.8750               119.9633                         1642.08 per sec.    959706.50           1642.08 per sec.
 ```
 
 Benchmark from TiDB with GCP
 ```
+Tue Aug 19 05:34:01 PM UTC 2025
+Reports have been generated in the sysbench_results_#16_tidb/sysbench_results_report directory.
+Combined report has been generated at sysbench_results_#16_tidb/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        84.47                         45.57                 320.89                12.45                 2633.6250                120.0164                         2807.81 per sec.    960131.42           175.49 per sec.
+oltp_read_write       114.72                        71.05                 342.97                20.99                 1689.7500                120.0536                         2250.76 per sec.    960429.12           112.54 per sec.
+oltp_write_only       43.39                         32.78                 248.02                13.14                 3661.1250                120.0130                         1464.04 per sec.    960103.90           244.01 per sec.
+select_random_points  20.74                         13.68                 287.81                5.68                  8770.6250                119.9995                         584.62 per sec.     959996.06           584.62 per sec.
+select_random_ranges  15.83                         10.96                 27.73                 5.83                  10951.0000               119.9943                         730.01 per sec.     959954.63           730.01 per sec.
 ```
 
 Benchmark from TiProxy with GCP
 ```
+Tue Aug 19 05:34:01 PM UTC 2025
+Reports have been generated in the sysbench_results_#16_tiproxy/sysbench_results_report directory.
+Combined report has been generated at sysbench_results_#16_tiproxy/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        167.44                        138.90                388.91                91.89                 864.3750                 120.0588                         920.81 per sec.     960470.67           57.55 per sec.
+oltp_read_write       207.82                        179.04                442.05                123.56                670.7500                 120.0932                         892.93 per sec.     960745.55           44.65 per sec.
+oltp_write_only       55.82                         50.12                 72.61                 38.71                 2394.5000                120.0228                         957.35 per sec.     960182.37           159.56 per sec.
+select_random_points  30.81                         18.88                 1038.68               11.00                 6356.2500                120.0010                         423.66 per sec.     960007.77           423.66 per sec.
+select_random_ranges  15.83                         15.43                 434.78                11.07                 7779.2500                119.9975                         518.58 per sec.     959979.69           518.58 per sec.
 ```
 
 - IDC * 2 + GCP * 1
