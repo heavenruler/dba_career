@@ -2484,6 +2484,14 @@ select_random_points  12.75                         11.09                 855.35
 select_random_ranges  13.95                         11.69                 1087.71               6.21                  10262.2500               119.9754                         684.09 per sec.     959803.53           684.09 per sec.
 ```
 
+Benchmark from TiDB with IDC # 離峰時段
+```
+```
+
+Benchmark from TiProxy with IDC # 離峰時段
+```
+```
+
 Benchmark from TiDB with GCP # 上班時段
 ```
 Tue Aug 19 08:55:52 AM UTC 2025
@@ -2508,13 +2516,6 @@ select_random_points  369.77                        61.96                 1149.7
 select_random_ranges  55.82                         33.45                 1516.40               11.21                 3587.5000                120.0066                         239.12 per sec.     960052.86           239.12 per sec.
 ```
 
-Benchmark from TiDB with IDC # 離峰時段
-```
-```
-
-Benchmark from TiProxy with IDC # 離峰時段
-```
-```
 Benchmark from TiDB with GCP # 離峰時段
 ```
 ```
