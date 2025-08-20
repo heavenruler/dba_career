@@ -2481,10 +2481,26 @@ ID                   Role     Host           Ports        OS/Arch       Status  
 
 Benchmark from TiDB with IDC
 ```
+Wed Aug 20 02:16:54 CST 2025
+Combined report has been generated at sysbench_results_#17_tidb/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        78.60                         33.92                 300.46                8.24                  3538.3750                120.0129                         3771.30 per sec.    960103.32           235.71 per sec.
+oltp_read_write       92.42                         43.73                 157.16                13.39                 2744.8750                120.0220                         3657.77 per sec.    960175.92           182.89 per sec.
+oltp_write_only       31.94                         20.11                 679.20                4.18                  5965.5000                119.9918                         2385.65 per sec.    959934.29           397.61 per sec.
+select_random_points  4.82                          2.85                  207.35                0.89                  42120.6250               119.9400                         2807.89 per sec.    959520.22           2807.89 per sec.
+select_random_ranges  3.89                          2.56                  22.52                 1.04                  46847.2500               119.9318                         3123.03 per sec.    959454.76           3123.03 per sec.
 ```
 
 Benchmark from TiProxy with IDC
 ```
+Wed Aug 20 02:16:54 CST 2025
+Combined report has been generated at sysbench_results_#17_tiproxy/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        80.03                         38.11                 311.67                9.21                  3148.7500                120.0115                         3356.62 per sec.    960092.20           209.79 per sec.
+oltp_read_write       102.97                        56.88                 324.73                15.03                 2109.8750                120.0178                         2811.23 per sec.    960142.61           140.56 per sec.
+oltp_write_only       31.37                         20.00                 53.31                 4.36                  6000.3750                119.9881                         2399.72 per sec.    959904.42           399.95 per sec.
+select_random_points  4.82                          2.61                  52.86                 0.88                  45876.2500               119.9344                         3058.26 per sec.    959474.95           3058.26 per sec.
+select_random_ranges  4.03                          2.51                  28.08                 1.02                  47799.6250               119.9309                         3186.53 per sec.    959447.57           3186.53 per sec.
 ```
 
 Benchmark from TiDB with GCP
