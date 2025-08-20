@@ -2909,6 +2909,49 @@ select_random_points  27.66                         21.86                 858.60
 select_random_ranges  22.28                         18.49                 91.00                 11.15                 6488.5000                120.0007                         432.50 per sec.     960005.25           432.50 per sec.
 ```
 
+啟用 proxy.local-tidb-only
+```
+tiproxy_servers:
+  - host: 172.24.40.17
+    port: 6000
+    status_port: 6001
+    config:
+      proxy.local-tidb-only: true
+```
+
+Benchmark from TiDB with IDC # 離峰
+```
+```
+
+Benchmark from TiProxy with IDC # 離峰
+```
+```
+
+Benchmark from TiDB with GCP # 離峰
+```
+```
+
+Benchmark from TiProxy with GCP # 離峰
+```
+```
+
+Benchmark from TiDB with IDC both Execute # 離峰
+```
+```
+
+Benchmark from TiProxy with IDC both Execute # 離峰
+```
+```
+
+Benchmark from TiDB with GCP both Execute # 離峰
+```
+```
+
+Benchmark from TiProxy with GCP both Execute # 離峰
+```
+```
+
+
 ---
 
 ## TPC-C benchmark
