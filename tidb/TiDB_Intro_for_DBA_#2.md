@@ -2293,10 +2293,26 @@ ID                  Role     Host          Ports        OS/Arch       Status   D
 
 Benchmark from TiDB
 ```
+Wed Aug 20 10:49:47 CST 2025
+Combined report has been generated at sysbench_results_#19_tidb/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        16.41                         12.37                 37.00                 8.04                  9703.7500                119.9897                         10349.42 per sec.   959917.48           646.84 per sec.
+oltp_read_write       23.10                         18.65                 237.12                12.94                 6435.6250                119.9947                         8579.39 per sec.    959957.94           428.97 per sec.
+oltp_write_only       7.56                          6.12                  28.07                 3.64                  19618.6250               119.9741                         7846.96 per sec.    959792.64           1307.83 per sec.
+select_random_points  3.25                          1.80                  23.90                 0.78                  66620.8750               119.9371                         4441.26 per sec.    959496.86           4441.26 per sec.
+select_random_ranges  2.43                          1.65                  16.15                 0.78                  72656.7500               119.9354                         4843.63 per sec.    959483.33           4843.63 per sec.
 ```
 
 Benchmark from TiProxy
 ```
+Wed Aug 20 10:49:47 CST 2025
+Combined report has been generated at sysbench_results_#19_tiproxy/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        19.65                         15.15                 38.77                 8.89                  7922.6250                119.9936                         8449.29 per sec.    959948.98           528.08 per sec.
+oltp_read_write       27.66                         21.65                 48.64                 14.37                 5541.2500                119.9930                         7387.28 per sec.    959943.69           369.36 per sec.
+oltp_write_only       8.90                          6.91                  35.87                 4.16                  17365.7500               119.9765                         6945.77 per sec.    959812.25           1157.63 per sec.
+select_random_points  3.07                          1.94                  15.81                 0.84                  61701.6250               119.9426                         4113.32 per sec.    959540.60           4113.32 per sec.
+select_random_ranges  2.52                          1.78                  13.92                 0.79                  67431.7500               119.9402                         4495.30 per sec.    959521.59           4495.30 per sec.
 ```
 
 - GCP * 1
