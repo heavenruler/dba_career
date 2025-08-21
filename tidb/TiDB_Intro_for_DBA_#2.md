@@ -2919,6 +2919,63 @@ tiproxy_servers:
       proxy.local-tidb-only: true
 ```
 
+RPS by TiDB from IDC
+```
+```
+
+RPS by TiProxy from IDC
+```
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.874                0.00            8.740           1144.14         1
+single_thread_multi_conn  10000           0.649                0.00            6.492           1540.29         1
+multi_thread_multi_conn   10000           2.657                0.00            26.584          376.17          1
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.613                0.00            6.133           1630.54         1
+single_thread_multi_conn  10000           0.837                0.00            8.548           1169.90         1
+multi_thread_multi_conn   10000           26.407               0.00            2.979           3357.26         100
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.664                0.00            6.649           1504.05         1
+single_thread_multi_conn  10000           0.938                0.00            9.766           1023.98         1
+multi_thread_multi_conn   10000           36.488               0.00            2.181           4585.49         200
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.609                0.00            6.097           1640.23         1
+single_thread_multi_conn  10000           0.856                0.00            9.006           1110.38         1
+multi_thread_multi_conn   10000           79.648               18.58           6.698           1493.07         250
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.606                0.00            6.070           1647.46         1
+single_thread_multi_conn  10000           1.732                0.00            19.301          518.12          1
+multi_thread_multi_conn   10000           38.505               0.00            1.569           6372.31         500
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.665                0.00            6.659           1501.74         1
+single_thread_multi_conn  10000           2.056                0.00            24.027          416.19          1
+multi_thread_multi_conn   10000           75.009               0.00            4.053           2467.54         750
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.748                0.00            7.492           1334.73         1
+single_thread_multi_conn  10000           1.871                0.00            22.667          441.17          1
+multi_thread_multi_conn   10000           30.631               0.00            2.284           4378.30         1000
+========================================================================================================================
+```
+
 Benchmark from TiDB with IDC # 離峰
 ```
 Wed Aug 20 21:13:41 CST 2025
@@ -2971,20 +3028,51 @@ select_random_ranges  11.87                         7.93                  25.42 
 
 Benchmark from TiDB with IDC both Execute # 離峰
 ```
+Wed Aug 20 22:27:19 CST 2025
+Combined report has been generated at sysbench_results_#22_tidb/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        77.19                         37.03                 305.67                7.79                  3241.5000                120.0199                         3455.64 per sec.    960159.38           215.98 per sec.
+oltp_read_write       89.16                         49.21                 1825.70               16.94                 2439.0000                120.0251                         3250.18 per sec.    960201.19           162.51 per sec.
+oltp_write_only       26.68                         18.17                 348.81                4.00                  6602.5000                119.9836                         2640.71 per sec.    959868.92           440.12 per sec.
+select_random_points  3.55                          2.10                  72.49                 0.74                  56986.5000               119.9284                         3798.94 per sec.    959427.29           3798.94 per sec.
+select_random_ranges  6.55                          2.08                  220.76                0.74                  57637.2500               119.9302                         3842.21 per sec.    959441.95           3842.21 per sec.
 ```
 
 Benchmark from TiProxy with IDC both Execute # 離峰
 ```
+Wed Aug 20 22:27:19 CST 2025
+Combined report has been generated at sysbench_results_#22_tiproxy/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        81.48                         47.72                 1595.61               9.84                  2515.0000                120.0086                         2681.22 per sec.    960069.02           167.58 per sec.
+oltp_read_write       106.75                        67.44                 1710.98               16.09                 1780.2500                120.0527                         2371.77 per sec.    960421.88           118.59 per sec.
+oltp_write_only       30.26                         19.90                 653.24                4.23                  6028.8750                119.9935                         2411.09 per sec.    959948.24           401.85 per sec.
+select_random_points  8.43                          3.35                  718.70                0.78                  35762.6250               119.9482                         2384.03 per sec.    959585.66           2384.03 per sec.
+select_random_ranges  7.30                          3.95                  640.65                0.91                  30369.3750               119.9557                         2024.49 per sec.    959645.81           2024.49 per sec.
 ```
 
 Benchmark from TiDB with GCP both Execute # 離峰
 ```
+Wed Aug 20 02:27:18 PM UTC 2025
+Combined report has been generated at sysbench_results_#23_tidb/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        90.78                         63.31                 340.18                12.45                 1896.0000                120.0411                         2021.01 per sec.    960329.00           126.31 per sec.
+oltp_read_write       125.52                        98.29                 366.91                27.70                 1221.2500                120.0402                         1627.20 per sec.    960321.45           81.36 per sec.
+oltp_write_only       47.47                         38.24                 650.83                13.91                 3138.7500                120.0162                         1255.14 per sec.    960129.99           209.19 per sec.
+select_random_points  23.10                         17.64                 286.74                10.49                 6801.1250                119.9989                         453.35 per sec.     959990.86           453.35 per sec.
+select_random_ranges  16.71                         13.96                 243.49                5.87                  8598.6250                119.9995                         573.17 per sec.     959996.01           573.17 per sec.
 ```
 
 Benchmark from TiProxy with GCP both Execute # 離峰
 ```
+Wed Aug 20 02:27:18 PM UTC 2025
+Combined report has been generated at sysbench_results_#23_tiproxy/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        183.21                        145.31                2448.17               90.18                 826.2500                 120.0609                         880.58 per sec.     960487.32           55.04 per sec.
+oltp_read_write       227.40                        186.74                1874.16               115.94                643.1250                 120.0959                         856.35 per sec.     960767.00           42.82 per sec.
+oltp_write_only       58.92                         50.12                 932.64                33.31                 2394.7500                120.0189                         957.55 per sec.     960150.93           159.59 per sec.
+select_random_points  15.55                         9.53                  1705.63               5.53                  12594.5000               119.9952                         839.55 per sec.     959961.28           839.55 per sec.
+select_random_ranges  12.08                         9.36                  669.08                5.65                  12820.5000               119.9945                         854.62 per sec.     959955.73           854.62 per sec.
 ```
-
 
 ---
 
