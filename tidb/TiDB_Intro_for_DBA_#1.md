@@ -343,6 +343,8 @@ RocksDB 的空間放大效應。
 
 ## [你可能會有這些問題](https://docs.pingcap.com/zh/tidb/stable/faq-overview/)
 
+### SELECT 1 到底驗證了什麼？
+
 ### 所以現有 MySQL 資料表結構匯入 TIDB 的長相是什麼？
 
 ### [RAFT Leader 的控制手段 & 狀態確認手段](https://google.com)
