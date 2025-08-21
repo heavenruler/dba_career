@@ -283,8 +283,6 @@ Total nodes: 15
 - 資料同步與一致性的複雜度
 - 就算有 TiDB 了以後，我們需要 `Active/Active` 還是 `Active/Standby`
 
-#### 結論
-{FIXME}
 
 ---
 
