@@ -363,19 +363,20 @@ RocksDB 的空間放大效應。
 
 - TiDB Monitor
 - TiDB Grafana
-  - tidb-demo-tidb-runtime
-  - tidb-demo-performance-overview
-  - tidb-demo-tidb-resource-control
-  - tidb-demo-tiproxy-summary
-  - tidb-demo-tidb-summary
-  - tidb-demo-pd
-  - tidb-demo-tikv-summary
-  - tidb-demo-tikv-details
-  - tidb-demo-tikv-raw
-  - tidb-demo-disk-performance
-
-
-- 可觀測性實作還有多少距離？
+  - Cluster Overview
+    - tidb-demo-performance-overview
+    - tidb-demo-tiproxy-summary
+    - tidb-demo-tidb-summary
+    - tidb-demo-pd
+    - tidb-demo-tikv-summary
+  - Component & Runtime Panels
+    - tidb-demo-tidb-runtime
+    - tidb-demo-tikv-details
+    - tidb-demo-tikv-raw
+    - tidb-demo-disk-performance
+  - Diagnostics & Troubleshooting
+    - tidb-demo-tidb-resource-control
+    - tidb-demo-tikv-trouble-shooting
 
 ### [TiProxy 負載平衡策略](https://docs.pingcap.com/zh/tidb/stable/tiproxy-load-balance/)
 
