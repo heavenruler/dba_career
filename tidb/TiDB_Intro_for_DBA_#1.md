@@ -351,6 +351,8 @@ RocksDB 的空間放大效應。
 
 ### [參數同步手段？](https://google.com)
 
+### [資料來源 pt-osc 如何執行](https://google.com)
+
 ### [ProxySQL 集成支援](https://docs.pingcap.com/zh/tidb/stable/dev-guide-proxysql-integration/)
 - 什麼情境需要 ProxySQL？
 - ProxySQL 能解決什麼問題？
@@ -844,3 +846,11 @@ grafana_servers:
   root_url: ""
   domain: ""
 ```
+
+---
+
+## 總結：我們現在需要先做什麼?
+
+### 科學計算的評估
+
+### 維運情境所有案例實際測試
