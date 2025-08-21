@@ -353,9 +353,17 @@ RocksDB 的空間放大效應。
 
 ### [資料來源 pt-osc 如何執行](https://google.com)
 
+### [有哪些已知的 Best Practice](https://google.com)
+
 ### [ProxySQL 集成支援](https://docs.pingcap.com/zh/tidb/stable/dev-guide-proxysql-integration/)
 - 什麼情境需要 ProxySQL？
 - ProxySQL 能解決什麼問題？
+
+### Dashboards 要看什麼
+
+- TiDB Monitor
+- TiDB Grafana
+- 可觀測性實作還有多少距離？
 
 ### [TiProxy 負載平衡策略](https://docs.pingcap.com/zh/tidb/stable/tiproxy-load-balance/)
 
