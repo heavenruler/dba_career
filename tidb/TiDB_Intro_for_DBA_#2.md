@@ -3254,3 +3254,15 @@ select_random_ranges  12.08                         9.36                  669.08
 - 延遲 (P95、P99)：顯示交易響應時間分佈，評估 SLA 是否能在實務場景達成。
 - System Load 指標：判斷效能瓶頸主要在計算、記憶體，或磁碟 I/O。
 
+### IDC * 3
+```
+[Summary] DELIVERY - Takes(s): 299.7, Count: 2858, TPM: 572.2, Sum(ms): 282137.9, Avg(ms): 98.7, 50th(ms): 75.5, 90th(ms): 176.2, 95th(ms): 218.1, 99th(ms): 352.3, 99.9th(ms): 486.5, Max(ms): 604.0
+[Summary] DELIVERY_ERR - Takes(s): 299.7, Count: 2, TPM: 0.4, Sum(ms): 94.5, Avg(ms): 46.8, 50th(ms): 7.9, 90th(ms): 88.1, 95th(ms): 88.1, 99th(ms): 88.1, 99.9th(ms): 88.1, Max(ms): 88.1
+[Summary] NEW_ORDER - Takes(s): 299.9, Count: 33007, TPM: 6602.7, Sum(ms): 1034428.7, Avg(ms): 31.4, 50th(ms): 24.1, 90th(ms): 60.8, 95th(ms): 71.3, 99th(ms): 88.1, 99.9th(ms): 109.1, Max(ms): 1040.2
+[Summary] NEW_ORDER_ERR - Takes(s): 299.9, Count: 2, TPM: 0.4, Sum(ms): 75.1, Avg(ms): 37.5, 50th(ms): 28.3, 90th(ms): 48.2, 95th(ms): 48.2, 99th(ms): 48.2, 99.9th(ms): 48.2, Max(ms): 48.2
+[Summary] ORDER_STATUS - Takes(s): 299.8, Count: 2954, TPM: 591.3, Sum(ms): 19726.8, Avg(ms): 6.7, 50th(ms): 6.8, 90th(ms): 9.4, 95th(ms): 10.5, 99th(ms): 14.7, 99.9th(ms): 29.4, Max(ms): 37.7
+[Summary] PAYMENT - Takes(s): 299.9, Count: 31773, TPM: 6355.8, Sum(ms): 1617272.1, Avg(ms): 50.9, 50th(ms): 52.4, 90th(ms): 71.3, 95th(ms): 79.7, 99th(ms): 96.5, 99.9th(ms): 121.6, Max(ms): 1040.2
+[Summary] PAYMENT_ERR - Takes(s): 299.9, Count: 6, TPM: 1.2, Sum(ms): 95.3, Avg(ms): 16.2, 50th(ms): 11.0, 90th(ms): 28.3, 95th(ms): 39.8, 99th(ms): 39.8, 99.9th(ms): 39.8, Max(ms): 39.8
+[Summary] STOCK_LEVEL - Takes(s): 299.8, Count: 2912, TPM: 582.8, Sum(ms): 30707.6, Avg(ms): 10.5, 50th(ms): 10.5, 90th(ms): 13.6, 95th(ms): 15.7, 99th(ms): 21.0, 99.9th(ms): 31.5, Max(ms): 48.2
+tpmC: 6602.7, tpmTotal: 14704.8, efficiency: 51343.0%
+```
