@@ -278,10 +278,16 @@ Total nodes: 15
   - IDC Prod 一個產品一個叢集
   - `Prod 一個叢集` 還是 `DR Site 一個叢集`
 
-
 #### 延伸討論
-- 資料同步與一致性的複雜度
-- 就算有 TiDB 了以後，我們需要 `Active/Active` 還是 `Active/Standby`
+- Cost / Budget 成本
+- Availability / SLA 可用性
+- Performance / Latency 效能
+- Data Isolation / Compliance 資料隔離
+- Operational Complexity 運維負擔
+- Scalability / Flexibility 可擴展性
+
+- 資料同步與一致性的複雜度會在哪個面向發生
+- 就算有 TiDB 了以後，如果跨專線的架構效能滿足部分產品需求後，我們需要 `Active/Active` 還是 `Active/Standby`?
 
 ---
 
