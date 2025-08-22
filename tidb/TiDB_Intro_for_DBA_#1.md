@@ -279,10 +279,6 @@ Total nodes: 15
   - `Prod 一個叢集` 還是 `DR Site 一個叢集`
 
 
-
-
-
-
 #### 延伸討論
 - 資料同步與一致性的複雜度
 - 就算有 TiDB 了以後，我們需要 `Active/Active` 還是 `Active/Standby`
