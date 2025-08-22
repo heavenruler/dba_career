@@ -430,4 +430,65 @@ multi_thread_multi_conn   10000           19.633               0.00            2
 ==================================
 ==================================
 
+- proxy.local-tidb-only: true Enabled.
+
+RPS by TiDB from IDC
+```
+
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+multi_thread_multi_conn   10000           1.621                0.00            16.223          616.42          1
+multi_thread_multi_conn   10000           22.404               0.00            2.480           4032.83         100
+multi_thread_multi_conn   10000           32.102               0.00            3.041           3288.04         200
+multi_thread_multi_conn   10000           37.940               23.24           2.777           3601.46         250
+multi_thread_multi_conn   10000           11.716               0.00            1.287           7770.02         500
+multi_thread_multi_conn   10000           17.869               0.00            3.039           3290.03         750
+multi_thread_multi_conn   10000           15.962               0.00            2.709           3691.66         1000
+```
+
+RPS by TiProxy from IDC
+```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+multi_thread_multi_conn   10000           2.657                0.00            26.584          376.17          1
+multi_thread_multi_conn   10000           26.407               0.00            2.979           3357.26         100
+multi_thread_multi_conn   10000           36.488               0.00            2.181           4585.49         200
+multi_thread_multi_conn   10000           79.648               18.58           6.698           1493.07         250
+multi_thread_multi_conn   10000           38.505               0.00            1.569           6372.31         500
+multi_thread_multi_conn   10000           75.009               0.00            4.053           2467.54         750
+multi_thread_multi_conn   10000           30.631               0.00            2.284           4378.30         1000
+```
+
+RPS by TiDB from GCP
+```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+multi_thread_multi_conn   10000           0.999                0.00            10.001          999.88          1
+multi_thread_multi_conn   10000           30.557               0.00            3.393           2946.98         100
+multi_thread_multi_conn   10000           43.938               20.67           5.823           1717.21         200
+multi_thread_multi_conn   10000           32.614               2.48            1.894           5280.44         250
+multi_thread_multi_conn   10000           11.716               0.00            1.287           7770.02         500
+multi_thread_multi_conn   10000           20.772               0.00            5.790           1727.13         750
+multi_thread_multi_conn   10000           8.276                0.00            3.158           3166.32         1000
+```
+
+RPS by TiProxy from GCP
+```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+multi_thread_multi_conn   10000           33.676               0.00            336.774         29.69           1
+multi_thread_multi_conn   10000           32.353               0.00            3.390           2950.05         100
+multi_thread_multi_conn   10000           36.594               0.00            2.227           4490.61         200
+multi_thread_multi_conn   10000           36.540               0.00            2.003           4991.53         250
+multi_thread_multi_conn   10000           47.398               0.00            2.242           4460.24         500
+multi_thread_multi_conn   10000           54.477               0.00            3.406           2936.10         750
+multi_thread_multi_conn   10000           72.247               0.00            3.285           3043.94         1000
+```
+
+==================================
+==================================
+==================================
+==================================
+
+
 - Galera Cluster 可以與哪個參數比較？
