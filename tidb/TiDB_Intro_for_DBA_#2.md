@@ -146,7 +146,7 @@
 - 不同 TiDB Cluster Component Scale Strategy 對效能的影響
 - 分散式資料庫與 Galera 相關指標比較
 
-## RPS 分析
+## RPS 分析 [Reference: TiDB #1 RPS](https://docs.google.com/spreadsheets/d/1GD0cZPNAewVus_SLHmNDLrb_ZcD-lfzc48bRB1VgRn4/)
 ```
 ```
 
