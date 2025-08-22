@@ -483,5 +483,24 @@ multi_thread_multi_conn   10000           44.595               0.00            3
 ==================================
 ==================================
 
+- tidb numbers updated 3 to 9.
 
-- Galera Cluster 可以與哪個參數比較？
+RPS by TiProxy from IDC
+```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+multi_thread_multi_conn   10000           2.922                0.00            29.235          342.05          1
+multi_thread_multi_conn   10000           27.333               0.00            3.049           3279.77         100
+multi_thread_multi_conn   10000           23.915               0.00            1.542           6484.21         200
+multi_thread_multi_conn   10000           38.827               0.00            2.854           3503.64         250
+multi_thread_multi_conn   10000           38.870               0.00            2.445           4089.65         500
+multi_thread_multi_conn   10000           41.807               0.00            3.432           2913.89         750
+multi_thread_multi_conn   10000           32.753               0.00            2.866           3489.45         1000
+```
+
+==================================
+==================================
+==================================
+==================================
+
+- Galera Cluster 可以與哪些數據能參與比較？
