@@ -133,6 +133,8 @@
 
 ## 數據解讀有哪些關鍵指標需要關注
 
+- 有沒有經過 NAT Load Balance 差異
+- 直接存取 TiDB / TiProxy 差異
 - 分散式資料庫 RPS 指標
 - 分散式資料庫 Sysbench 指標
 - 分散式資料庫 TPC-C 指標
