@@ -580,9 +580,9 @@ Storage: NVMe 375GB
 
 #### [How to Scale Your TiDB Cluster](https://docs.pingcap.com/tidbcloud/scale-tidb-cluster/)
 
-- Node number of TiDB, TiKV, and TiFlash
-- vCPU and RAM of TiDB, TiKV, and TiFlash
-- Storage of TiKV and TiFlash
+- Node number of TiDB, TiKV
+- vCPU and RAM of TiDB, TiKV
+- Storage of TiKV
 
 ```
 # scale_out_tiproxy.yaml
