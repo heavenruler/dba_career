@@ -132,8 +132,17 @@
 ---
 
 ## 數據解讀有哪些關鍵指標需要關注
-```
-```
+
+- 分散式資料庫 RPS 指標
+- 分散式資料庫 Sysbench 指標
+- 分散式資料庫 TPC-C 指標
+- Latency 與 Performance 的影響
+- 跨專線的延遲對 Performance 的影響及應對
+- Scale 辦法對 Performance 的影響
+  - Scale UP
+  - Scale Out
+- 不同 TiDB Cluster Component Scale Strategy 對效能的影響
+- 分散式資料庫與 Galera 相關指標比較
 
 ## RPS 分析
 ```
