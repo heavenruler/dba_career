@@ -147,8 +147,78 @@
 - 分散式資料庫與 Galera 相關指標比較
 
 ## RPS 分析 [Reference: TiDB #1 RPS](https://docs.google.com/spreadsheets/d/1GD0cZPNAewVus_SLHmNDLrb_ZcD-lfzc48bRB1VgRn4/)
-```
-```
+
+### TiDB 直連 vs Load Balance
+
+- Threads=200 起，Load Balance RPS 明顯下降，Error Rate 最高到 13%。
+- 直連在高併發 (1000 threads) 下仍維持 3.2K RPS，Load Balance 僅 1.6K RPS。
+
+### TiProxy 直連 vs Load Balance
+
+- TiProxy 直連 RPS 在高 Thread 時表現穩定 (~3K RPS)。
+- 加上 Load Balance 後，在 Thread=750/1000 時掉到 1.3K–1.4K RPS。
+
+### IDC → GCP vs GCP → GCP
+
+- 延遲顯著：IDC → GCP 平均 latency 基本 `~30ms+`，而 GCP 內部僅 `1–2ms`。
+- RPS 在相同 Threads 下，GCP→GCP 仍優於 IDC→GCP。 `# 避免跨區存取`
+
+### Error Rate 熱點
+
+- TiDB + LB：Threads≥200 即出現錯誤，最高 30%。
+- GCP→GCP 測試時，TiDB + LB 錯誤率也高達 25.6%。
+- TiProxy 在大多情況下錯誤率為 0，表現更穩定。
+
+### Scale Out / IDC 同區
+
+- TiDB + LB – RPS 對比
+  - IDC ×1 雖然 RPS 稍低，但錯誤率控制在可接受範圍。
+  - IDC ×3 在高 Threads (≥500) 下 RPS 更高，但錯誤率急升到 30%。
+- TiProxy + LB – RPS 對比
+  - IDC ×3 明顯優於 IDC ×1，尤其在高 Threads 時，RPS 可到 5K。
+  - 錯誤率仍維持 0%，穩定度高。
+
+- TiProxy + LB 在 IDC ×3 時，Latency 在 20–40ms 區間且穩定。
+
+### TiDB + LB 數據比較
+| Threads | IDC ×1 RPS | IDC ×3 RPS | Error % (IDC×1) | Error % (IDC×3) | Latency (ms) IDC×1 | Latency (ms) IDC×3 |
+|---------|------------|------------|-----------------|-----------------|--------------------|--------------------|
+| 1       | 732        | 600        | 0%              | 0%              | 9.8                | 8.9                |
+| 100     | 3,321      | 3,712      | 0%              | 0%              | 29                 | 26                 |
+| 200     | 2,371      | 2,086      | 0%              | 0%              | 87                 | 96                 |
+| 250     | 2,730      | 2,608      | 0%              | 0%              | 92                 | 96                 |
+| 500     | 1,448      | 2,530      | 0%              | 30%             | 54                 | 21                 |
+| 750     | 1,466      | 2,122      | 0%              | 27%             | 86                 | 52                 |
+| 1000    | 1,676      | 1,834      | 0%              | 20%             | 134                | 74                 |
+
+### TiProxy + LB 數據比較
+| Threads | IDC ×1 RPS | IDC ×3 RPS | Error % (IDC×1) | Error % (IDC×3) | Latency (ms) IDC×1 | Latency (ms) IDC×3 |
+|---------|------------|------------|-----------------|-----------------|--------------------|--------------------|
+| 1       | 488        | 386        | 0%              | 0%              | 25                 | 22                 |
+| 100     | 2,584      | 3,443      | 0%              | 0%              | 39                 | 30                 |
+| 200     | 2,772      | 2,630      | 0%              | 0%              | 72                 | 73                 |
+| 250     | 2,457      | 3,704      | 0%              | 0%              | 90                 | 70                 |
+| 500     | 2,650      | 5,188      | 0%              | 0%              | 56                 | 27                 |
+| 750     | 1,371      | 2,794      | 0%              | 0%              | 91                 | 40                 |
+| 1000    | 1,473      | 3,792      | 0%              | 0%              | 142                | 39                 |
+
+---
+
+### Scale Out / 跨 IDC–GCP 混合部署
+
+- 分散測試 (IDC×N + GCP×N) 時，TiProxy 明顯比 TiDB+LB 穩定。
+- 可觀察到越多 IDC 節點加入，錯誤率提升，但 TiProxy 調度支撐度較佳，RPS 保持在 3K–6K 左右。
+
+### Summary
+- TiProxy+LB 穩定度優於 TiDB+LB，錯誤率幾乎為 0。
+- 跨 IDC 對 Latency 與 Error 影響劇烈，盡量減少長距離流量。
+- Scale 策略建議優先 Scale Out TiProxy，再依照熱點調整 PD / TiKV / TiDB 節點。
+
+
+
+
+
+
 
 ## Benchmark 分析
 ```
