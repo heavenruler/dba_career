@@ -2,6 +2,8 @@
 
 RPS From TiDB
 ```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
 multi_thread_multi_conn   10000           1.283                0.00            12.844          778.56          1
 multi_thread_multi_conn   10000           19.550               0.00            2.084           4797.60         100
 multi_thread_multi_conn   10000           36.055               0.00            2.024           4939.65         200
@@ -53,6 +55,8 @@ multi_thread_multi_conn   10000           299.571              0.00            6
 
 RPS From TiDB ; Connect From IDC
 ```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
 multi_thread_multi_conn   10000           29.863               0.00            298.654         33.48           1
 multi_thread_multi_conn   10000           38.139               0.00            3.927           2546.21         100
 multi_thread_multi_conn   10000           72.666               0.00            3.874           2581.29         200
@@ -104,6 +108,8 @@ multi_thread_multi_conn   10000           527.272              0.00            7
 
 RPS From TiDB passthrough A10 NAT
 ```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
 multi_thread_multi_conn   10000           1.664                0.00            16.657          600.34          1
 multi_thread_multi_conn   10000           22.738               0.00            2.694           3712.11         100
 multi_thread_multi_conn   10000           40.300               0.00            4.795           2085.69         200
@@ -132,6 +138,8 @@ multi_thread_multi_conn   10000           29.584               0.00            2
 
 RPS From TiDB passthrough GCP Load Balance (#10.160.152.25:4000)
 ```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
 multi_thread_multi_conn   10000           1.053                0.00            10.538          948.95          1
 multi_thread_multi_conn   10000           29.547               0.00            3.312           3019.17         100
 multi_thread_multi_conn   10000           48.152               20.63           5.839           1712.52         200
@@ -161,6 +169,8 @@ multi_thread_multi_conn   10000           24.919               30.66           5
 
 RPS From TiDB with IDC
 ```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
 multi_thread_multi_conn   10000           1.455                0.00            14.566          686.54          1
 multi_thread_multi_conn   10000           28.748               0.00            3.166           3158.77         100
 multi_thread_multi_conn   10000           61.280               11.32           4.216           2372.00         200
@@ -212,6 +222,8 @@ multi_thread_multi_conn   10000           50.684               0.00            3
 
 RPS From TiDB with IDC
 ```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
 multi_thread_multi_conn   10000           1.558                0.00            15.590          641.42          1
 multi_thread_multi_conn   10000           24.899               0.00            2.854           3503.67         100
 multi_thread_multi_conn   10000           39.203               0.00            4.533           2206.28         200
@@ -263,6 +275,8 @@ multi_thread_multi_conn   10000           177.149              0.00            3
 
 RPS From TiDB with IDC
 ```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
 multi_thread_multi_conn   10000           1.605                0.00            16.064          622.51          1
 multi_thread_multi_conn   10000           22.498               0.00            2.578           3878.91         100
 multi_thread_multi_conn   10000           41.033               1.06            3.366           2970.50         200
@@ -314,6 +328,8 @@ multi_thread_multi_conn   10000           54.022               0.00            3
 
 RPS From TiDB with IDC
 ```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
 multi_thread_multi_conn   10000           1.480                0.00            14.814          675.02          1
 multi_thread_multi_conn   10000           23.210               0.00            2.567           3896.01         100
 multi_thread_multi_conn   10000           46.773               8.86            3.883           2575.13         200
@@ -361,10 +377,12 @@ multi_thread_multi_conn   10000           46.738               0.00            3
 ==================================
 ==================================
 
-- IDC * 2 + GCP * 3 (兩機房同時執行 RPS 測試)
+- IDC * 2 + GCP * 3 (RPS Benchmark co-work)
 
 RPS From TiDB with IDC
 ```
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
 multi_thread_multi_conn   10000           1.485                0.00            14.863          672.81          1
 multi_thread_multi_conn   10000           24.372               0.00            2.753           3632.48         100
 multi_thread_multi_conn   10000           54.522               8.53            3.941           2537.45         200
