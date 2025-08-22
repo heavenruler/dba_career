@@ -434,49 +434,48 @@ multi_thread_multi_conn   10000           19.633               0.00            2
 
 RPS by TiDB from IDC
 ```
-
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
 ------------------------------------------------------------------------------------------------------------------------
-multi_thread_multi_conn   10000           1.621                0.00            16.223          616.42          1
-multi_thread_multi_conn   10000           22.404               0.00            2.480           4032.83         100
-multi_thread_multi_conn   10000           32.102               0.00            3.041           3288.04         200
-multi_thread_multi_conn   10000           37.940               23.24           2.777           3601.46         250
-multi_thread_multi_conn   10000           11.716               0.00            1.287           7770.02         500
-multi_thread_multi_conn   10000           17.869               0.00            3.039           3290.03         750
-multi_thread_multi_conn   10000           15.962               0.00            2.709           3691.66         1000
+multi_thread_multi_conn   10000           1.817                0.00            18.182          550.00          1
+multi_thread_multi_conn   10000           23.275               0.00            2.670           3745.56         100
+multi_thread_multi_conn   10000           42.806               0.00            2.690           3716.86         200
+multi_thread_multi_conn   10000           65.753               23.24           4.012           2492.38         250
+multi_thread_multi_conn   10000           26.391               4.00            3.565           2804.78         500
+multi_thread_multi_conn   10000           22.936               10.49           4.379           2283.79         750
+multi_thread_multi_conn   10000           21.062               8.77            6.277           1593.01         1000
 ```
 
 RPS by TiProxy from IDC
 ```
-multi_thread_multi_conn   10000           2.657                0.00            26.584          376.17          1
-multi_thread_multi_conn   10000           26.407               0.00            2.979           3357.26         100
-multi_thread_multi_conn   10000           36.488               0.00            2.181           4585.49         200
-multi_thread_multi_conn   10000           79.648               18.58           6.698           1493.07         250
-multi_thread_multi_conn   10000           38.505               0.00            1.569           6372.31         500
-multi_thread_multi_conn   10000           75.009               0.00            4.053           2467.54         750
-multi_thread_multi_conn   10000           30.631               0.00            2.284           4378.30         1000
+multi_thread_multi_conn   10000           3.217                0.00            32.181          310.74          1
+multi_thread_multi_conn   10000           24.772               0.00            2.733           3659.35         100
+multi_thread_multi_conn   10000           29.449               0.00            1.943           5147.61         200
+multi_thread_multi_conn   10000           56.849               0.00            2.879           3473.39         250
+multi_thread_multi_conn   10000           48.835               0.00            2.314           4320.73         500
+multi_thread_multi_conn   10000           52.644               0.00            5.662           1766.06         750
+multi_thread_multi_conn   10000           35.884               0.00            3.935           2541.57         1000
 ```
 
-RPS by TiDB from GCP {FIXME}
+RPS by TiDB from GCP
 ```
-multi_thread_multi_conn   10000           0.999                0.00            10.001          999.88          1
-multi_thread_multi_conn   10000           30.557               0.00            3.393           2946.98         100
-multi_thread_multi_conn   10000           43.938               20.67           5.823           1717.21         200
-multi_thread_multi_conn   10000           32.614               2.48            1.894           5280.44         250
-multi_thread_multi_conn   10000           11.716               0.00            1.287           7770.02         500
-multi_thread_multi_conn   10000           20.772               0.00            5.790           1727.13         750
-multi_thread_multi_conn   10000           8.276                0.00            3.158           3166.32         1000
+multi_thread_multi_conn   10000           1.018                0.00            10.188          981.52          1
+multi_thread_multi_conn   10000           30.415               0.00            3.373           2964.71         100
+multi_thread_multi_conn   10000           23.797               0.00            1.529           6538.41         200
+multi_thread_multi_conn   10000           31.225               2.50            1.845           5419.67         250
+multi_thread_multi_conn   10000           49.887               0.00            1.882           5314.17         500
+multi_thread_multi_conn   10000           20.769               0.00            5.948           1681.14         750
+multi_thread_multi_conn   10000           13.792               0.00            3.568           2802.84         1000
 ```
 
 RPS by TiProxy from GCP
 ```
-multi_thread_multi_conn   10000           33.676               0.00            336.774         29.69           1
-multi_thread_multi_conn   10000           32.353               0.00            3.390           2950.05         100
-multi_thread_multi_conn   10000           36.594               0.00            2.227           4490.61         200
-multi_thread_multi_conn   10000           36.540               0.00            2.003           4991.53         250
-multi_thread_multi_conn   10000           47.398               0.00            2.242           4460.24         500
-multi_thread_multi_conn   10000           54.477               0.00            3.406           2936.10         750
-multi_thread_multi_conn   10000           72.247               0.00            3.285           3043.94         1000
+multi_thread_multi_conn   10000           34.930               0.00            349.312         28.63           1
+multi_thread_multi_conn   10000           200.385              0.00            22.900          436.68          100
+multi_thread_multi_conn   10000           38.948               0.00            3.662           2730.51         200
+multi_thread_multi_conn   10000           38.493               0.00            2.064           4844.78         250
+multi_thread_multi_conn   10000           58.567               0.00            2.470           4047.88         500
+multi_thread_multi_conn   10000           55.983               0.00            2.668           3748.27         750
+multi_thread_multi_conn   10000           44.595               0.00            3.152           3172.17         1000
 ```
 
 ==================================
