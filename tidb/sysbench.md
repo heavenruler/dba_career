@@ -1,36 +1,4 @@
-## [Sysbench](https://docs.pingcap.com/zh/tidb/stable/benchmark-tidb-using-sysbench/)
-
-- Tuning
-    - TiDB
-        - log.level: "error"
-    - TiKV
-        - log.level: "error"
-        - storage.block-cache.capacity: "6GB"
-
 - IDC * 1
-Cluster Summary
-```
-[root@l-k8s-labroom-1 ~]# make display
-date ; tiup cluster display tidb-demo
-Mon Aug 18 09:52:53 CST 2025
-Cluster type:       tidb
-Cluster name:       tidb-demo
-Cluster version:    v8.5.2
-Deploy user:        root
-SSH type:           builtin
-Dashboard URL:      http://172.24.40.17:2379/dashboard
-Dashboard URLs:     http://172.24.40.17:2379/dashboard
-Grafana URL:        http://172.24.40.20:3000
-ID                  Role        Host          Ports        OS/Arch       Status   Data Dir                         Deploy Dir
---                  ----        ----          -----        -------       ------   --------                         ----------
-172.24.40.20:3000   grafana     172.24.40.20  3000         linux/x86_64  Up       -                                /data/tidb-deploy/grafana-3000
-172.24.40.17:2379   pd          172.24.40.17  2379/2380    linux/x86_64  Up|L|UI  /data/tidb-data/pd-2379          /data/tidb-deploy/pd-2379
-172.24.40.20:9090   prometheus  172.24.40.20  9090/12020   linux/x86_64  Up       /data/tidb-data/prometheus-9090  /data/tidb-deploy/prometheus-9090
-172.24.40.17:4000   tidb        172.24.40.17  4000/10080   linux/x86_64  Up       -                                /data/tidb-deploy/tidb-4000
-172.24.40.17:20160  tikv        172.24.40.17  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160       /data/tidb-deploy/tikv-20160
-172.24.40.17:6000   tiproxy     172.24.40.17  6000/6001    linux/x86_64  Up       -                                /data/tidb-deploy/tiproxy-6000
-Total nodes: 6
-```
 
 Benchmark from TiDB
 ```
@@ -57,34 +25,6 @@ select_random_ranges  3.55                          2.37                  27.49 
 ```
 
 - IDC * 3 (4vCPU 8GB Ram)
-Cluster Summary
-```
-[root@l-k8s-labroom-1 ~]# make display
-date ; tiup cluster display tidb-demo
-Mon Aug 18 11:31:24 CST 2025
-Cluster type:       tidb
-Cluster name:       tidb-demo
-Cluster version:    v8.5.2
-Deploy user:        root
-SSH type:           builtin
-Dashboard URL:      http://172.24.40.17:2379/dashboard
-Dashboard URLs:     http://172.24.40.17:2379/dashboard
-ID                  Role     Host          Ports        OS/Arch       Status  Data Dir                    Deploy Dir
---                  ----     ----          -----        -------       ------  --------                    ----------
-172.24.40.17:2379   pd       172.24.40.17  2379/2380    linux/x86_64  Up|UI   /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.18:2379   pd       172.24.40.18  2379/2380    linux/x86_64  Up      /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.19:2379   pd       172.24.40.19  2379/2380    linux/x86_64  Up|L    /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.17:4000   tidb     172.24.40.17  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-172.24.40.18:4000   tidb     172.24.40.18  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-172.24.40.19:4000   tidb     172.24.40.19  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-172.24.40.17:20160  tikv     172.24.40.17  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.18:20160  tikv     172.24.40.18  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.19:20160  tikv     172.24.40.19  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.17:6000   tiproxy  172.24.40.17  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.18:6000   tiproxy  172.24.40.18  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.19:6000   tiproxy  172.24.40.19  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-Total nodes: 12
-```
 
 Benchmark from TiDB
 ```
@@ -111,31 +51,6 @@ select_random_ranges  3.19                          1.93                  19.37 
 ```
 
 - IDC * 3 (8vCPU 16GB Ram)
-Cluster Summary
-```
-Wed Aug 20 10:26:57 CST 2025
-Cluster type:       tidb
-Cluster name:       tidb-demo
-Cluster version:    v8.5.2
-Deploy user:        root
-SSH type:           builtin
-Dashboard URL:      http://172.24.40.17:2379/dashboard
-Dashboard URLs:     http://172.24.40.17:2379/dashboard
-ID                  Role     Host          Ports        OS/Arch       Status   Data Dir                    Deploy Dir
---                  ----     ----          -----        -------       ------   --------                    ----------
-172.24.40.17:2379   pd       172.24.40.17  2379/2380    linux/x86_64  Up|L|UI  /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.18:2379   pd       172.24.40.18  2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.19:2379   pd       172.24.40.19  2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.17:4000   tidb     172.24.40.17  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-172.24.40.18:4000   tidb     172.24.40.18  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-172.24.40.19:4000   tidb     172.24.40.19  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-172.24.40.17:20160  tikv     172.24.40.17  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.18:20160  tikv     172.24.40.18  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.19:20160  tikv     172.24.40.19  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.17:6000   tiproxy  172.24.40.17  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.18:6000   tiproxy  172.24.40.18  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.19:6000   tiproxy  172.24.40.19  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-```
 
 Benchmark from TiDB
 ```
@@ -162,26 +77,6 @@ select_random_ranges  2.52                          1.78                  13.92 
 ```
 
 - GCP * 1
-Cluster Summary
-```
-[root@l-k8s-labroom-1 ~]# make display
-date ; tiup cluster display tidb-demo
-Mon Aug 18 13:22:16 CST 2025
-Cluster type:       tidb
-Cluster name:       tidb-demo
-Cluster version:    v8.5.2
-Deploy user:        root
-SSH type:           builtin
-Dashboard URL:      http://10.160.152.21:2379/dashboard
-Dashboard URLs:     http://10.160.152.21:2379/dashboard
-ID                   Role     Host           Ports        OS/Arch       Status   Data Dir                    Deploy Dir
---                   ----     ----           -----        -------       ------   --------                    ----------
-10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|L|UI  /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-Total nodes: 4
-```
 
 Benchmark from TiDB
 ```
@@ -208,32 +103,6 @@ select_random_ranges  5.09                          3.27                  25.38 
 ```
 
 - GCP * 3
-Cluster Summary
-```
-Mon Aug 18 15:32:31 CST 2025
-Cluster type:       tidb
-Cluster name:       tidb-demo
-Cluster version:    v8.5.2
-Deploy user:        root
-SSH type:           builtin
-Dashboard URL:      http://10.160.152.21:2379/dashboard
-Dashboard URLs:     http://10.160.152.21:2379/dashboard
-ID                   Role     Host           Ports        OS/Arch       Status   Data Dir                    Deploy Dir
---                   ----     ----           -----        -------       ------   --------                    ----------
-10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|L|UI  /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.22:2379   pd       10.160.152.22  2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.23:2379   pd       10.160.152.23  2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-10.160.152.22:4000   tidb     10.160.152.22  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-10.160.152.23:4000   tidb     10.160.152.23  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.22:20160  tikv     10.160.152.22  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.23:20160  tikv     10.160.152.23  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-10.160.152.22:6000   tiproxy  10.160.152.22  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-10.160.152.23:6000   tiproxy  10.160.152.23  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-Total nodes: 12
-```
 
 Benchmark from TiDB
 ```
@@ -260,31 +129,6 @@ select_random_ranges  2.66                          1.82                  15.72 
 ```
 
 - IDC * 1 + GCP * 2
-Cluster Summary
-```
-Wed Aug 20 00:39:43 CST 2025
-Cluster type:       tidb
-Cluster name:       tidb-demo
-Cluster version:    v8.5.2
-Deploy user:        root
-SSH type:           builtin
-Dashboard URL:      http://10.160.152.21:2379/dashboard
-Dashboard URLs:     http://10.160.152.21:2379/dashboard
-ID                   Role     Host           Ports        OS/Arch       Status  Data Dir                    Deploy Dir
---                   ----     ----           -----        -------       ------  --------                    ----------
-10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|UI   /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.22:2379   pd       10.160.152.22  2379/2380    linux/x86_64  Up      /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.17:2379    pd       172.24.40.17   2379/2380    linux/x86_64  Up|L    /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-10.160.152.22:4000   tidb     10.160.152.22  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-172.24.40.17:4000    tidb     172.24.40.17   4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.22:20160  tikv     10.160.152.22  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.17:20160   tikv     172.24.40.17   20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-10.160.152.22:6000   tiproxy  10.160.152.22  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.17:6000    tiproxy  172.24.40.17   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-```
 
 Benchmark from TiDB with IDC
 ```
@@ -337,31 +181,6 @@ select_random_ranges  15.83                         15.43                 434.78
 ```
 
 - IDC * 2 + GCP * 1
-Cluster Summary
-```
-Wed Aug 20 01:41:23 CST 2025
-Cluster type:       tidb
-Cluster name:       tidb-demo
-Cluster version:    v8.5.2
-Deploy user:        root
-SSH type:           builtin
-Dashboard URL:      http://10.160.152.21:2379/dashboard
-Dashboard URLs:     http://10.160.152.21:2379/dashboard
-ID                   Role     Host           Ports        OS/Arch       Status  Data Dir                    Deploy Dir
---                   ----     ----           -----        -------       ------  --------                    ----------
-10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|UI   /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.17:2379    pd       172.24.40.17   2379/2380    linux/x86_64  Up      /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.18:2379    pd       172.24.40.18   2379/2380    linux/x86_64  Up|L    /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-172.24.40.17:4000    tidb     172.24.40.17   4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-172.24.40.18:4000    tidb     172.24.40.18   4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.17:20160   tikv     172.24.40.17   20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.18:20160   tikv     172.24.40.18   20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.17:6000    tiproxy  172.24.40.17   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.18:6000    tiproxy  172.24.40.18   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-```
 
 Benchmark from TiDB with IDC
 ```
@@ -412,39 +231,6 @@ select_random_ranges  12.30                         9.76                  434.01
 ```
 
 - IDC * 3 + GCP * 2
-Cluster Summary
-```
-Tue Aug 19 23:32:47 CST 2025
-Cluster type:       tidb
-Cluster name:       tidb-demo
-Cluster version:    v8.5.2
-Deploy user:        root
-SSH type:           builtin
-Dashboard URL:      http://10.160.152.21:2379/dashboard
-Dashboard URLs:     http://10.160.152.21:2379/dashboard
-ID                   Role     Host           Ports        OS/Arch       Status  Data Dir                    Deploy Dir
---                   ----     ----           -----        -------       ------  --------                    ----------
-10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|UI   /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.22:2379   pd       10.160.152.22  2379/2380    linux/x86_64  Up      /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.17:2379    pd       172.24.40.17   2379/2380    linux/x86_64  Up      /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.18:2379    pd       172.24.40.18   2379/2380    linux/x86_64  Up      /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.19:2379    pd       172.24.40.19   2379/2380    linux/x86_64  Up|L    /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-10.160.152.22:4000   tidb     10.160.152.22  4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-172.24.40.17:4000    tidb     172.24.40.17   4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-172.24.40.18:4000    tidb     172.24.40.18   4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-172.24.40.19:4000    tidb     172.24.40.19   4000/10080   linux/x86_64  Up      -                           /data/tidb-deploy/tidb-4000
-10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.22:20160  tikv     10.160.152.22  20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.17:20160   tikv     172.24.40.17   20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.18:20160   tikv     172.24.40.18   20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.19:20160   tikv     172.24.40.19   20160/20180  linux/x86_64  Up      /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-10.160.152.22:6000   tiproxy  10.160.152.22  6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.17:6000    tiproxy  172.24.40.17   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.18:6000    tiproxy  172.24.40.18   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.19:6000    tiproxy  172.24.40.19   6000/6001    linux/x86_64  Up      -                           /data/tidb-deploy/tiproxy-6000
-```
 
 Benchmark from TiDB with IDC # 離峰
 ```
@@ -495,39 +281,6 @@ select_random_ranges  14.21                         10.31                 522.44
 ```
 
 - IDC * 2 + GCP * 3
-Cluster Summary
-```
-Tue Aug 19 14:58:29 CST 2025
-Cluster type:       tidb
-Cluster name:       tidb-demo
-Cluster version:    v8.5.2
-Deploy user:        root
-SSH type:           builtin
-Dashboard URL:      http://10.160.152.21:2379/dashboard
-Dashboard URLs:     http://10.160.152.21:2379/dashboard
-ID                   Role     Host           Ports        OS/Arch       Status   Data Dir                    Deploy Dir
---                   ----     ----           -----        -------       ------   --------                    ----------
-10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|L|UI  /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.22:2379   pd       10.160.152.22  2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.23:2379   pd       10.160.152.23  2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.17:2379    pd       172.24.40.17   2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.18:2379    pd       172.24.40.18   2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-10.160.152.22:4000   tidb     10.160.152.22  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-10.160.152.23:4000   tidb     10.160.152.23  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-172.24.40.17:4000    tidb     172.24.40.17   4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-172.24.40.18:4000    tidb     172.24.40.18   4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.22:20160  tikv     10.160.152.22  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.23:20160  tikv     10.160.152.23  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.17:20160   tikv     172.24.40.17   20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.18:20160   tikv     172.24.40.18   20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-10.160.152.22:6000   tiproxy  10.160.152.22  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-10.160.152.23:6000   tiproxy  10.160.152.23  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.17:6000    tiproxy  172.24.40.17   6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.18:6000    tiproxy  172.24.40.18   6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-```
 
 Benchmark from TiDB with IDC # 上班時段
 ```
@@ -625,39 +378,6 @@ select_random_ranges  21.89                         19.56                 1309.9
 ```
 
 - IDC * 2 + GCP * 3 (兩機房同時執行 Sysbench 測試)
-Cluster Summary
-```
-Tue Aug 19 14:58:29 CST 2025
-Cluster type:       tidb
-Cluster name:       tidb-demo
-Cluster version:    v8.5.2
-Deploy user:        root
-SSH type:           builtin
-Dashboard URL:      http://10.160.152.21:2379/dashboard
-Dashboard URLs:     http://10.160.152.21:2379/dashboard
-ID                   Role     Host           Ports        OS/Arch       Status   Data Dir                    Deploy Dir
---                   ----     ----           -----        -------       ------   --------                    ----------
-10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|L|UI  /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.22:2379   pd       10.160.152.22  2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.23:2379   pd       10.160.152.23  2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.17:2379    pd       172.24.40.17   2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-172.24.40.18:2379    pd       172.24.40.18   2379/2380    linux/x86_64  Up       /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
-10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-10.160.152.22:4000   tidb     10.160.152.22  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-10.160.152.23:4000   tidb     10.160.152.23  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-172.24.40.17:4000    tidb     172.24.40.17   4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-172.24.40.18:4000    tidb     172.24.40.18   4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
-10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.22:20160  tikv     10.160.152.22  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.23:20160  tikv     10.160.152.23  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.17:20160   tikv     172.24.40.17   20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-172.24.40.18:20160   tikv     172.24.40.18   20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
-10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-10.160.152.22:6000   tiproxy  10.160.152.22  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-10.160.152.23:6000   tiproxy  10.160.152.23  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.17:6000    tiproxy  172.24.40.17   6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-172.24.40.18:6000    tiproxy  172.24.40.18   6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
-```
 
 Benchmark from TiDB with IDC # 上班時段
 ```
@@ -755,228 +475,7 @@ select_random_points  27.66                         21.86                 858.60
 select_random_ranges  22.28                         18.49                 91.00                 11.15                 6488.5000                120.0007                         432.50 per sec.     960005.25           432.50 per sec.
 ```
 
-啟用 proxy.local-tidb-only
-```
-tiproxy_servers:
-  - host: 172.24.40.17
-    port: 6000
-    status_port: 6001
-    config:
-      proxy.local-tidb-only: true
-```
-
-RPS by TiDB from IDC
-```
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.612                0.00            6.137           1629.57         1
-single_thread_multi_conn  10000           0.595                0.00            5.956           1679.07         1
-multi_thread_multi_conn   10000           1.621                0.00            16.223          616.42          1
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.536                0.00            5.368           1862.91         1
-single_thread_multi_conn  10000           0.613                0.00            6.225           1606.35         1
-multi_thread_multi_conn   10000           22.404               0.00            2.480           4032.83         100
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.554                0.00            5.542           1804.36         1
-single_thread_multi_conn  10000           0.645                0.00            6.883           1452.95         1
-multi_thread_multi_conn   10000           32.102               0.00            3.041           3288.04         200
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.547                0.00            5.473           1827.29         1
-single_thread_multi_conn  10000           0.624                0.00            6.463           1547.35         1
-multi_thread_multi_conn   10000           37.940               23.24           2.777           3601.46         250
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.588                0.00            5.879           1701.04         1
-single_thread_multi_conn  10000           0.628                0.00            6.738           1484.01         1
-multi_thread_multi_conn   10000           11.716               0.00            1.287           7770.02         500
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.541                0.00            5.417           1845.90         1
-single_thread_multi_conn  10000           0.641                0.00            7.151           1398.45         1
-multi_thread_multi_conn   10000           17.869               0.00            3.039           3290.03         750
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.567                0.00            5.679           1760.92         1
-single_thread_multi_conn  10000           0.617                0.00            7.428           1346.34         1
-multi_thread_multi_conn   10000           15.962               0.00            2.709           3691.66         1000
-========================================================================================================================
-```
-
-RPS by TiProxy from IDC
-```
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.874                0.00            8.740           1144.14         1
-single_thread_multi_conn  10000           0.649                0.00            6.492           1540.29         1
-multi_thread_multi_conn   10000           2.657                0.00            26.584          376.17          1
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.613                0.00            6.133           1630.54         1
-single_thread_multi_conn  10000           0.837                0.00            8.548           1169.90         1
-multi_thread_multi_conn   10000           26.407               0.00            2.979           3357.26         100
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.664                0.00            6.649           1504.05         1
-single_thread_multi_conn  10000           0.938                0.00            9.766           1023.98         1
-multi_thread_multi_conn   10000           36.488               0.00            2.181           4585.49         200
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.609                0.00            6.097           1640.23         1
-single_thread_multi_conn  10000           0.856                0.00            9.006           1110.38         1
-multi_thread_multi_conn   10000           79.648               18.58           6.698           1493.07         250
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.606                0.00            6.070           1647.46         1
-single_thread_multi_conn  10000           1.732                0.00            19.301          518.12          1
-multi_thread_multi_conn   10000           38.505               0.00            1.569           6372.31         500
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.665                0.00            6.659           1501.74         1
-single_thread_multi_conn  10000           2.056                0.00            24.027          416.19          1
-multi_thread_multi_conn   10000           75.009               0.00            4.053           2467.54         750
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.748                0.00            7.492           1334.73         1
-single_thread_multi_conn  10000           1.871                0.00            22.667          441.17          1
-multi_thread_multi_conn   10000           30.631               0.00            2.284           4378.30         1000
-========================================================================================================================
-```
-
-RPS by TiDB from GCP
-```
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.347                0.00            3.471           2881.41         1
-single_thread_multi_conn  10000           0.344                0.00            3.437           2909.13         1
-multi_thread_multi_conn   10000           0.999                0.00            10.001          999.88          1
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.346                0.00            3.464           2886.74         1
-single_thread_multi_conn  10000           0.370                0.00            3.757           2661.37         1
-multi_thread_multi_conn   10000           30.557               0.00            3.393           2946.98         100
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.341                0.00            3.413           2930.04         1
-single_thread_multi_conn  10000           0.373                0.00            4.032           2480.17         1
-multi_thread_multi_conn   10000           43.938               20.67           5.823           1717.21         200
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.343                0.00            3.429           2915.96         1
-single_thread_multi_conn  10000           0.372                0.00            3.870           2584.04         1
-multi_thread_multi_conn   10000           32.614               2.48            1.894           5280.44         250
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.588                0.00            5.879           1701.04         1
-single_thread_multi_conn  10000           0.628                0.00            6.738           1484.01         1
-multi_thread_multi_conn   10000           11.716               0.00            1.287           7770.02         500
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.354                0.00            3.538           2826.66         1
-single_thread_multi_conn  10000           0.375                0.00            4.209           2376.08         1
-multi_thread_multi_conn   10000           20.772               0.00            5.790           1727.13         750
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           0.344                0.00            3.444           2903.42         1
-single_thread_multi_conn  10000           0.377                0.00            5.320           1879.70         1
-multi_thread_multi_conn   10000           8.276                0.00            3.158           3166.32         1000
-========================================================================================================================
-```
-
-RPS by TiProxy from GCP
-```
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           10.975               0.00            109.773         91.10           1
-single_thread_multi_conn  10000           11.290               0.00            112.927         88.55           1
-multi_thread_multi_conn   10000           33.676               0.00            336.774         29.69           1
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           10.787               0.00            107.900         92.68           1
-single_thread_multi_conn  10000           10.926               0.00            111.419         89.75           1
-multi_thread_multi_conn   10000           32.353               0.00            3.390           2950.05         100
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           11.014               0.00            110.168         90.77           1
-single_thread_multi_conn  10000           11.135               0.00            115.833         86.33           1
-multi_thread_multi_conn   10000           36.594               0.00            2.227           4490.61         200
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           11.307               0.00            113.095         88.42           1
-single_thread_multi_conn  10000           11.533               0.00            121.249         82.48           1
-multi_thread_multi_conn   10000           36.540               0.00            2.003           4991.53         250
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           10.867               0.00            108.701         92.00           1
-single_thread_multi_conn  10000           10.975               0.00            120.564         82.94           1
-multi_thread_multi_conn   10000           47.398               0.00            2.242           4460.24         500
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           10.847               0.00            108.491         92.17           1
-single_thread_multi_conn  10000           11.018               0.00            127.494         78.43           1
-multi_thread_multi_conn   10000           54.477               0.00            3.406           2936.10         750
-========================================================================================================================
-========================================================================================================================
-Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
-------------------------------------------------------------------------------------------------------------------------
-single_thread_single_conn 10000           11.287               0.00            112.898         88.58           1
-single_thread_multi_conn  10000           11.878               0.00            141.657         70.59           1
-multi_thread_multi_conn   10000           72.247               0.00            3.285           3043.94         1000
-========================================================================================================================
-```
-
+- 啟用 proxy.local-tidb-only
 
 Benchmark from TiDB with IDC # 離峰
 ```
@@ -1074,41 +573,4 @@ oltp_read_write       227.40                        186.74                1874.1
 oltp_write_only       58.92                         50.12                 932.64                33.31                 2394.7500                120.0189                         957.55 per sec.     960150.93           159.59 per sec.
 select_random_points  15.55                         9.53                  1705.63               5.53                  12594.5000               119.9952                         839.55 per sec.     959961.28           839.55 per sec.
 select_random_ranges  12.08                         9.36                  669.08                5.65                  12820.5000               119.9945                         854.62 per sec.     959955.73           854.62 per sec.
-```
-
----
-
-## TPC-C benchmark
-> 使用 Percona-Lab/tpcc-mysql ; 不使用 TiUP Bench ; 根據 TiDB 優化過?
-
-### 只參照 sysbench 的問題
-- sysbench交易太單純 → 產能被高估
-- 均勻存取 → 掩蓋熱點與鎖衝突
-- 忽略日誌/複寫 → 產品上線問題逐漸浮現
-
-### 為什麼需要 TPC-C
-- 交易真實性：涵蓋五種交易類型，比例固定，能模擬 ERP / 訂單系統的實際行為。
-- 複雜關聯：多表 JOIN、二級索引、外鍵依賴，能觸發行鎖、間隙鎖與死鎖情境。
-- 查詢計畫穩定性：選擇性變化與複合索引，能反映統計異動導致的計畫抖動。
-- HA/複寫檢驗：能觀察叢集提交延遲，驗證同步/半同步複寫下的 SLA。
-- 資料寫入壓力：TPC-C 有大量新增/更新，能真實測試系統「寫入資料」的穩定性與延遲，而不是只看讀取速度。
-- 併發擴展性：倉庫數量能調整，模擬使用者數成長時，觀察系統是否能隨規模放大而維持效能。
-- 與 sysbench 互補：sysbench 適合微調，TPC-C 則提供端到端 SLA 與產能 (tpmC) 評估。
-
-### [TPC-C benchmark 需要關注哪些指標](https://blog.csdn.net/justlpf/article/details/127516283)
-- tpmC/TPS：越高代表系統能處理的交易產能越強。
-- 延遲 (P95、P99)：顯示交易響應時間分佈，評估 SLA 是否能在實務場景達成。
-- System Load 指標：判斷效能瓶頸主要在計算、記憶體，或磁碟 I/O。
-
-### IDC * 3
-```
-[Summary] DELIVERY - Takes(s): 299.7, Count: 2858, TPM: 572.2, Sum(ms): 282137.9, Avg(ms): 98.7, 50th(ms): 75.5, 90th(ms): 176.2, 95th(ms): 218.1, 99th(ms): 352.3, 99.9th(ms): 486.5, Max(ms): 604.0
-[Summary] DELIVERY_ERR - Takes(s): 299.7, Count: 2, TPM: 0.4, Sum(ms): 94.5, Avg(ms): 46.8, 50th(ms): 7.9, 90th(ms): 88.1, 95th(ms): 88.1, 99th(ms): 88.1, 99.9th(ms): 88.1, Max(ms): 88.1
-[Summary] NEW_ORDER - Takes(s): 299.9, Count: 33007, TPM: 6602.7, Sum(ms): 1034428.7, Avg(ms): 31.4, 50th(ms): 24.1, 90th(ms): 60.8, 95th(ms): 71.3, 99th(ms): 88.1, 99.9th(ms): 109.1, Max(ms): 1040.2
-[Summary] NEW_ORDER_ERR - Takes(s): 299.9, Count: 2, TPM: 0.4, Sum(ms): 75.1, Avg(ms): 37.5, 50th(ms): 28.3, 90th(ms): 48.2, 95th(ms): 48.2, 99th(ms): 48.2, 99.9th(ms): 48.2, Max(ms): 48.2
-[Summary] ORDER_STATUS - Takes(s): 299.8, Count: 2954, TPM: 591.3, Sum(ms): 19726.8, Avg(ms): 6.7, 50th(ms): 6.8, 90th(ms): 9.4, 95th(ms): 10.5, 99th(ms): 14.7, 99.9th(ms): 29.4, Max(ms): 37.7
-[Summary] PAYMENT - Takes(s): 299.9, Count: 31773, TPM: 6355.8, Sum(ms): 1617272.1, Avg(ms): 50.9, 50th(ms): 52.4, 90th(ms): 71.3, 95th(ms): 79.7, 99th(ms): 96.5, 99.9th(ms): 121.6, Max(ms): 1040.2
-[Summary] PAYMENT_ERR - Takes(s): 299.9, Count: 6, TPM: 1.2, Sum(ms): 95.3, Avg(ms): 16.2, 50th(ms): 11.0, 90th(ms): 28.3, 95th(ms): 39.8, 99th(ms): 39.8, 99.9th(ms): 39.8, Max(ms): 39.8
-[Summary] STOCK_LEVEL - Takes(s): 299.8, Count: 2912, TPM: 582.8, Sum(ms): 30707.6, Avg(ms): 10.5, 50th(ms): 10.5, 90th(ms): 13.6, 95th(ms): 15.7, 99th(ms): 21.0, 99.9th(ms): 31.5, Max(ms): 48.2
-tpmC: 6602.7, tpmTotal: 14704.8, efficiency: 51343.0%
 ```
