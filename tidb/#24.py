@@ -1,4 +1,8 @@
-"""Compare GCP * 1 vs GCP * 3 sysbench sections and plot differences (GCP3 - GCP1)."""
+"""Plot ONLY differences (GCP * 3 - GCP * 1) for QPS & TPS.
+
+Style mimics #22/#23: single axes, color per metric (QPS green, TPS red),
+TiDB solid, TiProxy dashed. No original value lines, no third group.
+"""
 
 import re
 import math
@@ -13,6 +17,7 @@ SEC_B = 'GCP * 3'
 
 ROLE_STYLES = {'TiDB': 'solid', 'TiProxy': 'dashed'}
 ROLE_COLORS = {'TiDB': 'tab:blue', 'TiProxy': 'tab:orange'}
+METRIC_COLORS = {'qps': 'tab:green', 'tps': 'tab:red'}
 
 def read_markdown(path: str) -> str:
     with open(path, 'r', encoding='utf-8') as f:
@@ -55,75 +60,65 @@ def parse_table(block: str):
             continue
     return rows
 
-def list_to_map(rows):
-    return {r['oltype']: r for r in rows}
-
-def compute_diff(map_a, map_b, metric):
-    # b - a
-    diff = {}
-    for k in set(map_a.keys()) | set(map_b.keys()):
-        va = map_a.get(k, {}).get(metric, float('nan'))
-        vb = map_b.get(k, {}).get(metric, float('nan'))
-        if math.isnan(va) or math.isnan(vb):
-            diff[k] = float('nan')
-        else:
-            diff[k] = vb - va
-    return diff
-
-def ordered_oltypes(*maps):
-    order = []
-    seen = set()
-    for mp in maps:
-        for k in mp.keys():
+def build_order(*lists):
+    order, seen = [], set()
+    for lst in lists:
+        for r in lst:
+            k = r['oltype']
             if k not in seen:
                 seen.add(k)
                 order.append(k)
     return order
 
-def plot_differences(tidb_a, tidb_b, tiproxy_a, tiproxy_b):
-    # Build maps
-    map_tidb_a = list_to_map(tidb_a)
-    map_tidb_b = list_to_map(tidb_b)
-    map_tiproxy_a = list_to_map(tiproxy_a)
-    map_tiproxy_b = list_to_map(tiproxy_b)
+def align(values_map, order, metric):
+    return [values_map.get(o, {}).get(metric, float('nan')) for o in order]
 
-    # Only QPS & TPS like #21.py style (two subplots)
-    metrics = [
-        ('qps', 'ΔQPS (GCP3 - GCP1)', '{:+.0f}'),
-        ('tps', 'ΔTPS (GCP3 - GCP1)', '{:+.0f}')
-    ]
+def to_map(rows):
+    return {r['oltype']: r for r in rows}
 
-    order = ordered_oltypes(map_tidb_a, map_tidb_b, map_tiproxy_a, map_tiproxy_b)
-    fig, axes = plt.subplots(len(metrics), 1, figsize=(12, 8), sharex=True)
+def plot_all(tidb1, tiproxy1, tidb3, tiproxy3):
+    order = build_order(tidb1, tiproxy1, tidb3, tiproxy3)
+    m_tidb1 = to_map(tidb1)
+    m_tiproxy1 = to_map(tiproxy1)
+    m_tidb3 = to_map(tidb3)
+    m_tiproxy3 = to_map(tiproxy3)
 
-    first_metric = metrics[0][0]
-    for ax, (mkey, ylabel, fmt) in zip(axes, metrics):
-        diff_tidb = compute_diff(map_tidb_a, map_tidb_b, mkey)
-        diff_tiproxy = compute_diff(map_tiproxy_a, map_tiproxy_b, mkey)
-        y_tidb = [diff_tidb.get(o, float('nan')) for o in order]
-        y_tiproxy = [diff_tiproxy.get(o, float('nan')) for o in order]
-        ax.axhline(0, color='#666666', linewidth=1, alpha=0.4)
-        # Lines
-        ax.plot(order, y_tidb, marker='o', color=ROLE_COLORS['TiDB'], linestyle=ROLE_STYLES['TiDB'], label='TiDB Δ' if mkey == first_metric else None)
-        ax.plot(order, y_tiproxy, marker='o', color=ROLE_COLORS['TiProxy'], linestyle=ROLE_STYLES['TiProxy'], label='TiProxy Δ' if mkey == first_metric else None)
-        # Annotations
-        for ox, vy in zip(order, y_tidb):
+    fig, ax = plt.subplots(figsize=(11, 5))
+    metrics = ['qps', 'tps']
+    label_names = {'qps': 'QPS', 'tps': 'TPS'}
+
+    # Differences only
+    for metric in metrics:
+        color = METRIC_COLORS[metric]
+        y_t1 = align(m_tidb1, order, metric)
+        y_t3 = align(m_tidb3, order, metric)
+        y_tp1 = align(m_tiproxy1, order, metric)
+        y_tp3 = align(m_tiproxy3, order, metric)
+        diff_tidb = [b - a if not (math.isnan(b) or math.isnan(a)) else float('nan') for a, b in zip(y_t1, y_t3)]
+        diff_tiproxy = [b - a if not (math.isnan(b) or math.isnan(a)) else float('nan') for a, b in zip(y_tp1, y_tp3)]
+        ax.plot(order, diff_tidb, marker='o', color=color, linestyle=ROLE_STYLES['TiDB'], label=f'TiDB Δ {label_names[metric]}')
+        ax.plot(order, diff_tiproxy, marker='o', color=color, linestyle=ROLE_STYLES['TiProxy'], label=f'TiProxy Δ {label_names[metric]}')
+        for ox, vy in zip(order, diff_tidb):
             if math.isnan(vy):
                 continue
-            ax.annotate(fmt.format(vy), (ox, vy), textcoords='offset points', xytext=(6, -8), fontsize=8, color=ROLE_COLORS['TiDB'])
-        for ox, vy in zip(order, y_tiproxy):
+            ax.annotate(f"{vy:+.0f}", (ox, vy), textcoords='offset points', xytext=(6, -10), fontsize=7, color=color)
+        for ox, vy in zip(order, diff_tiproxy):
             if math.isnan(vy):
                 continue
-            ax.annotate(fmt.format(vy), (ox, vy), textcoords='offset points', xytext=(6, 6), fontsize=8, color=ROLE_COLORS['TiProxy'])
-        ax.set_ylabel(ylabel)
-        ax.grid(True, alpha=0.4)
+            ax.annotate(f"{vy:+.0f}", (ox, vy), textcoords='offset points', xytext=(6, 6), fontsize=7, color=color)
 
-    axes[-1].set_xlabel('OLTP Type')
-    axes[-1].set_xticks(order)
-    handles, labels = axes[0].get_legend_handles_labels()
-    axes[0].legend(handles, labels, ncol=2, fontsize=9)
-    fig.suptitle('GCP * 3 vs GCP * 1 Differences (TiDB solid / TiProxy dashed)', fontsize=14)
-    plt.tight_layout(rect=(0,0,1,0.94))
+    ax.axhline(0, color='#666', linewidth=1, alpha=0.5)
+    ax.set_xlabel('OLTP Type')
+    ax.set_ylabel('Δ (GCP3 - GCP1)')
+    ax.set_title('GCP * 3 - GCP * 1 Differences (QPS & TPS)')
+    ax.grid(True, alpha=0.4)
+    handles, labels = ax.get_legend_handles_labels()
+    seen = set(); final_h=[]; final_l=[]
+    for h,l in zip(handles, labels):
+        if l not in seen:
+            seen.add(l); final_h.append(h); final_l.append(l)
+    ax.legend(final_h, final_l, fontsize=8, ncol=2)
+    fig.tight_layout()
     plt.show()
 
 def main():
@@ -143,7 +138,7 @@ def main():
     tiproxy_a = parse_table(blocks_a[1])
     tidb_b = parse_table(blocks_b[0])
     tiproxy_b = parse_table(blocks_b[1])
-    plot_differences(tidb_a, tidb_b, tiproxy_a, tiproxy_b)
+    plot_all(tidb_a, tiproxy_a, tidb_b, tiproxy_b)
 
 if __name__ == '__main__':
     main()
