@@ -444,7 +444,7 @@ select_random_points  27.66                         21.86                 858.60
 select_random_ranges  22.28                         18.49                 91.00                 11.15                 6488.5000                120.0007                         432.50 per sec.     960005.25           432.50 per sec.
 ```
 
-- 啟用 proxy.local-tidb-only
+- proxy.local-tidb-only enabled
 
 Benchmark from TiDB with IDC # 離峰
 ```
