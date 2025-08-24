@@ -148,7 +148,7 @@ def _create_legend(fig: Figure):
         Line2D([0], [0], color='black', lw=2, linestyle='solid', label='TiDB Direct'),
         Line2D([0], [0], color='black', lw=2, linestyle='dashed', label='TiProxy'),
     ]
-    fig.legend(handles=legend_elems, loc='upper center', bbox_to_anchor=(0.5, 0.99), ncol=5, fontsize=9, frameon=False)
+    fig.legend(handles=legend_elems, loc='upper center', bbox_to_anchor=(0.5, 0.98), ncol=5, fontsize=9, frameon=False)
 
 def plot_combined(tidb_idc: List[SysbenchResult], tiproxy_idc: List[SysbenchResult], 
                   tidb_gcp: List[SysbenchResult], tiproxy_gcp: List[SysbenchResult]):
@@ -161,7 +161,7 @@ def plot_combined(tidb_idc: List[SysbenchResult], tiproxy_idc: List[SysbenchResu
     _create_legend(fig)
     
     ax_gcp.set_xlabel('OLTP Test Type')
-    fig.suptitle(f'Sysbench Benchmark: {SECTION_HEADER}', fontsize=14, y=1.03)
+    fig.suptitle(SECTION_HEADER, fontsize=16, y=0.99)
     fig.tight_layout(rect=(0, 0.02, 1, 0.95))
     plt.show()
 
