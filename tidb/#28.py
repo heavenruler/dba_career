@@ -130,7 +130,7 @@ def _create_legend(fig: Figure):
         Line2D([0], [0], color='black', lw=2, linestyle='solid', label='TiDB'),
         Line2D([0], [0], color='black', lw=2, linestyle='dashed', label='TiProxy'),
     ]
-    fig.legend(handles=legend_elems, loc='upper center', bbox_to_anchor=(0.5, 0.99), ncol=5, fontsize=9, frameon=False)
+    fig.legend(handles=legend_elems, loc='upper center', bbox_to_anchor=(0.5, 0.95), ncol=5, fontsize=9, frameon=False)
 
 def plot_performance_comparison(tidb_on_peak, tiproxy_on_peak, tidb_off_peak, tiproxy_off_peak):
     """Creates and shows the combined plot for On-Peak vs Off-Peak performance."""
@@ -142,8 +142,8 @@ def plot_performance_comparison(tidb_on_peak, tiproxy_on_peak, tidb_off_peak, ti
     _create_legend(fig)
     
     ax_off_peak.set_xlabel('OLTP Test Type')
-    fig.suptitle(f'Performance Comparison for "{SCENARIO_HEADER}" (Access from IDC)', fontsize=16, y=1.03)
-    fig.tight_layout(rect=(0, 0.03, 1, 0.95))
+    fig.suptitle(f'Performance Comparison for "{SCENARIO_HEADER}" (Access from IDC)', fontsize=16, y=0.98)
+    fig.tight_layout(rect=(0, 0.03, 1, 0.93))
     plt.show()
 
 # -------- main -------- #
