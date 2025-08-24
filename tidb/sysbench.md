@@ -220,7 +220,7 @@ select_random_ranges  12.30                         9.76                  434.01
 
 - IDC * 3 + GCP * 2
 
-Benchmark from TiDB with IDC # 離峰
+Benchmark from TiDB with IDC
 ```
 Wed Aug 20 00:00:01 CST 2025
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
@@ -231,7 +231,7 @@ select_random_points  3.68                          2.09                  206.89
 select_random_ranges  6.43                          2.15                  842.92                0.75                  55697.3750               119.9344                         3712.91 per sec.    959475.22           3712.91 per sec.
 ```
 
-Benchmark from TiProxy with IDC # 離峰
+Benchmark from TiProxy with IDC
 ```
 Wed Aug 20 00:00:01 CST 2025
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
@@ -242,7 +242,7 @@ select_random_points  4.33                          2.39                  206.08
 select_random_ranges  3.13                          1.99                  211.58                0.84                  60294.2500               119.9248                         4019.43 per sec.    959398.08           4019.43 per sec.
 ```
 
-Benchmark from TiDB with GCP # 離峰
+Benchmark from TiDB with GCP
 ```
 Tue Aug 19 04:23:21 PM UTC 2025
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
@@ -253,7 +253,7 @@ select_random_points  32.53                         22.12                 1789.8
 select_random_ranges  17.95                         16.66                 506.38                11.53                 7201.2500                120.0014                         480.02 per sec.     960011.43           480.02 per sec.
 ```
 
-Benchmark from TiProxy with GCP # 離峰
+Benchmark from TiProxy with GCP
 ```
 Tue Aug 19 04:23:21 PM UTC 2025
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
