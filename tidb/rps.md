@@ -514,12 +514,3 @@ multi_thread_multi_conn_random_node      10000           13.996               0.
 multi_thread_multi_conn_random_node      10000           24.192               0.00            2.089           4787.52         1000
 multi_thread_multi_conn_random_node      10000           46.991               0.00            13.401          746.19          5000
 ```
-
-```
-OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
-oltp_read_only        110.66                        94.99                 552.32                81.29                 3158.5000                300.0377                         1347.26 per sec.    2400301.38          84.20 per sec.
-oltp_read_write       73.13                         31.88                 767.82                12.73                 9408.8750                299.9912                         5027.75 per sec.    2399929.58          250.86 per sec.
-oltp_write_only       32.53                         16.87                 765.96                8.15                  17781.0000               299.9684                         2844.80 per sec.    2399747.59          474.13 per sec.
-select_random_points  7.56                          6.04                  224.60                4.98                  49676.7500               299.9236                         1324.68 per sec.    2399388.59          1324.68 per sec.
-select_random_ranges  6.67                          5.87                  239.84                4.95                  51052.0000               299.9100                         1361.37 per sec.    2399280.11          1361.37 per sec.
-```
