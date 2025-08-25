@@ -535,3 +535,16 @@ oltp_write_only       58.92                         50.12                 932.64
 select_random_points  15.55                         9.53                  1705.63               5.53                  12594.5000               119.9952                         839.55 per sec.     959961.28           839.55 per sec.
 select_random_ranges  12.08                         9.36                  669.08                5.65                  12820.5000               119.9945                         854.62 per sec.     959955.73           854.62 per sec.
 ```
+
+- Galera Cluster 可以與哪些數據能參與比較？
+
+- Mix GCP / IDC Galera Cluster
+[Traffic is distributed across multi nodes with Multi ProxySQL: (172.24.40.14, 172.24.40.15, 10.160.152.14, 10.160.152.15)](https://codimd.104.com.tw/s/Idn1I_KD2#Traffic-is-distributed-across-multi-nodes-with-Multi-ProxySQL-172244014-172244015-1016015214-1016015215)
+```
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        110.66                        94.99                 552.32                81.29                 3158.5000                300.0377                         1347.26 per sec.    2400301.38          84.20 per sec.
+oltp_read_write       73.13                         31.88                 767.82                12.73                 9408.8750                299.9912                         5027.75 per sec.    2399929.58          250.86 per sec.
+oltp_write_only       32.53                         16.87                 765.96                8.15                  17781.0000               299.9684                         2844.80 per sec.    2399747.59          474.13 per sec.
+select_random_points  7.56                          6.04                  224.60                4.98                  49676.7500               299.9236                         1324.68 per sec.    2399388.59          1324.68 per sec.
+select_random_ranges  6.67                          5.87                  239.84                4.95                  51052.0000               299.9100                         1361.37 per sec.    2399280.11          1361.37 per sec.
+```
