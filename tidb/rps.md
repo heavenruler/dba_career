@@ -508,9 +508,8 @@ multi_thread_multi_conn   10000           32.753               0.00            2
 - Mix GCP / IDC Galera Cluster
 [Traffic is distributed across multi nodes with Multi ProxySQL: (172.24.40.14, 172.24.40.15, 10.160.152.14, 10.160.152.15)](https://codimd.104.com.tw/s/Idn1I_KD2#Traffic-is-distributed-across-multi-nodes-with-Multi-ProxySQL-172244014-172244015-1016015214-1016015215)
 ```
-Test Type                                Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
----------------------------------------------------------------------------------------------------------------------------------------
-multi_thread_multi_conn_random_node      10000           13.996               0.00            2.255           4433.66         100
-multi_thread_multi_conn_random_node      10000           24.192               0.00            2.089           4787.52         1000
-multi_thread_multi_conn_random_node      10000           46.991               0.00            13.401          746.19          5000
+Test Type                    Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+-----------------------------------------------------------------------------------------------------------------------
+multi_thread_multi_conn      10000           13.996               0.00            2.255           4433.66         100
+multi_thread_multi_conn      10000           24.192               0.00            2.089           4787.52         1000
 ```
