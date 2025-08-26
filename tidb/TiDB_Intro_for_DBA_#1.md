@@ -352,6 +352,43 @@ RocksDB 的空間放大效應。
 
 ### [RAFT Leader 的控制手段 & 狀態確認手段](https://google.com)
 
+PD 的 Leader 切換手段
+```
+[root@l-k8s-labroom-1 ~]# make move-pd-leader
+tiup ctl:v8.5.2 pd -u http://172.24.40.17:2379 config set dashboard-address http://172.24.40.17:2379
+```
+
+PD 後台數據會放在 dashboard.sqlite.db
+```
+[root@g-k8s-labroom-1 pd-2379]# ls -al
+total 276
+drwxr-xr-x 5 root root     84 Aug 25 06:59 .
+drwxr-xr-x 5 root root     59 Aug 25 06:02 ..
+-rw-r--r-- 1 root root 278528 Aug 25 06:56 dashboard.sqlite.db
+drwxr-xr-x 2 root root    104 Aug 25 06:59 hot-region
+drwx------ 4 root root     29 Aug 25 06:59 member
+drwxr-xr-x 2 root root    122 Aug 25 06:59 region-meta
+[root@g-k8s-labroom-1 pd-2379]# pwd
+/data/tidb-data/pd-2379
+```
+
+並於切換完成後轉入新的 PD Leader
+```
+[root@l-k8s-labroom-1 pd-2379]# ls -al
+total 1024
+drwxr-xr-x 5 root root     84 Aug 26 16:22 .
+drwxr-xr-x 5 root root     59 Aug 25 14:02 ..
+-rw-r--r-- 1 root root 851968 Aug 26 16:22 dashboard.sqlite.db
+drwxr-xr-x 2 root root     85 Aug 25 14:03 hot-region
+drwx------ 4 root root     29 Aug 25 14:03 member
+drwxr-xr-x 2 root root     85 Aug 25 14:03 region-meta
+[root@l-k8s-labroom-1 pd-2379]# pwd
+/data/tidb-data/pd-2379
+```
+
+
+
+
 ### [參數同步手段？](https://google.com)
 
 ### [資料來源 pt-osc 如何執行](https://google.com)
