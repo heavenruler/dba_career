@@ -386,9 +386,6 @@ drwxr-xr-x 2 root root     85 Aug 25 14:03 region-meta
 /data/tidb-data/pd-2379
 ```
 
-
-
-
 ### [參數同步手段？](https://google.com)
 
 ### [資料來源 pt-osc 如何執行](https://google.com)
