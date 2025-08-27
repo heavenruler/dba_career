@@ -149,7 +149,3 @@ ORDER BY table_name;
 ## 參考
 * 官方文件：TiDB Information Schema 擴充視圖（對應版本 8.5.x）
 * 本倉庫：`information_schema_tidb_tables.md` 含欄位清單
-
----
-如需加入「標準 MySQL vs TiDB 差集」或自動化比較腳本，可再提出需求。
-
