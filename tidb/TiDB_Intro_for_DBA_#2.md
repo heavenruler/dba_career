@@ -2150,6 +2150,68 @@ multi_thread_multi_conn   10000           19.633               0.00            2
 ========================================================================================================================
 ```
 
+
+
+
+- IDC * 3 + GCP * 3
+Cluster Summary
+```
+```
+
+RPS From TiDB with IDC # 離峰
+```
+```
+
+RPS From TiProxy with IDC # 離峰
+```
+```
+
+RPS From TiDB with GCP # 離峰
+```
+```
+
+RPS From TiProxy with GCP # 離峰
+```
+```
+
+RPS From TiDB with IDC # 離峰 # 同時執行
+```
+```
+
+RPS From TiProxy with IDC # 離峰 # 同時執行
+```
+```
+
+RPS From TiDB with GCP # 離峰 # 同時執行
+```
+```
+
+RPS From TiProxy with GCP # 離峰 # 同時執行
+```
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ---
 
 ## [Sysbench](https://docs.pingcap.com/zh/tidb/stable/benchmark-tidb-using-sysbench/)
