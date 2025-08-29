@@ -673,6 +673,13 @@ RPS From TiProxy with GCP # 離峰 # 同時執行
 
 - IDC * 3 + GCP * 3 # 實施 Label 隔離分流
 
+分析
+```
+- 上班時段，下班時段效能差異
+- 實施隔離分流語法差異
+- 單區執行 A/S 與共同執行 A/A 效能差異
+```
+
 Cluster Summary
 ```
 [root@l-k8s-labroom-1 ~]# make display
