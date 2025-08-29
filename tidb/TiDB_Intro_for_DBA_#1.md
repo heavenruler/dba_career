@@ -346,6 +346,10 @@ tiproxy_servers:
       labels: { zone: "idc" }
 ```
 
+### 如果沒分流調度的 TiDB 資源是如何配比？
+
+
+
 ---
 
 ### 硬體規格有哪些要求
