@@ -657,7 +657,7 @@ ID                   Role        Host           Ports                 OS/Arch   
 172.24.40.19:6000    tiproxy     172.24.40.19   6000/6001             linux/x86_64  Up      -                                /data/tidb-deploy/tiproxy-6000
 ```
 
-RPS From TiDB with IDC # 離峰
+RPS From TiDB with IDC # 離峰 #2-1.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -710,7 +710,7 @@ multi_thread_multi_conn   10000           12.104               0.00            2
 ========================================================================================================================
 ```
 
-RPS From TiProxy with IDC # 離峰
+RPS From TiProxy with IDC # 離峰 #2-2.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
