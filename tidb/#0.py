@@ -23,7 +23,7 @@ DATA = [
     (1000, 3540.01, 21.078, 2.825),  # 注意：相較 750 threads avg latency 降低，可能測試條件變動或抖動
 ]
 
-PNG_NAME = "#1.png"  # Output filename requested
+PNG_NAME = "#0.png"  # Output filename requested
 
 def analyze(data):
     peak = max(data, key=lambda r: r[1])
