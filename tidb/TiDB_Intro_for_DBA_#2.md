@@ -615,13 +615,6 @@ RPS From TiProxy with GCP # 離峰
 ```
 ```
 
-
-
-
-
-
-
-
 RPS From TiDB with IDC # 離峰 # 同時執行
 ```
 ```
@@ -655,6 +648,14 @@ RPS From TiDB with GCP # 尖峰
 RPS From TiProxy with GCP # 尖峰
 ```
 ```
+
+
+
+
+
+
+
+
 
 RPS From TiDB with IDC # 尖峰 # 同時執行
 ```
