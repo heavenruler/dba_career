@@ -144,7 +144,7 @@ Cluster Summary
 Fri Aug  1 10:07:42 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://172.24.40.18:2379/dashboard
@@ -383,7 +383,7 @@ Cluster Summary
 Thu Aug  7 11:24:01 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://172.24.40.17:2379/dashboard
@@ -621,7 +621,7 @@ Cluster Summary
 Thu Aug  7 16:07:07 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://172.24.40.17:2379/dashboard
@@ -761,7 +761,7 @@ Cluster Summary
 Mon Aug 11 11:15:20 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -901,7 +901,7 @@ Cluster Summary
 Mon Aug 11 14:25:07 CST 2025
 Checking updates for component cluster... Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.23:2379/dashboard
@@ -1148,7 +1148,7 @@ date ; tiup cluster display tidb-demo
 Fri Aug 15 10:16:41 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.23:2379/dashboard
@@ -1395,7 +1395,7 @@ date ; tiup cluster display tidb-demo
 Fri Aug 15 14:50:26 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -1650,7 +1650,7 @@ date ; tiup cluster display tidb-demo
 Sun Aug 17 03:42:17 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -1905,7 +1905,7 @@ date ; tiup cluster display tidb-demo
 Sun Aug 17 03:42:17 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -2198,7 +2198,7 @@ date ; tiup cluster display tidb-demo
 Fri Aug 29 00:18:54 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -2266,6 +2266,233 @@ RPS From TiProxy with GCP # 離峰 # 同時執行
 ```
 ```
 
+RPS From TiDB with IDC # 尖峰
+```
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.535                0.00            5.358           1866.53         1
+single_thread_multi_conn  10000           0.535                0.00            5.350           1869.30         1
+multi_thread_multi_conn   10000           1.651                0.00            16.519          605.37          1
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.524                0.00            5.245           1906.74         1
+single_thread_multi_conn  10000           0.614                0.00            6.233           1604.41         1
+multi_thread_multi_conn   10000           7.678                0.00            0.960           10417.45        100
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.516                0.00            5.165           1936.00         1
+single_thread_multi_conn  10000           0.614                0.00            6.319           1582.64         1
+multi_thread_multi_conn   10000           11.915               0.00            0.928           10776.75        200
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.522                0.00            5.223           1914.57         1
+single_thread_multi_conn  10000           0.612                0.00            6.338           1577.78         1
+multi_thread_multi_conn   10000           11.001               0.00            0.974           10265.02        250
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.539                0.00            5.394           1853.94         1
+single_thread_multi_conn  10000           0.642                0.00            6.986           1431.36         1
+multi_thread_multi_conn   10000           10.173               0.00            1.370           7297.53         500
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.529                0.00            5.291           1890.07         1
+single_thread_multi_conn  10000           0.610                0.00            6.777           1475.47         1
+multi_thread_multi_conn   10000           11.506               0.00            1.712           5842.36         750
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.520                0.00            5.199           1923.39         1
+single_thread_multi_conn  10000           0.610                0.00            7.036           1421.19         1
+multi_thread_multi_conn   10000           12.758               0.00            1.985           5038.69         1000
+========================================================================================================================
+```
+
+RPS From TiProxy with IDC # 尖峰
+```
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.742                0.00            7.420           1347.69         1
+single_thread_multi_conn  10000           0.612                0.00            6.130           1631.37         1
+multi_thread_multi_conn   10000           2.649                0.00            26.498          377.38          1
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.670                0.00            6.704           1491.60         1
+single_thread_multi_conn  10000           0.842                0.00            8.591           1164.04         1
+multi_thread_multi_conn   10000           12.050               0.00            1.382           7237.95         100
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.783                0.00            7.830           1277.18         1
+single_thread_multi_conn  10000           0.820                0.00            8.527           1172.69         1
+multi_thread_multi_conn   10000           22.407               0.00            1.335           7493.05         200
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.814                0.00            8.140           1228.55         1
+single_thread_multi_conn  10000           0.966                0.00            10.155          984.71          1
+multi_thread_multi_conn   10000           28.697               0.00            2.405           4157.55         250
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.756                0.00            7.561           1322.53         1
+single_thread_multi_conn  10000           0.841                0.00            9.257           1080.29         1
+multi_thread_multi_conn   10000           46.040               0.00            1.609           6213.77         500
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.602                0.00            6.027           1659.18         1
+single_thread_multi_conn  10000           0.821                0.00            9.607           1040.95         1
+multi_thread_multi_conn   10000           35.432               0.00            4.727           2115.66         750
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.837                0.00            8.375           1194.07         1
+single_thread_multi_conn  10000           0.919                0.00            11.172          895.13          1
+multi_thread_multi_conn   10000           29.681               0.00            2.146           4658.88         1000
+========================================================================================================================
+```
+
+RPS From TiDB with GCP # 尖峰
+```
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.364                0.00            3.646           2742.58         1
+single_thread_multi_conn  10000           0.369                0.00            3.696           2705.74         1
+multi_thread_multi_conn   10000           1.067                0.00            10.680          936.35          1
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.367                0.00            3.671           2724.23         1
+single_thread_multi_conn  10000           0.408                0.00            4.151           2408.91         1
+multi_thread_multi_conn   10000           9.620                0.00            1.136           8800.58         100
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.365                0.00            3.654           2736.56         1
+single_thread_multi_conn  10000           0.418                0.00            4.311           2319.61         1
+multi_thread_multi_conn   10000           17.773               0.00            1.254           7974.77         200
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.361                0.00            3.607           2772.30         1
+single_thread_multi_conn  10000           0.416                0.00            4.321           2314.11         1
+multi_thread_multi_conn   10000           20.529               0.00            1.274           7850.69         250
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.377                0.00            3.772           2651.28         1
+single_thread_multi_conn  10000           0.415                0.00            4.477           2233.55         1
+multi_thread_multi_conn   10000           12.161               0.00            1.553           6437.31         500
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.361                0.00            3.613           2767.78         1
+single_thread_multi_conn  10000           0.412                0.00            4.596           2175.75         1
+multi_thread_multi_conn   10000           4.959                0.00            2.089           4786.08         750
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.373                0.00            3.734           2678.31         1
+single_thread_multi_conn  10000           0.418                0.00            4.810           2078.81         1
+multi_thread_multi_conn   10000           5.541                0.00            2.877           3476.14         1000
+========================================================================================================================
+```
+
+RPS From TiProxy with GCP # 尖峰
+```
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.485                0.00            4.851           2061.47         1
+single_thread_multi_conn  10000           0.488                0.00            4.879           2049.43         1
+multi_thread_multi_conn   10000           1.628                0.00            16.291          613.84          1
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.486                0.00            4.862           2056.91         1
+single_thread_multi_conn  10000           0.543                0.00            5.541           1804.71         1
+multi_thread_multi_conn   10000           15.625               0.00            1.718           5821.99         100
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.499                0.00            4.997           2001.40         1
+single_thread_multi_conn  10000           0.556                0.00            5.783           1729.15         1
+multi_thread_multi_conn   10000           29.160               0.00            1.768           5655.58         200
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.489                0.00            4.894           2043.18         1
+single_thread_multi_conn  10000           0.554                0.00            5.818           1718.83         1
+multi_thread_multi_conn   10000           35.037               0.00            1.822           5489.46         250
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.522                0.00            5.225           1913.72         1
+single_thread_multi_conn  10000           0.555                0.00            6.095           1640.66         1
+multi_thread_multi_conn   10000           63.569               0.00            2.148           4656.07         500
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.487                0.00            4.874           2051.63         1
+single_thread_multi_conn  10000           0.564                0.00            6.453           1549.58         1
+multi_thread_multi_conn   10000           83.732               0.00            2.493           4011.99         750
+========================================================================================================================
+========================================================================================================================
+Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
+------------------------------------------------------------------------------------------------------------------------
+single_thread_single_conn 10000           0.477                0.00            4.772           2095.74         1
+single_thread_multi_conn  10000           0.557                0.00            6.696           1493.42         1
+multi_thread_multi_conn   10000           21.078               0.00            2.825           3540.01         1000
+========================================================================================================================
+```
+
+RPS From TiDB with IDC # 尖峰 # 同時執行
+```
+```
+
+RPS From TiProxy with IDC # 尖峰 # 同時執行
+```
+```
+
+RPS From TiDB with GCP # 尖峰 # 同時執行
+```
+```
+
+RPS From TiProxy with GCP # 尖峰 # 同時執行
+```
+```
 
 
 
@@ -2307,7 +2534,7 @@ date ; tiup cluster display tidb-demo
 Mon Aug 18 09:52:53 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://172.24.40.17:2379/dashboard
@@ -2356,7 +2583,7 @@ date ; tiup cluster display tidb-demo
 Mon Aug 18 11:31:24 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://172.24.40.17:2379/dashboard
@@ -2408,7 +2635,7 @@ Cluster Summary
 Wed Aug 20 10:26:57 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://172.24.40.17:2379/dashboard
@@ -2461,7 +2688,7 @@ date ; tiup cluster display tidb-demo
 Mon Aug 18 13:22:16 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -2505,7 +2732,7 @@ Cluster Summary
 Mon Aug 18 15:32:31 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -2557,7 +2784,7 @@ Cluster Summary
 Wed Aug 20 00:39:43 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -2634,7 +2861,7 @@ Cluster Summary
 Wed Aug 20 01:41:23 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -2709,7 +2936,7 @@ Cluster Summary
 Tue Aug 19 23:32:47 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -2792,7 +3019,7 @@ Cluster Summary
 Tue Aug 19 14:58:29 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -2922,7 +3149,7 @@ Cluster Summary
 Tue Aug 19 14:58:29 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://10.160.152.21:2379/dashboard
@@ -3373,7 +3600,7 @@ Cluster Summary
 Fri Aug 22 20:49:23 CST 2025
 Cluster type:       tidb
 Cluster name:       tidb-demo
-Cluster version:    v8.5.2
+Cluster version:    v8.5.3
 Deploy user:        root
 SSH type:           builtin
 Dashboard URL:      http://172.24.40.17:2379/dashboard
