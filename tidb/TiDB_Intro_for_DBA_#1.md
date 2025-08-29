@@ -296,10 +296,55 @@ Total nodes: 15
 - Linux network interface bonding/teaming, at least 2 interfaces.
 
 
-#### 延伸討論
+### 延伸討論
 - 如果 IDC / GCP 組建的單一叢集效能可以接受 ; 我們可以執行以下操作嗎？
     - 分配流量控制 `50%/50%`, `0%/100%` or `100%/0%`
 - 如果專線同步資料讓單一叢集資料同步變成問題的話，那 Async 資料同步如何實作？
+- [TiCDC 雙向同步如何實作？](https://docs.pingcap.com/zh/tidb/stable/ticdc-bidirectional-replication/#%E4%BD%BF%E7%94%A8%E9%99%90%E5%88%B6)
+
+### [Label 分流策略如何實作](https://docs.pingcap.com/zh/tidb/stable/schedule-replicas-by-topology-labels/)
+```
+server_configs:
+  tidb:
+    instance.tidb_slow_log_threshold: 300
+    graceful-wait-before-shutdown: 30
+    max-server-connections: 4096
+    log.level: "error"
+  tikv:
+    log.level: "error"
+    readpool.storage.use-unified-pool: false
+    readpool.coprocessor.use-unified-pool: true
+    storage.block-cache.capacity: "6GB"
+  pd:
+    replication.enable-placement-rules: true
+    replication.location-labels: ["zone", "host"]
+  tiproxy:
+    balance.label-name: "zone"
+    proxy.max-connections: 10000
+  tiflash:
+    logger.level: "info"
+
+tidb_servers:
+  - host: 172.24.40.17
+    port: 4000
+    status_port: 10080
+    config:
+      labels: { zone: "idc" }
+
+tikv_servers:
+  - host: 172.24.40.17
+    port: 20160
+    status_port: 20180
+    config:
+      server.labels: { zone: "idc", host: "l-k8s-labroom-1" }
+
+tiproxy_servers:
+  - host: 172.24.40.17
+    port: 6000
+    status_port: 6001
+    config:
+      labels: { zone: "idc" }
+```
 
 ---
 
@@ -345,6 +390,15 @@ RocksDB 的空間放大效應。
 ### Resource Control 具體運作方法
 
 ## [你可能會有這些問題](https://docs.pingcap.com/zh/tidb/stable/faq-overview/)
+
+### RAFT protocol 副本數計算與 SLA 的關聯？
+
+[To take advantage of Raft's reliability, the following conditions must be met in a real deployment scenario:](https://docs.pingcap.com/tidb/stable/multi-data-centers-in-one-city-deployment/#raft-protocol)
+
+- Use at least three servers in case one server fails.
+- Use at least three racks in case one rack fails.
+- Use at least three AZs in case one AZ fails.
+- Deploy TiDB in at least three regions in case data safety issue occurs in one region.
 
 ### SELECT 1 到底驗證了什麼？
 
