@@ -580,8 +580,48 @@ multi_thread_multi_conn   10000           25.584               0.00            3
 
 - IDC * 1 + GCP * 2 # 實施 Label 隔離分流
 
+- Dispatcher
+```
+"172.24.40.25:6000"
+總計: 500 次
+=== 統計結果 ===
+  l-k8s-labroom-1 : 500 次 (100.00%)
+
+"10.160.152.26:6000"
+總計: 500 次
+=== 統計結果 ===
+  g-k8s-labroom-2 : 236 次 (47.20%)
+  g-k8s-labroom-1 : 264 次 (52.80%)
+```
+
 Cluster Summary
 ```
+date ; tiup cluster display tidb-demo
+Sun Aug 31 20:23:04 CST 2025
+Cluster type:       tidb
+Cluster name:       tidb-demo
+Cluster version:    v8.5.3
+Deploy user:        root
+SSH type:           builtin
+Dashboard URL:      http://10.160.152.21:2379/dashboard
+Dashboard URLs:     http://10.160.152.21:2379/dashboard
+Grafana URL:        http://172.24.40.20:3000
+ID                   Role        Host           Ports                 OS/Arch       Status  Data Dir                         Deploy Dir
+--                   ----        ----           -----                 -------       ------  --------                         ----------
+172.24.40.20:3000    grafana     172.24.40.20   3000                  linux/x86_64  Up      -                                /data/tidb-deploy/grafana-3000
+10.160.152.21:2379   pd          10.160.152.21  2379/2380             linux/x86_64  Up|UI   /data/tidb-data/pd-2379          /data/tidb-deploy/pd-2379
+10.160.152.22:2379   pd          10.160.152.22  2379/2380             linux/x86_64  Up|L    /data/tidb-data/pd-2379          /data/tidb-deploy/pd-2379
+172.24.40.17:2379    pd          172.24.40.17   2379/2380             linux/x86_64  Up      /data/tidb-data/pd-2379          /data/tidb-deploy/pd-2379
+172.24.40.20:9090    prometheus  172.24.40.20   9090/9115/9100/12020  linux/x86_64  Up      /data/tidb-data/prometheus-9090  /data/tidb-deploy/prometheus-9090
+10.160.152.21:4000   tidb        10.160.152.21  4000/10080            linux/x86_64  Up      -                                /data/tidb-deploy/tidb-4000
+10.160.152.22:4000   tidb        10.160.152.22  4000/10080            linux/x86_64  Up      -                                /data/tidb-deploy/tidb-4000
+172.24.40.17:4000    tidb        172.24.40.17   4000/10080            linux/x86_64  Up      -                                /data/tidb-deploy/tidb-4000
+10.160.152.21:20160  tikv        10.160.152.21  20160/20180           linux/x86_64  Up      /data/tidb-data/tikv-20160       /data/tidb-deploy/tikv-20160
+10.160.152.22:20160  tikv        10.160.152.22  20160/20180           linux/x86_64  Up      /data/tidb-data/tikv-20160       /data/tidb-deploy/tikv-20160
+172.24.40.17:20160   tikv        172.24.40.17   20160/20180           linux/x86_64  Up      /data/tidb-data/tikv-20160       /data/tidb-deploy/tikv-20160
+10.160.152.21:6000   tiproxy     10.160.152.21  6000/6001             linux/x86_64  Up      -                                /data/tidb-deploy/tiproxy-6000
+10.160.152.22:6000   tiproxy     10.160.152.22  6000/6001             linux/x86_64  Up      -                                /data/tidb-deploy/tiproxy-6000
+172.24.40.17:6000    tiproxy     172.24.40.17   6000/6001             linux/x86_64  Up      -                                /data/tidb-deploy/tiproxy-6000
 ```
 
 RPS From TiDB with IDC # 離峰
