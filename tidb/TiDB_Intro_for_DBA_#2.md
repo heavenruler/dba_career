@@ -271,7 +271,7 @@ multi_thread_multi_conn   10000           238.522              0.00            3
 ```
 
 直連 TiDB 與透過 TiProxy 差異 #3-1_#3-2_compare
-
+![](#3-1_#3-2_compare.png)
 
 
 
