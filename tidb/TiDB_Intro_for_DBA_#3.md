@@ -126,6 +126,7 @@ select_random_ranges  15.55                         10.48                 35.96 
 
 ### IDC / GCP TiDB 直連與 TiProxy 連線的 Benchmark 差異
 
+![](./sysbench_idc_vs_gcp_diff.png)
 
 
 ### TiDB 直連與 TiProxy 連線與 Galera 的 Benchmark 差異
