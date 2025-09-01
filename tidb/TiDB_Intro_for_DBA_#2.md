@@ -4921,17 +4921,6 @@ multi_thread_multi_conn   10000           18.875               0.00            2
 ```
 ![](./%235-1_%237-5_%2310-5_%231-7_%235-2_%237-6_%2310-6_%231-8_scale_compare_gcp_origin.png)
 
-
-
-
-
-
-
-
-{FIXME}
-
-
-
 =======================================================================================================
 
 ## [Sysbench](https://docs.pingcap.com/zh/tidb/stable/benchmark-tidb-using-sysbench/)
