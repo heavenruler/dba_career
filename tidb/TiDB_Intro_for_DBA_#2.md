@@ -5,7 +5,7 @@
 ### IDC Only (passthrough TiProxy)
 
 <details>
-```sh
+```
 ╔═══════════════════════════════╗
 ║         Client / App         ║
 ╚═══════════════════════════════╝
