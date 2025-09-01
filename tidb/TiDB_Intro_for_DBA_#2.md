@@ -1205,6 +1205,8 @@ Dispatcher
   g-k8s-labroom-1 : 400 次 (100.00%)
 ```
 
+<details>
+
 Cluster Summary
 ```
 date ; tiup cluster display tidb-demo
@@ -1235,7 +1237,14 @@ ID                   Role        Host           Ports                 OS/Arch   
 172.24.40.18:6000    tiproxy     172.24.40.18   6000/6001             linux/x86_64  Up      -                                /data/tidb-deploy/tiproxy-6000
 ```
 
+</details>
+
 RPS From TiDB with IDC # 離峰 #8-1.py
+
+![](./%238-1.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -1288,7 +1297,14 @@ multi_thread_multi_conn   10000           17.316               0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with IDC # 離峰 #8-2.py
+
+![](./%238-2.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
