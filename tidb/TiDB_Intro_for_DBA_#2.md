@@ -5056,6 +5056,24 @@ multi_thread_multi_conn   10000           18.875               0.00            2
 
 ## [Sysbench](https://docs.pingcap.com/zh/tidb/stable/benchmark-tidb-using-sysbench/)
 
+
+## IDC * 3
+
+```
+```
+
+## IDC * 3 + GCP * 3 # 實施 Label 隔離分流
+
+```
+```
+
+
+
+
+
+
+<details>
+
 - Tuning
     - TiDB
         - log.level: "error"
@@ -6214,6 +6232,8 @@ single_thread_multi_conn  10000           0.949                0.00            1
 multi_thread_multi_conn   10000           32.753               0.00            2.866           3489.45         1000
 ========================================================================================================================
 ```
+
+</details>
 
 ---
 
