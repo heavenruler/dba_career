@@ -486,6 +486,9 @@ TiProxy: 顯著提升在 100 threads (+83.2%), 其他中高併發多數仍為正
 ## GCP * 3
 
 Cluster Summary
+
+<details>
+
 ```
 date ; tiup cluster display tidb-demo
 Sat Aug 30 03:29:55 CST 2025
@@ -512,8 +515,13 @@ ID                   Role     Host           Ports        OS/Arch       Status  
 10.160.152.23:6000   tiproxy  10.160.152.23  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
 ```
 
+</details>
+
 RPS From TiDB with GCP # 離峰 #6-1.py
 ![](./%236-1.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -566,8 +574,13 @@ multi_thread_multi_conn   10000           7.986                0.00            3
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with GCP # 離峰 #6-2.py
 ![](./%236-2.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -620,6 +633,7 @@ multi_thread_multi_conn   10000           25.584               0.00            3
 ========================================================================================================================
 ```
 
+</details>
 
 IDC / GCP TiDB 叢集效能差異
 ```
@@ -659,6 +673,9 @@ IDC TiProxy 在多個中高併發點 (100 / 250 / 750) 維持領先，顯示本�
 ```
 
 Cluster Summary
+
+<details>
+
 ```
 date ; tiup cluster display tidb-demo
 Sun Aug 31 20:23:04 CST 2025
@@ -687,6 +704,8 @@ ID                   Role        Host           Ports                 OS/Arch   
 10.160.152.22:6000   tiproxy     10.160.152.22  6000/6001             linux/x86_64  Up      -                                /data/tidb-deploy/tiproxy-6000
 172.24.40.17:6000    tiproxy     172.24.40.17   6000/6001             linux/x86_64  Up      -                                /data/tidb-deploy/tiproxy-6000
 ```
+
+</details>
 
 RPS From TiDB with IDC # 離峰 #7-1.py
 ```
