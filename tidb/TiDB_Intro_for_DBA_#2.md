@@ -313,12 +313,26 @@ Cluster Summary
 ```
 
 RPS From TiDB with GCP # 離峰 #4-1.py
+
+![](./%234-1.png)
+
+<details>
+
 ```
 ```
 
+</details>
+
 RPS From TiProxy with GCP # 離峰 #4-2.py
+
+![](./%234-2.png)
+
+<details>
+
 ```
 ```
+
+</details>
 
 =======================================================================================================
 
@@ -356,6 +370,7 @@ ID                  Role     Host          Ports        OS/Arch       Status   D
 </details>
 
 RPS From TiDB with IDC # 離峰 #5-1.py
+
 ![](./%235-1.png)
 
 <details>
