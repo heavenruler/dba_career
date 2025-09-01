@@ -5,7 +5,7 @@
 ### IDC Only (passthrough TiProxy)
 
 <details>
-```
+```SHELL
 ╔═══════════════════════════════╗
 ║         Client / App         ║
 ╚═══════════════════════════════╝
@@ -155,6 +155,7 @@
 - IDC * 1
 
 Cluster Summary
+
 <details>
 ```
 date ; tiup cluster display tidb-demo
@@ -174,8 +175,10 @@ ID                  Role     Host          Ports        OS/Arch       Status   D
 172.24.40.18:6000   tiproxy  172.24.40.18  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
 ```
 </details>
+
 RPS From TiDB with IDC # 離峰 #3-1.py
 ![](./%233-1.png)
+
 <details>
 ```
 ========================================================================================================================
