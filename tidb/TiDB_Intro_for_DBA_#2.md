@@ -4892,18 +4892,21 @@ multi_thread_multi_conn   10000           18.875               0.00            2
 ```
 
 - IDC * 3 + GCP * 3 有無分流隔離效能差異
-
 ```
 ```
 ![](./%235-1.png)
 
 
-- IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 & IDC * 3 + GCP * 3(確認 Scale  Out 後效能差異)
+- IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 & IDC * 3 + GCP * 3 從 IDC 發起 (確認 Scale  Out 後效能差異)
 
 ```
 ```
-![](./%235-1.png)
+![](./%235-1_%237-5_%2310-5_%231-5_%235-2_%237-6_%2310-6_%231-6_scale_compare.png)
 
+
+- IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 & IDC * 3 + GCP * 3 從 GCP 發起 (確認 Scale  Out 後效能差異)
+
+![](./%235-1_%237-5_%2310-5_%231-7_%235-2_%237-6_%2310-6_%231-8_scale_compare_gcp_origin.png)
 
 
 
