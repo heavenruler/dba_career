@@ -321,6 +321,8 @@ RPS From TiProxy with GCP # 離峰 #4-2.py
 
 ## IDC * 3
 
+<details>
+
 Cluster Summary
 ```
 date ; tiup cluster display tidb-demo
@@ -348,8 +350,13 @@ ID                  Role     Host          Ports        OS/Arch       Status   D
 172.24.40.19:6000   tiproxy  172.24.40.19  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
 ```
 
+</details>
+
 RPS From TiDB with IDC # 離峰 #5-1.py
 ![](./%235-1.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -402,8 +409,13 @@ multi_thread_multi_conn   10000           15.386               0.00            3
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with IDC # 離峰 #5-2.py
 ![](./%235-2.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -455,6 +467,8 @@ single_thread_multi_conn  10000           0.880                0.00            1
 multi_thread_multi_conn   10000           34.486               0.00            3.136           3188.79         1000
 ========================================================================================================================
 ```
+
+</details>
 
 直連 TiDB 與透過 TiProxy 差異 #5-1_#5-2_compare.py
 ![](./%235-1_%235-2_compare.png)
