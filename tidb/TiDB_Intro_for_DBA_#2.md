@@ -1740,6 +1740,9 @@ Dispatcher
 ```
 
 Cluster Summary
+
+<details>
+
 ```
 date ; tiup cluster display tidb-demo
 Sun Aug 31 23:33:25 CST 2025
@@ -1777,7 +1780,14 @@ ID                   Role        Host           Ports                 OS/Arch   
 172.24.40.19:6000    tiproxy     172.24.40.19   6000/6001             linux/x86_64  Up      -                                /data/tidb-deploy/tiproxy-6000
 ```
 
+</details>
+
 RPS From TiDB with IDC # 離峰 #9-1.py
+
+![](./%239-1.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -1829,8 +1839,14 @@ single_thread_multi_conn  10000           0.592                0.00            6
 multi_thread_multi_conn   10000           15.000               0.00            3.983           2510.54         1000
 ========================================================================================================================
 ```
+</details>
 
 RPS From TiProxy with IDC # 離峰 #9-2.py
+
+![](./%239-2.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -1883,7 +1899,14 @@ multi_thread_multi_conn   10000           36.732               0.00            3
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiDB with GCP # 離峰 #9-3.py
+
+![](./%239-3.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -1936,7 +1959,14 @@ multi_thread_multi_conn   10000           8.950                0.00            3
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with GCP # 離峰 #9-4.py
+
+![](./%239-4.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
