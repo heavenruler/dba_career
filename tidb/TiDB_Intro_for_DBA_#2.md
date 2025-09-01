@@ -149,6 +149,7 @@
 - IDC * 1
 
 Cluster Summary
+<details>
 ```
 date ; tiup cluster display tidb-demo
 Sat Aug 30 02:29:02 CST 2025
@@ -166,7 +167,7 @@ ID                  Role     Host          Ports        OS/Arch       Status   D
 172.24.40.18:20160  tikv     172.24.40.18  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
 172.24.40.18:6000   tiproxy  172.24.40.18  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
 ```
-
+</details>
 RPS From TiDB with IDC # 離峰 #3-1.py
 ![](./%233-1.png)
 <details>
