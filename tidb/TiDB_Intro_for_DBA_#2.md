@@ -1107,7 +1107,7 @@ multi_thread_multi_conn   10000           198.598              0.00            3
 
 ### 跨專線叢集相較 IDC 本地叢集 for TiDB & TiProxy 效能影響
 
-- 跨區混合拓撲對 Proxy 層衝擊 > 直連
+- 跨區混合拓撲對 TiProxy 層衝擊 > 直連
 
 ![](./%237-1_%235-1_crossline_local_compare.png)
 
@@ -1364,20 +1364,11 @@ multi_thread_multi_conn   10000           201.427              0.00            3
 
 ### 同時執行 TiDB & TiProxy 與本地叢集的效能差異
 
-- 本地 (Local) 峰值 200 threads (7137) 明顯高於兩種同步執行 (4911 / 5265)
-- 500 threads: 同步執行出現顯著反轉 (IDC +81%, GCP +75% vs Local) 顯示本地場景資源瓶頸較早出現
-- 高併發 1000 threads: GCP 同步仍 +10.5% vs Local, 但 IDC 同步 -34.2% (跨區調度差異)
-- 750 threads 為普遍退化點 (三者均低於 100 baseline 或接近) 需調查 hotspot / lock / GC / I/O 排隊
+- GCP 同步 全域劣勢 > IDC 同步, 表示跨區 RTT + Proxy 排程對 throughput 更敏感
 
 ![](./%235-1_%237-5_%237-7_tidb_local_crossline_compare.png)
 
-- 本地 100 threads 為峰值 (5899) 遠高於同步 (2964 / 2551) => 同步執行代理層顯著受限
-- 200~500 threads: 同步執行無法恢復到本地峰值, 顯示延遲 / 排程成本抵銷擴充效益
-- 750 / 1000 threads 出現深度退化 (特別是 GCP -57.8% @750 vs Local) 為關鍵調優點
-- GCP 同步 全域劣勢 > IDC 同步, 表示跨區 RTT + Proxy 排程對 throughput 更敏感
-
 ![](./%235-2_%237-6_%237-8_tiproxy_local_crossline_compare.png)
-
 
 =======================================================================================================
 
