@@ -624,7 +624,7 @@ ID                   Role        Host           Ports                 OS/Arch   
 172.24.40.17:6000    tiproxy     172.24.40.17   6000/6001             linux/x86_64  Up      -                                /data/tidb-deploy/tiproxy-6000
 ```
 
-RPS From TiDB with IDC # 離峰
+RPS From TiDB with IDC # 離峰 #7-1.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -684,7 +684,7 @@ multi_thread_multi_conn   10000           2.003                0.00            2
 ========================================================================================================================
 ```
 
-RPS From TiProxy with IDC # 離峰
+RPS From TiProxy with IDC # 離峰 #7-2.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -730,7 +730,7 @@ multi_thread_multi_conn   10000           286.611              0.00            3
 ========================================================================================================================
 ```
 
-RPS From TiDB with GCP # 離峰
+RPS From TiDB with GCP # 離峰 #7-3.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -783,7 +783,7 @@ multi_thread_multi_conn   10000           16.100               0.00            3
 ========================================================================================================================
 ```
 
-RPS From TiProxy with GCP # 離峰
+RPS From TiProxy with GCP # 離峰 #7-4.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -836,7 +836,7 @@ multi_thread_multi_conn   10000           198.598              0.00            3
 ========================================================================================================================
 ```
 
-RPS From TiDB with IDC # 離峰 # 同時執行
+RPS From TiDB with IDC # 離峰 # 同時執行 #7-5.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -889,7 +889,7 @@ multi_thread_multi_conn   10000           164.816              0.00            5
 ========================================================================================================================
 ```
 
-RPS From TiProxy with IDC # 離峰 # 同時執行
+RPS From TiProxy with IDC # 離峰 # 同時執行 #7-6.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -942,7 +942,7 @@ multi_thread_multi_conn   10000           268.058              0.00            3
 ========================================================================================================================
 ```
 
-RPS From TiDB with GCP # 離峰 # 同時執行
+RPS From TiDB with GCP # 離峰 # 同時執行 #7-7.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -995,7 +995,7 @@ multi_thread_multi_conn   10000           15.436               0.00            3
 ========================================================================================================================
 ```
 
-RPS From TiProxy with GCP # 離峰 # 同時執行
+RPS From TiProxy with GCP # 離峰 # 同時執行 #7-8.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
