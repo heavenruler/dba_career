@@ -2363,9 +2363,17 @@ multi_thread_multi_conn   10000           198.886              0.00            3
 
 - IDC * 1 & IDC * 3 + GCP * 2 Scale 效能影響對照 (包含專線影響) 
 
+TiDB
+```
+```
 
+![](./%2310-1.png)
 
+TiProxy
+```
+```
 
+![](./%2310-1.png)
 
 
 
