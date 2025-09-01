@@ -945,11 +945,33 @@ multi_thread_multi_conn   10000           198.598              0.00            3
 ========================================================================================================================
 ```
 
+</details>
 
 - 跨專線叢集效能影響
 
+SUMMARY for TiDB
+```
+最大正向差異 (GCP 相對 IDC) 出現在 1000 threads: +75.2%
+最大負向差異 出現在 750 threads: -21.0%
+GCP 對 IDC 顯著增益的區段：200 (+15.2%), 500 (+30.7%), 1000 (+75.2%).
+GCP 退化 / 表現不佳區段：250 (-14.1%), 750 (-21.0%).
+研判: 200 / 500 threads 於 GCP 可更有效利用資源 (CPU / I/O pipeline)，750 threads 產生負壓可能源自排程或 hotspot。
+建議: GCP 負載壓測以 200 / 500 作主要 sweet spots；調查 750 thread 降幅 (region balance、transaction lock、網路 jitter)。
+```
 
+SUMMARY for TiProxy
+```
+最大正向差異 (GCP 相對 IDC) 出現在 1 threads: +16.5%
+最大負向差異 出現在 750 threads: -22.5%
+GCP TiProxy 在 1 / 200 / 500 threads 有增益 (1 +16.5%, 200 +15.8%, 500 +7.9%).
+GCP 顯著退化在 100 / 250 / 750 threads (100 -10.5%, 250 -17.9%, 750 -22.5%).
+推測: 高延遲跨線路下連線池熱化與路由決策對中併發敏感，造成波動；低 / 部分高併發點 (1 / 200 / 500) 仍能受益。
+建議: 針對 100~250 / 750 threads 收集 proxy scheduler、backend latency、connection reuse metrics，調整路由與 batch 策略。
+```
 
+![](./%237-1_%237-3_crossline_compare.png)
+
+![](./%237-2_%237-4_crossline_compare.png)
 
 
 
@@ -958,7 +980,7 @@ multi_thread_multi_conn   10000           198.598              0.00            3
 
 
 
-</details>
+{FIXME}
 
 RPS From TiDB with IDC # 離峰 # 同時執行 #7-5.py
 
