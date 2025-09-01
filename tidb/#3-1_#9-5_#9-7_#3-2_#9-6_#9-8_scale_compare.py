@@ -211,44 +211,49 @@ def plot_rps():
         print('[WARN] matplotlib not available; skip plot.')
         return
     fig, axes = plt.subplots(1, 2, figsize=(15, 5), sharey=False)
-    # --- TiDB ---
-    ax = axes[0]
-    baseline = TIDB_SCENARIOS[0]
-    base_rps_map, _ = baseline.to_maps()
-    for sc, color, marker in zip(TIDB_SCENARIOS, ['#1f77b4', '#ff7f0e', '#2ca02c'], ['o', 's', '^']):
-        rps_map, _ = sc.to_maps()
-        ax.plot(THREADS, [rps_map[t] for t in THREADS], marker=marker, color=color, label=sc.label, linewidth=1.8)
-    # annotate deltas for non-baseline scenarios at key threads (100,200,250,500)
     key_threads = [100, 200, 250, 500]
-    for sc, color in zip(TIDB_SCENARIOS[1:], ['#ff7f0e', '#2ca02c']):
+    # --- TiDB BAR CHART ---
+    ax = axes[0]
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+    width = 0.25
+    x_pos = range(len(THREADS))
+    base_rps_map, _ = TIDB_SCENARIOS[0].to_maps()
+    for idx, sc in enumerate(TIDB_SCENARIOS):
         rps_map, _ = sc.to_maps()
-        for t in key_threads:
-            d = pct(rps_map[t], base_rps_map[t])
-            ax.text(t, rps_map[t]*1.02, f'{d:+.0f}%', color=color, fontsize=8, ha='center')
+        offsets = [i + (idx-1)*width for i in x_pos]
+        bars = ax.bar(offsets, [rps_map[t] for t in THREADS], width, label=sc.label, color=colors[idx], alpha=0.85)
+        # annotate delta vs baseline for non-baseline
+        if idx > 0:
+            for b, t in zip(bars, THREADS):
+                d = pct(rps_map[t], base_rps_map[t])
+                if t in key_threads:
+                    ax.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, f'{d:+.0f}%', ha='center', va='bottom', fontsize=7, color=colors[idx])
+    ax.set_xticks([i for i in x_pos], THREADS)
     ax.set_xlabel('Threads')
     ax.set_ylabel('RPS')
-    ax.set_title('TiDB RPS (Δ% vs IDC*1 baseline)')
-    ax.grid(alpha=0.3)
+    ax.set_title('TiDB RPS (Grouped Bars)')
+    ax.grid(axis='y', alpha=0.3)
     ax.legend(fontsize=8)
-    # --- TiProxy ---
+    # --- TiProxy BAR CHART ---
     axp = axes[1]
-    baseline_p = TIPROXY_SCENARIOS[0]
-    base_rps_map_p, _ = baseline_p.to_maps()
-    for sc, color, marker in zip(TIPROXY_SCENARIOS, ['#1f77b4', '#ff7f0e', '#2ca02c'], ['o', 's', '^']):
+    base_rps_map_p, _ = TIPROXY_SCENARIOS[0].to_maps()
+    for idx, sc in enumerate(TIPROXY_SCENARIOS):
         rps_map, _ = sc.to_maps()
-        axp.plot(THREADS, [rps_map[t] for t in THREADS], marker=marker, color=color, label=sc.label, linewidth=1.8)
-    for sc, color in zip(TIPROXY_SCENARIOS[1:], ['#ff7f0e', '#2ca02c']):
-        rps_map, _ = sc.to_maps()
-        for t in key_threads:
-            d = pct(rps_map[t], base_rps_map_p[t])
-            axp.text(t, rps_map[t]*1.02, f'{d:+.0f}%', color=color, fontsize=8, ha='center')
+        offsets = [i + (idx-1)*width for i in x_pos]
+        bars = axp.bar(offsets, [rps_map[t] for t in THREADS], width, label=sc.label, color=colors[idx], alpha=0.85)
+        if idx > 0:
+            for b, t in zip(bars, THREADS):
+                d = pct(rps_map[t], base_rps_map_p[t])
+                if t in key_threads:
+                    axp.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, f'{d:+.0f}%', ha='center', va='bottom', fontsize=7, color=colors[idx])
+    axp.set_xticks([i for i in x_pos], THREADS)
     axp.set_xlabel('Threads')
     axp.set_ylabel('RPS')
-    axp.set_title('TiProxy RPS (Δ% vs IDC*1 baseline)')
-    axp.grid(alpha=0.3)
+    axp.set_title('TiProxy RPS (Grouped Bars)')
+    axp.grid(axis='y', alpha=0.3)
     axp.legend(fontsize=8)
-    fig.suptitle('IDC*1 Baseline vs Simultaneous / Cross-Site (RPS)')
-    fig.tight_layout(rect=[0,0,1,0.93])
+    fig.suptitle('TiDB & TiProxy RPS 比較 (Δ% vs IDC*1 @100/200/250/500)')
+    fig.tight_layout(rect=[0,0,1,0.92])
     fig.savefig(OUTPUT_PNG, dpi=160)
     print(f'[OK] Saved {OUTPUT_PNG}')
 
