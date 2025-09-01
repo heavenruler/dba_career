@@ -2453,10 +2453,10 @@ multi_thread_multi_conn   10000           198.886              0.00            3
 
 </details>
 
-- IDC * 3 & IDC * 3 + GCP * 2 Scale 效能影響對照 (包含專線影響) 
-```
-123
-```
+### IDC * 3 & IDC * 3 + GCP * 2 Scale 同時執行模擬 (Active / Active) 效能影響對照 (含專線影響) 
+
+- 跨專線影響抖動甚巨
+- Scale 策略下 IDC * 3 < (IDC Sim + GCP Sim) 滿足預期
 
 ![](./%235-1_%239-5_%239-7_%235-2_%239-6_%239-8_scale_compare.png)
 
