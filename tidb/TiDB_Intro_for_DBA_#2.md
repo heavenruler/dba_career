@@ -5056,14 +5056,31 @@ multi_thread_multi_conn   10000           18.875               0.00            2
 
 ## [Sysbench](https://docs.pingcap.com/zh/tidb/stable/benchmark-tidb-using-sysbench/)
 
+### IDC * 3
 
-## IDC * 3
-
+Benchmark From TiDB with IDC
 ```
 ```
 
-## IDC * 3 + GCP * 3 # 實施 Label 隔離分流
+Benchmark From TiProxy with IDC
+```
+```
 
+### IDC * 3 + GCP * 3 # 實施 Label 隔離分流
+
+Benchmark From TiDB with IDC
+```
+```
+
+Benchmark From TiProxy with IDC
+```
+```
+
+Benchmark From TiDB with GCP
+```
+```
+
+Benchmark From TiProxy with GCP
 ```
 ```
 
