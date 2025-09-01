@@ -19,6 +19,7 @@ Data source: values copied directly from individual dataset scripts to maintain 
 from __future__ import annotations
 
 from typing import Dict, List
+import argparse
 
 THREADS = [1, 100, 200, 250, 500, 750, 1000]
 
@@ -57,7 +58,11 @@ def _peak(rps_map: Dict[str, Dict[int, float]]):
     return info
 
 
-def print_summary():
+def pct(new: float, base: float) -> float:
+    return (new / base - 1.0) * 100.0 if base else 0.0
+
+
+def print_summary(show_percent: bool):
     print("Three-way RPS comparison (raw values)")
     print("Threads: " + ", ".join(str(t) for t in THREADS))
 
@@ -100,13 +105,44 @@ def print_summary():
         tip_vals = [TIPROXY_RPS[s][t] for s in SCENARIO_ORDER]
         print(f"  Threads {t:>4}: TiDB max-min Δ={max(tidb_vals)-min(tidb_vals):.2f}; TiProxy max-min Δ={max(tip_vals)-min(tip_vals):.2f}")
 
+    if show_percent:
+        def delta_table(rps_map: Dict[str, Dict[int, float]], title: str):
+            base_label = "IDC*3"
+            base_series = rps_map[base_label]
+            other_labels = [s for s in SCENARIO_ORDER if s != base_label]
+            print(f"\n[{title}] Δ% vs {base_label} (per thread)")
+            header = ["Threads", f"{base_label} RPS"] + [f"{lbl} Δ%" for lbl in other_labels]
+            col_w = [len(h) for h in header]
+            rows = []
+            for t in THREADS:
+                base_v = base_series[t]
+                row = [str(t), f"{base_v:.2f}"]
+                for lbl in other_labels:
+                    dv = pct(rps_map[lbl][t], base_v)
+                    row.append(f"{dv:+.1f}%")
+                rows.append(row)
+                for i, cell in enumerate(row):
+                    if len(cell) > col_w[i]:
+                        col_w[i] = len(cell)
+            def fmt(r):
+                return " | ".join(r[i].rjust(col_w[i]) for i in range(len(r)))
+            print(fmt(header))
+            print("-+-".join('-'*w for w in col_w))
+            for r in rows:
+                print(fmt(r))
+        delta_table(TIDB_RPS, "TiDB")
+        delta_table(TIPROXY_RPS, "TiProxy")
+
     print("\nNotes:")
-    print(" - TiDB shows strong peak at 200 threads in 'IDC*2+GCP*3' (8362.52) exceeding other scenarios' 200T values.")
-    print(" - TiProxy peak positions differ: 'IDC*3' peaks high at 100T (5899.92) while mixed scenarios don't surpass their 100/200T ranges.")
-    print(" - Raw RPS only displayed to align with user preference (no percentage annotations).")
+    print(" - TiDB strong peak at 200T in 'IDC*2+GCP*3' (8362.52) vs 'IDC*3' 200T 7137.34.")
+    print(" - TiProxy peak: 'IDC*3' 100T 5899.92; mixed scenarios do not surpass local peak across threads.")
+    if show_percent:
+        print(" - Δ% tables show per-thread relative gap; positives = higher than baseline, negatives = lower.")
+    else:
+        print(" - Percent difference tables hidden (enable with --show-percent).")
 
 
-def make_plot():  # pragma: no cover
+def make_plot(annot_percent: bool):  # pragma: no cover
     try:
         import matplotlib.pyplot as plt
         import numpy as np
@@ -120,14 +156,23 @@ def make_plot():  # pragma: no cover
     colors_tip = ["#9467bd", "#8c564b", "#17becf"]
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
+    # Baselines for percent annotation
+    tidb_base = [TIDB_RPS['IDC*3'][t] for t in THREADS]
+    tip_base = [TIPROXY_RPS['IDC*3'][t] for t in THREADS]
+
     # TiDB
     ax = axes[0]
     for i, scen in enumerate(SCENARIO_ORDER):
         series = [TIDB_RPS[scen][t] for t in THREADS]
         pos = x + (i - 1) * width
         bars = ax.bar(pos, series, width, label=scen, color=colors_tidb[i], alpha=0.85)
-        for b, val in zip(bars, series):
-            ax.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, f"{val:.0f}", ha='center', va='bottom', fontsize=8)
+        for idx, (b, val) in enumerate(zip(bars, series)):
+            label = f"{val:.0f}"
+            if annot_percent and scen != 'IDC*3':
+                base_v = tidb_base[idx]
+                delta = (val / base_v - 1.0) * 100 if base_v else 0.0
+                label += f"\n{delta:+.0f}%"
+            ax.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, label, ha='center', va='bottom', fontsize=8, linespacing=0.9)
     ax.set_xticks(x)
     ax.set_xticklabels([str(t) for t in THREADS])
     ax.set_xlabel("Threads")
@@ -142,8 +187,13 @@ def make_plot():  # pragma: no cover
         series = [TIPROXY_RPS[scen][t] for t in THREADS]
         pos = x + (i - 1) * width
         bars = ax.bar(pos, series, width, label=scen, color=colors_tip[i], alpha=0.85)
-        for b, val in zip(bars, series):
-            ax.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, f"{val:.0f}", ha='center', va='bottom', fontsize=8)
+        for idx, (b, val) in enumerate(zip(bars, series)):
+            label = f"{val:.0f}"
+            if annot_percent and scen != 'IDC*3':
+                base_v = tip_base[idx]
+                delta = (val / base_v - 1.0) * 100 if base_v else 0.0
+                label += f"\n{delta:+.0f}%"
+            ax.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, label, ha='center', va='bottom', fontsize=8, linespacing=0.9)
     ax.set_xticks(x)
     ax.set_xticklabels([str(t) for t in THREADS])
     ax.set_xlabel("Threads")
@@ -161,8 +211,12 @@ def make_plot():  # pragma: no cover
 
 
 def main():
-    print_summary()
-    make_plot()
+    parser = argparse.ArgumentParser(description="Three-way RPS comparison")
+    parser.add_argument("--show-percent", action="store_true", help="Print per-thread percentage deltas vs IDC*3 baseline")
+    parser.add_argument("--annot-percent", action="store_true", help="Annotate bars with Δ% vs IDC*3 baseline (second line, non-baseline scenarios)")
+    args = parser.parse_args()
+    print_summary(show_percent=args.show_percent)
+    make_plot(annot_percent=args.annot_percent)
 
 
 if __name__ == "__main__":
