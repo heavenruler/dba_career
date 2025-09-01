@@ -5215,14 +5215,17 @@ select_random_points  20.00                         14.27                 290.75
 select_random_ranges  15.55                         10.48                 35.96                 6.05                  11452.0000               119.9957                         763.36 per sec.     959965.76           763.36 per sec.
 ```
 
-### 123
+### TiDB 直連與 TiProxy 連線的 Benchmark 差異
 
-- 123
-- 123
+- 整體：TiProxy QPS/TPS 輕微下降 3<del>12%（write / read_write -3%</del>-6%，point / range select -10%~-12%）。
+- 延遲：p95 全部升 2%<del>9%（range select 最差 +9%，point/select +3%</del>4%）。
 
 ![](./sysbench_results_%231_tidb_summary.png)
 
 
+
+
+### TiDB 直連與 TiProxy 連線與 Galera 的 Benchmark 差異
 
 
 ---
