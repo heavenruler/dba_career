@@ -1237,17 +1237,21 @@ multi_thread_multi_conn   10000           201.427              0.00            3
 
 </details>
 
+- 同時執行 IDC/GCP TiDB & TiProxy 四組整合比較 # #7-5_#7-6_#7-7_#7-8_simul_compare.py
 
+```
+ - TiDB 在 200/500/1000 GCP 具優勢, 但 250/750 退化顯著 (跨區交互 / 排程熱點)
+ - TiProxy 跨區 (GCP) 全域相對 IDC 劣勢較多, 顯示代理層延遲與連線管理成本敏感
+ - IDC Proxy 相對 IDC TiDB 在高併發 (1000) 尚能回升 (併發調度差異)；GCP Proxy 長尾更重
+ - 750 threads 普遍為退化點 (TiDB/Proxy/雙區) 需檢視 lock / region hotspot / GC / network jitter
+```
+
+![](./%237-5_%237-6_%237-7_%237-8_simul_compare.png)
 
 
 
 
 {FIXME}
-
-
-
-
-
 
 =======================================================================================================
 
