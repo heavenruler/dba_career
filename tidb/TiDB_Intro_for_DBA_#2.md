@@ -619,19 +619,18 @@ multi_thread_multi_conn   10000           34.486               0.00            3
 
 </details>
 
-### TiDB 叢集直連 TiDB 與透過 TiProxy 差異 #5-1_#5-2_compare.py
+### IDC TiDB 叢集直連 TiDB 與透過 TiProxy 差異 #5-1_#5-2_compare.py
 
-- 123
-- 123
-- 123
+- 200 threads 為 TiDB 直連唯一明顯最高效能；其餘 100、250、500、750、1000 threads 均為 TiProxy 吞吐更高 (+11%~+56%)。
+- 延遲：直連在峰值點 (200) 延遲 15.5 ms vs TiProxy 42.4 ms；但在 100 / 250 threads TiProxy 反而較低。
+- TiProxy 吞吐更平衡 (避免直連 250/500 threads 大幅塌陷)；直連曲線劇烈起伏。
 
 ![](./%235-1_%235-2_compare.png)
 
-### IDC * 1 Scale to IDC * 3 差異
+### IDC TiDB 叢集 IDC * 1 Scale to IDC * 3 差異
 
-- TiDB: 最佳提升發生於 200 threads (+33.5%), 高於或等於該點後快速退化。
-- TiProxy: 顯著提升在 100 threads (+83.2%), 其他中高併發多數仍為正增益。
-- TiDB 直連聚焦 200 threads , TiProxy 維持多節點以支撐 100~250 / 250~750 波段。
+- TiDB 擴至 3 節點僅 200 threads 提升 (+33.5%)，其他多數併發反降。
+- TiProxy 擴展多數併發正增益，100 / 250 / 750 threads 顯著提升。
 
 ![](./%233-1_%235-1_%233-2_%235-2_scale_compare.png)
 
