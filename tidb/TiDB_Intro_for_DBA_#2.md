@@ -309,8 +309,28 @@ multi_thread_multi_conn   10000           238.522              0.00            3
 ## GCP * 1
 
 Cluster Summary
+
+<details>
+
 ```
+date ; tiup cluster display tidb-demo
+Mon Sep  1 21:24:10 CST 2025
+Cluster type:       tidb
+Cluster name:       tidb-demo
+Cluster version:    v8.5.3
+Deploy user:        root
+SSH type:           builtin
+Dashboard URL:      http://10.160.152.21:2379/dashboard
+Dashboard URLs:     http://10.160.152.21:2379/dashboard
+ID                   Role     Host           Ports        OS/Arch       Status   Data Dir                    Deploy Dir
+--                   ----     ----           -----        -------       ------   --------                    ----------
+10.160.152.21:2379   pd       10.160.152.21  2379/2380    linux/x86_64  Up|L|UI  /data/tidb-data/pd-2379     /data/tidb-deploy/pd-2379
+10.160.152.21:4000   tidb     10.160.152.21  4000/10080   linux/x86_64  Up       -                           /data/tidb-deploy/tidb-4000
+10.160.152.21:20160  tikv     10.160.152.21  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
+10.160.152.21:6000   tiproxy  10.160.152.21  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
 ```
+
+</details>
 
 RPS From TiDB with GCP # 離峰 #4-1.py
 
