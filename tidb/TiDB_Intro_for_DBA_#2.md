@@ -2282,6 +2282,9 @@ Dispatcher
 ```
 
 Cluster Summary
+
+<details>
+
 ```
 date ; tiup cluster display tidb-demo
 Sun Aug 31 22:05:15 CST 2025
@@ -2319,7 +2322,14 @@ ID                   Role        Host           Ports                 OS/Arch   
 172.24.40.18:6000    tiproxy     172.24.40.18   6000/6001             linux/x86_64  Up      -                                /data/tidb-deploy/tiproxy-6000
 ```
 
+</details>
+
 RPS From TiDB with IDC # 離峰 #10-1.py
+
+![](./%2310-1.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -2372,7 +2382,14 @@ multi_thread_multi_conn   10000           19.783               0.00            3
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with IDC # 離峰 #10-2.py
+
+![](./%2310-2.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
