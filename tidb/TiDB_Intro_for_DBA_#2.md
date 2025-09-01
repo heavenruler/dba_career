@@ -331,6 +331,7 @@ ID                  Role     Host          Ports        OS/Arch       Status   D
 ```
 
 RPS From TiDB with IDC # 離峰 #5-1.py
+![](./%235-1.png)
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -384,6 +385,7 @@ multi_thread_multi_conn   10000           15.386               0.00            3
 ```
 
 RPS From TiProxy with IDC # 離峰 #5-2.py
+![](./%235-2.png)
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
