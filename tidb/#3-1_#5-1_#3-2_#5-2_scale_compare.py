@@ -89,13 +89,13 @@ def summarize():
     tipx_impr = {t: pct(TIPROXY_IDC3[t], TIPROXY_IDC1[t]) for t in THREADS}
     best_t_tipx = max(tipx_impr, key=lambda k: tipx_impr[k])
 
-    lines.append(f"TiDB: Best gain at {best_t_tidb} threads (+{tidb_impr[best_t_tidb]:.1f}%), throughput decays quickly above this point.")
-    lines.append(f"TiProxy: Strong improvement at {best_t_tipx} threads (+{tipx_impr[best_t_tipx]:.1f}%), most other mid/high concurrency points still positive.")
+    lines.append(f"TiDB: 最佳提升出現在 {best_t_tidb} threads (+{tidb_impr[best_t_tidb]:.1f}%), 其後吞吐快速衰退。")
+    lines.append(f"TiProxy: 顯著提升出現在 {best_t_tipx} threads (+{tipx_impr[best_t_tipx]:.1f}%), 其他中高併發大多仍為正向增益。")
     # Note on low thread degradation
     low_deg_tidb = pct(TIDB_IDC3[1], TIDB_IDC1[1])
     low_deg_tipx = pct(TIPROXY_IDC3[1], TIPROXY_IDC1[1])
-    lines.append(f"Low concurrency (1 thread): Direct {low_deg_tidb:+.1f}%, TiProxy {low_deg_tipx:+.1f}% (multi-node & proxy overhead at tiny load).")
-    lines.append("Recommendation: Direct TiDB tune around 200 threads (hotspot/scheduling); keep TiProxy multi-node to sustain 100~250 and 250~750 ranges.")
+    lines.append(f"低併發 (1 thread): 直連 {low_deg_tidb:+.1f}%, TiProxy {low_deg_tipx:+.1f}% → 多節點與代理在極低負載存在固定開銷。")
+    lines.append("建議: 直連 TiDB 聚焦 ~200 threads 熱點 / 調度調優；TiProxy 維持多節點以支撐 100~250 與 250~750 兩個效益區間。")
     summary = '\n'.join(lines)
     print('\n[SUMMARY]\n' + summary)
     return summary

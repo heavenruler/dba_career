@@ -485,6 +485,7 @@ ID                   Role     Host           Ports        OS/Arch       Status  
 ```
 
 RPS From TiDB with GCP # 離峰 #6-1.py
+![](./%236-1.png)
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -538,6 +539,7 @@ multi_thread_multi_conn   10000           7.986                0.00            3
 ```
 
 RPS From TiProxy with GCP # 離峰 #6-2.py
+![](./%236-2.png)
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
