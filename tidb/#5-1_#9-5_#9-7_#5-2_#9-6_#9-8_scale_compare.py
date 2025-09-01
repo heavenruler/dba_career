@@ -60,14 +60,14 @@ def plot():
 
     grouped(axes[0], [
         ('TiDB IDC*3', TIDB_IDC3, '#1f77b4'),
-        ('TiDB IDC Sim', TIDB_IDC_SIM, '#ff7f0e'),
-        ('TiDB GCP Sim', TIDB_GCP_SIM, '#2ca02c'),
+        ('TiDB IDC Req', TIDB_IDC_SIM, '#ff7f0e'),
+        ('TiDB GCP Req', TIDB_GCP_SIM, '#2ca02c'),
     ], 'TiDB RPS (Raw)')
 
     grouped(axes[1], [
         ('TiProxy IDC*3', TIPROXY_IDC3, '#1f77b4'),
-        ('TiProxy IDC Sim', TIPROXY_IDC_SIM, '#ff7f0e'),
-        ('TiProxy GCP Sim', TIPROXY_GCP_SIM, '#2ca02c'),
+        ('TiProxy IDC Req', TIPROXY_IDC_SIM, '#ff7f0e'),
+        ('TiProxy GCP Req', TIPROXY_GCP_SIM, '#2ca02c'),
     ], 'TiProxy RPS (Raw)')
 
     axes[1].set_xlabel('Threads')
