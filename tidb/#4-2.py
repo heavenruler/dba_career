@@ -85,7 +85,7 @@ def make_plot(data):
     avg_ms = [r[2] for r in data]
 
     fig, ax1 = plt.subplots(figsize=(9, 5))
-    bars = ax1.bar([str(t) for t in threads], rps, color="#9467bd", alpha=0.75, label="Req/sec")
+    bars = ax1.bar([str(t) for t in threads], rps, color="#1f77b4", alpha=0.75, label="Req/sec")
     ax1.set_xlabel("Threads")
     ax1.set_ylabel("Requests per second")
     ax1.set_title("#4-2 multi_thread_multi_conn (TiProxy GCP Off-Peak) Scaling")
