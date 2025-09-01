@@ -1803,6 +1803,25 @@ multi_thread_multi_conn   10000           477.031              0.00            6
 
 - 確認 IDC * 1 + GCP * 2 & IDC * 2 + GCP * 1 TiDB 叢集同時執行情境效能差異 (模擬 Active / Active 流量情境)
 
+TiDB #7-5_#7-7_#8-5_#8-7_tidb_topology_diff.png
+```
+ - IDC 節點在新增一個 IDC 節點後吞吐普遍大幅成長 (200T +58.7%, 500T +46.3%)
+ - GCP 節點吞吐同時顯著下滑 (200T -42.1%, 500T -37.4%) 顯示 scheduler / region 分布偏移
+ - 高併發 1000T: IDC +141.2% vs GCP -30.3%, IDC/GCP 比值躍升, 跨區壓力由 GCP 轉移
+ - 250T / 750T 仍為不穩定區 (雙方皆低 / 退化), 需檢視 balance 與 hotspot
+```
+
+![](./%237-5_%237-7_%238-5_%238-7_tidb_topology_diff.png)
+
+TiProxy #7-6_#7-8_#8-6_#8-8_tiproxy_topology_diff.py
+```
+ - IDC TiProxy 在新增 IDC 節點後 100T +46.5%, 250T +34.7% 明顯改善
+ - GCP 端 TiProxy 吞吐大幅下滑 (100T -44.4%, 200T -47.1%, 500T -45.4%) => 跨區負載轉移 / 連線排程偏向 IDC
+ - 750T / 1000T 下 IDC 雖保持較高但 GCP 極度退化, 整體平衡惡化
+ - Ratio 上升顯示代理層負載集中 IDC, 需檢視負載均衡策略
+```
+
+![](./%237-6_%237-8_%238-6_%238-8_tiproxy_topology_diff.png)
 
 
 {FIXME}
