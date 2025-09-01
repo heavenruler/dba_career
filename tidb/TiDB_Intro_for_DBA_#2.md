@@ -709,6 +709,8 @@ ID                   Role        Host           Ports                 OS/Arch   
 
 RPS From TiDB with IDC # 離峰 #7-1.py
 
+![](./%237-1.png)
+
 <details>
 
 ```
@@ -766,6 +768,8 @@ multi_thread_multi_conn   10000           168.535              0.00            5
 </details>
 
 RPS From TiProxy with IDC # 離峰 #7-2.py
+
+![](./%237-2.png)
 
 <details>
 
@@ -825,6 +829,8 @@ multi_thread_multi_conn   10000           286.611              0.00            3
 
 RPS From TiDB with GCP # 離峰 #7-3.py
 
+![](./%237-3.png)
+
 <details>
 
 ```
@@ -882,6 +888,8 @@ multi_thread_multi_conn   10000           16.100               0.00            3
 </details>
 
 RPS From TiProxy with GCP # 離峰 #7-4.py
+
+![](./%237-4.png)
 
 <details>
 
@@ -941,6 +949,8 @@ multi_thread_multi_conn   10000           198.598              0.00            3
 
 RPS From TiDB with IDC # 離峰 # 同時執行 #7-5.py
 
+![](./%237-5.png)
+
 <details>
 
 ```
@@ -998,6 +1008,8 @@ multi_thread_multi_conn   10000           164.816              0.00            5
 </details>
 
 RPS From TiProxy with IDC # 離峰 # 同時執行 #7-6.py
+
+![](./%237-6.png)
 
 <details>
 
@@ -1057,6 +1069,8 @@ multi_thread_multi_conn   10000           268.058              0.00            3
 
 RPS From TiDB with GCP # 離峰 # 同時執行 #7-7.py
 
+![](./%237-7.png)
+
 <details>
 
 ```
@@ -1114,6 +1128,8 @@ multi_thread_multi_conn   10000           15.436               0.00            3
 </details>
 
 RPS From TiProxy with GCP # 離峰 # 同時執行 #7-8.py
+
+![](./%237-8.png)
 
 <details>
 
