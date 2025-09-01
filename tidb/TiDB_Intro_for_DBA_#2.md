@@ -4898,7 +4898,7 @@ multi_thread_multi_conn   10000           18.875               0.00            2
 ![](./%231-5_%232-13_%231-6_%232-14_%231-7_%232-15_%231-8_%232-16_isolation_compare.png)
 
 
-- IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 & IDC * 3 + GCP * 3 從 IDC 發起 (確認 Scale  Out 後效能差異)
+- IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 & IDC * 3 + GCP * 3 從 IDC 發起 # 尖峰時段數據 (確認 Scale  Out 後效能差異)
 
 ```
 123
@@ -4906,7 +4906,7 @@ multi_thread_multi_conn   10000           18.875               0.00            2
 ![](./%235-1_%237-5_%2310-5_%231-5_%235-2_%237-6_%2310-6_%231-6_scale_compare.png)
 
 
-- IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 & IDC * 3 + GCP * 3 從 GCP 發起 (確認 Scale  Out 後效能差異)
+- IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 & IDC * 3 + GCP * 3 從 GCP 發起 # 尖峰時段數據 (確認 Scale  Out 後效能差異)
 ```
 123
 ```
