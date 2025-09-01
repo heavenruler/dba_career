@@ -41,6 +41,9 @@ select_random_ranges  7.56                          4.63                  228.49
 ```
 
 Benchmark From TiDB with GCP # 離峰 # sysbench_results_#2_tidb
+
+![](./sysbench_results_%231_tiproxy_summary.png)
+
 ```
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
 oltp_read_only        77.19                         37.03                 107.58                12.89                 3240.7500                120.0109                         3455.60 per sec.    960086.85           215.97 per sec.
