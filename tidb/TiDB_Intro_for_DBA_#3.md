@@ -112,7 +112,7 @@ select_random_ranges  15.55                         10.48                 35.96 
 
 ![](./sysbench_tidb_vs_tiproxy_throughput.png)
 
-
+### IDC / GCP TiDB 直連與 TiProxy 連線的 Benchmark 差異
 
 
 
