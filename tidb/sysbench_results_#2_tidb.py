@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plot Sysbench Scenario #2 (TiDB) results as line charts.
+"""Plot Sysbench Scenario #2 (TiDB) results as bar (QPS/TPS) + line (p95) chart.
 
 Scenario #2 numbers (IDC *3 baseline, no TiProxy) - from markdown table:
 Workload               p95(ms)   QPS       TPS
@@ -10,8 +10,9 @@ select_random_points   21.50     573.45    573.45
 select_random_ranges   16.71     708.15    708.15
 
 Chart:
-  - Three lines: QPS, TPS (left Y) ; p95 latency (right Y).
-  - Markers + value annotations.
+    - Grouped bars: QPS & TPS (left Y axis)
+    - Line: p95 latency (right Y axis)
+    - Value annotations on each bar + latency point
 
 Outputs:
   sysbench_results_#2_tidb_summary.png
@@ -87,12 +88,13 @@ def plot():  # pragma: no cover
     tps = [r.tps for r in DATA]
 
     x = list(range(len(names)))
-    fig, ax_thr = plt.subplots(figsize=(10.8, 5.0))
+    fig, ax_thr = plt.subplots(figsize=(11, 5.2))
     ax_lat = ax_thr.twinx()
 
-    l_qps = ax_thr.plot(x, qps, marker='o', linewidth=2, color="#1f77b4", label="QPS")
-    l_tps = ax_thr.plot(x, tps, marker='s', linewidth=2, color="#2ca02c", label="TPS")
-    l_p95 = ax_lat.plot(x, p95, marker='D', linewidth=2, color="#d62728", label="95p Latency (ms)")
+    width = 0.32
+    b_q = ax_thr.bar([i - width/2 for i in x], qps, width=width, color="#1f77b4", alpha=0.85, label="QPS")
+    b_t = ax_thr.bar([i + width/2 for i in x], tps, width=width, color="#2ca02c", alpha=0.80, label="TPS")
+    l_p, = ax_lat.plot(x, p95, color="#d62728", marker='o', linewidth=2, label="95p Latency (ms)")
 
     ax_thr.set_xticks(x)
     ax_thr.set_xticklabels([n.replace('_', '\n') for n in names])
@@ -101,20 +103,17 @@ def plot():  # pragma: no cover
     ax_thr.tick_params(axis='y', labelcolor="#1f77b4")
     ax_lat.tick_params(axis='y', labelcolor="#d62728")
     ax_thr.grid(axis='y', linestyle='--', alpha=0.35)
-    ax_thr.set_title('Sysbench Scenario #2 (TiDB) - QPS/TPS & 95p Latency Lines')
+    ax_thr.set_title('Sysbench Scenario #2 (TiDB) - QPS/TPS Bars + 95p Latency Line')
 
-    # Annotate points
-    for xi, val in enumerate(qps):
-        ax_thr.text(xi, val*1.015, f"{val:.0f}", ha='center', va='bottom', fontsize=8, color="#1f77b4")
-    for xi, val in enumerate(tps):
-        ax_thr.text(xi, val*1.015, f"{val:.0f}", ha='center', va='bottom', fontsize=8, color="#2ca02c")
+    # Annotate bars
+    for b in b_q:
+        ax_thr.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, f"{b.get_height():.0f}", ha='center', va='bottom', fontsize=8, color="#1f77b4")
+    for b in b_t:
+        ax_thr.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, f"{b.get_height():.0f}", ha='center', va='bottom', fontsize=8, color="#2ca02c")
     for xi, val in enumerate(p95):
         ax_lat.text(xi, val*1.03, f"{val:.1f}", ha='center', va='bottom', fontsize=8, color="#d62728")
 
-    # Build combined legend
-    handles = l_qps + l_tps + l_p95
-    labels = [h.get_label() for h in handles]
-    ax_thr.legend(handles, labels, loc='upper center', ncol=3, fontsize=9, frameon=False)
+    ax_thr.legend([b_q, b_t, l_p], ["QPS", "TPS", "95p Latency (ms)"], loc='upper center', ncol=3, fontsize=9, frameon=False)
 
     fig.tight_layout()
     fig.savefig(PNG_NAME, dpi=140)
