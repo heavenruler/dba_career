@@ -67,6 +67,9 @@ select_random_ranges  16.12                         11.82                 645.64
 ```
 
 Benchmark From TiDB with IDC # 離峰 # 同時執行 # sysbench_results_#3_tidb
+
+![](./sysbench_results_%233_tidb_summary.png)
+
 ```
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
 oltp_read_only        86.00                         63.06                 348.31                9.20                  1903.3750                120.0274                         2029.10 per sec.    960219.03           126.82 per sec.
@@ -77,6 +80,9 @@ select_random_ranges  7.04                          4.31                  34.11 
 ```
 
 Benchmark From TiProxy with IDC # 離峰 # 同時執行 # sysbench_results_#3_tiproxy
+
+![](./sysbench_results_%233_tiproxy_summary.png)
+
 ```
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
 oltp_read_only        87.56                         65.30                 302.16                12.06                 1838.2500                120.0310                         1959.76 per sec.    960247.66           122.49 per sec.
