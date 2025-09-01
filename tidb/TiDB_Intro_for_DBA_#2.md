@@ -1805,14 +1805,16 @@ multi_thread_multi_conn   10000           477.031              0.00            6
 
 TiDB #7-5_#7-7_#8-5_#8-7_tidb_topology_diff.png
 ```
-期望值: IDC A + GCP A ~= IDC B + GCP B ; 現況無，僅總和呈現相同效能體現
+- 期望值: IDC A + GCP A ~= IDC B + GCP B ; 現況無，僅總和呈現相同效能體現
+- 且 IDC B, GCP B 較能體現不同 TiDB 組件產生的效能差異
 ```
 
 ![](./%237-5_%237-7_%238-5_%238-7_tidb_topology_diff.png)
 
 TiProxy #7-6_#7-8_#8-6_#8-8_tiproxy_topology_diff.py
 ```
-期望值: IDC A + GCP A ~= IDC B + GCP B ; 現況無，僅總和呈現相同效能體現
+- 期望值: IDC A + GCP A ~= IDC B + GCP B ; 現況無，僅總和呈現相同效能體現
+- 且 IDC B, GCP B 較能體現不同 TiDB 組件產生的效能差異
 ```
 
 ![](./%237-6_%237-8_%238-6_%238-8_tiproxy_topology_diff.png)
