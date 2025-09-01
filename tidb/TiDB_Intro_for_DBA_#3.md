@@ -103,7 +103,6 @@ select_random_ranges  15.55                         10.48                 35.96 
 ### TiDB 直連與 TiProxy 連線的 Benchmark 差異
 
 - 吞吐：RO/RW/WO 約 -3%<del>-6%；Points / Ranges 約 -10%</del>-12%。
-- 延遲：p95 RO/RW/WO/Points 約 +2%~+4%；Ranges +9%（最差）。
 
 ![](./sysbench_tidb_vs_tiproxy_throughput.png)
 
