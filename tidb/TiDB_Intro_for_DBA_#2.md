@@ -5217,10 +5217,11 @@ select_random_ranges  15.55                         10.48                 35.96 
 
 ### TiDB 直連與 TiProxy 連線的 Benchmark 差異
 
-- 整體：TiProxy QPS/TPS 輕微下降 3<del>12%（write / read_write -3%</del>-6%，point / range select -10%~-12%）。
-- 延遲：p95 全部升 2%<del>9%（range select 最差 +9%，point/select +3%</del>4%）。
+- 吞吐：RO/RW/WO 約 -3%<del>-6%；Points / Ranges 約 -10%</del>-12%。
+- 延遲：p95 RO/RW/WO/Points 約 +2%~+4%；Ranges +9%（最差）。
 
-![](./sysbench_results_%231_tidb_summary.png)
+![](./sysbench_tidb_vs_tiproxy_throughput.png)
+
 
 
 
