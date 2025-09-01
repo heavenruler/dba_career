@@ -4548,7 +4548,14 @@ multi_thread_multi_conn   10000           5.225                0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with GCP # 離峰 # 同時執行 #1-16.py
+
+![](./%231-16.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4601,9 +4608,15 @@ multi_thread_multi_conn   10000           26.939               0.00            2
 ========================================================================================================================
 ```
 
+</details>
 ====================================================================
 
 RPS From TiDB with IDC # 尖峰 #1-1.py
+
+![](./%231-1.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4656,7 +4669,14 @@ multi_thread_multi_conn   10000           12.758               0.00            1
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with IDC # 尖峰 #1-2.py
+
+![](./%231-2.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4709,7 +4729,14 @@ multi_thread_multi_conn   10000           29.681               0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiDB with GCP # 尖峰 #1-3.py
+
+![](./%231-3.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4762,7 +4789,14 @@ multi_thread_multi_conn   10000           5.541                0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with GCP # 尖峰 #1-4.py
+
+![](./%231-4.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4815,7 +4849,14 @@ multi_thread_multi_conn   10000           21.078               0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiDB with IDC # 尖峰 # 同時執行 #1-5.py
+
+![](./%231-5.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4868,7 +4909,14 @@ multi_thread_multi_conn   10000           13.559               0.00            3
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with IDC # 尖峰 # 同時執行 #1-6.py
+
+![](./%231-6.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4921,7 +4969,14 @@ multi_thread_multi_conn   10000           26.256               0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiDB with GCP # 尖峰 # 同時執行 #1-7.py
+
+![](./%231-7.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4974,7 +5029,14 @@ multi_thread_multi_conn   10000           5.481                0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with GCP # 尖峰 # 同時執行 #1-8.py
+
+![](./%231-.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -5069,7 +5131,6 @@ Benchmark From TiProxy with IDC # 離峰 # sysbench_results_#5_tidb
 
 Benchmark From TiDB with IDC # 離峰 # sysbench_results_#1_tidb
 
-
 ```
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
 oltp_read_only        82.96                         61.28                 297.06                9.43                  1958.6250                120.0307                         2087.83 per sec.    960245.97           130.49 per sec.
@@ -5148,6 +5209,11 @@ oltp_write_only       41.85                         30.31                 262.51
 select_random_points  20.00                         14.27                 290.75                5.79                  8410.8750                119.9969                         560.65 per sec.     959975.57           560.65 per sec.
 select_random_ranges  15.55                         10.48                 35.96                 6.05                  11452.0000               119.9957                         763.36 per sec.     959965.76           763.36 per sec.
 ```
+
+![](./sysbench_results_%231_tidb_summary.png)
+
+
+
 
 ---
 

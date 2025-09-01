@@ -77,6 +77,7 @@ def as_table() -> str:
 
 
 def plot():  # pragma: no cover - visual output
+    """Render chart with QPS/TPS as grouped bars and 95p latency as overlay line."""
     if plt is None:
         print(f"[ERROR] matplotlib not available: {_matplotlib_err}")
         return False
@@ -86,39 +87,40 @@ def plot():  # pragma: no cover - visual output
     qps = [r.qps for r in DATA]
     tps = [r.tps for r in DATA]
 
-    # Because QPS/TPS numeric ranges differ strongly from latency, use two y-axes.
-    fig, ax_left = plt.subplots(figsize=(10.5, 5.2))
-    ax_right = ax_left.twinx()
+    fig, ax_thr = plt.subplots(figsize=(11, 5.4))
+    ax_lat = ax_thr.twinx()
 
-    x = range(len(names))
+    x = list(range(len(names)))
+    width = 0.32
+    bar_q = ax_thr.bar([i - width/2 for i in x], qps, width=width, color="#1f77b4", label="QPS", alpha=0.85)
+    bar_t = ax_thr.bar([i + width/2 for i in x], tps, width=width, color="#2ca02c", label="TPS", alpha=0.80)
 
-    # Left axis: latency
-    ax_left.plot(x, p95, marker='o', color='#d62728', label='95th Latency (ms)')
-    ax_left.set_ylabel('95th percentile latency (ms)', color='#d62728')
-    ax_left.tick_params(axis='y', labelcolor='#d62728')
-    ax_left.set_xticks(list(x))
-    ax_left.set_xticklabels([n.replace('_', '\n') for n in names], rotation=0)
+    # Latency line (secondary axis)
+    ax_lat.plot(x, p95, color="#d62728", marker="o", linewidth=2, label="95p Latency (ms)")
 
-    # Right axis: throughput
-    ax_right.plot(x, qps, marker='s', color='#1f77b4', label='QPS')
-    ax_right.plot(x, tps, marker='^', color='#2ca02c', label='TPS')
-    ax_right.set_ylabel('Throughput (ops/sec)', color='#1f77b4')
-    ax_right.tick_params(axis='y', labelcolor='#1f77b4')
+    # Axes labels
+    ax_thr.set_ylabel("Throughput (ops/sec)", color="#1f77b4")
+    ax_lat.set_ylabel("95th percentile latency (ms)", color="#d62728")
+    ax_thr.tick_params(axis='y', labelcolor="#1f77b4")
+    ax_lat.tick_params(axis='y', labelcolor="#d62728")
+    ax_thr.set_xticks(x)
+    ax_thr.set_xticklabels([n.replace('_', '\n') for n in names])
 
-    # Annotate points (optional concise labels)
-    for xi, (p, q, t) in enumerate(zip(p95, qps, tps)):
-        ax_left.text(xi, p * 1.02, f"{p:.1f}", ha='center', va='bottom', fontsize=8, color='#d62728')
-        ax_right.text(xi, q * 1.01, f"Q{q:.0f}", ha='center', va='bottom', fontsize=7, color='#1f77b4')
-        if abs(q - t) > 1:  # show TPS only if meaningfully different
-            ax_right.text(xi, t * 0.99, f"T{t:.0f}", ha='center', va='top', fontsize=7, color='#2ca02c')
+    # Annotate bars (QPS & TPS) and latency points
+    for b in bar_q:
+        ax_thr.text(b.get_x() + b.get_width()/2, b.get_height()*1.01, f"{b.get_height():.0f}", ha='center', va='bottom', fontsize=8, color="#1f77b4")
+    for b in bar_t:
+        ax_thr.text(b.get_x() + b.get_width()/2, b.get_height()*1.01, f"{b.get_height():.0f}", ha='center', va='bottom', fontsize=8, color="#2ca02c")
+    for xi, val in enumerate(p95):
+        ax_lat.text(xi, val * 1.03, f"{val:.1f}", ha='center', va='bottom', fontsize=8, color="#d62728")
 
-    ax_left.set_title('Sysbench Scenario #1 (TiDB) - Latency & Throughput (Label Isolation)')
-    ax_left.grid(axis='y', linestyle='--', alpha=0.35)
+    ax_thr.set_title('Sysbench Scenario #1 (TiDB) - QPS/TPS Bars + 95p Latency Line')
+    ax_thr.grid(axis='y', linestyle='--', alpha=0.35)
 
-    # Combined legend
-    lines_left, labels_left = ax_left.get_legend_handles_labels()
-    lines_right, labels_right = ax_right.get_legend_handles_labels()
-    ax_left.legend(lines_left + lines_right, labels_left + labels_right, loc='upper center', ncol=3, fontsize=9, frameon=False)
+    # Build combined legend manually
+    handles = [bar_q, bar_t, ax_lat.lines[0]]
+    labels = [h.get_label() for h in handles]
+    ax_thr.legend(handles, labels, loc='upper center', ncol=3, fontsize=9, frameon=False)
 
     fig.tight_layout()
     fig.savefig(PNG_NAME, dpi=140)
