@@ -282,11 +282,11 @@ Cluster Summary
 ```
 ```
 
-RPS From TiDB with GCP # 離峰
+RPS From TiDB with GCP # 離峰 #4-1.py
 ```
 ```
 
-RPS From TiProxy with GCP # 離峰
+RPS From TiProxy with GCP # 離峰 #4-2.py
 ```
 ```
 
@@ -325,7 +325,7 @@ ID                  Role     Host          Ports        OS/Arch       Status   D
 172.24.40.19:6000   tiproxy  172.24.40.19  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
 ```
 
-RPS From TiDB with IDC # 離峰
+RPS From TiDB with IDC # 離峰 #5-1.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -378,7 +378,7 @@ multi_thread_multi_conn   10000           15.386               0.00            3
 ========================================================================================================================
 ```
 
-RPS From TiProxy with IDC # 離峰
+RPS From TiProxy with IDC # 離峰 #5-2.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -466,7 +466,7 @@ ID                   Role     Host           Ports        OS/Arch       Status  
 10.160.152.23:6000   tiproxy  10.160.152.23  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
 ```
 
-RPS From TiDB with GCP # 離峰
+RPS From TiDB with GCP # 離峰 #6-1.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -519,7 +519,7 @@ multi_thread_multi_conn   10000           7.986                0.00            3
 ========================================================================================================================
 ```
 
-RPS From TiProxy with GCP # 離峰
+RPS From TiProxy with GCP # 離峰 #6-2.py
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
