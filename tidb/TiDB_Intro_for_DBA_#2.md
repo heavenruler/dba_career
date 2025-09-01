@@ -3358,22 +3358,55 @@ multi_thread_multi_conn   10000           42.207               0.00            3
 ====================================================================
 
 RPS From TiDB with IDC # 尖峰 #2-9.py
+
+![](./%232-9.png)
+
+<details>
+
 ```
 ```
+
+</details>
 
 RPS From TiProxy with IDC # 尖峰 #2-10.py
+
+![](./%232-10.png)
+
+<details>
+
 ```
 ```
+
+</details>
 
 RPS From TiDB with GCP # 尖峰 #2-11.py
+
+![](./%232-11.png)
+
+<details>
+
 ```
 ```
+
+</details>
 
 RPS From TiProxy with GCP # 尖峰 #2-12.py
+
+![](./%232-12.png)
+
+<details>
+
 ```
 ```
 
+</details>
+
 RPS From TiDB with IDC # 尖峰 # 同時執行 #2-13.py
+
+![](./%232-13.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
