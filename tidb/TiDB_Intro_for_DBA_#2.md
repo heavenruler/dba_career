@@ -1107,6 +1107,8 @@ multi_thread_multi_conn   10000           198.598              0.00            3
 
 ### 跨專線叢集相較 IDC 本地叢集 for TiDB & TiProxy 效能影響
 
+- 跨區混合拓撲對 Proxy 層衝擊 > 直連
+
 ![](./%237-1_%235-1_crossline_local_compare.png)
 
 ![](./%237-2_%235-2_crossline_local_compare.png)
