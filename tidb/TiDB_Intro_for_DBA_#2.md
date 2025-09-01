@@ -975,8 +975,27 @@ GCP 顯著退化在 100 / 250 / 750 threads (100 -10.5%, 250 -17.9%, 750 -22.5%)
 
 
 
-- 跨專線叢集相較本地叢集效能影響
+- 跨專線叢集相較 IDC 本地叢集效能影響
 
+TiDB
+```
+ - Cross-Line 優勢 thread: 500(+35.2%)
+ - Cross-Line 顯著劣勢 thread: 200(-35.2%), 250(-16.7%), 1000(-37.1%)
+ - 200 thread 下 Local 峰值大幅領先 (7137 vs 4625), Cross-Line 早期飽和
+ - Cross-Line 在 500 threads 相對 Local 反而較佳 (資源分佈與延遲型態不同)
+ - 高併發 (750, 1000) Cross-Line 下降幅度更深, 可能受跨站網路/排程延遲與熱點拖累
+```
+![](./%237-1_%235-1_crossline_local_compare.png)
+
+TiProxy
+```
+ - Cross-Line 優勢 thread: 1(+29.8%)
+ - Cross-Line 顯著劣勢 thread: 100(-52.3%), 200(-17.2%), 250(-49.7%), 750(-46.1%), 1000(-19.7%)
+ - Local 在 100 threads 達到峰值 5899 RPS, Cross-Line 任何併發無法逼近
+ - Cross-Line 在所有中高併發區間 (200~1000) 均顯著劣於 Local, 顯示早期飽和與延遲放大
+ - 500 / 750 / 1000 threads 仍維持 -5x~-40% 區間, 疑似跨區網路 RTT / proxy 排程開銷
+```
+![](./%237-2_%235-2_crossline_local_compare.png)
 
 
 
