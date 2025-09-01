@@ -154,13 +154,14 @@ def make_plot(annot_percent: bool):  # pragma: no cover
     width = 0.25
     colors_tidb = ["#1f77b4", "#ff7f0e", "#2ca02c"]
     colors_tip = ["#9467bd", "#8c564b", "#17becf"]
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    # Vertical stacking: TiDB (top), TiProxy (bottom)
+    fig, axes = plt.subplots(2, 1, figsize=(10, 11), sharex=True)
 
     # Baselines for percent annotation
     tidb_base = [TIDB_RPS['IDC*3'][t] for t in THREADS]
     tip_base = [TIPROXY_RPS['IDC*3'][t] for t in THREADS]
 
-    # TiDB
+    # TiDB (top)
     ax = axes[0]
     for i, scen in enumerate(SCENARIO_ORDER):
         series = [TIDB_RPS[scen][t] for t in THREADS]
@@ -181,7 +182,7 @@ def make_plot(annot_percent: bool):  # pragma: no cover
     ax.legend(fontsize=9)
     ax.grid(axis='y', linestyle='--', alpha=0.3)
 
-    # TiProxy
+    # TiProxy (bottom)
     ax = axes[1]
     for i, scen in enumerate(SCENARIO_ORDER):
         series = [TIPROXY_RPS[scen][t] for t in THREADS]
@@ -202,8 +203,8 @@ def make_plot(annot_percent: bool):  # pragma: no cover
     ax.legend(fontsize=9)
     ax.grid(axis='y', linestyle='--', alpha=0.3)
 
-    fig.suptitle("Three-Way RPS Comparison (Raw Values)", fontsize=14, y=0.98)
-    fig.tight_layout(rect=[0,0,1,0.96])
+    fig.suptitle("Three-Way RPS Comparison (Raw Values)\nTiDB (Top) / TiProxy (Bottom)", fontsize=14, y=0.995)
+    fig.tight_layout(rect=[0,0,1,0.975])
     out = "#5-1_#7-5_#10-5_#5-2_#7-6_#10-6_scale_compare.png"
     fig.savefig(out, dpi=140)
     print(f"[OK] Saved plot -> {out}")
