@@ -159,6 +159,7 @@
 Cluster Summary
 
 <details>
+
 ```
 date ; tiup cluster display tidb-demo
 Sat Aug 30 02:29:02 CST 2025
@@ -176,12 +177,14 @@ ID                  Role     Host          Ports        OS/Arch       Status   D
 172.24.40.18:20160  tikv     172.24.40.18  20160/20180  linux/x86_64  Up       /data/tidb-data/tikv-20160  /data/tidb-deploy/tikv-20160
 172.24.40.18:6000   tiproxy  172.24.40.18  6000/6001    linux/x86_64  Up       -                           /data/tidb-deploy/tiproxy-6000
 ```
+
 </details>
 
 RPS From TiDB with IDC # 離峰 #3-1.py
 ![](./%233-1.png)
 
 <details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -233,10 +236,14 @@ single_thread_multi_conn  10000           0.575                0.00            6
 multi_thread_multi_conn   10000           142.418              0.00            3.134           3190.80         1000
 ========================================================================================================================
 ```
+
 </details>
 
 RPS From TiProxy with IDC # 離峰 #3-2.py
 ![](./%233-2.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -288,6 +295,8 @@ single_thread_multi_conn  10000           0.681                0.00            8
 multi_thread_multi_conn   10000           238.522              0.00            3.369           2968.66         1000
 ========================================================================================================================
 ```
+
+</details>
 
 直連 TiDB 與透過 TiProxy 差異 #3-1_#3-2_compare.py
 ![](./%233-1_%233-2_compare.png)
