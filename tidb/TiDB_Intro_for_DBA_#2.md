@@ -788,23 +788,19 @@ multi_thread_multi_conn   10000           25.584               0.00            3
 
 </details>
 
-IDC / GCP TiDB 叢集效能差異
-```
-最大正向差異 (GCP 相對 IDC) 出現在 500 threads: +122.8%
-最大負向差異 出現在 750 threads: -27.5%
-GCP 在 500 threads 顯示明顯優勢 (網路/資源分配較佳)；250 / 750 threads 可能受限排程或熱點。
-建議: 深入檢視 GCP 低/中併發退化點 (250, 750) 的 TiKV 與 PD 指標，確認是否資源搶奪或 region balance 影響。
-```
+### GCP *3 vs IDC *3 TiDB 叢集效能差異
+
+- 最大正向差異 (GCP 相對 IDC) 出現在 500 threads: +122.8%
+- 最大負向差異 出現在 750 threads: -27.5%
+
 ![](./%235-1_%236-1_env_compare.png)
 
-IDC / GCP TiProxy 叢集效能差異
-```
-GCP 對 IDC 最大正向差異在 1 threads: +51.8%
-最大負向差異在 750 threads: -55.6%
-GCP 高併發 (500) 仍劣於 IDC, 但單執行緒 / 200 threads 有局部增益，可能與網路 RTT 與連線池熱化差異相關。
-IDC TiProxy 在多個中高併發點 (100 / 250 / 750) 維持領先，顯示本地網路拓撲更適合作為代理層。
-建議: GCP 需檢視 TiProxy 後端連線多工與路由策略；調整連線池大小與健康探測間隔，降低中併發抖動。
-```
+### IDC / GCP TiProxy 叢集效能差異
+
+- 最大負向差異在 750 threads: -55.6%
+- GCP 高併發 (500) 仍劣於 IDC, 但單執行緒 / 200 threads 有局部增益，可能與網路 RTT 與Connection Pool 覆用相關。
+- IDC TiProxy 在多個中高併發點 (100 / 250 / 750) 維持領先，顯示本地網路拓撲更適合作為代理層。
+
 ![](./%235-2_%236-2_env_compare.png)
 
 =======================================================================================================
@@ -5107,10 +5103,22 @@ select_random_ranges  7.56                          4.63                  228.49
 
 Benchmark From TiDB with GCP # 離峰 # sysbench_results_#2_tidb
 ```
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        77.19                         37.03                 107.58                12.89                 3240.7500                120.0109                         3455.60 per sec.    960086.85           215.97 per sec.
+oltp_read_write       104.84                        59.54                 156.87                21.70                 2016.0000                120.0303                         2685.90 per sec.    960242.20           134.29 per sec.
+oltp_write_only       43.39                         31.30                 355.41                13.18                 3834.8750                120.0181                         1533.41 per sec.    960145.15           255.57 per sec.
+select_random_points  21.50                         13.95                 251.19                5.94                  8602.8750                119.9994                         573.45 per sec.     959994.93           573.45 per sec.
+select_random_ranges  16.71                         11.30                 225.73                6.13                  10623.3750               119.9949                         708.15 per sec.     959959.16           708.15 per sec.
 ```
 
 Benchmark From TiProxy with GCP # 離峰 # sysbench_results_#2_tiproxy
 ```
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        81.48                         39.32                 106.15                14.42                 3052.3750                120.0152                         3254.39 per sec.    960121.81           203.40 per sec.
+oltp_read_write       110.66                        62.69                 338.16                24.14                 1914.5000                120.0294                         2550.61 per sec.    960235.33           127.53 per sec.
+oltp_write_only       43.39                         30.45                 309.89                14.01                 3941.2500                120.0122                         1576.06 per sec.    960097.20           262.68 per sec.
+select_random_points  18.61                         13.47                 246.17                5.98                  8911.6250                119.9990                         594.02 per sec.     959991.74           594.02 per sec.
+select_random_ranges  16.12                         11.82                 645.64                6.27                  10153.3750               119.9954                         676.82 per sec.     959963.35           676.82 per sec.
 ```
 
 Benchmark From TiDB with IDC # 離峰 # 同時執行 # sysbench_results_#3_tidb
