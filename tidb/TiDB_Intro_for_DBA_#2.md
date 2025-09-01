@@ -394,6 +394,8 @@ multi_thread_multi_conn   10000           274.003              0.00            4
 
 RPS From TiProxy with GCP # 離峰 #4-2.py
 
+![](./%234-3.png)
+
 ![](./%234-2.png)
 
 <details>
