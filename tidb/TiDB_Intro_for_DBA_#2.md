@@ -1803,7 +1803,7 @@ multi_thread_multi_conn   10000           477.031              0.00            6
 
 - 確認 IDC * 1 + GCP * 2 & IDC * 2 + GCP * 1 TiDB 叢集同時執行情境效能差異 (模擬 Active / Active 流量情境)
 
-TiDB #7-5_#7-7_#8-5_#8-7_tidb_topology_diff.png
+TiDB #7-5_#7-7_#8-5_#8-7_tidb_topology_diff.py
 ```
 - 期望值: IDC A + GCP A ~= IDC B + GCP B ; 現況無，僅總和呈現相同效能體現
 - 且 IDC B, GCP B 較能體現不同 TiDB 組件產生的效能差異
@@ -2908,7 +2908,13 @@ multi_thread_multi_conn   10000           19.220               0.00            3
 
 </details>
 
-- 確認 IDC * 2 + GCP * 3 & IDC * 3 + GCP * 2 效能差異
+- IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 (確認 Scale  Out 後效能差異)
+
+```
+TiDB：跨專線要追平本地 (IDC3, 200T 峰值 7137 RPS) 需擴至等效 5 節點混合 (IDC2+GCP*3, 200T 8363 RPS)；雖總量 +17%，但設備 +66.7%，追平跨專線損耗。
+TiProxy：5 節點總 RPS > 3 節點屬預期，但峰值仍落後本地 (100T 5899 vs 混合峰值 <5899)，顯示跨區延遲與排程耗損。
+```
+![](./%235-1_%237-5_%2310-5_%235-2_%237-6_%2310-6_scale_compare.png)
 
 
 {FIXME}
