@@ -121,6 +121,7 @@ def export_csv(path: str):
 
 
 def make_plot(annot_percent: bool, include_thread1: bool):
+    """Render plot with both 'With' and 'Without' as grouped bars (user requested all bar chart)."""
     fig, axes = plt.subplots(2, 2, figsize=(13, 9), sharex=True)
     panel_order: List[Tuple[str, str, plt.Axes]] = [
         ("IDC", "TiDB", axes[0][0]),
@@ -129,13 +130,15 @@ def make_plot(annot_percent: bool, include_thread1: bool):
         ("GCP", "TiProxy", axes[1][1]),
     ]
     x = np.arange(len(THREADS))
-    width = 0.36  # two bars
+    width = 0.38  # two bars per group
     for origin, comp, ax in panel_order:
-        series_with = [DATA[origin][comp]["with"][t] for t in THREADS]
         series_without = [DATA[origin][comp]["without"][t] for t in THREADS]
-        bars_without = ax.bar(x - width/2, series_without, width=width, label="Without", color=BAR_COLORS["without"], alpha=0.80)
-        bars_with = ax.bar(x + width/2, series_with, width=width, label="With", color=BAR_COLORS["with"], alpha=0.85)
-        # Annotations
+        series_with = [DATA[origin][comp]["with"][t] for t in THREADS]
+        bars_without = ax.bar(x - width/2, series_without, width=width, label="Without Isolation", color=BAR_COLORS["without"], alpha=0.80)
+        bars_with = ax.bar(x + width/2, series_with, width=width, label="With Isolation", color=BAR_COLORS["with"], alpha=0.85)
+        # Annotate bars
+        for bw, val in zip(bars_without, series_without):
+            ax.text(bw.get_x()+bw.get_width()/2, val*1.01, f"{val:.0f}", ha='center', va='bottom', fontsize=7)
         for bw, ww, t in zip(bars_with, series_with, THREADS):
             base = DATA[origin][comp]["without"][t]
             if annot_percent and (include_thread1 or t != 1):
@@ -147,16 +150,16 @@ def make_plot(annot_percent: bool, include_thread1: bool):
         ax.set_title(f"{origin} – {comp}")
         ax.grid(axis='y', linestyle='--', alpha=0.25)
         ax.set_ylabel("RPS")
+    # X axis ticks / labels
     axes[1][0].set_xticks(x)
     axes[1][0].set_xticklabels([str(t) for t in THREADS])
     axes[1][1].set_xticks(x)
     axes[1][1].set_xticklabels([str(t) for t in THREADS])
     axes[1][0].set_xlabel("Threads")
     axes[1][1].set_xlabel("Threads")
-    # Unified legend (top-right subplot)
     handles, labels = axes[0][0].get_legend_handles_labels()
     axes[0][1].legend(handles, labels, fontsize=9, loc='upper right')
-    fig.suptitle("IDC*3 + GCP*3 With vs Without Isolation (multi_thread_multi_conn RPS)", fontsize=14)
+    fig.suptitle("IDC*3 + GCP*3 Isolation Impact (Grouped Bars)", fontsize=14)
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     fig.savefig(OUTPUT_PNG, dpi=150)
     print(f"[OK] Saved combined plot -> {OUTPUT_PNG}")
