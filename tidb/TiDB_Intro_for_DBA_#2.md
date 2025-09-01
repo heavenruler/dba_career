@@ -4083,6 +4083,9 @@ multi_thread_multi_conn   10000           43.239               0.00            3
 ```
 
 Cluster Summary
+
+<details>
+
 ```
 [root@l-k8s-labroom-1 ~]# make display
 date ; tiup cluster display tidb-demo
@@ -4125,7 +4128,14 @@ ID                   Role        Host           Ports                 OS/Arch   
 172.24.40.19:6000    tiproxy     172.24.40.19   6000/6001             linux/x86_64  Up      -                                /data/tidb-deploy/tiproxy-6000
 ```
 
+</details>
+
 RPS From TiDB with IDC # 離峰 #1-9.py
+
+![](./%231-9.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4178,7 +4188,14 @@ multi_thread_multi_conn   10000           13.605               0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with IDC # 離峰 #1-10.py
+
+![](./%231-10.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4231,7 +4248,14 @@ multi_thread_multi_conn   10000           30.329               0.00            4
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiDB with GCP # 離峰 #1-11.py
+
+![](./%231-11.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4284,7 +4308,14 @@ multi_thread_multi_conn   10000           5.910                0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with GCP # 離峰 #1-12.py
+
+![](./%231-12.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4337,7 +4368,14 @@ multi_thread_multi_conn   10000           29.430               0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiDB with IDC # 離峰 # 同時執行 #1-13.py
+
+![](./%231-13.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4390,7 +4428,14 @@ multi_thread_multi_conn   10000           13.020               0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiProxy with IDC # 離峰 # 同時執行 #1-14.py
+
+![](./%231-14.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -4443,7 +4488,14 @@ multi_thread_multi_conn   10000           28.330               0.00            2
 ========================================================================================================================
 ```
 
+</details>
+
 RPS From TiDB with GCP # 離峰 # 同時執行 #1-15.py
+
+![](./%231-15.png)
+
+<details>
+
 ```
 ========================================================================================================================
 Test Type                 Total Tests     Avg Response (ms)    Error Rate %    Total Time (s)  Req/sec         Threads
@@ -5016,6 +5068,8 @@ Benchmark From TiProxy with IDC # 離峰 # sysbench_results_#5_tidb
 ### IDC * 3 + GCP * 3 # 實施 Label 隔離分流
 
 Benchmark From TiDB with IDC # 離峰 # sysbench_results_#1_tidb
+
+
 ```
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
 oltp_read_only        82.96                         61.28                 297.06                9.43                  1958.6250                120.0307                         2087.83 per sec.    960245.97           130.49 per sec.
