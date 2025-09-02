@@ -180,10 +180,11 @@
 
 ## Sysbench
 
-- [從 TiDB 與 TiProxy 的 Benchmark 效能差異](https://google.com)
-- [IDC VM * 3 從 4vCPU 8GB -> 8vCPU 16GB 效能差異](https://google.com)
-- [IDC VM * 3 與 IDC VM * 3 + GCP VM * 3 的 Scale Out 效能差異及專線損耗](https://google.com)
-- 
+- [TiDB 與 TiProxy 的 Benchmark 效能差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%233.md#tidb-%E7%9B%B4%E9%80%A3%E8%88%87-tiproxy-%E9%80%A3%E7%B7%9A%E7%9A%84-benchmark-%E5%B7%AE%E7%95%B0)
+- [IDC / GCP TiDB 直連與 TiProxy 連線的 Benchmark 差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%233.md#idc--gcp-tidb-%E7%9B%B4%E9%80%A3%E8%88%87-tiproxy-%E9%80%A3%E7%B7%9A%E7%9A%84-benchmark-%E5%B7%AE%E7%95%B0)
+- [IDC VM * 3 從 4vCPU -> 8vCPU 效能差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%233.md#idc-vm--3-%E5%BE%9E-4vcpu---8vcpu-%E6%95%88%E8%83%BD%E5%B7%AE%E7%95%B0)
+
+- []()
 
 
 
