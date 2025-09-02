@@ -146,7 +146,7 @@
 
 ---
 
-## RPS
+## RPS Summary
 
 - [直連 TiDB 與透過 TiProxy 差異 #3-1_#3-2_compare.py](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#%E7%9B%B4%E9%80%A3-tidb-%E8%88%87%E9%80%8F%E9%81%8E-tiproxy-%E5%B7%AE%E7%95%B0-3-1_3-2_comparepy)
 
@@ -170,17 +170,17 @@
 
 - [IDC * 3 & IDC * 3 + GCP * 2 Scale 同時執行模擬 (Active / Active) 效能影響對照 (含專線影響)](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#idc--3--idc--3--gcp--2-scale-%E5%90%8C%E6%99%82%E5%9F%B7%E8%A1%8C%E6%A8%A1%E6%93%AC-active--active-%E6%95%88%E8%83%BD%E5%BD%B1%E9%9F%BF%E5%B0%8D%E7%85%A7-%E5%90%AB%E5%B0%88%E7%B7%9A%E5%BD%B1%E9%9F%BF)
 
-- []()
+- [IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 (確認 Scale  Out 後效能差異)](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#idc--3--idc--1--gcp--2--idc--2--gcp--3-%E7%A2%BA%E8%AA%8D-scale--out-%E5%BE%8C%E6%95%88%E8%83%BD%E5%B7%AE%E7%95%B0)
+
+- [有無 Label 分流隔離效能差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#%E6%9C%89%E7%84%A1-label-%E5%88%86%E6%B5%81%E9%9A%94%E9%9B%A2%E6%95%88%E8%83%BD%E5%B7%AE%E7%95%B0)
+
+- [上下班時段尖峰離峰時間數據差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#%E4%B8%8A%E4%B8%8B%E7%8F%AD%E6%99%82%E6%AE%B5%E5%B0%96%E5%B3%B0%E9%9B%A2%E5%B3%B0%E6%99%82%E9%96%93%E6%95%B8%E6%93%9A%E5%B7%AE%E7%95%B0)
+
+- [IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 & IDC * 3 + GCP * 3 從 IDC 發起 # 尖峰時段數據 (確認 Scale Out 後效能差異)](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#idc--3--idc--1--gcp--2--idc--2--gcp--3--idc--3--gcp--3-%E5%BE%9E-idc-%E7%99%BC%E8%B5%B7--%E5%B0%96%E5%B3%B0%E6%99%82%E6%AE%B5%E6%95%B8%E6%93%9A-%E7%A2%BA%E8%AA%8D-scale--out-%E5%BE%8C%E6%95%88%E8%83%BD%E5%B7%AE%E7%95%B0)
 
 - []()
 
 - []()
-
-### SUMMARY
-
-- 123
-- 123
-- 123
 
 ## Sysbench
 
@@ -5136,7 +5136,7 @@ multi_thread_multi_conn   10000           18.875               0.00            2
 
 ### IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 & IDC * 3 + GCP * 3 從 IDC 發起 # 尖峰時段數據 (確認 Scale  Out 後效能差異)
 
-- 跨區節點不足時，跨區延遲懲罰 > 擴容收益
+- 跨區節點不足時，跨區延遲損耗 > 擴容收益
 
 From IDC
 ![](./%235-1_%237-5_%2310-5_%231-5_%235-2_%237-6_%2310-6_%231-6_scale_compare.png)
