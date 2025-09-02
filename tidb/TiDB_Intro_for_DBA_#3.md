@@ -2,15 +2,52 @@
 
 ## [Sysbench](https://docs.pingcap.com/zh/tidb/stable/benchmark-tidb-using-sysbench/)
 
-### IDC * 3
+### IDC * 3 (4vCPU 8GB Ram)
 
-Benchmark From TiDB with IDC # 離峰 # sysbench_results_#5_tidb
+Benchmark from TiDB
 ```
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        19.29                         14.91                 60.86                 8.42                  20121.5000               299.9338                         8584.75 per sec.    2399470.12          536.55 per sec.
+oltp_read_write       30.81                         23.90                 809.77                14.52                 12552.2500               299.9713                         6693.06 per sec.    2399770.39          334.65 per sec.
+oltp_write_only       10.65                         8.20                  35.96                 4.32                  36552.8750               299.9060                         5848.28 per sec.    2399248.21          974.71 per sec.
+select_random_points  3.96                          2.31                  174.16                0.78                  130037.1250              299.8231                         3467.61 per sec.    2398584.53          3467.61 per sec.
+select_random_ranges  3.13                          1.95                  29.62                 0.84                  153417.5000              299.7851                         4091.08 per sec.    2398280.45          4091.08 per sec.
 ```
 
-Benchmark From TiProxy with IDC # 離峰 # sysbench_results_#5_tidb
+Benchmark from TiProxy
 ```
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        18.61                         14.37                 145.59                8.83                  20869.0000               299.9442                         8903.67 per sec.    2399553.59          556.48 per sec.
+oltp_read_write       28.16                         22.79                 64.23                 14.54                 13163.2500               299.9658                         7019.79 per sec.    2399726.48          350.99 per sec.
+oltp_write_only       10.65                         8.32                  38.05                 4.38                  36065.1250               299.9151                         5770.23 per sec.    2399320.49          961.70 per sec.
+select_random_points  3.96                          2.28                  37.92                 0.75                  131615.3750              299.8247                         3509.69 per sec.    2398597.29          3509.69 per sec.
+select_random_ranges  3.19                          1.93                  19.37                 0.85                  155384.2500              299.8055                         4143.52 per sec.    2398444.19          4143.52 per sec.
 ```
+
+### IDC * 3 (8vCPU 16GB Ram)
+
+Benchmark from TiDB
+```
+Combined report has been generated at sysbench_results_#19_tidb/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        16.41                         12.37                 37.00                 8.04                  9703.7500                119.9897                         10349.42 per sec.   959917.48           646.84 per sec.
+oltp_read_write       23.10                         18.65                 237.12                12.94                 6435.6250                119.9947                         8579.39 per sec.    959957.94           428.97 per sec.
+oltp_write_only       7.56                          6.12                  28.07                 3.64                  19618.6250               119.9741                         7846.96 per sec.    959792.64           1307.83 per sec.
+select_random_points  3.25                          1.80                  23.90                 0.78                  66620.8750               119.9371                         4441.26 per sec.    959496.86           4441.26 per sec.
+select_random_ranges  2.43                          1.65                  16.15                 0.78                  72656.7500               119.9354                         4843.63 per sec.    959483.33           4843.63 per sec.
+```
+
+Benchmark from TiProxy
+```
+Combined report has been generated at sysbench_results_#19_tiproxy/combined_report.txt
+OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
+oltp_read_only        19.65                         15.15                 38.77                 8.89                  7922.6250                119.9936                         8449.29 per sec.    959948.98           528.08 per sec.
+oltp_read_write       27.66                         21.65                 48.64                 14.37                 5541.2500                119.9930                         7387.28 per sec.    959943.69           369.36 per sec.
+oltp_write_only       8.90                          6.91                  35.87                 4.16                  17365.7500               119.9765                         6945.77 per sec.    959812.25           1157.63 per sec.
+select_random_points  3.07                          1.94                  15.81                 0.84                  61701.6250               119.9426                         4113.32 per sec.    959540.60           4113.32 per sec.
+select_random_ranges  2.52                          1.78                  13.92                 0.79                  67431.7500               119.9402                         4495.30 per sec.    959521.59           4495.30 per sec.
+```
+
 
 ### IDC * 3 + GCP * 3 # 實施 Label 隔離分流
 
