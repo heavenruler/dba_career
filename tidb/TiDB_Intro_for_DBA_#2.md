@@ -148,21 +148,52 @@
 
 ## RPS
 
+- [直連 TiDB 與透過 TiProxy 差異 #3-1_#3-2_compare.py](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#%E7%9B%B4%E9%80%A3-tidb-%E8%88%87%E9%80%8F%E9%81%8E-tiproxy-%E5%B7%AE%E7%95%B0-3-1_3-2_comparepy)
+
+- [IDC TiDB 叢集直連 TiDB 與透過 TiProxy 差異 #5-1_#5-2_compare.py](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#idc-tidb-%E5%8F%A2%E9%9B%86%E7%9B%B4%E9%80%A3-tidb-%E8%88%87%E9%80%8F%E9%81%8E-tiproxy-%E5%B7%AE%E7%95%B0-5-1_5-2_comparepy)
+
+- [IDC TiDB 叢集 IDC * 1 Scale to IDC * 3 差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#idc-tidb-%E5%8F%A2%E9%9B%86-idc--1-scale-to-idc--3-%E5%B7%AE%E7%95%B0)
+
+- [GCP *3 vs IDC *3 TiDB 叢集效能差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#gcp-3-vs-idc-3-tidb-%E5%8F%A2%E9%9B%86%E6%95%88%E8%83%BD%E5%B7%AE%E7%95%B0)
+
+- [IDC / GCP TiProxy 叢集效能差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#idc--gcp-tiproxy-%E5%8F%A2%E9%9B%86%E6%95%88%E8%83%BD%E5%B7%AE%E7%95%B0)
+
+- [跨專線叢集效能影響 for TiDB & TiProxy](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#%E8%B7%A8%E5%B0%88%E7%B7%9A%E5%8F%A2%E9%9B%86%E6%95%88%E8%83%BD%E5%BD%B1%E9%9F%BF-for-tidb--tiproxy)
+
+- [跨專線叢集相較 IDC 本地叢集 for TiDB & TiProxy 效能影響](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#%E8%B7%A8%E5%B0%88%E7%B7%9A%E5%8F%A2%E9%9B%86%E7%9B%B8%E8%BC%83-idc-%E6%9C%AC%E5%9C%B0%E5%8F%A2%E9%9B%86-for-tidb--tiproxy-%E6%95%88%E8%83%BD%E5%BD%B1%E9%9F%BF)
+
+- [同時執行 IDC/GCP TiDB & TiProxy 四組整合比較 # #7-5_#7-6_#7-7_#7-8_simul_compare.py](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#%E5%90%8C%E6%99%82%E5%9F%B7%E8%A1%8C-idcgcp-tidb--tiproxy-%E5%9B%9B%E7%B5%84%E6%95%B4%E5%90%88%E6%AF%94%E8%BC%83--7-5_7-6_7-7_7-8_simul_comparepy)
+
+- [同時執行 TiDB & TiProxy 與本地叢集的效能差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#%E5%90%8C%E6%99%82%E5%9F%B7%E8%A1%8C-tidb--tiproxy-%E8%88%87%E6%9C%AC%E5%9C%B0%E5%8F%A2%E9%9B%86%E7%9A%84%E6%95%88%E8%83%BD%E5%B7%AE%E7%95%B0)
+
+- [確認 IDC * 1 + GCP * 2 & IDC * 2 + GCP * 1 TiDB 叢集同時執行情境效能差異 (模擬 Active / Active 流量情境) TiDB / TiProxy #7-5_#7-7_#8-5_#8-7_tidb_topology_diff.py #7-6_#7-8_#8-6_#8-8_tiproxy_topology_diff.py](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#%E7%A2%BA%E8%AA%8D-idc--1--gcp--2--idc--2--gcp--1-tidb-%E5%8F%A2%E9%9B%86%E5%90%8C%E6%99%82%E5%9F%B7%E8%A1%8C%E6%83%85%E5%A2%83%E6%95%88%E8%83%BD%E5%B7%AE%E7%95%B0-%E6%A8%A1%E6%93%AC-active--active-%E6%B5%81%E9%87%8F%E6%83%85%E5%A2%83-tidb--tiproxy-7-5_7-7_8-5_8-7_tidb_topology_diffpy-7-6_7-8_8-6_8-8_tiproxy_topology_diffpy)
+
+- [IDC * 3 & IDC * 3 + GCP * 2 Scale 同時執行模擬 (Active / Active) 效能影響對照 (含專線影響)](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#idc--3--idc--3--gcp--2-scale-%E5%90%8C%E6%99%82%E5%9F%B7%E8%A1%8C%E6%A8%A1%E6%93%AC-active--active-%E6%95%88%E8%83%BD%E5%BD%B1%E9%9F%BF%E5%B0%8D%E7%85%A7-%E5%90%AB%E5%B0%88%E7%B7%9A%E5%BD%B1%E9%9F%BF)
+
+- []()
+
+- []()
+
+- []()
+
 ### SUMMARY
 
-- 123
 - 123
 - 123
 - 123
 
 ## Sysbench
 
+- 123
+- 123
+- 123
+
 ### SUMMARY
 
 - 123
 - 123
 - 123
-- 123
+
 =======================================================================================================
 
 ## IDC * 1
