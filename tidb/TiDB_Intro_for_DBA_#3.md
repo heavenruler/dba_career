@@ -4,7 +4,10 @@
 
 ### IDC * 3 (4vCPU 8GB Ram)
 
-Benchmark from TiDB
+Benchmark from TiDB # sysbench_results_#2_tidb
+
+![](./sysbench_results_%232_tidb_summary.png)
+
 ```
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
 oltp_read_only        19.29                         14.91                 60.86                 8.42                  20121.5000               299.9338                         8584.75 per sec.    2399470.12          536.55 per sec.
@@ -14,7 +17,10 @@ select_random_points  3.96                          2.31                  174.16
 select_random_ranges  3.13                          1.95                  29.62                 0.84                  153417.5000              299.7851                         4091.08 per sec.    2398280.45          4091.08 per sec.
 ```
 
-Benchmark from TiProxy
+Benchmark from TiProxy # sysbench_results_#2_tiproxy
+
+![](./sysbench_results_%232_tiproxy_summary.png)
+
 ```
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
 oltp_read_only        18.61                         14.37                 145.59                8.83                  20869.0000               299.9442                         8903.67 per sec.    2399553.59          556.48 per sec.
@@ -24,9 +30,9 @@ select_random_points  3.96                          2.28                  37.92 
 select_random_ranges  3.19                          1.93                  19.37                 0.85                  155384.2500              299.8055                         4143.52 per sec.    2398444.19          4143.52 per sec.
 ```
 
-### IDC * 3 (8vCPU 16GB Ram)
+### IDC * 3 (8vCPU 16GB Ram) 
 
-Benchmark from TiDB
+Benchmark from TiDB # sysbench_results_#19_tidb
 ```
 Combined report has been generated at sysbench_results_#19_tidb/combined_report.txt
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second
@@ -37,7 +43,7 @@ select_random_points  3.25                          1.80                  23.90 
 select_random_ranges  2.43                          1.65                  16.15                 0.78                  72656.7500               119.9354                         4843.63 per sec.    959483.33           4843.63 per sec.
 ```
 
-Benchmark from TiProxy
+Benchmark from TiProxy # sysbench_results_#19_tiproxy
 ```
 Combined report has been generated at sysbench_results_#19_tiproxy/combined_report.txt
 OLTP Type             95th percentile latency (ms)  Average latency (ms)  Maximum latency (ms)  Minimum latency (ms)  Events per thread (avg)  Execution time per thread (avg)  Queries per second  Total latency (ms)  Transactions per second

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Plot Sysbench Scenario #2 (TiDB) results as bar (QPS/TPS) + line (p95) chart.
 
-Scenario #2 numbers (IDC *3 baseline, no TiProxy) - from markdown table:
+Environment: IDC * 3 (4vCPU 8GB RAM) TiDB 直連
+
+Dataset (new values provided):
 Workload               p95(ms)   QPS       TPS
-oltp_read_only         77.19     3455.60   215.97
-oltp_read_write        104.84    2685.90   134.29
-oltp_write_only        43.39     1533.41   255.57
-select_random_points   21.50     573.45    573.45
-select_random_ranges   16.71     708.15    708.15
+oltp_read_only         19.29     8584.75   536.55
+oltp_read_write        30.81     6693.06   334.65
+oltp_write_only        10.65     5848.28   974.71
+select_random_points   3.96      3467.61   3467.61
+select_random_ranges   3.13      4091.08   4091.08
 
 Chart:
     - Grouped bars: QPS & TPS (left Y axis)
@@ -47,11 +49,11 @@ class Row:
 
 
 DATA: List[Row] = [
-    Row("oltp_read_only", 77.19, 3455.60, 215.97),
-    Row("oltp_read_write", 104.84, 2685.90, 134.29),
-    Row("oltp_write_only", 43.39, 1533.41, 255.57),
-    Row("select_random_points", 21.50, 573.45, 573.45),
-    Row("select_random_ranges", 16.71, 708.15, 708.15),
+    Row("oltp_read_only", 19.29, 8584.75, 536.55),
+    Row("oltp_read_write", 30.81, 6693.06, 334.65),
+    Row("oltp_write_only", 10.65, 5848.28, 974.71),
+    Row("select_random_points", 3.96, 3467.61, 3467.61),
+    Row("select_random_ranges", 3.13, 4091.08, 4091.08),
 ]
 
 PNG_NAME = "sysbench_results_#2_tidb_summary.png"
@@ -103,7 +105,7 @@ def plot():  # pragma: no cover
     ax_thr.tick_params(axis='y', labelcolor="#1f77b4")
     ax_lat.tick_params(axis='y', labelcolor="#d62728")
     ax_thr.grid(axis='y', linestyle='--', alpha=0.35)
-    ax_thr.set_title('Sysbench Scenario #2 (TiDB) - QPS/TPS Bars + 95p Latency Line')
+    ax_thr.set_title('Sysbench Scenario #2 (TiDB IDC*3 4vCPU/8GB) - QPS/TPS Bars + 95p Latency Line')
 
     # Annotate bars
     for b in b_q:
