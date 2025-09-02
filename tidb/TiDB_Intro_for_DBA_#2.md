@@ -180,13 +180,28 @@
 
 ## Sysbench
 
-- [TiDB 與 TiProxy 的 Benchmark 效能差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%233.md#tidb-%E7%9B%B4%E9%80%A3%E8%88%87-tiproxy-%E9%80%A3%E7%B7%9A%E7%9A%84-benchmark-%E5%B7%AE%E7%95%B0)
-- [IDC / GCP TiDB 直連與 TiProxy 連線的 Benchmark 差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%233.md#idc--gcp-tidb-%E7%9B%B4%E9%80%A3%E8%88%87-tiproxy-%E9%80%A3%E7%B7%9A%E7%9A%84-benchmark-%E5%B7%AE%E7%95%B0)
-- [IDC VM * 3 從 4vCPU -> 8vCPU 效能差異](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%233.md#idc-vm--3-%E5%BE%9E-4vcpu---8vcpu-%E6%95%88%E8%83%BD%E5%B7%AE%E7%95%B0)
+### TiDB 直連與 TiProxy 連線的 Benchmark 差異
 
-- []()
+- 吞吐：RO/RW/WO 約 -3%<del>-6%；Points / Ranges 約 -10%</del>-12%。
+- Benchmark Throughput 沒有太大差異，因為 `計算` `調度` 單元，處理與連線階層無關。
 
+![](./sysbench_tidb_vs_tiproxy_throughput.png)
 
+### IDC / GCP TiDB 直連與 TiProxy 連線的 Benchmark 差異
+
+![](./sysbench_idc_vs_gcp_diff.png)
+
+### IDC VM * 3 從 4vCPU -> 8vCPU 效能差異
+
+![](./sysbench_idc_4c_to_8c_qps_tps.png)
+
+### IDC VM * 3 -> IDC VM * 3 + GCP VM * 3 效能差異
+
+![](./sysbench_idc_4c_to_8c_qps_tps_v2.png)
+
+### TiDB 直連與 TiProxy 連線與 Galera 的 Benchmark 差異
+
+{FIXME}
 
 =======================================================================================================
 
