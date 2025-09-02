@@ -194,11 +194,10 @@
 ### IDC VM * 3 從 4vCPU -> 8vCPU 效能差異
 
 ![](./sysbench_idc_4c_to_8c_qps_tps_v2.png)
-![](./sysbench_idc_4c_to_8c_qps_tps.png)
 
 ### IDC VM * 3 -> IDC VM * 3 + GCP VM * 3 效能差異
 
-{FIXME}
+![](./sysbench_idc_vs_idc_gcp_qps_tps_v2.png)
 
 ### TiDB 直連與 TiProxy 連線與 Galera 的 Benchmark 差異
 
