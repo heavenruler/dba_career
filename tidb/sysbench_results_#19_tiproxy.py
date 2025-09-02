@@ -1,29 +1,29 @@
 #!/usr/bin/env python3
-"""Plot Sysbench Scenario #2 (TiProxy) results as bar (QPS/TPS) + line (p95) chart.
+"""Plot Sysbench Scenario #19 (TiProxy) results as bar (QPS/TPS) + line (p95) chart.
 
-Environment: IDC * 3 (4vCPU 8GB RAM) TiProxy 直連
+Environment: IDC * 3 (8vCPU 16GB RAM) TiProxy 連線
 
-Dataset (updated values):
+Dataset:
 Workload               p95(ms)   QPS       TPS
-oltp_read_only         18.61     8903.67   556.48
-oltp_read_write        28.16     7019.79   350.99
-oltp_write_only        10.65     5770.23   961.70
-select_random_points   3.96      3509.69   3509.69
-select_random_ranges   3.19      4143.52   4143.52
+oltp_read_only         19.65     8449.29   528.08
+oltp_read_write        27.66     7387.28   369.36
+oltp_write_only        8.90      6945.77   1157.63
+select_random_points   3.07      4113.32   4113.32
+select_random_ranges   2.52      4495.30   4495.30
 
 Chart:
-    - Grouped bars: QPS & TPS (left Y axis)
-    - Line: p95 latency (right Y axis)
-    - Value annotations on each bar + latency point
+  - Grouped bars: QPS & TPS (left Y axis)
+  - Line: p95 latency (right Y axis)
+  - Value annotations on each bar + latency point
 
 Outputs:
-  sysbench_results_#2_tiproxy_summary.png
-  (optional) sysbench_results_#2_tiproxy_summary.svg
+  sysbench_results_#19_tiproxy_summary.png
+  (optional) sysbench_results_#19_tiproxy_summary.svg
 
 Usage:
-  python sysbench_results_#2_tiproxy.py            # generate PNG
-  python sysbench_results_#2_tiproxy.py --show     # print table then generate
-  python sysbench_results_#2_tiproxy.py --svg      # also export SVG
+  python sysbench_results_#19_tiproxy.py            # generate PNG
+  python sysbench_results_#19_tiproxy.py --show     # print table then generate
+  python sysbench_results_#19_tiproxy.py --svg      # also export SVG
 """
 from __future__ import annotations
 
@@ -49,15 +49,15 @@ class Row:
 
 
 DATA: List[Row] = [
-    Row("oltp_read_only", 18.61, 8903.67, 556.48),
-    Row("oltp_read_write", 28.16, 7019.79, 350.99),
-    Row("oltp_write_only", 10.65, 5770.23, 961.70),
-    Row("select_random_points", 3.96, 3509.69, 3509.69),
-    Row("select_random_ranges", 3.19, 4143.52, 4143.52),
+    Row("oltp_read_only", 19.65, 8449.29, 528.08),
+    Row("oltp_read_write", 27.66, 7387.28, 369.36),
+    Row("oltp_write_only", 8.90, 6945.77, 1157.63),
+    Row("select_random_points", 3.07, 4113.32, 4113.32),
+    Row("select_random_ranges", 2.52, 4495.30, 4495.30),
 ]
 
-PNG_NAME = "sysbench_results_#2_tiproxy_summary.png"
-SVG_NAME = "sysbench_results_#2_tiproxy_summary.svg"
+PNG_NAME = "sysbench_results_#19_tiproxy_summary.png"
+SVG_NAME = "sysbench_results_#19_tiproxy_summary.svg"
 
 
 def table() -> str:
@@ -73,8 +73,10 @@ def table() -> str:
             f"{ratio:.2f}",
         ])
     widths = [max(len(header[i]), *(len(row[i]) for row in rows)) for i in range(len(header))]
+
     def fmt(row):
         return " | ".join(row[i].ljust(widths[i]) for i in range(len(row)))
+
     out = [fmt(header), "-+-".join('-'*w for w in widths)]
     out.extend(fmt(r) for r in rows)
     return "\n".join(out)
@@ -105,9 +107,9 @@ def plot():  # pragma: no cover
     ax_thr.tick_params(axis='y', labelcolor="#1f77b4")
     ax_lat.tick_params(axis='y', labelcolor="#d62728")
     ax_thr.grid(axis='y', linestyle='--', alpha=0.35)
-    ax_thr.set_title('Sysbench Scenario #2 (TiProxy IDC*3 4vCPU/8GB) - QPS/TPS Bars + 95p Latency Line')
+    ax_thr.set_title('Sysbench Scenario #19 (TiProxy IDC*3 8vCPU/16GB) - QPS/TPS Bars + 95p Latency Line')
 
-    # Annotate bars & latency
+    # Annotate bars
     for b in b_q:
         ax_thr.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, f"{b.get_height():.0f}", ha='center', va='bottom', fontsize=8, color="#1f77b4")
     for b in b_t:
@@ -124,7 +126,7 @@ def plot():  # pragma: no cover
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Plot sysbench scenario #2 (TiProxy) line charts.')
+    ap = argparse.ArgumentParser(description='Plot sysbench scenario #19 (TiProxy) bar+line chart.')
     ap.add_argument('--show', action='store_true', help='Print table to stdout')
     ap.add_argument('--svg', action='store_true', help='Also export SVG')
     args = ap.parse_args()
