@@ -168,6 +168,7 @@ select_random_ranges  15.55                         10.48                 35.96 
 ### TiDB 直連與 TiProxy 連線的 Benchmark 差異
 
 - 吞吐：RO/RW/WO 約 -3%<del>-6%；Points / Ranges 約 -10%</del>-12%。
+- Benchmark Throughput 沒有太大差異，因為 `計算` `調度` 單元，處理與連線階層無關。
 
 ![](./sysbench_tidb_vs_tiproxy_throughput.png)
 
@@ -175,9 +176,14 @@ select_random_ranges  15.55                         10.48                 35.96 
 
 ![](./sysbench_idc_vs_gcp_diff.png)
 
+### IDC VM * 3 從 4vCPU -> 8vCPU 效能差異
+
+![](./sysbench_idc_4c_to_8c_qps_tps.png)
+
 
 ### TiDB 直連與 TiProxy 連線與 Galera 的 Benchmark 差異
 
+{FIXME}
 
 ======================================================================================================================================================
 
