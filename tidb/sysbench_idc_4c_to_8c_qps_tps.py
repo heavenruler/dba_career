@@ -151,20 +151,20 @@ def plot():  # pragma: no cover
                     color=('#d62728' if pct >= 0 else '#2ca02c'))
             # TiProxy
             h4p = b3[idx].get_height(); h8p = b4[idx].get_height()
-                # TiDB delta
-                h4 = b1[idx].get_height(); h8 = b2[idx].get_height()
-                pct = (h8 / h4 - 1.0) * 100 if h4 else 0.0
-                color_pct = '#d62728' if pct > 0 else '#2ca02c'
-                # raw value line
-                ax.text(b2[idx].get_x()+b2[idx].get_width()/2, h8*1.005, f"{h8:.0f}", ha='center', va='bottom', fontsize=7)
-                # percent line
-                ax.text(b2[idx].get_x()+b2[idx].get_width()/2, h8*1.03, f"{pct:+.1f}%", ha='center', va='bottom', fontsize=7, color=color_pct)
-                # TiProxy delta
-                h4p = b3[idx].get_height(); h8p = b4[idx].get_height()
-                pctp = (h8p / h4p - 1.0) * 100 if h4p else 0.0
-                color_pct_p = '#d62728' if pctp > 0 else '#2ca02c'
-                ax.text(b4[idx].get_x()+b4[idx].get_width()/2, h8p*1.005, f"{h8p:.0f}", ha='center', va='bottom', fontsize=7)
-                ax.text(b4[idx].get_x()+b4[idx].get_width()/2, h8p*1.03, f"{pctp:+.1f}%", ha='center', va='bottom', fontsize=7, color=color_pct_p)
+            pctp = (h8p / h4p - 1.0) * 100 if h4p else 0.0
+            x_tp = b4[idx].get_x()+b4[idx].get_width()/2
+            ax.text(x_tp, h8p*1.01, f"{h8p:.0f}", ha='center', va='bottom', fontsize=7)
+            ax.text(x_tp, h8p*1.01 + offset, f"{pctp:+.1f}%", ha='center', va='bottom', fontsize=7,
+                    color=('#d62728' if pctp >= 0 else '#2ca02c'))
+
+        ax.set_ylabel(metric.upper())
+        ax.grid(axis='y', linestyle='--', alpha=0.3)
+        return b1, b2, b3, b4
+
+    bq1, bq2, bq3, bq4 = bars(ax_qps, 'qps')
+    bt1, bt2, bt3, bt4 = bars(ax_tps, 'tps')
+
+    ax_tps.set_xticks(x)
     ax_tps.set_xticklabels([w.replace('_', '\n') for w in WORKLOADS])
 
     # Title + legend spacing: place legend below title (no overlap)
