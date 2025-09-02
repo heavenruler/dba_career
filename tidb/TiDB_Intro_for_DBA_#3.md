@@ -180,6 +180,10 @@ select_random_ranges  15.55                         10.48                 35.96 
 
 ![](./sysbench_idc_4c_to_8c_qps_tps.png)
 
+### IDC VM * 3 -> IDC VM * 3 + GCP VM * 3 效能差異
+
+![](./sysbench_idc_4c_to_8c_qps_tps.png)
+
 
 ### TiDB 直連與 TiProxy 連線與 Galera 的 Benchmark 差異
 
