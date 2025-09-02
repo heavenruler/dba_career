@@ -178,21 +178,11 @@
 
 - [IDC * 3 & IDC * 1 + GCP * 2 & IDC * 2 + GCP * 3 & IDC * 3 + GCP * 3 從 IDC 發起 # 尖峰時段數據 (確認 Scale Out 後效能差異)](https://github.com/heavenruler/dba_career/blob/master/tidb/TiDB_Intro_for_DBA_%232.md#idc--3--idc--1--gcp--2--idc--2--gcp--3--idc--3--gcp--3-%E5%BE%9E-idc-%E7%99%BC%E8%B5%B7--%E5%B0%96%E5%B3%B0%E6%99%82%E6%AE%B5%E6%95%B8%E6%93%9A-%E7%A2%BA%E8%AA%8D-scale--out-%E5%BE%8C%E6%95%88%E8%83%BD%E5%B7%AE%E7%95%B0)
 
-- []()
-
-- []()
-
 ## Sysbench
 
-- 123
-- 123
-- 123
-
-### SUMMARY
-
-- 123
-- 123
-- 123
+- [從 TiDB 與 TiProxy 的 Benchmark 效能差異](https://google.com)
+- [IDC VM * 3 從 4vCPU 8GB -> 8vCPU 16GB 效能差異](https://google.com)
+- [IDC VM * 3 與 IDC VM * 3 + GCP VM * 3 的 Scale Out 效能差異及專線損耗](https://google.com)
 
 =======================================================================================================
 
