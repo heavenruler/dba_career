@@ -9,6 +9,7 @@ DB="test"
 
 #THREADS_LIST="50 100 200 250 500 750 1000"
 THREADS_LIST="1 10 100"
+SAMPLER_INTERVAL=${SAMPLER_INTERVAL:-1}
 DURATION=10
 QNUM=10000
 WARMUP_THREADS=100
@@ -55,16 +56,22 @@ for t in $THREADS_LIST; do
   total_q=0; total_s=0; loops=0; errors=0
   PIDS=()
 
-  #### 啟動監控 (單一 pidstat 同時追蹤 tidb-server 與 tiproxy)
+  #### 啟動監控 (ps 取樣取代 pidstat，避免格式差異)
   for h in $TIDB_LIST; do
     sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "
       tidb_pid=\$(pgrep -f tidb-server | head -n1); \
       tipr_pid=\$(pgrep -f tiproxy | head -n1); \
       echo \$tidb_pid > /tmp/tidb_pid_${t}; \
       echo \$tipr_pid > /tmp/tipr_pid_${t}; \
-      mpstat 1 $DURATION > /tmp/mpstat_${t}.log &
-      pidstat -u -h -p \$tidb_pid,\$tipr_pid 1 $DURATION > /tmp/pidstat_${t}.log &
-      wait
+      : > /tmp/cpu_${t}.csv; \
+      end_time=\$((\$(date +%s)+$DURATION)); \
+      while [ \$(date +%s) -lt \$end_time ]; do \
+        ts=\$(date +%s); \
+        if [ -n \"\$tidb_pid\" ]; then tidb_cpu=\$(ps -p \$tidb_pid -o %cpu= 2>/dev/null | awk '{print $1+0}'); else tidb_cpu=0; fi; \
+        if [ -n \"\$tipr_pid\" ]; then tipr_cpu=\$(ps -p \$tipr_pid -o %cpu= 2>/dev/null | awk '{print $1+0}'); else tipr_cpu=0; fi; \
+        echo \"$t,\$ts,\$tidb_cpu,\$tipr_cpu\" >> /tmp/cpu_${t}.csv; \
+        sleep $SAMPLER_INTERVAL; \
+      done
     " &
     PIDS+=($!)
   done
@@ -105,30 +112,30 @@ for t in $THREADS_LIST; do
     avg_s_fmt="-"; rps=0; err_rate="-"
   fi
 
-  #### CPU 使用率 (彙總：若多節點則取平均)
+  #### CPU 使用率 (彙總：讀取 ps 取樣 CSV)
   tidb_sum=0; tipr_sum=0; host_cnt=0
   for h in $TIDB_LIST; do
     cores=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "nproc")
-    tidb_pid=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "cat /tmp/tidb_pid_${t} 2>/dev/null || true")
-    tipr_pid=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "cat /tmp/tipr_pid_${t} 2>/dev/null || true")
-    parse_one='BEGIN{cpu_col=0} /^#/ {for(i=1;i<=NF;i++) if($i=="%CPU") cpu_col=i} $1=="Average:" && $3==PID {print $cpu_col}'
-    tidb=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "awk -v PID=$tidb_pid '$parse_one' /tmp/pidstat_${t}.log 2>/dev/null || true")
-    tipr=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "awk -v PID=$tipr_pid '$parse_one' /tmp/pidstat_${t}.log 2>/dev/null || true")
-    [[ $tidb =~ ^[0-9]+(\.[0-9]+)?$ ]] || tidb=0
-    [[ $tipr =~ ^[0-9]+(\.[0-9]+)?$ ]] || tipr=0
+    # 聚合：欄位格式 t,epoch,tidb_cpu,tipr_cpu
+    avgs=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "awk -F, '{tidb+=\$3; tipr+=\$4; n++} END{ if(n>0) printf(\"%.4f %.4f %d\", tidb/n, tipr/n, n); }' /tmp/cpu_${t}.csv 2>/dev/null || true")
+    tidb_raw=$(echo "$avgs" | awk '{print $1}')
+    tipr_raw=$(echo "$avgs" | awk '{print $2}')
+    samples=$(echo "$avgs" | awk '{print $3}')
+    [[ $tidb_raw =~ ^[0-9]+(\.[0-9]+)?$ ]] || tidb_raw=0
+    [[ $tipr_raw =~ ^[0-9]+(\.[0-9]+)?$ ]] || tipr_raw=0
     if [ "$NORMALIZE" = "1" ] && [[ $cores =~ ^[0-9]+$ ]] && [ $cores -gt 0 ]; then
-      tidb_pct=$(echo "scale=4; $tidb/$cores" | bc 2>/dev/null | awk '{printf "%.2f", ($0==""?0:$0)}')
-      tipr_pct=$(echo "scale=4; $tipr/$cores" | bc 2>/dev/null | awk '{printf "%.2f", ($0==""?0:$0)}')
+      tidb_pct=$(echo "scale=4; $tidb_raw/$cores" | bc 2>/dev/null | awk '{printf "%.2f", ($0==""?0:$0)}')
+      tipr_pct=$(echo "scale=4; $tipr_raw/$cores" | bc 2>/dev/null | awk '{printf "%.2f", ($0==""?0:$0)}')
     else
-      tidb_pct=$(printf '%.2f' "$tidb")
-      tipr_pct=$(printf '%.2f' "$tipr")
+      tidb_pct=$(printf '%.2f' "$tidb_raw")
+      tipr_pct=$(printf '%.2f' "$tipr_raw")
     fi
     tidb_sum=$(echo "$tidb_sum + $tidb_pct" | bc)
     tipr_sum=$(echo "$tipr_sum + $tipr_pct" | bc)
     host_cnt=$((host_cnt+1))
     if [ "$DEBUG_CPU" = "1" ]; then
-      echo "[DEBUG_CPU] host=$h t=$t tidb_pid=$tidb_pid tipr_pid=$tipr_pid raw_tidb=$tidb raw_tipr=$tipr pct_tidb=$tidb_pct pct_tipr=$tipr_pct" >&2
-      sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "grep -E '^(#|Average:|[0-9]{2}:[0-9]{2}:[0-9]{2})' /tmp/pidstat_${t}.log | head -n 25 | sed 's/^/[pidstat] /'" >&2 || true
+      echo "[DEBUG_CPU] host=$h t=$t samples=$samples tidb_raw=$tidb_raw tipr_raw=$tipr_raw pct_tidb=$tidb_pct pct_tipr=$tipr_pct" >&2
+      sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "head -n 10 /tmp/cpu_${t}.csv | sed 's/^/[cpu_csv] /'" >&2 || true
     fi
   done
   if [ $host_cnt -gt 0 ]; then
@@ -154,8 +161,8 @@ for t in $THREADS_LIST; do
   #### 清理暫存檔
   if [ "$DEBUG_CPU" != "1" ]; then
     for h in $TIDB_LIST; do
-      sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h \
-        "rm -f /tmp/mpstat_${t}.log /tmp/pidstat_${t}.log /tmp/tidb_pid_${t} /tmp/tipr_pid_${t}"
+#      sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h \
+#        "rm -f /tmp/mpstat_${t}.log /tmp/cpu_${t}.csv /tmp/tidb_pid_${t} /tmp/tipr_pid_${t}"
     done
   else
     echo "[DEBUG_CPU] 保留遠端 pidstat/mpstat 日誌 (t=$t)" >&2
