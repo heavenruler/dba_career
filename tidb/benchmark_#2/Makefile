@@ -35,7 +35,7 @@ endif
 ## 檢查回傳結果
 check_csv:
 	@if [ ! -f "bench_result.csv" ]; then \
-		echo "❌ bench_result.csv 不存在，請先 make sync"; \
+		echo "bench_result.csv 不存在，請先 make sync"; \
 		exit 1; \
 	fi
 
@@ -46,7 +46,7 @@ plot: setup check_csv
 
 ## 一鍵流程
 run: sync plot
-	@echo "✅ 完成：資料同步 + 繪圖輸出"
+	@echo "完成：資料同步 + 繪圖輸出"
 
 ## 清理環境
 clean:
