@@ -8,9 +8,9 @@ PASS="1qaz@WSX"
 DB="test"
 
 #THREADS_LIST="50 100 200 250 500 750 1000"
-THREADS_LIST="1 2 10"
-DURATION=30
-QNUM=20000
+THREADS_LIST="1"
+DURATION=10
+QNUM=10000
 WARMUP_THREADS=100
 WARMUP_TIME=10
 TIMEOUT=1
@@ -107,8 +107,8 @@ for t in $THREADS_LIST; do
   tidb_sum=0; tipr_sum=0; host_cnt=0
   for h in $TIDB_LIST; do
     cores=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "nproc")
-    tidb=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "awk '/Average/ {print \\$8}' /tmp/pidstat_tidb_${t}.log")
-    tipr=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "awk '/Average/ {print \\$8}' /tmp/pidstat_tipr_${t}.log")
+  tidb=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "awk '$1==\"Average:\" {print $8}' /tmp/pidstat_tidb_${t}.log 2>/dev/null || true")
+  tipr=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "awk '$1==\"Average:\" {print $8}' /tmp/pidstat_tipr_${t}.log 2>/dev/null || true")
     if [[ -n "$tidb" ]]; then
       tidb_pct=$(echo "scale=2; $tidb/$cores" | bc)
       tidb_sum=$(echo "$tidb_sum + $tidb_pct" | bc)
