@@ -7,6 +7,7 @@ DST_PATH = .
 VENV := .venv
 PYTHON := $(VENV)/bin/python3
 PIP    := $(VENV)/bin/python3 -m pip
+COMMIT_MSG ?= update
 
 venv_ok := $(shell test -f $(PYTHON) && echo yes || echo no)
 
@@ -51,4 +52,14 @@ run: sync plot
 ## 清理環境
 clean:
 	rm -rf $(VENV)
+
+.PHONY: commit
+commit:
+	@echo "[git] add ."
+	@git add .
+	@echo "[git] commit -m '$(COMMIT_MSG)'"
+	@git commit -m "$(COMMIT_MSG)" || echo "[git] Nothing to commit"
+	@echo "[git] push"
+	@git push
+	@echo "[git] Done push (message: $(COMMIT_MSG))"
 

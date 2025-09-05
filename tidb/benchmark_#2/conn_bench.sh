@@ -7,7 +7,7 @@ PASS="1qaz@WSX"
 DB="test"
 
 #THREADS_LIST="50 100 200 250 500 750 1000"
-THREADS_LIST="100"
+THREADS_LIST="1 20 50 100"
 DURATION=30
 QNUM=20000
 WARMUP_THREADS=100
@@ -37,7 +37,7 @@ while [ $SECONDS -lt $end ]; do
     --query="SELECT SLEEP(0.001);" \
     --pre-query="SET SESSION MAX_EXECUTION_TIME=${SQL_TIMEOUT_MS};" >/dev/null 2>&1
 done
-echo "===== WARM UP 完成，sleep 30 秒 ====="
+echo "===== WARM UP 完成，sleep 10 秒 ====="
 sleep 10
 
 ########################################
