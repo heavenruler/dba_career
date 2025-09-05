@@ -8,7 +8,7 @@ PASS="1qaz@WSX"
 DB="test"
 
 #THREADS_LIST="50 100 200 250 500 750 1000"
-THREADS_LIST="1 2 10 50 100"
+THREADS_LIST="1 2 10"
 DURATION=30
 QNUM=20000
 WARMUP_THREADS=100
@@ -45,9 +45,12 @@ sleep 10
 # 正式測試
 ########################################
 echo "===== TiDB mysqlslap 壓測開始 ====="
-printf "+---------+---------+---------+---------+---------+\n"
-printf "| Threads |   RPS   |  AvgSec |  Loops  | ErrRate |\n"
-printf "+---------+---------+---------+---------+---------+\n"
+printf '%s\n' "+---------+---------+---------+---------+---------+----------+----------+-----------+"
+printf '%s\n' "| Threads |   RPS   |  AvgSec |  Loops  | ErrRate |  TiDB%   | TiProxy% | ScaleEff% |"
+printf '%s\n' "+---------+---------+---------+---------+---------+----------+----------+-----------+"
+
+baseline_rps=""
+baseline_threads=""
 
 for t in $THREADS_LIST; do
   total_q=0; total_s=0; loops=0; errors=0
@@ -93,41 +96,59 @@ for t in $THREADS_LIST; do
   #### 計算 RPS/Avg/ErrRate
   if [ $loops -gt 0 ]; then
     avg_s=$(echo "scale=3; $total_s/$loops" | bc)
-    rps=$(echo "$total_q/$total_s" | bc)
+    avg_s_fmt=$(printf '%0.3f' "$avg_s")
+    rps=$(echo "scale=0; $total_q/$total_s" | bc) # 取整數 RPS
     err_rate=$(echo "scale=2; ($errors/$loops)*100" | bc)
-    printf "| %7d | %7d | %7s | %7d | %6s%% |\n" $t $rps $avg_s $loops $err_rate
   else
-    avg_s="N/A"; rps="N/A"; err_rate="N/A"
-    printf "| %7d | %7s | %7s | %7s | %6s |\n" $t "N/A" "N/A" "0" "N/A"
+    avg_s_fmt="-"; rps=0; err_rate="-"
   fi
 
-  #### CPU 使用率 Table
-  row="$(date +'%F %T'),$t,$rps,$avg_s,$loops,$err_rate"
-
-  echo "---- CPU Usage @ Threads=$t ----"
-  echo "+---------+--------------------------+----------+"
-  echo "| Comp    | NodeIP                   | CPU%     |"
-  echo "+---------+--------------------------+----------+"
-
+  #### CPU 使用率 (彙總：若多節點則取平均)
+  tidb_sum=0; tipr_sum=0; host_cnt=0
   for h in $TIDB_LIST; do
     cores=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "nproc")
-
-    tidb=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h \
-      "awk '/Average/ {print \$8}' /tmp/pidstat_tidb_${t}.log")
-    tidb_pct=$(echo "scale=2; $tidb/$cores" | bc)
-
-    tipr=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h \
-      "awk '/Average/ {print \$8}' /tmp/pidstat_tipr_${t}.log")
-    tipr_pct=$(echo "scale=2; $tipr/$cores" | bc)
-
-    printf "| %-7s | %-24s | %7.2f%% |\n" "TiDB"    $h $tidb_pct
-    printf "| %-7s | %-24s | %7.2f%% |\n" "TiProxy" $h $tipr_pct
-    row="$row,$tidb_pct,$tipr_pct"
+    tidb=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "awk '/Average/ {print \\$8}' /tmp/pidstat_tidb_${t}.log")
+    tipr=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "awk '/Average/ {print \\$8}' /tmp/pidstat_tipr_${t}.log")
+    if [[ -n "$tidb" ]]; then
+      tidb_pct=$(echo "scale=2; $tidb/$cores" | bc)
+      tidb_sum=$(echo "$tidb_sum + $tidb_pct" | bc)
+    fi
+    if [[ -n "$tipr" ]]; then
+      tipr_pct=$(echo "scale=2; $tipr/$cores" | bc)
+      tipr_sum=$(echo "$tipr_sum + $tipr_pct" | bc)
+    fi
+    host_cnt=$((host_cnt+1))
   done
+  if [ $host_cnt -gt 0 ]; then
+    tidb_avg=$(echo "scale=2; $tidb_sum/$host_cnt" | bc)
+    tipr_avg=$(echo "scale=2; $tipr_sum/$host_cnt" | bc)
+  else
+    tidb_avg=0; tipr_avg=0
+  fi
 
-  echo "+---------+--------------------------+----------+"
+  #### Scale Efficiency (相對第一個成功樣本)
+  scale_eff="-"
+  if [ $loops -gt 0 ]; then
+    if [ -z "$baseline_rps" ] || [ -z "$baseline_threads" ]; then
+      baseline_rps=$rps
+      baseline_threads=$t
+      scale_eff="100.0"
+    else
+      scale_eff=$(echo "scale=2; ($rps / ($baseline_rps * ($t/$baseline_threads))) * 100" | bc -l)
+    fi
+  fi
 
-  #### 寫入 CSV
+  #### 印出統一 Row
+  if [ "$err_rate" != "-" ]; then
+    printf "| %7d | %7d | %7s | %7d | %6s%% | %8.2f | %8.2f | %9.2f |\n" \
+      $t $rps $avg_s_fmt $loops $err_rate $tidb_avg $tipr_avg ${scale_eff:-0}
+  else
+    printf "| %7d | %7s | %7s | %7s | %6s | %8s | %8s | %9s |\n" \
+      $t "-" "-" "0" "-" "-" "-" "-"
+  fi
+
+  #### 寫入 CSV (沿用原欄位)
+  row="$(date +'%F %T'),$t,$rps,$avg_s_fmt,$loops,$err_rate,$tidb_avg,$tipr_avg"
   echo "$row" >> $RESULT_CSV
 
   #### 清理暫存檔
@@ -137,5 +158,5 @@ for t in $THREADS_LIST; do
   done
 done
 
-printf "+---------+---------+---------+---------+---------+\n"
+printf '%s\n' "+---------+---------+---------+---------+---------+----------+----------+-----------+"
 echo "===== 測試完成 ====="

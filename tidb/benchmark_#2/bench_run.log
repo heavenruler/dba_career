@@ -1,0 +1,53 @@
+===== WARM UP 開始 (100 threads, 10 秒) =====
+===== WARM UP 完成，sleep 10 秒 =====
+===== TiDB mysqlslap 壓測開始 =====
++---------+---------+---------+---------+---------+----------+----------+-----------+
+./conn_bench.sh: line 49: printf: `|': invalid format character
+| Threads |   RPS   |  AvgSec |  Loops  | ErrRate |  TiDB+---------+---------+---------+---------+---------+----------+----------+-----------+
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ backslash not last character on line
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ syntax error
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ backslash not last character on line
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ syntax error
+|       1 |    3110 |   6.430 |       5 |      0% |     0.00 |     0.00 |    100.00 |
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ backslash not last character on line
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ syntax error
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ backslash not last character on line
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ syntax error
+|       2 |    4644 |   4.306 |       7 |      0% |     0.00 |     0.00 |     74.00 |
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ backslash not last character on line
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ syntax error
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ backslash not last character on line
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ syntax error
+|      10 |   15320 |   1.305 |      23 |      0% |     0.00 |     0.00 |     49.00 |
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ backslash not last character on line
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ syntax error
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ backslash not last character on line
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ syntax error
+|      50 |   21741 |   0.919 |      32 |      0% |     0.00 |     0.00 |     13.00 |
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ backslash not last character on line
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ syntax error
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ backslash not last character on line
+awk: cmd. line:1: /Average/ {print \}
+awk: cmd. line:1:                  ^ syntax error
+|     100 |   22258 |   0.898 |      32 |      0% |     0.00 |     0.00 |      7.00 |
++---------+---------+---------+---------+---------+
+===== 測試完成 =====
