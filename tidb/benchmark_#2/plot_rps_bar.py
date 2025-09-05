@@ -31,25 +31,12 @@ ax1.set_xlabel("Threads")
 ax1.set_ylabel("Requests / sec", color="#003A70")
 ax1.tick_params(axis="y", labelcolor="#003A70")
 
-# Baseline: choose first thread >= min threshold (e.g.  threads sorted, commonly 1 or 100). Prefer 100 if present
-baseline_val = None
-if 100 in set(threads):
-	baseline_val = float(df.loc[df["Threads"]==100, "RPS"].iloc[0])
-elif len(rps):
-	baseline_val = float(rps.iloc[0])
-if baseline_val:
-	ax1.axhline(baseline_val, color="#666", linestyle="--", linewidth=1, label=("100-thread baseline" if 100 in set(threads) else "baseline"))
+## (移除 ScaleEff 與 baseline，僅保留純 RPS 顯示)
 
-# Annotate each bar with RPS and delta vs baseline
-for b, t, val in zip(bars, threads, rps):
-	if baseline_val and baseline_val > 0:
-		delta_pct = (val - baseline_val) / baseline_val * 100.0
-		delta_str = f"{delta_pct:+.1f}%" if (t != 100 or baseline_val != val) else "+0.0%"
-		color = "#d62728" if delta_pct > 0 else ("#2ca02c" if delta_pct < 0 else "#000000")
-		ax1.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, f"{val:.0f}\n{delta_str}",
-				 ha='center', va='bottom', fontsize=8, color=color, linespacing=0.9)
-	else:
-		ax1.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, f"{val:.0f}", ha='center', va='bottom', fontsize=8)
+# 標註每個 bar 的 RPS 數字（移除 baseline / delta）
+for b, val in zip(bars, rps):
+	ax1.text(b.get_x()+b.get_width()/2, b.get_height()*1.01, f"{val:.0f}",
+			 ha='center', va='bottom', fontsize=8, color="#000000")
 
 lines, labels = ax1.get_legend_handles_labels()
 
@@ -63,7 +50,22 @@ if "TiProxyCPU%" in df.columns:
 ax2.set_ylabel("CPU %", color="#d62728")
 ax2.tick_params(axis="y", labelcolor="#d62728")
 
-fig.suptitle("RPS & CPU Usage Scaling")
+# 動態標題：若存在 Timestamp 欄位，加入起訖時間
+title = "RPS & CPU Usage Scaling"
+if 'Timestamp' in df.columns and len(df['Timestamp']) > 0:
+	try:
+		ts = pd.to_datetime(df['Timestamp'])
+		start_ts = ts.iloc[0]
+		end_ts = ts.iloc[-1]
+		if start_ts.date() == end_ts.date():
+			# 同一天：顯示 日期 與 時間區間
+			title += f" ({start_ts.strftime('%Y-%m-%d')} {start_ts.strftime('%H:%M:%S')} ~ {end_ts.strftime('%H:%M:%S')})"
+		else:
+			# 不同天：各自完整時間
+			title += f" ({start_ts.strftime('%Y-%m-%d %H:%M:%S')} ~ {end_ts.strftime('%Y-%m-%d %H:%M:%S')})"
+	except Exception:
+		pass
+fig.suptitle(title)
 if lines:
 	fig.legend(lines, labels, loc="upper left", bbox_to_anchor=(0.08,0.92))
 
