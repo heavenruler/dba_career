@@ -55,12 +55,15 @@ for t in $THREADS_LIST; do
   total_q=0; total_s=0; loops=0; errors=0
   PIDS=()
 
-  #### 啟動監控
+  #### 啟動監控 (單一 pidstat 同時追蹤 tidb-server 與 tiproxy)
   for h in $TIDB_LIST; do
     sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "
+      tidb_pid=\$(pgrep -f tidb-server | head -n1); \
+      tipr_pid=\$(pgrep -f tiproxy | head -n1); \
+      echo \$tidb_pid > /tmp/tidb_pid_${t}; \
+      echo \$tipr_pid > /tmp/tipr_pid_${t}; \
       mpstat 1 $DURATION > /tmp/mpstat_${t}.log &
-      pidstat -p \$(pgrep -f tidb-server | head -n1) 1 $DURATION > /tmp/pidstat_tidb_${t}.log &
-      pidstat -p \$(pgrep -f tiproxy | head -n1) 1 $DURATION > /tmp/pidstat_tipr_${t}.log &
+      pidstat -u -h -p \$tidb_pid,\$tipr_pid 1 $DURATION > /tmp/pidstat_${t}.log &
       wait
     " &
     PIDS+=($!)
@@ -106,10 +109,11 @@ for t in $THREADS_LIST; do
   tidb_sum=0; tipr_sum=0; host_cnt=0
   for h in $TIDB_LIST; do
     cores=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "nproc")
-    # 解析 pidstat：動態找 %CPU 欄位，若有 Average: 用它；否則平均所有時間戳行
-    parse_cmd="awk '{ for(i=1;i<=NF;i++) if(\$i==\"%CPU\") c=i; if(\$1==\"Average:\" && c){print \$c; found=1; exit} if(\$0 ~ /^[0-9]{2}:[0-9]{2}:[0-9]{2}/ && c && \$2 ~ /^[0-9]+$/){sum+=\$c; n++} } END{ if(!found && n>0) printf(\"%.2f\", sum/n) }'"
-    tidb=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "$parse_cmd /tmp/pidstat_tidb_${t}.log 2>/dev/null || true")
-    tipr=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "$parse_cmd /tmp/pidstat_tipr_${t}.log 2>/dev/null || true")
+    tidb_pid=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "cat /tmp/tidb_pid_${t} 2>/dev/null || true")
+    tipr_pid=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "cat /tmp/tipr_pid_${t} 2>/dev/null || true")
+    parse_one='BEGIN{cpu_col=0} /^#/ {for(i=1;i<=NF;i++) if($i=="%CPU") cpu_col=i} $1=="Average:" && $3==PID {print $cpu_col}'
+    tidb=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "awk -v PID=$tidb_pid '$parse_one' /tmp/pidstat_${t}.log 2>/dev/null || true")
+    tipr=$(sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "awk -v PID=$tipr_pid '$parse_one' /tmp/pidstat_${t}.log 2>/dev/null || true")
     [[ $tidb =~ ^[0-9]+(\.[0-9]+)?$ ]] || tidb=0
     [[ $tipr =~ ^[0-9]+(\.[0-9]+)?$ ]] || tipr=0
     if [ "$NORMALIZE" = "1" ] && [[ $cores =~ ^[0-9]+$ ]] && [ $cores -gt 0 ]; then
@@ -123,8 +127,8 @@ for t in $THREADS_LIST; do
     tipr_sum=$(echo "$tipr_sum + $tipr_pct" | bc)
     host_cnt=$((host_cnt+1))
     if [ "$DEBUG_CPU" = "1" ]; then
-      echo "[DEBUG_CPU] host=$h t=$t raw_tidb=$tidb raw_tipr=$tipr pct_tidb=$tidb_pct pct_tipr=$tipr_pct" >&2
-      sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "head -n 15 /tmp/pidstat_tidb_${t}.log 2>/dev/null | sed 's/^/[tidb_head] /'" >&2 || true
+      echo "[DEBUG_CPU] host=$h t=$t tidb_pid=$tidb_pid tipr_pid=$tipr_pid raw_tidb=$tidb raw_tipr=$tipr pct_tidb=$tidb_pct pct_tipr=$tipr_pct" >&2
+      sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h "grep -E '^(#|Average:|[0-9]{2}:[0-9]{2}:[0-9]{2})' /tmp/pidstat_${t}.log | head -n 25 | sed 's/^/[pidstat] /'" >&2 || true
     fi
   done
   if [ $host_cnt -gt 0 ]; then
@@ -151,7 +155,7 @@ for t in $THREADS_LIST; do
   if [ "$DEBUG_CPU" != "1" ]; then
     for h in $TIDB_LIST; do
       sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h \
-        "rm -f /tmp/mpstat_${t}.log /tmp/pidstat_tidb_${t}.log /tmp/pidstat_tipr_${t}.log"
+        "rm -f /tmp/mpstat_${t}.log /tmp/pidstat_${t}.log /tmp/tidb_pid_${t} /tmp/tipr_pid_${t}"
     done
   else
     echo "[DEBUG_CPU] 保留遠端 pidstat/mpstat 日誌 (t=$t)" >&2
