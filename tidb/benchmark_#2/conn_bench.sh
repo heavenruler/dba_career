@@ -159,14 +159,14 @@ for t in $THREADS_LIST; do
   echo "$row" >> $RESULT_CSV
 
   #### 清理暫存檔
-  if [ "$DEBUG_CPU" != "1" ]; then
-    for h in $TIDB_LIST; do
+#  if [ "$DEBUG_CPU" != "1" ]; then
+#    for h in $TIDB_LIST; do
 #      sshpass -p 'root321' ssh -o StrictHostKeyChecking=no root@$h \
 #        "rm -f /tmp/mpstat_${t}.log /tmp/cpu_${t}.csv /tmp/tidb_pid_${t} /tmp/tipr_pid_${t}"
-    done
-  else
-    echo "[DEBUG_CPU] 保留遠端 pidstat/mpstat 日誌 (t=$t)" >&2
-  fi
+#    done
+#  else
+#    echo "[DEBUG_CPU] 保留遠端 pidstat/mpstat 日誌 (t=$t)" >&2
+#  fi
 done
 
 printf '%s\n' "+---------+---------+---------+---------+---------+----------+----------+"
