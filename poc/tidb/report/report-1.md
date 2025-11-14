@@ -1,8 +1,28 @@
 # TiDB Intro for DBA #5-1
 
 ## TL;DR
-```
-```
+
+## 性能差異與選型建議
+
+- 主要性能差異總結
+  - MySQL 優勢突出 ; 跨專線短板明顯
+  - TiDB 分散式儲存與穩定性優勢，巨大資料量體合適
+    - 核心價值
+    - 性能瓶頸
+
+## 業務選型建議
+
+- 優先選擇 MySQL 的場景
+- 優先選擇 TiDB 的場景
+
+## 測試局限性與改善建議
+
+## 總結與未來規劃
+
+- 下一階段的技術管理投資方向 ; [Reference](https://landscape.cncf.io/guide#app-definition-and-development--database)
+![](https://codimd.104.com.tw/image/s3/key/uashd412g1c34ylela5gpbffp.png)
+
+----
 
 ## 文件定義
 
@@ -113,26 +133,6 @@
 ### 專線規格與網路條件
 
 - [專線規格](https://hackmd.io/2e84sGrITxuSSmwrROnuTA#%E6%B8%AC%E8%A9%A6%E7%B5%90%E6%9E%9C)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ### MySQL Galera Cluster with ProxySQL between IDC + GCP
 
@@ -532,25 +532,6 @@ DNS_SERVER,IP,COUNTRY,REGION
 
 - Solution: [Create a Private Mirror](https://docs.pingcap.com/tidb/stable/tiup-mirror/)
 
-## 性能差異與選型建議
-
-- 主要性能差異總結
-  - MySQL 優勢突出 ; 跨專線短板明顯
-  - TiDB 分散式儲存與穩定性優勢，巨大資料量體合適
-    - 核心價值
-    - 性能瓶頸
-
-## 業務選型建議
-
-- 優先選擇 MySQL 的場景
-- 優先選擇 TiDB 的場景
-
-## 測試局限性與改善建議
-
-## 總結與未來規劃
-
-- 下一階段的技術管理投資方向 ; [Reference](https://landscape.cncf.io/guide#app-definition-and-development--database)
-![](https://codimd.104.com.tw/image/s3/key/uashd412g1c34ylela5gpbffp.png)
 
 ## 數據壓縮比分析
 ```
