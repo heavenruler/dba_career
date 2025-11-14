@@ -59,7 +59,10 @@
   - Linux x86_64，kernel 4.18+；關閉透明大頁、numa balancing，`vm.swappiness=1`。
   - 檔案描述符上限 ≥ 100k；適度調整 `net.core.somaxconn`、`tcp_tw_reuse` 等網路參數。
 - 時間同步
-  - 全節點啟用 NTP/Chrony，同步誤差 < 50ms，避免 Galera Cluster & PD/TiKV 因時鐘漂移造成調度異常。
+  - 全節點啟用 NTP/Chrony，同步誤差 < 1 ms，避免 Galera Cluster & PD/TiKV 因時鐘漂移造成調度異常。
+    ```
+    IDC / GCP 時間差計算公式 = IDC_offset − GCP_offset = (−0.000062843) − (+0.000001383) = −0.000064226 seconds
+    ```
     - IDC (172.19.254.7)
 	```
     ^* 172.19.254.7 6 10 377 17 -110us[ -203us] +/- 21ms
