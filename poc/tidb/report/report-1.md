@@ -1,5 +1,9 @@
 # TiDB Intro for DBA #5-1
 
+## TL;DR
+```
+```
+
 ## 文件定義
 
 ### 目的
@@ -16,10 +20,10 @@
 
 - TiDB 架構重點：TiDB（SQL layer, stateless）、PD（placement/metadata）、TiKV（分散式 Key-Value 存儲，raft 共識）。`Raft 複本同步` 的延遲對寫入延遲影響最大。
 
-- 效能基準示意範例：在良好專線下（RTT < 10ms，丟包 <0.1%）系統可穩定提供目標 QPS，平均延遲 < 50ms、p99 < 200ms。
+- 效能基準示意範例：在良好專線下（RTT < 10ms，丟包 <0.1%）系統可穩定提供目標 QPS，平均延遲相關數據。
 
 - 專線品質敏感度測試：測試不同 RTT/頻寬/丟包條件下，量化寫操作延遲增幅與吞吐下降百分比。
-    - 網路敏感度參數：變動 RTT（50/100/200 ms）、頻寬（30Mbps/10Mbps/5Mbps）、丟包（0%/0.1%/1%），觀測 QPS、latency p50/p95/p99。
+  - 網路敏感度參數：變動 RTT（50/100/200 ms）、頻寬（30Mbps/10Mbps/5Mbps）、丟包（0%/0.1%/1%），觀測 QPS、latency 等相關數據。
 
 - Galera：同步複寫 (group commit)，每筆寫入需跨所有複本達成，同步跨 DC 會造成寫延遲顯著上升（WAN 不友善）。容易發生 Global Lock/衝突導致錯誤或重試。
 
@@ -37,13 +41,98 @@
 
 - Sysbench OLTP Types：oltp_read_write / oltp_read_only / oltp_write_only / oltp_update_index / select_random_points / select_random_ranges
 
-## TL;DR
-```
-```
-
 ----
 
 ## 架構說明
+
+## PoC 規格說明（Compute Engine VM & 專線規格）
+
+### IDC vSphere VM  & Compute Engine @ GCP
+
+- CPU/記憶體
+  - 測試節點建議最小規格：TiDB/TiProxy/ProxySQL/DB 節點 4–8 vCPU、16–32GB RAM；TiKV 建議 8–16 vCPU、32–64GB RAM。
+  - PD 節點 4 vCPU、8–16GB RAM，採 3 或 6 節點奇數部署。
+- 儲存
+  - TiKV：本地 SSD 或高 IOPS 區塊儲存，單盤至少 10k IOPS、延遲 p99 < 2ms；建議啟用多併發 I/O，資料與 WAL 分層（可行時）。
+  - TiDB/PD/ProxySQL/TiProxy：一般 SSD 即可，建議系統/日誌/資料分區分開。
+- OS 與核心參數
+  - Linux x86_64，kernel 4.18+；關閉透明大頁、numa balancing，`vm.swappiness=1`。
+  - 檔案描述符上限 ≥ 100k；適度調整 `net.core.somaxconn`、`tcp_tw_reuse` 等網路參數。
+- 時間同步
+  - 全節點啟用 NTP/Chrony，同步誤差 < 50ms，避免 Galera Cluster & PD/TiKV 因時鐘漂移造成調度異常。
+    - IDC (172.19.254.7)
+	```
+    ^* 172.19.254.7 6 10 377 17 -110us[ -203us] +/- 21ms
+    Reference ID : AC13FE07 (172.19.254.7)
+    Stratum : 7
+    Ref time (UTC) : Fri Nov 14 01:38:47 2025
+    System time : 0.000062843 seconds slow of NTP time
+    Last offset : -0.000093200 seconds
+    RMS offset : 0.000049073 seconds
+    Frequency : 6.526 ppm slow
+    Residual freq : -0.001 ppm
+    Skew : 0.047 ppm
+    Root delay : 0.036258023 seconds
+    Root dispersion : 0.001422471 seconds
+    Update interval : 1026.2 seconds
+    Leap status : Normal
+    ```
+    - GCP (metadata.google.internal)
+    ```
+    ^* metadata.google.internal 2 10 377 149 +354ns[+2045ns] +/- 93us
+    Reference ID : A9FEA9FE (metadata.google.internal)
+    Stratum : 3
+    Ref time (UTC) : Fri Nov 14 01:36:41 2025
+    System time : 0.000001383 seconds fast of NTP time
+    Last offset : +0.000001691 seconds
+    RMS offset : 0.000001281 seconds
+    Frequency : 75.702 ppm slow
+    Residual freq : +0.000 ppm
+    Skew : 0.000 ppm
+    Root delay : 0.000035683 seconds
+    Root dispersion : 0.000217084 seconds
+    Update interval : 1030.7 seconds
+    Leap status : Normal
+    ```
+
+### 專線規格與網路條件
+
+- 目標門檻（PoC 基準）
+  - RTT：IDC ↔ GCP 往返延遲 10–20ms 以內（越低越好），抖動 < 5ms。
+  - 丟包率：< 0.1%（理想 0%）；短時突增需在 1 分鐘內恢復。
+  - 頻寬：≥ 100 Mbps 穩定保證（建議 1 Gbps），避免高峰擁塞。
+- L3/L4 設定與 QoS
+  - 端到端 MTU 一致（1500 或 9001），避免碎片；確保 TCP/UDP 穩定通過。
+  - 對 Raft/DB 關鍵流量標記高優先級 QoS，與備份/大檔傳輸流量分級管理。
+- 可觀測性與驗收
+  - 提供 mtr/iperf3 雙向基準（30–60 分鐘視窗），輸出 RTT、抖動、丟包、重傳率。
+  - 連續 24–48 小時監測，於尖峰時段仍符合門檻。
+- 連通與安全
+  - 開通 TiDB/TiKV/PD/TiProxy/ProxySQL 必要埠與健康檢查、監控端點；DNS/Service 發現穩定。
+  - PD 控制面需雙向可達，避免 placement/調度受阻。
+- 失效與降級策略
+  - 專線異常自動切換備援鏈路（VPN/次要專線），收斂 < 30 秒。
+  - 監控告警：RTT、丟包、重傳、TCP RTT p95/p99 超標即告警並記錄事件。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### MySQL Galera Cluster with ProxySQL between IDC + GCP
 
@@ -446,10 +535,11 @@ DNS_SERVER,IP,COUNTRY,REGION
 ## 性能差異與選型建議
 
 - 主要性能差異總結
-    - MySQL 優勢突出 ; 跨專線短板明顯
-    - TiDB 分散式儲存與穩定性優勢，巨大資料量體合適
-        - 核心價值
-        - 性能瓶頸
+  - MySQL 優勢突出 ; 跨專線短板明顯
+  - TiDB 分散式儲存與穩定性優勢，巨大資料量體合適
+    - 核心價值
+    - 性能瓶頸
+
 ## 業務選型建議
 
 - 優先選擇 MySQL 的場景
