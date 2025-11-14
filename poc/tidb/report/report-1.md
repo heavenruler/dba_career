@@ -21,6 +21,8 @@
 
 - 下一階段的技術管理投資方向 ; [Reference](https://landscape.cncf.io/guide#app-definition-and-development--database)
 ![](https://codimd.104.com.tw/image/s3/key/uashd412g1c34ylela5gpbffp.png)
+- [TiKV](https://github.com/tikv/tikv)
+- [Vitess](https://github.com/vitessio/vitess)
 
 ----
 
