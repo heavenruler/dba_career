@@ -57,6 +57,18 @@
   - TiDB/PD/ProxySQL/TiProxy：一般 SSD 即可，建議系統/日誌/資料分區分開。
 - OS 與核心參數
   - Linux x86_64，kernel 4.18+；關閉透明大頁、numa balancing，`vm.swappiness=1`。
+    - IDC
+    ```
+    [root@l-k8s-labroom-1 ~]# cat /etc/redhat-release ; uname -r
+    CentOS Linux release 8.4.2105
+    4.18.0-425.3.1.el8.x86_64
+    ```
+    - GCP
+    ```
+    [root@g-k8s-labroom-1 ~]# cat /etc/redhat-release ; uname -r
+    CentOS Stream release 9
+    5.14.0-565.el9.x86_64
+    ```
   - 檔案描述符上限 ≥ 100k；適度調整 `net.core.somaxconn`、`tcp_tw_reuse` 等網路參數。
 - 時間同步
   - 全節點啟用 NTP/Chrony，同步誤差 < 1 ms，避免 Galera Cluster & PD/TiKV 因時鐘漂移造成調度異常。
