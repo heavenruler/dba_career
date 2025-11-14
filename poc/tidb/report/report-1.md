@@ -50,11 +50,11 @@
 ### IDC vSphere VM  & Compute Engine @ GCP
 
 - CPU/記憶體
-  - 測試節點建議最小規格：TiDB/TiProxy/ProxySQL/DB 節點 4–8 vCPU、16–32GB RAM；TiKV 建議 8–16 vCPU、32–64GB RAM。
-  - PD 節點 4 vCPU、8–16GB RAM，採 3 或 6 節點奇數部署。
-- 儲存
-  - TiKV：本地 SSD 或高 IOPS 區塊儲存，單盤至少 10k IOPS、延遲 p99 < 2ms；建議啟用多併發 I/O，資料與 WAL 分層（可行時）。
-  - TiDB/PD/ProxySQL/TiProxy：一般 SSD 即可，建議系統/日誌/資料分區分開。
+  - IDC: 4U8G、8U16G（vCPU/Memory）
+  - GCP: GCP: c2-standard-4（4 vCPU/16GB）、c2-standard-8（8 vCPU/32GB）
+- Data Volume Storage
+  - IDC: PURE Fibre Channel Disk
+  - GCP: NVMe SSD 375GB
 - OS 與核心參數
   - Linux x86_64，kernel 4.18+；關閉透明大頁、numa balancing，`vm.swappiness=1`。
     - IDC
@@ -69,7 +69,7 @@
     CentOS Stream release 9
     5.14.0-565.el9.x86_64
     ```
-  - 檔案描述符上限 ≥ 100k；適度調整 `net.core.somaxconn`、`tcp_tw_reuse` 等網路參數。
+  - security/limits.conf & ulimit 設定上限 ≥ 100k；適度調整 `net.core.somaxconn`、`tcp_tw_reuse` 等網路參數。
 - 時間同步
   - 全節點啟用 NTP/Chrony，同步誤差 < 1 ms，避免 Galera Cluster & PD/TiKV 因時鐘漂移造成調度異常。
     ```
