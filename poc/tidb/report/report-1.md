@@ -52,7 +52,7 @@
 - CPU/記憶體
   - IDC: 4U8G、8U16G（vCPU/Memory）
   - GCP: GCP: c2-standard-4（4 vCPU/16GB）、c2-standard-8（8 vCPU/32GB）
-- Data Volume Storage
+- Data Volume Storage ; [DIsk 壓力測試數據](https://hackmd.io/Lvwkh2VORwuIsPzGpGpkPg#IDC-VM-%E5%9F%BA%E7%A4%8E%E6%B8%AC%E8%A9%A6)
   - IDC: PURE Fibre Channel Disk
   - GCP: NVMe SSD 375GB
 - OS 與核心參數
@@ -112,22 +112,7 @@
 
 ### 專線規格與網路條件
 
-- 目標門檻（PoC 基準）
-  - RTT：IDC ↔ GCP 往返延遲 10–20ms 以內（越低越好），抖動 < 5ms。
-  - 丟包率：< 0.1%（理想 0%）；短時突增需在 1 分鐘內恢復。
-  - 頻寬：≥ 100 Mbps 穩定保證（建議 1 Gbps），避免高峰擁塞。
-- L3/L4 設定與 QoS
-  - 端到端 MTU 一致（1500 或 9001），避免碎片；確保 TCP/UDP 穩定通過。
-  - 對 Raft/DB 關鍵流量標記高優先級 QoS，與備份/大檔傳輸流量分級管理。
-- 可觀測性與驗收
-  - 提供 mtr/iperf3 雙向基準（30–60 分鐘視窗），輸出 RTT、抖動、丟包、重傳率。
-  - 連續 24–48 小時監測，於尖峰時段仍符合門檻。
-- 連通與安全
-  - 開通 TiDB/TiKV/PD/TiProxy/ProxySQL 必要埠與健康檢查、監控端點；DNS/Service 發現穩定。
-  - PD 控制面需雙向可達，避免 placement/調度受阻。
-- 失效與降級策略
-  - 專線異常自動切換備援鏈路（VPN/次要專線），收斂 < 30 秒。
-  - 監控告警：RTT、丟包、重傳、TCP RTT p95/p99 超標即告警並記錄事件。
+- [專線規格](https://hackmd.io/2e84sGrITxuSSmwrROnuTA#%E6%B8%AC%E8%A9%A6%E7%B5%90%E6%9E%9C)
 
 
 
