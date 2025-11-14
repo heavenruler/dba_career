@@ -34,7 +34,20 @@
 - 比對：同併發（threads = 2/4/8/16）下，對照「單區（IDC/GCP）」與「跨區（IDC+GCP）」RPS，並計算差異%。
 
 ### 數據對照表（TiDB：mysqlslap SELECT 1）
-- 欄位：threads | RPS(單點 IDC) | RPS(單區 IDC 4vCPU) | RPS(單區 IDC 8vCPU) | 差異%(8vCPU對4vCPU)
+
+- 表頭說明
+  - 單點 IDC 4vCPU：TiDB+TiProxy 單機（基準參考）
+  - 單區 IDC 4vCPU：TiDB+TiProxy 叢集
+  - 單區 IDC 8vCPU：TiDB+TiProxy 叢集
+  - 差異 同併發參數，8vCPU 相對 4vCPU 的比例變化
+
+- 來源
+  - 單點 IDC：TiDB + TiProxy @ Single Instance with 4 vCPU @ mysqlslap_logs_20251021_133658
+  - 單區 IDC：TiDB + TiProxy @ IDC Cluster with 4 vCPU #1 @ mysqlslap_logs_20251027_092815
+  - 單區 IDC：TiDB + TiProxy @ IDC Cluster with 8 vCPU #1 @ mysqlslap_logs_20251027_155357
+
+- 欄位
+  - threads | RPS(單點 IDC) | RPS(單區 IDC 4vCPU) | RPS(單區 IDC 8vCPU) | 差異%(8vCPU對4vCPU)
 
 | threads | RPS(單點 IDC) | RPS(單區 IDC 4vCPU) | RPS(單區 IDC 8vCPU) | 差異%(8vCPU對4vCPU) |
 | ------- | -------------- | ------------------- | ------------------- | ------------------- |
@@ -44,6 +57,11 @@
 | 250     | 21792.82       | 39719.32            | 46977.76            | +18.3%              |
 | 500     | 20781.38       | 10192.99            | 11862.40            | +16.4%              |
 | 1000    | 19677.29       | 8306.57             | 7773.63             | -6.4%               |
+
+- 快速解讀
+  - 低～中併發（10/50/100）：8vCPU 相對 4vCPU 提升小（+1%～+3%）；SELECT 1 無計算量，瓶頸在網路/連線/代理處理。
+  - 中高併發（250/500）：8vCPU 有感提升（+16%～+18%）；多核心分攤系統呼叫/中斷/排隊開銷。
+  - 超高併發（1000）：RPS 衰減（-6.4%），屬壓測邊界；需配合 IRQ/NUMA、RSS/RPS、nofile/somaxconn、LB/連線池等調校，或優先以水平擴展攤平。
 
 #### 數據解讀
 
@@ -67,7 +85,16 @@
 
 ### 數據對照表（TiDB & MySQL：mysqlslap SELECT 1，IDC 叢集 8 vCPU）
 
-- 欄位：threads | MySQL RPS(avg_qps) | TiDB RPS(avg_qps) | 差異%(TiDB 對 MySQL)
+- 表頭說明
+  - 比較對象：同為 IDC 叢集、8 vCPU 規格下的 MySQL(+ProxySQL) 與 TiDB(+TiProxy) 在 SELECT 1 的 RPS 表現。
+  - 比較口徑：同一 concurrency（threads）下，以 avg_qps 當作 RPS，計算 TiDB 相對 MySQL 的差異%。
+
+- 來源
+  - MySQL：MySQL + ProxySQL @ IDC Cluster with 8 vCPU @ mysqlslap_logs_20251027_135223
+  - TiDB：TiDB + TiProxy @ IDC Cluster with 8 vCPU #1 @ mysqlslap_logs_20251027_155357
+
+- 欄位
+  - threads | MySQL RPS(avg_qps) | TiDB RPS(avg_qps) | 差異%(TiDB 對 MySQL)
 
 | threads | MySQL RPS | TiDB RPS  | 差異%(TiDB 對 MySQL) |
 | ------- | ---------- | ---------- | -------------------- |
@@ -78,8 +105,8 @@
 | 500     | 24785.19   | 11862.40   | -52.1%               |
 | 1000    | 10648.12   | 7773.63    | -27.0%               |
 
-- 快速解讀：
-  - 低併發（10）：TiDB 顯著更高，受連線/協定處理差異與 TiProxy 影響。
+- 快速解讀
+  - 低併發（10）：TiDB 顯著更高，可能受連線/協定處理差異與 TiProxy 的連線複用影響。
   - 中併發（50/100）：TiDB 與 MySQL 接近，50 時 TiDB 略優，100 時 MySQL 略優。
   - 高併發（≥250）：MySQL 優勢擴大；SELECT 1 在 TiDB 上主要受前端/排隊機制影響。
 
