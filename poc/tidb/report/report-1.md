@@ -56,42 +56,120 @@ Ref：S1-2A / S1-2B / S1-3A / S1-3B
 ## **TL;DR**
 **MySQL Scale-Up 成效清楚；TiDB Scale-Out 遠優於 Scale-Up，瓶頸通常在 KV 層。**
 
+----
+
 # 一、MySQL：Scale-Up 最有效，Scale-Out 價值有限
+
 ## **1. Scale-Up（4vCPU → 8vCPU，S2-1）**
 - 10/50/100 threads：+1%～+16% 穩健提升  
 - 250 threads：+36.9%（效益最明顯）  
 - 500 threads：-10.2%（IRQ/backlog 等系統因素）  
 - 1000 threads：+53%（邊界行為，不具穩態）
 
+**結論：MySQL 適合垂直擴充，Scale-Up 成效可預期且線性。**
 
+## **2. Scale-Out（Galera Cluster）**
+- 性能提升不線性  
+- 高併發會受 certification / replication 流量限制  
+- 常以 3 nodes 為主，重點是 HA 不是效能
 
+**結論：MySQL Scale-Out = 高可用策略，不是性能策略。**
 
+----
 
+# 二、TiDB：Scale-Out（尤其 TiKV）遠優於 Scale-Up
 
+# 三、TiDB Scale-Up：效益有限（SQL 前端多非瓶頸）
 
+## **1. 單 TiDB + 多 TiKV（KV-heavy，S2-2A）**
+- 10～100 threads：僅 +0.8%～+2.8%（短查詢無 CPU 瓶頸）  
+- 250/500 threads：+18% / +16%（排隊/中斷成本分攤才有效）  
+- 1000 threads：-6.4%（邊界行為）
 
+**結論：TiDB-server CPU 放大效果弱。**
+
+## **2. 多 TiDB + 單 TiKV（SQL-heavy，S2-2B）**
+- 50 threads：-24.6%（資源 / 池化參數未同步調整）  
+- 100/500/1000 threads：+50% / +11% / +20%  
+- 250 threads：約持平
+
+**結論：高併發才看得到 Scale-Up 效果，低併發不受益。**
+
+----
+
+# 四、TiDB Scale-Out：效益顯著（尤其 TiKV）
+
+## **1. 4 vCPU（S2-3A）**
+SQL-heavy vs KV-heavy  
+- 10/50：差異極小  
+- 100：SQL-heavy -47.5%（單 TiKV 變瓶頸）  
+- 250/500/1000：SQL-heavy 持續落後
+
+**結論：TiKV 優先擴充最有效。**
+
+## **2. 8 vCPU（S2-3B）**
+- 50～250：SQL-heavy 落後 -24%~ -23%  
+- 1000 threads：SQL-heavy 反超 +18.7%（前端可攤平排隊，但僅限極端併發）
+
+**結論：前端多台 TiDB 不是主要性能關鍵，TiKV 才是。**
+
+----
+
+# 五、整體結論：Scale-Up vs Scale-Out
+
+## **MySQL**
+| 策略 | 效益 | 說明 |
+|------|------|------|
+| **Scale-Up** | **明顯、有感、可線性預期** | CPU/Memory 增加直接帶動吞吐 |
+| **Scale-Out** | 有限 | 以 HA 為主，非性能手段 |
+
+## **TiDB**
+| 策略 | 效益 | 說明 |
+|------|------|------|
+| **TiDB-server Scale-Up** | 有限 | 前端 SQL 不是瓶頸 |
+| **TiKV Scale-Up** | 中度有效 | CPU 增加不等比提升 IO/Raft |
+| **TiDB-server Scale-Out** | 高併發可減少排隊 | 效益不如 KV |
+| **TiKV Scale-Out** | **最有效，唯一可近線性擴展** | 分散 region / raft group 負載 |
+
+---
+
+# 六、最終建議（依情境選擇）
+
+## **以效能為主**
+- **MySQL → 優先 Scale-Up**  
+- **TiDB → 優先 Scale-Out（TiKV）**
+
+## **以容量 / 穩定為主**
+- MySQL：受限單點能力，不建議以 Scale-Out 拉性能  
+- TiDB：具分散式架構，Scale-Out 是正途
 
 ----
 
 # 小結 III：跨區影響：IDC vs IDC+GCP vs 跨區併發
 
+## **TL;DR**
+**跨區（IDC+GCP）效能差異與併發表現呈「中併發受損、高併發雲端佔優」的明顯特性。  
+MySQL 在跨區時對延遲敏感度更高；TiDB 受架構影響，在高併發時 GCP 端 RPS 明顯勝出。**
 
+## **MySQL 重點**
+- **中併發（50–250）易受延遲影響**：常出現 -7%～-33%。  
+- **高併發（500+）GCP 明顯優勢**：RPS 可達 +200% 等級。  
+- **跨區併發時差異更放大**：GCP 端吞吐可高於 IDC 2～3 倍。  
+- **整體偏向單區最佳**；跨區適合 DR，不適合 A-A 性質負載。
 
+## **TiDB 重點**
+- **跨區影響極低（10–250 threads）**：大多 ±1%～2%。  
+- **高併發（500–1000）GCP 端大幅領先**：可達 +150%～+400%。  
+- **跨區併發時負載可自然「傾向」GCP**，整體吞吐更高。  
+- **分散式架構吸收延遲**，跨區壓測穩定度優於 MySQL。
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## **綜合比較**
+| 面向 | MySQL | TiDB |
+|------|--------|--------|
+| 中併發延遲影響 | 高 | 低 |
+| 高併發跨區吞吐 | GCP 優於 IDC | GCP 大幅領先 IDC |
+| 跨區可用性 | DR 為主 | 適合跨區承載 |
+| A-A 多地多寫 | 不適合 | 適合 |
 
 ----
 
