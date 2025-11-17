@@ -28,7 +28,7 @@
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## 效能對照（MySQL vs TiDB / IDC vs IDC）解析（mysqlslap：SELECT 1）
+## 效能對照（MySQL vs TiDB / IDC vs IDC）解析
 
 ### 資訊說明
 - 指標：以 mysqlslap 的 AVG_QPS 視為 RPS（請求數/秒），工作負載為 `SELECT 1` 健康檢查型查詢。
@@ -189,6 +189,68 @@
   - 中併發（50/100）：B 落後（-13% / -27%），顯示 KV 層集中限制吞吐。
   - 高併發（≥250）：A 優勢明顯擴大（-48% / -57% / -13%），B 在 1000 時仍低於 A；需優先擴充/分散 TiKV 或調整前後端資源配比與池化參數。
 
+----
+
+## Scale 策略對照（Scale-Up vs Scale-Out）
+
+### 數據對照表（S2-1：MySQL Scale-Up 4 vCPU → 8 vCPU，mysqlslap SELECT 1）
+```
+用途：同拓樸、只放大 vCPU，看 Scale-Up 成效。
+```
+- 表頭說明
+  - 組態 A（#1）：MySQL + ProxySQL，IDC Cluster，4 vCPU
+  - 組態 B（#2）：MySQL + ProxySQL，IDC Cluster，8 vCPU（Scale-Up）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) - RPS(A)) / RPS(A) × 100（>0 代表 8 vCPU 優於 4 vCPU）。
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ IDC Cluster with 4 vCPU @ mysqlslap_logs_20251022_160800
+  - B(#2)：MySQL + ProxySQL @ IDC Cluster with 8 vCPU @ mysqlslap_logs_20251027_135223
+
+- 欄位
+  - threads | RPS(A) 4vCPU | RPS(B) 8vCPU | 差異%(B 對 A)
+
+| threads | RPS(A) 4vCPU | RPS(B) 8vCPU | 差異%(B 對 A) |
+| ------- | ------------- | ------------- | -------------- |
+| 10      | 24664.97      | 24962.56      | +1.2%          |
+| 50      | 72481.28      | 84080.72      | +16.0%         |
+| 100     | 92307.69      | 99272.01      | +7.5%          |
+| 250     | 50821.62      | 69573.28      | +36.9%         |
+| 500     | 27614.14      | 24785.19      | -10.2%         |
+| 1000    | 6944.28       | 10648.12      | +53.3%         |
+
+- 快速解讀
+  - 低～中併發（10/50/100）：8 vCPU 提升 +1%～+16%，增幅穩健。
+  - 中高併發（250）：8 vCPU 提升 +36.9%，Scale-Up 成效明顯。
+  - 高併發（500/1000）：500 出現 -10.2% 回落、1000 大幅上升 +53.3%（屬邊界行為），顯示在不同併發下可能受連線池、backlog、IRQ/網路參數等配置影響；建議檢查並調整以穩定高併發表現。
+
+### 數據對照表（S2-2A：TiDB Scale-Up（單 TiDB + 多 TiKV），4 vCPU → 8 vCPU，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1）：TiDB + TiProxy，IDC Cluster，4 vCPU（單 TiDB + 多 TiKV）
+  - 組態 B（#2）：TiDB + TiProxy，IDC Cluster，8 vCPU（單 TiDB + 多 TiKV，Scale-Up）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) - RPS(A)) / RPS(A) × 100（>0 代表 8 vCPU 優於 4 vCPU）。
+
+- 來源
+  - A(#1)：TiDB + TiProxy @ IDC Cluster with 4 vCPU #1 @ mysqlslap_logs_20251027_092815
+  - B(#2)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #1 @ mysqlslap_logs_20251027_155357
+
+- 欄位
+  - threads | RPS(A) 4vCPU | RPS(B) 8vCPU | 差異%(B 對 A)
+
+| threads | RPS(A) 4vCPU | RPS(B) 8vCPU | 差異%(B 對 A) |
+| ------- | ------------- | ------------- | -------------- |
+| 10      | 96774.19      | 97560.98      | +0.8%          |
+| 50      | 95026.92      | 96587.25      | +1.6%          |
+| 100     | 91547.15      | 94132.41      | +2.8%          |
+| 250     | 39719.32      | 46977.76      | +18.3%         |
+| 500     | 10192.99      | 11862.40      | +16.4%         |
+| 1000    | 8306.57       | 7773.63       | -6.4%          |
+
+- 快速解讀
+  - 低～中併發（10/50/100）：8 vCPU 提升幅度小（+0.8%～+2.8%），短查詢瓶頸不在 CPU。
+  - 中高併發（250/500）：8 vCPU 有感提升（+18.3% / +16.4%），顯示多核心能分攤排隊/中斷成本。
+  - 高併發（1000）：出現 -6.4% 回落（邊界行為），需校正連線池、FD/backlog、RSS/RPS/irqbalance 與 MTU 等設定。
+
 
 
 
@@ -211,8 +273,6 @@
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-
-II. Scale 策略對照（Scale-Up vs Scale-Out）
 
 III. 跨區影響（4 vCPU）：IDC vs IDC+GCP vs 跨區併發
 
