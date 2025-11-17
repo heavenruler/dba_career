@@ -251,6 +251,34 @@
   - 中高併發（250/500）：8 vCPU 有感提升（+18.3% / +16.4%），顯示多核心能分攤排隊/中斷成本。
   - 高併發（1000）：出現 -6.4% 回落（邊界行為），需校正連線池、FD/backlog、RSS/RPS/irqbalance 與 MTU 等設定。
 
+### 數據對照表（S2-2B：TiDB Scale-Up（多 TiDB + 單 TiKV），4 vCPU → 8 vCPU，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1）：TiDB + TiProxy，IDC Cluster，4 vCPU（多 TiDB + 單 TiKV）
+  - 組態 B（#2）：TiDB + TiProxy，IDC Cluster，8 vCPU（多 TiDB + 單 TiKV，Scale-Up）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) - RPS(A)) / RPS(A) × 100（>0 代表 8 vCPU 優於 4 vCPU）。
+
+- 來源
+  - A(#1)：TiDB + TiProxy @ IDC Cluster with 4 vCPU #2 @ mysqlslap_logs_20251027_102800
+  - B(#2)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #2 @ mysqlslap_logs_20251027_154712
+
+- 欄位
+  - threads | RPS(A) 4vCPU | RPS(B) 8vCPU | 差異%(B 對 A)
+
+| threads | RPS(A) 4vCPU | RPS(B) 8vCPU | 差異%(B 對 A) |
+| ------- | ------------- | ------------- | -------------- |
+| 10      | 97339.39      | 97560.98      | +0.2%          |
+| 50      | 96556.16      | 72797.86      | -24.6%         |
+| 100     | 48076.92      | 72236.94      | +50.2%         |
+| 250     | 35979.85      | 35928.14      | -0.1%          |
+| 500     | 9555.66       | 10588.73      | +10.8%         |
+| 1000    | 7699.22       | 9223.67       | +19.8%         |
+
+- 快速解讀
+  - 10：基本持平（+0.2%）。
+  - 50：8 vCPU 低於 4 vCPU（-24.6%），疑似資源/池化參數未同步調整（例如前端/後端連線上限、排程、IRQ/網路）。
+  - 100/500/1000：8 vCPU 提升（+50.2% / +10.8% / +19.8%）；250 持平（-0.1%）。整體顯示 Scale-Up 在較高併發下開始帶來可見效益。
+
 
 
 
