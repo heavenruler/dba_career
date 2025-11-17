@@ -827,6 +827,34 @@ The **average runtime (avg[s])** represents the mean value across all three runs
   - 低～中併發（10/50/100/250）：TiDB 明顯落後 MySQL（-31% 至 -60%），顯示單機 4vCPU 下 TiDB 前端處理/協定開銷較高，MySQL+ProxySQL 更適合輕量查詢衝 RPS。
   - 高併發（500/1000）：TiDB 反超（+8.7% / +50.4%），顯示在極高併發下 TiDB+TiProxy 的連線/排隊處理更能維持吞吐；此區間仍需結合系統與網路參數評估穩態性。
 
+### 數據對照表（IDC 叢集 8 vCPU：MySQL vs TiDB #1，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1）：MySQL + ProxySQL，IDC Cluster，8 vCPU（單組前端）
+  - 組態 B（#2）：TiDB + TiProxy，IDC Cluster，8 vCPU（單組前端）
+  - 比較口徑：同一 concurrency（threads），以 avg_qps 當作 RPS，差異% = (B/A - 1)×100（B 相對 A）；聚焦單組前端下的 scale up 差異。
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ IDC Cluster with 8 vCPU @ mysqlslap_logs_20251027_135223
+  - B(#2)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #1 @ mysqlslap_logs_20251027_155357
+
+- 欄位
+  - threads | RPS(#1) | RPS(#2) | 差異%(B 對 A)
+
+| threads | RPS(#1) MySQL | RPS(#2) TiDB | 差異%(B 對 A) |
+| ------- | -------------- | ------------- | -------------- |
+| 10      | 24962.56       | 97560.98      | +291.0%        |
+| 50      | 84080.72       | 96587.25      | +14.9%         |
+| 100     | 99272.01       | 94132.41      | -5.2%          |
+| 250     | 69573.28       | 46977.76      | -32.5%         |
+| 500     | 24785.19       | 11862.40      | -52.1%         |
+| 1000    | 10648.12       | 7773.63       | -27.0%         |
+
+- 快速解讀
+  - 低併發（10）：TiDB 顯著更高；單組 TiProxy/TiDB 前端對輕查詢處理更快。
+  - 中併發（50/100）：兩者接近；50 時 TiDB 略優、100 時 MySQL 略優。
+  - 高併發（≥250）：MySQL 優勢擴大；TiDB 前端/排隊機制成為主要限制，需透過水平擴展與系統參數最佳化改善。
+
 ## 測試數據紀錄
 
 ## MySQL + ProxySQL @ Single Instance with 4 vCPU @ mysqlslap_logs_20251021_132329
