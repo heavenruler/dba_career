@@ -2,9 +2,9 @@
 
 ----
 
-# RPS 效能對照（MySQL vs TiDB / IDC vs IDC+GCP）解析
+# RPS 效能對照解析
 
-# 小結 I：效能對照（MySQL vs TiDB / IDC vs IDC）
+# ** 小結 I：效能對照（MySQL vs TiDB）**
 
 ## **核心結論**
 
@@ -43,7 +43,7 @@
 
 ----
 
-# 小結 II：Scale 策略對照（Scale-Up vs Scale-Out）精簡版
+# ** 小結 II：Scale 策略對照（Scale-Up vs Scale-Out） **
 
 ## **核心結論**
 
@@ -90,7 +90,7 @@ TiDB：Scale-Out（尤其 TiKV）效益遠高於 Scale-Up。**
 
 ----
 
-# 小結 III：跨區受專線影響：IDC vs IDC+GCP vs 跨區併發
+# ** 小結 III：跨區受專線影響：IDC vs IDC+GCP vs 跨區併發 **
 
 ## **TL;DR**
 **跨區（IDC+GCP）效能差異與併發表現呈「中併發受損、高併發雲端佔優」的明顯特性。  
