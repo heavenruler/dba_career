@@ -28,7 +28,7 @@
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## RPS 解析（mysqlslap：SELECT 1）
+## 效能對照（MySQL vs TiDB / IDC vs IDC）解析（mysqlslap：SELECT 1）
 
 ### 資訊說明
 - 指標：以 mysqlslap 的 AVG_QPS 視為 RPS（請求數/秒），工作負載為 `SELECT 1` 健康檢查型查詢。
@@ -36,7 +36,9 @@
 - 比對：同併發（threads = 10 ~ 1000）下，對照「單區（IDC/GCP）」與「跨區（IDC+GCP）」RPS，並計算差異%。
 
 ### 數據對照表（S1-1：單機 4 vCPU MySQL vs TiDB，mysqlslap SELECT 1）
-
+```
+用途：純看「引擎差異」，作為最乾淨 baseline。
+```
 - 表頭說明
   - 組態 A（#1）：MySQL + ProxySQL，Single Instance，4 vCPU（引擎對照 baseline）
   - 組態 B（#2）：TiDB + TiProxy，Single Instance，4 vCPU（引擎對照）
@@ -62,9 +64,94 @@
   - 低～中併發（10/50/100/250）：B 相較 A 下降約 31%～60%，顯示同為單機 4 vCPU 時，TiDB+TiProxy 在超短查詢上固定開銷較高。
   - 高併發（500/1000）：B 相較 A 提升約 +8.7% / +50.4%，顯示在極高併發下，TiDB+TiProxy 的連線/排隊處理能維持吞吐；此區間屬邊界，需搭配連線池/IRQ/網路參數評估穩態性。
 
+----
+
+## S1-2 IDC MySQL Cluster vs IDC TiDB Cluster（4 vCPU）
+```
+用途：比較「單機 → 小型 Cluster」後，MySQL 集群 vs TiDB 分散式架構。
+```
+### 數據對照表（S1-2A：IDC 4 vCPU MySQL Cluster vs TiDB Cluster #1，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1）：MySQL + ProxySQL，IDC Cluster，4 vCPU（單 SQL 入口）
+  - 組態 B（#2）：TiDB + TiProxy，IDC Cluster，4 vCPU（SQL 單入口 + 多 TiKV）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) - RPS(A)) / RPS(A) × 100（>0 代表 B 優於 A）。
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ IDC Cluster with 4 vCPU @ mysqlslap_logs_20251022_160800
+  - B(#2)：TiDB + TiProxy @ IDC Cluster with 4 vCPU #1 @ mysqlslap_logs_20251027_092815
+
+- 欄位
+  - threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A)
+
+| threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A) |
+| ------- | ------------- | ----------- | -------------- |
+| 10      | 24664.97      | 96774.19    | +292.4%        |
+| 50      | 72481.28      | 95026.92    | +31.1%         |
+| 100     | 92307.69      | 91547.15    | -0.8%          |
+| 250     | 50821.62      | 39719.32    | -21.8%         |
+| 500     | 27614.14      | 10192.99    | -63.1%         |
+| 1000    | 6944.28       | 8306.57     | +19.6%         |
+
+- 快速解讀
+  - 低～中併發（10/50）：B 明顯優於 A（+292% / +31%），TiDB 前端在短查詢下可快速處理。
+  - 中併發（100）：兩者接近（-0.8%），差距不大。
+  - 高併發（≥250）：A 優勢擴大（-21.8% / -63.1%），B 在 1000 時回升（+19.6%）；顯示 TiDB 在高併發下受前端/排隊與資源配置影響，需配合池化/連線上限/IRQ/網路調優。
+
+### 數據對照表（S1-2B：IDC 4 vCPU MySQL Cluster vs TiDB Cluster #2，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1）：MySQL + ProxySQL，IDC Cluster，4 vCPU
+  - 組態 B（#2）：TiDB + TiProxy，IDC Cluster，4 vCPU（SQL 層多入口，KV 層集中）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) - RPS(A)) / RPS(A) × 100（>0 代表 B 優於 A）。
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ IDC Cluster with 4 vCPU @ mysqlslap_logs_20251022_160800
+  - B(#2)：TiDB + TiProxy @ IDC Cluster with 4 vCPU #2 @ mysqlslap_logs_20251027_102800
+
+- 欄位
+  - threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A)
+
+| threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A) |
+| ------- | ------------- | ----------- | -------------- |
+| 10      | 24664.97      | 97339.39    | +294.7%        |
+| 50      | 72481.28      | 96556.16    | +33.3%         |
+| 100     | 92307.69      | 48076.92    | -47.9%         |
+| 250     | 50821.62      | 35979.85    | -29.2%         |
+| 500     | 27614.14      | 9555.66     | -65.4%         |
+| 1000    | 6944.28       | 7699.22     | +10.9%         |
+
+- 快速解讀
+  - 低併發（10/50）：B 明顯優於 A（+295% / +33%），多入口對短查詢具優勢。
+  - 100～500：B 明顯落後（-48% ～ -65%），顯示 KV 層集中（僅 1 節點）成為瓶頸，前端多入口無法彌補後端容量不足。
+  - 1000：B 小幅回升（+10.9%），屬高併發邊界行為，需搭配連線池/IRQ/網路參數調校評估穩態性。
+
+----
+
+## S1-3 IDC MySQL Cluster vs IDC TiDB Cluster（8 vCPU）
+```
+用途：同拓樸升到 8 vCPU，看資源放大後的延伸表現與「差異%」。
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-I. 效能對照（MySQL vs TiDB / IDC vs IDC）
+
 
 II. Scale 策略對照（Scale-Up vs Scale-Out）
 
