@@ -539,6 +539,33 @@
   - 250：下降 -21.2%，可能與跨區路徑/排隊配置影響在此併發點較明顯。
   - 500/1000：提升 +18.5% / +15.0%，高併發下仍見增益；建議結合連線池/IRQ/網路參數持續驗證穩態性。
 
+### 數據對照表（S4-1-2：MySQL 8 vCPU — IDC+GCP（IDC vs GCP 壓測），mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1，IDC Local）：MySQL + ProxySQL，IDC+GCP Cluster，8 vCPU（測試端 172.24.40.16）
+  - 組態 B（#2，GCP Local）：MySQL + ProxySQL，IDC+GCP Cluster，8 vCPU（測試端 10.160.152.14）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) − RPS(A)) / RPS(A) × 100（>0 代表 GCP Local 優於 IDC Local）。
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ IDC + GCP Cluster with 8 vCPU @ mysqlslap_logs_20251111_154136
+  - B(#2)：MySQL + ProxySQL @ IDC + GCP Cluster with 8 vCPU @ mysqlslap_logs_20251111_154829
+
+- 欄位
+  - threads | RPS(A) IDC Local | RPS(B) GCP Local | 差異%(B 對 A)
+
+| threads | RPS(A) IDC Local | RPS(B) GCP Local | 差異%(B 對 A) |
+| ------- | ----------------- | ---------------- | -------------- |
+| 10      | 27901.79          | 36540.80         | +31.0%         |
+| 50      | 90661.83          | 108303.25        | +19.4%         |
+| 100     | 108892.92         | 107565.44        | -1.2%          |
+| 250     | 54864.67          | 84104.29         | +53.3%         |
+| 500     | 29354.21          | 33534.54         | +14.2%         |
+| 1000    | 12247.90          | 46853.04         | +282.5%        |
+
+- 快速解讀
+  - 10/50/250/500/1000：GCP Local 高於 IDC Local（+31%/+19%/+53%/+14%/+283%），高併發差距最大。
+  - 100：兩地近似（-1.2%）。整體看在跨區組態下，GCP Local 對短查詢的 RPS 更佳；高併發屬邊界，建議結合連線池/IRQ/網路參數持續評估。
+
 
 
 
