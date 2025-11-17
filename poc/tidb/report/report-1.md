@@ -338,6 +338,8 @@
 
 ## 跨區影響（4 vCPU）：IDC vs IDC+GCP vs 跨區併發
 
+## S3-1 MySQL 4 vCPU：IDC Only vs IDC+GCP
+
 ### 數據對照表（S3-1-1：MySQL 4 vCPU — 在 IDC 壓測：加掛 GCP 區對本地效能影響，mysqlslap SELECT 1）
 
 - 表頭說明
@@ -419,6 +421,63 @@
 - 快速解讀
   - 10/500/1000：GCP 端高於 IDC 端（+21.5% / +24.1% / +114.2%），高併發差距擴大。
   - 50/100/250：GCP 端低於 IDC 端（-19.2% / -33.6% / -19.5%），在中等並發下 IDC 端更佳。
+
+## S3-2 TiDB 4 vCPU：IDC Only vs IDC+GCP（先做 4vCPU #1）
+
+### 數據對照表（S3-2-1：TiDB 4 vCPU #1 — IDC Only vs IDC+GCP（在 IDC 壓測），mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1，IDC Only）：TiDB + TiProxy，IDC Cluster，4 vCPU #1
+  - 組態 B（#2，IDC+GCP 測於 IDC）：TiDB + TiProxy，IDC+GCP Cluster，4 vCPU #1（測試端 172.24.40.25）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) − RPS(A)) / RPS(A) × 100（>0 代表加掛 GCP 後於 IDC 側更佳）。
+
+- 來源
+  - A(#1)：TiDB + TiProxy @ IDC Cluster with 4 vCPU #1 @ mysqlslap_logs_20251027_092815
+  - B(#2)：TiDB + TiProxy @ IDC + GCP Cluster with 4 #1 vCPU @ mysqlslap_logs_20251107_155527（172.24.40.25）
+
+- 欄位
+  - threads | RPS(A) IDC | RPS(B) IDC+GCP(測IDC) | 差異%(B 對 A)
+
+| threads | RPS(A) IDC | RPS(B) IDC+GCP(測IDC) | 差異%(B 對 A) |
+| ------- | ---------- | ---------------------- | -------------- |
+| 10      | 96774.19   | 97370.98               | +0.6%          |
+| 50      | 95026.92   | 95298.60               | +0.3%          |
+| 100     | 91547.15   | 93691.44               | +2.3%          |
+| 250     | 39719.32   | 40360.55               | +1.6%          |
+| 500     | 10192.99   | 11869.91               | +16.4%         |
+| 1000    | 8306.57    | 8328.01                | +0.3%          |
+
+- 快速解讀
+  - 10/50/100/250：加掛 GCP 後（測在 IDC）RPS 微幅提升（+0.3%～+2.3%）。
+  - 500：提升顯著（+16.4%），可能與連線池/網卡/路徑在跨區組態下表現更佳有關。
+  - 1000：近似持平（+0.3%），高併發屬邊界點，建議觀察抖動與資源配置。
+
+### 數據對照表（S3-2-2：TiDB 4 vCPU #1 — 同一 Cluster 下 IDC vs GCP Local，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1，IDC Local）：TiDB + TiProxy，IDC+GCP Cluster，4 vCPU #1（測試端 172.24.40.25）
+  - 組態 B（#2，GCP Local）：TiDB + TiProxy，IDC+GCP Cluster，4 vCPU #1（測試端 10.160.152.26）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) − RPS(A)) / RPS(A) × 100（>0 代表 GCP Local 優於 IDC Local）。
+
+- 來源
+  - A(#1)：TiDB + TiProxy @ IDC + GCP Cluster with 4 #1 vCPU @ mysqlslap_logs_20251107_155527（172.24.40.25）
+  - B(#2)：TiDB + TiProxy @ IDC + GCP Cluster with 4 #1 vCPU @ mysqlslap_logs_20251107_155651（10.160.152.26）
+
+- 欄位
+  - threads | RPS(A) IDC Local | RPS(B) GCP Local | 差異%(B 對 A)
+
+| threads | RPS(A) IDC Local | RPS(B) GCP Local | 差異%(B 對 A) |
+| ------- | ----------------- | ---------------- | -------------- |
+| 10      | 97370.98          | 97815.45         | +0.5%          |
+| 50      | 95298.60          | 95268.34         | -0.0%          |
+| 100     | 93691.44          | 92137.59         | -1.7%          |
+| 250     | 40360.55          | 86083.21         | +113.3%        |
+| 500     | 11869.91          | 42589.44         | +258.8%        |
+| 1000    | 8328.01           | 21553.27         | +158.8%        |
+
+- 快速解讀
+  - 10/50/100：兩地近似（±2%）；
+  - 250/500/1000：GCP Local 顯著高於 IDC Local（+113%/+259%/+159%），顯示在更高併發下雲端網卡/IRQ/路徑能維持更高吞吐；屬高併發邊界，建議結合系統與網路觀測評估穩態性。
 
 
 
