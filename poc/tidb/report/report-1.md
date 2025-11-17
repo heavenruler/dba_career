@@ -855,6 +855,33 @@ The **average runtime (avg[s])** represents the mean value across all three runs
   - 中併發（50/100）：兩者接近；50 時 TiDB 略優、100 時 MySQL 略優。
   - 高併發（≥250）：MySQL 優勢擴大；TiDB 前端/排隊機制成為主要限制，需透過水平擴展與系統參數最佳化改善。
 
+### 數據對照表（IDC 叢集 8 vCPU：TiDB #1 vs TiDB #2，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1）：TiDB + TiProxy，IDC Cluster，8 vCPU，單組前端（TiProxy 1、TiDB 1）、TiKV 3 節點（Baseline）
+  - 組態 B（#2）：TiDB + TiProxy，IDC Cluster，8 vCPU，多組前端（TiProxy 3、TiDB 3）、TiKV 1 節點（前端擴、後端縮）
+  - 比較口徑：同一 concurrency（threads），以 avg_qps 當 RPS，差異% = (B/A - 1)×100（B 相對 A）；用於說明 scale out 策略對 RPS 的影響
+
+- 來源
+  - A(#1)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #1 @ mysqlslap_logs_20251027_155357
+  - B(#2)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #2 @ mysqlslap_logs_20251027_154712
+
+- 欄位
+  - threads | RPS(#1) | RPS(#2) | 差異%(B 對 A)
+
+| threads | RPS(#1) | RPS(#2) | 差異%(B 對 A) |
+| ------- | ------- | ------- | -------------- |
+| 10      | 97560.98 | 97560.98 | +0.0%          |
+| 50      | 96587.25 | 72797.86 | -24.6%         |
+| 100     | 94132.41 | 72236.94 | -23.2%         |
+| 250     | 46977.76 | 35928.14 | -23.5%         |
+| 500     | 11862.40 | 10588.73 | -10.7%         |
+| 1000    | 7773.63  | 9223.67  | +18.7%         |
+
+ - 快速解讀
+  - 50～250：#2 顯著落後（-23%～-25%），後端 TiKV 由 3 縮至 1 節點的影響大於前端擴容紅利。
+  - 1000：#2 反超（+18.7%），多前端能攤平連線/排隊；但 TiProxy/TiDB 新增連線/轉發固定成本對短查詢明顯，需靠連線複用/Connection Pool 與網路調整才能穩定放大效益（邊界行為）。
+
 ## 測試數據紀錄
 
 ## MySQL + ProxySQL @ Single Instance with 4 vCPU @ mysqlslap_logs_20251021_132329
