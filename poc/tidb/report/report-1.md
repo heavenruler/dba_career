@@ -799,6 +799,34 @@ The **average runtime (avg[s])** represents the mean value across all three runs
 | **avg_rps**    | 平均每秒系統能完成的請求次數（Requests Per Second）。 | 越高越好（系統吞吐量越高）   |
 | **avg_ms/req** | 平均每筆請求耗時（毫秒）。                         | 越低越好（單筆反應時間越快） |
 
+
+### 數據對照表（單機 4 vCPU：mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1）：MySQL + ProxySQL，Single Instance，4 vCPU
+  - 組態 B（#2）：TiDB + TiProxy，Single Instance，4 vCPU
+  - 比較口徑：同一 concurrency（threads），以 avg_qps 當作 RPS，差異% = (B/A - 1)×100（B 相對 A）
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ Single Instance with 4 vCPU @ mysqlslap_logs_20251021_132329
+  - B(#2)：TiDB + TiProxy @ Single Instance with 4 vCPU @ mysqlslap_logs_20251021_133658
+
+- 欄位
+  - threads | RPS(#1) | RPS(#2) | 差異%(B 對 A)
+
+| threads | RPS(#1) MySQL | RPS(#2) TiDB | 差異%(B 對 A) |
+| ------- | -------------- | ------------- | -------------- |
+| 10      | 22394.74       | 15395.67      | -31.3%         |
+| 50      | 51212.02       | 23433.84      | -54.2%         |
+| 100     | 57066.77       | 22627.85      | -60.3%         |
+| 250     | 50200.80       | 21792.82      | -56.6%         |
+| 500     | 19118.02       | 20781.38      | +8.7%          |
+| 1000    | 13079.87       | 19677.29      | +50.4%         |
+
+- 快速解讀
+  - 低～中併發（10/50/100/250）：TiDB 明顯落後 MySQL（-31% 至 -60%），顯示單機 4vCPU 下 TiDB 前端處理/協定開銷較高，MySQL+ProxySQL 更適合輕量查詢衝 RPS。
+  - 高併發（500/1000）：TiDB 反超（+8.7% / +50.4%），顯示在極高併發下 TiDB+TiProxy 的連線/排隊處理更能維持吞吐；此區間仍需結合系統與網路參數評估穩態性。
+
 ## 測試數據紀錄
 
 ## MySQL + ProxySQL @ Single Instance with 4 vCPU @ mysqlslap_logs_20251021_132329
