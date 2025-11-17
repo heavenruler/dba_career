@@ -2,6 +2,28 @@
 
 ## TL;DR
 
+### RPS
+
+- 效能對照（MySQL vs TiDB / IDC vs IDC）
+- Scale 策略對照（Scale-Up vs Scale-Out）
+- 跨區影響：IDC vs IDC+GCP vs 跨區併發
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### 性能差異與選型建議
 
 ### Request per Second
