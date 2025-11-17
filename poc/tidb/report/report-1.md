@@ -6,142 +6,87 @@
 
 # 小結 I：效能對照（MySQL vs TiDB / IDC vs IDC）
 
-## **TL;DR**
-**無論 4vCPU 或 8vCPU，TiDB 都在低併發極強，但在高併發時受 KV 層限制而落後；MySQL 在高併發更穩定。**
+## **核心結論**
 
-## 單機（4 vCPU）
-**MySQL 在低中併發領先，TiDB 在高併發反超**
-Ref: S1-1
+**TiDB 低併發爆發力強；MySQL 中高併發更穩定。  
+當併發提升，TiDB 易受 KV 層排隊限制；MySQL 隨 CPU 放大呈線性增長。**
 
-- **10 / 50 / 100 / 250 threads**：TiDB 慢 31%～60%  
-- **500 / 1000 threads**：TiDB 反超（+8.7%、+50%）
-
-> **結論：** MySQL 低併發穩定；TiDB 高併發吞吐更強。
-
-## IDC 叢集（4 vCPU / 8 vCPU）MySQL / TiDB 整合比較
-**主軸：TiDB 在低併發爆發力強，但高併發普遍受 KV 容量 / 排隊限制；MySQL 在高併發較穩定。**  
-Ref：S1-2A / S1-2B / S1-3A / S1-3B
-
-### **多 KV（SQL 單入口）— S1-2A（4 vCPU） + S1-3A（8 vCPU）**
-- **10 / 50 threads**：TiDB 皆大幅領先（+291% / +292% / +31%）  
-- **100 threads**：4vCPU 與 8vCPU 皆與 MySQL 接近  
-- **≥250 threads**：在兩種 vCPU 組態下，TiDB 都明顯落後（-21% ～ -52%）
-
-**結論：**  
-多 KV 有助於 TiDB 在低併發短查詢爆發，但高併發時仍受 KV 排隊與資源配置限制。
-
-### **單 KV（SQL 多入口）— S1-2B（4 vCPU） + S1-3B（8 vCPU）**
-- **10 / 50 threads**：皆領先 MySQL（+295% / +33%）  
-- **100～500 threads**：4vCPU / 8vCPU 皆因單顆 KV 成瓶頸 → TiDB 大幅落後（-13% ～ -65%）  
-- **1000 threads**：僅在極端併發小幅回彈（+10% / -13%）
-
-### **整體統一結論**
-
-1. **低併發（10 / 50 threads）**  
-   TiDB 在所有 4vCPU / 8vCPU、單 KV / 多 KV 組態皆大幅領先，顯示其 SQL 前端在短查詢負載下具有極高處理效率。
-
-2. **中併發（100 threads）**  
-   兩者表現接近，差異不具指標性；此階段已開始進入穩態，前端優勢不再明顯。
-
-3. **高併發（250～500 threads）**  
-   TiDB 明顯落後 MySQL，且不論 CPU 資源（4vCPU / 8vCPU）或拓樸（單 KV / 多 KV），皆呈相同趨勢；主因為 TiDB 在此負載下轉向受 KV 排隊、資源配置、後端容量影響。
-
-4. **超高併發（1000 threads）**  
-   雖部分情境中 TiDB 有回彈，但屬邊界效應、離群數據，無法重現，亦不構成可依賴的穩態優勢。
-
-----
-
-# 小結 II：Scale 策略對照（Scale-Up vs Scale-Out）
-
-## **TL;DR**
-**MySQL Scale-Up 成效清楚；TiDB Scale-Out 遠優於 Scale-Up，瓶頸通常在 KV 層。**
-
-----
-
-# 一、MySQL：Scale-Up 最有效，Scale-Out 價值有限
-
-## **1. Scale-Up（4vCPU → 8vCPU，S2-1）**
-- 10/50/100 threads：+1%～+16% 穩健提升  
-- 250 threads：+36.9%（效益最明顯）  
-- 500 threads：-10.2%（IRQ/backlog 等系統因素）  
-- 1000 threads：+53%（邊界行為，不具穩態）
-
-**結論：MySQL 適合垂直擴充，Scale-Up 成效可預期且線性。**
-
-## **2. Scale-Out（Galera Cluster）**
-- 性能提升不線性  
-- 高併發會受 certification / replication 流量限制  
-- 常以 3 nodes 為主，重點是 HA 不是效能
-
-**結論：MySQL Scale-Out = 高可用策略，不是性能策略。**
-
-----
-
-# 二、TiDB：Scale-Out（尤其 TiKV）遠優於 Scale-Up
-
-# 三、TiDB Scale-Up：效益有限（SQL 前端多非瓶頸）
-
-## **1. 單 TiDB + 多 TiKV（KV-heavy，S2-2A）**
-- 10～100 threads：僅 +0.8%～+2.8%（短查詢無 CPU 瓶頸）  
-- 250/500 threads：+18% / +16%（排隊/中斷成本分攤才有效）  
-- 1000 threads：-6.4%（邊界行為）
-
-**結論：TiDB-server CPU 放大效果弱。**
-
-## **2. 多 TiDB + 單 TiKV（SQL-heavy，S2-2B）**
-- 50 threads：-24.6%（資源 / 池化參數未同步調整）  
-- 100/500/1000 threads：+50% / +11% / +20%  
-- 250 threads：約持平
-
-**結論：高併發才看得到 Scale-Up 效果，低併發不受益。**
-
-----
-
-# 四、TiDB Scale-Out：效益顯著（尤其 TiKV）
-
-## **1. 4 vCPU（S2-3A）**
-SQL-heavy vs KV-heavy  
-- 10/50：差異極小  
-- 100：SQL-heavy -47.5%（單 TiKV 變瓶頸）  
-- 250/500/1000：SQL-heavy 持續落後
-
-**結論：TiKV 優先擴充最有效。**
-
-## **2. 8 vCPU（S2-3B）**
-- 50～250：SQL-heavy 落後 -24%~ -23%  
-- 1000 threads：SQL-heavy 反超 +18.7%（前端可攤平排隊，但僅限極端併發）
-
-**結論：前端多台 TiDB 不是主要性能關鍵，TiKV 才是。**
-
-----
-
-# 五、整體結論：Scale-Up vs Scale-Out
-
-## **MySQL**
-| 策略 | 效益 | 說明 |
-|------|------|------|
-| **Scale-Up** | **明顯、有感、可線性預期** | CPU/Memory 增加直接帶動吞吐 |
-| **Scale-Out** | 有限 | 以 HA 為主，非性能手段 |
-
-## **TiDB**
-| 策略 | 效益 | 說明 |
-|------|------|------|
-| **TiDB-server Scale-Up** | 有限 | 前端 SQL 不是瓶頸 |
-| **TiKV Scale-Up** | 中度有效 | CPU 增加不等比提升 IO/Raft |
-| **TiDB-server Scale-Out** | 高併發可減少排隊 | 效益不如 KV |
-| **TiKV Scale-Out** | **最有效，唯一可近線性擴展** | 分散 region / raft group 負載 |
+**MySQL 適合穩態中高併發；TiDB 適合低併發爆量與水平擴展。  
+高併發效能想進一步拉伸 → TiDB 必須走 KV Scale-Out，而不是前端 Scale-Up。**
 
 ---
 
-# 六、最終建議（依情境選擇）
+## **MySQL 重點**
+- **低〜中併發穩定度高**：RPS 一致領先 TiDB（單機 4 vCPU：+31%～+60%）。  
+- **中高併發（250〜500）仍保持優勢**：叢集組態下普遍領先 20%～60%。  
+- **高併發（1000）偶有邊界提升**：RPS 飆升屬非穩態行為。  
+- **整體：Scale-Up + 單區併發 = 表現最佳。**
 
-## **以效能為主**
-- **MySQL → 優先 Scale-Up**  
-- **TiDB → 優先 Scale-Out（TiKV）**
+---
 
-## **以容量 / 穩定為主**
-- MySQL：受限單點能力，不建議以 Scale-Out 拉性能  
-- TiDB：具分散式架構，Scale-Out 是正途
+## **TiDB 重點**
+- **低併發爆發力極強（+290% 等級）**：特別是 SQL 單入口 + 多 TiKV。  
+- **中併發（100）與 MySQL 接近**：前端優勢減弱、轉入穩態。  
+- **高併發（250～500）顯著受限**：KV 排隊 / 容量不足 → RPS 最多落後 65%。  
+- **超高併發（1000）偶有回彈**：前端可分攤排隊，但不具穩態指標。  
+- **整體：短查詢快、高併發需依賴 KV Scale-Out。**
+
+---
+
+## **整體比較**
+| 併發區間 | MySQL | TiDB |
+|---------|-------|-------|
+| **低併發（10/50）** | 稳定領先 | **大幅領先（+290%）** |
+| **中併發（100）** | 持平 | 持平 |
+| **高併發（250～500）** | **明顯領先** | 受 KV 限制、掉速 |
+| **超高併發（1000）** | 不穩態、高低起伏 | 偶有回彈但不穩定 |
+
+----
+
+# 小結 II：Scale 策略對照（Scale-Up vs Scale-Out）精簡版
+
+## **核心結論**
+
+**MySQL：Scale-Up 成效最佳。  
+TiDB：Scale-Out（尤其 TiKV）效益遠高於 Scale-Up。**
+
+**MySQL 擴充靠硬體；TiDB 擴充靠分散式。  
+要提升 TiDB 效能 → 先 Scale-Out TiKV，再談 CPU。**
+
+---
+
+## **MySQL 重點**
+- **Scale-Up（4 → 8 vCPU）提升明確**：  
+  多數併發區間皆有 +1%〜+37% 的穩健成長。  
+- **中高併發更顯著**：250 threads +36.9%。  
+- **Scale-Out 價值有限**：  
+  複寫 / certification 成本大 → 用於 HA，而非性能。
+
+**結論：MySQL 效能擴展主要靠 Scale-Up。**
+
+---
+
+## **TiDB 重點**
+### **1. TiDB-server Scale-Up（SQL 層）**
+- 低併發幾乎無效益（+1%〜+3%）。  
+- 中高併發才有提升（+11%〜+50%）。  
+- **SQL 層不是瓶頸 → CPU 放大效果有限。**
+
+### **2. TiKV Scale-Up / Scale-Out（KV 層）**
+- Scale-Up：有幫助但不線性。  
+- Scale-Out：**最有效策略，性能可近線性放大**。  
+- 高併發差異最明顯：前端多台 TiDB 也不如多 TiKV。
+
+**結論：TiDB 真正的擴展手段是 TiKV Scale-Out。**
+
+---
+
+## **整體比較**
+| 策略 | MySQL | TiDB |
+|------|--------|--------|
+| **Scale-Up** | ★★★★★（主要手段） | ★★☆☆☆（效果有限） |
+| **Scale-Out（前端）** | ★☆☆☆☆（非性能） | ★★☆☆☆（僅在高併發有效） |
+| **Scale-Out（TiKV）** | 不適用 | ★★★★★（最有效） |
 
 ----
 
