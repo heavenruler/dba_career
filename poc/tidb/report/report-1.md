@@ -90,7 +90,7 @@ TiDB：Scale-Out（尤其 TiKV）效益遠高於 Scale-Up。**
 
 ----
 
-# 小結 III：跨區影響：IDC vs IDC+GCP vs 跨區併發
+# 小結 III：跨區受專線影響：IDC vs IDC+GCP vs 跨區併發
 
 ## **TL;DR**
 **跨區（IDC+GCP）效能差異與併發表現呈「中併發受損、高併發雲端佔優」的明顯特性。  
