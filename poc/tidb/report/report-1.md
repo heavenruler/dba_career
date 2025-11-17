@@ -5,36 +5,17 @@
 ## RPS 效能對照（MySQL vs TiDB / IDC vs IDC）解析
 
 ### 小結 I：效能對照（MySQL vs TiDB / IDC vs IDC）
+
 - 差異%口徑：差異%(B 對 A) = (RPS(B) − RPS(A)) / RPS(A) × 100（>0 代表 B 優於 A）。
 - 單機 4 vCPU（S1-1）：MySQL 在 10/50/100/250 明顯高於 TiDB；500/1000 併發 TiDB 反超，屬高併發邊界，需搭配連線池/IRQ/網路參數驗證。
 - 叢集 4 vCPU（S1-2A）：10/50 併發 TiDB 明顯優於 MySQL；≥250 併發 MySQL 優勢擴大；1000 併發 TiDB 有回升但需觀測穩態。
 - 叢集 8 vCPU（S1-3A）：10/50 併發 TiDB 顯著更高；100 併發 MySQL 略優；≥250 併發 MySQL 優勢擴大，顯示超短查詢下 TiDB 前端固定成本在高併發更敏感。
-- 明細：見 S1-1、S1-2A、S1-3A（以及 S1-2B、S1-3B 之變體）。
+
+### 小結 I：Scale 策略對照（Scale-Up vs Scale-Out）
 
 
 
-
-
-
-
-
-
-
-
-- 效能對照（MySQL vs TiDB / IDC vs IDC）
-- Scale 策略對照（Scale-Up vs Scale-Out）
-- 跨區影響：IDC vs IDC+GCP vs 跨區併發
-
-
-
-
-
-
-
-
-
-
-
+### 小結 I：跨區影響：IDC vs IDC+GCP vs 跨區併發
 
 
 
@@ -42,8 +23,6 @@
 
 
 ### 性能差異與選型建議
-
-### Request per Second
 
 - 主要性能差異總結
   - MySQL 優勢突出 ; 跨專線短板明顯
@@ -66,7 +45,6 @@
 - [Vitess](https://github.com/vitessio/vitess)
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 ### 資訊說明
 - 指標：以 mysqlslap 的 AVG_QPS 視為 RPS（請求數/秒），工作負載為 `SELECT 1` 健康檢查型查詢。
