@@ -967,7 +967,7 @@ The **average runtime (avg[s])** represents the mean value across all three runs
 | 250         | 4.59   | 4.54   | 4.64   | 21792.82 | 0.05       |
 | 500         | 4.81   | 4.73   | 4.88   | 20781.38 | 0.05       |
 | 1000        | 5.08   | 5.05   | 5.10   | 19677.29 | 0.05       |
-
+ 
 ## TiDB + TiProxy @ IDC Cluster with 4 vCPU #1 @ mysqlslap_logs_20251027_092815
 
 ```
@@ -995,6 +995,33 @@ tikv_servers:
 | 1000        | 12.04  | 10.81  | 14.03  | 8306.57  | 0.12       |
 
 ## TiDB + TiProxy @ IDC Cluster with 4 vCPU #2 @ mysqlslap_logs_20251027_102800
+
+### 數據對照表（IDC 叢集 8 vCPU：TiDB #1 vs TiDB #2，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 C（8vCPU #1）：TiProxy 1 節點、TiDB 1 節點、TiKV 3 節點（Baseline）
+  - 組態 D（8vCPU #2）：TiProxy 3 節點、TiDB 3 節點、TiKV 1 節點（前端擴、後端縮）
+  - 比較口徑：同一 concurrency（threads），以 avg_qps 當作 RPS，差異% = (D/C - 1)×100（D 相對 C）；用於說明 scale 策略對 RPS 的影響。
+
+- 來源
+  - C(#1)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #1 @ mysqlslap_logs_20251027_155357
+  - D(#2)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #2 @ mysqlslap_logs_20251027_154712
+
+- 欄位
+  - threads | RPS(#1 C) | RPS(#2 D) | 差異%(D 對 C)
+
+| threads | RPS(C：8vCPU #1) | RPS(D：8vCPU #2) | 差異%(D 對 C) |
+| ------- | ----------------- | ----------------- | -------------- |
+| 10      | 97560.98          | 97560.98          | +0.0%          |
+| 50      | 96587.25          | 72797.86          | -24.6%         |
+| 100     | 94132.41          | 72236.94          | -23.2%         |
+| 250     | 46977.76          | 35928.14          | -23.5%         |
+| 500     | 11862.40          | 10588.73          | -10.7%         |
+| 1000    | 7773.63           | 9223.67           | +18.7%         |
+
+- 快速解讀
+  - 50～250：C 明顯優於 D，顯示後端 TiKV 3 節點對穩態吞吐貢獻顯著；單純增加前端節點但縮減 TiKV 會拉低 RPS。
+  - 1000：D 高於 C，代表多前端節點在極高併發下能攤平連線/排隊成本；此為邊界行為，仍需結合系統/網路調校與負載特性評估。
 
 ```
 tiproxy_servers:
