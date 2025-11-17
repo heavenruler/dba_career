@@ -334,6 +334,91 @@
   - 50～250：SQL-heavy 明顯落後（-25% 左右），單 TiKV 容量/排隊限制吞吐；KV-heavy 更穩定。
   - 1000：SQL-heavy 反超（+18.7%），多前端在極高併發下可攤平連線/排隊；屬邊界行為，需聯動連線池/IRQ/網路等參數評估。
 
+----
+
+## 跨區影響（4 vCPU）：IDC vs IDC+GCP vs 跨區併發
+
+### 數據對照表（S3-1-1：MySQL 4 vCPU — 在 IDC 壓測：加掛 GCP 區對本地效能影響，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1，IDC Only）：MySQL + ProxySQL，IDC Cluster，4 vCPU
+  - 組態 B（#2，IDC+GCP 測於 IDC）：MySQL + ProxySQL，IDC+GCP Cluster，4 vCPU（測試端 172.24.40.16）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) − RPS(A)) / RPS(A) × 100（>0 代表加掛 GCP 後於 IDC 側更佳）。
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ IDC Cluster with 4 vCPU @ mysqlslap_logs_20251022_160800
+  - B(#2)：MySQL + ProxySQL @ IDC + GCP Cluster with 4 vCPU @ mysqlslap_logs_20251112_141836（172.24.40.16）
+
+- 欄位
+  - threads | RPS(A) IDC | RPS(B) IDC+GCP(測IDC) | 差異%(B 對 A)
+
+| threads | RPS(A) IDC | RPS(B) IDC+GCP(測IDC) | 差異%(B 對 A) |
+| ------- | ---------- | ---------------------- | -------------- |
+| 10      | 24664.97   | 27027.03               | +9.6%          |
+| 50      | 72481.28   | 79449.15               | +9.6%          |
+| 100     | 92307.69   | 94398.99               | +3.0%          |
+| 250     | 50821.62   | 52984.81               | +4.3%          |
+| 500     | 27614.14   | 27688.05               | +0.3%          |
+| 1000    | 6944.28    | 9201.04                | +32.5%         |
+
+- 快速解讀
+  - 10～250：加掛 GCP 後（測在 IDC）RPS 小幅提升約 +3%～+10%（可能受路徑優化/LB 設定或抖動差異影響）。
+  - 500：幾乎持平（+0.3%）。
+  - 1000：B 明顯高於 A（+32.5%），屬高併發邊界行為，需結合連線池/IRQ/網路與抖動觀察驗證穩態性。
+
+### 數據對照表（S3-1-2：MySQL 4 vCPU — 同一 Cluster 下 IDC vs GCP Local，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1，IDC Local）：MySQL + ProxySQL，IDC+GCP Cluster，4 vCPU（測試端 172.24.40.16）
+  - 組態 B（#2，GCP Local）：MySQL + ProxySQL，IDC+GCP Cluster，4 vCPU（測試端 10.160.152.14）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) − RPS(A)) / RPS(A) × 100（>0 代表 GCP Local 優於 IDC Local）。
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ IDC + GCP Cluster with 4 vCPU @ mysqlslap_logs_20251112_141836（172.24.40.16）
+  - B(#2)：MySQL + ProxySQL @ IDC + GCP Cluster with 4 vCPU @ mysqlslap_logs_20251112_142110（10.160.152.14）
+
+- 欄位
+  - threads | RPS(A) IDC Local | RPS(B) GCP Local | 差異%(B 對 A)
+
+| threads | RPS(A) IDC Local | RPS(B) GCP Local | 差異%(B 對 A) |
+| ------- | ----------------- | ---------------- | -------------- |
+| 10      | 27027.03          | 32289.31         | +19.5%         |
+| 50      | 79449.15          | 73655.78         | -7.3%          |
+| 100     | 94398.99          | 68259.39         | -27.7%         |
+| 250     | 52984.81          | 50985.72         | -3.8%          |
+| 500     | 27688.05          | 35790.98         | +29.2%         |
+| 1000    | 9201.04           | 26824.03         | +191.5%        |
+
+- 快速解讀
+  - 10/500/1000：GCP Local 高於 IDC Local（+19.5% / +29.2% / +191.5%），高併發尤為明顯，可能與雲端主機網卡/IRQ/路徑差異有關。
+  - 50/100/250：GCP Local 低於 IDC Local（-7.3% / -27.7% / -3.8%），中併發區間 IDC Local 較佳。
+
+### 數據對照表（S3-1-3：MySQL 4 vCPU — IDC+GCP 共同壓測：跨區併發，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1，跨區併發@IDC）：MySQL + ProxySQL，IDC+GCP Cluster，4 vCPU（測試端 172.24.40.16）
+  - 組態 B（#2，跨區併發@GCP）：MySQL + ProxySQL，IDC+GCP Cluster，4 vCPU（測試端 10.160.152.14）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) − RPS(A)) / RPS(A) × 100（>0 代表 GCP 端優於 IDC 端）。
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ IDC + GCP Cluster with 4 vCPU @ mysqlslap_logs_20251112_142529（172.24.40.16）
+  - B(#2)：MySQL + ProxySQL @ IDC + GCP Cluster with 4 vCPU @ mysqlslap_logs_20251112_142528（10.160.152.14）
+
+- 欄位
+  - threads | RPS(A) 跨區@IDC | RPS(B) 跨區@GCP | 差異%(B 對 A)
+
+| threads | RPS(A) 跨區@IDC | RPS(B) 跨區@GCP | 差異%(B 對 A) |
+| ------- | ---------------- | ---------------- | -------------- |
+| 10      | 25462.57         | 30937.40         | +21.5%         |
+| 50      | 77559.46         | 62643.56         | -19.2%         |
+| 100     | 94696.97         | 62866.72         | -33.6%         |
+| 250     | 57926.24         | 46649.04         | -19.5%         |
+| 500     | 25737.82         | 31928.48         | +24.1%         |
+| 1000    | 11687.25         | 25027.11         | +114.2%        |
+
+- 快速解讀
+  - 10/500/1000：GCP 端高於 IDC 端（+21.5% / +24.1% / +114.2%），高併發差距擴大。
+  - 50/100/250：GCP 端低於 IDC 端（-19.2% / -33.6% / -19.5%），在中等並發下 IDC 端更佳。
 
 
 
@@ -347,19 +432,14 @@
 
 
 
+----
 
 
 
 
 
+## 跨區影響（8 vCPU）：IDC vs IDC+GCP vs 跨區併發
 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-III. 跨區影響（4 vCPU）：IDC vs IDC+GCP vs 跨區併發
-
-IV. 跨區影響（8 vCPU）：IDC vs IDC+GCP vs 跨區併發
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
