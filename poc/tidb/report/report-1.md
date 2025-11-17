@@ -133,6 +133,65 @@
 用途：同拓樸升到 8 vCPU，看資源放大後的延伸表現與「差異%」。
 ```
 
+### 數據對照表（S1-3A：IDC 8 vCPU MySQL Cluster vs TiDB Cluster #1，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1）：MySQL + ProxySQL，IDC Cluster，8 vCPU（SQL 單入口）
+  - 組態 B（#2）：TiDB + TiProxy，IDC Cluster，8 vCPU（SQL 單入口 + 多 TiKV 節點）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) - RPS(A)) / RPS(A) × 100（>0 代表 B 優於 A）。
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ IDC Cluster with 8 vCPU @ mysqlslap_logs_20251027_135223
+  - B(#2)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #1 @ mysqlslap_logs_20251027_155357
+
+- 欄位
+  - threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A)
+
+| threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A) |
+| ------- | ------------- | ----------- | -------------- |
+| 10      | 24962.56      | 97560.98    | +291.0%        |
+| 50      | 84080.72      | 96587.25    | +14.9%         |
+| 100     | 99272.01      | 94132.41    | -5.2%          |
+| 250     | 69573.28      | 46977.76    | -32.5%         |
+| 500     | 24785.19      | 11862.40    | -52.1%         |
+| 1000    | 10648.12      | 7773.63     | -27.0%         |
+
+- 快速解讀
+  - 低併發（10）：B 大幅優於 A（+291%），顯示 TiDB 前端在超短查詢下處理效率高。
+  - 中併發（50/100）：50 時 B 略優（+14.9%），100 時 A 略優（-5.2%），兩者接近。
+  - 高併發（≥250）：A 優勢擴大（-32.5% / -52.1% / -27.0%），B 在高並發下受前端/排隊與資源配置影響更明顯，需配合池化/連線上限/IRQ/網路調優。
+
+### 數據對照表（S1-3B：IDC 8 vCPU MySQL Cluster vs TiDB Cluster #2，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1）：MySQL + ProxySQL，IDC Cluster，8 vCPU
+  - 組態 B（#2）：TiDB + TiProxy，IDC Cluster，8 vCPU（SQL 層多入口，KV 層集中）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) - RPS(A)) / RPS(A) × 100（>0 代表 B 優於 A）。
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ IDC Cluster with 8 vCPU @ mysqlslap_logs_20251027_135223
+  - B(#2)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #2 @ mysqlslap_logs_20251027_154712
+
+- 欄位
+  - threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A)
+
+| threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A) |
+| ------- | ------------- | ----------- | -------------- |
+| 10      | 24962.56      | 97560.98    | +291.0%        |
+| 50      | 84080.72      | 72797.86    | -13.4%         |
+| 100     | 99272.01      | 72236.94    | -27.2%         |
+| 250     | 69573.28      | 35928.14    | -48.4%         |
+| 500     | 24785.19      | 10588.73    | -57.3%         |
+| 1000    | 10648.12      | 9223.67     | -13.4%         |
+
+- 快速解讀
+  - 低併發（10）：B 大幅優於 A（+291%），短查詢下 TiDB 前端處理速度高。
+  - 中併發（50/100）：B 落後（-13% / -27%），顯示 KV 層集中限制吞吐。
+  - 高併發（≥250）：A 優勢明顯擴大（-48% / -57% / -13%），B 在 1000 時仍低於 A；需優先擴充/分散 TiKV 或調整前後端資源配比與池化參數。
+
+
+
+
 
 
 
