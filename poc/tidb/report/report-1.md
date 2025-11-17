@@ -1,26 +1,28 @@
 # TiDB Intro for DBA #5-1
 
-## TL;DR
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## RPS 效能對照（MySQL vs TiDB / IDC vs IDC）解析
+# TL;DR
 
-### 小結 I：效能對照（MySQL vs TiDB / IDC vs IDC）
+# RPS 效能對照（MySQL vs TiDB / IDC vs IDC）解析
 
-- 差異%口徑：差異%(B 對 A) = (RPS(B) − RPS(A)) / RPS(A) × 100（>0 代表 B 優於 A）。
-- 單機 4 vCPU（S1-1）：MySQL 在 10/50/100/250 明顯高於 TiDB；500/1000 併發 TiDB 反超，屬高併發邊界，需搭配連線池/IRQ/網路參數驗證。
-- 叢集 4 vCPU（S1-2A）：10/50 併發 TiDB 明顯優於 MySQL；≥250 併發 MySQL 優勢擴大；1000 併發 TiDB 有回升但需觀測穩態。
-- 叢集 8 vCPU（S1-3A）：10/50 併發 TiDB 顯著更高；100 併發 MySQL 略優；≥250 併發 MySQL 優勢擴大，顯示超短查詢下 TiDB 前端固定成本在高併發更敏感。
-
-### 小結 I：Scale 策略對照（Scale-Up vs Scale-Out）
-
-
-
-### 小結 I：跨區影響：IDC vs IDC+GCP vs 跨區併發
+# 小結 I：效能對照（MySQL vs TiDB / IDC vs IDC）
 
 
 
 
 
+# 小結 II：Scale 策略對照（Scale-Up vs Scale-Out）
+
+
+
+# 小結 III：跨區影響：IDC vs IDC+GCP vs 跨區併發
+
+
+
+
+
+----
 
 ### 性能差異與選型建議
 
