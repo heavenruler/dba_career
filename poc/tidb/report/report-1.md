@@ -8,6 +8,14 @@
 
 # 小結 I：效能對照（MySQL vs TiDB / IDC vs IDC）
 
+## 1. 單機（4 vCPU）
+**MySQL 在低中併發領先，TiDB 在高併發反超**  
+（S1-1）
+
+- **10 / 50 / 100 / 250 threads**：TiDB 慢 31%～60%  
+- **500 / 1000 threads**：TiDB 反超（+8.7%、+50%）
+
+> **結論：** MySQL 低併發穩定；TiDB 高併發吞吐更強。
 
 
 
