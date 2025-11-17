@@ -307,6 +307,33 @@
   - 100：SQL-heavy 明顯落後（-47.5%），單 TiKV 容量/排隊成瓶頸。
   - 250/500/1000：SQL-heavy 一路落後（-9% ～ -7%），KV-heavy 在較高併發下更穩定；同為 4 vCPU 時，KV-heavy 組態對 SELECT 1 的穩態 RPS 較友善。
 
+### 數據對照表（S2-3B：TiDB Scale-Out（8 vCPU，SQL-heavy vs KV-heavy），mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1，KV-heavy）：TiDB + TiProxy，IDC Cluster，8 vCPU（單 TiDB + 多 TiKV）
+  - 組態 B（#2，SQL-heavy）：TiDB + TiProxy，IDC Cluster，8 vCPU（多 TiDB + 單 TiKV）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) - RPS(A)) / RPS(A) × 100（>0 代表 SQL-heavy 優於 KV-heavy）。
+
+- 來源
+  - A(#1)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #1 @ mysqlslap_logs_20251027_155357
+  - B(#2)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #2 @ mysqlslap_logs_20251027_154712
+
+- 欄位
+  - threads | RPS(A) KV-heavy | RPS(B) SQL-heavy | 差異%(B 對 A)
+
+| threads | RPS(A) KV-heavy | RPS(B) SQL-heavy | 差異%(B 對 A) |
+| ------- | ---------------- | ---------------- | -------------- |
+| 10      | 97560.98         | 97560.98         | +0.0%          |
+| 50      | 96587.25         | 72797.86         | -24.6%         |
+| 100     | 94132.41         | 72236.94         | -23.2%         |
+| 250     | 46977.76         | 35928.14         | -23.5%         |
+| 500     | 11862.40         | 10588.73         | -10.7%         |
+| 1000    | 7773.63          | 9223.67          | +18.7%         |
+
+- 快速解讀
+  - 50～250：SQL-heavy 明顯落後（-25% 左右），單 TiKV 容量/排隊限制吞吐；KV-heavy 更穩定。
+  - 1000：SQL-heavy 反超（+18.7%），多前端在極高併發下可攤平連線/排隊；屬邊界行為，需聯動連線池/IRQ/網路等參數評估。
+
 
 
 
