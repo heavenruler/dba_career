@@ -279,6 +279,34 @@
   - 50：8 vCPU 低於 4 vCPU（-24.6%），疑似資源/池化參數未同步調整（例如前端/後端連線上限、排程、IRQ/網路）。
   - 100/500/1000：8 vCPU 提升（+50.2% / +10.8% / +19.8%）；250 持平（-0.1%）。整體顯示 Scale-Up 在較高併發下開始帶來可見效益。
 
+### 數據對照表（S2-3A：TiDB Scale-Out（4 vCPU，SQL-heavy vs KV-heavy），mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1，KV-heavy）：TiDB + TiProxy，IDC Cluster，4 vCPU（單 TiDB + 多 TiKV）
+  - 組態 B（#2，SQL-heavy）：TiDB + TiProxy，IDC Cluster，4 vCPU（多 TiDB + 單 TiKV）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) - RPS(A)) / RPS(A) × 100（>0 代表 SQL-heavy 優於 KV-heavy）。
+
+- 來源
+  - A(#1)：TiDB + TiProxy @ IDC Cluster with 4 vCPU #1 @ mysqlslap_logs_20251027_092815
+  - B(#2)：TiDB + TiProxy @ IDC Cluster with 4 vCPU #2 @ mysqlslap_logs_20251027_102800
+
+- 欄位
+  - threads | RPS(A) KV-heavy | RPS(B) SQL-heavy | 差異%(B 對 A)
+
+| threads | RPS(A) KV-heavy | RPS(B) SQL-heavy | 差異%(B 對 A) |
+| ------- | ---------------- | ---------------- | -------------- |
+| 10      | 96774.19         | 97339.39         | +0.6%          |
+| 50      | 95026.92         | 96556.16         | +1.6%          |
+| 100     | 91547.15         | 48076.92         | -47.5%         |
+| 250     | 39719.32         | 35979.85         | -9.4%          |
+| 500     | 10192.99         | 9555.66          | -6.2%          |
+| 1000    | 8306.57          | 7699.22          | -7.3%          |
+
+- 快速解讀
+  - 10/50：SQL-heavy 略優（+0.6% / +1.6%），差異小。
+  - 100：SQL-heavy 明顯落後（-47.5%），單 TiKV 容量/排隊成瓶頸。
+  - 250/500/1000：SQL-heavy 一路落後（-9% ～ -7%），KV-heavy 在較高併發下更穩定；同為 4 vCPU 時，KV-heavy 組態對 SELECT 1 的穩態 RPS 較友善。
+
 
 
 
