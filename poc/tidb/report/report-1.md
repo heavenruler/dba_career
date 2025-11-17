@@ -677,21 +677,62 @@
   - 10/50/100：兩端近似（+0.6%～+0.8%）。
   - 250/500/1000：GCP 端顯著高於 IDC 端（+102%/+443%/+128%），跨區併發高併發下雲端側吞吐更佳；屬邊界行為，建議持續觀測並調整池化/IRQ/網路。
 
-
-
-
-
-
-
-
-
-
-
-
 ## S4-3 TiDB 8 vCPU #2（tiproxy/tidb *3 + tikv *1）
 
+### 數據對照表（S4-3-1：TiDB 8 vCPU #2 — IDC Only vs IDC+GCP（在 IDC 壓測），mysqlslap SELECT 1）
 
+- 表頭說明
+  - 組態 A（#1，IDC Only）：TiDB + TiProxy，IDC Cluster，8 vCPU #2
+  - 組態 B（#2，IDC+GCP 測於 IDC）：TiDB + TiProxy，IDC+GCP Cluster，8 vCPU #2（測試端 172.24.40.25）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) − RPS(A)) / RPS(A) × 100（>0 代表加掛 GCP 後於 IDC 側更佳）。
 
+- 來源
+  - A(#1)：TiDB + TiProxy @ IDC Cluster with 8 vCPU #2 @ mysqlslap_logs_20251027_154712
+  - B(#2)：TiDB + TiProxy @ IDC + GCP Cluster with 8 #2 vCPU @ mysqlslap_logs_20251028_131838（172.24.40.25）
+
+- 欄位
+  - threads | RPS(A) IDC | RPS(B) IDC+GCP(測IDC) | 差異%(B 對 A)
+
+| threads | RPS(A) IDC | RPS(B) IDC+GCP(測IDC) | 差異%(B 對 A) |
+| ------- | ---------- | ---------------------- | -------------- |
+| 10      | 97560.98   | 97624.47               | +0.1%          |
+| 50      | 72797.86   | 96899.22               | +33.1%         |
+| 100     | 72236.94   | 96153.85               | +33.1%         |
+| 250     | 35928.14   | 47808.76               | +33.1%         |
+| 500     | 10588.73   | 11058.68               | +4.4%          |
+| 1000    | 9223.67    | 9135.20                | -1.0%          |
+
+- 快速解讀
+  - 10：持平（+0.1%）。
+  - 50/100/250：加掛 GCP 後（測在 IDC）RPS 提升約 +33%，顯著高於 IDC Only；
+  - 500：小幅提升（+4.4%）；1000：近似持平（-1.0%）。整體看 8 vCPU #2 在跨區組態下於中等併發呈現可見增益，高併發為邊界點需持續驗證。
+
+### 數據對照表（S4-3-2：TiDB 8 vCPU #2 — IDC+GCP（IDC vs GCP 壓測），mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1，IDC Local）：TiDB + TiProxy，IDC+GCP Cluster，8 vCPU #2（測試端 172.24.40.25）
+  - 組態 B（#2，GCP Local）：TiDB + TiProxy，IDC+GCP Cluster，8 vCPU #2（測試端 10.160.152.26）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) − RPS(A)) / RPS(A) × 100（>0 代表 GCP Local 優於 IDC Local）。
+
+- 來源
+  - A(#1)：TiDB + TiProxy @ IDC + GCP Cluster with 8 #2 vCPU @ mysqlslap_logs_20251028_131838（172.24.40.25）
+  - B(#2)：TiDB + TiProxy @ IDC + GCP Cluster with 8 #2 vCPU @ mysqlslap_logs_20251028_131839（10.160.152.26）
+
+- 欄位
+  - threads | RPS(A) IDC Local | RPS(B) GCP Local | 差異%(B 對 A)
+
+| threads | RPS(A) IDC Local | RPS(B) GCP Local | 差異%(B 對 A) |
+| ------- | ----------------- | ---------------- | -------------- |
+| 10      | 97624.47          | 97560.98         | -0.1%          |
+| 50      | 96899.22          | 97276.26         | +0.4%          |
+| 100     | 96153.85          | 96774.19         | +0.6%          |
+| 250     | 47808.76          | 95419.85         | +99.6%         |
+| 500     | 11058.68          | 55228.28         | +399.6%        |
+| 1000    | 9135.20           | 30072.17         | +229.1%        |
+
+- 快速解讀
+  - 10/50/100：兩地近似（±1%）。
+  - 250/500/1000：GCP Local 顯著高於 IDC Local（+100% / +400% / +229%），高併發差距極大；屬邊界行為，建議聯動連線池/IRQ/網路與路徑觀測確認穩態性。
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
