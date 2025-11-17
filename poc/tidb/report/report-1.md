@@ -855,6 +855,25 @@ The **average runtime (avg[s])** represents the mean value across all three runs
   - 中併發（50/100）：兩者接近；50 時 TiDB 略優、100 時 MySQL 略優。
   - 高併發（≥250）：MySQL 優勢擴大；TiDB 前端/排隊機制成為主要限制，需透過水平擴展與系統參數最佳化改善。
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### 數據對照表（IDC 叢集 8 vCPU：TiDB #1 vs TiDB #2，mysqlslap SELECT 1）
 
 - 表頭說明
