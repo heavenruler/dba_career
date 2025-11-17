@@ -33,8 +33,46 @@
 ### 資訊說明
 - 指標：以 mysqlslap 的 AVG_QPS 視為 RPS（請求數/秒），工作負載為 `SELECT 1` 健康檢查型查詢。
 - 取樣：每組 threads 測試三次取平均（Sample_Count=3）。
-- 比對：同併發（threads = 2/4/8/16）下，對照「單區（IDC/GCP）」與「跨區（IDC+GCP）」RPS，並計算差異%。
+- 比對：同併發（threads = 10 ~ 1000）下，對照「單區（IDC/GCP）」與「跨區（IDC+GCP）」RPS，並計算差異%。
 
+### 數據對照表（S1-1：單機 4 vCPU MySQL vs TiDB，mysqlslap SELECT 1）
+
+- 表頭說明
+  - 組態 A（#1）：MySQL + ProxySQL，Single Instance，4 vCPU（引擎對照 baseline）
+  - 組態 B（#2）：TiDB + TiProxy，Single Instance，4 vCPU（引擎對照）
+  - 比較口徑：同一 threads，以 avg_qps 當 RPS；差異%(B 對 A) = (RPS(B) - RPS(A)) / RPS(A) × 100。差異% > 0 代表 B 優於 A。
+
+- 來源
+  - A(#1)：MySQL + ProxySQL @ Single Instance with 4 vCPU @ mysqlslap_logs_20251021_132329
+  - B(#2)：TiDB + TiProxy @ Single Instance with 4 vCPU @ mysqlslap_logs_20251021_133658
+
+- 欄位
+  - threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A)
+
+| threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A) |
+| ------- | ------------- | ----------- | -------------- |
+| 10      | 22394.74      | 15395.67    | -31.3%         |
+| 50      | 51212.02      | 23433.84    | -54.2%         |
+| 100     | 57066.77      | 22627.85    | -60.3%         |
+| 250     | 50200.80      | 21792.82    | -56.6%         |
+| 500     | 19118.02      | 20781.38    | +8.7%          |
+| 1000    | 13079.87      | 19677.29    | +50.4%         |
+
+- 快速解讀
+  - 低～中併發（10/50/100/250）：B 相較 A 下降約 31%～60%，顯示同為單機 4 vCPU 時，TiDB+TiProxy 在超短查詢上固定開銷較高。
+  - 高併發（500/1000）：B 相較 A 提升約 +8.7% / +50.4%，顯示在極高併發下，TiDB+TiProxy 的連線/排隊處理能維持吞吐；此區間屬邊界，需搭配連線池/IRQ/網路參數評估穩態性。
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+${FIXME}
+
+I. 效能對照（MySQL vs TiDB / IDC vs IDC）
+
+II. Scale 策略對照（Scale-Up vs Scale-Out）
+
+III. 跨區影響（4 vCPU）：IDC vs IDC+GCP vs 跨區併發
+
+IV. 跨區影響（8 vCPU）：IDC vs IDC+GCP vs 跨區併發
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -798,16 +836,6 @@ The **average runtime (avg[s])** represents the mean value across all three runs
 | **avg(s)**     | 平均執行時間（秒），從開始到全部請求完成的平均耗時。   | 越低越好（代表總體執行越快） |
 | **avg_rps**    | 平均每秒系統能完成的請求次數（Requests Per Second）。 | 越高越好（系統吞吐量越高）   |
 | **avg_ms/req** | 平均每筆請求耗時（毫秒）。                         | 越低越好（單筆反應時間越快） |
-
-----
-
-${FIXME}
-
-
-
-
-
-
 
 ----
 
