@@ -1,6 +1,6 @@
 # TiDB Intro for DBA #5-1
 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----
 
 # RPS 效能對照（MySQL vs TiDB / IDC vs IDC+GCP）解析
 
@@ -49,8 +49,19 @@ Ref：S1-2A / S1-2B / S1-3A / S1-3B
 4. **超高併發（1000 threads）**  
    雖部分情境中 TiDB 有回彈，但屬邊界效應、離群數據，無法重現，亦不構成可依賴的穩態優勢。
 
+----
+
 # 小結 II：Scale 策略對照（Scale-Up vs Scale-Out）
 
+## **TL;DR**
+**MySQL Scale-Up 成效清楚；TiDB Scale-Out 遠優於 Scale-Up，瓶頸通常在 KV 層。**
+
+# 一、MySQL：Scale-Up 最有效，Scale-Out 價值有限
+## **1. Scale-Up（4vCPU → 8vCPU，S2-1）**
+- 10/50/100 threads：+1%～+16% 穩健提升  
+- 250 threads：+36.9%（效益最明顯）  
+- 500 threads：-10.2%（IRQ/backlog 等系統因素）  
+- 1000 threads：+53%（邊界行為，不具穩態）
 
 
 
@@ -60,8 +71,7 @@ Ref：S1-2A / S1-2B / S1-3A / S1-3B
 
 
 
-
-
+----
 
 # 小結 III：跨區影響：IDC vs IDC+GCP vs 跨區併發
 
