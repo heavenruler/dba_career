@@ -53,33 +53,42 @@
 | Write-heavy | 線性成長 | 2PC 成本限制 | MySQL 明確領先 |
 | Mixed | 表現穩定 | 雙路徑成本上升 | MySQL 大幅勝出 |
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+----
 
 # ** Scale-Up（4 → 8 vCPU）vs Scale-Out（單機 → Cluster → 跨 IDC/GCP）**
 
 ## **核心結論**
+
+
+
+
+
+# **MySQL Scale-Up（4 → 8 vCPU）效能分析**
+
+以下內容屬「Scale-Up 單純 CPU 增加」的觀察結果，僅涉及 **MySQL + ProxySQL @ IDC Cluster（Multi-Primary 架構）**。  
+重點目標：**比較 4 vCPU → 8 vCPU 是否帶來線性提升？**
+
+# **小結 A：Read-heavy（oltp_read_only / points / ranges）**
+
+## **效能現象（4 vCPU → 8 vCPU）**
+| 類型 | 代表數據 | 4 vCPU | 8 vCPU | 變化 |
+|------|----------|--------|--------|--------|
+| oltp_read_only | 16 threads | 29005 → 27945 QPS | **-3.6%** |
+| select_random_points | 16 threads | 22796 → 21912 QPS | **-3.9%** |
+| select_random_ranges | 16 threads | 25762 → 25394 QPS | **-1.4%** |
+
+
+
+
+
+
+
+
+
+
+
+
+----
 
 # 跨區延遲影響（IDC vs IDC+GCP vs 跨區併發）
 
