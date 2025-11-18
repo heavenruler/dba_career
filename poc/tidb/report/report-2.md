@@ -15,6 +15,14 @@
 - **MySQL：本地 Buffer Pool + 單節點執行路徑 → 極短延遲、輕量查詢特別強**  
 - **TiDB：SQL Layer 與 TiKV 分層 + RPC hop + 2PC/Raft → 單機固定開銷大、底層需透過 Scale-Out 才能展現優勢**
 
+| 類型 | MySQL | TiDB | 結論 |
+|------|--------|--------|--------|
+| Read-heavy | 高效能 | 固定開銷大 | MySQL 壓倒性優勢 |
+| Write-heavy | 線性成長 | 2PC 成本限制 | MySQL 明確領先 |
+| Mixed | 表現穩定 | 雙路徑成本上升 | MySQL 大幅勝出 |
+
+----
+
 ## **小結 A：Read-heavy（oltp_read_only / points / ranges）**
 
 ### **效能現象**
@@ -45,13 +53,6 @@
 ### **原因分析**
 - 混合負載同時放大 TiDB 的查詢 RPC + 寫入 2PC 成本  
 - MySQL 仍可依賴本地 Buffer Pool 與 CPU 線性提升
-
-## **Single Instance 總結**
-| 類型 | MySQL | TiDB | 結論 |
-|------|--------|--------|--------|
-| Read-heavy | 高效能 | 固定開銷大 | MySQL 壓倒性優勢 |
-| Write-heavy | 線性成長 | 2PC 成本限制 | MySQL 明確領先 |
-| Mixed | 表現穩定 | 雙路徑成本上升 | MySQL 大幅勝出 |
 
 ----
 
@@ -123,6 +124,19 @@
 
 # **Scale-Up（4 → 8 vCPU）效能對照解析：TiDB (單 SQL 多 KV vs 多 SQL 單 KV)**
 
+## **核心結論（TiDB Scale-Up（4 → 8 vCPU））**
+
+> **TiDB 的效能主要取決於 SQL 層併行能力與 KV 層能力；Scale-Up 對 SQL 層提升顯著，因此 8vCPU 對 TiDB 是「可見提升」。**
+
+| 負載類型 | Scale-Up 成效 | 說明 |
+|----------|----------------|--------|
+| Read-heavy | **明顯提升（+15～25%）** | SQL 層 CPU 增加即可提升 |
+| Write-heavy | **中度提升（+20～35%）** | 受 KV/RAFT 限制，仍可增長 |
+| Mixed | **穩定提升（+20%）** | SQL 層效益明顯，KV 為主瓶頸 |
+| 單 SQL vs 多 SQL | 多 SQL **全面優於** 單 SQL | SQL Layer 對 CPU 反應非常敏感 |
+
+----
+
 # **小結 A：Read-heavy（read_only / points / ranges）**
 
 ## **效能現象**
@@ -142,11 +156,11 @@
 
 # **小結 B：Write-heavy（write_only / update_index）**
 
-## **效能現象（濃縮）**
+## **效能現象**
 - **4 → 8 vCPU：穩定提升（約 +20%～+35%）**  
 - 多 SQL 單 KV 提升幅度最大（SQL side scaling 明顯吞得下更多提交）
 
-## **原因（精簡）**
+## **原因**
 - TiDB 寫入主要瓶頸在 TiKV（RocksDB + Raft）  
 - SQL 層 CPU 增加 → 更快送出 Prewrite/Commit，RPC 更密集  
 - 單 KV 因 Region 分布集中 → 效能更穩定、可預測
@@ -154,7 +168,35 @@
 ## **結論（Write-heavy）**
 **TiDB 寫入在 Scale-Up 有明顯提升，但受限於 KV 端（Raft/RocksDB）後段，提升屬「有限度成長」。**
 
+----
 
+# **小結 C：Mixed（read_write）**
+
+## **效能現象**
+- **4 → 8 vCPU：全系列提升（約 +20%）**  
+- 多 SQL 單 KV 的提升幅度略高，但兩者差異不大（瓶頸均在 KV）
+
+## **原因**
+- Mixed = SQL Layer（查詢） + KV Layer（寫入）同時壓力  
+- TiDB SQL Layer 增加 CPU → RPC/執行緒排程量大增  
+- KV 層仍會卡在 Raft/IO，但整體吞吐仍比 4vCPU 高
+
+## **結論（Mixed）**
+**TiDB 在 Mixed 類型中對 CPU 擴張相對敏感：8vCPU 明顯優於 4vCPU。**
+
+----
+
+# **小結 D：單 SQL 多 KV vs 多 SQL 單 KV 比較**
+
+| 類型 | 單 SQL 多 KV | 多 SQL 單 KV | 說明 |
+|------|--------------|--------------|----------------|
+| Read-heavy | 中等提升 | **最佳** | 多 SQL 帶來更高併發解析能力 |
+| Write-heavy | 穩定（受 KV 限制） | **最佳** | 多 SQL 提升 TSO/2PC 發送速率 |
+| Mixed | 相近 | **略優** | SQL 層排程能力較強 |
+
+### 精簡結論
+- **多 SQL 單 KV = SQL 層可線性擴張，因此整體表現最穩定**  
+- **單 SQL 多 KV = 更像是在觀察 TiKV 負載分散能力，SQL 層反而限制提升幅度**
 
 
 
