@@ -206,33 +206,6 @@
 ## **結論（Mixed）**
 **Mixed 對 CPU 擴張最敏感；8 vCPU 提升最為明顯（+41%）。**
 
-----
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ========================================================================================================================================
 
 # **Scale-Up（4 → 8 vCPU）最終對照：MySQL Multi-Primary vs TiDB（單 SQL 多 KV）**
@@ -240,24 +213,43 @@
 ## **核心對照結論**
 
 - **MySQL Multi-Primary：Scale-Up 無效甚至下降**  
-  → 瓶頸存在於 InnoDB 本地結構及 2PC issue，非 CPU-bound。
+  → Multi-Primary 凸顯 InnoDB 的競爭瓶頸，屬非 CPU-bound。  
+  → 升級至 8 vCPU 反而使 TPS 全面下降（-3% ～ -10%）。
 
 - **TiDB（單 SQL 多 KV）：Scale-Up 效果顯著**  
-  → SQL 層對 CPU 擴張高度敏感，KV 層分散負載後更能承接 SQL 提升。
+  → SQL Layer 對 CPU 高敏感度，8 vCPU 可推動更多 RPC / Goroutine。  
+  → Write-heavy / Mixed 類型甚至能提升 +30% ～ +41%。
 
-**MySQL：Scale-Up 無效；TiDB：Scale-Up 有效。**  
-原因不在測試方式，而是兩者的架構設計本質完全不同。  
-TiDB 能利用 CPU 增長提升 SQL 併行處理能力；InnoDB 則完全不具可擴張性。
+**MySQL：Scale-Up 效益有限；TiDB：Scale-Up 有效。**  
+不是測試問題，而是兩種儲存引擎架構本質不同。
 
-## **總覽**
 
-| 項目 | MySQL Multi-Primary | TiDB（單 SQL 多 KV） | 整體觀察 |
-|------|----------------------|------------------------|-----------|
-| Read-heavy | **下降**（-3%～-4%） | **提升**（+15～25%） | TiDB SQL 層併行能力遠高於 MySQL |
-| Write-heavy | **下降**（-4%～-6%） | **提升**（+20～35%） | MySQL 卡 InnoDB；TiDB 卡 KV，仍能成長 |
-| Mixed | **下降最明顯**（-10%） | **大幅提升**（+20～40%） | TiDB 可同時用 CPU 與分散式優勢 |
-| CPU 擴張效果 | **負面/無效** | **有效** | MySQL 非 CPU-bound；TiDB CPU-sensitive |
-| 本質瓶頸 | InnoDB BufferPool / Redo | KV（Raft / RocksDB） | 兩者瓶頸完全不同 |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ========================================================================================================================================
 
