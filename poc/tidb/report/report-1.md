@@ -156,7 +156,7 @@ MySQL 在跨區時對延遲敏感度更高；TiDB 受架構影響，在高併發
   - [TiDB 2024 年度报告：增长的故事](https://cn.pingcap.com/company-activity/tidb-2024-annual-report-growth-story/) & [Customer Stories](https://www.pingcap.com/customers/)
   - [Pricing](https://www.pingcap.com/pricing/)
 ![](https://codimd.104.com.tw/image/s3/key/g34kv5tyrq3rd3cglwuz4t2rk.png)
-  - Contact: [Hao (Howard) Cheng @ SG](https://www.linkedin.com/in/cheng-hao/) & [Andy Hsu @ TW](https://www.linkedin.com/in/andy-hsu-206836114/)
+  - Contact: [Howard Cheng (Market Strategist) @ SG](https://www.linkedin.com/in/cheng-hao/) & [Andy Hsu (Key Account Sales) @ TW](https://www.linkedin.com/in/andy-hsu-206836114/)
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
