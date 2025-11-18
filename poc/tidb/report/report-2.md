@@ -355,19 +355,56 @@
 
 ========================================================================================================================================
 
-# 跨區延遲寫入競爭影響與錯誤率（IDC vs IDC+GCP 跨區併發）
+# **跨區延遲與寫入競爭影響（IDC vs IDC+GCP，sysbench TPS 視角）**
 
-- MySQL：寫入類負載在跨區 Multi-Primary 架構中，**錯誤率（ignored errors）明顯升高**  
-- TiDB：在同樣跨區、同樣高併發條件下，**壓測期間錯誤率為 0**  
+## **核心結論**
 
-## 結論
+> **MySQL 用「丟錯＋重試」換取跨區 TPS；TiDB 用「容忍高延遲」換取零錯誤與一致性。**
 
-> **跨專線多寫：MySQL 需要應用程式自己承受大量寫入失敗與重試；  
-> TiDB 則由分散式交易層吸收衝突，對應用呈現「高延遲但無錯誤」。**
+- **MySQL Multi-Primary：**
+  - IDC+GCP 跨區併發時，**表面 TPS 可略增**，但 sysbench 顯示大量 `ignored errors`（寫入衝突／重試）。
+  - 實際「成功寫入 TPS」打折，穩定性明顯下降。
 
+- **TiDB（TiProxy + TiDB + TiKV）：**
+  - IDC+GCP 跨區下，**TPS 顯著下降（受 RTT + Raft 影響）**，但 sysbench 全程 **`ignored errors = 0`**。
+  - 在高併發與跨區延遲下仍維持一致性與零錯誤行為。
 
+## **1. MySQL：IDC vs IDC+GCP（sysbench TPS + Error Rate）**
 
+### **1-1. IDC 單區基準（log_test6，8 vCPU）**
 
+| 類型（16 threads） | IDC TPS |
+|--------------------|---------|
+| oltp_read_write    | **770.19** |
+| oltp_write_only    | **786.62** |
+
+### **1-2. IDC+GCP 雙點同時壓測（log_test25 + log_test26）**
+
+> 下表為「IDC + GCP 兩端 TPS 相加」的聚合視角。
+
+| 類型（16 threads） | IDC TPS | GCP TPS | 總 TPS（IDC+GCP） | 相對 IDC 基準 |
+|--------------------|---------|---------|--------------------|----------------|
+| oltp_read_write    | 374.98  | 467.21  | **842.19**         | **+9%** vs 770.19 |
+| oltp_write_only    | 483.67  | 444.60  | **928.27**         | **+18%** vs 786.62 |
+
+### **1-3. Error Rate（sysbench）**
+
+- IDC+GCP 測試（log_test25 / log_test26）中：
+  - `oltp_read_write` 在 8 / 16 threads 時，**ignored errors 每秒上升到 0.4～1.8/sec**。
+  - `oltp_write_only` 在 8 / 16 threads 時，**ignored errors 最多達 2.3/sec**。
+  - `oltp_update_index` 亦在 4 / 8 / 16 threads 出現持續 `ignored errors`。
+
+### **MySQL 跨區行為解讀**
+
+- 跨 IDC+GCP 後：
+  - 表面聚合 TPS **看似略高**（+9%～+18%），  
+    但伴隨大量 ignored errors，代表：
+    - 寫入競爭（PK/UK 衝突、Multi-Primary 延遲導致可見舊版本）頻繁。
+    - sysbench 部分寫入被視為錯誤丟棄或重試，實際有效 TPS 低於表面值。
+- 對業務角度：
+  - **吞吐「看起來」沒掉很多，但可靠度明顯變差。**
+
+----
 
 
 
