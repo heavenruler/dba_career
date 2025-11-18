@@ -225,13 +225,14 @@
 
 # **總覽**
 
-| 項目 | MySQL Multi-Primary | TiDB（單 SQL 多 KV） | 整體觀察 |
-|------|----------------------|------------------------|-----------|
-| Read-heavy | **下降 -3%～-4%** | **提升 +18～23%** | TiDB SQL 層併行能力遠優於 MySQL |
-| Write-heavy | **下降 -4%～-6%** | **提升 +30% 等級** | MySQL 卡 InnoDB；TiDB 卡 KV，但仍能增長 |
-| Mixed | **下降 -10%（最明顯）** | **提升 +41%（最明顯）** | TiDB 善用 CPU 擴張與分散式 |
-| CPU 擴張效果 | **負面 / 無效** | **明顯有效** | MySQL 非 CPU-bound；TiDB CPU-sensitive |
-| 本質瓶頸 | InnoDB（BufferPool / Redo / B+Tree） | KV（Raft / RocksDB） | 架構本質不同 |
+| 項目 | MySQL Multi-Primary（4v → 8v） | 差異 | TiDB（單 SQL 多 KV）（4v → 8v） | 差異 | 整體觀察 |
+|------|-------------------------------|--------|----------------------------------|--------|-----------|
+| **Read-heavy** | 1812.85 → 1746.58 TPS | **-3.7%** | 783.54 → 965.52 TPS | **+23.2%** | TiDB SQL 層併行能力遠優於 MySQL |
+| **Write-heavy（write_only）** | 830.24 → 786.62 TPS | **-5.3%** | 1500.30 → 1988.00 TPS | **+32.5%** | MySQL 卡 InnoDB；TiDB 增長幅度高 |
+| **Write-heavy（update_index）** | 3434.72 → 3285.13 TPS | **-4.4%** | 3371.89 → 4374.26 TPS | **+29.7%** | MySQL 無擴張性；TiDB 提升穩定 |
+| **Mixed（oltp_read_write）** | 862.51 → 770.19 TPS | **-10.7%** | 503.92 → 712.43 TPS | **+41.4%** | TiDB Mixed 對 CPU 擴張最敏感 |
+| **CPU 擴張效果** | 無效 / 負向 | - | 明顯有效 | - | MySQL 非 CPU-bound；TiDB CPU-sensitive |
+| **本質瓶頸** | InnoDB（BufferPool / Redo / B+Tree） | - | KV（Raft / RocksDB） | - | 架構本質完全不同 |
 
 ----
 
