@@ -4,6 +4,40 @@
 
 # Sysbench 效能對照解析
 
+## TL;DR
+
+----
+
+# **MySQL vs TiDB**
+
+## **核心結論**
+
+
+
+
+
+
+
+
+
+# ** Scale-Up（4 → 8 vCPU）vs Scale-Out（單機 → Cluster → 跨 IDC/GCP）**
+
+## **核心結論**
+
+# 跨區延遲影響（IDC vs IDC+GCP vs 跨區併發）
+
+## **核心結論**
+
+
+
+
+
+
+
+
+
+
+
 
 
 ----

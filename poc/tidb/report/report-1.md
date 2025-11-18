@@ -149,8 +149,18 @@ MySQL 在跨區時對延遲敏感度更高；TiDB 受架構影響，在高併發
 
 - 下一階段的技術管理投資方向 ; [Reference](https://landscape.cncf.io/guide#app-definition-and-development--database)
 ![](https://codimd.104.com.tw/image/s3/key/uashd412g1c34ylela5gpbffp.png)
-- [TiKV](https://github.com/tikv/tikv)
-- [Vitess](https://github.com/vitessio/vitess)
+  - [TiKV](https://github.com/tikv/tikv)
+  - [Vitess](https://github.com/vitessio/vitess)
+
+
+- 分散式資料庫的應用在台灣普及率普遍不高 ; 如果需要導入，我們有哪些資源可以使用
+  - [TiDB 2024 年度报告：增长的故事](https://cn.pingcap.com/company-activity/tidb-2024-annual-report-growth-story/) & [Customer Stories](https://www.pingcap.com/customers/)
+
+
+
+
+
+
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
