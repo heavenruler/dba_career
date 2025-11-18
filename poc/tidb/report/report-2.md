@@ -23,7 +23,7 @@
 2. **Scale-Up / Scale-Out（擴展能力比較）**
 3. **跨區延遲與寫入競爭（IDC vs IDC+GCP）— sysbench TPS & Error Rate 視角**
 
-# **1. MySQL vs TiDB（Single Instance 基準比較）**
+# ## **1. MySQL vs TiDB（Single Instance 基準比較）**
 
 ## **核心結論**
 - **MySQL 在單機效能上全面領先 TiDB（差距 40%～80%）**
@@ -41,7 +41,7 @@
 | update_index | 4015.32 | 2704.83 | **-33%** |
 | read_write | 1003.99 | 354.22 | **-59%** |
 
-# **2. Scale-Up（4 → 8 vCPU）vs Scale-Out（單機 → Cluster）**
+# ## **2. Scale-Up（4 → 8 vCPU）vs Scale-Out（單機 → Cluster）**
 
 ## **MySQL：Scale-Up 無效（InnoDB-bound）**
 8 vCPU 改善有限甚至下降：
@@ -56,8 +56,25 @@
 - update_index：+29%
 - read_write：**+41%**
 
+## **Scale-Out 結論：TiDB 能擴張；MySQL 幾乎無擴張性**
 
+### **MySQL Multi-Primary**
+- 多 Primary 無法線性擴張
+- InnoDB 仍是每個 Primary 的瓶頸
+- ProxySQL 只能分流，不是擴容
 
+### **TiDB Scale-Out（單 SQL 多 KV → 多 SQL 單 KV）**
+
+| 類型 | TPS（單 SQL 多 KV → 多 SQL 單 KV） | 差異 |
+|------|--------------------------------------|--------|
+| read_only | 783.54 → 830.14 | **+6%** |
+| points | 5097.07 → 5538.02 | **+8.6%** |
+| ranges | 5598.35 → 7026.91 | **+25.5%** |
+| update_index | 3371.89 → 3946.03 | **+17.1%** |
+| write_only | 1500.30 → 1782.03 | **+18.8%** |
+| read_write | 503.92 → 561.45 | **+11.4%** |
+
+# ## **3. 跨區延遲與寫入競爭（IDC vs IDC+GCP）**
 
 
 
