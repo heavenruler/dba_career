@@ -52,48 +52,8 @@
 
 
 
-在單機 4 vCPU 情境下，MySQL 在 Read-heavy／Write-heavy／Mixed 三大負載皆明顯領先 TiDB，差距可達 -40%～-80%。符合兩者架構定位：  
-- **MySQL：本地 Buffer Pool + 單節點執行路徑 → 極短延遲、輕量查詢特別強**  
-- **TiDB：SQL Layer 與 TiKV 分層 + RPC hop + 2PC/Raft → 單機固定開銷大、底層需透過 Scale-Out 才能展現優勢**
 
-| 類型 | MySQL | TiDB | 結論 |
-|------|--------|--------|--------|
-| Read-heavy | 高效能 | 固定開銷大 | MySQL 壓倒性優勢 |
-| Write-heavy | 線性成長 | 2PC 成本限制 | MySQL 明確領先 |
-| Mixed | 表現穩定 | 雙路徑成本上升 | MySQL 大幅勝出 |
 
-----
-
-## **小結 A：Read-heavy（oltp_read_only / points / ranges）**
-
-### **效能現象**
-- TiDB QPS 全面落後 MySQL（約 **-50%～-80%**）
-- 查詢愈輕量，差距愈大
-- MySQL 隨併發線性成長；TiDB 成長有限
-
-### **原因分析**
-- MySQL 走本地記憶體路徑，延遲極低  
-- TiDB 需經 TiDB→TiKV→RocksDB，多層 RPC 固定成本無法在單機被攤平
-
-## **小結 B：Write-heavy（write_only / update_index）**
-
-### **效能現象**
-- TiDB TPS 落後 MySQL（約 **-40%～-60%**）
-- MySQL 能隨併發提升；TiDB 受 2PC/Raft 限制，提升幅度小
-
-### **原因分析**
-- MySQL 寫入＝本地 Redo Log + Buffer Pool  
-- TiDB 寫入＝2PC + Raft，多重網路往返，固定開銷明顯
-
-## **小結 C：Mixed（oltp_read_write）**
-
-### **效能現象**
-- TiDB 全 threads 落後 MySQL（**-50%～-65%**）
-- 隨併發上升，差距略為擴大
-
-### **原因分析**
-- 混合負載同時放大 TiDB 的查詢 RPC + 寫入 2PC 成本  
-- MySQL 仍可依賴本地 Buffer Pool 與 CPU 線性提升
 
 ========================================================================================================================================
 
