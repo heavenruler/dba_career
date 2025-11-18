@@ -27,7 +27,6 @@
 | **Write-heavy：update_index** | **4015.32** | 2704.83 | **-32.7%** |
 | **Mixed：read_write** | **1003.99** | 354.22 | **-64.7%** |
 
-
 ----
 
 # **小結 A：Read-heavy（read_only / points / ranges）**
@@ -359,12 +358,6 @@
 # 跨區延遲影響（IDC vs IDC+GCP vs 跨區併發）
 
 ## **核心結論**
-
-
-
-
-
-
 
 
 
