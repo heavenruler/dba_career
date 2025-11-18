@@ -11,7 +11,7 @@
 
 ### **2. Scale-Up：TiDB 有效；MySQL 效益有限且放大寫入競爭現象**
 
-### **3. Scale-Out：TiDB 可線性擴張；MySQL 幾乎無擴張性**
+### **3. Scale-Out：TiDB 擴張因效能擴增；MySQL 擴張性因 HA 考量**
 
 ### **4. 跨區：MySQL Error Rate 爆量；TiDB 仍 0 Error**
 跨區寫入 → MySQL 死鎖/衝突不可避免  
