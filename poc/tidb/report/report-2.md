@@ -6,12 +6,68 @@
 
 ## TL;DR
 
+
+
+
+
+
+
+
+
+
+========================================================================================================================================
+
+# **MySQL vs TiDB（Single Instance → Scale-Up → Scale-Out → 跨區）整合結論**
+
+1. **Single Instance（基準比較）**
+2. **Scale-Up / Scale-Out（擴展能力比較）**
+3. **跨區延遲與寫入競爭（IDC vs IDC+GCP）— sysbench TPS & Error Rate 視角**
+
+# **1. MySQL vs TiDB（Single Instance 基準比較）**
+
+## **核心結論**
+- **MySQL 在單機效能上全面領先 TiDB（差距 40%～80%）**
+- 原因在於：
+  - **MySQL：單節點、無 RPC、無 2PC → 本地記憶體路徑極快**
+  - **TiDB：SQL Layer → RPC → TiKV → RocksDB → Raft → 固定開銷大**
+
+## **記憶點（16 threads TPS 對照）**
+| 類型 | MySQL TPS | TiDB TPS | 差異 |
+|------|-----------|-----------|-----------|
+| read_only | 1812.85 | 559.71 | **-69%** |
+| random_points | 18096.01 | 3403.69 | **-81%** |
+| random_ranges | 18309.55 | 4424.09 | **-75%** |
+| write_only | 2625.10 | 1108.85 | **-58%** |
+| update_index | 4015.32 | 2704.83 | **-33%** |
+| read_write | 1003.99 | 354.22 | **-59%** |
+
+# **2. Scale-Up（4 → 8 vCPU）vs Scale-Out（單機 → Cluster）**
+
+## **MySQL：Scale-Up 無效（InnoDB-bound）**
+8 vCPU 改善有限甚至下降：
+- read_only：-3.6%
+- write_only：-5%
+- read_write：-10%
+
+## **TiDB：Scale-Up 有效（CPU-bound）**
+8 vCPU 性能提升 **20%～40%**：
+- read_only：+23%
+- write_only：+32%
+- update_index：+29%
+- read_write：**+41%**
+
+
+
+
+
+
+
 ========================================================================================================================================
 # **MySQL vs TiDB（Single Instance 基準比較）**
 
 ## **核心結論（Single Instance）**
-- **MySQL 在所有 Read-heavy／Write-heavy／Mixed 類型皆全面領先 TiDB**  
-- MySQL 具 **本地記憶體路徑、無 RPC hop、無 2PC 成本** → 單機效率極高  
+- **MySQL 在所有 Read-heavy／Write-heavy／Mixed 類型皆全面領先 TiDB**
+- MySQL 具 **本地記憶體路徑、無 RPC hop、無 2PC 成本** → 單機效率極高
 - TiDB 必經 **SQL Layer → RPC → TiKV → RocksDB → Raft** → 單機固定開銷顯著
 
 因此兩者不是同一類型的引擎，**單機比較本就會呈現 MySQL 極大優勢**。
@@ -75,12 +131,12 @@
 | read_write | **1003.99** | 354.22 | **-64.7%** |
 
 ## **效能現象**
-- TiDB 在 Mixed 的 TPS 落後 MySQL **近六成**  
-- Mixed 同時增加 read（RPC hop）與 write（2PC）成本  
+- TiDB 在 Mixed 的 TPS 落後 MySQL **近六成**
+- Mixed 同時增加 read（RPC hop）與 write（2PC）成本
 - MySQL 依靠 CPU 與 BufferPool 仍可線性提升
 
 ## **原因分析**
-- TiDB：查詢與寫入路徑皆需要 RPC，延遲固定且無法靠 CPU 改善  
+- TiDB：查詢與寫入路徑皆需要 RPC，延遲固定且無法靠 CPU 改善
 - MySQL：純本地 I/O 與記憶體存取，延遲極低
 
 ## **結論（Mixed）**
@@ -94,7 +150,7 @@
 
 ## **核心結論（MySQL Scale-Up（4 → 8 vCPU））**
 
-> **MySQL Multi-Primary 的主要瓶頸來自 InnoDB，屬於非 CPU-bound。  
+> **MySQL Multi-Primary 的主要瓶頸來自 InnoDB，屬於非 CPU-bound。
 > 因此 Scale-Up 無法改善效能，8vCPU 反而普遍低於 4vCPU。**
 
 | 類型         | Scale-Up 成效 | 原因摘要 |
@@ -175,8 +231,8 @@
 | select_random_ranges         | 5598.35       | 6808.54       | +21.6% |
 
 ## **效能現象**
-- Read-heavy 在 8 vCPU 明顯成長  
-- SQL Layer 能以更多 CPU 執行 RPC / Coprocessor 排程  
+- Read-heavy 在 8 vCPU 明顯成長
+- SQL Layer 能以更多 CPU 執行 RPC / Coprocessor 排程
 - 越多 threads 越能看出 CPU 擴張效益
 
 ## **結論（Read-heavy）**
@@ -194,7 +250,7 @@
 | write_only         | 1500.30       | 1988.00       | +32.5% |
 
 ## **效能現象**
-- SQL 層 CPU 增加 → TSO / Prewrite / Commit 等流程加速  
+- SQL 層 CPU 增加 → TSO / Prewrite / Commit 等流程加速
 - 雖然最終瓶頸在 TiKV（Raft/RocksDB），但 **SQL 層越強 → 能推動更多寫入**
 
 ## **結論（Write-heavy）**
@@ -211,8 +267,8 @@
 | read_write    | 503.92        | 712.43        | +41.4% |
 
 ## **效能現象**
-- Mixed 同時包含 SQL 查詢（Read-heavy）與 KV 寫入（Write-heavy）  
-- SQL 層擴張直接提升整體吞吐  
+- Mixed 同時包含 SQL 查詢（Read-heavy）與 KV 寫入（Write-heavy）
+- SQL 層擴張直接提升整體吞吐
 - TiKV 仍為瓶頸，但 8 vCPU SQL 層仍能拉起整體 TPS
 
 ## **結論（Mixed）**
@@ -224,15 +280,15 @@
 
 ## **核心對照結論**
 
-- **MySQL Multi-Primary：Scale-Up 無效甚至下降**  
-  → Multi-Primary 凸顯 InnoDB 的競爭瓶頸，屬非 CPU-bound。  
+- **MySQL Multi-Primary：Scale-Up 無效甚至下降**
+  → Multi-Primary 凸顯 InnoDB 的競爭瓶頸，屬非 CPU-bound。
   → 升級至 8 vCPU 反而使 TPS 全面下降（-3% ～ -10%）。
 
-- **TiDB（單 SQL 多 KV）：Scale-Up 效果顯著**  
-  → SQL Layer 對 CPU 高敏感度，8 vCPU 可推動更多 RPC / Goroutine。  
+- **TiDB（單 SQL 多 KV）：Scale-Up 效果顯著**
+  → SQL Layer 對 CPU 高敏感度，8 vCPU 可推動更多 RPC / Goroutine。
   → Write-heavy / Mixed 類型甚至能提升 +30% ～ +41%。
 
-**MySQL：Scale-Up 效益有限；TiDB：Scale-Up 有效。**  
+**MySQL：Scale-Up 效益有限；TiDB：Scale-Up 有效。**
 不是測試問題，而是兩種儲存引擎架構本質不同。
 
 # **總覽**
@@ -284,7 +340,7 @@
 
 # **結論**
 
-> TiDB 的 Scale-Out 本質是 **SQL 層可橫向擴張 × KV 層可分片化分擔負載**。  
+> TiDB 的 Scale-Out 本質是 **SQL 層可橫向擴張 × KV 層可分片化分擔負載**。
 > 兩者皆能提升效能，但 **SQL 層擴張的收益遠大於 KV 層擴張**。
 
 | 工作負載 | 單 SQL 多 KV（TPS） | 多 SQL 單 KV（TPS） | 差異幅度 |
@@ -309,8 +365,8 @@
 | ranges | 5598.35 | 7026.91 | **+25.5%** |
 
 ## **效能現象**
-- 多 SQL 單 KV 全面高於單 SQL 多 KV  
-- 特別是 **範圍查詢（ranges）差異最大**  
+- 多 SQL 單 KV 全面高於單 SQL 多 KV
+- 特別是 **範圍查詢（ranges）差異最大**
 - SQL 層並行能力是主導因素，KV 層瓶頸影響較少
 
 ## **結論（Read-heavy）**
@@ -328,8 +384,8 @@
 | write_only | 1500.30 | 1782.03 | **+18.8%** |
 
 ## **效能現象**
-- 多 SQL 單 KV 持續領先  
-- 原因在於 SQL 層能更快送出 Prewrite / Commit  
+- 多 SQL 單 KV 持續領先
+- 原因在於 SQL 層能更快送出 Prewrite / Commit
 - 雖然 KV（Raft + RocksDB）是主要瓶頸，但 SQL 層壓力越分散越吃香
 
 ## **結論（Write-heavy）**
@@ -346,8 +402,8 @@
 | read_write | 503.92 | 561.45 | **+11.4%** |
 
 ## **效能現象**
-- Mixed 同時壓 SQL 與 KV  
-- 多 SQL 單 KV 能更好利用 SQL 層 CPU  
+- Mixed 同時壓 SQL 與 KV
+- 多 SQL 單 KV 能更好利用 SQL 層 CPU
 - 差距相較 Read-heavy 稍小（瓶頸在 KV 端逐漸顯現）
 
 ## **結論（Mixed）**
@@ -397,7 +453,7 @@
 ### **MySQL 跨區行為解讀**
 
 - 跨 IDC+GCP 後：
-  - 表面聚合 TPS **看似略高**（+9%～+18%），  
+  - 表面聚合 TPS **看似略高**（+9%～+18%），
     但伴隨大量 ignored errors，代表：
     - 寫入競爭（PK/UK 衝突、Multi-Primary 延遲導致衝突頻發）。
     - sysbench 部分寫入被視為錯誤丟棄或重試，實際有效 TPS 低於表面值。
