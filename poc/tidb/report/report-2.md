@@ -61,6 +61,10 @@
 
 
 
+
+
+
+
 ----
 
 # **Scale-Up（4 → 8 vCPU）效能對照解析：MySQL Multi-Primary 架構**
@@ -116,6 +120,39 @@
 **Scale-Up 無法改善 Mixed 工作負載；由於 2PC 瓶頸與跨節點協調成本的累積，CPU 增加反而使內部競爭加劇，成為效能下降最明顯的一類。**
 
 ----
+
+# **Scale-Up（4 → 8 vCPU）效能對照解析：TiDB (單 SQL 多 KV vs 多 SQL 單 KV)**
+
+# **小結 A：Read-heavy（read_only / points / ranges）**
+
+## **效能現象**
+- **4 → 8 vCPU：明顯提升（約 +15%～+25%）**  
+- **多 SQL 單 KV > 單 SQL 多 KV**  
+- 併發提升後，8vCPU 的 TiDB SQL Layer 能更有效排程 RPC／Goroutine，使 QPS 上升更乾淨。
+
+## **原因**
+- Read-heavy 完全由「TiDB SQL 層 + gRPC → TiKV」組成  
+- 增加 CPU = 增加 SQL 層可併行能力  
+- 多 SQL（多 TiDB）可以同時推更多查詢，單 KV 仍可支撐
+
+## **結論（Read-heavy）**
+**TiDB 的 Read-heavy 對 Scale-Up 完全有感；8vCPU 在 SQL Layer 有明確提升。**
+
+----
+
+# **小結 B：Write-heavy（write_only / update_index）**
+
+## **效能現象（濃縮）**
+- **4 → 8 vCPU：穩定提升（約 +20%～+35%）**  
+- 多 SQL 單 KV 提升幅度最大（SQL side scaling 明顯吞得下更多提交）
+
+## **原因（精簡）**
+- TiDB 寫入主要瓶頸在 TiKV（RocksDB + Raft）  
+- SQL 層 CPU 增加 → 更快送出 Prewrite/Commit，RPC 更密集  
+- 單 KV 因 Region 分布集中 → 效能更穩定、可預測
+
+## **結論（Write-heavy）**
+**TiDB 寫入在 Scale-Up 有明顯提升，但受限於 KV 端（Raft/RocksDB）後段，提升屬「有限度成長」。**
 
 
 
