@@ -8,9 +8,32 @@
 
 ----
 
-# **MySQL vs TiDB**
+# **MySQL vs TiDB（Single Instance 基準比較）**
 
-## **核心結論**
+## **核心結論（Single Instance）**
+在單機 4 vCPU 情境下，MySQL 在 Read-heavy／Write-heavy／Mixed 三大負載皆明顯領先 TiDB，差距可達 -40%～-80%。此結果完全符合兩者架構定位：  
+- **MySQL：本地 Buffer Pool + 單節點執行路徑 → 極短延遲、輕量查詢特別強**  
+- **TiDB：SQL Layer 與 TiKV 分層 + RPC hop + 2PC/Raft → 單機固定開銷大、底層需透過 Scale-Out 才能展現優勢**
+
+> 此章節僅討論 **Single Instance**，Cluster/跨區行為將於後續 Scale-Out 章節再比較。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
