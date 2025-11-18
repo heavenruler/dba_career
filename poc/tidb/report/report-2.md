@@ -15,7 +15,6 @@
 - **MySQL：本地 Buffer Pool + 單節點執行路徑 → 極短延遲、輕量查詢特別強**  
 - **TiDB：SQL Layer 與 TiKV 分層 + RPC hop + 2PC/Raft → 單機固定開銷大、底層需透過 Scale-Out 才能展現優勢**
 
-
 ## **小結 A：Read-heavy（oltp_read_only / points / ranges）**
 
 ### **效能現象**
