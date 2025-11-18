@@ -68,19 +68,29 @@
 
 
 ========================================================================================================================================
-----
 
 # **Scale-Up（4 → 8 vCPU）效能對照解析：MySQL Multi-Primary 架構**
 
-針對 **MySQL + ProxySQL @ IDC Cluster（Multi-Primary）** 進行純 Scale-Up（4 → 8 vCPU）行為分析。  
-核心問題是：**CPU 增加是否能提升多節點（Multi-Primary）整體吞吐？**
+## **核心結論（MySQL Scale-Up（4 → 8 vCPU））**
 
-雖然本次壓力測試的 threads 僅至 16，尚未將系統推到極端邊界，但從結果可見：
-**即便未達到極端併發，4 vCPU 與 8 vCPU 的效能曲線幾乎一致甚至下降，已能明確反映出瓶頸並不位於 CPU。**
+> **MySQL Multi-Primary 的主要瓶頸來自 InnoDB，屬於非 CPU-bound。  
+> 因此 Scale-Up 無法改善效能，8vCPU 反而普遍低於 4vCPU。**
+
+| 類型         | Scale-Up 成效 | 原因摘要 |
+|--------------|----------------|-----------|
+| Read-heavy   | 無提升／微降   | BufferPool 分散 |
+| Write-heavy  | 下降           | 讀寫瓶頸疊加、協調成本 |
+| Mixed        | 下降最明顯     | 讀寫瓶頸疊加、協調成本 |
+| Multi-Primary| 無法獲得線性增益  | 每個 Primary 仍是單機 InnoDB |
+
+----
 
 # **小結 A：Read-heavy（oltp_read_only / points / ranges）**
 
-## **效能現象**
+## **效能現象（4 → 8 vCPU）**
+- 單純查詢型負載下，QPS **全面下降**（約 -1%～-4%）
+- 未看到任何 CPU 擴張的正向效益
+- 已確認：**這類 workload 完全不是 CPU-bound**
 
 | 類型                         | 4 vCPU → 8 vCPU           | 變化  |
 |------------------------------|----------------------------|-------|
@@ -88,41 +98,50 @@
 | points（16 threads）         | 22796 → 21912 QPS          | -3.9% |
 | ranges（16 threads）         | 25762 → 25394 QPS          | -1.4% |
 
+## **原因**
+- 讀取路徑主要耗在 ** InnoDB BufferPool 熱點** ; CPU 增加不會改善以上負載型態。
+
 ## **結論（Read-heavy）**
-**Scale-Up 對 Read-heavy 完全無效；瓶頸來自記憶體熱度與 InnoDB 架構，而非 CPU。**
+**Scale-Up 對 MySQL Read-heavy 無效；CPU 從來不是瓶頸來源。**
 
 ----
 
 # **小結 B：Write-heavy（write_only / update_index）**
 
-## **效能現象**
+## **效能現象（4 → 8 vCPU）**
+- TPS/QPS 全面下降（約 -4%～-6%）
+- 增加 CPU 無法改善寫入極限，甚至更容易引發寫入競爭
 
 | 類型                         | 4 vCPU → 8 vCPU           | 變化  |
 |------------------------------|----------------------------|-------|
 | write_only（16 threads）     | 830 → 786 TPS              | -5.3% |
 | update_index（16 threads）   | 3434 → 3285 TPS            | -4.3% |
 
+## **原因**
+- 多 Primary 雖能分散寫入量，但：
+  - **每顆 Primary 的內部寫入成本不變**
+  - 節點間仍有 binlog 傳遞或 Galera Cluster 2PC 同步延遲
+
 ## **結論（Write-heavy）**
-**Multi-Primary 確實能將寫入流量分散到多節點，但每個節點的 InnoDB 寫入成本並不會因 CPU 增加而下降。**
-
-同時，由於多 Primary 之間仍需處理 binlog 傳遞、衝突檢查或同步延遲（依架構不同而有所差異），在高併發下也可能出現額外的跨節點協調成本。此類行為不屬 CPU-bound，無法透過 Scale-Up 解決。
-
-**因此，Scale-Up 對寫入反而負面；MySQL 的寫入瓶頸集中於 InnoDB 本地結構與跨節點協調成本，並不會因 CPU 設定而改善。**
+**MySQL Multi-Primary 的寫入效能完全受 InnoDB 限制，Scale-Up 不但無效，還可能造成反向下降。**
 
 ----
 
 # **小結 C：Mixed（oltp_read_write）**
 
-## **效能現象**
+## **效能現象（4 → 8 vCPU）**
+- Mixed 為下降幅度最高的一類（-10%）
+- 原因是 Read-heavy 與 Write-heavy 的瓶頸同時疊加
 
 | 類型                        | 4 vCPU → 8 vCPU           | 變化   |
 |-----------------------------|----------------------------|--------|
 | read_write（16 threads）    | 862 → 770 TPS             | -10.7% |
 
-## **結論（Mixed）**
-**Scale-Up 無法改善 Mixed 工作負載；由於 2PC 瓶頸與跨節點協調成本的累積，CPU 增加反而使內部競爭加劇，成為效能下降最明顯的一類。**
+## **原因**
+- 若多 Primary 之間需要同步 binlog 或處理衝突，也會讓協調成本更明顯。
 
-----
+## **結論（Mixed）**
+**Mixed 更能凸顯 MySQL Multi-Primary 的架構瓶頸，效能下降最明顯。**
 
 ========================================================================================================================================
 
@@ -142,6 +161,24 @@
 ----
 
 # **小結 A：Read-heavy（read_only / points / ranges）**
+
+## **（A-1）單 SQL 多 KV（log_test3 → log_test7）**
+
+| 類型                         | 4 vCPU → 8 vCPU            | 變化   |
+|------------------------------|-----------------------------|--------|
+| oltp_read_only（16 threads） | 12536.78 → 15448.48 QPS     | +23.2% |
+| points（16 threads）         | 5097.07 → 5798.88 QPS       | +13.8% |
+| ranges（16 threads）         | 5598.35 → 6808.54 QPS       | +21.6% |
+
+---
+
+## **（A-2）多 SQL 單 KV（log_test4 → log_test8）**
+
+| 類型                         | 4 vCPU → 8 vCPU            | 變化   |
+|------------------------------|-----------------------------|--------|
+| oltp_read_only（16 threads） | 13282.32 → 15549.46 QPS     | +17.1% |
+| points（16 threads）         | 5538.02 → 7162.81 QPS       | +29.3% |
+| ranges（16 threads）         | 7026.91 → 8913.89 QPS       | +26.8% |
 
 ## **效能現象**
 - **4 → 8 vCPU：明顯提升（約 +15%～+25%）**  
