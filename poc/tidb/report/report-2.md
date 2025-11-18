@@ -18,34 +18,74 @@
 
 # **總覽（Single Instance：MySQL vs TiDB）**
 
-| 類型 | MySQL TPS (16 threads) | TiDB TPS (16 threads) | 差異 |
-|------|--------------------------|--------------------------|--------|
-| **Read-heavy（read_only）** | **1812.85** | 559.71 | **-69%** |
-| **Read-heavy（random_points）** | **18096.01** | 3403.69 | **-81%** |
-| **Read-heavy（ranges）** | **18309.55** | 4424.09 | **-75%** |
-| **Write-heavy（write_only）** | **2625.10** | 1108.85 | **-58%** |
-| **Write-heavy（update_index）** | **4015.32** | 2704.83 | **-33%** |
-| **Mixed（read_write）** | **862.51** | 354.22 | **-59%** |
+| 類型 | MySQL TPS (16 Threads) | TiDB TPS (16 Threads) | 差異 |
+|------|------------------|------------------|--------|
+| **Read-heavy：read_only** | **1342.52** | 559.71 | **-58.3%** |
+| **Read-heavy：random_points** | **18096.01** | 3403.69 | **-81.2%** |
+| **Read-heavy：ranges** | **18309.55** | 4424.09 | **-75.8%** |
+| **Write-heavy：write_only** | **2625.10** | 1108.85 | **-57.7%** |
+| **Write-heavy：update_index** | **4015.32** | 2704.83 | **-32.7%** |
+| **Mixed：read_write** | **1003.99** | 354.22 | **-64.7%** |
 
 
+----
 
+# **小結 A：Read-heavy（read_only / points / ranges）**
 
+## **原始 TPS 數據（16 threads）**
 
+| 類型 | MySQL TPS | TiDB TPS | 差異 |
+|------|------------|------------|--------|
+| oltp_read_only | **1812.85** | 559.71 | **-69%** |
+| select_random_points | **18096.01** | 3403.69 | **-81%** |
+| select_random_ranges | **18309.55** | 4424.09 | **-75%** |
 
+## **分析**
+- **MySQL → 純本地記憶體路徑（Handler / BufferPool / Index page）**
+- **TiDB → 每次查詢都必須經 RPC + 多副本 TiKV + RocksDB**
+- 單節點下，RPC/Region hop 成本完全被放大
 
+## **結論（Read-heavy）**
+**單機 Read-heavy：MySQL 壓倒性領先；TiDB 為架構固定成本無解。**
 
+----
 
+# **小結 B：Write-heavy（write_only / update_index）**
 
+## **原始 TPS 數據（16 threads）**
 
+| 類型 | MySQL TPS | TiDB TPS | 差異 |
+|------|------------|------------|--------|
+| write_only | **2625.10** | 1108.85 | **-58%** |
+| update_index | **4015.32** | 2704.83 | **-33%** |
 
+## **分析**
+**TiDB 分散式協議成本在單機無法被分攤，TPS 自然劣化。**
 
+## **結論（Write-heavy）**
+**MySQL 單機寫入更快；TiDB 單機寫入固定成本大，TPS 不可能追上 MySQL。**
 
+----
 
+# **小結 C：Mixed（read_write）**
 
+## **原始 TPS 數據（16 threads）**
 
+| 類型 | MySQL TPS | TiDB TPS | 差異 |
+|------|------------|------------|--------|
+| read_write | **862.51** | 354.22 | **-59%** |
 
+## **效能現象**
+- TiDB 在 Mixed 的 TPS 落後 MySQL **近六成**  
+- Mixed 同時增加 read（RPC hop）與 write（2PC）成本  
+- MySQL 依靠 CPU 與 BufferPool 仍可線性提升
 
+## **原因分析**
+- TiDB：查詢與寫入路徑皆需要 RPC，延遲固定且無法靠 CPU 改善  
+- MySQL：純本地 I/O 與記憶體存取，延遲極低
 
+## **結論（Mixed）**
+**Mixed 讓 TiDB 的讀寫雙成本同時暴露 → TPS 大幅落後 MySQL。**
 
 
 
