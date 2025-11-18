@@ -61,21 +61,67 @@
 
 
 
+----
 
+# **Scale-Up（4 → 8 vCPU）效能對照解析：MySQL Multi-Primary 架構**
 
-# **MySQL Scale-Up（4 → 8 vCPU）效能分析**
+針對 **MySQL + ProxySQL @ IDC Cluster（Multi-Primary）** 進行純 Scale-Up（4 → 8 vCPU）行為分析。  
+核心問題是：**CPU 增加是否能提升多節點（Multi-Primary）整體吞吐？**
 
-以下內容屬「Scale-Up 單純 CPU 增加」的觀察結果，僅涉及 **MySQL + ProxySQL @ IDC Cluster（Multi-Primary 架構）**。  
-重點目標：**比較 4 vCPU → 8 vCPU 是否帶來線性提升？**
+雖然本次壓力測試的 threads 僅至 16，尚未將系統推到極端邊界，但從結果可見：
+**即便未達到極端併發，4 vCPU 與 8 vCPU 的效能曲線幾乎一致甚至下降，已能明確反映出瓶頸並不位於 CPU。**
 
 # **小結 A：Read-heavy（oltp_read_only / points / ranges）**
 
-## **效能現象（4 vCPU → 8 vCPU）**
-| 類型 | 代表數據 | 4 vCPU | 8 vCPU | 變化 |
-|------|----------|--------|--------|--------|
-| oltp_read_only | 16 threads | 29005 → 27945 QPS | **-3.6%** |
-| select_random_points | 16 threads | 22796 → 21912 QPS | **-3.9%** |
-| select_random_ranges | 16 threads | 25762 → 25394 QPS | **-1.4%** |
+## **效能現象**
+
+| 類型                         | 4 vCPU → 8 vCPU           | 變化  |
+|------------------------------|----------------------------|-------|
+| oltp_read_only（16 threads） | 29005 → 27945 QPS          | -3.6% |
+| points（16 threads）         | 22796 → 21912 QPS          | -3.9% |
+| ranges（16 threads）         | 25762 → 25394 QPS          | -1.4% |
+
+## **結論（Read-heavy）**
+**Scale-Up 對 Read-heavy 完全無效；瓶頸來自記憶體熱度與 InnoDB 架構，而非 CPU。**
+
+----
+
+# **小結 B：Write-heavy（write_only / update_index）**
+
+## **效能現象**
+
+| 類型                         | 4 vCPU → 8 vCPU           | 變化  |
+|------------------------------|----------------------------|-------|
+| write_only（16 threads）     | 830 → 786 TPS              | -5.3% |
+| update_index（16 threads）   | 3434 → 3285 TPS            | -4.3% |
+
+## **結論（Write-heavy）**
+**Multi-Primary 確實能將寫入流量分散到多節點，但每個節點的 InnoDB 寫入成本並不會因 CPU 增加而下降。**
+
+同時，由於多 Primary 之間仍需處理 binlog 傳遞、衝突檢查或同步延遲（依架構不同而有所差異），在高併發下也可能出現額外的跨節點協調成本。此類行為不屬 CPU-bound，無法透過 Scale-Up 解決。
+
+**因此，Scale-Up 對寫入反而負面；MySQL 的寫入瓶頸集中於 InnoDB 本地結構與跨節點協調成本，並不會因 CPU 設定而改善。**
+
+----
+
+# **小結 C：Mixed（oltp_read_write）**
+
+## **效能現象**
+
+| 類型                        | 4 vCPU → 8 vCPU           | 變化   |
+|-----------------------------|----------------------------|--------|
+| read_write（16 threads）    | 862 → 770 TPS             | -10.7% |
+
+## **結論（Mixed）**
+**Scale-Up 無法改善 Mixed 工作負載；由於 2PC 瓶頸與跨節點協調成本的累積，CPU 增加反而使內部競爭加劇，成為效能下降最明顯的一類。**
+
+----
+
+
+
+
+
+
 
 
 
