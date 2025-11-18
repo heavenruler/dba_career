@@ -139,21 +139,74 @@
 
 ## **核心結論（TiDB Scale-Up（4 → 8 vCPU））**
 
+> **SQL 層可多線程併行 → CPU 越多優勢越大**
 > **TiDB 的效能主要受 SQL 層 CPU 併行能力主導；Scale-Up 對 TiDB 屬「有效擴張」。**
-> **8 vCPU 對 Read / Write / Mixed 三類負載皆有明顯提升。**
+> **8 vCPU 全面優於 4 vCPU，對 Read / Write / Mixed 三類負載皆有明顯提升。**
 
 | 負載類型 | Scale-Up 成效（4 → 8 vCPU） | 說明 |
 |----------|------------------------------|--------|
-| Read-heavy | **+15～25%** | SQL 層 CPU 增加，排程更有效率 |
-| Write-heavy | **+20～35%** | KV/RAFT 限制仍在，但可增長 |
-| Mixed | **+20% 以上** | SQL 層改善明顯，KV 為主瓶頸 |
+| Read-heavy | **+18～23%** | SQL 層 CPU 增加，排程更有效率 |
+| Write-heavy | **+29～32%** | KV/RAFT 限制仍在，但可增長 |
+| Mixed | **+41% 以上** | SQL 層改善明顯，KV 為主瓶頸 |
 | 整體行為 | **全類型皆有感提升** | TiDB 對 CPU 敏感度高，可自然 scale-up |
 
 ----
 
+# **小結 A：Read-heavy（read_only / points / ranges）**
 
+## **效能數據（單 SQL 多 KV, 16 threads）**
 
+| 類型                         | 4 vCPU（TPS） | 8 vCPU（TPS） | 變化   |
+|------------------------------|---------------|---------------|--------|
+| oltp_read_only               | 783.54        | 965.52        | +23.2% |
+| select_random_points         | 5097.07       | 5798.88       | +13.8% |
+| select_random_ranges         | 5598.35       | 6808.54       | +21.6% |
 
+## **效能現象**
+- Read-heavy 在 8 vCPU 明顯成長  
+- SQL Layer 能以更多 CPU 執行 RPC / Coprocessor 排程  
+- 越多 threads 越能看出 CPU 擴張效益
+
+## **結論（Read-heavy）**
+**Scale-Up 對 Read-heavy 完全有效；TiDB SQL 層對 CPU 擴張高度敏感。**
+
+----
+
+# **小結 B：Write-heavy（write_only / update_index）**
+
+## **效能數據（單 SQL 多 KV, 16 threads）**
+
+| 類型               | 4 vCPU（TPS） | 8 vCPU（TPS） | 變化   |
+|--------------------|---------------|---------------|--------|
+| update_index       | 3371.89       | 4374.26       | +29.7% |
+| write_only         | 1500.30       | 1988.00       | +32.5% |
+
+## **效能現象**
+- SQL 層 CPU 增加 → TSO / Prewrite / Commit 等流程加速  
+- 雖然最終瓶頸在 TiKV（Raft/RocksDB），但 **SQL 層越強 → 能推動更多寫入**
+
+## **結論（Write-heavy）**
+**TiDB 寫入在 Scale-Up 有明顯提升，但 TiKV 仍是後段限制，提升屬有限度成長。**
+
+----
+
+# **小結 C：Mixed（read_write）**
+
+## **效能數據（單 SQL 多 KV, 16 threads）**
+
+| 類型          | 4 vCPU（TPS） | 8 vCPU（TPS） | 變化   |
+|---------------|---------------|---------------|--------|
+| read_write    | 503.92        | 712.43        | +41.4% |
+
+## **效能現象**
+- Mixed 同時包含 SQL 查詢（Read-heavy）與 KV 寫入（Write-heavy）  
+- SQL 層擴張直接提升整體吞吐  
+- TiKV 仍為瓶頸，但 8 vCPU SQL 層仍能拉起整體 TPS
+
+## **結論（Mixed）**
+**Mixed 對 CPU 擴張最敏感；8 vCPU 提升最為明顯（+41%）。**
+
+----
 
 
 
