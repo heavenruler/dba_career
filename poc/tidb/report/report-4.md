@@ -58,9 +58,7 @@ Total nodes: 22
 
 
 
-
-
-
+## Testing Record
 
 - **RTO（Recovery Time Objective）**
   - SQL 層：TiDB 重新路由 + 連線重建需 < 30 秒
