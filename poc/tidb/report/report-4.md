@@ -4,7 +4,8 @@
 
 ### Scenario
 - **RTO（Recovery Time Objective）**
-  - SQL 層：Tiproxy 重新路由 + 連線重建需 < 30 秒
+  - SQL 層：TiDB 重新路由 + 連線重建需 < 30 秒
+  - PD 層：Leader 切換 < 30 秒
   - TiKV 層：Raft leader 轉移 + Region 補足需 < 90 秒
   - Re-Sharding：調度過程不得中斷 SQL 服務（RTO = 0）
 - **RPO（Recovery Point Objective）**
@@ -54,3 +55,22 @@ ID                   Role        Host           Ports                 OS/Arch   
 172.24.40.19:6000    tiproxy     172.24.40.19   6000/6001             linux/x86_64  Up       -                                /data/tidb-deploy/tiproxy-6000
 Total nodes: 22
 ```
+
+
+
+
+
+
+
+- **RTO（Recovery Time Objective）**
+  - SQL 層：TiDB 重新路由 + 連線重建需 < 30 秒
+    - shutdown one tidb
+    [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/DYmA5Ne3nrE)
+
+    - shutdown all tidb
+  - PD 層：Leader 切換 < 30 秒
+    - shutdown PD Follower
+    - shutdown PD Leader
+    - shutdown All PDs
+  - TiKV 層：Raft leader 轉移 + Region 補足需 < 90 秒
+  - Re-Sharding：調度過程不得中斷 SQL 服務（RTO = 0）
