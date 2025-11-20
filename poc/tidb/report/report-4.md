@@ -67,7 +67,12 @@ Total nodes: 22
     - shutdown one tidb
     [Click Here](https://youtu.be/DYmA5Ne3nrE)
     ```
-    123
+    ========== SQL RTO Monitor Summary ==========
+    Samples        : 128
+    Fail segments  : 0
+    Total fail (ms): 0
+    無故障發生
+    ==============================================
     ```
 
     - shutdown all tidb
