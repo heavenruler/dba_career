@@ -65,7 +65,7 @@ Total nodes: 22
 - **RTO（Recovery Time Objective）**
   - SQL 層：TiDB 重新路由 + 連線重建需 < 30 秒
     - shutdown one tidb
-    [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/DYmA5Ne3nrE)
+    [![Click Here](https://youtu.be/DYmA5Ne3nrE)](https://youtu.be/DYmA5Ne3nrE)
 
     - shutdown all tidb
   - PD 層：Leader 切換 < 30 秒
