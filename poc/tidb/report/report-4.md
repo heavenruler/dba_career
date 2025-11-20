@@ -4,9 +4,9 @@
 
 ### Scenario
 - **RTO（Recovery Time Objective）**
-  - SQL 層：TiDB 重新路由 + 連線重建需 < 30 秒
-  - PD 層：Leader 切換 < 30 秒
-  - TiKV 層：Raft leader 轉移 + Region 補足需 < 90 秒
+  - SQL 層：TiDB 重新路由 + 連線重建
+  - PD 層：Leader 切換
+  - TiKV 層：Raft leader 轉移 + Region 補足需要多少時間
   - Re-Sharding：調度過程不得中斷 SQL 服務（RTO = 0）
 - **RPO（Recovery Point Objective）**
   - 交易寫入以 Raft 多副本為前提 → 期望 0 秒
