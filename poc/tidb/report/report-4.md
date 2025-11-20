@@ -66,6 +66,9 @@ Total nodes: 22
   - SQL 層：TiDB 重新路由 + 連線重建需 < 30 秒
     - shutdown one tidb
     [Click Here](https://youtu.be/DYmA5Ne3nrE)
+    ```
+    123
+    ```
 
     - shutdown all tidb
   - PD 層：Leader 切換 < 30 秒
