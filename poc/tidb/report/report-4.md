@@ -61,7 +61,7 @@ Total nodes: 22
 ## Testing Record
 
 - **RTO（Recovery Time Objective）**
-  - SQL 層：TiDB 重新路由 + 連線重建需 < 30 秒
+  - SQL 層：TiDB 重新路由 + 連線重建需要多少時間
     - shutdown one tidb
     [Click Here](https://youtu.be/DYmA5Ne3nrE)
     ```
@@ -74,6 +74,15 @@ Total nodes: 22
     ```
 
     - shutdown all tidb
+    ```
+    ========== SQL RTO Monitor Summary ==========
+    Samples        : 26
+    Fail segments  : 1
+    Total fail (ms): 28008
+    --------------- Failure Windows -------------
+    FAIL#1 2025-11-20 15:40:44.700 -> 2025-11-20 15:41:03.099 (28008ms)
+    ==============================================
+    ```
   - PD 層：Leader 切換 < 30 秒
     - shutdown PD Follower
     - shutdown PD Leader
