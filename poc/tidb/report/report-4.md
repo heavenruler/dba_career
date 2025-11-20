@@ -62,8 +62,7 @@ Total nodes: 22
 
 - **RTO（Recovery Time Objective）**
   - SQL 層：TiDB 重新路由 + 連線重建需要多少時間
-    - shutdown one tidb
-    [Click Here](https://youtu.be/DYmA5Ne3nrE)
+    - shutdown one tidb [Click Here](https://youtu.be/DYmA5Ne3nrE)
     ```
     ========== SQL RTO Monitor Summary ==========
     Samples        : 128
@@ -73,7 +72,7 @@ Total nodes: 22
     ==============================================
     ```
 
-    - shutdown all tidb
+    - shutdown all tidb [Click Here](https://youtu.be/DYmA5Ne3nrE)
     ```
     ========== SQL RTO Monitor Summary ==========
     Samples        : 26
