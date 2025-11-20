@@ -72,7 +72,7 @@ Total nodes: 22
     ==============================================
     ```
 
-    - shutdown all tidb [Click Here](https://youtu.be/DYmA5Ne3nrE)
+    - shutdown all tidb [Click Here](https://youtu.be/92OqEJydPP8)
     ```
     ========== SQL RTO Monitor Summary ==========
     Samples        : 26
