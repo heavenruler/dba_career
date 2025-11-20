@@ -32,7 +32,7 @@ while true; do
          WHERE id = 1;
 
       COMMIT;
-    " 2>&1
+    " 2>/dev/null
   )
   rc=$?
 

@@ -20,7 +20,7 @@ while true; do
            DATE_FORMAT(last_ts, '%Y-%m-%d %H:%i:%s.%f')
       FROM rto_seq
      WHERE id = 1;
-  ")
+  " 2>/dev/null)
   rc=$?
 
   end_ms=$(date +%s%3N)
@@ -47,4 +47,3 @@ while true; do
 
   sleep "${SLEEP_INTERVAL}"
 done
-
