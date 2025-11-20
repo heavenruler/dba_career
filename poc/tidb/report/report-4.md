@@ -82,8 +82,16 @@ Total nodes: 22
     FAIL#1 2025-11-20 15:40:44.700 -> 2025-11-20 15:41:03.099 (28008ms)
     ==============================================
     ```
-  - PD 層：Leader 切換 < 30 秒
-    - shutdown PD Follower
+  - PD 層：Leader 切換
+    - shutdown PD Follower [Click Here](https://youtu.be/irOAXQ6ETKk)
+    ```
+    ========== SQL RTO Monitor Summary ==========
+    Samples        : 29
+    Fail segments  : 0
+    Total fail (ms): 0
+    無故障發生
+    ==============================================
+    ```
     - shutdown PD Leader
     - shutdown All PDs
   - TiKV 層：Raft leader 轉移 + Region 補足需 < 90 秒
