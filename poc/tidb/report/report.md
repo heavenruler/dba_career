@@ -14,13 +14,16 @@
 
 ## [Sysbench 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-2.md)
 
-- **單機：MySQL 一定贏；TiDB 固定開銷大**
-> 單機比較不在相同架構基礎，TiDB 非設計給單節點效能。
-- **Scale-Up：TiDB 有效；MySQL 效益有限且放大寫入競爭現象**
-- **Scale-Out：TiDB 擴張因效能擴增；MySQL 擴張性因 HA 考量**
-- **跨區：MySQL Error Rate 爆量；TiDB 仍 0 Error**
-> 跨區寫入 → MySQL 死鎖/衝突不可避免  
-> TiDB → 跨區仍可維持完全成功交易
+
+### **Single Instance（基準比較）**
+### **Scale-Up / Scale-Out（擴展能力比較）**
+### **跨區延遲與寫入競爭（IDC vs IDC+GCP）— sysbench TPS & Error Rate 視角**
+
+- **MySQL 在單機效能上全面領先 TiDB（差距 40%～80%）**
+- 原因在於：
+  - **MySQL：單節點、無 RPC、無 2PC → 本地記憶體路徑極快**
+  - **TiDB：SQL Layer → RPC → TiKV → RocksDB → Raft → 固定開銷大**
+
 
 
 
