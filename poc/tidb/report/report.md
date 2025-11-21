@@ -4,12 +4,24 @@
 
 ## ==== **[RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)**====
 
-- **MySQL 跨區中併發易掉速（-7%〜-33%）**  
-- **TiDB 低併發吞吐可比 MySQL 快 +290%**  
-- **跨區高併發（500 threads）TiDB 在 GCP 可快 +402%**  
-- **同區高併發（GCP Local vs IDC）TiDB 可快 +518%**  
-- **TiDB 跨區穩定度極高：10〜250 threads 僅 ±1%〜2% 波動**  
-- **TiDB Scale-Out 成效顯著，可呈接近線性成長**  
+- **MySQL 跨區中併發易掉速（-7%〜-33%）**
+- **TiDB 低併發吞吐可比 MySQL 快 +290%**
+
+  - S1-3A：IDC 8 vCPU MySQL Cluster vs TiDB Cluster #1，mysqlslap SELECT 1
+
+    | threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A) |
+    | ------- | ------------- | ----------- | -------------- |
+    | 10      | 24962.56      | 97560.98    | +291.0%        |
+    | 50      | 84080.72      | 96587.25    | +14.9%         |
+    | 100     | 99272.01      | 94132.41    | -5.2%          |
+    | 250     | 69573.28      | 46977.76    | -32.5%         |
+    | 500     | 24785.19      | 11862.40    | -52.1%         |
+    | 1000    | 10648.12      | 7773.63     | -27.0%         |
+
+- **跨區高併發（500 threads）TiDB 在 GCP 可快 +402%**
+- **同區高併發（GCP Local vs IDC）TiDB 可快 +518%**
+- **TiDB 跨區穩定度極高：10〜250 threads 僅 ±1%〜2% 波動**
+- **TiDB Scale-Out 成效顯著，可呈接近線性成長**
 - **跨區併發時，負載會自然傾向 TiDB 表現較佳的一側（多為 GCP）**
 
 ----
