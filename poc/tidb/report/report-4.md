@@ -3,18 +3,18 @@
 ## 如何測試 RTO / RPO 數據
 
 ### Scenario
-- **RTO（Recovery Time Objective）**
-  - SQL 層：TiDB 重新路由 + 連線重建
-  - PD 層：Leader 切換
-  - TiKV 層：Raft leader 轉移 + Region 補足需要多少時間
-  - Re-Sharding：調度過程不得中斷 SQL 服務（RTO = 0）
-- **RPO（Recovery Point Objective）**
-  - 交易寫入以 Raft 多副本為前提 → 期望 0 秒
-  - TiKV Re-Sharding 調度期間允許 < 5 秒追平時間
 
-- **SQL Layer 不可用**：模擬 2/6 TiDB server 故障，觀察 Tiproxy 監控、連線重試、Session 粘滯行為
-- **TiKV Layer 不可用**：下架單一或多個 store，觀察 Region leader 補位、txn retry、TiKV GC
-- **TiKV Layer Re-Sharding**：Scale-out 再 scale-in，強迫 Region re-balance，觀察 PD 調度併發量
+以下場景以「Testing Record」的實測資料為準：
+
+- **SQL 層（TiDB + Tiproxy）**
+  - 單一 TiDB 停機（影片 `DYmA5Ne3nrE`）：樣本 128、故障 0，RTO ≈ 0，顯示 Tiproxy 重新路由無感。
+  - 同時停所有 TiDB（影片 `92OqEJydPP8`）：出現 1 段 28,008 ms 中斷視窗；此為 SQL 層最壞 RTO，恢復後 `rto_seq` 連續，RPO = 0。
+- **PD 層（Leader / Follower 切換）**
+  - 關閉 follower、leader 或整組 PD（含舊連線、新連線；影片 `irOAXQ6ETKk`、`Yi_WWKZMXwo`、`h9d9Vumfjhs`、`-9gCAvybCG0`）皆無故障段，RTO = 0，證實 PD failover 對 SQL 服務透明。
+- **TiKV 層（Region / Store 故障）**
+  - 寫入與讀取同時監控（影片 `bG8OAF1RtC8`）皆觀測到 41,124 ms 的中斷視窗，對應 Raft leader 轉移與 Region 補足；視為 TiKV 層 RTO 上限。
+- **RPO（Recovery Point Objective）**
+  - 所有測試以 `rto_seq` Heartbeat 表計算，實測值皆為 0；僅在 TiKV Re-Sharding 調度時允許 < 5 秒追平，超標需通報。
 
 ## 環境交代
 ```
@@ -55,8 +55,6 @@ ID                   Role        Host           Ports                 OS/Arch   
 172.24.40.19:6000    tiproxy     172.24.40.19   6000/6001             linux/x86_64  Up       -                                /data/tidb-deploy/tiproxy-6000
 Total nodes: 22
 ```
-
-
 
 ## Testing Record
 
@@ -129,5 +127,24 @@ Total nodes: 22
     無故障發生
     ==============================================
     ```
-  - TiKV 層：Raft leader 轉移 + Region 補足需 < 90 秒
-  - Re-Sharding：調度過程不得中斷 SQL 服務（RTO = 0）
+  - TiKV 層：Region 故障恢復 [Click Here](https://youtu.be/bG8OAF1RtC8)
+    Write
+    ```
+    ========== SQL RTO Monitor Summary ==========
+    Samples        : 52
+    Fail segments  : 1
+    Total fail (ms): 41124
+    --------------- Failure Windows -------------
+    FAIL#1 2025-11-21 10:29:18.846 -> 2025-11-21 10:29:22.251 (41124ms)
+    ==============================================
+    ```
+    Read
+    ```
+    ========== SQL RTO Monitor Summary ==========
+    Samples        : 52
+    Fail segments  : 1
+    Total fail (ms): 41124
+    --------------- Failure Windows -------------
+    FAIL#1 2025-11-21 10:29:18.846 -> 2025-11-21 10:29:22.251 (41124ms)
+    ==============================================
+    ```
