@@ -123,6 +123,8 @@
 
 ## Chaos engineering for leased-line quality across multiple data centers
 
+### [現有專線規格](https://hackmd.io/2e84sGrITxuSSmwrROnuTA#%E6%B8%AC%E8%A9%A6%E7%B5%90%E6%9E%9C)
+
 ----
 
 ## Staging AC-API 整合測試紀錄
