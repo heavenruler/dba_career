@@ -14,9 +14,9 @@
 
 ----
 
-## [Sysbench 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-2.md)
+## ==== **[Sysbench 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-2.md)** ====
 
-### **==== Single Instance（基準比較） ====**
+### **Single Instance（基準比較）**
 
 - **MySQL 在單機效能上全面領先 TiDB（差距 40%～80%）**
   - **OLTP 比較（16 threads TPS 對照）**
@@ -33,7 +33,7 @@
   - **MySQL：單節點、無 RPC、無 2PC → 本地記憶體路徑極快**
   - **TiDB：SQL Layer → RPC → TiKV → RocksDB → Raft → 固定開銷大**
 
-### **==== Scale-Up（4 → 8 vCPU）vs Scale-Out（單機 → Cluster） ====**
+### ** Scale-Up（4 → 8 vCPU）vs Scale-Out（單機 → Cluster） **
 
 - **MySQL Multi-Primary：Scale-Up 無效益（InnoDB-bound）**
   8 vCPU 改善有限甚至下降：
@@ -71,7 +71,7 @@
 
 ----
 
-### ====** TiDB Scale-Out（單 SQL 多 KV → 多 SQL 單 KV） **====
+### ** TiDB Scale-Out（單 SQL 多 KV → 多 SQL 單 KV） **
 
 > TiDB 的 Scale-Out 本質是 **SQL 層可橫向擴張 × KV 層可分片化分擔負載**
 
@@ -86,7 +86,7 @@
 
 ----
 
-### **==== 跨區延遲與寫入競爭（IDC vs IDC+GCP） ====**
+### ** 跨區延遲與寫入競爭（IDC vs IDC+GCP） **
 
 > **MySQL 用「Excpetion＋Retry」換取跨區 TPS；TiDB 用「容忍高延遲」換取零錯誤與一致性。**
 
@@ -104,7 +104,7 @@
 
 ----
 
-## [Failover Scenario](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-4.md)
+## ==== **[Failover Scenario](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-4.md)** ====
 
 ### **RPO（Recovery Point Objective）/ RTO（Recovery Time Objective）**
 - 根據目前 `rto_seq` Heartbeat 表推算，紀錄皆為 0；但測試條件尚不嚴謹，待完整腳本與案例設計完成後再更新完整合理數據。
