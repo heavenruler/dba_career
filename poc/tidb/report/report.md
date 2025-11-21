@@ -19,6 +19,18 @@
     | 1000    | 10648.12      | 7773.63     | -27.0%         |
 
 - **跨區高併發（500 threads）TiDB 在 GCP 可快 +402%**
+
+  - [S3-2-3：TiDB 4 vCPU #1 — IDC+GCP 共同壓測（跨區併發），mysqlslap SELECT 1](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md#%E6%95%B8%E6%93%9A%E5%B0%8D%E7%85%A7%E8%A1%A8s3-2-3tidb-4-vcpu-1--idcgcp-%E5%85%B1%E5%90%8C%E5%A3%93%E6%B8%AC%E8%B7%A8%E5%8D%80%E4%BD%B5%E7%99%BCmysqlslap-select-1)
+
+    | threads | RPS(A) 跨區@IDC | RPS(B) 跨區@GCP | 差異%(B 對 A) |
+    | ------- | ---------------- | ---------------- | -------------- |
+    | 10      | 97276.26         | 97751.71         | +0.5%          |
+    | 50      | 95147.48         | 95268.34         | +0.1%          |
+    | 100     | 93370.68         | 92478.42         | -1.0%          |
+    | 250     | 46490.00         | 85372.79         | +83.6%         |
+    | 500     | 8687.34          | 43649.06         | +402.4%        |
+    | 1000    | 8417.74          | 21226.92         | +152.2%        |
+
 - **同區高併發（GCP Local vs IDC）TiDB 可快 +518%**
 - **TiDB 跨區穩定度極高：10〜250 threads 僅 ±1%〜2% 波動**
 - **TiDB Scale-Out 成效顯著，可呈接近線性成長**
