@@ -9,7 +9,7 @@
 
 ----
 
-## ==== **[RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)**====
+## ==== **[RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)**==== [Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
 
 - **TiDB 低併發效能好；MySQL 中高併發更穩定。  
   - 當併發提升，TiDB 易受 KV 層排隊限制；MySQL 隨 CPU 放大呈線性增長。**
@@ -86,7 +86,7 @@
 
 ----
 
-## ==== **[Sysbench 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-2.md)** ====
+## ==== **[Sysbench 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-2.md)** ==== [Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
 
 ### **Single Instance（基準比較）**
 
@@ -176,7 +176,7 @@
 
 ----
 
-## ==== **[Failover Scenario](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-4.md)** ====
+## ==== **[Failover Scenario](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-4.md)** ==== [Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
 
 ### **RPO（Recovery Point Objective）/ RTO（Recovery Time Objective）**
 - 根據目前 `rto_seq` Heartbeat 表推算，紀錄皆為 0；但測試條件尚不嚴謹，待完整腳本與案例設計完成後再更新完整合理數據。
@@ -193,7 +193,7 @@
 
 ----
 
-## ==== **{FIXME}[Chaos engineering for leased-line quality across multiple data centers](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md)**====
+## ==== **{FIXME}[Chaos engineering for leased-line quality across multiple data centers](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md)**==== [Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
 
 ### [現有專線規格](https://hackmd.io/2e84sGrITxuSSmwrROnuTA#%E6%B8%AC%E8%A9%A6%E7%B5%90%E6%9E%9C)
 
@@ -203,7 +203,7 @@
 
 ----
 
-## ==== **Final** ====
+## ==== **Final** ==== [Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
 
 - 下一階段的分散式資料庫架構投資方向 ; [Reference](https://landscape.cncf.io/guide#app-definition-and-development--database)
 ![](https://codimd.104.com.tw/image/s3/key/uashd412g1c34ylela5gpbffp.png)
