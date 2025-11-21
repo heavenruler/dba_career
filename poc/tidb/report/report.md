@@ -5,6 +5,18 @@
 ## ==== **[RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)**====
 
 - **MySQL 跨區中併發易掉速（-7%〜-33%）**
+
+  - [S3-1-3：MySQL 4 vCPU — IDC+GCP 共同壓測：跨區併發，mysqlslap SELECT 1](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md#%E6%95%B8%E6%93%9A%E5%B0%8D%E7%85%A7%E8%A1%A8s3-1-3mysql-4-vcpu--idcgcp-%E5%85%B1%E5%90%8C%E5%A3%93%E6%B8%AC%E8%B7%A8%E5%8D%80%E4%BD%B5%E7%99%BCmysqlslap-select-1)
+
+    | threads | RPS(A) 跨區@IDC | RPS(B) 跨區@GCP | 差異%(B 對 A) |
+    | ------- | ---------------- | ---------------- | -------------- |
+    | 10      | 25462.57         | 30937.40         | +21.5%         |
+    | 50      | 77559.46         | 62643.56         | -19.2%         |
+    | 100     | 94696.97         | 62866.72         | -33.6%         |
+    | 250     | 57926.24         | 46649.04         | -19.5%         |
+    | 500     | 25737.82         | 31928.48         | +24.1%         |
+    | 1000    | 11687.25         | 25027.11         | +114.2%        |
+
 - **TiDB 低併發吞吐可比 MySQL 快 +290%**
 
   - [S1-3A：IDC 8 vCPU MySQL Cluster vs TiDB Cluster #1，mysqlslap SELECT 1](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md#%E6%95%B8%E6%93%9A%E5%B0%8D%E7%85%A7%E8%A1%A8s1-3aidc-8-vcpu-mysql-cluster-vs-tidb-cluster-1mysqlslap-select-1)
