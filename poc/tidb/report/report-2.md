@@ -30,7 +30,7 @@
 ## **核心結論**
 - **MySQL 在單機效能上全面領先 TiDB（差距 40%～80%）**
 - 原因在於：
-  - **MySQL：單節點、無 RPC、無 2PC → 本地記憶體路徑極快**
+  - **MySQL：單節點、無 RPC → 本地記憶體路徑極快**
   - **TiDB：SQL Layer → RPC → TiKV → RocksDB → Raft → 固定開銷大**
 
 ## **OLTP 比較（16 threads TPS 對照）**
