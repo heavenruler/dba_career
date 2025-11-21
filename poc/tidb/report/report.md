@@ -129,4 +129,15 @@
 
 ----
 
-## Other
+## Final
+
+- 下一階段的分散式資料庫架構投資方向 ; [Reference](https://landscape.cncf.io/guide#app-definition-and-development--database)
+![](https://codimd.104.com.tw/image/s3/key/uashd412g1c34ylela5gpbffp.png)
+  - [TiKV](https://github.com/tikv/tikv)
+  - [Vitess](https://github.com/vitessio/vitess)
+
+- 分散式資料庫的應用在台灣普及率普遍不高 ; 如果需要導入，我們需要哪些資源？
+  - [TiDB 2024 年度报告：增长的故事](https://cn.pingcap.com/company-activity/tidb-2024-annual-report-growth-story/) & [Customer Stories](https://www.pingcap.com/customers/)
+  - [Pricing](https://www.pingcap.com/pricing/)
+![](https://codimd.104.com.tw/image/s3/key/g34kv5tyrq3rd3cglwuz4t2rk.png)
+  - Contact: [Howard Cheng (Market Strategist) @ SG](https://www.linkedin.com/in/cheng-hao/) & [Andy Hsu (Key Account Sales) @ TW](https://www.linkedin.com/in/andy-hsu-206836114/)
