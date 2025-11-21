@@ -31,9 +31,41 @@
   - **MySQL：單節點、無 RPC、無 2PC → 本地記憶體路徑極快**
   - **TiDB：SQL Layer → RPC → TiKV → RocksDB → Raft → 固定開銷大**
 
-### **Scale-Up / Scale-Out（擴展能力比較）**
-### **跨區延遲與寫入競爭（IDC vs IDC+GCP）— sysbench TPS & Error Rate 視角**
+### **Scale-Up（4 → 8 vCPU）vs Scale-Out（單機 → Cluster）**
 
+- **MySQL：Scale-Up 無效（InnoDB-bound）**
+  8 vCPU 改善有限甚至下降：
+  - read_only：-3.6%
+  - write_only：-5%
+  - read_write：-10%
+
+- **TiDB：Scale-Up 有效（CPU-bound）**
+  8 vCPU 性能提升 **20%～40%**：
+  - read_only：+23%
+  - write_only：+32%
+  - update_index：+29%
+  - read_write：**+41%**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### **跨區延遲與寫入競爭（IDC vs IDC+GCP）— sysbench TPS & Error Rate 視角**
 
 
 
