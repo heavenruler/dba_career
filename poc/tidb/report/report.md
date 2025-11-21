@@ -144,6 +144,8 @@
 
 或直接參考 [TiDB集群可用区级别改造的探索与实践](https://mp.weixin.qq.com/s/c_Kh6mPSVvwvByoRyNBTyw)
 
+![](https://mmbiz.qpic.cn/sz_mmbiz_png/DEWdgLnJps5XkW83iatFMUZXicxd881dAiaAVEiciasLcRpKMhPut7JyfbMaPbricrv0yO9gk5XOwHXJfRlkckaYD0mA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=6)
 
+![](https://mmbiz.qpic.cn/sz_mmbiz_png/DEWdgLnJps5XkW83iatFMUZXicxd881dAiaCAicqj0fDUicosZlVW9VYtoeVib902l0JUogqKuL2jKou17GVwicQelXsA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=11)
 
-![](https://mmbiz.qpic.cn/sz_mmbiz_png/DEWdgLnJps5XkW83iatFMUZXicxd881dAiaFQF3iaOW6LNgZsNPsZSJWdib2BwQbG98ibicumpXq2z2DgYvDs4y80mjlA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=10)
+![](https://mmbiz.qpic.cn/sz_mmbiz_png/DEWdgLnJps5XkW83iatFMUZXicxd881dAiaOZx4E7Jn7cUcYdgbqJfw77bibKF5siasHlV1kp8Qmn0BmVjtwx9H9aXQ/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=12)
