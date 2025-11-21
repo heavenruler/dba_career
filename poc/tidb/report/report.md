@@ -33,11 +33,17 @@
 
 ### **Scale-Up（4 → 8 vCPU）vs Scale-Out（單機 → Cluster）**
 
-- **MySQL：Scale-Up 無效（InnoDB-bound）**
+- **MySQL Multi-Primary：Scale-Up 無效（InnoDB-bound）**
   8 vCPU 改善有限甚至下降：
   - read_only：-3.6%
   - write_only：-5%
   - read_write：-10%
+  - 說明
+    ```
+    - 多 Primary 無法線性擴張
+    - InnoDB 仍是每個 Primary 的瓶頸
+    - ProxySQL 只能分流，不是擴容
+    ```
 
 - **TiDB：Scale-Up 有效（CPU-bound）**
   8 vCPU 性能提升 **20%～40%**：
