@@ -109,8 +109,6 @@
 
 ### **MySQL IDC+GCP 雙點同時壓測**
 
-> 下表為「IDC + GCP 兩端 TPS 相加」的聚合視角。
-
 | 類型（16 threads） | IDC TPS | GCP TPS | 總 TPS（IDC+GCP） | 相對 IDC 基準 |
 |--------------------|---------|---------|--------------------|----------------|
 | oltp_read_write    | 374.98  | 467.21  | **842.19**         | **+9%** vs 770.19 |
@@ -130,21 +128,21 @@
 
 ### **TiDB IDC+GCP 雙點同時壓測**
 
-同樣以「IDC + GCP TPS 相加」呈現：
-
 | 類型（16 threads） | IDC TPS | GCP TPS | 總 TPS（IDC+GCP） | 相對 IDC 基準 |
 |--------------------|---------|---------|--------------------|----------------|
 | oltp_read_write    | 186.33  | 106.95  | **293.28**         | **-59%** vs 712.43 |
 | oltp_write_only    | 561.22  | 332.54  | **893.76**         | **-55%** vs 1988.00 |
 
-
-
-
-
-
-
-
 ----
+
+
+
+
+
+
+
+
+
 
 
 ## [Failover Scenario](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-4.md)
