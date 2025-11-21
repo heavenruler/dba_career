@@ -117,7 +117,7 @@
 - 寫入與讀取同時監控（[影片](https://youtu.be/bG8OAF1RtC8)）皆觀測到 41,124 ms 的中斷視窗。
 
 ### **RPO（Recovery Point Objective）/ RTO（Recovery Time Objective）**
-- 目前以 `rto_seq` Heartbeat 表推算，紀錄皆為 0；但測試條件尚不嚴謹，待完整腳本與案例設計完成後再更新完整合理數據。
+- 根據目前 `rto_seq` Heartbeat 表推算，紀錄皆為 0；但測試條件尚不嚴謹，待完整腳本與案例設計完成後再更新完整合理數據。
 
 ## Chaos engineering for leased-line quality across multiple data centers
 
