@@ -61,7 +61,6 @@
 - TiDB
   - Packet Loss ~= 0.1%
   - Packet Loss ~= 1%
-
 - PD
   - Leader
     - Packet Loss ~= 0.1%
