@@ -21,7 +21,7 @@
   - **MySQL：單節點、無 RPC、無 2PC → 本地記憶體路徑極快**
   - **TiDB：SQL Layer → RPC → TiKV → RocksDB → Raft → 固定開銷大**
 
-## **OLTP 比較（16 threads TPS 對照）**
+**OLTP 比較（16 threads TPS 對照）**
 | 類型 | MySQL TPS | TiDB TPS | 差異 |
 |------|-----------|-----------|-----------|
 | read_only | 1342.52 | 559.71 | **-58.3%** |
