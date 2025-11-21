@@ -9,7 +9,7 @@
 - **TiDB 低併發吞吐可比 MySQL 快 +290%**  
 - **跨區高併發（500 threads）TiDB 在 GCP 可快 +402%**  
 - **同區高併發（GCP Local vs IDC）TiDB 可快 +518%**  
-- **TiDB 跨區穩定度極高：10〜250 threads 僅 ±1%〜2% 波動**  
+- **TiDB 跨區穩定度高：10〜250 threads 僅 ±1%〜2% 波動**  
 - **TiDB Scale-Out 成效顯著，可呈接近線性成長**  
 - **MySQL 跨區中併發易掉速（-7%〜-33%）**  
 
