@@ -1,5 +1,12 @@
 # TiDB Intro
 
+- [RPS 效能對照解析]()
+- [Sysbench 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-2.md)
+- [Failover Scenario](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-4.md)
+- {FIXME}[Chaos engineering for leased-line quality across multiple data centers](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md)
+- {FIXME}[Staging AC-API 整合測試紀錄](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md)
+- [Final](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#-final)
+
 ----
 
 ## ==== **[RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)**====
@@ -196,7 +203,7 @@
 
 ----
 
-## ==== **Final
+## ==== **Final** ====
 
 - 下一階段的分散式資料庫架構投資方向 ; [Reference](https://landscape.cncf.io/guide#app-definition-and-development--database)
 ![](https://codimd.104.com.tw/image/s3/key/uashd412g1c34ylela5gpbffp.png)
