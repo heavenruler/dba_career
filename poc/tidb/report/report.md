@@ -69,7 +69,7 @@
 | **CPU 擴張效果** | 無效 / 負向 | - | 明顯有效 | - | MySQL 非 CPU-bound；TiDB CPU-sensitive |
 | **本質瓶頸** | InnoDB（BufferPool / Redo / B+Tree） | - | KV（Raft / RocksDB） | - | 架構本質完全不同 |
 
-
+----
 
 ### **==== TiDB Scale-Out（單 SQL 多 KV → 多 SQL 單 KV） ====**
 
