@@ -90,7 +90,7 @@
 
 > **MySQL 用「Excpetion＋Retry」換取跨區 TPS；TiDB 用「容忍高延遲」換取零錯誤與一致性。**
 
-- **MySQL Multi-Primary：**
+## **MySQL Multi-Primary：**
   - IDC+GCP 跨區併發時，**表面 TPS 可略增**，但 sysbench 顯示大量 `ignored errors`（寫入衝突／重試）。
   - 實際「成功寫入 TPS」打折，穩定性明顯下降。
     ```
@@ -116,11 +116,26 @@
 | oltp_read_write    | 374.98  | 467.21  | **842.19**         | **+9%** vs 770.19 |
 | oltp_write_only    | 483.67  | 444.60  | **928.27**         | **+18%** vs 786.62 |
 
-- **TiDB（TiProxy + TiDB + TiKV）：**
+
+## **TiDB（TiProxy + TiDB + TiKV）：**
   - IDC+GCP 跨區下，**TPS 顯著下降（受 RTT + Raft 影響）**，但 sysbench 全程 **`ignored errors = 0`**。
   - 在高併發與跨區延遲下仍維持一致性與零錯誤行為。
 
+### **TiDB IDC 單區基準**
 
+| 類型（16 threads） | IDC TPS |
+|--------------------|---------|
+| oltp_read_write    | **712.43** |
+| oltp_write_only    | **1988.00** |
+
+### **TiDB IDC+GCP 雙點同時壓測**
+
+同樣以「IDC + GCP TPS 相加」呈現：
+
+| 類型（16 threads） | IDC TPS | GCP TPS | 總 TPS（IDC+GCP） | 相對 IDC 基準 |
+|--------------------|---------|---------|--------------------|----------------|
+| oltp_read_write    | 186.33  | 106.95  | **293.28**         | **-59%** vs 712.43 |
+| oltp_write_only    | 561.22  | 332.54  | **893.76**         | **-55%** vs 1988.00 |
 
 
 
