@@ -99,7 +99,7 @@
 
 #### 解讀
 
-- MySQL 跨區靠 GCP 節點提供額外 467.21 / 444.60 TPS，總量提升但同時伴隨 `ignored errors` 與 retry，實際「成功寫入 TPS」打折，穩定性明顯下降。
+- MySQL 跨區靠 GCP 節點提供額外 TPS，總量提升但同時伴隨 `ignored errors` 與 retry，實際「成功寫入 TPS」打折，穩定性明顯下降。
 - TiDB 跨區受受 RTT + Raft 開銷影響，TPS 明顯下降但保持 `ignored errors = 0`、RPO = 0，在高併發與跨區延遲下仍維持一致性與零錯誤行為。
 
 ----
