@@ -53,10 +53,12 @@
   - update_index：+29%
   - read_write：**+41%**
   - 說明
-```
-- SQL 層可多線程併行 → CPU 推動更多 RPC / Goroutine 優勢越大
-- SQL Layer 能以更多 CPU 執行 RPC / Coprocessor 排程
-```
+    ```
+    - SQL 層可多線程併行 → CPU 推動更多 RPC / Goroutine 優勢越大
+    - SQL Layer 能以更多 CPU 執行 RPC / Coprocessor 排程
+    ```
+
+### **總覽**
 
 | 項目 | MySQL Multi-Primary（4v → 8v） | 差異 | TiDB（單 SQL 多 KV）（4v → 8v） | 差異 | 整體觀察 |
 |------|-------------------------------|--------|----------------------------------|--------|-----------|
