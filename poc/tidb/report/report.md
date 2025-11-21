@@ -94,8 +94,8 @@
 
 | 指標 | MySQL | TiDB | 說明 |
 |------|-------|------|------|
-| 單區基準（16 threads）mixed | 770.19 | 712.43 | MySQL 略高但接近 |
-| 總 TPS（IDC+GCP）mixed | 842.19 | 293.28 | MySQL 跨點總量仍高，但 TiDB 保持錯誤率 0 |
+| 單區基準（16 threads）read_write | 770.19 | 712.43 | MySQL 略高但接近 |
+| 總 TPS（IDC+GCP）read_write | 842.19 | 293.28 | MySQL 跨點總量仍高，但 TiDB 保持錯誤率 0 |
 | 總 TPS（IDC+GCP）write_only | 928.27 | 893.76 | MySQL 較高但 TiDB 幾乎等級，且無 ignored errors |
 | 相對 IDC 提升 | +9% / +18% | -59% / -55% | MySQL 利用 Async Retry 提升；TiDB 以一致性為優先 |
 
