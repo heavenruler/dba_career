@@ -4,6 +4,12 @@
 
 ## ==== **[RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)**====
 
+**TiDB 低併發爆發力強；MySQL 中高併發更穩定。  
+當併發提升，TiDB 易受 KV 層排隊限制；MySQL 隨 CPU 放大呈線性增長。**
+
+**MySQL 適合穩態中高併發；TiDB 適合低併發爆量與水平擴展。  
+高併發效能想進一步拉伸 → TiDB 必須走 KV Scale-Out 及 SQL Layer Scale-Up。**
+
 ### **MySQL 跨區中併發易掉速（-7%〜-33%）**
 
   - [S3-1-3：MySQL 4 vCPU — IDC+GCP 共同壓測：跨區併發，mysqlslap SELECT 1](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md#%E6%95%B8%E6%93%9A%E5%B0%8D%E7%85%A7%E8%A1%A8s3-1-3mysql-4-vcpu--idcgcp-%E5%85%B1%E5%90%8C%E5%A3%93%E6%B8%AC%E8%B7%A8%E5%8D%80%E4%BD%B5%E7%99%BCmysqlslap-select-1)
