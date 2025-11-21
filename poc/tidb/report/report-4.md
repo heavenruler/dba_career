@@ -92,7 +92,15 @@ Total nodes: 22
     無故障發生
     ==============================================
     ```
-    - shutdown PD Leader
+    - shutdown PD Leader [Click Here](https://youtu.be/Yi_WWKZMXwo)
+    ```
+    ========== SQL RTO Monitor Summary ==========
+    Samples        : 77
+    Fail segments  : 0
+    Total fail (ms): 0
+    無故障發生
+    ==============================================
+    ```
     - shutdown All PDs
   - TiKV 層：Raft leader 轉移 + Region 補足需 < 90 秒
   - Re-Sharding：調度過程不得中斷 SQL 服務（RTO = 0）
