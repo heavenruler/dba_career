@@ -7,7 +7,7 @@
 - **MySQL 跨區中併發易掉速（-7%〜-33%）**
 - **TiDB 低併發吞吐可比 MySQL 快 +290%**
 
-  - S1-3A：IDC 8 vCPU MySQL Cluster vs TiDB Cluster #1，mysqlslap SELECT 1
+  - [S1-3A：IDC 8 vCPU MySQL Cluster vs TiDB Cluster #1，mysqlslap SELECT 1](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md#%E6%95%B8%E6%93%9A%E5%B0%8D%E7%85%A7%E8%A1%A8s1-3aidc-8-vcpu-mysql-cluster-vs-tidb-cluster-1mysqlslap-select-1)
 
     | threads | RPS(A) MySQL | RPS(B) TiDB | 差異%(B 對 A) |
     | ------- | ------------- | ----------- | -------------- |
