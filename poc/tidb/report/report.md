@@ -1,6 +1,6 @@
 # TiDB Intro
 
-[[_TOC_]]
+[_TOC_]
 ----
 
 ## ==== **[RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)**====
