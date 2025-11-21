@@ -10,6 +10,8 @@
 **MySQL 適合穩態中高併發；TiDB 適合低併發爆量與水平擴展。  
 高併發效能想進一步拉伸 → TiDB 必須走 KV Scale-Out 及 SQL Layer Scale-Up。**
 
+### **TiDB 跨區穩定度高：10〜250 threads 僅 ±1%〜2% 波動**
+
 ### **MySQL 跨區中併發易掉速（-7%〜-33%）**
 
   - [S3-1-3：MySQL 4 vCPU — IDC+GCP 共同壓測：跨區併發，mysqlslap SELECT 1](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md#%E6%95%B8%E6%93%9A%E5%B0%8D%E7%85%A7%E8%A1%A8s3-1-3mysql-4-vcpu--idcgcp-%E5%85%B1%E5%90%8C%E5%A3%93%E6%B8%AC%E8%B7%A8%E5%8D%80%E4%BD%B5%E7%99%BCmysqlslap-select-1)
@@ -61,8 +63,6 @@
     | 250     | 47199.50          | 91687.04         | +94.2%         |
     | 500     | 10590.23          | 65445.03         | +518.0%        |
     | 1000    | 8412.79           | 37005.06         | +339.9%        |
-
-### **TiDB 跨區穩定度極高：10〜250 threads 僅 ±1%〜2% 波動**
 
 ### **TiDB Scale-Out 成效顯著，可呈接近線性成長**
 
