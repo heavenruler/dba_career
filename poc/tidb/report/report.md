@@ -106,6 +106,9 @@
 
 ## [Failover Scenario](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-4.md)
 
+### **RPO（Recovery Point Objective）/ RTO（Recovery Time Objective）**
+- 根據目前 `rto_seq` Heartbeat 表推算，紀錄皆為 0；但測試條件尚不嚴謹，待完整腳本與案例設計完成後再更新完整合理數據。
+
 ### **SQL 層（TiDB + Tiproxy）**
 - 單一 TiDB 停機（[影片](https://youtu.be/DYmA5Ne3nrE)）：故障 0，初步顯示 Tiproxy / TiDB 重新路由或重連於壓測流量下無感；但因僅為簡化流量情境，仍需模擬貼近線上負載後再更新正式數據。
 - 同時停所有 TiDB（[影片](https://youtu.be/92OqEJydPP8)）：出現 1 段 28,008 ms 中斷視窗；此為 SQL 層最壞 RTO，恢復後 `rto_seq` 持續運行。
@@ -116,11 +119,14 @@
 ### **TiKV 層（Region / Store 故障）**
 - 寫入與讀取同時監控（[影片](https://youtu.be/bG8OAF1RtC8)）皆觀測到 41,124 ms 的中斷視窗。
 
-### **RPO（Recovery Point Objective）/ RTO（Recovery Time Objective）**
-- 根據目前 `rto_seq` Heartbeat 表推算，紀錄皆為 0；但測試條件尚不嚴謹，待完整腳本與案例設計完成後再更新完整合理數據。
+----
 
 ## Chaos engineering for leased-line quality across multiple data centers
 
+----
+
 ## Staging AC-API 整合測試紀錄
+
+----
 
 ## Other
