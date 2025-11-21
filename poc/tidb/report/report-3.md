@@ -19,21 +19,59 @@
 
 ----
 
-- **RTT 延遲（50 / 100 / 200 ms）**
-  - TiDB
+## **RTT 延遲（50 / 100 / 200 ms）**
+- TiDB
+  - Latency ~= 50 ms
+  - Latency ~= 100 ms
+  - Latency ~= 200 ms
+- PD
+  - Leader
     - Latency ~= 50 ms
     - Latency ~= 100 ms
     - Latency ~= 200 ms
-  - PD
-    - Leader
-      - Latency ~= 50 ms
-      - Latency ~= 100 ms
-      - Latency ~= 200 ms
-    - Follower
-      - Latency ~= 50 ms
-      - Latency ~= 100 ms
-      - Latency ~= 200 ms
-  - TiKV
+  - Follower
     - Latency ~= 50 ms
     - Latency ~= 100 ms
     - Latency ~= 200 ms
+- TiKV
+  - Latency ~= 50 ms
+  - Latency ~= 100 ms
+  - Latency ~= 200 ms
+
+----
+
+## **頻寬瓶頸（30Mbps / 10Mbps / 5Mbps）**
+- TiDB
+  - Latency ~= 10Mbps
+  - Latency ~= 5Mbps
+- PD
+  - Leader
+    - Latency ~= 10Mbps
+    - Latency ~= 5Mbps
+  - Follower
+    - Latency ~= 10Mbps
+    - Latency ~= 5Mbps
+- TiKV
+  - Latency ~= 10Mbps
+  - Latency ~= 5Mbps
+
+----
+
+## **丟包（0% / 0.1% / 1%）**
+- TiDB
+  - Latency ~= 50 ms
+  - Latency ~= 100 ms
+  - Latency ~= 200 ms
+- PD
+  - Leader
+    - Latency ~= 50 ms
+    - Latency ~= 100 ms
+    - Latency ~= 200 ms
+  - Follower
+    - Latency ~= 50 ms
+    - Latency ~= 100 ms
+    - Latency ~= 200 ms
+- TiKV
+  - Latency ~= 50 ms
+  - Latency ~= 100 ms
+  - Latency ~= 200 ms
