@@ -100,6 +100,22 @@
       - `oltp_update_index` 亦在 4 / 8 / 16 threads 出現持續 `ignored errors`。
     ```
 
+### **MySQL IDC 單區基準**
+
+| 類型（16 threads） | IDC TPS |
+|--------------------|---------|
+| oltp_read_write    | **770.19** |
+| oltp_write_only    | **786.62** |
+
+### **MySQL IDC+GCP 雙點同時壓測**
+
+> 下表為「IDC + GCP 兩端 TPS 相加」的聚合視角。
+
+| 類型（16 threads） | IDC TPS | GCP TPS | 總 TPS（IDC+GCP） | 相對 IDC 基準 |
+|--------------------|---------|---------|--------------------|----------------|
+| oltp_read_write    | 374.98  | 467.21  | **842.19**         | **+9%** vs 770.19 |
+| oltp_write_only    | 483.67  | 444.60  | **928.27**         | **+18%** vs 786.62 |
+
 - **TiDB（TiProxy + TiDB + TiKV）：**
   - IDC+GCP 跨區下，**TPS 顯著下降（受 RTT + Raft 影響）**，但 sysbench 全程 **`ignored errors = 0`**。
   - 在高併發與跨區延遲下仍維持一致性與零錯誤行為。
