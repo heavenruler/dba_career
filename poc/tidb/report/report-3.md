@@ -7,7 +7,7 @@
 面向測試內容與容忍值如下，採用同一套 `monitor_rto_sql.sh` / `write_rto_sql.sh` Heartbeat 設計：
 
 - **RTT 延遲（50 / 100 / 200 ms）**
-  - 在 TiDB、PD、TiKV 之間逐層注入額外延遲，觀察 `seq_val` 是否停滯、Tiproxy 連線是否先報 fail；目標 RTO 為 Tiproxy 能在 2-5 秒內切換至健康節點並保持 Heartbeat。
+  - 在 TiDB、PD、TiKV 之間逐層注入額外延遲，觀察 `seq_val` 是否停滯、Tiproxy 連線是否先異常告警。
 
 - **頻寬瓶頸（30Mbps / 10Mbps / 5Mbps）**
   - 針對 TiDB 上行、TiKV 下行等方向限速，同步觀察 TiKV `region` pending、PD scheduler 採納策略；期望在低頻寬下仍維持運作。
