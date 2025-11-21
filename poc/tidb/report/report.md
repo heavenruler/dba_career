@@ -104,7 +104,7 @@
     | read_write | 1003.99 | 354.22 | **-59%** |
 
 - 原因在於：
-  - **MySQL：單節點、無 RPC、無 2PC → 本地記憶體路徑極快**
+  - **MySQL：單節點、無 RPC → 本地記憶體路徑極快**
   - **TiDB：SQL Layer → RPC → TiKV → RocksDB → Raft → 固定開銷大**
 
 ### ** Scale-Up（4 → 8 vCPU）vs Scale-Out（單機 → Cluster） **
