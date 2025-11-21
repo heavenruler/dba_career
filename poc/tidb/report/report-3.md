@@ -17,3 +17,23 @@
 
 每個條件下都可搭配 `tiup cluster display`、Grafana 面板確認 PD/RoF/TiKV 延遲與負載變化，測試記錄可附於報告供進一步分析。
 
+----
+
+- **RTT 延遲（50 / 100 / 200 ms）**
+  - TiDB
+    - Latency ~= 50 ms
+    - Latency ~= 100 ms
+    - Latency ~= 200 ms
+  - PD
+    - Leader
+      - Latency ~= 50 ms
+      - Latency ~= 100 ms
+      - Latency ~= 200 ms
+    - Follower
+      - Latency ~= 50 ms
+      - Latency ~= 100 ms
+      - Latency ~= 200 ms
+  - TiKV
+    - Latency ~= 50 ms
+    - Latency ~= 100 ms
+    - Latency ~= 200 ms
