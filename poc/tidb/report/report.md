@@ -135,6 +135,13 @@
 ![](https://codimd.104.com.tw/image/s3/key/uashd412g1c34ylela5gpbffp.png)
   - [TiKV](https://github.com/tikv/tikv)
   - [Vitess](https://github.com/vitessio/vitess)
+  - 或直接參考其他已完成的實踐 [TiDB集群可用区级别改造的探索与实践](https://mp.weixin.qq.com/s/c_Kh6mPSVvwvByoRyNBTyw)
+
+![](https://mmbiz.qpic.cn/sz_mmbiz_png/DEWdgLnJps5XkW83iatFMUZXicxd881dAiaAVEiciasLcRpKMhPut7JyfbMaPbricrv0yO9gk5XOwHXJfRlkckaYD0mA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=6)
+
+![](https://mmbiz.qpic.cn/sz_mmbiz_png/DEWdgLnJps5XkW83iatFMUZXicxd881dAiaCAicqj0fDUicosZlVW9VYtoeVib902l0JUogqKuL2jKou17GVwicQelXsA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=11)
+
+![](https://mmbiz.qpic.cn/sz_mmbiz_png/DEWdgLnJps5XkW83iatFMUZXicxd881dAiaOZx4E7Jn7cUcYdgbqJfw77bibKF5siasHlV1kp8Qmn0BmVjtwx9H9aXQ/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=12)
 
 - 分散式資料庫的應用在台灣普及率普遍不高 ; 如果需要導入，我們需要哪些資源？
   - [TiDB 2024 年度报告：增长的故事](https://cn.pingcap.com/company-activity/tidb-2024-annual-report-growth-story/) & [Customer Stories](https://www.pingcap.com/customers/)
@@ -142,10 +149,3 @@
 ![](https://codimd.104.com.tw/image/s3/key/g34kv5tyrq3rd3cglwuz4t2rk.png)
   - Contact: [Howard Cheng (Market Strategist) @ SG](https://www.linkedin.com/in/cheng-hao/) & [Andy Hsu (Key Account Sales) @ TW](https://www.linkedin.com/in/andy-hsu-206836114/)
 
-或直接參考其他已完成的實踐 [TiDB集群可用区级别改造的探索与实践](https://mp.weixin.qq.com/s/c_Kh6mPSVvwvByoRyNBTyw)
-
-![](https://mmbiz.qpic.cn/sz_mmbiz_png/DEWdgLnJps5XkW83iatFMUZXicxd881dAiaAVEiciasLcRpKMhPut7JyfbMaPbricrv0yO9gk5XOwHXJfRlkckaYD0mA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=6)
-
-![](https://mmbiz.qpic.cn/sz_mmbiz_png/DEWdgLnJps5XkW83iatFMUZXicxd881dAiaCAicqj0fDUicosZlVW9VYtoeVib902l0JUogqKuL2jKou17GVwicQelXsA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=11)
-
-![](https://mmbiz.qpic.cn/sz_mmbiz_png/DEWdgLnJps5XkW83iatFMUZXicxd881dAiaOZx4E7Jn7cUcYdgbqJfw77bibKF5siasHlV1kp8Qmn0BmVjtwx9H9aXQ/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=12)
