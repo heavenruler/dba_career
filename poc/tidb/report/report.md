@@ -1,8 +1,17 @@
 # TiDB Intro
 
-## RPS 效能對照解析
 
-## Sysbench 效能對照解析
+
+
+
+
+
+
+
+
+## [RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)
+
+## [Sysbench 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-2.md)
 
 ## Chaos engineering for leased-line quality across multiple data centers
 
