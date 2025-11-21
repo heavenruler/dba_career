@@ -101,6 +101,33 @@ Total nodes: 22
     無故障發生
     ==============================================
     ```
-    - shutdown All PDs
+    - shutdown All PDs (still connect) [Click Here](https://youtu.be/h9d9Vumfjhs)
+    ```
+    ========== SQL RTO Monitor Summary ==========
+    Samples        : 77
+    Fail segments  : 0
+    Total fail (ms): 0
+    無故障發生
+    ==============================================
+    ```
+    - shutdown All PDs (new connect) [Click Here](https://youtu.be/-9gCAvybCG0)
+    Old Connection
+    ```
+    ========== SQL RTO Monitor Summary ==========
+    Samples        : 95
+    Fail segments  : 0
+    Total fail (ms): 0
+    無故障發生
+    ==============================================
+    ```
+    New Connection
+    ```
+    ========== SQL RTO Monitor Summary ==========
+    Samples        : 29
+    Fail segments  : 0
+    Total fail (ms): 0
+    無故障發生
+    ==============================================
+    ```
   - TiKV 層：Raft leader 轉移 + Region 補足需 < 90 秒
   - Re-Sharding：調度過程不得中斷 SQL 服務（RTO = 0）
