@@ -2,7 +2,7 @@
 
 ----
 
-## [RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)
+## ==== **[RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)**====
 
 - **MySQL 跨區中併發易掉速（-7%〜-33%）**  
 - **TiDB 低併發吞吐可比 MySQL 快 +290%**  
@@ -71,7 +71,7 @@
 
 ----
 
-### **==== TiDB Scale-Out（單 SQL 多 KV → 多 SQL 單 KV） ====**
+### ====** TiDB Scale-Out（單 SQL 多 KV → 多 SQL 單 KV） **====
 
 > TiDB 的 Scale-Out 本質是 **SQL 層可橫向擴張 × KV 層可分片化分擔負載**
 
@@ -121,17 +121,17 @@
 
 ----
 
-## Chaos engineering for leased-line quality across multiple data centers
+## ==== **Chaos engineering for leased-line quality across multiple data centers
 
 ### [現有專線規格](https://hackmd.io/2e84sGrITxuSSmwrROnuTA#%E6%B8%AC%E8%A9%A6%E7%B5%90%E6%9E%9C)
 
 ----
 
-## Staging AC-API 整合測試紀錄
+## ==== **Staging AC-API 整合測試紀錄** ====
 
 ----
 
-## Final
+## ==== **Final
 
 - 下一階段的分散式資料庫架構投資方向 ; [Reference](https://landscape.cncf.io/guide#app-definition-and-development--database)
 ![](https://codimd.104.com.tw/image/s3/key/uashd412g1c34ylela5gpbffp.png)
