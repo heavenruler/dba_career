@@ -88,21 +88,29 @@
 
 ### **跨區延遲與寫入競爭（IDC vs IDC+GCP）**
 
-#### MySQL（跨 IDC+GCP）→ TPS 下跌 + Error Rate 激增
+> **MySQL 用「Excpetion＋Retry」換取跨區 TPS；TiDB 用「容忍高延遲」換取零錯誤與一致性。**
 
-- **跨區後行為（明顯特徵）**
-  - Read-only 類 TPS **仍高**（因為本地快取）
-  - Write 類 TPS **下降 30～60%**
-  - 出現大量 **ignored errors（寫衝突、死鎖、lock wait timeout）**
+- **MySQL Multi-Primary：**
+  - IDC+GCP 跨區併發時，**表面 TPS 可略增**，但 sysbench 顯示大量 `ignored errors`（寫入衝突／重試）。
+  - 實際「成功寫入 TPS」打折，穩定性明顯下降。
+    ```
+    - IDC+GCP 測試（log_test25 / log_test26）中：
+      - `oltp_read_write` 在 8 / 16 threads 時，**ignored errors 每秒上升到 0.4～1.8/sec**。
+      - `oltp_write_only` 在 8 / 16 threads 時，**ignored errors 最多達 2.3/sec**。
+      - `oltp_update_index` 亦在 4 / 8 / 16 threads 出現持續 `ignored errors`。
+    ```
 
-#### **TiDB（跨 IDC+GCP）→ TPS 下降，但永遠 0 Error**
+- **TiDB（TiProxy + TiDB + TiKV）：**
+  - IDC+GCP 跨區下，**TPS 顯著下降（受 RTT + Raft 影響）**，但 sysbench 全程 **`ignored errors = 0`**。
+  - 在高併發與跨區延遲下仍維持一致性與零錯誤行為。
 
-- **跨區後行為**
-  - TPS 下降（因為跨區 RTT + Raft 協議）
-  - 沒有 row lock
-  - 沒有死鎖
-  - 沒有 ignored errors
-  - 高併發 read_write / write_only 仍維持完全成功
+
+
+
+
+
+
+
 
 
 ----
