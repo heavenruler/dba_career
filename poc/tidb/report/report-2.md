@@ -283,7 +283,7 @@
 | write_only         | 1500.30       | 1988.00       | +32.5% |
 
 ## **效能現象**
-- SQL 層 CPU 增加 → TSO / Prewrite / Commit 等流程加速
+- SQL 層 CPU 增加 → TSO / Commit 等流程加速
 - 雖然最終瓶頸在 TiKV（Raft/RocksDB），但 **SQL 層越強 → 能推動更多寫入**
 
 ## **結論（Write-heavy）**
