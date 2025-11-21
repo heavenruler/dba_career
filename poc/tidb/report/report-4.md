@@ -7,12 +7,12 @@
 以下場景以「Testing Record」的實測資料為準：
 
 - **SQL 層（TiDB + Tiproxy）**
-  - 單一 TiDB 停機（影片 `DYmA5Ne3nrE`）：樣本 128、故障 0，RTO ≈ 0，顯示 Tiproxy 重新路由無感。
-  - 同時停所有 TiDB（影片 `92OqEJydPP8`）：出現 1 段 28,008 ms 中斷視窗；此為 SQL 層最壞 RTO，恢復後 `rto_seq` 連續，RPO = 0。
+  - 單一 TiDB 停機（[影片](https://youtu.be/DYmA5Ne3nrE)）：樣本 128、故障 0，RTO ≈ 0，顯示 Tiproxy 重新路由無感。
+  - 同時停所有 TiDB（[影片](https://youtu.be/92OqEJydPP8)）：出現 1 段 28,008 ms 中斷視窗；此為 SQL 層最壞 RTO，恢復後 `rto_seq` 連續，RPO = 0。
 - **PD 層（Leader / Follower 切換）**
-  - 關閉 follower、leader 或整組 PD（含舊連線、新連線；影片 `irOAXQ6ETKk`、`Yi_WWKZMXwo`、`h9d9Vumfjhs`、`-9gCAvybCG0`）皆無故障段，RTO = 0，證實 PD failover 對 SQL 服務透明。
+  - 關閉 follower、leader 或整組 PD（含舊連線、新連線；[影片1](https://youtu.be/irOAXQ6ETKk), [影片2](https://youtu.be/Yi_WWKZMXwo), [影片3](https://youtu.be/h9d9Vumfjhs), [影片4](https://youtu.be/-9gCAvybCG0)）皆無故障段，RTO = 0，證實 PD failover 對 SQL 服務透明。
 - **TiKV 層（Region / Store 故障）**
-  - 寫入與讀取同時監控（影片 `bG8OAF1RtC8`）皆觀測到 41,124 ms 的中斷視窗，對應 Raft leader 轉移與 Region 補足；視為 TiKV 層 RTO 上限。
+  - 寫入與讀取同時監控（[影片](https://youtu.be/bG8OAF1RtC8)）皆觀測到 41,124 ms 的中斷視窗，對應 Raft leader 轉移與 Region 補足；視為 TiKV 層 RTO 上限。
 - **RPO（Recovery Point Objective）/ RTO（Recovery Time Objective）**
   - 目前以 `rto_seq` Heartbeat 表推算，紀錄皆為 0；但測試條件尚不嚴謹，待完整腳本與案例設計完成後再更新完整合理數據。
 
