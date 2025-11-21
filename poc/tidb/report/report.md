@@ -64,25 +64,19 @@
 | write_only | 1500.30 → 1782.03 | **+18.8%** |
 | read_write | 503.92 → 561.45 | **+11.4%** |
 
+### **跨區延遲與寫入競爭（IDC vs IDC+GCP）**
 
+#### MySQL（跨 IDC+GCP）→ TPS 下跌 + Error Rate 激增
 
+- **跨區後行為（明顯特徵）**
+  - Read-only 類 TPS **仍高**（因為本地快取）
+  - Write 類 TPS **下降 30～60%**
+  - 出現大量 **ignored errors（寫衝突、死鎖、lock wait timeout）**
 
+#### **TiDB（跨 IDC+GCP）→ TPS 下降，但永遠 0 Error**
 
-
-
-
-
-
-
-
-
-
-
-
-### **跨區延遲與寫入競爭（IDC vs IDC+GCP）— sysbench TPS & Error Rate 視角**
-
-
-
+- **跨區後行為**
+  - TPS 下降（因為跨區 RTT + Raft 協議）
 
 
 
