@@ -92,7 +92,7 @@
 
 ### **IDC vs IDC+GCP 雙邊壓測比較 (凸顯跨專線後的叢集效能影響)**
 
-| 類型（16 threads） | MySQL IDC | MySQL IDC+GCP | 相對 IDC | TiDB IDC | TiDB IDC+GCP | 相對 IDC |
+| 類型（16 threads, TPS） | MySQL IDC | MySQL IDC+GCP | 相對 IDC | TiDB IDC | TiDB IDC+GCP | 相對 IDC |
 |--------------------|------------|----------------|----------|----------|--------------|----------|
 | oltp_read_write    | 770.19     | 842.19         | **+9%**  | 712.43   | 293.28       | **-59%** |
 | oltp_write_only    | 786.62     | 928.27         | **+18%** | 1988.00  | 893.76       | **-55%** |
