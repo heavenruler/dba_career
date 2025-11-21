@@ -66,6 +66,17 @@
 
 ### **TiDB Scale-Out 成效顯著，可呈接近線性成長**
 
+  - [S2-3B：TiDB Scale-Out（8 vCPU，SQL-heavy vs KV-heavy），mysqlslap SELECT 1](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md#%E6%95%B8%E6%93%9A%E5%B0%8D%E7%85%A7%E8%A1%A8s2-3btidb-scale-out8-vcpusql-heavy-vs-kv-heavymysqlslap-select-1)
+
+    | threads | RPS(A) KV-heavy | RPS(B) SQL-heavy | 差異%(B 對 A) |
+    | ------- | ---------------- | ---------------- | -------------- |
+    | 10      | 97560.98         | 97560.98         | +0.0%          |
+    | 50      | 96587.25         | 72797.86         | -24.6%         |
+    | 100     | 94132.41         | 72236.94         | -23.2%         |
+    | 250     | 46977.76         | 35928.14         | -23.5%         |
+    | 500     | 11862.40         | 10588.73         | -10.7%         |
+    | 1000    | 7773.63          | 9223.67          | +18.7%         |
+
 ----
 
 ## ==== **[Sysbench 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-2.md)** ====
