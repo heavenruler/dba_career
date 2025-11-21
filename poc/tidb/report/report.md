@@ -4,7 +4,7 @@
 
 ## ==== **[RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)**====
 
-- **MySQL 跨區中併發易掉速（-7%〜-33%）**
+### **MySQL 跨區中併發易掉速（-7%〜-33%）**
 
   - [S3-1-3：MySQL 4 vCPU — IDC+GCP 共同壓測：跨區併發，mysqlslap SELECT 1](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md#%E6%95%B8%E6%93%9A%E5%B0%8D%E7%85%A7%E8%A1%A8s3-1-3mysql-4-vcpu--idcgcp-%E5%85%B1%E5%90%8C%E5%A3%93%E6%B8%AC%E8%B7%A8%E5%8D%80%E4%BD%B5%E7%99%BCmysqlslap-select-1)
 
@@ -17,7 +17,7 @@
     | 500     | 25737.82         | 31928.48         | +24.1%         |
     | 1000    | 11687.25         | 25027.11         | +114.2%        |
 
-- **TiDB 低併發吞吐可比 MySQL 快 +290%**
+### **TiDB 低併發吞吐可比 MySQL 快 +290%**
 
   - [S1-3A：IDC 8 vCPU MySQL Cluster vs TiDB Cluster #1，mysqlslap SELECT 1](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md#%E6%95%B8%E6%93%9A%E5%B0%8D%E7%85%A7%E8%A1%A8s1-3aidc-8-vcpu-mysql-cluster-vs-tidb-cluster-1mysqlslap-select-1)
 
@@ -30,7 +30,7 @@
     | 500     | 24785.19      | 11862.40    | -52.1%         |
     | 1000    | 10648.12      | 7773.63     | -27.0%         |
 
-- **跨區高併發（500 threads）TiDB 在 GCP 可快 +402%**
+### **跨區高併發（500 threads）TiDB 在 GCP 可快 +402%**
 
   - [S3-2-3：TiDB 4 vCPU #1 — IDC+GCP 共同壓測（跨區併發），mysqlslap SELECT 1](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md#%E6%95%B8%E6%93%9A%E5%B0%8D%E7%85%A7%E8%A1%A8s3-2-3tidb-4-vcpu-1--idcgcp-%E5%85%B1%E5%90%8C%E5%A3%93%E6%B8%AC%E8%B7%A8%E5%8D%80%E4%BD%B5%E7%99%BCmysqlslap-select-1)
 
@@ -43,7 +43,7 @@
     | 500     | 8687.34          | 43649.06         | +402.4%        |
     | 1000    | 8417.74          | 21226.92         | +152.2%        |
 
-- **同區高併發（GCP Local vs IDC）TiDB 可快 +518%**
+### **同區高併發（GCP Local vs IDC）TiDB 可快 +518%**
 
   - [S4-2-2：TiDB 8 vCPU #1 — IDC+GCP（IDC vs GCP 壓測），mysqlslap SELECT 1](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md#%E6%95%B8%E6%93%9A%E5%B0%8D%E7%85%A7%E8%A1%A8s4-2-2tidb-8-vcpu-1--idcgcpidc-vs-gcp-%E5%A3%93%E6%B8%ACmysqlslap-select-1)
 
@@ -56,9 +56,9 @@
     | 500     | 10590.23          | 65445.03         | +518.0%        |
     | 1000    | 8412.79           | 37005.06         | +339.9%        |
 
-- **TiDB 跨區穩定度極高：10〜250 threads 僅 ±1%〜2% 波動**
+### **TiDB 跨區穩定度極高：10〜250 threads 僅 ±1%〜2% 波動**
 
-- **TiDB Scale-Out 成效顯著，可呈接近線性成長**
+### **TiDB Scale-Out 成效顯著，可呈接近線性成長**
 
 ----
 
