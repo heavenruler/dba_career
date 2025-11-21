@@ -92,13 +92,6 @@
 
 ### **IDC+GCP 雙邊壓測比較**
 
-
-
-
-
-
-
-
 ## **MySQL Multi-Primary：**
   - IDC+GCP 跨區併發時，**表面 TPS 可略增**，但 sysbench 顯示大量 `ignored errors`（寫入衝突／重試）。
   - 實際「成功寫入 TPS」打折，穩定性明顯下降。
