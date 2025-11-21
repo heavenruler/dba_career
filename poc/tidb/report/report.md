@@ -90,6 +90,15 @@
 
 > **MySQL 用「Excpetion＋Retry」換取跨區 TPS；TiDB 用「容忍高延遲」換取零錯誤與一致性。**
 
+### **IDC+GCP 雙點壓測差異簡析**
+
+| 指標 | MySQL | TiDB | 說明 |
+|------|-------|------|------|
+| 單區基準（16 threads）mixed | 770.19 | 712.43 | MySQL 略高但接近 |
+| 總 TPS（IDC+GCP）mixed | 842.19 | 293.28 | MySQL 跨點總量仍高，但 TiDB 保持錯誤率 0 |
+| 總 TPS（IDC+GCP）write_only | 928.27 | 893.76 | MySQL 較高但 TiDB 幾乎等級，且無 ignored errors |
+| 相對 IDC 提升 | +9% / +18% | -59% / -55% | MySQL 利用 Async Retry 提升；TiDB 以一致性為優先 |
+
 ## **MySQL Multi-Primary：**
   - IDC+GCP 跨區併發時，**表面 TPS 可略增**，但 sysbench 顯示大量 `ignored errors`（寫入衝突／重試）。
   - 實際「成功寫入 TPS」打折，穩定性明顯下降。
