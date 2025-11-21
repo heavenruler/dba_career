@@ -141,3 +141,9 @@
   - [Pricing](https://www.pingcap.com/pricing/)
 ![](https://codimd.104.com.tw/image/s3/key/g34kv5tyrq3rd3cglwuz4t2rk.png)
   - Contact: [Howard Cheng (Market Strategist) @ SG](https://www.linkedin.com/in/cheng-hao/) & [Andy Hsu (Key Account Sales) @ TW](https://www.linkedin.com/in/andy-hsu-206836114/)
+
+或直接參考 [TiDB集群可用区级别改造的探索与实践](https://mp.weixin.qq.com/s/c_Kh6mPSVvwvByoRyNBTyw)
+
+
+
+![](https://mmbiz.qpic.cn/sz_mmbiz_png/DEWdgLnJps5XkW83iatFMUZXicxd881dAiaFQF3iaOW6LNgZsNPsZSJWdib2BwQbG98ibicumpXq2z2DgYvDs4y80mjlA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=10)
