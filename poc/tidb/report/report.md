@@ -4,11 +4,11 @@
 
 ## ==== **[RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)**====
 
-**TiDB 低併發爆發力強；MySQL 中高併發更穩定。  
-當併發提升，TiDB 易受 KV 層排隊限制；MySQL 隨 CPU 放大呈線性增長。**
+- **TiDB 低併發效能好；MySQL 中高併發更穩定。  
+  - 當併發提升，TiDB 易受 KV 層排隊限制；MySQL 隨 CPU 放大呈線性增長。**
 
-**MySQL 適合穩態中高併發；TiDB 適合低併發爆量與水平擴展。  
-高併發效能想進一步拉伸 → TiDB 必須走 KV Scale-Out 及 SQL Layer Scale-Up。**
+- **MySQL 適合穩態中高併發；TiDB 適合低併發爆量與水平擴展。  
+  - 高併發效能想進一步拉伸 → TiDB 必須走 KV Scale-Out 及 SQL Layer Scale-Up。**
 
 ### **TiDB 跨區穩定度高：10〜250 threads 僅 ±1%〜2% 波動**
 
