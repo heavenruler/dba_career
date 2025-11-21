@@ -42,36 +42,33 @@
 
 ## **頻寬瓶頸（30Mbps / 10Mbps / 5Mbps）**
 - TiDB
-  - Latency ~= 10Mbps
-  - Latency ~= 5Mbps
+  - Bandwidth ~= 10Mbps
+  - Bandwidth ~= 5Mbps
 - PD
   - Leader
-    - Latency ~= 10Mbps
-    - Latency ~= 5Mbps
+    - Bandwidth ~= 10Mbps
+    - Bandwidth ~= 5Mbps
   - Follower
-    - Latency ~= 10Mbps
-    - Latency ~= 5Mbps
+    - Bandwidth ~= 10Mbps
+    - Bandwidth ~= 5Mbps
 - TiKV
-  - Latency ~= 10Mbps
-  - Latency ~= 5Mbps
+  - Bandwidth ~= 10Mbps
+  - Bandwidth ~= 5Mbps
 
 ----
 
 ## **丟包（0% / 0.1% / 1%）**
 - TiDB
-  - Latency ~= 50 ms
-  - Latency ~= 100 ms
-  - Latency ~= 200 ms
+  - Packet Loss ~= 0.1%
+  - Packet Loss ~= 1%
+
 - PD
   - Leader
-    - Latency ~= 50 ms
-    - Latency ~= 100 ms
-    - Latency ~= 200 ms
+    - Packet Loss ~= 0.1%
+    - Packet Loss ~= 1%
   - Follower
-    - Latency ~= 50 ms
-    - Latency ~= 100 ms
-    - Latency ~= 200 ms
+    - Packet Loss ~= 0.1%
+    - Packet Loss ~= 1%
 - TiKV
-  - Latency ~= 50 ms
-  - Latency ~= 100 ms
-  - Latency ~= 200 ms
+  - Packet Loss ~= 0.1%
+  - Packet Loss ~= 1%
