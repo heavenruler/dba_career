@@ -1,6 +1,6 @@
 # TiDB Intro for DBA #5-4
 
-## 如何測試 RTO / RPO 數據
+## Failover Scenario
 
 ### Scenario
 
@@ -13,8 +13,8 @@
   - 關閉 follower、leader 或整組 PD（含舊連線、新連線；影片 `irOAXQ6ETKk`、`Yi_WWKZMXwo`、`h9d9Vumfjhs`、`-9gCAvybCG0`）皆無故障段，RTO = 0，證實 PD failover 對 SQL 服務透明。
 - **TiKV 層（Region / Store 故障）**
   - 寫入與讀取同時監控（影片 `bG8OAF1RtC8`）皆觀測到 41,124 ms 的中斷視窗，對應 Raft leader 轉移與 Region 補足；視為 TiKV 層 RTO 上限。
-- **RPO（Recovery Point Objective）**
-  - 所有測試以 `rto_seq` Heartbeat 表計算，實測值皆為 0；僅在 TiKV Re-Sharding 調度時允許 < 5 秒追平，超標需通報。
+- **RPO（Recovery Point Objective）/ RTO（Recovery Time Objective）**
+  - 目前以 `rto_seq` Heartbeat 表推算，紀錄皆為 0；但測試條件尚不嚴謹，待完整腳本與案例設計完成後再更新完整合理數據。
 
 ## 環境交代
 ```
