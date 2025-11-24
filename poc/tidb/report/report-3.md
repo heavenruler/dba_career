@@ -355,23 +355,15 @@ Total nodes: 22
 
 ## **丟包（0% / 0.1% / 1%）**
 - TiProxy
-  - Packet Loss ~= 0.1%
-  - Packet Loss ~= 1%
+  - Packet Loss ~= 0.1% @ 
+  - Packet Loss ~= 1% @ 
 - TiDB
-  - Packet Loss ~= 0.1%
-  - Packet Loss ~= 1%
+  - Packet Loss ~= 0.1% @ 
+  - Packet Loss ~= 1% @ 
 - PD
   - Leader
-    - Packet Loss ~= 0.1% @ mysqlslap_logs_20251124_144507
-      | concurrency | avg(s) | min(s) | max(s) | avg_qps | avg_ms/req |
-      |--------------|--------|--------|--------|----------|-------------|
-      | 10 | 1.03 | 1.03 | 1.03 | 97118.81 | 0.01 |
-      | 50 | 1.05 | 1.04 | 1.05 | 95632.77 | 0.01 |
-      | 100 | 1.06 | 1.05 | 1.06 | 94577.55 | 0.01 |
-      | 250 | 2.47 | 2.10 | 3.15 | 40556.98 | 0.02 |
-      | 500 | 13.48 | 7.26 | 22.73 | 7420.42 | 0.13 |
-      | 1000 | 12.87 | 10.56 | 14.34 | 7768.20 | 0.13 |
-    - Packet Loss ~= 1%
+    - Packet Loss ~= 0.1% @ 
+    - Packet Loss ~= 1% @ 
 
 
 
@@ -382,5 +374,5 @@ Total nodes: 22
 
 
 - TiKV
-  - Packet Loss ~= 0.1%
-  - Packet Loss ~= 1%
+  - Packet Loss ~= 0.1% @ 
+  - Packet Loss ~= 1% @ 
