@@ -240,26 +240,6 @@ TiDB 集群的效能受制於網路品質的兩大決定性因素：
 2.  **前端層一致性：** 在 10 Mbps 條件下，TiProxy、TiDB 和 PD Leader 的 QPS 下降比例都集中在 78% 至 81% 之間。
 3.  **讀取穩定性：** TiKV Read 在 5 Mbps 頻寬限制下，效能下降僅 **2.88%** ，確認讀取操作對於頻寬的敏感度極低。
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ----
 
 ## ==== **{FIXME}[Staging AC-API 整合測試紀錄](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md)** ====
@@ -287,4 +267,3 @@ TiDB 集群的效能受制於網路品質的兩大決定性因素：
   - [Pricing](https://www.pingcap.com/pricing/)
 ![](https://codimd.104.com.tw/image/s3/key/g34kv5tyrq3rd3cglwuz4t2rk.png)
   - Contact: [Howard Cheng (Market Strategist) @ SG](https://www.linkedin.com/in/cheng-hao/) & [Andy Hsu (Key Account Sales) @ TW](https://www.linkedin.com/in/andy-hsu-206836114/)
-
