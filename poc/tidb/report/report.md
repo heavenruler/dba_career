@@ -250,6 +250,23 @@ TiDB 集群的效能受制於網路品質的兩大決定性因素：
 ## ==== **Final** ====
 [Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
 
+### 性能差異與選型建議
+
+- 主要性能差異總結
+  - MySQL 優勢突出 ; 跨專線短板明顯
+  - TiDB 分散式儲存與穩定性優勢，巨大資料量體合適
+    - 核心價值
+    - 性能瓶頸
+
+## 業務選型建議
+
+- 優先選擇 MySQL 的場景
+- 優先選擇 TiDB 的場景
+
+## 測試局限性與改善建議
+
+## 總結與未來規劃
+
 - 下一階段的分散式資料庫架構投資方向 ; [Reference](https://landscape.cncf.io/guide#app-definition-and-development--database)
 ![](https://codimd.104.com.tw/image/s3/key/uashd412g1c34ylela5gpbffp.png)
   - [TiKV](https://github.com/tikv/tikv)
