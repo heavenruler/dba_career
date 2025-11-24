@@ -7,10 +7,10 @@
 面向測試內容與容忍值如下，採用同一套 `monitor_rto_sql.sh` / `write_rto_sql.sh` Heartbeat 設計：
 
 - **RTT 延遲（50 / 100 / 200 ms）**
-  - 在 TiDB、PD、TiKV 之間逐層注入額外延遲，觀察 `seq_val` 是否停滯、Tiproxy 連線是否先異常告警。
+  - TiDB、PD Leader、TiKV 之間逐層注入額外延遲觀察。
 
 - **頻寬瓶頸（30Mbps / 10Mbps / 5Mbps）**
-  - 針對 TiDB 上行、TiKV 下行等方向限速，同步觀察 TiKV `region` pending、PD scheduler 採納策略；期望在低頻寬下仍維持運作。
+  - 此情境針對 TiProxy / TiDB / TiKV 進行限速，期望在低頻寬下仍維持運作。
 
 ----
 
@@ -40,7 +40,6 @@ TiDB 集群的效能受制於網路品質的兩大決定性因素：
 1.  **前端層衝擊：** 在 RTT 200 ms 條件下，TiProxy 的 QPS 衰退最為嚴重，高達 **93.73%**。TiDB 也下降了 **86.58%**。
 2.  **寫入效能：** TiKV Write 的 QPS 在 RTT 200 ms 時下降了 **61.58%**。
 3.  **讀取穩定性：** TiKV Read 在所有 RTT 測試中表現穩定，效能下降極微或甚至微幅上升。
-
 
 ----
 
