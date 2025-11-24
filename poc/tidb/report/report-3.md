@@ -4,8 +4,6 @@
 
 ### Scenario
 
-面向測試內容與容忍值如下，採用同一套 `monitor_rto_sql.sh` / `write_rto_sql.sh` Heartbeat 設計：
-
 - **RTT 延遲（50 / 100 / 200 ms）**
   - TiDB、PD Leader、TiKV 之間逐層注入額外延遲觀察。
 
