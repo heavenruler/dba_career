@@ -63,7 +63,7 @@ Total nodes: 22
 ## **RTT 延遲（50 / 100 / 200 ms）**
 
 - TiProxy
-    - Latency ~= Default @ mysqlslap_logs_20251124_095128
+  - Latency ~= Default @ mysqlslap_logs_20251124_095128
     ```
     | concurrency | avg(s) | min(s) | max(s) | avg_qps | avg_ms/req |
     |--------------|--------|--------|--------|----------|-------------|
