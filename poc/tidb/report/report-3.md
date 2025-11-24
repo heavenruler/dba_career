@@ -264,7 +264,19 @@ Total nodes: 22
     - Bandwidth ~= 10Mbps
     - Bandwidth ~= 5Mbps
 - TiKV
-  - Bandwidth ~= 10Mbps
+  - Write
+    - Bandwidth ~= 10Mbps @ 
+    - Bandwidth ~= 5Mbps @ 
+  - Read
+    - Bandwidth ~= 10Mbps @ mysqlslap_logs_20251124_140242
+      | concurrency | avg(s) | min(s) | max(s) | avg_qps | avg_ms/req |
+      |--------------|--------|--------|--------|----------|-------------|
+      | 10 | 0.06 | 0.06 | 0.06 | 17751.48 | 0.06 |
+      | 50 | 0.03 | 0.03 | 0.03 | 32608.70 | 0.03 |
+      | 100 | 0.04 | 0.03 | 0.04 | 26548.67 | 0.04 |
+      | 250 | 0.05 | 0.05 | 0.07 | 18867.92 | 0.05 |
+      | 500 | 0.07 | 0.06 | 0.07 | 14705.88 | 0.07 |
+      | 1000 | 0.12 | 0.11 | 0.13 | 8042.90 | 0.12 |
   - Bandwidth ~= 5Mbps
 
 ----
