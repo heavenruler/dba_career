@@ -252,20 +252,28 @@ TiDB 集群的效能受制於網路品質的兩大決定性因素：
 
 ### 性能差異與選型建議
 
-- 主要性能差異總結
-  - MySQL 優勢突出 ; 跨專線短板明顯
-  - TiDB 分散式儲存與穩定性優勢，巨大資料量體合適
-    - 核心價值
-    - 性能瓶頸
+#### 主要性能差異總結
 
-## 業務選型建議
+| 特性 | MySQL (傳統單體) | TiDB (分散式架構) | 導入啟示 |
+| :--- | :--- | :--- | :--- |
+| **單機基準效能** | **全面領先 TiDB 40%～80%** 。路徑極快（單節點、無 RPC）。 | 單機效能較差，因固定開銷大（SQL Layer → RPC → TiKV → RocksDB → Raft]。 | 適用於追求絕對單機效能的場景。 |
+| **垂直擴展（Scale-Up）** | 無效益/負向（-3.6%～-10%），受限於 InnoDB 競爭瓶頸。 | **明顯有效（+20%～+41%）** ，特別是 Mixed 負載最敏感。 | TiDB 屬 CPU-sensitive，擴容 CPU 可有效提升性能。 |
+| **水平擴展（Scale-Out）** | 難以實現，ProxySQL 僅能分流，非擴容。 | **成效顯著** ，可呈接近線性成長，讀寫負載可提升 6% 至 25.5%。 | 這是 TiDB 的核心優勢，適合處理高併發和大規模數據。 |
 
-- 優先選擇 MySQL 的場景
-- 優先選擇 TiDB 的場景
+#### MySQL 優勢突出 ; 跨專線短板明顯
 
-## 測試局限性與改善建議
+* **MySQL 單機優勢突出：** 在單節點基準測試中，MySQL 在讀寫操作（`read_write`）的 TPS 比 TiDB 高 **59%** 。
+* **跨專線短板明顯：**
+  * MySQL 在跨區中併發（50～250 threads）測試中容易掉速（-7%〜-33%）。例如在 100 threads 時，RPS 下降 **33.6%** 。
+  * 雖然 MySQL 跨區寫入時，總 TPS 可能提升 (+9% 至 +18%)，但這伴隨著 `ignored errors` 與 retry 的發生 ，**穩定性明顯下降** 。
 
-## 總結與未來規劃
+
+
+
+
+
+
+### 總結與未來規劃
 
 - 下一階段的分散式資料庫架構投資方向 ; [Reference](https://landscape.cncf.io/guide#app-definition-and-development--database)
 ![](https://codimd.104.com.tw/image/s3/key/uashd412g1c34ylela5gpbffp.png)
