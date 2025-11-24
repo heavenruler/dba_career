@@ -174,7 +174,7 @@ Total nodes: 22
       | 250 | 3.45 | 2.65 | 5.04 | 29019.15 | 0.03 |
       | 500 | 3.02 | 2.67 | 3.57 | 33072.43 | 0.03 |
       | 1000 | 5.16 | 4.49 | 5.67 | 19373.59 | 0.05 |
-- TiKV
+- TiKV (調整 mysqlslap 參數 1000 times.)
   - Write
     - Latency ~= Default @ mysqlslap_logs_20251124_134753
       | concurrency | avg(s) | min(s) | max(s) | avg_qps | avg_ms/req |
