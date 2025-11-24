@@ -61,6 +61,11 @@ Total nodes: 22
 ----
 
 ## **RTT 延遲（50 / 100 / 200 ms）**
+
+- TiProxy
+  - Latency ~= 50 ms
+  - Latency ~= 100 ms
+  - Latency ~= 200 ms
 - TiDB
   - Latency ~= 50 ms
   - Latency ~= 100 ms
