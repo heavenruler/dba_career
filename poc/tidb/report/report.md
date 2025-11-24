@@ -287,6 +287,51 @@ TiDB 集群的效能受制於網路品質的兩大決定性因素：
 
 ### 未來維運的幾個已知可能風險
 
+## Public Mirror Site 不穩定 ; 且為 tiup 前置既定程序
+
+![](https://codimd.104.com.tw/image/s3/key/n2e8k4ys4wncbr1f6jjzx9qgn.png)
+
+![](https://codimd.104.com.tw/image/s3/key/tuz5q2sa75kjvuyady3skxmyq.png)
+
+![](https://codimd.104.com.tw/image/s3/key/rru76wuzww9lemqvf2elhxisp.png)
+
+```
+date ; tiup cluster display tidb-demo
+Checking updates for component cluster... Timedout (after 2s)
+Error: fetch /timestamp.json from mirror(https://tiup-mirrors.pingcap.com) failed: download from https://tiup-mirrors.pingcap.com/timestamp.json failed: Get "https://tiup-mirrors.pingcap.com/timestamp.json": EOF
+```
+
+確認 mirror 來源
+```
+wn.lin@2740-mac13 ~ % date ; bash test.sh
+2025年11月 7日 星期五 14時12分20秒 CST
+DNS_SERVER,IP,COUNTRY,REGION
+10.0.1.5,128.1.102.113,Taiwan,Kaohsiung
+10.0.1.5,107.155.58.204,Taiwan,Taipei City
+10.0.1.5,175.99.198.25,Taiwan,Taiwan
+10.0.1.5,23.236.104.178,Taiwan,Taipei City
+10.0.1.5,107.155.58.219,Taiwan,Taipei City
+10.0.1.5,128.1.102.212,Taiwan,Kaohsiung
+168.95.1.1,23.236.104.178,Taiwan,Taipei City
+168.95.1.1,175.99.198.25,Taiwan,Taiwan
+168.95.1.1,107.155.58.219,Taiwan,Taipei City
+168.95.1.1,128.1.102.113,Taiwan,Kaohsiung
+168.95.1.1,128.1.102.212,Taiwan,Kaohsiung
+168.95.1.1,107.155.58.204,Taiwan,Taipei City
+8.8.8.8,43.152.2.144,United States,Florida
+8.8.8.8,43.152.2.154,United States,Florida
+8.8.8.8,43.174.143.248,United States,New Mexico
+8.8.8.8,43.175.170.163,United States,New Mexico
+8.8.8.8,43.152.48.139,United States,Texas
+8.8.8.8,43.159.79.166,United States,New Mexico
+```
+
+- [Manifest format and repository layout 說明](https://github.com/pingcap/tiup/blob/master/doc/design/manifest.md)
+
+![](https://codimd.104.com.tw/image/s3/key/gjnlfgp0bqj69e633uw3l78yp.png)
+
+- Solution: [Create a Private Mirror](https://docs.pingcap.com/tidb/stable/tiup-mirror/)
+
 ----
 
 ### 總結與未來規劃
