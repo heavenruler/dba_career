@@ -350,29 +350,3 @@ Total nodes: 22
       | 250 | 0.05 | 0.04 | 0.05 | 22058.82 | 0.05 |
       | 500 | 0.07 | 0.07 | 0.08 | 13333.33 | 0.07 |
       | 1000 | 0.13 | 0.12 | 0.14 | 7853.40 | 0.13 |
-
-----
-
-## **丟包（0% / 0.1% / 1%）**
-- TiProxy
-  - Packet Loss ~= 0.1% @ 
-  - Packet Loss ~= 1% @ 
-- TiDB
-  - Packet Loss ~= 0.1% @ 
-  - Packet Loss ~= 1% @ 
-- PD
-  - Leader
-    - Packet Loss ~= 0.1% @ 
-    - Packet Loss ~= 1% @ 
-
-
-
-
-
-
-
-
-
-- TiKV
-  - Packet Loss ~= 0.1% @ 
-  - Packet Loss ~= 1% @ 
