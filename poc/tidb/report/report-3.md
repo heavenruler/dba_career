@@ -260,9 +260,6 @@ Total nodes: 22
   - Leader
     - Bandwidth ~= 10Mbps
     - Bandwidth ~= 5Mbps
-  - Follower
-    - Bandwidth ~= 10Mbps
-    - Bandwidth ~= 5Mbps
 - TiKV
   - Write
     - Bandwidth ~= 10Mbps @ mysqlslap_logs_20251124_140416
