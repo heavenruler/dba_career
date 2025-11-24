@@ -46,7 +46,9 @@ TiDB 集群的效能受制於網路品質的兩大決定性因素：
 
 #### **二、 頻寬瓶頸情境下的效能差異 (30 / 10 / 5 Mbps)**
 
-此情境針對 TiDB 上行和 TiKV 下行等方向進行限速，期望在低頻寬下仍維持運作，並同步觀察 TiKV `region` pending 情況。
+> 此情境針對 TiProxy / TiDB / TiKV 進行限速，期望在低頻寬下仍維持運作，並同步觀察 TiKV `region` pending 情況。
+
+
 
 
 
