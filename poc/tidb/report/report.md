@@ -3,7 +3,7 @@
 - [RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#-rps-%E6%95%88%E8%83%BD%E5%B0%8D%E7%85%A7%E8%A7%A3%E6%9E%90)
 - [Sysbench 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#-sysbench-%E6%95%88%E8%83%BD%E5%B0%8D%E7%85%A7%E8%A7%A3%E6%9E%90-)
 - [Failover Scenario](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#-failover-scenario-)
-- {FIXME}[Chaos engineering for leased-line quality across multiple data centers](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#-fixmechaos-engineering-for-leased-line-quality-across-multiple-data-centers)
+- [Chaos engineering for leased-line quality across multiple data centers](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#-fixmechaos-engineering-for-leased-line-quality-across-multiple-data-centers)
 - {FIXME}[Staging AC-API 整合測試紀錄](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#-fixmestaging-ac-api-%E6%95%B4%E5%90%88%E6%B8%AC%E8%A9%A6%E7%B4%80%E9%8C%84-)
 - [Final](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#-final-)
 
@@ -190,10 +190,75 @@
 
 ----
 
-## ==== **{FIXME}[Chaos engineering for leased-line quality across multiple data centers](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md)**====
+## ==== **[Chaos engineering for leased-line quality across multiple data centers](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md)**====
 [Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
 
 ### [現有專線規格](https://hackmd.io/2e84sGrITxuSSmwrROnuTA#%E6%B8%AC%E8%A9%A6%E7%B5%90%E6%9E%9C)
+
+測試結果揭示了系統對於網路延遲（RTT）和頻寬（Bandwidth）瓶頸的敏感度差異，尤其在**高併發（Concurrency 1000）**情境下，對應用程式層（TiProxy/TiDB）和儲存層寫入（TiKV Write）的影響最為顯著。
+
+TiDB 集群的效能受制於網路品質的兩大決定性因素：
+
+*   **高延遲 (RTT)：** 主要衝擊**前端應用層**（TiProxy/TiDB）的高併發處理能力，導致 QPS 顯著下降（90% 左右）。
+*   **低頻寬 (Bandwidth)：** 對**後端儲存層的寫入**操作（TiKV Write）影響甚重，使其成為系統在高併發環境下維持運作的最大瓶頸。
+
+#### **一、 網路延遲情境下的效能差異 (RTT 6 / 50 / 100 / 200 ms)**
+
+> TiDB、PD Leader、TiKV 之間逐層注入額外延遲觀察。
+
+| 組件 (Component) | 基準 QPS (Default RTT) | RTT 50 ms QPS | RTT 50 ms 效能下降比例 | RTT 100 ms QPS | RTT 100 ms 效能下降比例 | RTT 200 ms QPS | RTT 200 ms 效能下降比例 |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **TiProxy** | 41631.97 | 10988.21 | 73.69% | 6201.94 | 85.08% | 2608.58 | 93.73% |
+| **TiDB** | 38870.17 | 15673.98 | 59.66% | 9707.17 | 75.04% | 5217.21 | 86.58% |
+| **PD Leader** | 38709.68 | 33452.27 | 13.60% | 28710.88 | 25.80% | 19373.59 | 49.95% |
+| **TiKV Write** | 7874.02 | 5386.00 | 31.60% | 4792.33 | 39.14% | 3024.19 | 61.58% |
+| **TiKV Read** | 8086.25 | 8426.97 | -4.21% (上升) | 7915.57 | 2.11% | 8645.53 | -6.92% (上升) |
+
+### RTT 情境分析重點 (Concurrency 1000):
+
+1.  **前端層衝擊：** 在 RTT 200 ms 條件下，TiProxy 的 QPS 衰退最為嚴重，高達 **93.73%**。TiDB 也下降了 **86.58%**。
+2.  **寫入效能：** TiKV Write 的 QPS 在 RTT 200 ms 時下降了 **61.58%**。
+3.  **讀取穩定性：** TiKV Read 在所有 RTT 測試中表現穩定，效能下降極微或甚至微幅上升。
+
+----
+
+#### **二、 頻寬瓶頸情境下的效能差異 (30 / 10 / 5 Mbps)**
+
+> 此情境針對 TiProxy / TiDB / TiKV 進行限速，期望在低頻寬下仍維持運作，並同步觀察 TiKV `region` pending 情況。
+
+| 組件 (Component) | 基準 QPS (Default) | 10 Mbps QPS | 10 Mbps 效能下降比例 | 5 Mbps QPS | 5 Mbps 效能下降比例 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **TiProxy** | 41631.97 | 7733.55 | 81.42% | 6697.62 | 83.92% |
+| **TiDB** | 38870.17 | 8161.27 | 79.01% | 6117.33 | 84.24% |
+| **PD Leader** | 38709.68 | 8390.43 | 78.33% | 5984.32 | 84.55% |
+| **TiKV Write** | 7874.02 | 6109.98 | 22.39% | 814.77 | 89.65% |
+| **TiKV Read** | 8086.25 | 8042.90 | 0.54% | 7853.40 | 2.88% |
+
+### 頻寬情境分析重點 (Concurrency 1000):
+
+1.  **寫入瓶頸：** 當頻寬限制到 5 Mbps 時，TiKV Write 的 QPS 暴跌 **89.65%** ，遠高於其他組件在此情境下的跌幅，這使其成為高併發低頻寬下的最大瓶頸。
+2.  **前端層一致性：** 在 10 Mbps 條件下，TiProxy、TiDB 和 PD Leader 的 QPS 下降比例都集中在 78% 至 81% 之間。
+3.  **讀取穩定性：** TiKV Read 在 5 Mbps 頻寬限制下，效能下降僅 **2.88%** ，確認讀取操作對於頻寬的敏感度極低。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ----
 
