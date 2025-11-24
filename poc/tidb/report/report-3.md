@@ -12,11 +12,6 @@
 - **頻寬瓶頸（30Mbps / 10Mbps / 5Mbps）**
   - 針對 TiDB 上行、TiKV 下行等方向限速，同步觀察 TiKV `region` pending、PD scheduler 採納策略；期望在低頻寬下仍維持運作。
 
-- **丟包（0% / 0.1% / 1%）**
-  - 透過 `chaosd` 對不同專線注入封包遺失，檢驗 TiKV Raft 重傳與 TiDB coprocessor 重試；若 Heartbeat 出現 gap，需立刻標記為 RPO 事件並擴增追蹤資料。
-
-每個條件下都可搭配 `tiup cluster display`、Grafana 面板確認 PD/RoF/TiKV 延遲與負載變化，測試記錄可附於報告供進一步分析。
-
 ----
 
 ### 測試環境資訊 交付
