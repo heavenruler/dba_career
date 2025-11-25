@@ -175,8 +175,7 @@
 ## ==== **[Failover Scenario](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-4.md)** ====
 [Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
 
-### **RPO（Recovery Point Objective）/ RTO（Recovery Time Objective）**
-- 根據目前 `rto_seq` Heartbeat 表推算，紀錄皆為 0；但測試條件尚不嚴謹，待完整腳本與案例設計完成後再更新完整合理數據。
+> 測試條件尚不嚴謹，待完整腳本與案例設計完成後再更新完整合理 RTO / RPO 數據。
 
 ### **SQL 層（TiDB + Tiproxy）**
 - 單一 TiDB 停機（[影片](https://youtu.be/DYmA5Ne3nrE)）：故障 0，初步顯示 Tiproxy / TiDB 重新路由或重連於壓測流量下無感；但因僅為簡化流量情境，仍需模擬貼近線上負載後再更新正式數據。
