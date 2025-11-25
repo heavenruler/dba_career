@@ -282,6 +282,18 @@ TiDB 集群的效能受制於網路品質的兩大決定性因素：
 * **低頻寬 (Bandwidth)：** 主要衝擊**後端儲存層的寫入**操作（TiKV Write）。當頻寬限制到 5 Mbps 時，TiKV Write 的 QPS 暴跌 **89.65%** ，使其成為高併發低頻寬下的最大瓶頸。
 * **讀取穩定性：** TiKV Read 在所有 RTT (單純 Insert Into 測試情境下) 測試中表現穩定 ，且在 5 Mbps 頻寬限制下，效能下降僅 **2.88%** 。
 
+#### 數據壓縮比分析
+
+- MySQL：
+  - Table size 約 2.14 GB 資料 + 0.15 GB 索引 ≈ 2.29 GB，多為單一 .ibd 檔案。
+  - 實際磁碟空間 ~2.3 GB（du /data/mysql/data/sbtest/）。
+- TiDB：
+  - information_schema 展示 sbtest1 只有 152.6 MB 資料 + 76.3 MB 索引 ≈ 228.9 MB，整個 sbtest schema 也只有 228.9 MB。
+  - TiKV/RocksDB 實體檔案分散在多個 SST 檔，總佔用約 2.0 GB（但包含所有 Region 的 metadata 與空間 placeholder）。
+- 結論：
+TiDB 在 OLTP 表的邏輯佔用率大幅優於 MySQL（約 10:1），來源在於 RocksDB 的列式壓縮與 Region 分片導致的高效儲存；
+即便底層資料切割進多個 SST，對應的物理總量仍略小於 MySQL，展現 TiDB 在壓縮比與儲存密度上的優勢，對需要節省容量或加快備份/傳輸的場景特別有利。
+
 ----
 
 ### 未來維運的幾個已知可能風險
