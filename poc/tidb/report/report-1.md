@@ -1342,7 +1342,6 @@ DNS_SERVER,IP,COUNTRY,REGION
 
 - Solution: [Create a Private Mirror](https://docs.pingcap.com/tidb/stable/tiup-mirror/)
 
-
 ## 數據壓縮比分析
 ```
 一樣是 10000000 rows 的 Table Space ; 各自佔用多少儲存空間？
