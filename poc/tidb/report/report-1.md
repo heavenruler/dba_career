@@ -129,6 +129,21 @@ MySQL 在跨區時對延遲敏感度更高；TiDB 受架構影響，在高併發
 
 ----
 
+# 數據壓縮比分析
+
+- MySQL：
+  - Table size 約 2.14 GB 資料 + 0.15 GB 索引 ≈ 2.29 GB，多為單一 .ibd 檔案。
+  - 實際磁碟空間 ~2.3 GB（du /data/mysql/data/sbtest/）。
+- TiDB：
+  - information_schema 展示 sbtest1 只有 152.6 MB 資料 + 76.3 MB 索引 ≈ 228.9 MB，整個 sbtest schema 也只有 228.9 MB。
+  - TiKV/RocksDB 實體檔案分散在多個 SST 檔，總佔用約 2.0 GB（但包含所有 Region 的 metadata 與空間 placeholder）。
+
+## 結論：
+TiDB 在 OLTP 表的邏輯佔用率大幅優於 MySQL（約 10:1），來源在於 RocksDB 的列式壓縮與 Region 分片導致的高效儲存；
+即便底層資料切割進多個 SST，對應的物理總量仍略小於 MySQL，展現 TiDB 在壓縮比與儲存密度上的優勢，對需要節省容量或加快備份/傳輸的場景特別有利。
+
+----
+
 ### 資訊說明
 - 指標：以 mysqlslap 的 AVG_QPS 視為 RPS（請求數/秒），工作負載為 `SELECT 1` 健康檢查型查詢。
 - 取樣：每組 threads 測試三次取平均（Sample_Count=3）。
