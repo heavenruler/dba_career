@@ -1,6 +1,6 @@
-# TiDB Intro for DBA #5-5
+# TiDB Intro for DBA #5-5 
 
-[Ver: Codimd](https://codimd.104.com.tw/s/vt2-_lsP5)
+[Ver: Hackmd](https://hackmd.io/@skhUTGhBTuKf0SIjiqI3-g/r1Z05J4fWx)
 
 [Ver: Github](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-5.md)
 
@@ -26,7 +26,23 @@
 
 ## 相關可觀測 (效能對照) 數據
 
-### MariaDB
+### ProxySQL with MariaDB
+
+ProxySQL Active Backend Connections
+![](https://codimd.104.com.tw/image/s3/key/y5683dhsnl29109vxsgheft5z.png)
+
+ProxySQL Network Traffic
+![](https://codimd.104.com.tw/image/s3/key/m3ffkp83wzpn2love1ubo464i.png)
+
+
+
+
+
+
+
+
+
+
 
 
 ### TiDB
