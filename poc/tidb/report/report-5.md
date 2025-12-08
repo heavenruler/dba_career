@@ -28,12 +28,14 @@
 
 ### ProxySQL with MariaDB
 
+ProxySQL Client Connections
+![image](https://hackmd.io/_uploads/Sk6FoJVz-e.png)
+
 ProxySQL Active Backend Connections
-![](https://codimd.104.com.tw/image/s3/key/y5683dhsnl29109vxsgheft5z.png)
+![image](https://hackmd.io/_uploads/By7PjJVG-l.png)
 
 ProxySQL Network Traffic
-![](https://codimd.104.com.tw/image/s3/key/m3ffkp83wzpn2love1ubo464i.png)
-
+![image](https://hackmd.io/_uploads/SJjNskVfZe.png)
 
 
 
