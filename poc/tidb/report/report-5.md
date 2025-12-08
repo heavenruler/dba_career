@@ -1,4 +1,6 @@
-# TiDB Intro for DBA #5-5 [Ver: Codimd](https://codimd.104.com.tw/s/vt2-_lsP5) [Ver: Github](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-5.md)
+# TiDB Intro for DBA #5-5
+[Ver: Codimd](https://codimd.104.com.tw/s/vt2-_lsP5)
+[Ver: Github](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-5.md)
 
 ## Staging AC-API 整合測試紀錄
 
