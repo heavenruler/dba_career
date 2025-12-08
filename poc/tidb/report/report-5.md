@@ -28,19 +28,56 @@
 
 ### ProxySQL with MariaDB
 
-ProxySQL Client Connections
+#### ProxySQL
+
+![image](https://hackmd.io/_uploads/rJKAMlEM-x.png)
+
+Client Connections
 ![image](https://hackmd.io/_uploads/Sk6FoJVz-e.png)
 
-ProxySQL Active Backend Connections
+Active Backend Connections
 ![image](https://hackmd.io/_uploads/By7PjJVG-l.png)
 
-ProxySQL Network Traffic
+Network Traffic
 ![image](https://hackmd.io/_uploads/SJjNskVfZe.png)
 
+Latency
+![image](https://hackmd.io/_uploads/Sk-Mhy4MZe.png)
+
+CPU Usage
+![image](https://hackmd.io/_uploads/S1DIAkEfbe.png)
 
 
+#### MariaDB
 
+![image](https://hackmd.io/_uploads/rJ-gQl4f-x.png)
 
+Select Types
+![image](https://hackmd.io/_uploads/BycYhkEfZl.png)
+
+Network Traffic
+![image](https://hackmd.io/_uploads/B1Qh31EfWx.png)
+
+Top Command Counters
+![image](https://hackmd.io/_uploads/H1hZaJEzbe.png)
+
+Transaction Handlers
+![image](https://hackmd.io/_uploads/BJWJA1Nfbl.png)
+
+CPU Usage / Load
+![image](https://hackmd.io/_uploads/SJ3kleEGZl.png)
+
+I/O Activity
+![image](https://hackmd.io/_uploads/BkDzleEfbe.png)
+
+InnoDB Row Operations
+![image](https://hackmd.io/_uploads/SJGPxlNMZl.png)
+
+InnoDB Row Lock Time
+![image](https://hackmd.io/_uploads/HkLagxVMWl.png)
+
+InnoDB Buffer Pool I/O & Requests
+![image](https://hackmd.io/_uploads/B1BGWe4MWl.png)
 
 
 
@@ -49,13 +86,29 @@ ProxySQL Network Traffic
 
 ### TiDB
 
+![image](https://hackmd.io/_uploads/r1QcMg4zWx.png)
+
+![image](https://hackmd.io/_uploads/SJx987gVz-l.png)
+
+![image](https://hackmd.io/_uploads/r10vQlEMWg.png)
+
 - [SQL 語句分析](http://172.21.40.19:2379/dashboard/#/statement?from=1765165500&to=1765170900)
 
-![](https://codimd.104.com.tw/image/s3/key/pss9tiruoz8h00inuygd1zid1.png)
+![image](https://hackmd.io/_uploads/BkCIzlEMZg.png)
 
+- No Slow Queries.
+![image](https://hackmd.io/_uploads/BJRZrgVGbg.png)
 
+- [監控指標](http://172.21.40.19:2379/dashboard/#/monitoring?from=1765165500&to=1765170900)
 
+Connections
+![image](https://hackmd.io/_uploads/ryGOveEGWe.png)
 
+TPS
+![image](https://hackmd.io/_uploads/rk6T_gNG-e.png)
+
+QPS
+![image](https://hackmd.io/_uploads/S1f6weEMWe.png)
 
 
 
