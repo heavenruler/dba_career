@@ -1,4 +1,4 @@
-# TiDB Intro for DBA #5-5
+# TiDB Intro for DBA #5-5 [Ver: Codimd](https://codimd.104.com.tw/s/vt2-_lsP5)
 
 ## Staging AC-API 整合測試紀錄
 
