@@ -1,5 +1,7 @@
 # TiDB Intro for DBA #5-5
+
 [Ver: Codimd](https://codimd.104.com.tw/s/vt2-_lsP5)
+
 [Ver: Github](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-5.md)
 
 ## Staging AC-API 整合測試紀錄
@@ -7,10 +9,10 @@
 ### 前提:
 
 - Staging AC-API 僅將部分 Mirror 流量導入 TiDB，實際導向的 API Endpoint 篩選清單如下
-  - 123
-  - 123
-  - 123
-  - 123
+  - /v1/account/get-multiple
+  - /v1/account/vip
+  - /v1/account/${idc-update-bd-pid}/birthday
+  - /v1/b/ha/set-account
 
 ## Staging 壓測時間點
 
