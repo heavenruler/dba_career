@@ -216,19 +216,41 @@ I/O Activity
 [TiKV](http://172.21.40.20:3000/d/000000001/tidb-cluster-node_exporter?editPanel=21&orgId=1&from=1765338900000&to=1765343100000&var-interval=1m&var-host=172.21.40.20:9100&var-buddyinfozone=All)
 ![image](https://hackmd.io/_uploads/H1dMV98Mbl.png)
 
+- [I/O Activity](http://172.21.40.20:3000/d/000000001/tidb-cluster-node_exporter?orgId=1&from=1765338900000&to=1765343100000&var-interval=1m&var-host=172.21.40.20:9100&var-buddyinfozone=All)
+
+TiProxy/TiDB/PD
+![image](https://hackmd.io/_uploads/SkZ64c8Gbg.png)
+![image](https://hackmd.io/_uploads/r17CNc8G-x.png)
+![image](https://hackmd.io/_uploads/Hk51S5Lzbe.png)
+
+TiKV
+![image](https://hackmd.io/_uploads/rkFiE5UG-g.png)
+
+[Connection Count](http://172.21.40.19:2379/dashboard/#/monitoring)
+![image](https://hackmd.io/_uploads/H1z6D5UGbe.png)
+
+[Database Time by SQL Types](http://172.21.40.19:2379/dashboard/#/monitoring)
+![image](https://hackmd.io/_uploads/Bk04w5LM-e.png)
+
+[QPS](http://172.21.40.19:2379/dashboard/#/monitoring)
+![image](https://hackmd.io/_uploads/SyTDD9UzZe.png)
+
+[TPS](http://172.21.40.19:2379/dashboard/#/monitoring)
+![image](https://hackmd.io/_uploads/B1xVOqLzWx.png)
+
+[Top Command Counters](http://172.21.40.19:2379/dashboard/#/monitoring)
+![image](https://hackmd.io/_uploads/SycKu5LM-g.png)
+![image](https://hackmd.io/_uploads/Bk3q_cLzWl.png)
 
 
+TiProxy CPU Usage
+![image](https://hackmd.io/_uploads/Hk6bK98fbl.png)
 
-- I/O Activity
+TiDB CPU Usage
+![image](https://hackmd.io/_uploads/r1GAOcLGWl.png)
 
-[TiProxy/TiDB/PD]()
-[TiKV]()
+TiKV CPU Usage
+![image](https://hackmd.io/_uploads/BkYyt58zWe.png)
 
-
-
-
-
-
-QPS
-
-Top Command Counters
+TiKV IO MBps
+![image](https://hackmd.io/_uploads/SJVQF9LGZx.png)
