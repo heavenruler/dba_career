@@ -109,7 +109,6 @@ Tue Dec  9 16:25:08 CST 2025
 - TiKV
 ![image](https://hackmd.io/_uploads/S1qqxF8G-l.png)
 
-
 ##### [I/O Activity](http://172.21.40.20:3000/d/000000001/tidb-cluster-node_exporter?orgId=1&from=1765268100000&to=1765269000000&var-interval=1m&var-host=172.21.40.20:9100&var-buddyinfozone=All)
 
 - TiProxy/TiDB/PD
@@ -120,12 +119,6 @@ Tue Dec  9 16:25:08 CST 2025
 - TiKV
 ![image](https://hackmd.io/_uploads/r1S4GK8zWl.png)
 
-
-
-
-
-
-
 ##### [Network Traffic](http://172.21.40.20:3000/d/000000001/tidb-cluster-node_exporter?editPanel=21&orgId=1&from=1765268100000&to=1765269000000&var-interval=1m&var-host=172.21.40.20:9100&var-buddyinfozone=All)
 
 - TiProxy/TiDB/PD
@@ -135,3 +128,107 @@ Tue Dec  9 16:25:08 CST 2025
 
 - TiKV
 ![image](https://hackmd.io/_uploads/S12qWFUfZx.png)
+
+----
+
+## Staging 壓測時間點
+
+- [AC 基礎量 壓力測試 @ 2025-12-05 (五) 11:30 ~ 2025-12-05 (五) 18:00](https://teams.microsoft.com/l/message/19:c44e126d5a4e4f42a1fdc5f0c71c942c@thread.skype/1764905115320?tenantId=e5b7696b-abd7-48ed-9482-723ead81e6fd&groupId=442a8629-6c1b-435f-9c92-268280d1f25f&parentMessageId=1764905115320&teamName=announcement&channelName=%E9%9D%9E%E7%B7%9A%E4%B8%8A%E4%BD%9C%E6%A5%AD%E5%85%AC%E5%91%8A&createdTime=1764905115320)
+
+- [AC 基礎量 壓力測試 @ 2025-12-05 (五) 18:00 ~ 2025-12-05 (五) 20:30](https://teams.microsoft.com/l/message/19:c44e126d5a4e4f42a1fdc5f0c71c942c@thread.skype/1764927638765?tenantId=e5b7696b-abd7-48ed-9482-723ead81e6fd&groupId=442a8629-6c1b-435f-9c92-268280d1f25f&parentMessageId=1764927638765&teamName=announcement&channelName=%E9%9D%9E%E7%B7%9A%E4%B8%8A%E4%BD%9C%E6%A5%AD%E5%85%AC%E5%91%8A&createdTime=1764927638765)
+
+- [AC 基礎量 壓力測試 @ 2025-12-08 (一) 12:00 ~ 2025-12-08 (一) 13:00](https://teams.microsoft.com/l/message/19:c44e126d5a4e4f42a1fdc5f0c71c942c@thread.skype/1765166484458?tenantId=e5b7696b-abd7-48ed-9482-723ead81e6fd&groupId=442a8629-6c1b-435f-9c92-268280d1f25f&parentMessageId=1765166484458&teamName=announcement&channelName=%E9%9D%9E%E7%B7%9A%E4%B8%8A%E4%BD%9C%E6%A5%AD%E5%85%AC%E5%91%8A&createdTime=1765166484458)
+
+- [AC 基礎量 壓力測試 @ 2025-12-08 (一) 18:00 ~ 2025-12-08 (一) 19:00](https://teams.microsoft.com/l/message/19:c44e126d5a4e4f42a1fdc5f0c71c942c@thread.skype/1765171405602?tenantId=e5b7696b-abd7-48ed-9482-723ead81e6fd&groupId=442a8629-6c1b-435f-9c92-268280d1f25f&parentMessageId=1765171405602&teamName=announcement&channelName=%E9%9D%9E%E7%B7%9A%E4%B8%8A%E4%BD%9C%E6%A5%AD%E5%85%AC%E5%91%8A&createdTime=1765171405602)
+
+- [AC 基礎量 壓力測試 @ 2025-12-09 (二) 12:00 ~ 2025-12-09 (二) 13:00](https://teams.microsoft.com/l/message/19:c44e126d5a4e4f42a1fdc5f0c71c942c@thread.skype/1765249368164?tenantId=e5b7696b-abd7-48ed-9482-723ead81e6fd&groupId=442a8629-6c1b-435f-9c92-268280d1f25f&parentMessageId=1765249368164&teamName=announcement&channelName=%E9%9D%9E%E7%B7%9A%E4%B8%8A%E4%BD%9C%E6%A5%AD%E5%85%AC%E5%91%8A&createdTime=1765249368164)
+
+- [AC 基礎量 壓力測試 @ 2025-12-09 (二) 18:00 ~ 2025-12-09 (二) 19:00](https://teams.microsoft.com/l/message/19:c44e126d5a4e4f42a1fdc5f0c71c942c@thread.skype/1765266380849?tenantId=e5b7696b-abd7-48ed-9482-723ead81e6fd&groupId=442a8629-6c1b-435f-9c92-268280d1f25f&parentMessageId=1765266380849&teamName=announcement&channelName=%E9%9D%9E%E7%B7%9A%E4%B8%8A%E4%BD%9C%E6%A5%AD%E5%85%AC%E5%91%8A&createdTime=1765266380849)
+
+- [AC 基礎量 壓力測試 @ 2025-12-10 (三) 12:00 ~ 2025-12-10 (三) 13:00](https://teams.microsoft.com/l/message/19:c44e126d5a4e4f42a1fdc5f0c71c942c@thread.skype/1765331401195?tenantId=e5b7696b-abd7-48ed-9482-723ead81e6fd&groupId=442a8629-6c1b-435f-9c92-268280d1f25f&parentMessageId=1765331401195&teamName=announcement&channelName=%E9%9D%9E%E7%B7%9A%E4%B8%8A%E4%BD%9C%E6%A5%AD%E5%85%AC%E5%91%8A&createdTime=1765331401195)
+
+- {Sample from here.} [AC 基礎量 壓力測試 @ 2025-12-10 (三) 18:00 ~ 2025-12-10 (三) 19:00 ](https://teams.microsoft.com/l/message/19:c44e126d5a4e4f42a1fdc5f0c71c942c@thread.skype/1765343548564?tenantId=e5b7696b-abd7-48ed-9482-723ead81e6fd&groupId=442a8629-6c1b-435f-9c92-268280d1f25f&parentMessageId=1765343548564&teamName=announcement&channelName=%E9%9D%9E%E7%B7%9A%E4%B8%8A%E4%BD%9C%E6%A5%AD%E5%85%AC%E5%91%8A&createdTime=1765343548564)
+
+## ProxySQL with MariaDB
+
+CPU Usage
+
+[s-proxysql-acapi-1](https://pmm.104-staging.com.tw/graph/d/qyzrQGHmk/system-overview?refresh=1m&orgId=1&panelId=2&fullscreen&edit&var-interval=$__auto_interval_interval&var-host=s-proxysql2-acapi-1&from=1765338900000&to=1765343100000)
+![image](https://hackmd.io/_uploads/BJxV0KLGbx.png)
+
+[s-m075-1](https://pmm.104-staging.com.tw/graph/d/qyzrQGHmk/system-overview?refresh=1m&orgId=1&panelId=2&fullscreen&edit&from=1765338900000&to=1765343100000&var-interval=$__auto_interval_interval&var-host=s-m075-1)
+![image](https://hackmd.io/_uploads/BJa4RYIMbx.png)
+
+Network Traffic
+
+[s-proxysql-acapi-1](https://pmm.104-staging.com.tw/graph/d/qyzrQGHmk/system-overview?refresh=1m&orgId=1&panelId=21&fullscreen&edit&from=1765338900000&to=1765343100000&var-interval=$__auto_interval_interval&var-host=s-proxysql2-acapi-1)
+![image](https://hackmd.io/_uploads/r1b3AtIGWg.png)
+
+[s-m075-1](https://pmm.104-staging.com.tw/graph/d/qyzrQGHmk/system-overview?refresh=1m&orgId=1&panelId=21&fullscreen&edit&var-interval=$__auto_interval_interval&var-host=s-m075-1&from=1765338900000&to=1765343100000)
+![image](https://hackmd.io/_uploads/SJjYRYUGbl.png)
+
+I/O Activity
+
+[s-proxysql-acapi-1](https://pmm.104-staging.com.tw/graph/d/qyzrQGHmk/system-overview?refresh=1m&orgId=1&panelId=31&fullscreen&edit&from=1765338900000&to=1765343100000&var-interval=$__auto_interval_interval&var-host=s-proxysql2-acapi-1)
+![image](https://hackmd.io/_uploads/ry7fyqUGbg.png)
+
+[s-m075-1](https://pmm.104-staging.com.tw/graph/d/qyzrQGHmk/system-overview?refresh=1m&orgId=1&panelId=31&fullscreen&edit&from=1765338900000&to=1765343100000&var-interval=$__auto_interval_interval&var-host=s-m075-1)
+![image](https://hackmd.io/_uploads/SJMbk9LM-x.png)
+
+
+[ProxySQL Client Questions](https://pmm.104-staging.com.tw/graph/d/fwWR9oiiz/proxysql-overview?refresh=1m&panelId=56&fullscreen&edit&orgId=1&var-interval=$__auto_interval_interval&var-proxysql=s-proxysql2-acapi-1&var-hostgroup=10&var-hostgroup=11&from=1765338900000&to=1765343100000)
+![image](https://hackmd.io/_uploads/r1BdJcIzWl.png)
+
+[MariaDB Questions](https://pmm.104-staging.com.tw/graph/d/MQWgroiiz/mysql-overview?refresh=1m&panelId=53&fullscreen&edit&orgId=1&var-interval=$__auto_interval_interval&var-host=s-m075-1&from=1765338900000&to=1765343100000)
+![image](https://hackmd.io/_uploads/r1sAyc8G-l.png)
+
+[Top Command Counters](https://pmm.104-staging.com.tw/graph/d/MQWgroiiz/mysql-overview?refresh=1m&panelId=14&fullscreen&edit&orgId=1&var-interval=$__auto_interval_interval&var-host=s-m075-1&from=1765338900000&to=1765343100000)
+![image](https://hackmd.io/_uploads/BJUmec8MZe.png)
+
+[InnoDB Row Operations](https://pmm.104-staging.com.tw/graph/d/giGgrTimz/mysql-innodb-metrics?refresh=1m&panelId=23&fullscreen&edit&orgId=1&var-interval=$__auto_interval_interval&var-host=s-m075-1&from=1765338900000&to=1765343100000)
+![image](https://hackmd.io/_uploads/r1rYx9LfZg.png)
+
+[InnoDB Read/Write Status](https://pmm.104-staging.com.tw/graph/d/giGgrTimz/mysql-innodb-metrics?refresh=1m&orgId=1&var-interval=$__auto_interval_interval&var-host=s-m075-1&from=1765338900000&to=1765343100000)
+![image](https://hackmd.io/_uploads/rkeX-q8M-x.png)
+
+----
+
+## TiDB Cluster
+
+- CPU Usage
+
+[TiProxy/TiDB/PD](http://172.21.40.20:3000/d/000000001/tidb-cluster-node_exporter?editPanel=2&orgId=1&from=1765338900000&to=1765343100000&var-interval=1m&var-host=172.21.40.17:9100&var-buddyinfozone=All)
+![image](https://hackmd.io/_uploads/rJIcm5Uzbg.png)
+![image](https://hackmd.io/_uploads/HJYTQ9UMbe.png)
+![image](https://hackmd.io/_uploads/BJH0Xc8z-l.png)
+
+[TiKV](http://172.21.40.20:3000/d/000000001/tidb-cluster-node_exporter?editPanel=2&orgId=1&from=1765338900000&to=1765343100000&var-interval=1m&var-host=172.21.40.20:9100&var-buddyinfozone=All)
+![image](https://hackmd.io/_uploads/BymJVqIfZl.png)
+
+
+- Network Traffic
+
+[TiProxy/TiDB/PD](http://172.21.40.20:3000/d/000000001/tidb-cluster-node_exporter?editPanel=21&orgId=1&from=1765338900000&to=1765343100000&var-interval=1m&var-host=172.21.40.17:9100&var-buddyinfozone=All)
+![image](https://hackmd.io/_uploads/Sk_7N98GZg.png)
+![image](https://hackmd.io/_uploads/Hy44NcLfbx.png)
+![image](https://hackmd.io/_uploads/BkeS4cIfbg.png)
+
+[TiKV](http://172.21.40.20:3000/d/000000001/tidb-cluster-node_exporter?editPanel=21&orgId=1&from=1765338900000&to=1765343100000&var-interval=1m&var-host=172.21.40.20:9100&var-buddyinfozone=All)
+![image](https://hackmd.io/_uploads/H1dMV98Mbl.png)
+
+
+
+
+- I/O Activity
+
+[TiProxy/TiDB/PD]()
+[TiKV]()
+
+
+
+
+
+
+QPS
+
+Top Command Counters
