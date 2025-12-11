@@ -356,6 +356,7 @@ DNS_SERVER,IP,COUNTRY,REGION
 
 - [Manifest format and repository layout 說明](https://github.com/pingcap/tiup/blob/master/doc/design/manifest.md)
 
+![image](https://hackmd.io/_uploads/r11Ikluf-g.png)
 ![](https://codimd.104.com.tw/image/s3/key/gjnlfgp0bqj69e633uw3l78yp.png)
 
 - Solution: [Create a Private Mirror](https://docs.pingcap.com/tidb/stable/tiup-mirror/)
