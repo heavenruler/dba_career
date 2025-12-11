@@ -242,7 +242,18 @@ TiDB 集群的效能受制於網路品質的兩大決定性因素：
 ----
 
 ## ==== **{FIXME}[Staging AC-API 整合測試紀錄](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md)** ====
-[Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
+[Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-5.md)
+
+### Staging AC 基礎量 壓力測試 觀測總結
+
+在相同壓測來源，兩者於 CPU、Network、IO、QPS、Latency 呈現明顯差異，可歸納如下：
+
+| 效能指標 | ProxySQL + MariaDB (P+M) 集中式數據 | TiDB Cluster (TiDB) 分佈式數據 | P+M 相較 TiDB 的差異比例 (約略值) | 關鍵差異點 |
+| :--- | :--- | :--- | :--- | :--- |
+| **CPU 負載 (儲存層)** | MariaDB MAX **11.5%** | TiKV MAX **5.8%** | P+M 核心節點 CPU 負載約高 **1.98 倍** | MariaDB 單點瓶頸在集中架構呈現較明顯。 |
+| **I/O 寫入 (儲存層)** | MariaDB Disk Write **1.9 MB/s** | TiKV sdb throughput current **316.00 KB/s** | P+M I/O 寫入集中度約高 **6.0 倍** | TiDB 將 I/O 寫入分散到 TiKV 節點。 |
+| **網路流量 (Outbound)** | ProxySQL Outbound AVG **11.64 MB/s** | TiDB/Proxy/PD Outbound current **587 KB/s** | 參考數據 | Outbound 去 NULL 與正確回應的差異。 |
+| **P+M 查詢量 (Client Questions)** | ProxySQL 接收 AVG **5.85K** ; MariaDB 處理 AVG **2K** | TiDB Select QPS 113 | P+M 核心處理量約高 17.7 倍 | MariaDB 實際查詢量: (2K) 約為 TiDB Select QPS (113) 的 17.7 倍。但負載僅多 TiDB 1.98 倍差異。 |
 
 ----
 
