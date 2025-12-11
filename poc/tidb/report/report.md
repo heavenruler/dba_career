@@ -1,5 +1,5 @@
 # TiDB Intro
-
+- [PoC 架構設計原則](https://hackmd.io/iWx0brzWQ2W7Xs7gYpRFFQ?view#PoC-%E6%9E%B6%E6%A7%8B%E8%A8%AD%E8%A8%88%E5%8E%9F%E5%89%87)
 - [RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#-rps-%E6%95%88%E8%83%BD%E5%B0%8D%E7%85%A7%E8%A7%A3%E6%9E%90)
 - [Sysbench 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#-sysbench-%E6%95%88%E8%83%BD%E5%B0%8D%E7%85%A7%E8%A7%A3%E6%9E%90-)
 - [Failover Scenario](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#-failover-scenario-)
