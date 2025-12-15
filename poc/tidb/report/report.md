@@ -11,7 +11,7 @@
 ----
 
 ## ==== **[RPS 效能對照解析](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-1.md)**====
-[Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
+[Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-poc-report)
 
 ### **TiDB 跨區穩定度高：10〜250 threads 僅 ±1%〜2% 波動**
 
