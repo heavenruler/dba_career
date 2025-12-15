@@ -174,7 +174,7 @@
 ----
 
 ## ==== **[Failover Scenario](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-4.md)** ====
-[Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
+[Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-poc-report)
 
 > 目前測試條件尚不嚴謹，待完整腳本與案例設計完成後再更新完整合理 RTO / RPO 數據。
 
