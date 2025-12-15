@@ -263,7 +263,7 @@ TiDB 集群的效能受制於網路品質的兩大決定性因素：
 ----
 
 ## ==== **Final** ====
-[Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-intro)
+[Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-poc-report)
 
 ### 性能差異與選型建議
 
