@@ -243,7 +243,7 @@ TiDB 集群的效能受制於網路品質的兩大決定性因素：
 ----
 
 ## ==== **[Staging AC-API 整合測試紀錄](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report-5.md)** ====
-[Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md)
+[Back](https://github.com/heavenruler/dba_career/blob/master/poc/tidb/report/report.md#tidb-poc-report)
 
 ### 流量架構示意圖
 
