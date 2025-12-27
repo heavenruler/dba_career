@@ -44,10 +44,6 @@ variable "vsphere_template_folder" {
 #=========================#
 
 variable "vm_datastore_test" {description = "Datastore used for the vSphere virtual machines"}
-variable "vm_datastore_test2" {description = "Datastore used for the vSphere virtual machines"}
-variable "vm_datastore_hvm" {description = "Datastore used for the vSphere virtual machines"}
-variable "vm_datastore_infra" {description = "Datastore used for the vSphere virtual machines"}
-variable "vm_datastore_product" {description = "Datastore used for the vSphere virtual machines"}
 
 variable "vm_network" {
   description = "Network used for the vSphere virtual machines"
