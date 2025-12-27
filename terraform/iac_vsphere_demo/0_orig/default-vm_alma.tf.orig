@@ -1,0 +1,62 @@
+locals {
+  use_tpl_XXX = "template_XXX"
+}
+
+resource "vsphere_virtual_machine" "vm-XXX" {
+  name              = "l-XXX"
+  resource_pool_id  = "${data.vsphere_resource_pool.resource_pool.id}"
+  datastore_id      = "${data.vsphere_datastore.datastore_XXX.id}"
+  folder            = "${var.vsphere_vm_folder}"
+  custom_attributes = tomap({ for name, value in var.vm_custom_attrs_XXX : data.vsphere_custom_attribute.attrs_XXX[name].id => value })
+
+  num_cpus                         = "cpuXXX"
+  memory                           = "ramXXX"
+  memory_reservation               = "ramXXX"
+  memory_reservation_locked_to_max = true
+  guest_id                         = "${data.vsphere_virtual_machine.template.guest_id}"
+  firmware                         = "${var.vm_firmware}"
+
+  network_interface {
+    network_id   = "${data.vsphere_network.network.id}"
+  }
+
+  disk {
+    label            = "l-XXX-sda.vmdk"
+    size             = "${data.vsphere_virtual_machine.template.disks.0.size}"
+    eagerly_scrub    = "${data.vsphere_virtual_machine.template.disks.0.eagerly_scrub}"
+    thin_provisioned = "true"
+  }
+
+  clone {
+    template_uuid = data.vsphere_virtual_machine.templates[local.use_tpl_XXX].id
+    linked_clone  = "${var.vm_linked_clone}"
+
+    customize {
+      timeout = "20"
+
+      linux_options {
+        host_name = "l-XXX"
+        domain    = ""
+        script_text = <<-EOT
+          #!/bin/bash
+          sleep 5
+          if grep -qi "ubuntu" /etc/os-release 2>/dev/null || [ ! -f /etc/redhat-release ]; then
+            exit 0
+          fi
+          cat /dev/null > /etc/sysconfig/network
+          sed -i -r "/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+.*$(hostname -s)/d" /etc/hosts
+        EOT
+      }
+
+      network_interface {
+        ipv4_address = "ipXXX"
+        ipv4_netmask = "${var.vm_netmask}"
+      }
+
+      ipv4_gateway    = "${var.vm_gateway}"
+      dns_suffix_list = ["${var.vm_domain}"]
+      dns_server_list = ["${var.vm_dns}"]
+    }
+  }
+}
+

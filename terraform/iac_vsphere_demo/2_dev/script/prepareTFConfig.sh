@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+
+hostname_prefix="$1"
+
+vm_list_path="../1_globalConfig/1_vmList_$ENV"
+mapping_file="../1_globalConfig/0_serviceList_mapping"
+tfstate_path="terraform.tfstate.d"
+tfplan_path="terraform.plan.d"
+ruleString=""
+
+# Check if parameters are empty
+if [ -z "$hostname_prefix" ] || [ -z "$ENV" ]; then
+    echo "ENV or hostname_prefix parameters are missing. Please check ececute command."
+    exit 1
+fi
+
+# 檢查 $vm_list_path 内容是否存在設定
+if ! grep -qE "^[^#]*$hostname_prefix" "$vm_list_path"; then
+    echo "No data found for hostname prefix: $hostname_prefix in $vm_list_path."
+    exit 1
+fi
+
+# 建立基本資料參數
+while IFS=$'\t' read -r environment hostname template_name cpu memory data_volumn data_store IP_List; do
+   if [[ $environment != \#* ]] && [ "$hostname" = "$hostname_prefix" ]; then
+   	EXEC="$ENV-$hostname_prefix"
+
+       # Check if parameters are empty
+       if [ -z "$environment" ] || [ -z "$hostname" ] || [ -z "$template_name" ] || [ -z "$cpu" ] || [ -z "$memory" ] || [ -z "$data_volumn" ] || [ -z "$data_store" ] || [ -z "$IP_List" ]; then
+           echo "One or more parameters are missing. Please check the contents of \"1_globalConfig/1_vmList_$ENV\"."
+           exit 1
+       fi
+
+       echo "ENV: $ENV"
+       echo "Hostname Prefix: $hostname_prefix"
+       echo "Template Name: $template_name"
+       echo "CPU: $cpu"
+       echo "Memory: $memory"
+       echo "Data Volume: $data_volumn"
+       echo "Data Store: $data_store"
+       echo "IP List: $IP_List"
+       echo "State: $tfstate_path/$EXEC.tfstate"
+       echo "Plan Out: $tfplan_path/$EXEC.tfplan"
+
+
+       # Calculate IP count
+       IFS=',' read -ra IP_Array <<< "$IP_List"
+       count=${#IP_Array[@]}
+       echo "VM Count: $count"
+
+       # Ping check for each IP
+       for ip in "${IP_Array[@]}"; do
+		   echo "IP: $ip 狀態確認中"
+           if ping -c 1 "$ip" &>/dev/null; then
+			   echo "IP: $ip 已被使用; 請注意是否更換 IP 避免衝突!!!!!!"
+           else
+               echo "IP: $ip 可用"
+           fi
+       done
+       break
+   fi
+done < "$vm_list_path"
+
+# Init DSL Config
+cat /dev/null | tee ./$EXEC.tf
+echo "#===============================================================================" >> ./$EXEC.tf
+echo "# vSphere Resources                                                             " >> ./$EXEC.tf
+echo "#===============================================================================" >> ./$EXEC.tf
+echo "" >> ./$EXEC.tf
+
+## 建立 Terraform Config for Resource Pool
+#cat ../0_orig/default-resource-pool.tf.orig >> ./$EXEC.tf
+
+# 建立 Terraform Config for VM
+if [ "$count" -ge 1 ]; then
+    # 根據 template_name 定義使用哪個resource tf，原先的不變，後來新增的改用新的resource tf
+    if [[ "${template_name}" == "db-template" || "${template_name}" == "db-template-u16" ]];then
+      default_vm_file="default-vm.tf.orig";
+      defailt_vm_data_volumn_file="default-vm-with-data-volumn.tf.orig";
+    else
+      default_vm_file="default-vm_alma.tf.orig";
+      defailt_vm_data_volumn_file="default-vm_alma-with-data-volumn.tf.orig";
+    fi
+
+    for ((i=0; i<count; i++)); do
+        if [ "$data_volumn" -eq 0 ]; then # 如果 $data_volumn = 0，执行 cat ../orig/default-vm.tf.orig
+            cat ../0_orig/${default_vm_file} >> ./$EXEC.tf
+        else # 如果 $data_volumn != 0，执行 cat ../orig/default-vm-with-data-volumn.tf.orig
+            cat ../0_orig/${defailt_vm_data_volumn_file} >> ./$EXEC.tf
+        fi
+
+        sed -i "" "s/vm-XXX/$EXEC-$((i+1))/g" ./$EXEC.tf # for tf resource prefix
+		if [[ "$data_store" =~ ^test ]]; then
+			sed -i "" "s/datastore_XXX/datastore_test/g" "./$EXEC.tf"
+		else
+			sed -i "" "s/datastore_XXX/datastore_$data_store/g" ./$EXEC.tf # for datastore label
+		fi
+        sed -i "" "s/attrs_XXX/attrs_${hostname_prefix}/g" ./$EXEC.tf # for custom attribute label
+        sed -i "" "s/l-XXX-sda/l-$hostname_prefix-$((i+1))-sda/g" ./$EXEC.tf # for disk label
+        sed -i "" "s/l-XXX/l-$hostname_prefix-$((i+1))/g" ./$EXEC.tf # for host basic information
+        sed -i "" "s/cpuXXX/$cpu/g" ./$EXEC.tf # for tf resource prefix
+        sed -i "" "s/ramXXX/$((memory*1024))/g" ./$EXEC.tf # for tf resource prefix
+        sed -i "" "s/dataXXX/$data_volumn/g" ./$EXEC.tf # for tf data volume prefix
+        sed -i "" "s/ipXXX/${IP_Array[$i]}/g" ./$EXEC.tf # for tf resource prefix
+        sed -i "" "s/template_XXX/${template_name}/g" ./$EXEC.tf # for tf resource prefix
+        sed -i ""  "s/use_tpl_XXX/use_tpl_l_${hostname_prefix}_$((i+1))/g" ./$EXEC.tf # for tf resource prefix
+
+        # 組合 anti affinity 設定字串給 ruleString
+        if [ -z "$ruleString" ]; then
+            ruleString="vsphere_virtual_machine.$EXEC-$((i+1)).id"
+        else
+            ruleString="$ruleString, vsphere_virtual_machine.$EXEC-$((i+1)).id"
+        fi
+    done
+fi
+
+## 建立 Terraform Config for DRS Anti Affinity
+cat ../0_orig/default-anti-affinity.tf.orig >> ./$EXEC.tf
+sed -i "" "s/ruleXXX/$ruleString/g" ./$EXEC.tf
+
+## Gen Custom Attribute Content
+function generate_tfvars_content() {
+    while IFS=$'\t' read -r service_name AZ BillDomain BillUnit DeveloperOwner Group SystemOwner; do
+        if [[ $service_name == $hostname_prefix ]]; then
+            # 預防 AZ 指定錯誤，如果不為 AZ_ENV_DB 則預設內帳AZ_INFRA_DB ; 其他產品 AZ 將指定為 AZ_LAB_DB
+            [[ $AZ == "AZ_ENV_DB" ]] && AZ="AZ_LAB_DB" || AZ="AZ_INFRA_DB"
+			echo ""
+			echo "data \"vsphere_custom_attribute\" \"attrs_${hostname_prefix}\" {"
+			echo "  for_each      = \"\${var.vm_custom_attrs_${hostname_prefix}}\""
+			echo "  name          = each.key"
+			echo "}"
+			echo ""
+			echo "variable \"vm_custom_attrs_${hostname_prefix}\" {"
+			echo "  description = \"Custom Attributes\""
+			echo "  default = {"
+			echo "    \"AZ\"              = \"$AZ\""
+			echo "    \"BillDomain\"      = \"$BillDomain\""
+			echo "    \"BillUnit\"        = \"$BillUnit\""
+			echo "    \"DeveloperOwner\"  = \"$DeveloperOwner\""
+			echo "    \"Group\"           = \"$Group\""
+			echo "    \"SystemOwner\"     = \"$SystemOwner\""
+			echo "  }"
+			echo "}"
+        fi
+    done < "$mapping_file"
+}
+generate_tfvars_content >> ./$EXEC.tf
+
+## 統一修正
+sed -i "" "s/XXX/$EXEC/g" ./$EXEC.tf
