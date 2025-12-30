@@ -1,0 +1,312 @@
+---
+# tasks file for basic_config_for_os
+
+- name: Get first ethetnet name
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      nmcli device status |grep -i 'ethernet' |grep -i 'connected' |awk 'NR==1 {for(i=4; i<=NF; i++) names=names $i " "} END {print substr(names,1,length(names)-1)}'
+  register: var_local_eth
+
+- name: Ensure directories are present
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /localhost
+    - /var/log/cron-log
+
+- name: Remove proxy setting in dnf.conf
+  ansible.builtin.lineinfile:
+    path: /etc/dnf/dnf.conf
+    regexp: '^proxy='
+    state: absent
+
+- name: Ensure proxy is set in dnf.conf
+  ansible.builtin.lineinfile:
+    path: /etc/dnf/dnf.conf
+    insertafter: '\[main\]'
+    line: 'proxy={{ var_proxy }}'
+    state: present
+
+- name: Skip kernel update
+  ansible.builtin.lineinfile:
+    path: /etc/dnf/dnf.conf
+    insertafter: 'skip_if_unavailable=False'
+    line: 'exclude=kernel* almalinux-release'
+    state: present
+
+- name: Disable selinux
+  ansible.builtin.lineinfile:
+    path: /etc/selinux/config
+    regexp: '^SELINUX=([a-zA-z]+)$'
+    line: 'SELINUX=disabled'
+    state: present
+  register: selinux_modify_flag
+
+- name: Print selinux_modify_flag
+  ansible.builtin.debug:
+    msg: "selinux_modify_flag: {{ selinux_modify_flag.changed }}"
+
+- name: Disable and stop firewalld service
+  ansible.builtin.systemd:
+    name: firewalld
+    enabled: false
+    state: stopped
+
+- name: Reboot machine
+  ansible.builtin.reboot:
+    reboot_timeout: 180
+  when: selinux_modify_flag.changed == True
+
+- name: Gather facts about installed packages
+  ansible.builtin.package_facts:
+    manager: "auto"
+
+- name: Add proxy settings to /root/.bashrc
+  ansible.builtin.lineinfile:
+    path: /root/.bashrc
+    line: "{{ item }}"
+    state: present
+    create: true
+    regexp: "^{{ item.split('=')[0] }}"
+    mode: '0644'
+  loop:
+    - "export http_proxy={{ var_proxy }}"
+    - "export https_proxy={{ var_proxy }}"
+  become: true
+
+- name: Import AlmaLinux GPG key
+  ansible.builtin.command:
+    cmd: "rpm --import https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux"
+
+- name: Install packages epel-release
+  ansible.builtin.package:
+    name:
+      - epel-release
+    state: present
+  register: epel_installed_flag
+  until: epel_installed_flag is succeeded
+  retries: 10
+  delay: 5
+  when: "'epel-release' not in ansible_facts.packages"
+
+- name: Define repo_url_replace variable
+  ansible.builtin.set_fact:
+    repo_url_replace:
+      - filter: "^(mirrorlist=)"
+        replace: "#\\1"
+      - filter: "^# (baseurl=)"
+        replace: "\\1"
+      #- filter: "^(metalink=)"
+      #  replace: "#\\1"
+      - filter: "^#(baseurl=)"
+        replace: "\\1"
+      - filter: "https://download.example/pub/epel/8/Everything"
+        replace: "http://free.nchc.org.tw/fedora-epel/8/Everything"
+#        replace: "http://mirror01.idc.hinet.net/EPEL/8/Everything"
+
+- name: Replace the epel.repo settings
+  ansible.builtin.replace:
+    path: /etc/yum.repos.d/epel.repo
+    regexp: "{{ item.filter }}"
+    replace: "{{ item.replace }}"
+  loop: "{{ repo_url_replace }}"
+  when: "'epel-release' in ansible_facts.packages"
+
+- name: Replace the almalinux.repo settings
+  ansible.builtin.replace:
+    path: /etc/yum.repos.d/almalinux.repo
+    regexp: "{{ item.filter }}"
+    replace: "{{ item.replace }}"
+  loop: "{{ repo_url_replace }}"
+
+- name: Enable almalinux-powertools repo
+  ansible.builtin.command:
+    cmd: dnf config-manager --set-enabled powertools
+
+- name: Replace almalinux-powertools.repo settings
+  ansible.builtin.replace:
+    path: /etc/yum.repos.d/almalinux-powertools.repo
+    regexp: "{{ item.filter }}"
+    replace: "{{ item.replace }}"
+  loop: "{{ repo_url_replace }}"
+
+- name: Install basic packages
+  ansible.builtin.dnf:
+    name:
+      - btop
+      - htop
+      - nmap
+      - perf
+      - tmux
+      - dstat
+      - smem
+      - iotop
+      - nfs-utils
+      - net-tools
+      - bind-utils
+      - wireshark-cli
+      - traceroute
+      - tcpdump
+      - vim-common
+      - vim-enhanced
+      - vim-filesystem
+      - vim-minimal
+      - jemalloc
+      - zstd
+      - unzip
+    state: present
+  register: dnf_result
+  until: dnf_result is succeeded
+  retries: 5
+  delay: 10
+
+- name: Update pam packages
+  ansible.builtin.dnf:
+    name:
+      - pam
+    state: latest
+  register: dnf_result
+  until: dnf_result is succeeded
+  retries: 5
+  delay: 10
+
+- name: Fix screen mode's title change configuration
+  become: true
+  block:
+    - name: Write bash-prompt-screen configuration
+      ansible.builtin.copy:
+        content: |
+          printf "\033]0;%s@%s:%s\033\\" "${USER}" "${HOSTNAME%%.*}" "${PWD/#$HOME/~}"
+        dest: /etc/sysconfig/bash-prompt-screen
+        mode: '0644'
+
+    - name: Make bash-prompt-screen executable
+      ansible.builtin.file:
+        path: /etc/sysconfig/bash-prompt-screen
+        mode: '0755'
+
+- name: Set sysctl parameters
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.conf
+    line: "{{ item.line }}"
+    regexp: "^{{ item.regexp }}"
+    state: present
+  loop:
+    - { line: 'fs.file-max = 19729204', regexp: 'fs\.file-max' }
+    - { line: 'fs.inotify.max_user_instances = 8192', regexp: 'fs\.inotify\.max_user_instances' }
+    - { line: 'net.core.default_qdisc = fq', regexp: 'net\.core\.default_qdisc' }
+    - { line: 'net.ipv4.tcp_congestion_control = bbr', regexp: 'net\.ipv4\.tcp_congestion_control' }
+    - { line: 'net.ipv4.tcp_tw_reuse = 1', regexp: 'net\.ipv4\.tcp_tw_reuse' }
+    - { line: 'net.ipv4.tcp_fin_timeout = 30', regexp: 'net\.ipv4\.tcp_fin_timeout' }
+    - { line: 'vm.zone_reclaim_mode = 0', regexp: 'vm\.zone_reclaim_mode' }
+    - { line: 'vm.force_cgroup_v2_swappiness = 1', regexp: 'vm\.force_cgroup_v2_swappiness' }
+    - { line: 'vm.swappiness = 1', regexp: 'vm\.swappiness' }
+    - { line: 'vm.drop_caches = 3', regexp: 'vm\.drop_caches' }
+  become: true
+
+- name: Reload sysctl parameters
+  ansible.builtin.command:
+    cmd: sysctl -p
+  register: sysctl_output
+  become: true
+  changed_when: sysctl_output.stdout != ""
+
+- name: Update limits.conf settings
+  ansible.builtin.lineinfile:
+    path: /etc/security/limits.conf
+    line: "{{ item.line }}"
+    regexp: "^{{ item.regexp }}"
+    state: present
+  loop:
+    - { line: '*         hard nofile  1048576', regexp: '\*\s+hard\s+nofile' }
+    - { line: '*         soft nofile  1048576', regexp: '\*\s+soft\s+nofile' }
+    - { line: '*         hard nproc   1048576', regexp: '\*\s+hard\s+nproc' }
+    - { line: '*         soft nproc   1048576', regexp: '\*\s+soft\s+nproc' }
+  become: true
+- name: Install chrony
+  ansible.builtin.package:
+    name: chrony
+    state: present
+  become: true
+
+- name: Update chrony configuration
+  ansible.builtin.lineinfile:
+    path: /etc/chrony.conf
+    regexp: '^pool .*\.pool\.ntp\.org iburst'
+    line: "pool {{ var_ntp }} iburst"
+  become: true
+
+- name: Enable and restart chronyd service
+  ansible.builtin.systemd:
+    name: chronyd
+    enabled: true
+    state: restarted
+  become: true
+
+# Optionally, if you really want to retrieve the status (this will not change any state, just show the status)
+- name: Show chronyd service status
+  ansible.builtin.command:
+    cmd: systemctl status chronyd
+  register: chronyd_status
+  become: true
+  changed_when: false  # This ensures Ansible knows the state hasn't changed
+
+- name: Display chronyd status
+  ansible.builtin.debug:
+    var: chronyd_status.stdout_lines
+  when: chronyd_status is defined
+
+- name: Fix /etc/vimrc
+  ansible.builtin.lineinfile:
+    path: /etc/vimrc
+    line: "{{ item.line }}"
+    state: present
+  loop:
+    - { line: "\" Disable_automatic_comment_insertion" }
+    - { line: "au BufEnter * set fo-=c fo-=r fo-=o" }
+
+- name: Create /root/.vimrc
+  ansible.builtin.lineinfile:
+    path: /root/.vimrc
+    line: "{{ item.line }}"
+    create: true
+    state: present
+  loop:
+    - { line: "\" 自訂" }
+    - { line: "set nopaste" }
+    - { line: "hi LineNr ctermfg=gray"}
+    - { line: "set cursorline"}
+    - { line: "hi cursorline cterm=bold ctermbg=none"}
+    - { line: "hi CursorLineNr cterm=bold ctermbg=black ctermfg=red"}
+
+- name: Change /etc/rc.d/rc.local permissions
+  ansible.builtin.file:
+    path: /etc/rc.d/rc.local
+    mode: '0755'
+
+- name: Run nmcli command get current settings
+  ansible.builtin.command:
+    cmd: nmcli connection show "{{ var_local_eth.stdout }}"
+  register: nmcli_current_settings
+
+- name: Setup ipv4 dns server and search domain
+  community.general.nmcli:
+    conn_name: "{{ var_local_eth.stdout }}"
+    type: ethernet
+    dns4: "{{ var_dns }}"
+    dns4_search: "{{ var_dns_search }}"
+    state: present
+
+- name: Run nmcli command get desired settings
+  ansible.builtin.command:
+    cmd: nmcli connection show "{{ var_local_eth.stdout }}"
+  register: nmcli_desired_settings
+
+- name: Restart NetworkManager service
+  ansible.builtin.service:
+    name: NetworkManager
+    state: restarted
+  when: "nmcli_desired_settings.stdout != nmcli_current_settings.stdout"

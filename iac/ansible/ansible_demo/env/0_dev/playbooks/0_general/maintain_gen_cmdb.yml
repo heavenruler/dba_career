@@ -1,0 +1,27 @@
+---
+- name: maintain_gen_cmdb
+  hosts: all
+  serial: 1
+  gather_facts: true
+
+  roles:
+    - 0_import_all_vars
+    - maintain_nmap_collector_subnet_ip
+    - maintain_check_ssh_hosts
+    - maintain_gen_cmdb
+    - role: 3_commit_to_github
+      repo_name: "dba-documents"
+      repo_github: "https://github.com/104corp/{{ repo_name }}.git"
+      repo_path: "/tmp/{{ repo_name }}"
+      commit_path: "/tmp/{{ repo_name }}/X.DB_ALL_Info/0_Genrate_by_Ansible/{{target_env}}"
+      filenames:
+        - "{{ commit_path }}/iplist"
+        - "{{ commit_path }}/iplist_ssh"
+        - "{{ commit_path }}/iplist_other"
+        - "{{ commit_path }}/iplist_proxysql"
+        - "{{ commit_path }}/iplist_rdbms"
+        - "{{ commit_path }}/iplist_mongodb"
+        - "{{ commit_path }}/iplist_redis"
+        - "{{ commit_path }}/iplist_redis_tls"
+        - "{{ commit_path }}/cmdb.html"
+        - "{{ commit_path }}/cmdb.csv"

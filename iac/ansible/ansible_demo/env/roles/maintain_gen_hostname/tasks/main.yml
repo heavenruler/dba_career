@@ -1,0 +1,56 @@
+---
+# tasks file for maintain_gen_hostname
+
+- name: Ensure temporary directory exists
+  file:
+    path: "/tmp/dba-documents"
+    state: directory
+
+- name: Clone DBA documents using sparse checkout
+  include_role:
+    name: 4_sparse_clone_dba-documents
+
+- name: Check if the directory /tmp/dba-documents/X.DB_ALL_Info/0_Genrate_by_Ansible exists
+  stat:
+    path: "/tmp/dba-documents/X.DB_ALL_Info/0_Genrate_by_Ansible/{{ target_env }}"
+  register: gen_by_ansible_dir
+
+- name: Fail the playbook if the directory does not exist
+  fail:
+    msg: "Directory /tmp/dba-documents/X.DB_ALL_Info/0_Genrate_by_Ansible/{{ target_env }} does not exist."
+  when: not gen_by_ansible_dir.stat.exists
+
+- name: Read list of IPs from the file
+  ansible.builtin.slurp:
+    src: "/tmp/dba-documents/X.DB_ALL_Info/0_Genrate_by_Ansible/{{ target_env }}/iplist_ssh"
+  register: ip_list_slurped
+  delegate_to: localhost
+
+- name: Decode the IP list content
+  set_fact:
+    ip_list: "{{ (ip_list_slurped['content'] | b64decode).splitlines() }}"
+
+- name: Echo IP list
+  ansible.builtin.debug:
+    msg: "{{ ip_list }}"
+
+- name: Get hostnames for all IPs in the list using SSH command
+  ansible.builtin.command:
+    cmd: "ssh -q -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null root@{{ item }} hostname -s"
+  delegate_to: localhost
+  loop: "{{ ip_list }}"
+  register: hostnames_output
+  ignore_errors: true
+  ignore_unreachable: true
+
+- name: Create dictionary of IP addresses to hostnames
+  set_fact:
+    ip_hostname_map: "{{ ip_hostname_map | default({}) | combine({item.item: item.stdout.strip()}) }}"
+  loop: "{{ hostnames_output.results }}"
+  when: item.stdout is defined and item.rc == 0
+
+- name: Template out the ip to hostname mapping
+  template:
+    src: ip_hostname_map.j2
+    dest: "/tmp/iplist_hostname.yml"
+    

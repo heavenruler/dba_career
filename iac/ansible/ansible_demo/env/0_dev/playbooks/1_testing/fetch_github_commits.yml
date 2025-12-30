@@ -1,0 +1,90 @@
+---
+- name: Fetch GitHub commits from multiple repos in the last 5 minutes and send to Teams Webhook
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - fetch_github_commits_secret.yml  # 確保這個文件存在並正確配置
+
+  tasks:
+    - name: Get current time
+      command: date -u +"%Y-%m-%dT%H:%M:%SZ"
+      register: current_time
+
+    - name: Calculate time 5 minutes ago
+      command: date -u -d "-5 minutes" +"%Y-%m-%dT%H:%M:%SZ"
+      register: five_minutes_ago
+
+    - name: Define repos to check
+      set_fact:
+        repos:
+          - name: "dba-documents"
+            url: "https://api.github.com/repos/104corp/dba-documents/commits"
+          - name: "104isgd-dba-ansible"
+            url: "https://api.github.com/repos/104corp/104isgd-dba-ansible/commits"
+          - name: "104isgd-dba-terraform"
+            url: "https://api.github.com/repos/104corp/104isgd-dba-terraform/commits"
+
+    - name: Fetch latest commits from each repository
+      uri:
+        url: "{{ item.url }}"
+        method: GET
+        headers:
+          Accept: "application/vnd.github+json"
+          Authorization: "Bearer {{ github_token }}"  # 使用 Vault 中的變數
+          X-GitHub-Api-Version: "2022-11-28"
+        return_content: yes
+      loop: "{{ repos }}"
+      register: github_commits
+
+    - name: Combine commits from all repositories
+      set_fact:
+        all_commits: "{{ github_commits.results | map(attribute='json') | flatten }}"
+
+    - name: Filter commits from the last 5 minutes
+      set_fact:
+        recent_commits: "{{ all_commits | selectattr('commit.committer.date', '>=', five_minutes_ago.stdout) | list }}"
+
+    - name: Sort recent commits by date (ascending)
+      set_fact:
+        sorted_commits: "{{ recent_commits | sort(attribute='commit.committer.date', reverse=false) }}"
+
+    - name: Debug sorted commits
+      debug:
+        msg: "{{ sorted_commits }}"
+
+    - name: Check if there are any recent commits
+      debug:
+        msg: "No commits found in the last 5 minutes."
+      when: sorted_commits | length == 0
+
+    - name: Prepare to send each commit to Teams
+      set_fact:
+        commit_info: >
+          {
+            "repository": "{{ item.url | regex_replace('https://api.github.com/repos/(.*?)/commits/', '\\1') }}",
+            "message": "{{ item.commit.message | replace('"', '\\"') }}",
+            "author": "{{ item.commit.author.name }}",
+            "commit_date": "{{ item.commit.committer.date }}",
+            "html_url": "{{ item.html_url }}"
+          }
+      loop: "{{ sorted_commits }}"  # 確保對 sorted_commits 進行循環
+
+    - name: Send each commit to Teams
+      uri:
+        url: "https://104cloud.webhook.office.com/webhookb2/77b00473-98e0-484d-8bbe-6578a9e61349@e5b7696b-abd7-48ed-9482-723ead81e6fd/IncomingWebhook/0897dac9627a4b569c2df36eb8f1a3c0/7633f98e-ef88-454c-8a96-5328912a76ff/V2S8GowGdGi-J60LkzwMub2F3pR0yklnoLaX8yx07JGS01"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body: >-
+          {
+            "text": "**Latest Commit from {{ commit_info.repository }}**\n\n
+            - **Message**: {{ commit_info.message }}\n
+            - **Author**: {{ commit_info.author }}\n
+            - **Time**: {{ commit_info.commit_date }}\n
+            - [View Commit]({{ commit_info.html_url }})",
+            "themeColor": "0078D7"
+          }
+        body_format: json
+      loop: "{{ sorted_commits }}"
+      when: sorted_commits | length > 0  # 在發送前的條件檢查
+

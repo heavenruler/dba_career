@@ -1,0 +1,28 @@
+---
+# tasks file for health_check_for_semaphore
+
+- name: Check if Semaphore service is running
+  shell: "ps uaxw | grep '/root/semaphore' | grep -vi grep"
+  register: semaphore_process
+  ignore_errors: true
+
+- name: Display service status
+  debug:
+    msg: "service exists"
+  when: semaphore_process.stdout != ""
+
+- name: Display service status
+  debug:
+    msg: "service does not exist"
+  when: semaphore_process.stdout == ""
+
+- name: Notify Teams about service restart
+  include_role:
+    name: 1_notify_to_teams
+  vars:
+    message: "Semaphore service restarted."
+  when: semaphore_process.stdout == ""
+
+- name: Restart Semaphore service
+  shell: "/root/semaphore service --config=./config.json"
+  when: semaphore_process.stdout == ""

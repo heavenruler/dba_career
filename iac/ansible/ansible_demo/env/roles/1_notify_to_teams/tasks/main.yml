@@ -1,0 +1,25 @@
+---
+# tasks file for 1_notify_to_teams
+
+- name: Set default_message fact
+  set_fact:
+    default_message: "這是來自 {{ ansible_hostname }} (IP: {{ ansible_default_ipv4.address }}) 的測試訊息" # 如果未傳入 Message 則顯示預設訊息
+
+- name: Set proxy environment variable
+  set_fact:
+    proxy_env:
+      https_proxy: "{{ var_proxy }}"
+  when: var_proxy != 'unknown'
+
+- name: Notify via webhook with structured message
+  delegate_to: localhost
+  uri:
+    url: "{{ var_teams_webhook }}"
+    method: POST
+    body_format: json
+    body:
+      title: "This Alert Message from \"{{ target_env }}\" by {{ ansible_hostname }} @ {{ ansible_default_ipv4.address }}"
+      text: "{{ message | default(default_message) }}"
+    headers:
+      Content-Type: "application/json"
+  environment: "{{ proxy_env }}"

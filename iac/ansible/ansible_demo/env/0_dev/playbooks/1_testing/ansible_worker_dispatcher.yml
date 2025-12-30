@@ -1,0 +1,16 @@
+---
+- name: Perform Ping Test
+  hosts: all
+  gather_facts: true
+
+  pre_tasks:
+    - name: Ensure the playbook runs on the correct Ansible controller node
+      ansible.builtin.include_role:
+        name: ansible_controller_dispatcher
+      vars:
+        ansible_controller_dispatcher_controller_node_ip: "172.24.47.224"
+
+  tasks:
+    - name: Ping hosts
+      ansible.builtin.ping:
+      register: ping_result

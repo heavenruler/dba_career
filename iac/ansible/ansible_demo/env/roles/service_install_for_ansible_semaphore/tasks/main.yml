@@ -1,0 +1,156 @@
+---
+# tasks file for service_install_for_ansible_semaphore
+
+- name: Comment out exclude line in yum.conf
+  lineinfile:
+    path: /etc/yum.conf
+    regexp: '^exclude=kernel\* almalinux-release'
+    line: "#exclude=kernel* almalinux-release"
+
+- name: Run dnf update
+  command: dnf update -y
+
+- name: Add proxy configuration to ~/.bashrc
+  lineinfile:
+    path: /root/.bashrc
+    line: "export http_proxy={{ var_proxy }}"
+  become_user: "root"
+
+- name: Append https_proxy to ~/.bashrc
+  lineinfile:
+    path: /root/.bashrc
+    line: "export https_proxy={{ var_proxy }}"
+  become_user: "root"
+
+- name: Reload .bashrc to apply changes
+  shell: source /root/.bashrc
+  args:
+    executable: /bin/bash
+  become_user: "root"
+
+- name: Configure log rotation for /tmp/ansible.log
+  copy:
+    dest: /etc/logrotate.d/ansible
+    content: |
+      /tmp/ansible.log {
+          daily
+          rotate 3
+          missingok
+          notifempty
+          create 640 root root
+          su root root
+      }
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Remove Python 3
+  command: dnf remove python3 -y
+
+- name: Install Development Tools
+  command: dnf groupinstall "Development Tools" -y
+
+- name: Install required development libraries
+  command: dnf install bzip2-devel libffi-devel openssl-devel nmap -y
+
+- name: Download and install Python 3.11.5
+  block:
+    - name: Change to /root directory
+      command: cd /root
+
+    - name: Download Python 3.11.5 source code
+      command: wget https://www.python.org/ftp/python/3.11.5/Python-3.11.5.tar.xz
+
+    - name: Extract Python source code
+      command: tar xvf Python-3.11.5.tar.xz
+
+    - name: Enter Python source directory
+      command: cd Python-3.11.5
+
+    - name: Configure Python
+      command: ./configure --enable-optimizations
+      args:
+        chdir: /root/Python-3.11.5
+
+    - name: Compile Python
+      command: make
+      args:
+        chdir: /root/Python-3.11.5
+
+    - name: Install Python
+      command: make install
+      args:
+        chdir: /root/Python-3.11.5
+
+- name: Validate Python 3 version
+  command: python3 -V
+  register: python_version
+
+- name: Validate pip3 version
+  command: pip3 --version
+  register: pip_version
+
+- name: Upgrade pip
+  command: pip3 install --upgrade pip
+
+- name: Install passlib using pip
+  command: pip3 install passlib
+
+- name: Install ansible-cmdb using pip
+  command: pip3 install ansible-cmdb
+
+- name: Create symbolic link for python
+  command: ln -s /usr/local/bin/python3 /usr/local/bin/python
+  args:
+    creates: /usr/local/bin/python
+
+- name: Create symbolic link for pip
+  command: ln -s /usr/local/bin/pip3 /usr/local/bin/pip
+  args:
+    creates: /usr/local/bin/pip
+
+- name: Validate pip executable path
+  command: which pip
+  register: pip_path
+
+- name: Validate global Python version
+  command: python -V
+  register: global_python_version
+
+- name: Validate global pip version
+  command: pip --version
+  register: global_pip_version
+
+- name: Install Ansible
+  command: dnf install ansible -y
+
+- name: Clean dnf cache
+  command: dnf clean all
+
+- name: Download and extract Semaphore
+  block:
+    - name: Change to /root directory
+      command: cd /root
+
+    - name: Download Semaphore release
+      command: wget https://github.com/semaphoreui/semaphore/releases/download/v2.15.0/semaphore_2.15.0_linux_amd64.tar.gz
+    
+    - name: Extract Semaphore
+      command: tar xf semaphore_2.15.0_linux_amd64.tar.gz
+
+- name: Copy ansible.cfg to /etc
+  copy:
+    src: files/semaphore/ansible.cfg
+    dest: /etc
+
+- name: Copy config.json to /root
+  copy:
+    src: files/semaphore/config.json
+    dest: /root
+
+- name: Start Semaphore service
+  command: "/root/semaphore service --config=./config.json &"
+  async: true
+  poll: 0
+  become_user: "root"
+  ignore_errors: true

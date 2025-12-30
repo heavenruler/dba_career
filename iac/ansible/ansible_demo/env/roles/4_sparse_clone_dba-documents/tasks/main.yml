@@ -1,0 +1,45 @@
+---
+# tasks file for 4_sparse_clone_dba-documents
+
+- name: Import github_personal_access_tokens
+  include_vars: github_personal_access_tokens
+
+- name: Check required variables are defined
+  fail:
+    msg: "'{{ item }}' is not defined"
+  when: vars[item] is not defined or vars[item] == ""
+  loop:
+    - github_username
+    - github_password
+
+# - name: Print all variables
+#   debug:
+#     msg: 
+#       - "github_username: {{ github_username }}"
+#       - "github_password: {{ github_password }}"
+
+# - name: Remove the existing directory
+#   file:
+#     path: "/tmp/dba-documents"
+#     state: absent
+
+- name: Ensure temporary directory exists
+  file:
+    path: "/tmp/dba-documents"
+    state: directory
+
+- name: prepare sparse git repository
+  shell: |
+    git init
+    git config core.sparseCheckout true
+    echo "X.DB_ALL_Info/0_Genrate_by_Ansible/" > .git/info/sparse-checkout
+    git remote add origin https://{{ github_username }}:{{ github_password }}@github.com/localhost/dba-documents.git
+  args:
+    chdir: "/tmp/dba-documents"
+    creates: "/tmp/dba-documents/.git"
+
+- name: clone code
+  shell: git pull origin master
+  args:
+    chdir: "/tmp/dba-documents"
+    creates: "/tmp/dba-documents/X.DB_ALL_Info/0_Genrate_by_Ansible/"

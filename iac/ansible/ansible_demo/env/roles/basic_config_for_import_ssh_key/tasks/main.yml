@@ -1,0 +1,16 @@
+---
+# tasks file for basic_config_for_import_ssh_key
+
+- name: Ensure /root/.ssh directory exists
+  ansible.builtin.file:
+    path: /root/.ssh
+    state: directory
+    mode: '0700'
+
+- name: Copy authorized_keys to /root/.ssh/
+  ansible.builtin.copy:
+    src: "files/{{target_env}}_authorized_keys"
+    dest: /root/.ssh/authorized_keys
+    mode: '0600'
+    owner: root
+    group: root

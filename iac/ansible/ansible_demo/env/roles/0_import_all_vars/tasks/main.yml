@@ -1,0 +1,9 @@
+---
+# tasks file for 0_import_all_vars
+
+- name: Include global vars
+  include_vars: "{{ playbook_dir }}/../../../vars/global_vars.yml"
+# 
+# - name: Print all host variables
+#   ansible.legacy.debug:
+#     var: hostvars[inventory_hostname]
