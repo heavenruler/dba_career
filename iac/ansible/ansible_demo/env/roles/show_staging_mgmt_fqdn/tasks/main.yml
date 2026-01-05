@@ -1,0 +1,45 @@
+---
+- name: Import github_personal_access_tokens
+  include_vars: github_personal_access_tokens
+
+- name: 建立臨時目錄
+  file:
+    path: /tmp/localhost-staging-int-dns-master-centos
+    state: directory
+
+- name: 初始化 git 倉庫
+  git:
+    repo: "{{ repo_name }}"
+    dest: /tmp/localhost-staging-int-dns-master-centos
+    depth: 1
+    clone: true
+    update: false
+  environment:
+    http_proxy: "{{ var_proxy }}"
+    https_proxy: "{{ var_proxy }}"
+
+- name: 設定 sparse checkout
+  shell: |
+    cd /tmp/localhost-staging-int-dns-master-centos
+    git sparse-checkout init --cone
+    git sparse-checkout set named-zone/staging/
+  environment:
+    http_proxy: "{{ var_proxy }}"
+    https_proxy: "{{ var_proxy }}"
+
+- name: 解析並顯示 Staging 管理網域 FQDN 清單
+  shell: |
+    awk '!/^;|^$/ && /192\.168\.[3-5]/ {print $1".localhost"}' \
+    /tmp/localhost-staging-int-dns-master-centos/named-zone/staging/int-db.localhost | \
+    sort -u
+  register: staging_mgmt_fqdn
+  changed_when: false
+
+- name: 顯示結果
+  debug:
+    msg: "{{ staging_mgmt_fqdn.stdout_lines }}"
+
+- name: 清理臨時目錄
+  file:
+    path: /tmp/localhost-staging-int-dns-master-centos
+    state: absent 

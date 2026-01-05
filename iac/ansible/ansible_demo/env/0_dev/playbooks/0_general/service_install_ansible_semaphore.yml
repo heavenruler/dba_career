@@ -1,0 +1,12 @@
+---
+- name: Service_install_ansible_semaphore
+  hosts: all
+  gather_facts: true
+
+  roles:
+    - role: 0_import_all_vars
+    - basic_config_for_ssh_config
+    - basic_config_for_import_ssh_key
+    - basic_config_for_os
+    - configuration_config_management
+    - service_install_for_ansible_semaphore

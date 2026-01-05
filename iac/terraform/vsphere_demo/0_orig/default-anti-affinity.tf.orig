@@ -1,0 +1,8 @@
+resource "vsphere_compute_cluster_vm_anti_affinity_rule" "anti-affinity-XXX" {
+  name                = "anti-affinity-rule-XXX"
+  enabled             = true
+  mandatory           = false
+  compute_cluster_id  = "${data.vsphere_compute_cluster.cluster.id}"
+  virtual_machine_ids = [ruleXXX]
+  lifecycle { replace_triggered_by = [ruleXXX] }
+}

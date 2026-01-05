@@ -1,0 +1,87 @@
+---
+- name: inventory_db_info_full_dev
+  hosts: localhost
+  serial: 1
+  gather_facts: true
+
+  roles:
+    - 0_import_all_vars
+    - inventory_rdbms_dev
+    - inventory_proxysql_dev
+    - inventory_mongodb_dev
+
+  tasks:
+    - name: 設定匯出檔案清單
+      set_fact:
+        export_dirs:
+          - name: rdbms
+            path: /tmp/rdbms_export
+          - name: proxysql
+            path: /tmp/proxysql_export
+          - name: mongodb
+            path: /tmp/mongodb_export
+
+    - name: 處理匯出檔案並提交到 GitHub
+      block:
+        - name: 檢查匯出目錄
+          debug:
+            msg: "檢查目錄 {{ item.path }} 中的檔案"
+          loop: "{{ export_dirs }}"
+          loop_control:
+            label: "{{ item.name }}"
+
+        - name: 列出匯出目錄內容
+          find:
+            paths: "{{ item.path }}"
+            patterns: "*"
+          loop: "{{ export_dirs }}"
+          loop_control:
+            label: "{{ item.name }}"
+          register: export_files_list
+
+        - name: 顯示找到的檔案
+          debug:
+            msg: "在 {{ item.item.name }} 中找到檔案：{{ item.files | map(attribute='path') | list }}"
+          loop: "{{ export_files_list.results }}"
+          loop_control:
+            label: "{{ item.item.name }}"
+
+        - name: 設定倉庫路徑
+          set_fact:
+            export_files: >-
+              {{ lookup('fileglob', item.path + '/*', wantlist=True) | 
+              map('regex_replace', '^' + item.path + '/', 
+              '/tmp/dba-documents/X.DB_ALL_Info/0_Genrate_by_Ansible/dev/' + item.name + '_export/') | 
+              list }}
+          loop: "{{ export_dirs }}"
+          loop_control:
+            label: "{{ item.name }}"
+          register: export_files_result
+
+        - name: 合併所有匯出檔案路徑
+          set_fact:
+            all_export_files: "{{ export_files_result.results | map(attribute='ansible_facts.export_files') | list | flatten }}"
+
+        - name: 顯示所有匯出檔案路徑
+          debug:
+            msg: "所有匯出檔案路徑：{{ all_export_files }}"
+
+        - name: 提交到 GitHub
+          include_role:
+            name: 3_commit_to_github
+          vars:
+            repo_name: "dba-documents"
+            repo_github: "https://github.com/104corp/{{ repo_name }}.git"
+            repo_path: "/tmp/{{ repo_name }}"
+            commit_path: "/tmp/{{ repo_name }}/X.DB_ALL_Info/0_Genrate_by_Ansible/dev"
+            filenames: "{{ all_export_files }}"
+            commit_message: "Update inventory files from {{ inventory_hostname }}"
+
+        - name: 清理暫存目錄
+          file:
+            path: "{{ item.path }}"
+            state: absent
+          loop: "{{ export_dirs }}"
+          loop_control:
+            label: "{{ item.name }}"
+          tags: cleanup

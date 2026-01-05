@@ -1,0 +1,254 @@
+---
+- name: inventory_jira_to_teams_daily_notify
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - inventory_jira_to_teams_daily_notify_secret.yml
+
+  tasks:
+    - name: Install lxml package
+      pip:
+        name: lxml
+        state: present
+      become: yes
+
+    - name: Get tomorrow's date and weekday
+      shell: date -d "tomorrow" +"%Y-%m-%d %w"
+      register: tomorrow_info
+      changed_when: false
+
+    - name: Set tomorrow variables
+      set_fact:
+        tomorrow_date: "{{ tomorrow_info.stdout.split(' ')[0] }}"
+        tomorrow_weekday: "{{ tomorrow_info.stdout.split(' ')[1] }}"
+        is_weekend: "{{ tomorrow_info.stdout.split(' ')[1] in ['0', '6'] }}"
+
+    - name: Display tomorrow's date and weekday
+      debug:
+        msg: "明天是 {{ tomorrow_date }}，星期{{ tomorrow_weekday }}"
+
+    - name: Skip execution if tomorrow is weekend
+      meta: end_play
+      when: is_weekend | default(false)
+
+    - name: Get current time
+      command: date -u +"%Y-%m-%dT%H:%M:%SZ"
+      register: current_time
+
+    - name: Test JIRA API connection
+      uri:
+        url: "https://104corp.atlassian.net/rest/api/2/myself"
+        method: GET
+        user: "wn.lin@104.com.tw"
+        password: "{{ jira_api_token }}"
+        force_basic_auth: yes
+        headers:
+          Accept: "application/json"
+        status_code: [200]
+      register: jira_test
+      ignore_errors: yes
+
+    - name: Send JIRA connection failure notification to Teams
+      uri:
+        url: "{{ teams_webhook }}"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body: >-
+          {
+            "text": "**JIRA 串接失敗通知**\n\n
+            - **時間**: {{ current_time.stdout }}\n
+            - **狀態碼**: {{ jira_test.status }}\n
+            - **錯誤訊息**: {{ jira_test.msg }}",
+            "themeColor": "FF0000"
+          }
+        body_format: json
+      when: jira_test.status != 200
+
+    - name: Get JIRA issues via RSS
+      uri:
+        url: "https://104corp.atlassian.net/sr/jira.issueviews:searchrequest-rss/temp/SearchRequest.xml?jqlQuery=project%20is%20not%20EMPTY%0AAND%0Aassignee%20in%20(6359986476b91b62562de578%2C%20712020%3A152726c5-7865-443c-99fa-975fdf24ac21%2C%2063f455d6263233e653a8f988%2C%20712020%3Ae309be24-81e6-424f-8ee6-756594fbfadc)%0AAND%0ASTATUS%20%3D%20%E5%BE%85ISGD%E7%A2%BA%E8%AA%8D%0AAND%0A%22%E6%9C%9F%E6%9C%9B%E4%BD%9C%E6%A5%AD%E6%97%A5%E6%9C%9F.%5BTime%20stamp%5D%22%20is%20not%20EMPTY%0AAND%0A%22%E4%BD%9C%E6%A5%AD%E7%92%B0%E5%A2%83.%5BRadio%20Buttons%5D%22%20%3D%20Prod%0AAND%0Acf%5B12078%5D%20%3E%3D%20%22{{ tomorrow_date }}%2006%3A00%22%20AND%20cf%5B12078%5D%20%3C%3D%20%22{{ tomorrow_date }}%2019%3A00%22%0AORDER%20BY%20cf%5B12078%5D&tempMax=100"
+        method: GET
+        user: "wn.lin@104.com.tw"
+        password: "{{ jira_api_token }}"
+        force_basic_auth: yes
+        headers:
+          Accept: "application/xml"
+        return_content: yes
+      register: jira_rss
+      when: jira_test.status == 200
+      ignore_errors: yes
+
+    - name: Send JIRA RSS failure notification to Teams
+      uri:
+        url: "{{ teams_webhook }}"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body: >-
+          {
+            "text": "**JIRA RSS 獲取失敗通知**\n\n
+            - **時間**: {{ current_time.stdout }}\n
+            - **狀態碼**: {{ jira_rss.status }}\n
+            - **錯誤訊息**: {{ jira_rss.msg }}",
+            "themeColor": "FF0000"
+          }
+        body_format: json
+      when: jira_rss.status != 200
+
+    - name: Save RSS content to file
+      copy:
+        content: "{{ jira_rss.content }}"
+        dest: "/tmp/jira_rss.xml"
+      when: jira_rss.status == 200
+
+    - name: Create Python script to parse XML
+      copy:
+        content: |
+          #!/usr/bin/env python3
+          import xml.etree.ElementTree as ET
+          import html
+          import re
+          import json
+          import sys
+          from datetime import datetime
+
+          # 負責人映射表
+          ASSIGNEE_MAPPING = {
+              "6359986476b91b62562de578": "wn.lin",
+              "63f455d6263233e653a8f988": "ivan.chuang",
+              "712020:152726c5-7865-443c-99fa-975fdf24ac21": "peter.pan",
+              "712020:e309be24-81e6-424f-8ee6-756594fbfadc": "will.chen"
+          }
+
+          def clean_html(text):
+              # 解碼 HTML 實體
+              text = html.unescape(text)
+              # 移除 HTML 標籤
+              text = re.sub(r'<[^>]+>', '', text)
+              return text.strip()
+
+          def extract_assignee(text):
+              # 先解碼 HTML 實體
+              text = html.unescape(text)
+              # 使用正則表達式提取負責人 ID
+              matches = re.findall(r'id="word_assignee_([^"]+)"', text)
+              if matches:
+                  # 取最後一個匹配的負責人 ID
+                  assignee_id = matches[-1]
+                  return ASSIGNEE_MAPPING.get(assignee_id, assignee_id)
+              return None
+
+          def extract_expected_date(text):
+              # 先解碼 HTML 實體
+              text = html.unescape(text)
+              # 使用正則表達式提取期望完成日期
+              match = re.search(r'title="([^"]+)"', text)
+              if match:
+                  date_str = match.group(1)
+                  try:
+                      # 解析日期字串
+                      date_obj = datetime.strptime(date_str, "%Y/%b/%d %I:%M %p")
+                      # 格式化為更易讀的格式
+                      return date_obj.strftime("%Y-%m-%d %H:%M")
+                  except ValueError:
+                      return date_str
+              return None
+
+          try:
+              # 讀取 XML 檔案
+              with open(sys.argv[1], 'r', encoding='utf-8') as f:
+                  content = f.read()
+
+              # 先解碼整個內容的 HTML 實體
+              content = html.unescape(content)
+
+              # 使用正則表達式提取 item 元素
+              items = re.findall(r'<item>(.*?)</item>', content, re.DOTALL)
+              
+              result = []
+              for item in items:
+                  # 提取標題
+                  title_match = re.search(r'<title>(.*?)</title>', item)
+                  title = clean_html(title_match.group(1)) if title_match else '未找到標題'
+                  
+                  # 提取連結
+                  link_match = re.search(r'<link>(.*?)</link>', item)
+                  link = link_match.group(1) if link_match else '未找到連結'
+                  
+                  # 提取負責人
+                  assignee = extract_assignee(item)
+                  
+                  # 提取期望完成日期
+                  expected_date = extract_expected_date(item)
+                  
+                  result.append({
+                      'title': title,
+                      'link': link,
+                      'assignee': assignee,
+                      'expected_date': expected_date
+                  })
+              
+              # 輸出 JSON 格式的結果
+              print(json.dumps(result, ensure_ascii=False, indent=2))
+              
+          except Exception as e:
+              print(f"Error: {str(e)}", file=sys.stderr)
+              sys.exit(1)
+        dest: "/tmp/parse_jira_xml.py"
+        mode: '0755'
+      when: jira_rss.status == 200
+
+    - name: Parse XML with Python script
+      shell: python3 /tmp/parse_jira_xml.py /tmp/jira_rss.xml
+      register: parsed_result
+      when: jira_rss.status == 200
+
+    - name: Display parsed content
+      debug:
+        msg: >-
+          JIRA 任務列表
+          ============
+
+          {% for item in parsed_result.stdout | from_json %}
+          任務 {{ loop.index }}
+          ------------
+          - 標題: {{ item.title }}
+          - 連結: {{ item.link }}
+          - 負責人: {{ item.assignee | default('未指派') }}
+          - 期望完成日期: {{ item.expected_date | default('尚未指定') }}
+
+          {% endfor %}
+      when: jira_rss.status == 200
+      register: display_result
+
+    - name: Send JIRA tasks to Teams
+      uri:
+        url: "{{ teams_webhook }}"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body: >-
+          {
+            "text": "**JIRA Next Business Day (06:00 ~ 19:00) Todo.**\n\n
+            ----\n
+            {% for item in parsed_result.stdout | from_json %}
+            - Summary: {{ item.title }}\n
+            - Link: {{ item.link }}\n
+            - Assignee: {{ item.assignee | default('未指派') }}\n
+            - Expected Date: {{ item.expected_date | default('尚未指定') }}\n
+            ----\n\n
+            {% endfor %}",
+            "themeColor": "0076D7"
+          }
+        body_format: json
+      when: jira_rss.status == 200
+
+    - name: Clean up temporary files
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "/tmp/jira_rss.xml"
+        - "/tmp/parse_jira_xml.py"
+      when: jira_rss.status == 200

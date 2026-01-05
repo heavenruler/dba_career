@@ -1,0 +1,275 @@
+---
+# tasks file for maintain_nmap_collector_subnet_ip
+
+- name: Check if nmap is installed
+  ansible.builtin.command: which nmap
+  register: nmap_check
+  changed_when: false
+  failed_when: nmap_check.rc != 0
+
+- name: Abort if nmap is not installed
+  ansible.builtin.fail:
+    msg: "Please install nmap before proceeding."
+  when: nmap_check.rc != 0
+
+- name: Initialize open_ssh and closed_ssh lists
+  ansible.builtin.set_fact:
+    closed_ssh: []
+    open_ssh: []
+    open_proxysql: []
+    open_rdbms: []
+    open_mongodb: []
+    open_redis: []
+    open_redis_tls: []
+    a10_ips_combined: []
+
+- name: Define known network device IPs by manual
+  ansible.builtin.set_fact:
+    known_network_device_ips_manual: [
+      '192.168.32.4', '192.168.32.7', '192.168.32.9', '192.168.32.16',
+      '192.168.32.22', '192.168.32.24', '192.168.32.26', '192.168.32.28',
+      '192.168.32.30', '192.168.32.250', '192.168.32.1', '192.168.32.15',
+      '192.168.32.16', '192.168.32.17', '192.168.46.3', '192.168.46.31',
+      '192.168.46.34', '192.168.46.48', '192.168.46.50', '192.168.46.54',
+      '192.168.46.55', '192.168.46.64', '192.168.46.70', '192.168.46.72',
+      '192.168.46.79', '192.168.46.87', '192.168.46.88', '192.168.46.100',
+      '192.168.46.101', '192.168.46.103', '192.168.46.105', '192.168.46.106'
+    ] # 過濾已知外單位使用 IP
+
+- name: Set A10 config URL based on target environment
+  ansible.builtin.set_fact:
+    a10_config_url: "{{ {
+      'dev': 'http://localhost/a10/config',
+      'staging': 'http://localhost/a10/config',
+      'prod': 'http://localhost/a10/config?ip=192.168.0.15',
+      'drsite': 'http://localhost/a10/config?ip=192.168.16.15'
+    }[target_env] }}"
+
+- name: Download A10 config and extract IPs
+  ansible.builtin.shell: |
+    wget -T 3 -O - "{{ a10_config_url }}" 2>/dev/null | grep "slb virtual-server" | grep -oE '192\.168\.[0-9]{1,3}\.[0-9]{1,3}'
+  register: grep_output
+  ignore_errors: yes
+  when: target_env != "staging"
+
+- name: Set known_network_device_ips_a10 from grep output
+  ansible.builtin.set_fact:
+    known_network_device_ips_a10: "{{ grep_output.stdout_lines }}"
+  when: target_env != "staging"
+
+- name: Remove duplicate IPs from the combined list
+  ansible.builtin.set_fact:
+    known_network_device_ips_a10: "{{ known_network_device_ips_a10 | unique }}"
+  when: target_env != "staging"
+
+- name: Manually add staging A10 IP addresses
+  ansible.builtin.set_fact:
+    known_network_device_ips_a10: "{{ known_network_device_ips_a10 | default([]) + [
+      '192.168.1.11','192.168.1.165','192.168.1.203','192.168.1.209','192.168.1.249','192.168.1.5'
+      ,'192.168.15.10','192.168.15.101','192.168.15.102','192.168.15.104','192.168.15.107','192.168.15.11'
+      ,'192.168.15.111','192.168.15.112','192.168.15.114','192.168.15.117','192.168.15.12','192.168.15.125'
+      ,'192.168.15.126','192.168.15.127','192.168.15.128','192.168.15.131','192.168.15.133','192.168.15.138'
+      ,'192.168.15.139','192.168.15.140','192.168.15.141','192.168.15.143','192.168.15.145','192.168.15.146'
+      ,'192.168.15.147','192.168.15.148','192.168.15.149','192.168.15.15','192.168.15.150','192.168.15.151'
+      ,'192.168.15.152','192.168.15.156','192.168.15.157','192.168.15.158','192.168.15.159','192.168.15.16'
+      ,'192.168.15.160','192.168.15.161','192.168.15.162','192.168.15.166','192.168.15.167','192.168.15.169'
+      ,'192.168.15.17','192.168.15.170','192.168.15.171','192.168.15.172','192.168.15.174','192.168.15.175'
+      ,'192.168.15.178','192.168.15.179','192.168.15.180','192.168.15.181','192.168.15.182','192.168.15.183'
+      ,'192.168.15.184','192.168.15.185','192.168.15.186','192.168.15.187','192.168.15.189','192.168.15.190'
+      ,'192.168.15.191','192.168.15.192','192.168.15.193','192.168.15.194','192.168.15.199','192.168.15.200'
+      ,'192.168.15.204','192.168.15.205','192.168.15.206','192.168.15.207','192.168.15.208','192.168.15.209'
+      ,'192.168.15.210','192.168.15.211','192.168.15.212','192.168.15.214','192.168.15.215','192.168.15.217'
+      ,'192.168.15.218','192.168.15.219','192.168.15.220','192.168.15.222','192.168.15.223','192.168.15.224'
+      ,'192.168.15.225','192.168.15.226','192.168.15.227','192.168.15.228','192.168.15.229','192.168.15.230'
+      ,'192.168.15.231','192.168.15.232','192.168.15.233','192.168.15.234','192.168.15.236','192.168.15.237'
+      ,'192.168.15.24','192.168.15.242','192.168.15.26','192.168.15.27','192.168.15.28','192.168.15.29'
+      ,'192.168.15.3','192.168.15.30','192.168.15.31','192.168.15.36','192.168.15.37','192.168.15.39'
+      ,'192.168.15.4','192.168.15.40','192.168.15.41','192.168.15.42','192.168.15.43','192.168.15.44'
+      ,'192.168.15.46','192.168.15.47','192.168.15.48','192.168.15.49','192.168.15.5','192.168.15.50'
+      ,'192.168.15.54','192.168.15.6','192.168.15.60','192.168.15.61','192.168.15.63','192.168.15.64'
+      ,'192.168.15.65','192.168.15.66','192.168.15.67','192.168.15.73','192.168.15.75','192.168.15.77'
+      ,'192.168.15.8','192.168.15.9','192.168.254.200','192.168.254.201','192.168.254.205','192.168.47.100'
+      ,'192.168.47.105','192.168.47.106','192.168.47.107','192.168.47.108','192.168.47.109','192.168.47.112'
+      ,'192.168.47.118','192.168.47.121','192.168.47.122','192.168.47.123','192.168.47.124','192.168.47.125'
+      ,'192.168.47.126','192.168.47.127','192.168.47.128','192.168.47.129','192.168.47.130','192.168.47.131'
+      ,'192.168.47.132','192.168.47.133','192.168.47.134','192.168.47.141','192.168.47.30','192.168.1.201'
+    ] }}"
+  when: target_env == "staging"
+
+- name: Merge known_network_device_ips_manual and known_network_device_ips_a10
+  ansible.builtin.set_fact:
+    known_network_device_ips: "{{ known_network_device_ips_manual + known_network_device_ips_a10 }}"
+
+- name: Remove duplicate IPs from the combined list
+  ansible.builtin.set_fact:
+    known_network_device_ips: "{{ known_network_device_ips | unique }}"
+
+- name: Print known_network_device_ips
+  ansible.builtin.debug:
+    msg: "{{ a10_config_url }} {{ known_network_device_ips }}"
+
+- name: Scan the subnet with nmap
+  shell: |
+    nmap -sn {{ var_db_subnet }} -oG - | grep 'Up' | awk '{print $2}' | cut -d " " -f 2
+  register: nmap_output
+
+- name: Write IP addresses to /tmp/iplist without trailing newline
+  copy:
+    content: "{{ nmap_output.stdout_lines | join('\n') }}"
+    dest: "/tmp/iplist"
+
+######################################################################
+
+- name: Check SSH port for each IP using nc
+  command: nc -zv -w 1 {{ item }} 22
+  when: item not in known_network_device_ips
+  with_items: "{{ nmap_output.stdout_lines }}"
+  register: ssh_scan
+  ignore_errors: true
+  no_log: true
+
+- name: Collect IPs without open SSH port (network devices)
+  set_fact:
+    closed_ssh: "{{ closed_ssh + [item.item] }}"
+  when: 
+    - "'rc' in item"
+    - item.rc != 0
+  with_items: "{{ ssh_scan.results }}"
+  no_log: true
+
+- name: Collect IPs with open SSH port
+  set_fact:
+    open_ssh: "{{ open_ssh + [item.item] }}"
+  when:
+    - "'rc' in item"
+    - item.rc == 0
+    - item.item not in closed_ssh
+  with_items: "{{ ssh_scan.results }}"
+  no_log: true
+
+- name: Write IPs with open SSH port to /tmp/iplist_ssh
+  copy:
+    content: "{{ open_ssh | join('\n') }}"
+    dest: "/tmp/iplist_ssh"
+
+######################################################################
+
+- name: Check ProxySQL port for each IP using nc
+  command: nc -zv -w 1 {{ item }} 6032
+  with_items: "{{ open_ssh }}"
+  register: proxysql_scan
+  ignore_errors: true
+  no_log: true
+
+- name: Check RDBMS port for each IP using nc
+  command: nc -zv -w 1 {{ item }} 3306
+  with_items: "{{ open_ssh }}"
+  register: rdbms_scan
+  ignore_errors: true
+  no_log: true
+
+- name: Check MongoDB port 27017 for each IP using nc
+  command: nc -zv -w 1 {{ item }} 27017
+  with_items: "{{ open_ssh }}"
+  register: mongodb_scan_27017
+  ignore_errors: true
+  no_log: true
+
+- name: Check MongoDB port 27019 for each IP using nc
+  command: nc -zv -w 1 {{ item }} 27019
+  with_items: "{{ open_ssh }}"
+  register: mongodb_scan_27019
+  ignore_errors: true
+  no_log: true
+
+- name: Check Redis port for each IP using nc
+  command: nc -zv -w 1 {{ item }} 6379
+  with_items: "{{ open_ssh }}"
+  register: redis_scan_6379
+  ignore_errors: true
+  no_log: true
+
+- name: Check Redis TLS port 6380 for each IP using nc
+  command: nc -zv -w 1 {{ item }} 6380
+  with_items: "{{ open_ssh }}"
+  register: redis_tls_scan_6380
+  ignore_errors: true
+  no_log: true
+
+######################################################################
+
+- name: Collect IPs with open ProxySQL port
+  set_fact:
+    open_proxysql: "{{ open_proxysql + [item.item] }}"
+  when:
+    - item.rc == 0
+    - item.item not in closed_ssh
+  with_items: "{{ proxysql_scan.results }}"
+  no_log: true
+
+- name: Collect IPs with open RDBMS port but not open ProxySQL port and not in closed_ssh
+  set_fact:
+    open_rdbms: "{{ open_rdbms + [item.item] }}"
+  when:
+    - item.rc == 0
+    - item.item not in open_proxysql
+    - item.item not in closed_ssh
+  with_items: "{{ rdbms_scan.results }}"
+  no_log: true
+
+- name: Collect IPs with open MongoDB port 27017 or 27019
+  set_fact:
+    open_mongodb: "{{ open_mongodb + [item.item] }}"
+  when:
+    - (item.rc == 0) or (item in mongodb_scan_27019.results and item.rc == 0)
+    - item.item not in closed_ssh
+  with_items: "{{ mongodb_scan_27017.results }}"
+  no_log: true
+
+- name: Collect IPs with open Redis port 6379
+  set_fact:
+    open_redis: "{{ open_redis | default([]) + [item.item] }}"
+  when: item.rc == 0
+  with_items: "{{ redis_scan_6379.results }}"
+  no_log: true
+
+- name: Collect IPs with open Redis TLS port 6380 where port 6379 is also open
+  set_fact:
+    open_redis_tls: "{{ open_redis_tls | default([]) + [item.item] }}"
+  when:
+    - item.rc == 0  # 6380 is open
+    - "'{{ item.item }}' in open_redis"
+  with_items: "{{ redis_tls_scan_6380.results }}"
+  no_log: true
+
+######################################################################
+
+- name: Write IPs without open SSH port to /tmp/iplist_other
+  copy:
+    content: "{{ closed_ssh | join('\n') }}"
+    dest: "/tmp/iplist_other"
+
+- name: Write IPs with open ProxySQL port to /tmp/iplist_proxysql
+  copy:
+    content: "{{ open_proxysql | join('\n') }}"
+    dest: "/tmp/iplist_proxysql"
+
+- name: Write IPs with open RDBMS port to /tmp/iplist_rdbms
+  copy:
+    content: "{{ open_rdbms | join('\n') }}"
+    dest: "/tmp/iplist_rdbms"
+
+- name: Write IPs with open MongoDB port to /tmp/iplist_mongodb
+  copy:
+    content: "{{ open_mongodb | join('\n') }}"
+    dest: "/tmp/iplist_mongodb"
+
+- name: Write IPs with open Redis port to /tmp/iplist_redis
+  copy:
+    content: "{{ open_redis | join('\n') }}"
+    dest: "/tmp/iplist_redis"
+
+- name: Write IPs with open Redis TLS ports to /tmp/iplist_redis_tls
+  copy:
+    content: "{{ open_redis_tls | join('\n') }}"
+    dest: "/tmp/iplist_redis_tls"

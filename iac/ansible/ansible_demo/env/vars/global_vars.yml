@@ -1,0 +1,76 @@
+---
+# vars file for global
+
+target_env: >-
+  {{ (ansible_default_ipv4.address.startswith('192.168.24.') or ansible_default_ipv4.address.startswith('10.102.')) | ternary('dev', 
+       ansible_default_ipv4.address.startswith('192.168.21.') | ternary('staging', 
+       ansible_default_ipv4.address.startswith('192.168.30.') | ternary('prod', 
+       ansible_default_ipv4.address.startswith('192.168.26.') | ternary('drsite',
+       ansible_default_ipv4.address.startswith('10.163.') | ternary('gcp', 'unknown'))))) }}
+
+env_settings:
+  dev:
+    ntp: "ntp.localhost"
+    domain: "localhost"
+    mgmt_domain: "db.localhost"
+    proxy: "http://sproxy.localhost:3128/"
+    dns: "10.0.1.5"
+    dns_search: "localhost db.localhost"
+    db_subnet: "192.168.32.0/20"
+    db_gateway: "192.168.32.1"
+    docker_network_name: "net-172-24"
+  staging:
+    ntp: "ntp.localhost"
+    domain: "localhost"
+    mgmt_domain: "db.localhost"
+    proxy: "http://sproxy.localhost:3128/"
+    dns: "192.168.1.5"
+    dns_search: "localhost db.localhost"
+    db_subnet: "192.168.32.0/20"
+    db_gateway: "192.168.47.254"
+    docker_network_name: "net-172-21"
+    db_logstash: "192.168.47.203:5044"
+  prod:
+    ntp: "ntp.localhost"
+    domain: "localhost"
+    mgmt_domain: "db.localhost"
+    proxy: "http://sproxy.localhost:3128/"
+    dns: "192.168.1.5"
+    dns_search: "localhost db.localhost"
+    db_subnet: "192.168.32.0/20"
+    db_gateway: "192.168.32.1"
+    docker_network_name: "net-172-30"
+    db_logstash: "192.168.47.203:5044"
+  drsite:
+    ntp: "ntp.localhost"
+    domain: "localhost"
+    mgmt_domain: "db.localhost"
+    proxy: "http://sproxy.localhost:3128/"
+    dns: "192.168.2.205"
+    dns_search: "localhost db.localhost"
+    db_subnet: "192.168.32.0/20"
+    db_gateway: "192.168.32.1"
+    docker_network_name: "net-172-26"
+    db_logstash: "192.168.47.203:5044"
+  gcp:
+    ntp: "metadata.google.internal"
+    domain: "localhost"
+    mgmt_domain: "db.localhost"
+    proxy: "http://10.163.31.5:3128/"
+    dns: "169.254.169.254"
+    dns_search: "google.internal"
+    db_subnet: "10.163.31.0/32"
+    db_gateway: "10.163.31.1"
+    docker_network_name: ""
+
+var_ntp: "{{ env_settings[target_env]['ntp'] | default('unknown') }}"
+var_domain: "{{ env_settings[target_env]['domain'] | default('unknown') }}"
+var_mgmt_domain: "{{ env_settings[target_env]['mgmt_domain'] | default('unknown') }}"
+var_proxy: "{{ env_settings[target_env]['proxy'] | default('unknown') }}"
+var_dns: "{{ env_settings[target_env]['dns'] | default('unknown') }}"
+var_dns_search: "{{ env_settings[target_env]['dns_search'] | default('unknown') }}"
+var_db_subnet: "{{ env_settings[target_env]['db_subnet'] | default('unknown') }}"
+var_db_gateway: "{{ env_settings[target_env]['db_gateway'] | default('unknown') }}"
+var_docker_network_name: "{{ env_settings[target_env]['docker_network_name'] | default('unknown') }}"
+
+var_teams_webhook: "https://104cloud.webhook.office.com/webhookb2/{FIXME}/IncomingWebhook/"

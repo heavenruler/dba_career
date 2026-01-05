@@ -1,0 +1,15 @@
+---
+# tasks file for 2_ansible_controller_dispatcher
+
+- name: Get local IP of Ansible controller
+  ansible.builtin.shell: |
+    set -o pipefail &&
+    hostname -I | awk '{print $1}'
+  register: local_ip
+  changed_when: false
+  delegate_to: localhost
+
+- name: Check if playbook can be run on this controller node
+  ansible.builtin.fail:
+    msg: "This playbook must be run on {{ ansible_controller_dispatcher_controller_node_ip }}. Current node IP is {{ local_ip.stdout }}"
+  when: local_ip.stdout != ansible_controller_dispatcher_controller_node_ip

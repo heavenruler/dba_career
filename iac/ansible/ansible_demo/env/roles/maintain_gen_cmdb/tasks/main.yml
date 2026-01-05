@@ -1,0 +1,78 @@
+---
+# tasks file for maintain_gen_cmdb
+
+- name: Read list of IPs from the file
+  ansible.builtin.slurp:
+    src: "/tmp/iplist_ssh"
+  register: ip_list_slurped
+  delegate_to: localhost
+
+- name: Decode the IP list content
+  set_fact:
+    ip_list: "{{ (ip_list_slurped['content'] | b64decode).splitlines() }}"
+
+- name: Echo IP list
+  ansible.builtin.debug:
+    msg: "{{ ip_list }}"
+
+- name: Clear /tmp/cmdb_hosts file
+  copy:
+    content: ""
+    dest: /tmp/cmdb_hosts
+  delegate_to: localhost
+
+- name: Add header to cmdb_hosts file
+  lineinfile:
+    path: /tmp/cmdb_hosts
+    line: '[all]'
+    create: yes
+  delegate_to: localhost
+
+- name: Append IP addresses to cmdb_hosts file
+  lineinfile:
+    path: /tmp/cmdb_hosts
+    line: "{{ item }}"
+  loop: "{{ ip_list }}"
+  delegate_to: localhost
+
+- name: Ensure cmdb-output directory exists
+  file:
+    path: "/root/cmdb-output"
+    state: directory
+  delegate_to: localhost
+
+- name: Remove all contents in /root/cmdb-output directory
+  command: find /root/cmdb-output -mindepth 1 -delete
+  delegate_to: localhost
+
+- name: Run ansible setup module for all hosts and output to /root/cmdb-output
+  command: ansible all -m setup -i /tmp/cmdb_hosts --tree /root/cmdb-output/ -f 1
+  delegate_to: localhost
+  throttle: 1
+  ignore_errors: yes
+
+- name: Ensure cmdb-export directory exists
+  file:
+    path: "/root/cmdb-export"
+    state: directory
+  delegate_to: localhost
+
+- name: Generate CMDB HTML report using ansible-cmdb
+  shell: ansible-cmdb -i /tmp/cmdb_hosts /root/cmdb-output/ > /root/cmdb-export/cmdb.html
+  delegate_to: localhost
+
+- name: Copy cmdb.html to /tmp directory for commit to dba-document
+  copy:
+    src: "/root/cmdb-export/cmdb.html"
+    dest: "/tmp/cmdb.html"
+  delegate_to: localhost
+
+- name: Generate CMDB CSV report using ansible-cmdb
+  shell: ansible-cmdb -i /tmp/cmdb_hosts -t csv /root/cmdb-output/ > /root/cmdb-export/cmdb.csv
+  delegate_to: localhost
+
+- name: Copy cmdb.csv to /tmp directory for commit to dba-document
+  copy:
+    src: "/root/cmdb-export/cmdb.csv"
+    dest: "/tmp/cmdb.csv"
+  delegate_to: localhost

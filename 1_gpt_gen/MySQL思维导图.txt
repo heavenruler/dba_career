@@ -1,0 +1,210 @@
+MySQL思维导图
+复制
+模式
+异步(Mysql Master-Slave)
+半同步(Mysql Master-Slave)
+同步(Percona XtraDB Cluster)
+工作线程
+SQL线程:重放Relaylog里的变更语句至Mysql
+IO线程:同步主库Binlog内容,写入RelayLog
+复制拓扑
+单级主从
+多级主从
+主主
+环形复制
+多源复制
+二进制日志格式
+Statement
+ROW
+Mixed
+监控
+Lepus(天兔)
+PMM
+Zabbix Template
+性能优化
+压力测试
+sysbench
+mysqlslap
+tpcc-mysql
+优化
+OS调优
+文件系统
+打开文件数限制: /etc/security/limit.conf
+* soft nofile 65535
+* hard nofile 65535
+磁盘调度策略: /sys/block/devname/queue/scheduler
+echo deadline > /sys/block/devname/queue/scheduler
+XFS
+ext4
+echo '/dev/sda1/ext4 native,nodiratime,data=writeback 1 1' >> /etc/fstab
+内核参数
+net.core.somaxconn =  65535
+net.core.netdev_max_backlog = 65535
+net.ipv4.tcp_max_syn_backlog = 65535
+net.ipv4.tcp_fin_timeout = 10
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_tw_recycle = 1
+net.core.wmem_default = 87380
+net.core.wmem_max = 16777216
+net.core.rmem_default = 87380
+net.core.rmem_max = 16777216
+net.ipv4.tcp_keepalive_time = 120
+net.ipv4.tcp_keepalive_intvl = 30
+net.ipv4.tcp_keepalive_probes = 3
+kernel.shmmax = 4294967295
+vm.swapiness = 0
+Mysql参数调整
+内存参数
+线程独享
+sort_buffer_size
+join_buffer_size
+read_buffer_size
+read_rnd_buffer_size
+线程共享
+innodb_buffer_pool_size
+key_buffer_size
+select sum(index_length) from information_schema.tables where engine='myisam'
+tmp_table_size
+max_head_table_size
+IO参数
+事务日志相关
+innodb_log_file_size
+innodb_log_files_in_group
+innodb_log_buffer_size
+innodb_flush_log_at_trx_commit
+0:每秒进行一次log buffer写入os cache,并flush log到磁盘,mysql崩溃会丢失一秒事务
+性能最高,安全性最低
+1[默认]:在每次事务提交时进行log buffer写入os cache,并flush log到磁盘,mysql或OS崩溃会丢失一个事务
+安全性最高,性能最低
+2[推荐]:每次事务提交时进行log buffer写入到os cache,每秒flush log到磁盘,OS崩溃或断电会丢失一秒事务
+性能和安全性折中
+innodb_flush_method = O_DIRECT
+innodb_file_per_table = 1
+innodb_doublewrite = 1
+delay_key_write
+ON
+OFF
+ALL
+innodb_read_io_threads
+innodb_read_io_threads
+innodb_io_capacity
+innodb_flush_neighbors
+sync_binlog
+其他参数
+expire_logs_days
+max_allowed_packet
+skip_name_resolve
+read_only
+skip_slave_start
+sql_mode
+max_connections
+硬件升级
+CPU 
+非计算密集型 - 多核
+计算密集型 - 高频
+内存
+大容量
+磁盘
+RAID 10
+SSD & PCIE卡
+网络
+万兆网卡
+表架构优化
+索引优化
+SQL优化
+相关工具
+慢查询日志: slow.log
+慢查询日志分析: pt-query-digest
+SQL执行计划分析: explain
+SQL耗时分析: show profile
+查询SQL执行流程
+1.DB客户端发送SQL请求给DB服务端
+2.DB服务端检查是否可以在查询缓存(QC)中命中
+3.DB服务端进行SQL解析,预处理,再由优化器生成对应的执行计划
+4.DB服务端Server层根据执行计划,调用存储引擎API来查询数据
+5.DB服务端Server层将结果返回给客户端
+优化方法
+DB中间件
+MysqlProxy(Mysql)
+Atlas(360)
+DBProxy(MeiTuan)
+MyCat
+ProxySQL(Percona)
+KingShard(KingSoft)
+MaxScale(MariaDB)
+OneProxy
+Certus(NetEase)
+其他特性
+触发器
+存储过程
+集群
+Mysql Group Replication
+Mysql InnoDB Cluster
+Percona XtraDB Cluster
+MariaDB Galera Cluster
+基本原理
+SQL
+Select
+Update
+Insert
+Delete
+Commit
+Rollback
+体系结构
+客户端
+Java,PHP,GO,Python,C/C++.....
+服务层
+SQL接口
+解析器
+优化器
+缓存 & 缓冲区
+连接池
+存储引擎层
+MyISAM
+InnoDB
+Memory
+CSV
+Archive
+TokuDB
+Mysql体系结构图
+高可用
+Keppalived
+MMM
+MHA
+PXC
+Raft
+Consul
+存储引擎
+MyISAM
+表级锁,并发度低
+无事务
+不支持热备份
+不支持外键
+崩溃恢复
+只缓存索引到内存
+InnoDB
+行级锁,并发度高
+支持事务
+崩溃恢复机制强大
+支持在线热备
+支持外键
+缓存索引和数据到内存
+Archive
+Memory
+CSV
+TokuDB
+分布式
+Mysql Cluster
+Percona Xtradb Cluster
+备份
+逻辑备份
+mysqldump
+mysqlpump
+mydumper
+物理备份
+LVM Snapshot
+Xtrabackup
+cp,tar
+Online DDL
+gh-osc
+pt-osc

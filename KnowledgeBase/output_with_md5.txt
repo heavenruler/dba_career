@@ -1,0 +1,1316 @@
+PolarDB MySQL跨可用区强一致解决方案
+https://mysql.taobao.org/monthly/2025/02/01/
+f47e6048987f7b4eeb3199c1fc30c45c
+----
+Using Blue/Green Deployment For (near) Zero-Downtime Primary Key Updates in RDS MySQL
+https://www.percona.com/blog/using-blue-green-deployment-for-near-zero-downtime-primary-key-updates-in-rds-mysql/
+7e04df7e492af937f3db7351c4bd43b8
+----
+Orchestrator (for Managing MySQL) High Availability Using Raft
+https://www.percona.com/blog/orchestrator-for-managing-mysql-high-availability-using-raft/
+41244ed80cb02c95a173325114b0285b
+----
+如何迅速并识别处理MDL锁阻塞问题TaurusDB推出MDL锁视图功能，帮助用户迅速识别并处理MDL锁阻塞问题，从而有效 - 掘金
+https://juejin.cn/post/7462296625656528936
+aa48496117f65bb611d2fbea446b3c6c
+----
+面试复盘：MySQL InnoDB 事务隔离级别与 MVCC 分析/为什么可重复读的死锁概率高？_ 最近一次面试中，面 - 掘金
+https://juejin.cn/post/7486852319461883916
+02f7ce5680cb3c01e50450fddbe10d04
+----
+理解 MySQL 的分组机制：GROUP BY、SELECT、HAVING 及索引优化理解 MySQL 的分组机制：GR - 掘金
+https://juejin.cn/post/7487071171194896395
+23a35557d03da0e51c3396bd694b4bf5
+----
+Docker部署MySQL、Redis、Kafka、ES、KibanaDocker Docker的基础概念和安装就不多讲 - 掘金
+https://juejin.cn/post/7487219933127245833
+13c919cde6178d6e6bbf2bcaa88f6cd4
+----
+SQL执行顺序与ON vs WHERE：MySQL底层解析与面试记忆法SQL执行顺序与ON vs WHERE：MySQL - 掘金
+https://juejin.cn/post/7487542928133210175
+b221d40092566cfb3b93d88b064efe4f
+----
+美团2面：亿级流量，如何保证Redis与MySQL的一致性？操作失败 如何设计 补偿？
+https://mp.weixin.qq.com/s/_VyHzICG_qZENjjnHGC0UA
+9b155c5f6dba05ac24db758bf32a027a
+----
+"慢SQL"治理的几点思考
+https://mp.weixin.qq.com/s/-OcciTrwcTGKAWdjJQY4_g
+928473265cdc10481ccbce541bba4a5b
+----
+MySQL表数据已经删了，为什么空间还是没释放？
+https://mp.weixin.qq.com/s/08QfxxIgMCCIjElE5A2Q9g
+dd9ab01aa305698c82f77c8cc05f2e0d
+----
+掌握 SQL 子查询：让你成为查询优化高手
+https://mp.weixin.qq.com/s/1oBUSdJMZz0ZYo5tRlF9SQ
+23cf552d4947da4441ccb1acd5aa7079
+----
+好问题，数据治理到底解决了什么啊
+https://mp.weixin.qq.com/s/2FWioX0kdkGrzch3r7NFKw
+f963b5bf58c9daad2b17f798d93d4f3d
+----
+MySQL 如何实现安全连接？
+https://mp.weixin.qq.com/s/2OpQpEsRWl_59WL4bSIqUA
+e51cd350fe0d6bce55191d86520d2261
+----
+MySQL中varchar(50)和varchar(500)区别是什么?
+https://mp.weixin.qq.com/s/36pk7ljy4OdSLNv1_rFZRw
+69543d21b92b2836d64184f7a064390e
+----
+35岁重学网络安全——SQL注入篇（二十四）
+https://mp.weixin.qq.com/s/4_X1Bau3m_JfBH6RqDTagw
+86a8ea7c70317357da7b0a3bf35dea79
+----
+免费开源 PDF 神器，啥功能都有，PDF 需求全覆盖～～～
+https://mp.weixin.qq.com/s/44L49wDSTDyywC-3hlhzFQ
+d56385bf638090498b47d885e2ed6b43
+----
+MySQL8第108期-性能优化之数据库结构1
+https://mp.weixin.qq.com/s/52QXAf66lD_bw6n3zb8kMA
+8742fddec1aac99f2ec7f7ae4655c089
+----
+TiDB × AI ：DeepSeek 时代你需要什么样的数据基座
+https://mp.weixin.qq.com/s/5JRFnZQLsVxX2jGCcppfpA
+2f7d940a3a2e1635b70fe4d038d9e330
+----
+阿里面试：10WQPS高并发，怎么限流？这份答案，让我当场拿了offer
+https://mp.weixin.qq.com/s/5M8vO5rLpt9uXmxYC4Z8vw
+6b159e0502dedddad0a2c78d220d598b
+----
+MySQL内存问题分析利器--Jemalloc
+https://mp.weixin.qq.com/s/6_owYVqub2uok32EvgpneA
+cf063b6e344bb94de337aa8099ec0765
+----
+MySQL 升级后查询性能跳水，排序竟成“罪魁祸首”？
+https://mp.weixin.qq.com/s/66ryA_iJ-29jnRlry7K5Og
+3e6aea7a585dd2262279f6bf9853912a
+----
+数据库流程管理功能：防范灾难性故障的最后防线
+https://mp.weixin.qq.com/s/6SGIRvKCMwQputHjwQQC-A
+cd78ff0348afb430117e1b1594b25d0a
+----
+[MYSQL] 记录一下undo太大(Disk is full)导致数据库宕机案例
+https://mp.weixin.qq.com/s/7_yYa6G9dfeU1dXHFUNMHw
+3033a92d5b8ec0a31605d0312ae9898d
+----
+行业案例：12306亿级流量架构分析（史上最全）
+https://mp.weixin.qq.com/s/7PUDlhbuEjpi-H-BzfJ4ig
+e323f982151cdee3c063172ec89893b2
+----
+京东二面：分库分表后翻页100万条，怎么设计？答对这题直接给P7！
+https://mp.weixin.qq.com/s/81IDSdw5yKY4oN4ktf3Hyg
+f89a1f60714663f9493a4a35837dfaa1
+----
+从单一到多活，麦当劳中国的数据库架构迁移实战
+https://mp.weixin.qq.com/s/AdNNN39eqWW_BGtsw28BUA
+22cfb4facea082f8b8debd6605e8e257
+----
+第 53 期：EXPLAIN 中最直观的 rows
+https://mp.weixin.qq.com/s/AEH9xzn1Um6FI-YOykuWYQ
+783f485ee2a4566af9ddf900f7f8bb56
+----
+面试官：如果某个业务量突然提升100倍QPS你会怎么做？
+https://mp.weixin.qq.com/s/aNvkGSQpt84HF4gwQ7GybA
+f27b82079b8733bedc70f25fa53da604
+----
+一起免费考 MySQL OCP 认证啦！
+https://mp.weixin.qq.com/s/ati9F7TlDYxkMPwfIWECJQ
+be34ff8663b0ba98397851ad3de8c7e8
+----
+什么是索引下推？什么是索引覆盖？什么是回表？
+https://mp.weixin.qq.com/s/BGqt1mjXDOHM6ZTqpEFg0A
+4f288e377446e893136755b1f417aa89
+----
+SQL优化实战：从慢如蜗牛到快如闪电的必杀技
+https://mp.weixin.qq.com/s/Bgw8MQnwg4-FKCQTFRohyw
+0504718023db4a726279fd687d4bcab0
+----
+阿里二面：10亿级分库分表，如何丝滑扩容、如何双写灰度？阿里P8方案+ 架构图，看完直接上offer！
+https://mp.weixin.qq.com/s/Cj-v4k6kORjrfySfC1_wtA
+0f1fbb21bfa72846d928642ab8afa178
+----
+MySQL免费培训与认证
+https://mp.weixin.qq.com/s/DfXXxiyBB4qBJBAgAE5eEg
+0f947a3b8fb7da48c5dfc8dfe5493ef8
+----
+高并发下幂等性的七大解决方案（图文总结）
+https://mp.weixin.qq.com/s/DRIowcqgJmLSIYP1fBJmqg
+55a2e878185edd06369a1b04387280e6
+----
+腾讯二面：1.2 亿级大表, 如何 加索引？
+https://mp.weixin.qq.com/s/epIyCN4ofKIavOEVc3hoWQ
+562b8a33a3d8c8e2348279008e454053
+----
+性能比拼: MySQL vs PostgreSQL
+https://mp.weixin.qq.com/s/EwiCeKvXM9kJJB1UQN2_rw
+d0d1305ad59b2d3b0e3f6fbf26f823f7
+----
+实现一个 MySQL 配置对比脚本需要考虑哪些细节？
+https://mp.weixin.qq.com/s/F7liZUrfP6LX3MsoIbq3Rw
+b42daf3594e7c685521ef338b772085e
+----
+SQL优化——我是如何将SQL执行性能提升10倍的
+https://mp.weixin.qq.com/s/FDRczYdgZ5kMKU64yMB_fw
+1e8b6b87255ee140f42e8a9cc94f6190
+----
+分布式数据库是伪需求
+https://mp.weixin.qq.com/s/FNhTCZk-SBVQkYhQ3zi_-g
+3e081f32fa73e052fe70bb3c86d634f4
+----
+别再卷技术细节了，不值钱。。。
+https://mp.weixin.qq.com/s/fOyi_BdKUxbCNcBSp2aE0g
+613ad8fa92bb5155bdd8b6a8eafcd10a
+----
+CPU又100%了
+https://mp.weixin.qq.com/s/Fy8gXzPBLKhPLIB03Ey78A?poc_token=HMUz82ejexlP0FPKCFMSk65K4yJVGU-iNisR56Lh
+44862aef1f3e9f432840f303bb9da948
+----
+MySQL惊天陷阱：left join时选on还是where？
+https://mp.weixin.qq.com/s/g6xKA76N1IR9EcESVoFO6A
+4ece2a5d71108290a43bd9aa6fe88d14
+----
+高并发下连接池：性能飞升的魔法秘籍
+https://mp.weixin.qq.com/s/h_a93PdKqpZ2eQzZJFq1Vw
+7fa5526bae686214bbcb40c29a167309
+----
+架构师必看！现代应用架构发展趋势与数据库选型建议丨TiDB vs MySQL 专题（一）
+https://mp.weixin.qq.com/s/HgvRyGjHmyW-e3HwZRBJVg
+1c72a63958d35f8bbaac1d46415655a8
+----
+TiDB 观测性解读（一）丨索引观测：快速识别无用索引与低效索引
+https://mp.weixin.qq.com/s/hoALPGuaV7K-GAn2U-H47w
+2de026eacc1b893ed1226f2bd873037c
+----
+MySQL数据库常用的41个脚本，速来下载！
+https://mp.weixin.qq.com/s/i_iwSxoYWlZ1jBqIrcUiQQ
+63e7f4a398c3412bd0e46e04761ec0f0
+----
+MySQL 8.0 INSTANT DDL 算法原理简析
+https://mp.weixin.qq.com/s/iGQ_DQAKsO1d-w6O7QYXMQ
+897240cbe8f970062e4b51aa9a925826
+----
+Redis缓存三剑客：穿透、雪崩、击穿—手把手教你解决
+https://mp.weixin.qq.com/s/IqzJyiVnYRVYlatfAnq91A
+a9d7a197acc8356eb770b8865430d8bc
+----
+面试官最爱问：你线上 QPS 是多少？你怎么知道的？
+https://mp.weixin.qq.com/s/j6ntmudbsISfYkMKonqUqA
+c88bc9dc70d233d3bbe555aa91b89b8e
+----
+如何准确获取 MySQL 主从延迟时间？
+https://mp.weixin.qq.com/s/jkKCw8aJJ528s5fL3RwAzA
+efdce531a066312521594d378fbec0b1
+----
+重新定义可视化：我的 Grafana 设计之旅
+https://mp.weixin.qq.com/s/JKyxdolFrZHpTOukiWOx4w
+c4c2ab9a7b97fbbda9bc4e0cb41d79af
+----
+MySQL死锁全解析：从原理到实战的破局指南
+https://mp.weixin.qq.com/s/JoXK3e9kxrSNbcENcLp_eg
+1917eb14d34aacecd7169b6ca66c3fc1
+----
+万字详解：K8s核心组件与指标监控体系
+https://mp.weixin.qq.com/s/jZCiQEKdMxZbuXmG7jdg-A
+15ae13e657d0a2cdbb7a9447df344ba9
+----
+MySQL 8.0 OCP 1Z0-908 考试题解析指南
+https://mp.weixin.qq.com/s/km40l315vVgsJMFb8C0s2A
+e4e533ce546996f92a85b8a5e760ae1b
+----
+活动中台系统慢 SQL 治理实践
+https://mp.weixin.qq.com/s/kYj4yg5kMPjU7mDg_iykmQ
+341f2313c1791492b1c0284347ce6220
+----
+MySQL 30 周年庆！MySQL 企业版已开放下载！
+https://mp.weixin.qq.com/s/L_Gqy62wUWZ58r0_aJjxSQ?poc_token=HOZxLWijrk4BneCtOlM5C6nbXwBh4z2sLgdy8e61
+3608af8780e5810dea74d054e452b709
+----
+庖丁解InnoDB之B+Tree
+https://mp.weixin.qq.com/s/LMLOfDOFMs6rAJbcu04lOA
+2e34f0e79a7ff1abef3d20cbbd74f695
+----
+京东面试：mysql深度分页 严重影响性能？根本原因是什么？如何优化？
+https://mp.weixin.qq.com/s/LXvQMQFf_SyLWh1zI6onkA
+938ec8b854beade0cca15aaaba177790
+----
+停从库,为啥主库报错[ERROR]mysqld:Got an error reading communication packe
+https://mp.weixin.qq.com/s/MkiM1iuxur104jQMwYmojw
+85a3ee4b98438113378489e6e8029f92
+----
+不同数据库的存算分离有何不同
+https://mp.weixin.qq.com/s/MLHamGiq9hfiiBp4S9P6Tw
+22b190fe2638409e2dde4bc5f7dd2ad9
+----
+深入理解 SQL 联结表：从基础到优化，一篇文章带你掌握
+https://mp.weixin.qq.com/s/mMCa_aM8wh4rL7agIUpKug
+b3e61dbf1eaa62124a0f3fb0d7fca83f
+----
+面试必看！腾讯面试问：MySQL缓存有几级？你能答上来吗？
+https://mp.weixin.qq.com/s/mzrc2lSNc8mqvcwrOvHJBQ
+85442faf3da258ee16a3ef38899f808b
+----
+重生之 MySQL B+Tree 提前问世二十年，MySQL之父叫我师父
+https://mp.weixin.qq.com/s/N2budx0ZuoKZMRdicp80SQ
+1739e4ae182da8c5d4e409b063d6876a
+----
+MySQL日志系统：持久性和一致性是如何实现的？
+https://mp.weixin.qq.com/s/NUjHxYi153OFPv3B4XAxNw
+4e63b616ab207e733ae09e3b879e2637
+----
+腾讯面试：1亿用户的好友关系如何秒级查询共同好友？这套方案让性能提升100倍！
+https://mp.weixin.qq.com/s/o4hGXvRoAmLfU0mr2VTFPQ
+f0fa06631288db2fe941f72b59f6f429
+----
+mysql字段数量限制为啥是1017 ?
+https://mp.weixin.qq.com/s/Oms38x8IR5F0jSN6c3e3sA
+7e84f0d02bc9c52eb91888f94b8c1414
+----
+MySQL 8.0参数默认值变更，恐致性能下降3倍多
+https://mp.weixin.qq.com/s/OrflexV6469yVqP5BNlS-g
+f23997bda0e84488df8ab87e753bb69c
+----
+架构设计过程中的10点体会
+https://mp.weixin.qq.com/s/ORRryNe2gO79L4sa0uufuQ
+42dfb24cc37ad18726de64a2bb5cc686
+----
+「合集」MySQL 8.x 系列文章汇总
+https://mp.weixin.qq.com/s/ov4PvO3xY9YGljxVE2GR8Q
+e5f93f1a236836228efea418a70ea536
+----
+全面监控太优雅 , 太6了, 运维强推
+https://mp.weixin.qq.com/s/PC5HzmhwgRXUXaj5FK253g
+255ef4a415237f487394694346498aee
+----
+MySQL 高可用：MHA 实现 MySQL 高可用
+https://mp.weixin.qq.com/s/qITvEYNaedRiyPwMmC-lpw
+44380ab34618101b2a7b528a7fba216f
+----
+一文搞懂 MySQL InnoDB架构 Buffer Pool、Change Buffer、自适应哈希索引、Log Buffer
+https://mp.weixin.qq.com/s/Qo_11gtXLilb-fXLqHEY2g
+50301f09e4569d3c389c6146db83bd10
+----
+我的2023-2024年mysql相关文章整理汇总
+https://mp.weixin.qq.com/s/QQ52xHZ9-lSCGDfP9aiyCg
+0b42390bb6652a945e1b87c86efc459a
+----
+如何给MySQL的字符串字段加好索引？
+https://mp.weixin.qq.com/s/ral7-TNRWuVbFCYpalnGrg
+67b9239c1e117f57662e78ccd279613b
+----
+淘宝质量保障之主动预警能力建设
+https://mp.weixin.qq.com/s/rDrj3DhO3dhc7x2ewj5y_w
+1cacda269b0dafc0d0c693ab78fcb2c7
+----
+字节二面：为何还执着传统数据复制，零拷贝它不香吗？
+https://mp.weixin.qq.com/s/rhSJQVTJu1U8dgKE-JoTxA
+7323232c21b1301c822fd40679b9c46b
+----
+[MYSQL] mysql空间问题案例分享
+https://mp.weixin.qq.com/s/rVR1pGz0aOs_vOy3OS0J_w
+ce02df5a739df7820a4d3c2094ac4340
+----
+当 DeepSeek 遇见数据库，大模型如何重构 DBA 的工作模式？
+https://mp.weixin.qq.com/s/S923YsepXamytT4iqkA1rA
+9d0cce180d29510aeaa72fabc39369bd
+----
+MySQL 用 limit 为什么会影响性能？有什么优化方案？
+https://mp.weixin.qq.com/s/SHloLVl2PaYWTHoeTxw1Pw
+e17662648434859bd6be76ed3b95a212
+----
+字节一面：20亿手机号存储选int还是string？varchar还是char？为什么？
+https://mp.weixin.qq.com/s/svWY28jSDkwCzB4Xkq1ClQ
+63f9298623511a70589f45ada9401398
+----
+MySQL参数innodb_buffer_pool_size优化方法
+https://mp.weixin.qq.com/s/Sxg1FHHITufWUW3J-HES5g
+daa4411582408500b5be400ff24ce477
+----
+爬虫搞崩网站后，程序员自制“Zip炸弹”反击，6刀服务器成功扛住4.6万请求
+https://mp.weixin.qq.com/s/sZonRHd9SQku8n6zH5hmmQ
+72a36f88fa5f3dd55625c60c045a0f3c
+----
+为什么GROUP BY比DISTINCT快3倍？90%的程序员都踩过这个坑！
+https://mp.weixin.qq.com/s/t2tun1tEU7a2bc2hszgkuQ
+2ce23a075947fcba62bdaaeaa37af067
+----
+利用 MySQL 8.0 clone 插件远程克隆快速重建主从复制环境
+https://mp.weixin.qq.com/s/t8PWdVQhT6M6Eg1ucEeFoA
+c05b559cdae28f2f430f663a7fcfd3e8
+----
+网易终面：100G内存下，MySQL查询200G大表会OOM么？
+https://mp.weixin.qq.com/s/tiY_5PQbRDlGWlUL-vIldA
+64b489bde252cbb70863ab7a779b75cf
+----
+[MYSQL] 服务器出现大量的TIME_WAIT, 每天凌晨就清零了
+https://mp.weixin.qq.com/s/UDEQxNGUmGcGrO1lwbZLgw
+7b1aa4898308cb8d02cd86501b2bc5ef
+----
+TiDB 可观测性解读系列：索引与算子执行性能优化实践
+https://mp.weixin.qq.com/s/udQNyROzQsPOLYxv3Ah4HA
+2ab019b57c025f2f4972986577ee1f5c
+----
+新特性：用户管理升级，角色权限一目了然
+https://mp.weixin.qq.com/s/URcSpHzmaofEJ3Zvd2FVQA
+9ea1332c634ea50d1442fa530ea9c633
+----
+验证 MySQL MGR 双机房双活架构可行性
+https://mp.weixin.qq.com/s/vnO1qXz8DumPgpN4R0WDzA
+be275f1ba6718211207a8bea411b237f
+----
+重生之MySQL 索引失效六大陷阱
+https://mp.weixin.qq.com/s/Vt37N499AocCqHPRpNbYaA
+5f7bdc0ef060d0efff808773e7782c67
+----
+去哪面试：1Wtps高并发，MySQL 热点行 问题， 怎么解决？
+https://mp.weixin.qq.com/s/vZgmpCeMFK1K6_xX6PVExw
+21374143cf71842dc5d7d1a8e1b36d40
+----
+阿里一面：MySQL 一张表最多支持多少个索引？16个？64个？还是无限制？
+https://mp.weixin.qq.com/s/woAOfER5FC3Pgf_xHF8o7A
+2b7f33be7031ea105eaa09a6193da552
+----
+主从报错GTID_MODE = ON cannot be set to ANONYMOUS
+https://mp.weixin.qq.com/s/wOHpCZ6u8tp_QjZjM3jxAA
+8806df80070e0504041848adeb3d0e1b
+----
+阿里面试：每天新增100w订单，如何的分库分表？这份答案让我当场拿了offer
+https://mp.weixin.qq.com/s/XkbtHrZVRtx-f7REzi-eBg
+1bb42ceacac9fdb371ef81785f2c8b29
+----
+MySQL出息了! 大败PG用的这个case
+https://mp.weixin.qq.com/s/XL_319dq6-Edphxgq0KnrQ
+ec00423c5e1578b5ff5fc4032f41879a
+----
+mysql提升10倍count(*)的神器
+https://mp.weixin.qq.com/s/XOYK9eGMxFlmPucUi7imcg
+88e03927022b034a07fc05697d27b429
+----
+携程面试：100 亿分库分表 如何设计？ 核弹级 16字真经， 让面试官彻底 “沦陷”，当场发offer！
+https://mp.weixin.qq.com/s/xQtKtaLG8xRMbK-8b3Rzuw
+6a5506a915d6ff1834b919009678a30f
+----
+深度解析MySQL索引失效的8大场景及终极解决方案
+https://mp.weixin.qq.com/s/y1Ym11YlxtJKIzRfdmp4lQ
+2703fc1679655e88248b2b12af886e95
+----
+事务持续执行之谜：怎样找出对行记录上锁的 SQL？
+https://mp.weixin.qq.com/s/y2zmEfwL-vAxQ15IvB5VNw
+90a8dd6f2dddc0d00efe98fd30c36f8f
+----
+大规模数据同步后源端与目标端数据总条数对不上的系统性解决方案
+https://mp.weixin.qq.com/s/y4wZlm4272G6sm6-_3ORoQ
+c600b512bfaa0d325fedfe7742fb0b23
+----
+MySQL内存使用率高问题排查
+https://mp.weixin.qq.com/s/YBY5T34M6xWq24lS8vKZlQ
+02507d3964afd744e6dbb7e9148eaacf
+----
+一、架构设计基础
+https://mp.weixin.qq.com/s/YDu-IzEZCxTFLZeD8tzWlg
+1e45d837b5e0443da7128142263f5a27
+----
+认知密度：为什么聪明的人越来越沉默了
+https://mp.weixin.qq.com/s/YiOMPXuz8raGVmNgAmWLNA
+70cf21c5606f0e8a9494c4b5d16ebbec
+----
+面试官：说说四层和七层代理的本质区别？——从 OSI 模型到千万级集群的拆解指南
+https://mp.weixin.qq.com/s/yL0jeiMc6oxn1wDUBzMNsA
+652496fd9d65b8fb0e3df460c3d85f3d
+----
+MySQL生产实战优化（利用Index skip scan优化性能提升257倍）
+https://mp.weixin.qq.com/s/YO8JW0A3p9_Zc5zU6562WA
+e384c3abb1f2ec298174c21666b0cc67
+----
+火焰图：MySQL 性能分析的可视化利器
+https://mp.weixin.qq.com/s/YRW6lWta82g2l1RCByUeXQ
+e98faa4611508ebf162d1ae5f9b8622d
+----
+凌晨四点，线上CPU告警，绩效没了……
+https://mp.weixin.qq.com/s/ytGCxne9PmzS9BjhYPC61g
+9a132f2b394a5efe8b50c0abaf80ecb7
+----
+MySQL 性能优化核心指南：表结构设计与查询速度深度解析
+https://mp.weixin.qq.com/s/zN8F0igQ6DilCv3ZoDjHiw
+6178cb92683f4e4ed6d5e16ac3b57411
+----
+Database Scalability and the Giant Flea: A Lesson in Complexity - The New Stack
+https://thenewstack.io/database-scalability-and-the-giant-flea-a-lesson-in-complexity/
+94fb63fc6db6864ca91e18cbbe282906
+----
+基于 MySQL 8.0 细粒度授权：单独授予 KILL 权限的优雅解决方案 - 墨天轮
+https://www.modb.pro/db/1897173226581667840?utm_source=index_ori
+cf51ea429c1967586f9582bb182a15d9
+----
+聊聊跨数据库迁移的数据比对那些事儿 - 墨天轮
+https://www.modb.pro/db/1897452784597872640?utm_source=index_ori
+f30c184d6c036d4d3d20f77b75f37302
+----
+AWR报告暗藏的致命误区，90%的DBA还在踩坑！ - 墨天轮
+https://www.modb.pro/db/1899229815295717376?utm_source=index_ori
+8e613f1d9f82451d3aa96ae12dc43051
+----
+MySQL突然崩溃？教你用gdb解剖core文件，快速锁定“元凶”! - 墨天轮
+https://www.modb.pro/db/1899860365098364928?utm_source=index_ori
+3eb79c4afbd0fc2c42133f9d0b606de1
+----
+NineData 社区版：从 MySQL 到 TiDB 数据复制新选择 - 墨天轮
+https://www.modb.pro/db/1900115262142164992?utm_source=index_ori
+6ae9da3549283979aa62066b97ba2a96
+----
+MySQL生产实战优化（利用Index skip scan优化性能提升257倍） - 墨天轮
+https://www.modb.pro/db/1901462538399789056?utm_source=index_ori
+8011ad97f55be5ff49fb57fe47b36b7a
+----
+MySQL8.0统计信息总结 - 墨天轮
+https://www.modb.pro/db/1901545046118248448?utm_source=index_ori
+001569921a9bb9ed2b9b5384beec7bbe
+----
+MySQL 有没有类似 Oracle 的索引监控功能？ - 墨天轮
+https://www.modb.pro/db/1901881763480219648?utm_source=index_ori
+864da5709363c16af76f365306c1a0f1
+----
+Debezium实战！一款不错的开源CDC工具 - 墨天轮
+https://www.modb.pro/db/1901976160691564544?utm_source=index_ori
+5ed3876f474f24c2a33147acd3267d85
+----
+[MYSQL] 漏扫发现驱动存在漏洞, 怎么快速查找客户端的驱动版本呢? - 墨天轮
+https://www.modb.pro/db/1902590635555696640?utm_source=index_ori
+6424dd3cd2dcf41a682a292d0693b88c
+----
+MySQL 8.4 新特性深度解析：功能增强、废弃项与移除项全指南 - 墨天轮
+https://www.modb.pro/db/1913206257922617344
+c057781ef0c7e0873c7f9a43cadca7b5
+----
+轻松上手：使用 Docker Compose 部署 TiDB 的简易指南 - 墨天轮
+https://www.modb.pro/db/1916401881191034880?utm_source=index_ori
+dd80518a03cc67779a0c876376ccb05b
+----
+MySQL 8.0 OCP 1Z0-908 考试解析指南(三)终结篇 - 墨天轮
+https://www.modb.pro/db/1926994935606161408?utm_source=index_ai
+3c5d927871fd91e17ed6408eec088c71
+----
+Password Management in MySQL 8: Switching Between Authentication Plugins
+https://www.mydbops.com/blog/password-management-in-mysql-8
+52e38072515ecdc8bacde815def89053
+----
+万字总结：腾讯会议后台告警治理实践——如何才能避免“事后诸葛亮”
+https://mp.weixin.qq.com/s/JLoUGJRrWa4RY5YTuTB5Gw
+bc19303cf196e66d02df8b299abd8a1a
+----
+如何构建故障容忍的分布式系统
+https://mp.weixin.qq.com/s/B-SqaL2HHnxqInePnMnbhQ
+5a1f568435e61abfbf5dd495d88fda9b
+----
+一分钟阅读:架构师的核心能力
+https://mp.weixin.qq.com/s/KMD3AM-XOf6Gc7gX1Sh9jw
+cbde1a52bbe1f2e64dfbfb3166c29f2e
+----
+分布式系统不可靠时钟问题
+https://mp.weixin.qq.com/s/yWDDonbXrdHcLQiMT36dLQ
+1a1779077a8ec0f1dc5b805ef4d6f082
+----
+字节面试：流量突然提升100倍QPS，怎么办？说出这 9字真经（压、分、缓、异、限、降、扩 、监、演），大厂 面试官跪了！！
+https://mp.weixin.qq.com/s/ozf0L0s8rm2awH7ILrlayw
+a3d782e1a99228f82f8d9bbebeeeeb8b
+----
+如何度量高可用架构设计指标
+https://mp.weixin.qq.com/s/GnY3gMmmv78eEG5tt_wDEA
+9098d0816007e761ad4aafc541b1a6cd
+----
+对 MySQL MGR 双机房双活架构的可行性验证（附 Cursor 脚本）
+https://mp.weixin.qq.com/s/TU82SfCWYBJoFQ6c7JiHBQ
+65345b7d3cd1b42a7c2fc5184097e77b
+----
+淘宝质量保障之主动预警能力建设
+https://mp.weixin.qq.com/s/rDrj3DhO3dhc7x2ewj5y_w
+1cacda269b0dafc0d0c693ab78fcb2c7
+----
+"慢SQL"治理的几点思考
+https://mp.weixin.qq.com/s/-OcciTrwcTGKAWdjJQY4_g
+928473265cdc10481ccbce541bba4a5b
+----
+一键生成MySQL巡检报告
+https://www.modb.pro/db/1931959384364560384
+29ecf63fcd34313a9a5e06c2b97a01c4
+----
+xtrabackup原理及实施
+https://zhuanlan.zhihu.com/p/435853859
+ada26a457f24c63b95c3b4cd08ffc1d8
+----
+MySQL 8.0 性能优化实战：性能提升的全方位调优方案
+https://www.modb.pro/db/1937788365559050240
+68739bb3073ab7d8c92fd54feacfcfe9
+----
+MySQL锁定位实践指南
+https://www.modb.pro/db/1939284373065445376
+1b075f6bffd67f550f942f6b81dabf9d
+----
+ETL的“终结者”？DBA如何看待HTAP的概念、价值与实现路径
+https://mp.weixin.qq.com/s/9eEePkyJSRigDXBnYEOnBg
+238bc7725675313cf3055d2b4cad8c5b
+----
+MySQL 8.0升级价值分析：新特性与5.7性能实测
+https://mp.weixin.qq.com/s/E4UT9kQTvBsdqlTSkXQdpw
+356d597ec2167bdfd3ed77777f909971
+----
+[MYSQL] 当一个PAGE里的数据全部被delete之后, 它还会存在于Btree+中吗?
+https://mp.weixin.qq.com/s/W2tRd5JBPgjnADsciQ1k_Q
+9449fab062d488b9ec305b64000d070a
+----
+DBSyncer：一款开源的数据同步工具
+https://mp.weixin.qq.com/s/74ub6uImMInPQ9_HShzWfw
+8abecd7579f40e36704900e1dc658a7c
+----
+[MYSQL] 出现大量的Waiting for table flush导致业务表查询不了
+https://mp.weixin.qq.com/s/s4cFhr-AjTvY1biLmLl6cg
+da3cbf9103dd0fde44989bcf85ce8d8e
+----
+刚升级到MySQL8.0就凉凉，是时候准备再次重启升级了
+https://mp.weixin.qq.com/s/fAkEhhtB3Z2HGA4BR8u2Qw
+868c71eb7e985d733eda69dde101d31b
+----
+上线3周：告警减少70%！AI巡检分级报告实战（一）
+https://mp.weixin.qq.com/s/3s0Tvw8q5y6IpDNl3Y_7VA
+4a7d3d0523b8155c5eef588a3dc9907e
+----
+如何分析 mysqld crash 的原因
+https://mp.weixin.qq.com/s/BY75sBfrDWGVQZGsoiwMBQ
+9188f9c7f4423974c11dd8222435fe12
+----
+[MYSQL] 参数/变量浅析(1) -- 超时(timeout)相关
+https://mp.weixin.qq.com/s/sOhKpsbVSA9qnGLXH0GF-w
+63119f5c69d42ed1a267a59ce5c3a63a
+----
+SQL 优化对比：驱动表 vs Hash 关联
+https://mp.weixin.qq.com/s/XDb0c6sObPJKqQxfGvxzHQ
+c42de607b00a6d208b94059f4d218b1a
+----
+mysql自适应哈希索引（AHI）,40%性能提升，为何有人却选择关闭？
+https://www.modb.pro/db/1937342590010011648
+801ad604fe510fdd79c023b9c99aa7df
+----
+[MYSQL] row_format=compressed的存储结构浅析
+https://www.modb.pro/db/1946035841021784064
+af409e79577162f416b6463ce5d15a87
+----
+什么？事务提交后，数据丢了？
+https://mp.weixin.qq.com/s/VWRRp_hT5igApIi1ApQp0Q
+974aa1398cfb33a892f4faec4fdba4ff
+----
+阿里面试：MySQL 一个表最多 加几个索引？ 6个？64个？还是多少？
+https://mp.weixin.qq.com/s/c9rvC_gaEnoVkxWHUiC7mg
+499ade35926310be425eda5ff150f94e
+----
+怎样保持MySQL Performance Schema的性能开销在可控范围内？--深度解析PFS对数据库性能的影响
+https://www.modb.pro/db/1940668437475373056
+3e4d8db847142e8a85459e10b6868641
+----
+Ubuntu上的MySQL 8.4.5安装：一行命令背后的系统级操作实录 | 不只是apt install那么简单
+https://www.modb.pro/db/1942846167356813312
+38e33dbdc635c5230643e3801cf0cef9
+----
+[MYSQL] 从库 io_thread 接受binlog速度太慢?
+https://www.modb.pro/db/1943498977723297792
+ab0fceca2e10d9257ab64bf479662204
+----
+云和恩墨杨廷琨：日常运维中的技术决策
+https://www.modb.pro/db/1924302539982385152
+09de87d3a15a7e8dcfbd0ef455ddefa7
+----
+MySQL 8.0.40：字符集革命、窗口函数效能与DDL原子性实践
+https://www.modb.pro/db/1941142474068602880
+bbe9baf20037a60a6bda0752abc273be
+----
+深度解析MySQL的半连接转换
+https://www.modb.pro/db/1943504966363131904
+8b3b99d613c2bf75e4779522b9170476
+----
+MySQL 8.0 性能优化实战：性能提升的全方位调优方案
+https://www.modb.pro/db/1937788365559050240
+68739bb3073ab7d8c92fd54feacfcfe9
+----
+使用 MySQL Clone 插件为MGR集群添加节点
+https://www.modb.pro/db/1948016960059486208
+4504759312deaf01f04cd5a2d02c4b99
+----
+MySQL数据库SQL优化案例(走错索引)
+https://www.modb.pro/db/1945834983298445312
+87f38de02a1b77e66adc488b320edb1c
+----
+InnoDB 二级索引 B+ 树的 Key 是什么？
+http://mysql.taobao.org/monthly/2025/07/02/
+99e79ab39ea9004943b9c92dfcdcceb9
+----
+CloudJump II：云数据库在共享存储场景下的优化与实现（发表于SIGMOD 2025）
+http://mysql.taobao.org/monthly/2025/07/03/
+4504ec57cff1695d52509f095590eb57
+----
+美团面试： ‘异地多活’ 都不用 ， 你们 项目 怎么实现 高可用呢？
+https://mp.weixin.qq.com/s/oW-8AhbW5thOsN_upA4DBw
+d7fe63bdf2283b3983577c28e356c225
+----
+微众银行：大规模 TiDB 运维体系建设 & 金融级稳定性保障漫谈
+https://mp.weixin.qq.com/s/gDozWyLjrM2LBAeus32uPg
+b1b7469378233f9581c863170286f8ef
+----
+告别 MySQL 分库分表， 重庆富民银行通过 TiDB 实现批量场景降本提效
+https://mp.weixin.qq.com/s/ya4n9TCoBVZh_I3dhF1q7g
+69639d8704c7656d30176be0d63596f7
+----
+如何理解高可用数据复制原理
+https://mp.weixin.qq.com/s/fn7K3BFwRD8cg6EpvbMe8w
+765b189c8a79c9f58e7574de2b359fb8
+----
+我们运维的 CMDB 模型是不是都做错了？
+https://mp.weixin.qq.com/s/-Uqsf-klZIp13kPEGqrtRA
+44f04696c333a9712822825f2f257b78
+----
+阿里面试：redis 突然变慢，如何定位？ 如何止血 ？ 如何 根治？
+https://mp.weixin.qq.com/s/AfqN9TJniilePMyec_-98w
+a921f24b9133afc247ffb8b7924bd74b
+----
+MySQL Buffer Pool的“防暴”机制，让你的数据库内存永不“社恐”
+https://mp.weixin.qq.com/s/srAbsTFCKxEYn-cmeFSa2Q
+db88b92775464cd4e325dfcf2d2a4c66
+----
+运维做好述职-“让价值被看见”
+https://mp.weixin.qq.com/s/l0v-abzsT2jJtOdnMYjupg
+e1a168c44200c635a475549f4c5a5cc3
+----
+优秀架构师必备：技术领导力的六项核心修炼
+https://mp.weixin.qq.com/s/IptpXq1IaeFNIhg54rk2kg
+027e57475b162bf6d68064e5223762fc
+----
+MySQL InnoDB MONITOR 性能监控
+https://mp.weixin.qq.com/s/QYnmIe_mgsEr8i1MLjHuMA
+177c701a8fcabb8769c4e6695fa54383
+----
+为什么DBA怒吼：MySQL小数必须用decimal？float/double是隐藏的财务刺客！
+https://mp.weixin.qq.com/s/F6elSTBOZBOitl4etZAVwg
+677109bf61d41cae7f523d3703c4a8ee
+----
+为什么DBA要求MySQL表索引不能超过5个
+https://mp.weixin.qq.com/s/GngfPmMQcTrdE3-MO8tRyA
+8d31234716fdeda76cb7fffa732202f6
+----
+庖丁解InnoDB之Lock
+http://mysql.taobao.org/monthly/2025/10/02/
+b99aab95e87290f8dd024f1f1f0c67ce
+----
+分布式架构的“灵魂拷问”：数据一致性到底怎么做？
+https://mp.weixin.qq.com/s/9vTmAiX3-hZlYaxxeSRhJw
+5d395169523ccf6cbee6c8b59648b40d
+----
+不止数据库替换，更是架构的跃迁
+ihttps://mp.weixin.qq.com/s/nF2algLSnl9BREdhdK5M6g
+dcf3bfb86e729a8eb661acd62c6dbfd8
+----
+小心！那个中划线可能让你的MySQL数据库“折了腰”
+https://mp.weixin.qq.com/s/TiozwvbxaZBt3Zuh23gTfA
+3bc37e5adcfbdfb28c86d3d961b53a10
+----
+一条 SQL 是怎么导致 MySQL TempTable 引擎崩溃的？
+https://mp.weixin.qq.com/s/d6QkC6uNTm4rKPVKhbAoLA
+87414491af876ac2bed247c28af3dc32
+----
+从0到1建设美团数据库容量评估系统
+https://mp.weixin.qq.com/s/excBMwipnmuRe730a8qfDw
+d60c3b194bd62f5a755432fc11e2a5ee
+----
+美团MySQL数据库巡检系统的设计与应用
+https://tech.meituan.com/2020/06/04/mysql-detection-system.html
+b2a72b1f792bbd5c3e6baf7bf5a17911
+----
+超大规模数据库集群保稳系列之一：高可用系统
+https://tech.meituan.com/2023/05/11/meituan-high-availability-system.html
+9a3c31cdbd7bcaaeb71c74d2758815c7
+----
+超大规模数据库集群保稳系列之二：数据库攻防演练建设实践
+https://tech.meituan.com/2023/05/26/database-attack-and-defense-practice.html
+2363f83ac347c8e3e1c148804be7270a
+----
+超大规模数据库集群保稳系列之三：美团数据库容灾体系建设实践
+https://tech.meituan.com/2023/06/09/meituan-database-recovery-system.html
+5c22c86cab79a213aa0f3e774fb65a44
+----
+MySQL自治平台建设的内核原理及实践（上）
+https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-01.html
+26c7b841d9c64290bf8f23d5052f45be
+----
+MySQL自治平台建设的内核原理及实践（下）
+https://tech.meituan.com/2023/07/06/meituan-mysql-autonomous-platform-02.html
+bfd730f8429ec1986a03f22dc2fa7a46
+----
+同城容灾+异地多活是全球化容灾处理的最好模式吗？
+https://cloud.tencent.com/developer/article/2439412
+c92d31dbd1b551149cf863cce4ccd1d5
+----
+TiDB 赋能半导体产线运营：以毫秒级数据同步、零超时故障转移，实现稳定性与运行效率双突破
+https://mp.weixin.qq.com/s/eOQ-kpRqf3aPaPmAGuvMFw
+a73b1b80834904a0d6e0700e4c32caab
+----
+图解 MySQL 第二篇 | KILL 的工作原理
+https://mp.weixin.qq.com/s/F5XqlOegYGzyMjTL3h-cGg
+03d5679966d22435f119ed5d4289921e
+----
+面试官：如果你是架构师，PostgreSQL 和 MySQL 你选择哪个？
+https://mp.weixin.qq.com/s/foHFwdxtJ32Pv-GEjw3yHA
+357b0755039b4c7a0f4d48da5408d9b8
+----
+跨机房ADG因带宽限制引起的GAP问题
+https://mp.weixin.qq.com/s/9veGFs2VShoPFGBI2aM8_Q
+87ba322240f941f18209b19f0c2c47c4
+----
+数据库之路——TiDB + AiOps，迈入智能运维新时代
+https://mp.weixin.qq.com/s/6yhkmnsZVQVa3CKsZ7h2iQ
+a7a6a3bab63361e278b50e0f8a513da5
+----
+SysBench 压缩并发性能翻倍：单机版TiDB vs MySQL 8.0.42
+https://www.modb.pro/db/1966716469840982016
+03a099cb3391000ab587847a092ef3f8
+----
+中国农业发展银行智能支付平台分布式数据库建设实践
+https://mp.weixin.qq.com/s/64B0AryXydh8Jys_v-QDwg
+cc38ab37dcf288409015dfacbd09ad91
+----
+你以为DROP TABLE只是简单删表？MySQL底层到底在偷偷干什么？
+https://mp.weixin.qq.com/s/I2KU1yEV_U_j8TblMAXJAw
+dc4da16d552aec6627bc814718ea772a
+----
+面试题：在 Redis 中，什么是 “缓存穿透” “缓存击穿” “缓存雪崩”？分别有哪些解决方案？
+https://mp.weixin.qq.com/s/bRLe9yO40FmRrlSF5utHog
+dd54183c3ee2b4ab14b53296108bb227
+----
+SQL查询优化：为什么“先聚合再JOIN”更高效？
+https://mp.weixin.qq.com/s/U692UQeUGk1-Z52UKaQ7CQ
+ff147dc2b8a767234da1c5501f270cf2
+----
+搞懂Redo Log与Binlog，就搞懂了MySQL数据安全的半壁江山
+https://mp.weixin.qq.com/s/jp0YvywiQl57EppNjNNFng
+0a5cc77baa6fdac01c4cad8e5669fa86
+----
+读数据不用等？MySQL的Inno引擎是如何做到“秒读”而不阻塞的？
+https://mp.weixin.qq.com/s/v49O3MfPiO98tPYIfwPJAA
+e97c83626b9b5a9253ec49984f1f84ad
+----
+初识 ASH —— 打开数据库的「月光宝盒」
+https://mp.weixin.qq.com/s/pwPqwMQpDhgddQs2vkhUZA
+77d153d0f7a90db44f7655a7644ccfa5
+----
+数据库允许空值(null)，现在我有点后悔了，悲剧的开始（1分钟系列）
+https://mp.weixin.qq.com/s/E5Ubqml4TfSsWNVDrYsVCg 
+e6411bf956d1fcd106513aaaaa682ec0
+----
+一致性协议到底选 Paxos、Raft 还是 ZooKeeper？权威解读来了
+https://mp.weixin.qq.com/s/XgTzqJa03o2y41DitvYxvg
+ef788f772e3b94f5adcf1c9654232a05
+----
+数据库监控指标
+https://mp.weixin.qq.com/s/IEVgOavBDJHJKRZAchpUPQ
+568d16fb706f7aded0dcd246ae07f462
+----
+从 MySQL 迁移到 TiDB 成本详解
+https://mp.weixin.qq.com/s/5a_WFayUwYNAU7P_pUWYdA
+51ee295b6fd03c36d8fc819a10cdeda1
+----
+兆翔科技：利用TiDB 助力福建四大机场核心系统高效运营
+https://mp.weixin.qq.com/s/6De22TfZTm8eKIMPcGARBQ
+f284001f410a32a012f8b5bf217e5792
+----
+MariaDB 12.0 震撼上线，助你打造稳定可靠的数据库底座
+https://mp.weixin.qq.com/s/TTR7Xh-ULJfax_s-nUdI3w
+a5401f96c8b6aabf360c82cc55070bbf
+----
+阿里订单系统演进史：从单体到多活架构全公开！
+https://mp.weixin.qq.com/s/7C5TUVwIDrqdMleYYCaboQ
+e8881308e198ef0269283514e5caa4b3
+----
+微服务拆错一步，项目直接崩！资深架构师这样避坑
+https://mp.weixin.qq.com/s/0uSQPzV8ft-ve2DZKxL9cg
+0548e80783f89f58f8de9622f4d13675
+----
+TiDB 多列索引优化：从分钟级到毫秒级，实现超万倍延迟降低
+https://mp.weixin.qq.com/s/hCouuV4vLscGBuENGJLCoQ
+b1736a85bcca8ec024c8adc6afac4036
+----
+从微服务到单体：究竟是什么让架构走“回头路”？
+https://mp.weixin.qq.com/s/aloVKHx3EWzF61bI89WRiA
+c9ca56db7d4e7a2a07b40175b0370203
+----
+MySQL的performance_schema：你的数据库隐形监控官！
+https://mp.weixin.qq.com/s/Fwo7OaS19Ap51v54v9ERHA
+232ca7ed99f159b92e0f2cf1d06394ed
+----
+容器化后性能反而下降了？老杨带你深挖背后的技术真相
+https://mp.weixin.qq.com/s/jcujZnr0bOzlnkhvQVsTqg
+e7fb3d296d98f0cb512b4cbd2d2e7640
+----
+可以不用，但是不能不会的MySQL进阶技能
+https://mp.weixin.qq.com/s/GHm3awuOCfXkBkOYJs1N2A
+8afe88f0d8aa0f874c0ff4603080c299
+----
+一款开源的零代码开发api服务，这些核心亮点绝了
+https://mp.weixin.qq.com/s/bIjsgSohWIlWKsV4mT-p2Q
+bc6fd79aec0f956697f37e8e6e1756b0
+----
+亿级流量系统架构设计系列——5.系统降级特技
+https://mp.weixin.qq.com/s/7u0gz5C1b9wLc3AWka5bhw
+32c69f4736b968a9f6f790d56bcccbe2
+----
+GTID生命周期大揭秘：MySQL复制中的“身份证”如何运转？
+https://mp.weixin.qq.com/s/xFL0EsnOr1tv4bBQCtl0fA
+ceb0b611cf2ea95c8d2a8cbcea078de2
+----
+分布式跨节点的数据排序 - Lamport Clock
+https://mp.weixin.qq.com/s/73rYku-eQbjDNNsj5pbxDA
+68cf2d356d223e40052e1a97cbd82a56
+----
+MySQL查询优化的三种处理阶段：Index Key、Index Filter 和 Table Filter
+https://mp.weixin.qq.com/s/f-XSLDTfEZaDLIONOH2BaQ
+14abac1ce6e1ea52c5e109f2b0e10a9a
+----
+破解gh-ost变更导致MySQL表膨胀之谜｜得物技术
+https://mp.weixin.qq.com/s/gkRqwk_kvY1BVzML6cPfpQ
+e3177aa0c78f29ff04351a044e709e05
+----
+问系统能支撑多少并发时该怎么回答
+https://mp.weixin.qq.com/s/28F_b3arfGwyhETn2EWfjQ
+a0293ae142b48d3d7526cc669c9b0475
+----
+5分钟搭建AI知识库！这个开源神器太香了
+https://mp.weixin.qq.com/s/H1JdaUqhCJSo7BpYtB4dRQ
+02cb05d407f170aac442804e36e6537e
+----
+在连表查询场景下，MySQL隐式转换存在的坑
+https://mp.weixin.qq.com/s/Lbmh07YCFBFHDYhbtxKiGQ
+c89b59697d52f0578a0ee32178ec85cd
+----
+MySQL防'打脸'机制-内部XA事务：说出去的话，如何保证一定能做到？
+https://mp.weixin.qq.com/s/YrheLK6WdBDK1iLBLcKDMA
+b697a6325edb82e5bff5f2f0f34c4c3a
+----
+MemFree 辣么大，为啥报 out of memory？
+https://mp.weixin.qq.com/s/Rr1Gk6Gto6WVOA9s6_ab6w
+97dffaf7176f45379b87d01e34d47765
+----
+队列不只是MQ！——亿级流量系统架构设计系列
+https://mp.weixin.qq.com/s/bZQRAnA-hCq19uWcebI6dQ
+ee379b8960c3cec660fb5579a208ac1d
+----
+为什么分布式系统中的“顺序”比你想象的更重要？
+https://mp.weixin.qq.com/s/2uSUmBWMa2Tncz4FfU4HqA
+e1a687e18d0243cbe8e8ed2e126360a4
+----
+简洁优雅知识库 FastGPT 快速部署
+https://alwq.xyz/post/2024-07-20-fastgpt-quick-deploy/
+742eb8ef288e0836e4a5c06bec6ba6ab
+----
+MySQL优化生产实践-MySQL 优化器负优化产生超慢查询(三)，优化后性能提升 47倍
+https://www.modb.pro/db/1971488670347702272
+920fc401e964bd564fd1ba19586c13d8
+----
+P10老板一句‘搞不定就P0’，15分钟我用Arthas捞回1000万资损
+https://juejin.cn/post/7555180687033810944
+af9e005ca4117ac5d06795668036cf6f
+----
+从MySQL数据库的角度来看系统page fault（缺页异常）
+https://www.modb.pro/db/1970308942026780672
+0eba42bf7d02a3c3e3598a9722cbd847
+----
+MySQL 参数核心优化指导
+https://www.modb.pro/db/1964859805508579328?0919
+c51099813fdf00efdcac4c2423542dcc
+----
+OLTP上云，哪种架构最划算？·VLDB'25
+https://juejin.cn/post/7549378194211684379
+75274d56ff4ecbbf91b4faee75cac8cd
+----
+MySQL DBA请注意 不要被Sleep会话蒙蔽了双眼
+https://www.modb.pro/db/1962444034597728256
+b6969167c3b02f8ec30f7728da29dfd3
+----
+MySQL 5.7 半同步复制优缺点、配置及实操记录
+https://www.modb.pro/db/1955920423942631424
+0a126f19f7fb8815e609b1bd7ddf1a8e
+----
+MySQL 密码防暴力破解插件：Connection Control
+https://www.modb.pro/db/1957258003443363840
+62f94a5713ff62a9daed28d8d820eb8a
+----
+MySQL慢查询治理：从索引优化到分布式数据库分库策略
+https://www.yunweipai.com/47345.html
+f753b00c2c9516dd73315fb80c9c3371
+----
+mysql mgr参数调优与最佳实践
+https://www.modb.pro/db/1953351762266566656
+6962faaf603def99caf469a99c3fef6e
+----
+为什么调换几个表的连接顺序，SQL性能就能天差地别？
+https://www.modb.pro/db/1952633848433487872
+e9fe1e133eb7b4c2ffeea38b635d1c99
+----
+指标监控
+https://mp.weixin.qq.com/s/ZEtgOP3HZfKrGOuJ0PX34g
+98be07551b410eef63f5208c98f6f61c
+----
+解密百万并发秒杀架构：如何在1秒内抗住流量洪峰
+https://mp.weixin.qq.com/s/WlWaOnhaXrTlK7vYdfeMwA
+36b7e4bac8908b8e68432c259b73e076
+----
+面试官：MySQL 内存飙升，可能是什么原因？
+https://mp.weixin.qq.com/s/9gGs9Ll9Gubj7cbEva1VfQ
+53cdbc61c404deac009700776ed6cb31
+----
+PostgreSQL 18 最新版本发布了，看看都有啥？
+https://mp.weixin.qq.com/s/FNZAnlh-fDryRFU31-HVqA
+3f933187d5510b2a9790706d699eaeba
+----
+互联网 | 千万日活背后，TiDB 赋能美柚核心系统高并发场景降本增效
+https://mp.weixin.qq.com/s/b25b8AHGKikymr-QF7ByiQ
+fe7dbdfb7b57bb71d5d65b19716af0a4
+----
+作业帮多云架构下的数据库集群解决方案，实现资源隔离、快速响应
+https://mp.weixin.qq.com/s/AUnzq-Iu3iBvML20flpINQ
+8192be1d3dc64e250a40e06f8fcbb6cd
+----
+MySQL 8.0.34 高可用集群OOM故障分析与解决方案
+https://mp.weixin.qq.com/s/4QiCcOsWWXwwK3onftXuKg
+9f3f6317d944f32807f64c9f8a6140a6
+----
+MySQL内存稳定神器--jemalloc内存分配器
+https://mp.weixin.qq.com/s/26IzUz2kprXM27hOz_uuNw
+ee4f383c38b25b93083dd7fa22dcc594
+----
+希音面试：第三方挂了，我们总 背锅。设计一 靠谱的 高可用方案，让 外部依赖 稳如泰山
+https://mp.weixin.qq.com/s/LPl3MzuKU6C1TkLDuai24Q
+099c8de99670cbaf5c08e08feef5e1b4
+----
+MySQL后台线程大揭秘：你知道数据库里有16个“隐形员工”在007工作吗？
+https://mp.weixin.qq.com/s/Ad_4YnIsRQe6p6kbKW74MQ
+c7c239f59df48e5aa1513329f33b9345
+----
+多租户隔离最佳实践：每个租户一库
+https://mp.weixin.qq.com/s/hmhs7u3j9ZDYdYKVnjKJvw
+807f235ec633096f7fa295142a1aa586
+----
+多租户架构设计
+https://mp.weixin.qq.com/s/lf42Qyf1MTAZZsxM36H3YA
+a6c10f51f8156600506205716e39208e
+----
+Apache Doris毫秒级分布式数据库引擎
+https://mp.weixin.qq.com/s/mZAFuXpDIpnmaTNQyQIfvQ
+7a3cda39d47cb670a24215b0004634dc
+----
+MySQL 问题排查
+https://mp.weixin.qq.com/s/3gXDKxVe9Hx1cZjyIgEpqA
+b030787670fe57cfc763df9379c316b4
+----
+服务器突然断电，我为何丝毫不慌？揭秘MySQL DBA的“后悔药”机制！两次写（Double Write）
+https://mp.weixin.qq.com/s/rmdXMTqkJ2W57p6Vz3ZYKA
+67f5b0495d2930c7dccaf6f4fde943a3
+----
+MySQL 一个会话占用几十 GB，你敢信？
+https://mp.weixin.qq.com/s/qFZoAK-n3pQy8L_ytCOYLA
+3343f80ad4ea02a9b1fc52250a3b2bff
+----
+你的数据库在摸鱼吗？SHOW ENGINE INNODB STATUS 教你抓个正着
+https://mp.weixin.qq.com/s/2c9g7sXBHDK6APQOGZR7NQ
+a1ad0e0cf7ca5cfc9f42bb71aa30ef02
+----
+汽车之家携手 TiDB：业务增长 20+ 倍，一套 HTAP 数据库的规模化实践
+https://mp.weixin.qq.com/s/N8BIhwfacU7YveyKgieZPQ
+75e91fdee79fc69993f32ae16a7df548
+----
+老杨教你做监控体系设计(纯干货版)
+https://mp.weixin.qq.com/s/ki3gvGQMl9JdCM8NTELe5w
+96ef003bebcb8c621f0a7f3123e736ce
+----
+Redis凭什么用单线程“干翻”了全世界？
+https://mp.weixin.qq.com/s/-6kuhqJQuEecb1piMmTBZg
+05700a89acbe2a648d376dd8852b3607
+----
+用错nacos 损失1.7亿美金，教训惨痛。 一个 骇人听闻的 P0级故障 复盘（2）
+https://mp.weixin.qq.com/s/dKkXKal6CkpVRXLptuwmYA
+a51447dc0d71de23310cfd2502e4c740
+----
+MySQL的自优化秘籍：AHI如何智能加速你的查询？
+https://mp.weixin.qq.com/s/6jsM9yGs4UqRXgizrUXnDw
+2cb60eb63c026e43f8ccb22b013c82db
+----
+双活、异地多活架构怎么设计才不翻车？
+https://mp.weixin.qq.com/s/iMCMvibukK5hD_X0J8n29A
+987fea908c8a8365e5cacfb7ff206ecd
+----
+为什么说“懂业务”的DBA最值钱？
+https://mp.weixin.qq.com/s/APxD-WQMeILwHkEfia4oEw
+476cf87c95cd3a760ead59fa0372046a
+----
+系统容灾体系及架构设计（续）
+https://mp.weixin.qq.com/s/ZqMGI-u04TCG5tNZEaO9Fg
+bb1cb5fccc38cebad1d22ba9963fd05e
+----
+MySQL的这个参数能让性能提升300%！你居然还不知道？
+https://mp.weixin.qq.com/s/Nevj7pqxn6jzKbIHdU-f5g
+9c16734f4f56ad61ffa56829b66f32d1
+----
+拼多多一面：说说缓存淘汰机制 LRU 和 LFU 的区别，秒杀场景下应该如何选择？
+https://mp.weixin.qq.com/s/bt_zQdNoio8Swm8GoiKL8Q
+605c8df3f7810b55f87fb6656e8e5e94
+----
+InnoDB圣经：30个图 硬核解读 InnoDB 内存架构 和 磁盘架构 （ 万字 长文 ）
+https://mp.weixin.qq.com/s/cTo35wu9PBkRRrrm5QU-sQ
+032a893337606d370fd014049066b747
+----
+七年，从 TB 到 PB：TiDB 助力马上消费金融核心系统演进
+https://mp.weixin.qq.com/s/VmWWfNRkzopHV2dSDYHk3w
+f196e3b48eaa71038dc1d55cec4e9dce
+----
+TiDB 资源管控的原理与实践
+https://mp.weixin.qq.com/s/P0n_zvs3Q56TnZOSEjhOqA
+0f6de1c74d05b48b3022aded0ed1dfef
+----
+TiDB DR-Auto-Sync 同城双中心的原理与实践
+https://mp.weixin.qq.com/s/5CA0ip-Pmu5q424RyMAhww
+5d5b8506afba43b65c7fd1af35337f77
+----
+MySQL MRR优化：让磁盘不再“跳广场舞”！
+https://mp.weixin.qq.com/s/6phzzKNz2e98awXYJ_P7Xw
+bbd19a0c71e5da944ef7cac41569bc91
+----
+MySQL 8.4新特性之直方图自动更新
+https://mp.weixin.qq.com/s/IWSMjRwye7xozJ3iwIdYtg
+4ea56b9aac3735b178b207e76680ba16
+----
+MySQL部分最新特性快速预览
+https://mp.weixin.qq.com/s/w1xzm_N8cfML8XYqcBvm7Q
+fbcf77bf952164ea6e86aacf5457ec21
+----
+P0级故障：头部电商双11大促 全链路故障损失超1.2亿，竟然是 Eureka 雪崩。骇人听闻的P0级故障 (1）
+https://mp.weixin.qq.com/s/WXJQOxpEDa_Edmg1IarIig
+9164b6b01c752abcc65ef034a1368be8
+----
+可观测性三重奏：Logs+Metrics+Traces的协同作战
+https://mp.weixin.qq.com/s/c-xrANEw7wknniTxFEykYg
+cb938de003553777024e704a83f4b688
+----
+为什么很多DBA的工作无法量化？
+https://mp.weixin.qq.com/s/MQI1qXEYA9ZfcyN1zVb8Bg
+46cac2677f26e25f6ee8e2142ef86e57
+----
+分布式共识算法哪个最通用？Raft协议占有一席之地！（分布式共识算法-中）
+https://mp.weixin.qq.com/s/eAoqWT4f0bqyrHiWQw6zWA
+c9cdf8ce5968990b8f343b5fb685942b
+----
+从ibdata1到ibd：MySQL是如何管理数据“不动产”的？
+https://mp.weixin.qq.com/s/JknHpRh8ZsUfBwbta9Um8g
+418a747501aa79be9d4ccc7e444cd1b8
+----
+从 MySQL 到 TiDB：调研、测试、迁移、上线全流程实施方案
+https://mp.weixin.qq.com/s/TBPsD3i1ZR-811ZgNcP9Fg
+611bb676a511fec6025dd44a32121663
+----
+面试官最爱问的MySQL日志问题：3大日志工作原理图解
+https://mp.weixin.qq.com/s/dNSMAje0pjAaEvY-zt7LCQ
+1c947f799503ee9786c18815202eb1cf
+----
+系统容灾体系及架构设计
+https://mp.weixin.qq.com/s/F4BjmaUbJyMQ_7OuedGgAw
+770a5ded7afe237c255adb98bb24947c
+----
+如何看待顺序与因果一致性问题
+https://mp.weixin.qq.com/s/v57GPiUnD0NV1YzlChF1CA
+72d0d29cf6257887b0bebe47a79221d1
+----
+MyBatis动态SQL中的"引号陷阱"：一个让排序失效的隐蔽Bug
+https://mp.weixin.qq.com/s/xjg57MLbTmfGpv-ytqt2JQ
+d394fdc6ce7ee33faaf1410ed7239637
+----
+应用缓存不止是Redis！——亿级流量系统架构设计系列
+https://mp.weixin.qq.com/s/VVvPhTaH14AddnblSjH3uQ
+8cf0dfac20145d8aad1f1fcc8ef182f6
+----
+一文了解 TiDB 存储架构基本原理
+https://mp.weixin.qq.com/s/ctJRkB1MQcIWlKVmrki81w
+e7468c61306e14e57dd688156495c3e3
+----
+Redis集群模式在扩容情况下，如何处理客户端的读写请求
+https://mp.weixin.qq.com/s/UQHlSKBACY8b4qzorzpiHw
+c412d8a69cf951e567b5711fd8c974ce
+----
+阿里面试：10Wqps 的“限流阈值”，是怎么 计算 出来的 ？
+https://mp.weixin.qq.com/s/whJZlK6fVMQBUnCFxRZa1Q
+bdb938515d4db0a98027b2e465844afd
+----
+Redis 8.2 来了！性能暴涨 49%，单机破百万 QPS
+https://mp.weixin.qq.com/s/QybbbjwfzP1zoSa8QmD1hQ
+6b53c975ffe7e5c0754c8fa7e7917a15
+----
+DBA性能调优内功心法（十五）：知己知彼篇——从多列到系统统计，构建性能优化的全局视野
+https://mp.weixin.qq.com/s/IWY-4s5ZC4VJGc9E7g2KUQ
+80755396e73533176ba1510ae02d1664
+----
+面试官：第三方服务经常挂，你的系统怎么保证高可用？
+https://mp.weixin.qq.com/s/N7PIL7lCPoLmaWPVs4H6Zg
+32c55cca02b90fedfe90f13be0b0cc48
+----
+分布式事务一致性方案有哪些？先从XA事务（2PC与3PC）讲起！（分布式事务一致性解决方案-上）
+https://mp.weixin.qq.com/s/rX9QVpxDRG85HoTAcX191g
+68e3486ba833991fcd34b4368e6479b0
+----
+MySQL防丢数据秘籍：双剑合璧的redo log与binlog
+https://mp.weixin.qq.com/s/xoBEWmpBWbOG9JVlBhhX6g
+741dfcb409d3cd9199a0bb815cc32d15
+----
+InnoDB为什么不用跳表，Redis为什么不用B+树？
+https://mp.weixin.qq.com/s/XNyUy1f42Lxs3yEcNkxpOw
+4aef6f739e31d7fce382d6b841946eff
+----
+MySQL 内存使用情况排查
+https://mp.weixin.qq.com/s/7OAD4Pnc4ygwf7AAxJAhiA
+1e49bc31193fce5f3844c70461bbb30a
+----
+小红书自研Binlog Server守护MySQL数据0丢失
+https://mp.weixin.qq.com/s/0Lu7_XVCbMIOJkN9h_0o6g
+efde1c0d259b1f325219ed58c751fad6
+----
+Redis 集群为什么只能用 0 号数据库？
+https://mp.weixin.qq.com/s/ha_Og08FDrwJ9dKQtPU7Yg
+35474ce24b41d8442b3ea28170c7f494
+----
+讲真，没见过技术这么差的架构师！
+https://mp.weixin.qq.com/s/LIO0TU4BsF0m8QoFQPv8mg
+569e1013099d129639d9057381dac1fa
+----
+持续改善的趋势和S曲线模型
+https://mp.weixin.qq.com/s/hiII9nh0qqiOH7Ur1s8-tQ
+856f040a989f98c424a263b0de744481
+----
+高性能场景为什么推荐使用PostgreSQL，而非MySQL?
+https://www.cnblogs.com/12lisu/p/19132585
+8f248675052975f863e75b5d853d4076
+----
+PostgreSQL 18 核心新特性解析
+https://mp.weixin.qq.com/s/JwGPhg6Bd3rQxJ6IKCR3JQ
+5db25a77c7a120bb8ea0b1b1bf9ad498
+----
+个人网站的终结
+https://mp.weixin.qq.com/s/WtZPpvTJvaVzbcyaIsOl2w
+d3f4272583bda5caffab5245ec27b236
+----
+盛天网络 TiDB 落地复盘：从 MySQL 瓶颈到高效运营的架构升级之路
+https://mp.weixin.qq.com/s/fMArDjEtWhSOpm_dniJHBQ
+1281d483d3e4579a1f95fe17afaebeba
+----
+TiDB集群可用区级别改造的探索与实践
+https://mp.weixin.qq.com/s/c_Kh6mPSVvwvByoRyNBTyw
+ba66f907d6293014bd76b120e9e5b65c
+----
+面试官：MySQL 空值字段应该保存 NULL 还是默认值？
+https://mp.weixin.qq.com/s/nNwSGsoRzIbBX1RHgWQMWg
+15fc67fda4eb410aaca2c5e353ebfe55
+----
+Oracle 翻车之作：MySQL Cluster 的失败根源与设计原罪
+https://mp.weixin.qq.com/s/yRlIQSCD3kPh5_-Uny0G0g
+ef89b334588239e3c1f76d0e4c1ca8ff
+----
+阿里面崩：听说Redis Pipeline能提升3-12倍性能 ？怎么实现的?我懵逼了。 6抡暴击, 帮你KO 面试官
+https://mp.weixin.qq.com/s/Zv6CtAi0I6PtdyOgkiiNDQ
+f08a253aedb8ac4520ff1c7255c419dd
+----
+PostgreSQL运维篇--日常运维集合①h
+ttps://mp.weixin.qq.com/s/ir1ngKCLMOPGIt6EEUVS6A
+63b60d9696e9cc24fcdaeb89c42fb825
+----
+破解gh-ost变更导致MySQL表膨胀之谜｜得物技术
+https://mp.weixin.qq.com/s/gkRqwk_kvY1BVzML6cPfpQ
+e3177aa0c78f29ff04351a044e709e05
+----
+Yulu's Data Breakthrough: 72% Storage Savings & Scalability with TiDB
+https://www.mydbops.com/case-studies/yulu-tidb-database-migration-performance
+b69f492e3b8214868eff4d6c09f68d8b
+----
+DBA运维压力大的根源是什么？分享3个提升效率的核心方法
+https://www.modb.pro/db/1998230073342779392
+cb36d6d5588ad442a66262586b2e28ca
+----
+数据库管理-第394期 从数据角度如何用好分布式数据库（20251209）
+https://www.modb.pro/db/1993482805888770048
+63b2d82ac235da5f28aea4fca14603a6
+----
+从秒级洞察到一键修复：现代数据库监控工具的MTTD与MTTR制胜之道
+https://www.modb.pro/db/1996482736275136512
+8c8a6713a6a88c0a81a4844755c9e9ca
+----
+浅析Xtrabackup备份工具
+http://mysql.taobao.org/monthly/2025/11/02/
+3cf2f16b5ce48c00b76497ffe86cb55f
+----
+团队授权：分散化的架构决策
+https://www.infoq.cn/article/335Q3mKrOpmGXhSJGY79
+435f356f18b2ed534f8aaf0c16c36944
+----
+慢SQL优化别白忙！一份“报告”让老板秒懂你多强！
+https://mp.weixin.qq.com/s/yLG__g4-QDF446q3FCaXAQ
+f74081dd01bea8ccc790f779a7a8a47c
+----
+测了一圈SQL审核软件后，我产生了一个疑问：“SQL审核软件“应该是什么样的？
+https://www.modb.pro/db/1992954932141039616
+36cfcaa8f5e388e1e28b25fce2145e69
+----
+MySQL时区踩坑记：为什么time_zone=SYSTEM会让你的数据库慢如蜗牛？
+https://mp.weixin.qq.com/s/FpEKpITrhkunVNLP-gluhA
+eb0768ebcf35cf0e987dc2e6e6ca9fac
+----
+你要做的是技术负责人，还是技术领袖？
+https://mp.weixin.qq.com/s/e15y5sneXJnwmajmE-x0nw
+55dd89e2ce321cd9badca57499b4de1a
+----
+A philosophy of building high-quality TiDB
+https://medium.com/@siddontang/a-philosophy-of-building-high-quality-tidb-f37845f893a7
+7240ba3a595045166bc14dc906dc5070
+----
+MySQL 并发线程的理解
+https://mp.weixin.qq.com/s/hKbe34V9sM6tIyZhlJnfNw
+b21fae0e09bbe6f464d740707f77117a
+----
+数据库巡检进入智能时代：异常检测算法的落地实践
+https://mp.weixin.qq.com/s/AhXvRlrV4GoR3cLsARzAFQ
+82e29afe90a9448e6d252c6f190ddc60
+----
+字节内部演进实录：Redis 迁移 Valkey，以一体化破解 AI 集群规模魔咒
+https://mp.weixin.qq.com/s/WKvk4O5gSY2zugzhBUOTCg
+f2cff3040d8b002c70ec2f3b8b0ecd8f
+----
+数据治理这件事，90% 的公司都做错了
+https://mp.weixin.qq.com/s/EDAOLe9wqVQkhncde9X-ow
+eb5ff1f17c4e634df8cd767f7474c5bc
+----
+别再乱用dd和fio了！一篇文章彻底讲清底层原理，从性能测试小白变专家
+https://mp.weixin.qq.com/s/ujpBrK-qs5AOowLAIp9o_g
+0bb56f2b4df816c6969b87d72ff5a89d
+----
+TiDB架构师：数据底座已成为企业级 AI 落地的核心变量
+https://mp.weixin.qq.com/s/_9HA8FCLwZAudrQjt4f5vw
+854ced78c28960d8bc5e6454498d6797
+----
+SCALE | SQLFlash 在 SQL 优化维度上的表现评估
+https://mp.weixin.qq.com/s/YF8lW757p1rPf9HrlRzTFA
+55eb11785caa1e1fa9d78eede1117a41
+----
+04 | 能有效揭示数据库性能瓶颈的数据集
+https://mp.weixin.qq.com/s/16W5jt2Ec4F-Yy1d11_7HA
+3692e564c188bfff113d0b44cdf7e1cf
+----
+99线怎么算？99线、90线 你们 盯哪根？
+https://mp.weixin.qq.com/s/vFxithoj6Zl_tame0xRxdA
+373cccfc80aaa90e9d52e29d6c2befba
+----
+用41张架构图，快速掌握Oracle 19C RAC原理
+https://mp.weixin.qq.com/s/_fHC508aVoNCA2MvduEuuQ
+5c8d64c19d54db6cc2c80bc36051d9c1
+----
+阿里面试：延迟双删有什么问题？大厂是如何优雅避开 延迟双删 的？
+https://mp.weixin.qq.com/s/1ULBU0dknKg6t67ZBuworw
+d19ed17ffb58920fe620e4bc1d1ab7b1
+----

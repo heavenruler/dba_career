@@ -1,0 +1,100 @@
+---
+# tasks file for 3_commit_to_github
+
+- name: Import github_personal_access_tokens
+  include_vars: github_personal_access_tokens
+
+- name: Check required variables are defined
+  fail:
+    msg: "'{{ item }}' is not defined"
+  when: vars[item] is not defined or vars[item] == ""
+  loop:
+    - repo_name
+    - repo_github
+    - repo_path
+    - filenames
+    - github_username
+    - github_password
+
+- name: Print all variables
+  debug:
+    msg: 
+      - "repo_name: {{ repo_name }}"
+      - "repo_github: {{ repo_github }}"
+      - "repo_path: {{ repo_path }}"
+      - "filenames: {{ filenames }}"
+
+- name: Check if repo_path exists
+  stat:
+    path: "{{ repo_path }}"
+  register: repo_path_stat
+
+- name: Remove repo_path if it exists
+  file:
+    path: "{{ repo_path }}"
+    state: absent
+  when: repo_path_stat.stat.exists
+
+- name: Clone the repository
+  git:
+    repo: "https://{{ github_username }}:{{ github_password }}@github.com/localhost/{{ repo_name }}.git"
+    dest: "{{ repo_path }}"
+    clone: true
+    update: false
+  environment:
+    http_proxy: "{{ var_proxy }}"
+    https_proxy: "{{ var_proxy }}"
+
+- name: Ensure directories for each file exist
+  file:
+    path: "{{ item | dirname }}"
+    state: directory
+  loop: "{{ filenames }}"
+
+- name: Ensure source file exists
+  file:
+    path: "/tmp/{{ item.split('/')[-1] }}"
+    state: touch
+  loop: "{{ filenames }}"
+
+- name: Overwrite the files
+  copy:
+    src: "/tmp/{{ item.split('/')[-1] }}"
+    dest: "{{ item }}"
+    force: true
+  loop: "{{ filenames }}"
+
+- name: Add changes to git
+  command: git add "{{ item }}"
+  args:
+    chdir: "{{ repo_path }}"
+  loop: "{{ filenames }}"
+
+- name: Commit changes to git
+  command: git commit -m "{{ ansible_hostname }} updated."
+  args:
+    chdir: "{{ repo_path }}"
+  register: git_commit_result
+  changed_when: "'沒有要提交的檔案，工作區為乾淨狀態' not in git_commit_result.stdout"
+  ignore_errors: yes
+
+- name: Set git user configurations
+  command:
+    cmd: git config user.{{ item.key }} "{{ item.value }}"
+    chdir: "{{ repo_path }}"
+  loop:
+    - { key: 'name', value: "{{ github_username }} @ {{ ansible_fqdn }}" }
+    - { key: 'email', value: "4es05@localhost" }
+
+- name: Push committed changes
+  shell: |
+    cd {{ repo_path }}
+    git pull -v ; git push --set-upstream origin master
+  args:
+    executable: /bin/bash
+  when: git_commit_result.changed
+
+- name: Remove the directory once tasks are done
+  file:
+    path: "{{ repo_path }}"
+    state: absent

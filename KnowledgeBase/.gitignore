@@ -1,0 +1,23 @@
+# 排除 collector 目錄下的所有 PDF 檔案
+collector/*.pdf
+
+# 一般性的 PDF 檔案排除（可選）
+*.pdf
+
+# 系統檔案
+.DS_Store
+Thumbs.db
+
+# 編輯器檔案
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日誌檔案
+*.log
+
+# 暫存檔案
+*.tmp
+*.temp

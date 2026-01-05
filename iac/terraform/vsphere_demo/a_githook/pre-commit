@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Function to check if the required settings are present in a terraform.tfvars file
+check_tfvars() {
+    local tfvars_file="$1"
+    
+    if ! grep -q 'vsphere_user = "XXXvsphere_userXXX"' "$tfvars_file" || \
+       ! grep -q 'vsphere_password = "XXXvsphere_passXXX"' "$tfvars_file"; then
+        echo "Error: Required settings are missing in $tfvars_file."
+        exit 1
+    else
+        echo "Required settings are present in $tfvars_file."
+    fi
+}
+
+# Get the absolute path to the current directory
+current_dir=$(pwd)
+
+# Array of directories to check
+directories=("2_dev" "3_staging" "4_prod")
+
+# Loop through the directories and check the terraform.tfvars files
+for dir in "${directories[@]}"; do
+    tfvars_file="$current_dir/$dir/terraform.tfvars"
+    
+    if [ -f "$tfvars_file" ]; then
+        echo "Checking $tfvars_file"
+        check_tfvars "$tfvars_file"
+    else
+        echo "Warning: $tfvars_file not found."
+    fi
+done
+
+echo "All checks passed. Commit allowed."
+exit 0

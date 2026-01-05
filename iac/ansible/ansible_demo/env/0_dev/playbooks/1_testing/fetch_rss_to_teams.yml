@@ -1,0 +1,16 @@
+---
+- name: Send test message to Teams webhook
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Post test message to Teams
+      uri:
+        url: "https://104cloud.webhook.office.com/webhookb2/77b00473-98e0-484d-8bbe-6578a9e61349@e5b7696b-abd7-48ed-9482-723ead81e6fd/IncomingWebhook/1cb53b3c8bd94329ae59992d437ec7f5/7633f98e-ef88-454c-8a96-5328912a76ff/V2pTSqPPfgQ3TTFnqFm-_wUC3VoDuWt-MQCnU6-FlidI41"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body: |
+          {
+            "text": "這是一則測試訊息 from Ansible"
+          }
+        body_format: json

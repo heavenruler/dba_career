@@ -1,0 +1,70 @@
+---
+# tasks file for maintain_update_inventory
+# 使用 role: maintain_update_inventory 必須安裝相依性套件
+# $ ansible-galaxy collection install community.mysql
+# $ pip3 install PyMySQL
+
+- name: Include secret variables
+  include_vars:
+    file: secret.yml
+    name: secret
+
+- name: Use a variable from secret.yml
+  debug:
+    msg: "The value of dev_host is {{ secret.dev_host }}"
+
+- name: Ensure PyMySQL is installed
+  ansible.builtin.pip:
+    name: pymysql
+    state: present
+  delegate_to: localhost
+
+- name: Check if community.mysql is installed
+  ansible.builtin.command:
+    cmd: ansible-galaxy collection list
+  register: galaxy_list
+  changed_when: false
+
+- name: Set environment specific variables for dev
+  set_fact:
+    env_username: "{{ secret.dev_username }}"
+    env_password: "{{ secret.dev_password }}"
+    env_host: "{{ secret.dev_host }}"
+  when: target_env == 'dev'
+
+- name: Set environment specific variables for non-dev (default)
+  set_fact:
+    env_username: "{{ secret.username }}"
+    env_password: "{{ secret.password }}"
+    env_host: "{{ secret.host }}"
+  when: target_env != 'dev'
+
+- name: Override for staging environment
+  set_fact:
+    env_host: "{{ secret.staging_host }}"
+  when: target_env == 'staging'
+
+- name: Override for prod environment
+  set_fact:
+    env_host: "{{ secret.prod_host }}"
+  when: target_env == 'prod'
+
+- name: Override for drsite environment
+  set_fact:
+    env_host: "{{ secret.drsite_host }}"
+  when: target_env == 'drsite'
+
+- name: Execute SQL query for test
+  community.mysql.mysql_query:
+    login_user: "{{ env_username }}"
+    login_password: "{{ env_password }}"
+    login_host: "{{ env_host.split(':')[0] }}"
+    login_port: "{{ env_host.split(':')[1] }}"
+    query: "SELECT 1;"
+  register: query_result
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Print query result
+  debug:
+    msg: "{{ query_result }}"
