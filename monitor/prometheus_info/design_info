@@ -1,0 +1,19 @@
+一、作業系統層 ()
+CPU：node_cpu_seconds_total，可分 user/system/iowait/idle。
+Memory：node_memory_MemAvailable_bytes、node_memory_Buffers_bytes。
+Disk I/O：node_disk_read_bytes_total、node_disk_write_time_seconds_total。
+Filesystem：node_filesystem_avail_bytes、node_filesystem_size_bytes。
+Network：node_network_receive_bytes_total、node_network_transmit_errs_total。
+
+二、資料庫層 ()
+QPS / TPS：mysql_global_status_questions、mysql_global_status_commands_total。
+Wait / Lock：mysql_global_status_innodb_row_lock_time、tidb_executor_concurrency。
+Buffer Pool / Cache：mysql_global_status_innodb_buffer_pool_reads。
+Connection：mysql_global_status_threads_connected、mysql_connection_errors_total。
+SQL 效能分佈：tidb_server_query_total、tidb_query_duration_seconds_bucket。
+
+三、系統效能與 AWR 對應
+Top SQL / Top Wait Event：聚合 Query Hash 與 Wait Class。
+Load Profile：整體 QPS / TPS / IO / Network 速率平均與峰值。
+Instance Efficiency：CPU Util、IOPS、Buffer Hit Ratio。
+Time Model / Wait Class Breakdown：以 PromQL sum by(...) 分類時間佔比。
