@@ -1,0 +1,161 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": false,
+        "iconColor": "#e0752d",
+        "limit": 100,
+        "name": "PMM Annotations",
+        "showIn": 0,
+        "tags": [
+          "pmm_annotation"
+        ],
+        "type": "tags"
+      },
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "#6ed0e0",
+        "limit": 100,
+        "name": "Annotations & Alerts",
+        "showIn": 0,
+        "tags": [],
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 1,
+  "id": 101,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "repeat": null,
+      "title": "Replication Topology",
+      "type": "row"
+    },
+    {
+      "content": "<strong>Instance p-m075-1 replication graph</strong>
+<p>固定查看 mysql_slave_status 表示的 master/slave 關係與 lag。</p>",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "links": [],
+      "mode": "html",
+      "title": "說明",
+      "type": "text"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"custom": {}}, "overrides": []},
+      "gridPos": {"h": 7, "w": 24, "x": 0, "y": 3},
+      "id": 3,
+      "options": {"showHeader": true},
+      "targets": [
+        {
+          "expr": "mysql_slave_status_seconds_behind_master{instance="p-m075-1"}",
+          "format": "table",
+          "interval": "5m",
+          "legendFormat": "{{instance}} → {{master_host}}:{{master_port}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Replication relationships",
+      "type": "table"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 10},
+      "id": 4,
+      "legend": {"show": true, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "targets": [
+        {
+          "expr": "mysql_slave_status_seconds_behind_master{instance="p-m075-1"}",
+          "format": "time_series",
+          "interval": "5m",
+          "legendFormat": "Lag",
+          "refId": "A"
+        }
+      ],
+      "title": "Seconds Behind Master",
+      "type": "graph",
+      "xaxis": {"mode": "time"},
+      "yaxes": [{"format": "s"}, {"format": "s", "show": false}]
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": ["#d44a3a", "#eab839", "#299c46"],
+      "datasource": "Prometheus",
+      "format": "time_series",
+      "gridPos": {"h": 3, "w": 6, "x": 12, "y": 10},
+      "id": 5,
+      "interval": "5m",
+      "targets": [
+        {
+          "expr": "sum(mysql_up{instance="p-m075-1"})",
+          "legendFormat": "live",
+          "refId": "A"
+        }
+      ],
+      "title": "MySQL up",
+      "type": "stat",
+      "valueName": "current"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 16,
+  "style": "dark",
+  "tags": ["MySQL", "Replication"],
+  "templating": {
+    "list": [
+      {
+        "name": "interval",
+        "type": "interval",
+        "label": "Interval",
+        "query": "1m,5m,1h",
+        "options": [],
+        "auto": true,
+        "current": {"text": "auto", "value": "auto"}
+      },
+      {
+        "name": "host",
+        "type": "query",
+        "label": "Host",
+        "query": "label_values(mysql_up, instance)",
+        "options": [],
+        "current": {"text": "p-m075-1", "value": "p-m075-1"}
+      }
+    ]
+  },
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {"refresh_intervals": ["5s", "30s", "1m", "5m"], "now": true},
+  "timezone": "browser",
+  "title": "MySQL replication demo",
+  "uid": "mysql-replication-demo",
+  "version": 1
+}
