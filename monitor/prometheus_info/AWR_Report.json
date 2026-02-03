@@ -91,8 +91,9 @@
               "refId": "A"
             }
           ],
-          "title": "Up Instances Count",
-          "type": "stat"
+          "title": "Global Up Instances Count - Trend",
+          "type": "stat",
+          "description": "優先級：P0\n用途：觀察Global Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -154,8 +155,9 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Up Instances Count",
-          "type": "stat"
+          "title": "MySQL Up Instances Count - Trend",
+          "type": "stat",
+          "description": "優先級：P0\n用途：觀察MySQL Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -217,8 +219,9 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Up Instances Count",
-          "type": "stat"
+          "title": "ProxySQL Up Instances Count - Trend",
+          "type": "stat",
+          "description": "優先級：P0\n用途：觀察ProxySQL Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -280,8 +283,9 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Up Instances Count",
-          "type": "stat"
+          "title": "Redis Up Instances Count - Trend",
+          "type": "stat",
+          "description": "優先級：P0\n用途：觀察Redis Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -343,8 +347,9 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Up Instances Count",
-          "type": "stat"
+          "title": "MongoDB Up Instances Count - Trend",
+          "type": "stat",
+          "description": "優先級：P0\n用途：觀察MongoDB Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -445,8 +450,9 @@
               "refId": "A"
             }
           ],
-          "title": "Host Uptime",
-          "type": "timeseries"
+          "title": "Host Uptime - Trend",
+          "type": "timeseries",
+          "description": "優先級：P0\n用途：觀察Host Uptime - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -537,8 +543,9 @@
               "refId": "A"
             }
           ],
-          "title": "Load AVG Top10（15 分鐘內 Load15 上升最快",
-          "type": "timeseries"
+          "title": "Load AVG Load15 - Top 10 (15 分鐘內上升最快)",
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Load AVG Load15 - Top 10 (15 分鐘內上升最快)的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -629,8 +636,9 @@
               "refId": "A"
             }
           ],
-          "title": "Load AVG Top10（15 分鐘內 Load15 下降最快",
-          "type": "timeseries"
+          "title": "Load AVG Load15 - Top 10 (15 分鐘內下降最快)",
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Load AVG Load15 - Top 10 (15 分鐘內下降最快)的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -726,8 +734,9 @@
               "refId": "A"
             }
           ],
-          "title": "Load AVG Host Load1 Top 30",
-          "type": "timeseries"
+          "title": "Load AVG Host Load1 - Top 30",
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Load AVG Host Load1 - Top 30的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -823,8 +832,9 @@
               "refId": "A"
             }
           ],
-          "title": "Load AVG Host Load5 Top 30",
-          "type": "timeseries"
+          "title": "Load AVG Host Load5 - Top 30",
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Load AVG Host Load5 - Top 30的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -920,8 +930,9 @@
               "refId": "A"
             }
           ],
-          "title": "Load AVG Host Load15 Top 30",
-          "type": "timeseries"
+          "title": "Load AVG Host Load15 - Top 30",
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Load AVG Host Load15 - Top 30的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -992,8 +1003,9 @@
               "refId": "A"
             }
           ],
-          "title": "CPU mode: system 壓力 Top10",
-          "type": "bargauge"
+          "title": "CPU mode: system 壓力 - Top 10",
+          "type": "bargauge",
+          "description": "優先級：P1\n用途：觀察CPU mode: system 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -1064,8 +1076,9 @@
               "refId": "A"
             }
           ],
-          "title": "CPU mode: user 壓力 Top10",
-          "type": "bargauge"
+          "title": "CPU mode: user 壓力 - Top 10",
+          "type": "bargauge",
+          "description": "優先級：P1\n用途：觀察CPU mode: user 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -1136,8 +1149,9 @@
               "refId": "A"
             }
           ],
-          "title": "CPU mode: iowait 壓力 Top10",
-          "type": "bargauge"
+          "title": "CPU mode: iowait 壓力 - Top 10",
+          "type": "bargauge",
+          "description": "優先級：P1\n用途：觀察CPU mode: iowait 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -1208,8 +1222,9 @@
               "refId": "A"
             }
           ],
-          "title": "CPU Context Switch 壓力 Top10",
-          "type": "bargauge"
+          "title": "CPU Context Switch 壓力 - Top 10",
+          "type": "bargauge",
+          "description": "優先級：P1\n用途：觀察CPU Context Switch 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -1310,8 +1325,9 @@
               "refId": "A"
             }
           ],
-          "title": "Host Memory Usage",
-          "type": "timeseries"
+          "title": "Host Memory Usage - Trend",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察Host Memory Usage - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -1412,8 +1428,9 @@
               "refId": "A"
             }
           ],
-          "title": "Host SWAP Used > 0",
-          "type": "timeseries"
+          "title": "Host SWAP Used > 0 - Trend",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察Host SWAP Used > 0 - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -1513,8 +1530,9 @@
               "refId": "A"
             }
           ],
-          "title": "{FIXME} MemAvailable 時序圖（含 1h/24h）",
-          "type": "timeseries"
+          "title": "Host MemAvailable Trend - 1h/24h",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察Host MemAvailable Trend - 1h/24h的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -1577,7 +1595,8 @@
             }
           ],
           "title": "Mountpoint Usage (%) - Top N",
-          "type": "stat"
+          "type": "stat",
+          "description": "優先級：P2\n用途：觀察Mountpoint Usage (%) - Top N的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -1672,8 +1691,9 @@
               "refId": "A"
             }
           ],
-          "title": "Mountpoint Capacity (Used)",
-          "type": "timeseries"
+          "title": "Mountpoint Capacity (Used) - Trend",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察Mountpoint Capacity (Used) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -1772,8 +1792,9 @@
               "refId": "A"
             }
           ],
-          "title": "Mountpoint Capacity (Free)",
-          "type": "timeseries"
+          "title": "Mountpoint Capacity (Free) - Trend",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察Mountpoint Capacity (Free) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -1866,7 +1887,8 @@
             }
           ],
           "title": "Disk Read IO Latency (ms) - Top 10",
-          "type": "timeseries"
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Disk Read IO Latency (ms) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -1959,7 +1981,8 @@
             }
           ],
           "title": "Disk Write IO Latency (ms) - Top 10",
-          "type": "timeseries"
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Disk Write IO Latency (ms) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -2052,7 +2075,8 @@
             }
           ],
           "title": "Disk Read IOPS (ops/s) - Top 10",
-          "type": "timeseries"
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Disk Read IOPS (ops/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -2145,7 +2169,8 @@
             }
           ],
           "title": "Disk Write IOPS (ops/s) - Top 10",
-          "type": "timeseries"
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Disk Write IOPS (ops/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -2238,7 +2263,8 @@
             }
           ],
           "title": "Disk Read Bandwidth (B/s) - Top 10",
-          "type": "timeseries"
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察Disk Read Bandwidth (B/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -2331,7 +2357,8 @@
             }
           ],
           "title": "Disk Write Bandwidth (B/s) - Top 10",
-          "type": "timeseries"
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察Disk Write Bandwidth (B/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -2421,8 +2448,9 @@
               "refId": "A"
             }
           ],
-          "title": " Disk IO Size for Write",
-          "type": "timeseries"
+          "title": "Disk IO Size for Write - Trend",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察Disk IO Size for Write - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -2512,8 +2540,9 @@
               "refId": "A"
             }
           ],
-          "title": " Disk IO Size for Read",
-          "type": "timeseries"
+          "title": "Disk IO Size for Read - Trend",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察Disk IO Size for Read - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -2612,8 +2641,9 @@
               "refId": "A"
             }
           ],
-          "title": "Disk Util / Busy",
-          "type": "timeseries"
+          "title": "Disk Util / Busy - Trend",
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Disk Util / Busy - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -2712,8 +2742,9 @@
               "refId": "A"
             }
           ],
-          "title": "Disk Read / Busy",
-          "type": "timeseries"
+          "title": "Disk Read / Busy - Trend",
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Disk Read / Busy - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -2812,11 +2843,12 @@
               "refId": "A"
             }
           ],
-          "title": "Disk Write / Busy",
-          "type": "timeseries"
+          "title": "Disk Write / Busy - Trend",
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察Disk Write / Busy - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         }
       ],
-      "title": "Global",
+      "title": "Global Overview - Section",
       "type": "row"
     },
     {
@@ -2834,7 +2866,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "正常應隨時間單調遞增；\n若突然歸零或 changes > 0，代表 Redis 曾重啟。",
+          "description": "優先級：P0\n用途：正常應隨時間單調遞增\n判讀：若突然歸零或 changes > 0，代表 Redis 曾重啟",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2902,7 +2934,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Uptime",
+          "title": "Redis Uptime - Trend",
           "transformations": [
             {
               "id": "organize",
@@ -2926,7 +2958,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "反映 client ↔ Redis 資料流量；\nOutput 長期高於 Input 常見於 large value / pipeline；\n搭配 NIC / bandwidth 上限判斷是否網路瓶頸。",
+          "description": "優先級：P2\n用途：反映 client ↔ Redis 資料流量\n判讀：Output 長期高於 Input 常見於 large value；pipeline；搭配 NIC；bandwidth 上限判斷是否網路瓶頸",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3029,7 +3061,7 @@
               "refId": "B"
             }
           ],
-          "title": "Redis Network Throughput (In / Out)",
+          "title": "Redis Network Throughput (In / Out) - Trend",
           "type": "timeseries"
         },
         {
@@ -3037,7 +3069,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "Redis 實際處理完成的指令速率；\n反映真實 workload，常用於容量評估與尖峰分析。",
+          "description": "優先級：P1\n用途：Redis 實際處理完成的指令速率\n判讀：反映真實 workload，常用於容量評估與尖峰分析",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3127,7 +3159,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Commands Processed (QPS)",
+          "title": "Redis Commands Processed (QPS) - Trend",
           "type": "timeseries"
         },
         {
@@ -3135,7 +3167,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "Redis 實際處理完成的指令速率；\n反映真實 workload，常用於容量評估與尖峰分析。",
+          "description": "優先級：P1\n用途：Redis 實際處理完成的指令速率\n判讀：反映真實 workload，常用於容量評估與尖峰分析",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3225,7 +3257,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Commands Processed (QPS) > 200",
+          "title": "Redis Commands Processed (QPS) > 200 - Trend",
           "type": "timeseries"
         },
         {
@@ -3233,7 +3265,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "顯示最近一次被 slowlog 記錄的指令耗時；\n適合用於告警與事件對齊（CPU / I/O / 流量尖峰）。\n此指標為「事件型」，需搭配 percentile / histogram 使用。",
+          "description": "優先級：P1\n用途：顯示最近一次被 slowlog 記錄的指令耗時\n判讀：適合用於告警與事件對齊（CPU；I/O；流量尖峰）；此指標為「事件型」，需搭配 percentile；histogram 使用",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3323,7 +3355,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Last Slow Execution Duration",
+          "title": "Redis Last Slow Execution Duration - Trend",
           "type": "timeseries"
         },
         {
@@ -3331,7 +3363,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "顯示各 Redis 指令的 P50（常態）與 P95/P99（尾端）延遲，\n用於同時判斷整體效能基準與尾端風險；\nP50 反映日常負載，P95/P99 用來定位慢指令與資源瓶頸。",
+          "description": "優先級：P1\n用途：顯示各 Redis 指令的 P50（常態）與 P95/P99（尾端）延遲\n判讀：用於同時判斷整體效能基準與尾端風險；P50 反映日常負載，P95/P99 用來定位慢指令與資源瓶頸\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3417,7 +3449,7 @@
               "refId": "C"
             }
           ],
-          "title": "Redis Command Latency Percentiles (P50 / P95 / P99)",
+          "title": "Redis Command Latency Percentiles - P50 / P95 / P99",
           "type": "stat"
         },
         {
@@ -3425,7 +3457,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "",
+          "description": "優先級：P1\n用途：觀察Redis Latency Percentiles - P50的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3519,7 +3551,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Latency Percentiles (P50)",
+          "title": "Redis Latency Percentiles - P50",
           "type": "timeseries"
         },
         {
@@ -3527,7 +3559,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "",
+          "description": "優先級：P1\n用途：觀察Redis Latency Percentiles - P99的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3621,7 +3653,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Latency Percentiles (P99)",
+          "title": "Redis Latency Percentiles - P99",
           "type": "timeseries"
         },
         {
@@ -3629,7 +3661,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "",
+          "description": "優先級：P1\n用途：觀察Redis Latency Percentiles - P99.9的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3723,7 +3755,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Latency Percentiles (P99.9)",
+          "title": "Redis Latency Percentiles - P99.9",
           "type": "timeseries"
         },
         {
@@ -3731,7 +3763,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "代表 Redis 執行指令所消耗的 CPU；\n持續偏高通常代表 CPU bound（高 QPS、複雜指令、big key）。\n常與 commands_processed_total、latency P99 一起觀察。",
+          "description": "優先級：P1\n用途：代表 Redis 執行指令所消耗的 CPU\n判讀：持續偏高通常代表 CPU bound（高 QPS、複雜指令、big key）；常與 commands_processed_total、latency P99 一起觀察",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3821,7 +3853,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis CPU User Usage",
+          "title": "Redis CPU User Usage - Trend",
           "type": "timeseries"
         },
         {
@@ -3829,7 +3861,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "反映系統呼叫成本（network I/O、epoll、fork、AOF rewrite、RDB snapshot）；\nsystem 明顯高於 user，通常不是純指令問題，而是 IO / OS 層壓力。",
+          "description": "優先級：P1\n用途：反映系統呼叫成本（network I/O、epoll、fork、AOF rewrite、RDB snapshot）\n判讀：system 明顯高於 user，通常不是純指令問題，而是 IO；OS 層壓力",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3919,7 +3951,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis CPU System Usage",
+          "title": "Redis CPU System Usage - Trend",
           "type": "timeseries"
         },
         {
@@ -3927,7 +3959,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "User 高、System 低：CPU bound（指令／資料結構）\n\nSystem 高：syscall / I/O / fork 壓力\n\n兩者同升：整體負載過高，需配合 QPS、latency、network 檢查",
+          "description": "優先級：P1\n用途：User 高、System 低：CPU bound（指令／資料結構）\n判讀：System 高：syscall；I/O；fork 壓力；兩者同升：整體負載過高，需配合 QPS、latency、network 檢查",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -4017,7 +4049,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis CPU Usage (User vs System)",
+          "title": "Redis CPU Usage (User vs System) - Trend",
           "type": "timeseries"
         },
         {
@@ -4025,7 +4057,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "Redis 實際使用的記憶體，用於判斷負載與成長趨勢。",
+          "description": "優先級：P2\n用途：Redis 實際使用的記憶體，用於判斷負載與成長趨勢\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -4115,7 +4147,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Memory Used",
+          "title": "Redis Memory Used - Trend",
           "type": "timeseries"
         },
         {
@@ -4123,7 +4155,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "剩餘可用記憶體，搭配 Usage% 判斷安全水位。",
+          "description": "優先級：P2\n用途：剩餘可用記憶體，搭配 Usage% 判斷安全水位\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -4213,7 +4245,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Memory Free",
+          "title": "Redis Memory Free - Trend",
           "type": "timeseries"
         },
         {
@@ -4221,7 +4253,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "OS 層面實際佔用記憶體，用來對照碎片化問題。",
+          "description": "優先級：P2\n用途：OS 層面實際佔用記憶體，用來對照碎片化問題\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -4311,7 +4343,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Memory RSS",
+          "title": "Redis Memory RSS - Trend",
           "type": "timeseries"
         },
         {
@@ -4319,7 +4351,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "RSS / Used 記憶體比例；>1.5 通常代表碎片化偏高。",
+          "description": "優先級：P1\n用途：RSS\n判讀：Used 記憶體比例；>1.5 通常代表碎片化偏高",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -4409,7 +4441,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Memory Fragmentation Ratio",
+          "title": "Redis Memory Fragmentation Ratio - Trend",
           "type": "timeseries"
         },
         {
@@ -4417,7 +4449,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "是否逼近 maxmemory，評估 OOM / eviction 風險。",
+          "description": "優先級：P1\n用途：是否逼近 maxmemory，評估 OOM\n判讀：eviction 風險\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -4486,7 +4518,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Memory Usage %",
+          "title": "Redis Memory Usage % - Trend",
           "transformations": [
             {
               "id": "organize",
@@ -4508,7 +4540,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "實際命中與未命中請求速率，用於觀察快取行為變化。",
+          "description": "優先級：P2\n用途：實際命中與未命中請求速率，用於觀察快取行為變化\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -4611,7 +4643,7 @@
               "refId": "B"
             }
           ],
-          "title": "Redis Keyspace Hit / Miss QPS",
+          "title": "Redis Keyspace Hit / Miss QPS - Trend",
           "type": "timeseries"
         },
         {
@@ -4619,7 +4651,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "快取命中率，等同 Oracle AWR Buffer Cache Hit Ratio；\n反映 Redis 是否有效減少後端 DB 壓力。",
+          "description": "優先級：P1\n用途：快取命中率，等同 Oracle AWR Buffer Cache Hit Ratio\n判讀：反映 Redis 是否有效減少後端 DB 壓力",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -4709,7 +4741,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Cache Hit Ratio %",
+          "title": "Redis Cache Hit Ratio % - Trend",
           "type": "timeseries"
         },
         {
@@ -4717,7 +4749,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "未命中比例，利於快速定位 TTL / key 設計不良問題。",
+          "description": "優先級：P1\n用途：未命中比例，利於快速定位 TTL\n判讀：key 設計不良問題",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -4807,7 +4839,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Cache Miss Ratio %",
+          "title": "Redis Cache Miss Ratio % - Trend",
           "type": "timeseries"
         },
         {
@@ -4815,7 +4847,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "實際被快取層承接的讀取流量，用於解讀 Hit Ratio 是否失真。\n\nHit Ratio < 90%（持續）：快取策略需檢視\n\nHit Ratio 高但 QPS 低：可能為冷流量或誤判\n\nHit Ratio 驟降 + DB QPS 上升：快取失效事件",
+          "description": "優先級：P1\n用途：實際被快取層承接的讀取流量，用於解讀 Hit Ratio 是否失真\n判讀：Hit Ratio < 90%（持續）：快取策略需檢視；Hit Ratio 高但 QPS 低：可能為冷流量或誤判；Hit Ratio 驟降 + DB QPS 上升：快取失效事件",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -4905,7 +4937,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Keyspace Access QPS",
+          "title": "Redis Keyspace Access QPS - Trend",
           "type": "timeseries"
         },
         {
@@ -4913,7 +4945,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "因記憶體壓力（maxmemory + eviction policy）被動淘汰的 key 速率。\n任何持續 > 0 都需關注，通常代表容量不足或策略不合適。",
+          "description": "優先級：P1\n用途：因記憶體壓力（maxmemory + eviction policy）被動淘汰的 key 速率\n判讀：任何持續 > 0 都需關注，通常代表容量不足或策略不合適",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -5001,7 +5033,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Evicted Keys Rate",
+          "title": "Redis Evicted Keys Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -5009,7 +5041,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "依 TTL 正常過期移除的 key 速率，屬預期行為。\n常用於驗證快取生命週期與流量模型是否匹配。",
+          "description": "優先級：P2\n用途：依 TTL 正常過期移除的 key 速率，屬預期行為\n判讀：常用於驗證快取生命週期與流量模型是否匹配",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -5099,7 +5131,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Expired Keys Rate",
+          "title": "Redis Expired Keys Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -5107,7 +5139,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "Eviction 相對 Expire 的比例。\n> 0.1 通常代表 TTL 不足以保護系統，需調整記憶體或策略。",
+          "description": "優先級：P1\n用途：Eviction 相對 Expire 的比例\n判讀：> 0.1 通常代表 TTL 不足以保護系統，需調整記憶體或策略",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -5195,7 +5227,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Eviction / Expire Ratio",
+          "title": "Redis Eviction / Expire Ratio - Trend",
           "type": "timeseries"
         },
         {
@@ -5203,7 +5235,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "目前是否正在執行 RDB 背景儲存。\n長時間為 1 代表 IO 或 fork 壓力，需關注磁碟與 CPU。",
+          "description": "優先級：P1\n用途：目前是否正在執行 RDB 背景儲存\n判讀：長時間為 1 代表 IO 或 fork 壓力，需關注磁碟與 CPU",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -5292,7 +5324,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis RDB BGSAVE In Progress",
+          "title": "Redis RDB BGSAVE In Progress - Trend",
           "type": "timeseries"
         },
         {
@@ -5300,7 +5332,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "最近一次成功 RDB 的實際耗時。\n趨勢上升 常與資料量成長或磁碟效能下降相關。",
+          "description": "優先級：P2\n用途：最近一次成功 RDB 的實際耗時\n判讀：趨勢上升 常與資料量成長或磁碟效能下降相關",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -5390,7 +5422,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Last RDB BGSAVE Duration",
+          "title": "Redis Last RDB BGSAVE Duration - Trend",
           "type": "timeseries"
         },
         {
@@ -5398,7 +5430,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "1 小時內 RDB 觸發次數，用於評估 save 設定是否過於頻繁。",
+          "description": "優先級：P2\n用途：1 小時內 RDB 觸發次數，用於評估 save 設定是否過於頻繁\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -5488,7 +5520,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis RDB BGSAVE Frequency",
+          "title": "Redis RDB BGSAVE Frequency - Trend",
           "type": "timeseries"
         },
         {
@@ -5496,7 +5528,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "主節點目前連上的 slave 數量。低於預期副本數（例如 < 1 / < 2）代表 HA 冗餘不足，failover 成功率下降。",
+          "description": "優先級：P0\n用途：主節點目前連上的 slave 數量\n判讀：低於預期副本數（例如 < 1；< 2）代表 HA 冗餘不足，failover 成功率下降\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -5585,7 +5617,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Connected Slaves",
+          "title": "Redis Connected Slaves - Trend",
           "type": "timeseries"
         },
         {
@@ -5593,7 +5625,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "從節點到主節點的複寫連線狀態。0 代表複寫中斷（網路、主節點不可達、切換進行中或權限/設定問題）。",
+          "description": "優先級：P0\n用途：從節點到主節點的複寫連線狀態\n判讀：0 代表複寫中斷（網路、主節點不可達、切換進行中或權限/設定問題）\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -5682,7 +5714,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Master Link Up",
+          "title": "Redis Master Link Up - Trend",
           "type": "timeseries"
         },
         {
@@ -5690,7 +5722,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "從節點落後主節點的秒數（越高越危險）。持續 > 0 且上升，通常意味：主節點寫入壓力、磁碟/網路瓶頸、或 slave 跟不上。",
+          "description": "優先級：P0\n用途：從節點落後主節點的秒數（越高越危險）\n判讀：持續 > 0 且上升，通常意味：主節點寫入壓力、磁碟/網路瓶頸、或 slave 跟不上\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -5780,7 +5812,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Replication Lag Seconds",
+          "title": "Redis Replication Lag Seconds - Trend",
           "type": "timeseries"
         },
         {
@@ -5788,7 +5820,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "因指令阻塞（Lua、BLPOP/BRPOP、磁碟或 I/O）而等待的 client 數。\n> 0 且持續 代表 contention 或不當指令使用。",
+          "description": "優先級：P1\n用途：因指令阻塞（Lua、BLPOP/BRPOP、磁碟或 I/O）而等待的 client 數\n判讀：> 0 且持續 代表 contention 或不當指令使用",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -5877,7 +5909,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Blocked Clients",
+          "title": "Redis Blocked Clients - Trend",
           "type": "timeseries"
         },
         {
@@ -5885,7 +5917,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "因達到 maxclients 或 backlog 不足被拒的連線速率。\n任何 > 0 都是高風險，常導致應用瞬斷。",
+          "description": "優先級：P1\n用途：因達到 maxclients 或 backlog 不足被拒的連線速率\n判讀：任何 > 0 都是高風險，常導致應用瞬斷\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -5974,7 +6006,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Rejected Connections Rate",
+          "title": "Redis Rejected Connections Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -5982,7 +6014,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "Redis 回傳給 client 的錯誤回應（WRONGTYPE、OOM、NOPERM…）。\n突增 通常代表程式邏輯或資料型別誤用。",
+          "description": "優先級：P1\n用途：Redis 回傳給 client 的錯誤回應（WRONGTYPE、OOM、NOPERM…）\n判讀：突增 通常代表程式邏輯或資料型別誤用\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -6072,11 +6104,11 @@
               "refId": "A"
             }
           ],
-          "title": "Redis Error Replies Rate",
+          "title": "Redis Error Replies Rate - Trend",
           "type": "timeseries"
         }
       ],
-      "title": "Redis",
+      "title": "Redis Overview - Section",
       "type": "row"
     },
     {
@@ -6094,7 +6126,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "1 = Exporter 可正常抓取 MongoDB 指標\n0 = 服務中斷 / Exporter 失效（立即告警）",
+          "description": "優先級：P0\n用途：1 = Exporter 可正常抓取 MongoDB 指標\n判讀：0 = 服務中斷；Exporter 失效（立即告警）\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -6181,7 +6213,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Instance Up",
+          "title": "MongoDB Instance Up - Trend",
           "type": "timeseries"
         },
         {
@@ -6283,15 +6315,16 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Uptime",
-          "type": "timeseries"
+          "title": "MongoDB Uptime - Trend",
+          "type": "timeseries",
+          "description": "優先級：P0\n用途：觀察MongoDB Uptime - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "用於檢查同一 cluster 是否混版\n\n升級、回溯、問題比對的重要基準",
+          "description": "優先級：P2\n用途：用於檢查同一 cluster 是否混版\n判讀：升級、回溯、問題比對的重要基準",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -6352,7 +6385,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Version Info",
+          "title": "MongoDB Version Info - Trend",
           "transformations": [
             {
               "id": "organize",
@@ -6376,7 +6409,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "反映 read / write / command 等操作速率；用於判斷負載型態與尖峰行為。",
+          "description": "優先級：P2\n用途：反映 read\n判讀：write；command 等操作速率；用於判斷負載型態與尖峰行為",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -6466,7 +6499,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB CRUD Throughput",
+          "title": "MongoDB CRUD Throughput - Trend",
           "type": "timeseries"
         },
         {
@@ -6474,7 +6507,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "驗證應用請求壓力是否異常，常與 CRUD QPS 不成比例時代表協定/連線成本上升。",
+          "description": "優先級：P2\n用途：驗證應用請求壓力是否異常，常與 CRUD QPS 不成比例時代表協定/連線成本上升\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -6564,7 +6597,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Network Requests Rate",
+          "title": "MongoDB Network Requests Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -6572,7 +6605,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "用於判斷資料傳輸量、batch size、aggregation 回傳過大等問題；與延遲、CPU 需交叉比對。",
+          "description": "優先級：P1\n用途：用於判斷資料傳輸量、batch size、aggregation 回傳過大等問題\n判讀：與延遲、CPU 需交叉比對",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -6662,7 +6695,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Network Throughput",
+          "title": "MongoDB Network Throughput - Trend",
           "type": "timeseries"
         },
         {
@@ -6670,7 +6703,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "高延遲 bucket 的操作速率，等同 AWR「高延遲 SQL 出現頻率」",
+          "description": "優先級：P1\n用途：高延遲 bucket 的操作速率，等同 AWR「高延遲 SQL 出現頻率」\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -6760,7 +6793,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB High Latency Ops Rate",
+          "title": "MongoDB High Latency Ops Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -6768,7 +6801,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "等同 AWR Avg Elapsed Time per Exec\n",
+          "description": "優先級：P1\n用途：等同 AWR Avg Elapsed Time per Exec\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -6858,7 +6891,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Avg Op Latency",
+          "title": "MongoDB Avg Op Latency - Trend",
           "type": "timeseries"
         },
         {
@@ -6866,7 +6899,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "越接近 1 代表鎖持有/競爭時間占比越高；若與 QPS 下滑、Latency 上升同時發生，優先懷疑 lock bound 或長時間操作（慢查詢/長交易）。",
+          "description": "優先級：P1\n用途：越接近 1 代表鎖持有/競爭時間占比越高\n判讀：若與 QPS 下滑、Latency 上升同時發生，優先懷疑 lock bound 或長時間操作（慢查詢/長交易）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -6956,7 +6989,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Global Lock Ratio",
+          "title": "MongoDB Global Lock Ratio - Trend",
           "type": "timeseries"
         },
         {
@@ -6964,7 +6997,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "排隊數持續上升通常表示鎖競爭加劇或有長時間持鎖；搭配 CPU idle、IO wait 可區分是 lock bound 還是 IO bound。",
+          "description": "優先級：P1\n用途：排隊數持續上升通常表示鎖競爭加劇或有長時間持鎖\n判讀：搭配 CPU idle、IO wait 可區分是 lock bound 還是 IO bound",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -7052,7 +7085,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Global Lock Wait Queue",
+          "title": "MongoDB Global Lock Wait Queue - Trend",
           "type": "timeseries"
         },
         {
@@ -7060,7 +7093,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "值越高代表每秒累積的鎖持有時間越多；與 Avg Latency 同步上升時，代表鎖成本正在主導延遲。",
+          "description": "優先級：P1\n用途：值越高代表每秒累積的鎖持有時間越多\n判讀：與 Avg Latency 同步上升時，代表鎖成本正在主導延遲",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -7150,7 +7183,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Global Lock Time (rate)",
+          "title": "MongoDB Global Lock Time (rate) - Trend",
           "type": "timeseries"
         },
         {
@@ -7158,7 +7191,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "快速判斷目前同時連線規模，是否有連線暴增、連線未釋放風險。",
+          "description": "優先級：P2\n用途：快速判斷目前同時連線規模，是否有連線暴增、連線未釋放風險\n判讀：與歷史基準比對，異常偏高或偏低需追查。\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -7247,7 +7280,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Total Connections",
+          "title": "MongoDB Total Connections - Trend",
           "type": "timeseries"
         },
         {
@@ -7255,7 +7288,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "持續偏高通常代表應用併發壓力大或操作耗時過長。",
+          "description": "優先級：P2\n用途：持續偏高通常代表應用併發壓力大或操作耗時過長\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -7344,7 +7377,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Connections In Use",
+          "title": "MongoDB Connections In Use - Trend",
           "type": "timeseries"
         },
         {
@@ -7352,7 +7385,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "反映連線池剩餘空間；趨近 0 代表即將出現 connection wait / reject 風險。",
+          "description": "優先級：P1\n用途：反映連線池剩餘空間\n判讀：趨近 0 代表即將出現 connection wait；reject 風險\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -7441,7 +7474,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Connections Available",
+          "title": "MongoDB Connections Available - Trend",
           "type": "timeseries"
         },
         {
@@ -7449,7 +7482,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "高比例 + 高 Latency → DB 忙於處理請求。",
+          "description": "優先級：P1\n用途：高比例 + 高 Latency → DB 忙於處理請求\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -7537,7 +7570,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Active Session Ratio",
+          "title": "MongoDB Active Session Ratio - Trend",
           "type": "timeseries"
         },
         {
@@ -7545,7 +7578,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "判斷是否需要調整 pool size 或限制應用連線策略。",
+          "description": "優先級：P2\n用途：判斷是否需要調整 pool size 或限制應用連線策略\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -7633,7 +7666,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Connection Pool Utilization",
+          "title": "MongoDB Connection Pool Utilization - Trend",
           "type": "timeseries"
         },
         {
@@ -7641,7 +7674,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "實際佔用實體記憶體；持續上升且接近 OS 上限時，需關注 OOM / swap / cache 壓力。",
+          "description": "優先級：P2\n用途：實際佔用實體記憶體\n判讀：持續上升且接近 OS 上限時，需關注 OOM；swap；cache 壓力\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -7729,7 +7762,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Process Memory (RSS)",
+          "title": "MongoDB Process Memory (RSS) - Trend",
           "type": "timeseries"
         },
         {
@@ -7737,7 +7770,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "MongoDB 核心快取資料；反映實際 working set 規模。",
+          "description": "優先級：P2\n用途：MongoDB 核心快取資料\n判讀：反映實際 working set 規模",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -7827,7 +7860,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB WiredTiger Cache Used",
+          "title": "MongoDB WiredTiger Cache Used - Trend",
           "type": "timeseries"
         },
         {
@@ -7835,7 +7868,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "Cache 容量上限，用於計算 cache 使用率與容量評估。",
+          "description": "優先級：P2\n用途：Cache 容量上限，用於計算 cache 使用率與容量評估\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -7925,7 +7958,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB WiredTiger Cache Max",
+          "title": "MongoDB WiredTiger Cache Max - Trend",
           "type": "timeseries"
         },
         {
@@ -7933,7 +7966,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "長期 > 0.85～0.9 代表 cache 空間不足，working set 已逼近上限。",
+          "description": "優先級：P2\n用途：長期 > 0.85～0.9 代表 cache 空間不足，working set 已逼近上限\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -8023,7 +8056,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB WiredTiger Cache Utilization",
+          "title": "MongoDB WiredTiger Cache Utilization - Trend",
           "type": "timeseries"
         },
         {
@@ -8031,7 +8064,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "eviction 上升代表 cache 不足或查詢掃描過大，通常伴隨 latency 與 disk IO 上升。",
+          "description": "優先級：P1\n用途：eviction 上升代表 cache 不足或查詢掃描過大，通常伴隨 latency 與 disk IO 上升\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -8121,7 +8154,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB WiredTiger Cache Eviction Rate",
+          "title": "MongoDB WiredTiger Cache Eviction Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -8129,7 +8162,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "WT log 產生速率上升通常代表寫入壓力、journal/commit 活躍；可用於抓 IO 尖峰與寫入型 workload 的爆量。",
+          "description": "優先級：P1\n用途：WT log 產生速率上升通常代表寫入壓力、journal/commit 活躍\n判讀：可用於抓 IO 尖峰與寫入型 workload 的爆量",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -8219,7 +8252,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB WiredTiger Log Throughput (bytes/s)",
+          "title": "MongoDB WiredTiger Log Throughput (bytes/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -8227,7 +8260,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "代表系統在單位時間內花在 checkpoint 的時間比例；數值升高通常伴隨 disk IO、latency 抖動（checkpoint 造成寫入/刷盤壓力）。",
+          "description": "優先級：P1\n用途：代表系統在單位時間內花在 checkpoint 的時間比例\n判讀：數值升高通常伴隨 disk IO、latency 抖動（checkpoint 造成寫入/刷盤壓力）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -8317,7 +8350,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB WiredTiger Checkpoint Time Rate",
+          "title": "MongoDB WiredTiger Checkpoint Time Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -8325,7 +8358,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "faults 上升通常表示 working set 超出 RAM/WT cache，觸發更多磁碟讀取；常與 cache eviction、讀延遲上升同時出現。",
+          "description": "優先級：P1\n用途：faults 上升通常表示 working set 超出 RAM/WT cache，觸發更多磁碟讀取\n判讀：常與 cache eviction、讀延遲上升同時出現",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -8415,7 +8448,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Page Fault Rate",
+          "title": "MongoDB Page Fault Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -8423,7 +8456,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "逐節點顯示 ReplicaSet member state code",
+          "description": "優先級：P0\n用途：逐節點顯示 ReplicaSet member state code\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -8561,7 +8594,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB ReplicaSet Member State",
+          "title": "MongoDB ReplicaSet Member State - Trend",
           "type": "timeseries"
         },
         {
@@ -8569,7 +8602,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每個 replicaset 的 PRIMARY 數量；理想值=1（≠1 代表 failover/網路分割/監控異常風險）\n",
+          "description": "優先級：P0\n用途：每個 replicaset 的 PRIMARY 數量\n判讀：理想值=1（≠1 代表 failover/網路分割/監控異常風險）\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -8708,7 +8741,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB ReplicaSet Primary Count",
+          "title": "MongoDB ReplicaSet Primary Count - By ReplicaSet",
           "type": "timeseries"
         },
         {
@@ -8716,7 +8749,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "觀察 Secondary（或 member）落後 Primary 的延遲\n\nFailover 風險：延遲越大，切主後資料一致性與服務恢復風險越高",
+          "description": "優先級：P0\n用途：觀察 Secondary（或 member）落後 Primary 的延遲\n判讀：Failover 風險：延遲越大，切主後資料一致性與服務恢復風險越高\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -8809,7 +8842,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB ReplicaSet Members Delayed",
+          "title": "MongoDB ReplicaSet Members Delayed - Trend",
           "type": "timeseries"
         },
         {
@@ -8817,7 +8850,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每個 replicaset 的 SECONDARY 數量；太少會提高 failover 後承載風險\n",
+          "description": "優先級：P0\n用途：每個 replicaset 的 SECONDARY 數量\n判讀：太少會提高 failover 後承載風險\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -8956,7 +8989,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB ReplicaSet Primary Count",
+          "title": "MongoDB ReplicaSet Secondary Count - By ReplicaSet",
           "type": "timeseries"
         },
         {
@@ -8964,7 +8997,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "抓出延遲最大的 N 個 member，快速定位問題節點",
+          "description": "優先級：P0\n用途：抓出延遲最大的 N 個 member，快速定位問題節點\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -9054,7 +9087,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Top Replication Lag (Max)",
+          "title": "MongoDB Top Replication Lag - Max",
           "type": "timeseries"
         },
         {
@@ -9062,7 +9095,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "用分位數看尖峰延遲",
+          "description": "優先級：P0\n用途：用分位數看尖峰延遲\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -9164,7 +9197,7 @@
               "refId": "B"
             }
           ],
-          "title": "MongoDB Replication Lag P95/P99 (5m window)",
+          "title": "MongoDB Replication Lag P95/P99 - 5m window",
           "type": "timeseries"
         },
         {
@@ -9172,7 +9205,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "5 分鐘內延遲是變大還是變小；>0 代表正在落後擴大",
+          "description": "優先級：P0\n用途：5 分鐘內延遲是變大還是變小\n判讀：>0 代表正在落後擴大",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -9262,7 +9295,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Replication Lag Delta (5m)",
+          "title": "MongoDB Replication Lag Delta - 5m",
           "type": "timeseries"
         },
         {
@@ -9270,7 +9303,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每個 member 的 oplog size（理想上同一 replicaset 應接近一致）",
+          "description": "優先級：P0\n用途：每個 member 的 oplog size（理想上同一 replicaset 應接近一致）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -9360,7 +9393,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Oplog Size by Member",
+          "title": "MongoDB Oplog Size - By Member",
           "type": "timeseries"
         },
         {
@@ -9368,7 +9401,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "取每個 replicaset 中 oplog size 的最小值；最小者通常是風險瓶頸",
+          "description": "優先級：P0\n用途：取每個 replicaset 中 oplog size 的最小值\n判讀：最小者通常是風險瓶頸\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -9458,7 +9491,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Oplog Size by ReplicaSet (Min)",
+          "title": "MongoDB Oplog Size - By ReplicaSet (Min)",
           "type": "timeseries"
         },
         {
@@ -9466,7 +9499,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "同 replicaset 內 oplog size 差異；差異過大常意味設定不一致或節點異常",
+          "description": "優先級：P0\n用途：同 replicaset 內 oplog size 差異\n判讀：差異過大常意味設定不一致或節點異常",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -9562,7 +9595,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "找最耗時的 db/collection/type（AWR Top by elapsed）；先排除 type=\"Total\" 與系統 db、cmd\n",
+          "description": "優先級：P2\n用途：找最耗時的 db/collection/type（AWR Top by elapsed）\n判讀：先排除 type=\"Total\" 與系統 db、cmd",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -9652,7 +9685,7 @@
               "refId": "A"
             }
           ],
-          "title": "Top Elapsed Time Rate (TopK)",
+          "title": "MongoDB Elapsed Time Rate - Top 20",
           "type": "timeseries"
         },
         {
@@ -9660,7 +9693,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "同一 db/collection/type 取 instance 最大耗時速率，定位問題節點（避免 sum 被平均稀釋）",
+          "description": "優先級：P0\n用途：同一 db/collection/type 取 instance 最大耗時速率，定位問題節點（避免 sum 被平均稀釋）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -9750,7 +9783,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Worst Member Elapsed (Max by type)",
+          "title": "MongoDB Worst Member Elapsed (Max ) - By type",
           "type": "timeseries"
         },
         {
@@ -9758,7 +9791,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "各 type 的操作吞吐（ops/sec），看流量熱點類型",
+          "description": "優先級：P2\n用途：各 type 的操作吞吐（ops/sec），看流量熱點類型\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -9848,7 +9881,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Ops Rate by Type",
+          "title": "MongoDB Ops Rate - By Type",
           "type": "timeseries"
         },
         {
@@ -9856,7 +9889,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "找最頻繁的 db/collection/type（AWR Top by executions）；排除系統 db、cmd、Total\n",
+          "description": "優先級：P2\n用途：找最頻繁的 db/collection/type（AWR Top by executions）\n判讀：排除系統 db、cmd、Total",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -9946,7 +9979,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Top Ops Rate (TopK)",
+          "title": "MongoDB Ops Rate - Top 20",
           "type": "timeseries"
         },
         {
@@ -9954,7 +9987,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "5 分鐘內各類 assert 的新增次數",
+          "description": "優先級：P2\n用途：5 分鐘內各類 assert 的新增次數\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -10044,7 +10077,7 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Assert Increase (5m)",
+          "title": "MongoDB Assert Increase - 5m",
           "type": "timeseries"
         },
         {
@@ -10052,7 +10085,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "cursor 逾時發生速率；反映應用或查詢行為問題",
+          "description": "優先級：P2\n用途：cursor 逾時發生速率\n判讀：反映應用或查詢行為問題",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -10142,11 +10175,11 @@
               "refId": "A"
             }
           ],
-          "title": "MongoDB Cursor Timed Out Rate",
+          "title": "MongoDB Cursor Timed Out Rate - Trend",
           "type": "timeseries"
         }
       ],
-      "title": "MongoDB",
+      "title": "MongoDB Overview - Section",
       "type": "row"
     },
     {
@@ -10164,7 +10197,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "此指標表示 **ProxySQL 自最近一次啟動後的運行秒數**。\n\n* 可用於辨識 **重啟、部署或異常當機**\n* 與錯誤率/連線數一起看，可定位事件影響範圍\n",
+          "description": "優先級：P0\n用途：此指標表示 ProxySQL 自最近一次啟動後的運行秒數\n判讀：可用於辨識 重啟、部署或異常當機；與錯誤率/連線數一起看，可定位事件影響範圍",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -10234,7 +10267,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Uptime（越高越好）",
+          "title": "ProxySQL Uptime - 越高越好",
           "transformations": [
             {
               "id": "organize",
@@ -10257,7 +10290,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "觀測歷史最高連線使用量，作為連線池容量 SLO 風險指標（是否逼近上限）",
+          "description": "優先級：P2\n用途：觀測歷史最高連線使用量，作為連線池容量 SLO 風險指標（是否逼近上限）\n判讀：與歷史基準比對，異常偏高或偏低需追查。\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -10324,7 +10357,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Max Connection Used",
+          "title": "ProxySQL Max Connection Used - Trend",
           "transformations": [
             {
               "id": "organize",
@@ -10345,7 +10378,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "ProxySQL Backend Status",
+          "description": "優先級：P0\n用途：ProxySQL Backend Status\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -10421,7 +10454,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Backend Server Status",
+          "title": "ProxySQL Backend Server Status - Trend",
           "transformations": [
             {
               "id": "organize",
@@ -10541,15 +10574,16 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Connection Pool Errors [有錯誤狀態才顯示]",
-          "type": "timeseries"
+          "title": "ProxySQL Connection Pool Errors - 有錯誤狀態才顯示",
+          "type": "timeseries",
+          "description": "優先級：P1\n用途：觀察ProxySQL Connection Pool Errors - 有錯誤狀態才顯示的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "ProxySQL 偵測到 MySQL 連線被拒事件總量，包含\nmax_connections / max_user_connections / wrong_password\n用於判斷容量、連線行為或設定錯誤。",
+          "description": "優先級：P2\n用途：ProxySQL 偵測到 MySQL 連線被拒事件總量，包含\n判讀：max_connections；max_user_connections；wrong_password；用於判斷容量、連線行為或設定錯誤",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -10639,7 +10673,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL MySQL Access Denied [有錯誤狀態才顯示]",
+          "title": "ProxySQL MySQL Access Denied - 有錯誤狀態才顯示",
           "type": "timeseries"
         },
         {
@@ -10647,7 +10681,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "DB 存活偵測失敗比例",
+          "description": "優先級：P1\n用途：DB 存活偵測失敗比例\n判讀：與歷史基準比對，異常偏高或偏低需追查。\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -10736,7 +10770,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Monitor Ping Error Ratio [有錯誤狀態才顯示]",
+          "title": "ProxySQL Monitor Ping Error Ratio - 有錯誤狀態才顯示",
           "type": "timeseries"
         },
         {
@@ -10744,7 +10778,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "ProxySQL 實際處理查詢速率",
+          "description": "優先級：P2\n用途：ProxySQL 實際處理查詢速率\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -10834,7 +10868,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Query Throughput",
+          "title": "ProxySQL Query Throughput - Trend",
           "type": "timeseries"
         },
         {
@@ -10842,7 +10876,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "SQL 流量壓力指標\n",
+          "description": "優先級：P2\n用途：SQL 流量壓力指標\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -10945,7 +10979,7 @@
               "refId": "B"
             }
           ],
-          "title": "ProxySQL Traffic In/Out",
+          "title": "ProxySQL Traffic In/Out - Trend",
           "type": "timeseries"
         },
         {
@@ -10953,7 +10987,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "影響 SLO 的主因",
+          "description": "優先級：P1\n用途：影響 SLO 的主因\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -11043,7 +11077,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Slow Query Rate",
+          "title": "ProxySQL Slow Query Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -11051,7 +11085,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "反映高負載或 backend 異常時，應用端最差體驗",
+          "description": "優先級：P1\n用途：反映高負載或 backend 異常時，應用端最差體驗\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -11122,7 +11156,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Connection Pool Latency 分佈 （越低越好）",
+          "title": "ProxySQL Connection Pool Latency 分佈 - 越低越好",
           "type": "histogram"
         },
         {
@@ -11130,7 +11164,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "各 ProxySQL instance 連線池平均延遲（µs）。用於觀察整體連線取得成本與跨節點基線差異，適合長時間趨勢與異常對比分析。",
+          "description": "優先級：P1\n用途：各 ProxySQL instance 連線池平均延遲（µs）\n判讀：用於觀察整體連線取得成本與跨節點基線差異，適合長時間趨勢與異常對比分析",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -11221,7 +11255,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Connection Pool Latency (Avg)",
+          "title": "ProxySQL Connection Pool Latency - Avg",
           "type": "timeseries"
         },
         {
@@ -11229,7 +11263,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "此指標表示 ProxySQL 連線池中目前可用（Free）的後端連線數量\n\n數值越低，代表可用連線資源減少，連線池壓力升高\n\n長期偏低可能導致 新請求等待、延遲上升或連線失敗",
+          "description": "優先級：P2\n用途：此指標表示 ProxySQL 連線池中目前可用（Free）的後端連線數量\n判讀：數值越低，代表可用連線資源減少，連線池壓力升高；長期偏低可能導致 新請求等待、延遲上升或連線失敗\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -11319,7 +11353,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Connection Pool Usage (%)（越低越好）",
+          "title": "ProxySQL Connection Pool Usage (%) - 越低越好",
           "type": "timeseries"
         },
         {
@@ -11415,15 +11449,16 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Connection Pool – Used Connections (Avg)",
-          "type": "timeseries"
+          "title": "ProxySQL Connection Pool – Used Connections - Avg",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察ProxySQL Connection Pool – Used Connections - Avg的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "此指標表示 **ProxySQL 連線池中目前可用（Free）的後端連線數量**。\n\n* 數值越低，代表可用連線資源減少，可能接近飽和\n* 若長期偏低，容易導致 **新請求等待、延遲上升或連線失敗**\n* 常需搭配 `conn_used / maxconnused / latency` 一併判讀，以確認是否為正常高負載或容量不足",
+          "description": "優先級：P1\n用途：此指標表示 ProxySQL 連線池中目前可用（Free）的後端連線數量\n判讀：數值越低，代表可用連線資源減少，可能接近飽和；若長期偏低，容易導致 新請求等待、延遲上升或連線失敗；常需搭配 conn_used；maxconnused；latency 一併判讀，以確認是否為正常高負載或容量不足\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -11512,7 +11547,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Connection Pool – Free Connections",
+          "title": "ProxySQL Connection Pool – Free Connections - Trend",
           "type": "timeseries"
         },
         {
@@ -11520,7 +11555,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "寫入型負載",
+          "description": "優先級：P2\n用途：寫入型負載\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -11610,7 +11645,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Active Transactions",
+          "title": "ProxySQL Active Transactions - Trend",
           "type": "timeseries"
         },
         {
@@ -11618,7 +11653,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "目前 ProxySQL 與 Client 的即時連線數",
+          "description": "優先級：P2\n用途：目前 ProxySQL 與 Client 的即時連線數\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -11707,7 +11742,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Client Connections (Connected)",
+          "title": "ProxySQL Client Connections (Connected) - Trend",
           "type": "timeseries"
         },
         {
@@ -11715,7 +11750,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "實際執行中、非閒置連線",
+          "description": "優先級：P2\n用途：實際執行中、非閒置連線\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -11804,7 +11839,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Client Connections (Active)",
+          "title": "ProxySQL Client Connections (Active) - Trend",
           "type": "timeseries"
         },
         {
@@ -11812,7 +11847,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "新連線建立速率，反映連線 churn\n突增代表 App 未使用連線池",
+          "description": "優先級：P2\n用途：新連線建立速率，反映連線 churn\n判讀：突增代表 App 未使用連線池",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -11901,7 +11936,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Client Connections Created Rate",
+          "title": "ProxySQL Client Connections Created Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -11909,7 +11944,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "Client 非正常斷線",
+          "description": "優先級：P2\n用途：Client 非正常斷線\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -11998,7 +12033,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Client Connections Aborted",
+          "title": "ProxySQL Client Connections Aborted - Trend",
           "type": "timeseries"
         },
         {
@@ -12006,7 +12041,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每秒 commit 次數（成功交易完成量）",
+          "description": "優先級：P2\n用途：每秒 commit 次數（成功交易完成量）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -12096,7 +12131,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Commit Rate (req/s)",
+          "title": "ProxySQL Commit Rate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -12104,7 +12139,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每秒 rollback 次數（交易被中止/回滾量）",
+          "description": "優先級：P2\n用途：每秒 rollback 次數（交易被中止/回滾量）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -12194,7 +12229,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Rollback Rate (req/s)",
+          "title": "ProxySQL Rollback Rate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -12202,7 +12237,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "rollback / (commit + rollback)，越低越好；可作為交易穩定度 SLI",
+          "description": "優先級：P2\n用途：rollback\n判讀：(commit + rollback)，越低越好；可作為交易穩定度 SLI",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -12292,7 +12327,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Rollback Ratio (%)",
+          "title": "ProxySQL Rollback Ratio (%) - Trend",
           "type": "timeseries"
         },
         {
@@ -12300,7 +12335,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "commit_filtered / commit",
+          "description": "優先級：P2\n用途：commit_filtered\n判讀：commit",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -12390,7 +12425,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Commit Filtered Ratio (%)",
+          "title": "ProxySQL Commit Filtered Ratio (%) - Trend",
           "type": "timeseries"
         },
         {
@@ -12398,7 +12433,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "rollback_filtered / rollback",
+          "description": "優先級：P2\n用途：rollback_filtered\n判讀：rollback",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -12488,7 +12523,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Rollback Filtered Ratio (%)",
+          "title": "ProxySQL Rollback Filtered Ratio (%) - Trend",
           "type": "timeseries"
         },
         {
@@ -12496,7 +12531,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "COM_AUTOCOMMIT 的變更頻率；高代表應用頻繁切換 autocommit（連線行為不穩定或框架行為）。",
+          "description": "優先級：P2\n用途：COM_AUTOCOMMIT 的變更頻率\n判讀：高代表應用頻繁切換 autocommit（連線行為不穩定或框架行為）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -12586,7 +12621,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Autocommit Command Rate (req/s)",
+          "title": "ProxySQL Autocommit Command Rate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -12594,7 +12629,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "被 ProxySQL 過濾/攔截的 autocommit 操作比例。",
+          "description": "優先級：P2\n用途：被 ProxySQL 過濾/攔截的 autocommit 操作比例\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -12684,7 +12719,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Autocommit Filtered Ratio (%)",
+          "title": "ProxySQL Autocommit Filtered Ratio (%) - Trend",
           "type": "timeseries"
         },
         {
@@ -12692,7 +12727,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "client 送到 ProxySQL 的 execute 速率（近似應用層 request 壓力）。",
+          "description": "優先級：P2\n用途：client 送到 ProxySQL 的 execute 速率（近似應用層 request 壓力）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -12782,7 +12817,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Frontend STMT Execute Rate (req/s)",
+          "title": "ProxySQL Frontend STMT Execute Rate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -12790,7 +12825,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "ProxySQL 對後端 MySQL 實際送出的 execute 速率（近似 DB 壓力）。",
+          "description": "優先級：P2\n用途：ProxySQL 對後端 MySQL 實際送出的 execute 速率（近似 DB 壓力）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -12880,7 +12915,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Backend STMT Execute Rate (req/s)",
+          "title": "ProxySQL Backend STMT Execute Rate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -12888,7 +12923,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "若 FE 明顯大於 BE，代表大量請求未落到後端（可能是 query rules、cache、deny、或路由策略）。",
+          "description": "優先級：P2\n用途：若 FE 明顯大於 BE，代表大量請求未落到後端（可能是 query rules、cache、deny、或路由策略）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -12986,7 +13021,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "prepare 過高但 execute 不高：可能是短連線/未重用 statement/框架行為異常；close 異常也常跟連線 churn 相關。\n\n後端 prepare 速率；過高常見於「statement 未重用」或「連線常斷」。",
+          "description": "優先級：P2\n用途：prepare 過高但 execute 不高：可能是短連線/未重用 statement/框架行為異常\n判讀：close 異常也常跟連線 churn 相關；後端 prepare 速率；過高常見於「statement 未重用」或「連線常斷」",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -13076,7 +13111,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Backend STMT Prepare Rate (req/s)",
+          "title": "ProxySQL Backend STMT Prepare Rate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -13084,7 +13119,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": ">1 通常代表 prepare 後有重用 execute；接近 1 甚至 <1 代表重用差或 prepare 氾濫。",
+          "description": "優先級：P2\n用途：>1 通常代表 prepare 後有重用 execute\n判讀：接近 1 甚至 <1 代表重用差或 prepare 氾濫",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -13174,7 +13209,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Execute / Prepare Ratio (Backend)",
+          "title": "ProxySQL Execute / Prepare Ratio (Backend) - Trend",
           "type": "timeseries"
         },
         {
@@ -13182,7 +13217,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "這些都偏向「每次建立/切換 session 會做的事」，用來追 client 行為是否造成連線池壓力與延遲上升（你 dashboard 也有 pool latency/usage）。\n\nProxySQL 後端連線上執行 change_user 的頻率；高通常代表連線池正在頻繁切換使用者/狀態，容易帶來 latency 抖動。",
+          "description": "優先級：P1\n用途：這些都偏向「每次建立/切換 session 會做的事」，用來追 client 行為是否造成連線池壓力與延遲上升（你 dashboard 也有 pool latency/usage）\n判讀：ProxySQL 後端連線上執行 change_user 的頻率；高通常代表連線池正在頻繁切換使用者/狀態，容易帶來 latency 抖動",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -13272,7 +13307,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Backend Change User Rate (req/s)",
+          "title": "ProxySQL Backend Change User Rate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -13280,7 +13315,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "",
+          "description": "優先級：P2\n用途：觀察ProxySQL Backend Init DB Rate (req/s) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -13370,7 +13405,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Backend Init DB Rate (req/s)",
+          "title": "ProxySQL Backend Init DB Rate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -13378,7 +13413,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "",
+          "description": "優先級：P2\n用途：觀察ProxySQL Backend Set Names Rate (req/s) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -13468,7 +13503,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Backend Set Names Rate (req/s)",
+          "title": "ProxySQL Backend Set Names Rate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -13476,7 +13511,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "",
+          "description": "優先級：P2\n用途：觀察ProxySQL Frontend Use DB Rate (req/s) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -13566,7 +13601,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Frontend Use DB Rate (req/s)",
+          "title": "ProxySQL Frontend Use DB Rate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -13574,7 +13609,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "",
+          "description": "優先級：P2\n用途：觀察ProxySQL Frontend Set Names Rate (req/s) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -13664,7 +13699,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Frontend Set Names Rate (req/s)",
+          "title": "ProxySQL Frontend Set Names Rate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -13672,7 +13707,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每秒新增的 connect timeout 事件量（連線品質惡化最敏感）",
+          "description": "優先級：P1\n用途：每秒新增的 connect timeout 事件量（連線品質惡化最敏感）\n判讀：與歷史基準比對，異常偏高或偏低需追查。\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -13762,7 +13797,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Backend Connect Timeout Rate [有錯誤狀態才顯示]",
+          "title": "ProxySQL Backend Connect Timeout Rate - 有錯誤狀態才顯示",
           "type": "timeseries"
         },
         {
@@ -13770,7 +13805,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每秒成功從連線池取得後端連線的次數（可視為「後端連線供給」能力）。",
+          "description": "優先級：P2\n用途：每秒成功從連線池取得後端連線的次數（可視為「後端連線供給」能力）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -13860,7 +13895,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL ConnPool GetConn Success (req/s)",
+          "title": "ProxySQL ConnPool GetConn Success (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -13868,7 +13903,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每秒取用失敗次數（連線池耗盡、連線建立失敗、hostgroup 不可用等都可能反映在此）。",
+          "description": "優先級：P0\n用途：每秒取用失敗次數（連線池耗盡、連線建立失敗、hostgroup 不可用等都可能反映在此）\n判讀：與歷史基準比對，異常偏高或偏低需追查。\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -13958,7 +13993,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL ConnPool GetConn Failure (req/s) [有錯誤狀態才顯示]",
+          "title": "ProxySQL ConnPool GetConn Failure (req/s) - 有錯誤狀態才顯示",
           "type": "timeseries"
         },
         {
@@ -13966,7 +14001,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "failure / (success + failure)。是「Request client 連線使用狀態」最直接的 SLI。",
+          "description": "優先級：P2\n用途：failure\n判讀：(success + failure)；是「Request client 連線使用狀態」最直接的 SLI",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -14056,7 +14091,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL ConnPool GetConn Failure Ratio (%) [有錯誤狀態才顯示]",
+          "title": "ProxySQL ConnPool GetConn Failure Ratio (%) - 有錯誤狀態才顯示",
           "type": "timeseries"
         },
         {
@@ -14064,7 +14099,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "過去 30 分鐘累積失敗次數（適合 error budget/事故回放）。",
+          "description": "優先級：P1\n用途：過去 30 分鐘累積失敗次數（適合 error budget/事故回放）\n判讀：與歷史基準比對，異常偏高或偏低需追查。\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -14154,7 +14189,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL ConnPool GetConn Failures (30m) [有錯誤狀態才顯示]",
+          "title": "ProxySQL ConnPool GetConn Failures (30m) - 有錯誤狀態才顯示",
           "type": "timeseries"
         },
         {
@@ -14162,7 +14197,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "可立即取得連線的次數；越高通常代表池內可用連線充足、等待少。",
+          "description": "優先級：P2\n用途：可立即取得連線的次數\n判讀：越高通常代表池內可用連線充足、等待少",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -14252,7 +14287,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL ConnPool GetConn Immediate (req/s)",
+          "title": "ProxySQL ConnPool GetConn Immediate (req/s) - Trend",
           "type": "timeseries"
         },
         {
@@ -14260,7 +14295,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "連線池占用記憶體即時值；異常上升可能是連線數膨脹、碎片化或 bug/洩漏跡象。",
+          "description": "優先級：P2\n用途：連線池占用記憶體即時值\n判讀：異常上升可能是連線數膨脹、碎片化或 bug/洩漏跡象",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -14350,7 +14385,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL ConnPool Memory",
+          "title": "ProxySQL ConnPool Memory - Trend",
           "type": "timeseries"
         },
         {
@@ -14358,7 +14393,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "immediate / success。若下降，常代表連線池開始吃緊或需要等待/新建連線。",
+          "description": "優先級：P2\n用途：immediate\n判讀：success；若下降，常代表連線池開始吃緊或需要等待/新建連線",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -14448,7 +14483,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Immediate Ratio (%)",
+          "title": "ProxySQL Immediate Ratio (%) - Trend",
           "type": "timeseries"
         },
         {
@@ -14456,7 +14491,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "前端 buffer 佔用現況；異常上升代表前端資料堆積或處理壓力增加。",
+          "description": "優先級：P2\n用途：前端 buffer 佔用現況\n判讀：異常上升代表前端資料堆積或處理壓力增加",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -14546,7 +14581,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL MySQL Frontend Buffers",
+          "title": "ProxySQL MySQL Frontend Buffers - Trend",
           "type": "timeseries"
         },
         {
@@ -14554,7 +14589,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "",
+          "description": "優先級：P2\n用途：觀察ProxySQL MySQL Monitor OK rate - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -14644,7 +14679,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL MySQL Monitor OK rate",
+          "title": "ProxySQL MySQL Monitor OK rate - Trend",
           "type": "timeseries"
         },
         {
@@ -14652,7 +14687,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "",
+          "description": "優先級：P1\n用途：觀察ProxySQL MySQL Monitor Error Rate - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -14742,7 +14777,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL MySQL Monitor Error Rate",
+          "title": "ProxySQL MySQL Monitor Error Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -14750,7 +14785,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "衡量「Client 請求流量」進來後，被 ProxySQL 轉成多少「對 DB 的回傳資料量」。可抓 fan-out、join、cache miss、結果集暴增等風險。",
+          "description": "優先級：P1\n用途：衡量「Client 請求流量」進來後，被 ProxySQL 轉成多少「對 DB 的回傳資料量」\n判讀：可抓 fan-out、join、cache miss、結果集暴增等風險\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -14840,7 +14875,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Traffic Amplification Ratio (BackendRecv / FrontendRecv)",
+          "title": "ProxySQL Traffic Amplification Ratio (BackendRecv / FrontendRecv) - Trend",
           "type": "timeseries"
         },
         {
@@ -14848,7 +14883,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "MySQL 存活檢查失敗次數",
+          "description": "優先級：P1\n用途：MySQL 存活檢查失敗次數\n判讀：與歷史基準比對，異常偏高或偏低需追查。\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -14936,7 +14971,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL MySQL Monitor Ping Errors",
+          "title": "ProxySQL MySQL Monitor Ping Errors - Trend",
           "type": "timeseries"
         },
         {
@@ -14944,7 +14979,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "ProxySQL session 內部緩衝記憶體用量",
+          "description": "優先級：P2\n用途：ProxySQL session 內部緩衝記憶體用量\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -15032,7 +15067,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Internal Session Bytes",
+          "title": "ProxySQL Internal Session Bytes - Trend",
           "type": "timeseries"
         },
         {
@@ -15040,7 +15075,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "MySQL 回傳給 ProxySQL 的資料吞吐。可用來判斷 DB 回傳壓力、結果集放大、下游瓶頸。",
+          "description": "優先級：P2\n用途：MySQL 回傳給 ProxySQL 的資料吞吐\n判讀：可用來判斷 DB 回傳壓力、結果集放大、下游瓶頸",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -15130,7 +15165,7 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Backend Ingress Throughput",
+          "title": "ProxySQL Backend Ingress Throughput - Trend",
           "type": "timeseries"
         },
         {
@@ -15138,7 +15173,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "ProxySQL 回應給 Client 的輸出吞吐（真實對外服務流量）。用來做吞吐 SLO、容量與突波偵測。",
+          "description": "優先級：P2\n用途：ProxySQL 回應給 Client 的輸出吞吐（真實對外服務流量）\n判讀：用來做吞吐 SLO、容量與突波偵測",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -15228,11 +15263,11 @@
               "refId": "A"
             }
           ],
-          "title": "ProxySQL Frontend Egress Throughput",
+          "title": "ProxySQL Frontend Egress Throughput - Trend",
           "type": "timeseries"
         }
       ],
-      "title": "ProxySQL",
+      "title": "ProxySQL Overview - Section",
       "type": "row"
     },
     {
@@ -15250,7 +15285,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "此指標表示 **MySQL 服務自最近一次啟動後持續運行的時間**。\n\n* 用於判斷是否發生 **重啟、異常中斷或維運操作**\n* Uptime 突然歸零通常代表 **服務重啟**\n* 常搭配 Error / Restart / Deploy 事件一起判讀\n",
+          "description": "優先級：P0\n用途：此指標表示 MySQL 服務自最近一次啟動後持續運行的時間\n判讀：用於判斷是否發生 重啟、異常中斷或維運操作；Uptime 突然歸零通常代表 服務重啟；常搭配 Error；Restart；Deploy 事件一起判讀\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -15338,7 +15373,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Uptime",
+          "title": "MySQL Uptime - Trend",
           "type": "timeseries"
         },
         {
@@ -15346,7 +15381,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "列出各 instance 的 MySQL 版本資訊（用於版本差異、升級規劃、行為差異排查）",
+          "description": "優先級：P2\n用途：列出各 instance 的 MySQL 版本資訊（用於版本差異、升級規劃、行為差異排查）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -15413,7 +15448,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Version Inventory",
+          "title": "MySQL Version Inventory - Trend",
           "transformations": [
             {
               "id": "organize",
@@ -15448,7 +15483,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "列出各 instance 的 MySQL 版本資訊（用於版本差異、升級規劃、行為差異排查）",
+          "description": "優先級：P2\n用途：列出各 instance 的 MySQL 版本資訊（用於版本差異、升級規劃、行為差異排查）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -15515,7 +15550,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Version Inventory",
+          "title": "MySQL Version Inventory - Trend",
           "transformations": [
             {
               "id": "organize",
@@ -15552,7 +15587,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每個 MySQL instance 的 SQL 請求速率（Questions/sec），用於識別高負載節點與流量分佈不均。",
+          "description": "優先級：P2\n用途：每個 MySQL instance 的 SQL 請求速率（Questions/sec），用於識別高負載節點與流量分佈不均\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -15642,7 +15677,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL QPS by Instance",
+          "title": "MySQL QPS - By Instance",
           "type": "timeseries"
         },
         {
@@ -15650,7 +15685,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "QPS 是否快速上升（流量尖峰偵測）",
+          "description": "優先級：P2\n用途：QPS 是否快速上升（流量尖峰偵測）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -15740,7 +15775,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL QPS Delta（5m）",
+          "title": "MySQL QPS Delta - 5m",
           "type": "timeseries"
         },
         {
@@ -15748,7 +15783,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "各類 SQL 指令的每秒速率，觀察讀寫比例",
+          "description": "優先級：P2\n用途：各類 SQL 指令的每秒速率，觀察讀寫比例\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -15838,7 +15873,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Command Rate by Type",
+          "title": "MySQL Command Rate - By Type",
           "type": "timeseries"
         },
         {
@@ -15846,7 +15881,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "讀寫比例結構（select vs insert/update/delete）\n\n數值＝讀取速率 / 寫入速率 × 100%\n\n```100% ≈ 1:1```\n\n```>100%：讀多寫少```\n\n```<100%：寫多於讀```",
+          "description": "優先級：P0\n用途：讀寫比例結構（select vs insert/update/delete）\n判讀：數值＝讀取速率；寫入速率 × 100%；100% ≈ 1:1；>100%：讀多寫少；<100%：寫多於讀",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -15936,7 +15971,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Read / Write Ratio",
+          "title": "MySQL Read / Write Ratio - Trend",
           "type": "timeseries"
         },
         {
@@ -15944,7 +15979,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "找出最熱的 command（如 select / admin_commands / show_status）\n",
+          "description": "優先級：P0\n用途：找出最熱的 command（如 select\n判讀：admin_commands；show_status）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -16034,7 +16069,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Top Commands (ops/sec)",
+          "title": "MySQL Top Commands (ops/sec) - Trend",
           "type": "timeseries"
         },
         {
@@ -16131,8 +16166,9 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Read Ops/s",
-          "type": "timeseries"
+          "title": "MySQL Read Ops/s - Trend",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察MySQL Read Ops/s - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -16228,8 +16264,9 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Write Ops/s",
-          "type": "timeseries"
+          "title": "MySQL Write Ops/s - Trend",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察MySQL Write Ops/s - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
@@ -16325,15 +16362,16 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Transaction Ops/s (Commit+Rollback)",
-          "type": "timeseries"
+          "title": "MySQL Transaction Ops/s (Commit+Rollback) - Trend",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察MySQL Transaction Ops/s (Commit+Rollback) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "MySQL 協定層 ingress 吞吐。",
+          "description": "優先級：P2\n用途：MySQL 協定層 ingress 吞吐\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -16421,7 +16459,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Bytes Received",
+          "title": "MySQL Bytes Received - Trend",
           "type": "timeseries"
         },
         {
@@ -16429,7 +16467,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "MySQL 協定層 egress 吞吐。",
+          "description": "優先級：P2\n用途：MySQL 協定層 egress 吞吐\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -16519,7 +16557,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Bytes Sent",
+          "title": "MySQL Bytes Sent - Trend",
           "type": "timeseries"
         },
         {
@@ -16616,15 +16654,16 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Throughput Top 20",
-          "type": "timeseries"
+          "title": "MySQL Throughput - Top 20",
+          "type": "timeseries",
+          "description": "優先級：P2\n用途：觀察MySQL Throughput - Top 20的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每秒新增慢 SQL 次數（依 slow_query_threshold）。",
+          "description": "優先級：P1\n用途：每秒新增慢 SQL 次數（依 slow_query_threshold）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -16714,7 +16753,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Slow Queries Rate",
+          "title": "MySQL Slow Queries Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -16722,7 +16761,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "時間區間內累積的慢 SQL 數量。",
+          "description": "優先級：P1\n用途：時間區間內累積的慢 SQL 數量\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -16812,7 +16851,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Slow Queries Delta",
+          "title": "MySQL Slow Queries Delta - Trend",
           "type": "timeseries"
         },
         {
@@ -16820,7 +16859,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "Slow queries ÷ QPS；排除流量假象。",
+          "description": "優先級：P1\n用途：Slow queries ÷ QPS\n判讀：排除流量假象",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -16910,7 +16949,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Slow Query Ratio",
+          "title": "MySQL Slow Query Ratio - Trend",
           "type": "timeseries"
         },
         {
@@ -16918,7 +16957,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "只聚焦 lock/mutex/rwlock/metadata wait；以 (instance,event) 排序 Top 20。",
+          "description": "優先級：P1\n用途：只聚焦 lock/mutex/rwlock/metadata wait\n判讀：以 (instance,event) 排序 Top 20",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -17008,7 +17047,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Top Lock Wait Events",
+          "title": "MySQL Top Lock Wait Events - Trend",
           "type": "timeseries"
         },
         {
@@ -17016,7 +17055,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "所有 lock/mutex/rwlock/metadata wait 的等待時間加總。",
+          "description": "優先級：P1\n用途：所有 lock/mutex/rwlock/metadata wait 的等待時間加總\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -17106,7 +17145,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Total Lock Wait Time",
+          "title": "MySQL Total Lock Wait Time - Trend",
           "type": "timeseries"
         },
         {
@@ -17114,7 +17153,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "以區間差分觀察連線變化速度；不依賴 counter。\n\n> 0：5 分鐘內 Threads Connected 淨增加\n→ 新連線建立速度 > 連線釋放（連線暴增、pool 擴張、登入尖峰）\n\n< 0：5 分鐘內 Threads Connected 淨減少\n→ 連線被關閉/回收（流量下降、pool 回收、服務重啟後收斂）",
+          "description": "優先級：P2\n用途：以區間差分觀察連線變化速度\n判讀：不依賴 counter；> 0：5 分鐘內 Threads Connected 淨增加；→ 新連線建立速度 > 連線釋放（連線暴增、pool 擴張、登入尖峰）；< 0：5 分鐘內 Threads Connected 淨減少；→ 連線被關閉/回收（流量下降、pool 回收、服務重啟後收斂）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -17204,7 +17243,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Connection Growth (Δ per 5m)",
+          "title": "MySQL Connection Growth - Delta per 5m",
           "type": "timeseries"
         },
         {
@@ -17212,7 +17251,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "聚焦 wait/io/file (innodb/sql)；以 (instance,event) 排序 Top 20。",
+          "description": "優先級：P1\n用途：聚焦 wait/io/file (innodb/sql)\n判讀：以 (instance,event) 排序 Top 20",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -17302,7 +17341,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Top IO Wait Events",
+          "title": "MySQL Top IO Wait Events - Trend",
           "type": "timeseries"
         },
         {
@@ -17310,7 +17349,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "所有 IO wait 的等待時間加總。",
+          "description": "優先級：P1\n用途：所有 IO wait 的等待時間加總\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -17400,7 +17439,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Total IO Wait Time",
+          "title": "MySQL Total IO Wait Time - Trend",
           "type": "timeseries"
         },
         {
@@ -17408,7 +17447,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "聚焦 InnoDB log flush / log sys 相關等待；以 (instance,event) 排序 Top 20。",
+          "description": "優先級：P1\n用途：聚焦 InnoDB log flush\n判讀：log sys 相關等待；以 (instance,event) 排序 Top 20",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -17498,7 +17537,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Top Log/Commit Wait Events",
+          "title": "MySQL Top Log/Commit Wait Events - Trend",
           "type": "timeseries"
         },
         {
@@ -17506,7 +17545,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "log/commit path wait 的等待時間加總。",
+          "description": "優先級：P1\n用途：log/commit path wait 的等待時間加總\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -17596,7 +17635,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Total Log/Commit Wait Time",
+          "title": "MySQL Total Log/Commit Wait Time - Trend",
           "type": "timeseries"
         },
         {
@@ -17604,7 +17643,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "依 Threads Running 排序 Top 20（適合 table）。",
+          "description": "優先級：P2\n用途：依 Threads Running 排序 Top 20（適合 table）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -17694,7 +17733,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Active Sessions Top 20",
+          "title": "MySQL Active Sessions - Top 20",
           "type": "timeseries"
         },
         {
@@ -17702,7 +17741,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "Running ÷ Connected；越高代表連線多且真的在跑（壓力更直接）。",
+          "description": "優先級：P1\n用途：Running ÷ Connected\n判讀：越高代表連線多且真的在跑（壓力更直接）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -17792,7 +17831,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Busy Ratio (Running/Connected)",
+          "title": "MySQL Busy Ratio (Running/Connected) - Trend",
           "type": "timeseries"
         },
         {
@@ -17800,7 +17839,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "依 Connected 排序 Top 20。",
+          "description": "優先級：P2\n用途：依 Connected 排序 Top 20\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -17888,7 +17927,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Connections Top 20",
+          "title": "MySQL Connections - Top 20",
           "type": "timeseries"
         },
         {
@@ -17896,7 +17935,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "自 mysqld 啟動以來的最大同時連線數；用於回顧尖峰是否逼近上限。",
+          "description": "優先級：P2\n用途：自 mysqld 啟動以來的最大同時連線數\n判讀：用於回顧尖峰是否逼近上限",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -17986,7 +18025,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Peak Connections (Max Used)",
+          "title": "MySQL Peak Connections - Max Used",
           "type": "timeseries"
         },
         {
@@ -17994,7 +18033,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "依 Max Used Connections 排序 Top 20。",
+          "description": "優先級：P2\n用途：依 Max Used Connections 排序 Top 20\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -18084,7 +18123,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Peak Connections Top 20",
+          "title": "MySQL Peak Connections - Top 20",
           "type": "timeseries"
         },
         {
@@ -18092,7 +18131,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "以 MaxUsed ÷ max_connections 算壓力；需同時有 mysql_global_variables_max_connections（若你環境沒有就跳過）。",
+          "description": "優先級：P2\n用途：以 MaxUsed ÷ max_connections 算壓力\n判讀：需同時有 mysql_global_variables_max_connections（若你環境沒有就跳過）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -18182,7 +18221,7 @@
               "refId": "A"
             }
           ],
-          "title": "MySQL Connection Headroom (Peak vs Limit)",
+          "title": "MySQL Connection Headroom - Peak vs Limit",
           "type": "timeseries"
         },
         {
@@ -18190,7 +18229,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每秒新增 row lock waits 次數；用於偵測鎖衝突突增。",
+          "description": "優先級：P1\n用途：每秒新增 row lock waits 次數\n判讀：用於偵測鎖衝突突增",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -18280,7 +18319,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Row Lock Waits Rate",
+          "title": "MySQL InnoDB Row Lock Waits Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -18288,7 +18327,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "時間區間內累積 row lock waits 次數。",
+          "description": "優先級：P1\n用途：時間區間內累積 row lock waits 次數\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -18378,7 +18417,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Row Lock Waits Delta",
+          "title": "MySQL InnoDB Row Lock Waits Delta - Trend",
           "type": "timeseries"
         },
         {
@@ -18386,7 +18425,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每秒累積的 row lock wait time；用於判斷鎖等待是否成為主要瓶頸。",
+          "description": "優先級：P1\n用途：每秒累積的 row lock wait time\n判讀：用於判斷鎖等待是否成為主要瓶頸",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -18476,7 +18515,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Row Lock Wait Time",
+          "title": "MySQL InnoDB Row Lock Wait Time - Trend",
           "type": "timeseries"
         },
         {
@@ -18484,7 +18523,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "時間區間內累積 row lock wait time（秒）。",
+          "description": "優先級：P1\n用途：時間區間內累積 row lock wait time（秒）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -18574,7 +18613,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Row Lock Wait Time Delta",
+          "title": "MySQL InnoDB Row Lock Wait Time Delta - Trend",
           "type": "timeseries"
         },
         {
@@ -18582,7 +18621,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "row_lock_time ÷ row_lock_waits；單次鎖等待平均耗時。",
+          "description": "優先級：P1\n用途：row_lock_time ÷ row_lock_waits\n判讀：單次鎖等待平均耗時",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -18672,7 +18711,7 @@
               "refId": "A"
             }
           ],
-          "title": "Avg Row Lock Wait Time",
+          "title": "MySQL Row Lock Wait Time - Avg",
           "type": "timeseries"
         },
         {
@@ -18680,7 +18719,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每秒 buffer pool reads；通常與 IO wait、讀延遲高度相關。",
+          "description": "優先級：P1\n用途：每秒 buffer pool reads\n判讀：通常與 IO wait、讀延遲高度相關",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -18770,7 +18809,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Buffer Pool Reads (Physical)",
+          "title": "MySQL InnoDB Buffer Pool Reads (Physical) - Trend",
           "type": "timeseries"
         },
         {
@@ -18778,7 +18817,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "區間內累積的 buffer pool reads。",
+          "description": "優先級：P2\n用途：區間內累積的 buffer pool reads\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -18868,7 +18907,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Buffer Pool Reads Delta",
+          "title": "MySQL InnoDB Buffer Pool Reads Delta - Trend",
           "type": "timeseries"
         },
         {
@@ -18876,7 +18915,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每秒 logical read requests；用於和 physical reads 對照算 hit ratio。",
+          "description": "優先級：P1\n用途：每秒 logical read requests\n判讀：用於和 physical reads 對照算 hit ratio",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -18966,7 +19005,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Buffer Pool Read Requests (Logical)",
+          "title": "MySQL InnoDB Buffer Pool Read Requests (Logical) - Trend",
           "type": "timeseries"
         },
         {
@@ -18974,7 +19013,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "cache 是否命中；命中率下降通常直接導向 IO wait 上升與 latency 上升。\n\n1 - (physical_reads / logical_reads)；以 rate 計算避免 counter 影響。",
+          "description": "優先級：P1\n用途：cache 是否命中\n判讀：命中率下降通常直接導向 IO wait 上升與 latency 上升；1 - (physical_reads；logical_reads)；以 rate 計算避免 counter 影響",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -19064,7 +19103,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Buffer Pool Hit Ratio",
+          "title": "MySQL InnoDB Buffer Pool Hit Ratio - Trend",
           "type": "timeseries"
         },
         {
@@ -19072,7 +19111,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "把命中率反過來看「miss」更直覺，適合設門檻。\n\nphysical_reads / logical_reads（%）；上升代表 cache miss 加重。",
+          "description": "優先級：P1\n用途：把命中率反過來看「miss」更直覺，適合設門檻\n判讀：physical_reads；logical_reads（%）；上升代表 cache miss 加重",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -19162,7 +19201,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Buffer Pool Miss Ratio",
+          "title": "MySQL InnoDB Buffer Pool Miss Ratio - Trend",
           "type": "timeseries"
         },
         {
@@ -19170,7 +19209,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "髒頁量（bytes）；髒頁高可能導致 flush 壓力、checkpoint/IO 抖動。\n\n目前 buffer pool 髒頁總 bytes；與 redo、IO、寫入延遲相關。",
+          "description": "優先級：P2\n用途：髒頁量（bytes）\n判讀：髒頁高可能導致 flush 壓力、checkpoint/IO 抖動；目前 buffer pool 髒頁總 bytes；與 redo、IO、寫入延遲相關",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -19260,7 +19299,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Buffer Pool Dirty Bytes",
+          "title": "MySQL InnoDB Buffer Pool Dirty Bytes - Trend",
           "type": "timeseries"
         },
         {
@@ -19268,7 +19307,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "5 分鐘內髒頁 bytes 淨變化；>0 代表髒頁堆積，<0 代表 flush 追上。",
+          "description": "優先級：P2\n用途：5 分鐘內髒頁 bytes 淨變化\n判讀：>0 代表髒頁堆積，<0 代表 flush 追上",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -19358,7 +19397,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Dirty Bytes Delta (5m)",
+          "title": "MySQL InnoDB Dirty Bytes Delta - 5m",
           "type": "timeseries"
         },
         {
@@ -19366,7 +19405,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "資料檔讀取量（bytes）速率；對齊「讀 IO 壓力」與 cache miss 後的磁碟讀。\n\n每秒 data reads（bytes）；與 Buffer Pool physical reads、IO waits 連動解讀。",
+          "description": "優先級：P1\n用途：資料檔讀取量（bytes）速率\n判讀：對齊「讀 IO 壓力」與 cache miss 後的磁碟讀；每秒 data reads（bytes）；與 Buffer Pool physical reads、IO waits 連動解讀",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -19456,7 +19495,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Data Reads",
+          "title": "MySQL InnoDB Data Reads - Trend",
           "type": "timeseries"
         },
         {
@@ -19464,7 +19503,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "資料檔寫入量（bytes）速率；對齊「flush / checkpoint」造成的 datafile write 壓力。\n\n每秒 data writes（bytes）；與 dirty bytes delta、IO waits 連動解讀。",
+          "description": "優先級：P1\n用途：資料檔寫入量（bytes）速率\n判讀：對齊「flush；checkpoint」造成的 datafile write 壓力；每秒 data writes（bytes）；與 dirty bytes delta、IO waits 連動解讀",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -19554,7 +19593,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Data Writes",
+          "title": "MySQL InnoDB Data Writes - Trend",
           "type": "timeseries"
         },
         {
@@ -19562,7 +19601,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "data reads + data writes 的總吞吐，用於排序與容量視角。",
+          "description": "優先級：P2\n用途：data reads + data writes 的總吞吐，用於排序與容量視角\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -19652,7 +19691,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Data IO Throughput",
+          "title": "MySQL InnoDB Data IO Throughput - Trend",
           "type": "timeseries"
         },
         {
@@ -19660,7 +19699,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "5 分鐘累積 data reads+writes bytes。",
+          "description": "優先級：P2\n用途：5 分鐘累積 data reads+writes bytes\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -19750,7 +19789,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Data IO Delta (5m)",
+          "title": "MySQL InnoDB Data IO Delta - 5m",
           "type": "timeseries"
         },
         {
@@ -19758,7 +19797,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "Redo log write 次數速率；反映寫入工作量與 redo 壓力（寫多、更新多時上升）。\n\n每秒 redo log writes；常與 TPS、dirty page、log fsync 連動。",
+          "description": "優先級：P2\n用途：Redo log write 次數速率\n判讀：反映寫入工作量與 redo 壓力（寫多、更新多時上升）；每秒 redo log writes；常與 TPS、dirty page、log fsync 連動",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -19848,7 +19887,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Redo Log Writes",
+          "title": "MySQL InnoDB Redo Log Writes - Trend",
           "type": "timeseries"
         },
         {
@@ -19856,7 +19895,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "區間內 redo write 總次數（寫入事件量）。\n\n5 分鐘累積 redo log writes 次數。",
+          "description": "優先級：P2\n用途：區間內 redo write 總次數（寫入事件量）\n判讀：5 分鐘累積 redo log writes 次數",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -19946,7 +19985,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Redo Writes Delta (5m)",
+          "title": "MySQL InnoDB Redo Writes Delta - 5m",
           "type": "timeseries"
         },
         {
@@ -19954,7 +19993,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "fsync 速率（log sync 壓力）；最接近「commit latency」風險指標。\n\n每秒 log fsync 次數；innodb_flush_log_at_trx_commit、磁碟延遲會直接影響此路徑。",
+          "description": "優先級：P1\n用途：fsync 速率（log sync 壓力）\n判讀：最接近「commit latency」風險指標；每秒 log fsync 次數；innodb_flush_log_at_trx_commit、磁碟延遲會直接影響此路徑\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -20044,7 +20083,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Log fsyncs",
+          "title": "MySQL InnoDB Log fsyncs - Trend",
           "type": "timeseries"
         },
         {
@@ -20052,7 +20091,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "判斷 fsync 是否隨交易線性上升（或異常偏高）。\n\nfsync rate ÷ commit rate；若 commit rate 偏低但 fsync/commit 卻高，常見於設定/flush 行為異常或背景 flush。",
+          "description": "優先級：P2\n用途：判斷 fsync 是否隨交易線性上升（或異常偏高）\n判讀：fsync rate ÷ commit rate；若 commit rate 偏低但 fsync/commit 卻高，常見於設定/flush 行為異常或背景 flush",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -20142,7 +20181,7 @@
               "refId": "A"
             }
           ],
-          "title": "Log fsync per Commit",
+          "title": "MySQL Log fsync per Commit - Trend",
           "type": "timeseries"
         },
         {
@@ -20150,7 +20189,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "觀察 fsync 是否能「批次吸收」redo writes（越高通常代表批次化較好；解讀需搭配延遲）。\n\nredo writes rate ÷ fsync rate；偏低代表每次 fsync 承載較少 redo writes（更頻繁同步）。",
+          "description": "優先級：P2\n用途：觀察 fsync 是否能「批次吸收」redo writes（越高通常代表批次化較好\n判讀：解讀需搭配延遲）；redo writes rate ÷ fsync rate；偏低代表每次 fsync 承載較少 redo writes（更頻繁同步）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -20240,7 +20279,7 @@
               "refId": "A"
             }
           ],
-          "title": "Redo Writes per Fsync",
+          "title": "MySQL Redo Writes per Fsync - Trend",
           "type": "timeseries"
         },
         {
@@ -20248,7 +20287,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "行操作吞吐（整體壓力指標）；用於判斷 DB 正在「做多少事」，並搭配 CPU/IO 交叉分析。",
+          "description": "優先級：P1\n用途：行操作吞吐（整體壓力指標）\n判讀：用於判斷 DB 正在「做多少事」，並搭配 CPU/IO 交叉分析",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -20338,7 +20377,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Row Ops Rate",
+          "title": "MySQL InnoDB Row Ops Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -20346,7 +20385,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "聚焦寫入壓力（insert+update+delete）；常用於評估 redo/binlog/replication 壓力。",
+          "description": "優先級：P0\n用途：聚焦寫入壓力（insert+update+delete）\n判讀：常用於評估 redo/binlog/replication 壓力",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -20436,7 +20475,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Row Writes Rate",
+          "title": "MySQL InnoDB Row Writes Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -20444,7 +20483,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "區間內處理量（非速率）；適合做「TopN/尖峰區間」回放。",
+          "description": "優先級：P2\n用途：區間內處理量（非速率）\n判讀：適合做「TopN/尖峰區間」回放",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -20534,7 +20573,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Row Ops (Increase over 5m)",
+          "title": "MySQL InnoDB Row Ops - Increase over 5m",
           "type": "timeseries"
         },
         {
@@ -20542,7 +20581,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "死鎖發生頻率；用於告警與回溯（多由索引/交易範圍/鎖順序造成）。",
+          "description": "優先級：P1\n用途：死鎖發生頻率\n判讀：用於告警與回溯（多由索引/交易範圍/鎖順序造成）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -20632,7 +20671,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Deadlocks Rate",
+          "title": "MySQL InnoDB Deadlocks Rate - Trend",
           "type": "timeseries"
         },
         {
@@ -20640,7 +20679,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "5 分鐘內死鎖總數；直覺、適合門檻告警（例如 > 0 或 > 3）。",
+          "description": "優先級：P1\n用途：5 分鐘內死鎖總數\n判讀：直覺、適合門檻告警（例如 > 0 或 > 3）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -20730,7 +20769,7 @@
               "refId": "A"
             }
           ],
-          "title": "InnoDB Deadlocks (5m)",
+          "title": "MySQL InnoDB Deadlocks - 5m",
           "type": "timeseries"
         },
         {
@@ -20738,7 +20777,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "目前活躍交易數；上升代表併發/長交易增加，常與 lock wait、history length、undo 壓力相關。",
+          "description": "優先級：P1\n用途：目前活躍交易數\n判讀：上升代表併發/長交易增加，常與 lock wait、history length、undo 壓力相關",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -20828,7 +20867,7 @@
               "refId": "A"
             }
           ],
-          "title": "Active Transactions",
+          "title": "MySQL Active Transactions - Trend",
           "type": "timeseries"
         },
         {
@@ -20836,7 +20875,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "5 分鐘內尖峰；用於壓力峰值回放與容量評估。",
+          "description": "優先級：P2\n用途：5 分鐘內尖峰\n判讀：用於壓力峰值回放與容量評估",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -20926,7 +20965,7 @@
               "refId": "A"
             }
           ],
-          "title": "Active Transactions Peak (5m)",
+          "title": "MySQL Active Transactions Peak - 5m",
           "type": "timeseries"
         },
         {
@@ -20934,7 +20973,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "平滑後趨勢；適合看是否「持續偏高」而非瞬間尖峰。",
+          "description": "優先級：P2\n用途：平滑後趨勢\n判讀：適合看是否「持續偏高」而非瞬間尖峰",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -21024,7 +21063,7 @@
               "refId": "A"
             }
           ],
-          "title": "Active Transactions Avg (1h)",
+          "title": "MySQL Active Transactions Avg - 1h",
           "type": "timeseries"
         },
         {
@@ -21032,7 +21071,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "Replica 落後 Master 的時間；反映 RPO 風險與複寫壓力。",
+          "description": "優先級：P0\n用途：Replica 落後 Master 的時間\n判讀：反映 RPO 風險與複寫壓力\n風險：若持續惡化可能影響可用性或效能。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -21122,7 +21161,7 @@
               "refId": "A"
             }
           ],
-          "title": "Replication Lag (Seconds Behind Master)",
+          "title": "MySQL Replication Lag (Seconds Behind Master) - Trend",
           "type": "timeseries"
         },
         {
@@ -21130,7 +21169,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "短時間尖峰延遲；常用於找突刺（IO 抖動、DDL、熱點寫入）。",
+          "description": "優先級：P0\n用途：短時間尖峰延遲\n判讀：常用於找突刺（IO 抖動、DDL、熱點寫入）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -21220,7 +21259,7 @@
               "refId": "A"
             }
           ],
-          "title": "Replication Lag Peak (5m)",
+          "title": "MySQL Replication Lag Peak - 5m",
           "type": "timeseries"
         },
         {
@@ -21228,7 +21267,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "長期延遲趨勢，排除瞬間噪音。",
+          "description": "優先級：P0\n用途：長期延遲趨勢，排除瞬間噪音\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -21318,7 +21357,7 @@
               "refId": "A"
             }
           ],
-          "title": "Replication Lag Avg (1h)",
+          "title": "MySQL Replication Lag Avg - 1h",
           "type": "timeseries"
         },
         {
@@ -21326,7 +21365,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "此節點觀測到的叢集是否在 Primary Component；0 常見於分區/分裂腦/仲裁不足。",
+          "description": "優先級：P0\n用途：此節點觀測到的叢集是否在 Primary Component\n判讀：0 常見於分區/分裂腦/仲裁不足",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -21413,7 +21452,7 @@
               "refId": "A"
             }
           ],
-          "title": "WSREP Cluster Status (Primary=1)",
+          "title": "MySQL WSREP Cluster Status - Primary=1",
           "type": "timeseries"
         },
         {
@@ -21421,7 +21460,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "此節點觀測到的叢集是否在 Primary Component；0 常見於分區/分裂腦/仲裁不足。",
+          "description": "優先級：P0\n用途：此節點觀測到的叢集是否在 Primary Component\n判讀：0 常見於分區/分裂腦/仲裁不足",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -21508,7 +21547,7 @@
               "refId": "A"
             }
           ],
-          "title": "WSREP Cluster Status (Primary=1)",
+          "title": "MySQL WSREP Cluster Status - Primary=1",
           "type": "timeseries"
         },
         {
@@ -21516,7 +21555,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "各 DB 目前總大小（table 合計）；用於容量盤點與 budget/磁碟規劃。",
+          "description": "優先級：P2\n用途：各 DB 目前總大小（table 合計）\n判讀：用於容量盤點與 budget/磁碟規劃",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -21606,7 +21645,7 @@
               "refId": "A"
             }
           ],
-          "title": "Database Size Max  TopN (data_length + index_length)",
+          "title": "MySQL Database Size Max (data_length + index_length) - Top N",
           "type": "timeseries"
         },
         {
@@ -21614,7 +21653,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "各 DB row 數（趨勢用）；搭配 size 可推估平均 row size 是否異常飆大。",
+          "description": "優先級：P2\n用途：各 DB row 數（趨勢用）\n判讀：搭配 size 可推估平均 row size 是否異常飆大",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -21704,7 +21743,7 @@
               "refId": "A"
             }
           ],
-          "title": "Database Row Count",
+          "title": "MySQL Database Row Count - Trend",
           "type": "timeseries"
         },
         {
@@ -21712,7 +21751,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每張表每秒被讀取的 row 數（讀取熱點指標）。",
+          "description": "優先級：P2\n用途：每張表每秒被讀取的 row 數（讀取熱點指標）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -21780,7 +21819,7 @@
               "refId": "A"
             }
           ],
-          "title": "Table Rows Read Rate",
+          "title": "MySQL Table Rows Read Rate - Trend",
           "transformations": [
             {
               "id": "organize",
@@ -21801,7 +21840,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "過去 5 分鐘內每表被讀取的 row 數（事件回放/報表）。",
+          "description": "優先級：P2\n用途：過去 5 分鐘內每表被讀取的 row 數（事件回放/報表）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -21869,7 +21908,7 @@
               "refId": "A"
             }
           ],
-          "title": "Table Rows Read (5m)",
+          "title": "MySQL Table Rows Read - 5m",
           "transformations": [
             {
               "id": "organize",
@@ -21890,7 +21929,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每張表每秒被變更的 row 數（Insert/Update/Delete 的合成 proxy）。",
+          "description": "優先級：P0\n用途：每張表每秒被變更的 row 數（Insert/Update/Delete 的合成 proxy）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -21958,7 +21997,7 @@
               "refId": "A"
             }
           ],
-          "title": "Table Rows Changed Rate",
+          "title": "MySQL Table Rows Changed Rate - Trend",
           "transformations": [
             {
               "id": "organize",
@@ -21979,7 +22018,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "過去 5 分鐘內每表被讀取的 row 數（事件回放/報表）。",
+          "description": "優先級：P2\n用途：過去 5 分鐘內每表被讀取的 row 數（事件回放/報表）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -22047,7 +22086,7 @@
               "refId": "A"
             }
           ],
-          "title": "Table Rows Read (5m)",
+          "title": "MySQL Table Rows Read - 5m",
           "transformations": [
             {
               "id": "organize",
@@ -22064,7 +22103,7 @@
           "type": "table"
         }
       ],
-      "title": "MySQL",
+      "title": "MySQL Overview - Section",
       "type": "row"
     },
     {
@@ -22082,7 +22121,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "InnoDB 順序讀取 row 的次數；高值通常代表大量掃描（缺索引/不走索引/選擇性差）。",
+          "description": "優先級：P2\n用途：InnoDB 順序讀取 row 的次數\n判讀：高值通常代表大量掃描（缺索引/不走索引/選擇性差）",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -22172,7 +22211,7 @@
               "refId": "A"
             }
           ],
-          "title": "Full Table Scan Rate (Handler_read_rnd_next)",
+          "title": "MySQL Full Table Scan Rate (Handler_read_rnd_next) - Trend",
           "type": "timeseries"
         },
         {
@@ -22180,7 +22219,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "5 分鐘內掃描事件量（告警/事件回放）。",
+          "description": "優先級：P2\n用途：5 分鐘內掃描事件量（告警/事件回放）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -22270,7 +22309,7 @@
               "refId": "A"
             }
           ],
-          "title": "Full Table Scan (5m)",
+          "title": "MySQL Full Table Scan - 5m",
           "type": "timeseries"
         },
         {
@@ -22278,7 +22317,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "寫入變更帶來的索引維護成本 proxy（越高代表寫入索引更新負擔越重）。",
+          "description": "優先級：P2\n用途：寫入變更帶來的索引維護成本 proxy（越高代表寫入索引更新負擔越重）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -22368,7 +22407,7 @@
               "refId": "A"
             }
           ],
-          "title": "Index Maintenance Cost Rate (rows_changed × indexes)",
+          "title": "MySQL Index Maintenance Cost Rate (rows_changed × indexes) - Trend",
           "type": "timeseries"
         },
         {
@@ -22376,7 +22415,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
-          "description": "每變更 1 row，平均需維護多少索引（越高＝索引冗餘/更新熱點欄位落在多索引）。",
+          "description": "優先級：P2\n用途：每變更 1 row，平均需維護多少索引（越高＝索引冗餘/更新熱點欄位落在多索引）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -22466,11 +22505,11 @@
               "refId": "A"
             }
           ],
-          "title": "Indexes Touched per Row Changed",
+          "title": "MySQL Indexes Touched per Row Changed - Trend",
           "type": "timeseries"
         }
       ],
-      "title": "MySQL #2",
+      "title": "MySQL Detail - Section",
       "type": "row"
     },
     {
@@ -22478,7 +22517,7 @@
         "type": "prometheus",
         "uid": "dfapnaswd3vnke"
       },
-      "description": "每秒從儲存引擎讀取的 row 數（讀取工作量 proxy；高值常伴隨掃描/Join/回表放大）。",
+      "description": "優先級：P2\n用途：每秒從儲存引擎讀取的 row 數（讀取工作量 proxy\n判讀：高值常伴隨掃描/Join/回表放大）",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -22568,7 +22607,7 @@
           "refId": "A"
         }
       ],
-      "title": "Rows Read Rate",
+      "title": "MySQL Rows Read Rate - Trend",
       "type": "timeseries"
     },
     {
@@ -22576,7 +22615,7 @@
         "type": "prometheus",
         "uid": "dfapnaswd3vnke"
       },
-      "description": "過去 5 分鐘讀取的 row 總量（事件回放/報表）。",
+      "description": "優先級：P2\n用途：過去 5 分鐘讀取的 row 總量（事件回放/報表）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -22666,7 +22705,7 @@
           "refId": "A"
         }
       ],
-      "title": "Rows Read (5m)",
+      "title": "MySQL Rows Read - 5m",
       "type": "timeseries"
     },
     {
@@ -22674,7 +22713,7 @@
         "type": "prometheus",
         "uid": "dfapnaswd3vnke"
       },
-      "description": "每秒送到 client 的 row 數（結果集大小 proxy；高值常見於缺分頁、查太多欄位或回傳大量明細）。",
+      "description": "優先級：P2\n用途：每秒送到 client 的 row 數（結果集大小 proxy\n判讀：高值常見於缺分頁、查太多欄位或回傳大量明細）",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -22764,7 +22803,7 @@
           "refId": "A"
         }
       ],
-      "title": "Rows Sent Rate",
+      "title": "MySQL Rows Sent Rate - Trend",
       "type": "timeseries"
     },
     {
@@ -22772,7 +22811,7 @@
         "type": "prometheus",
         "uid": "dfapnaswd3vnke"
       },
-      "description": "過去 5 分鐘送出的 row 總量（事件回放/報表）。",
+      "description": "優先級：P2\n用途：過去 5 分鐘送出的 row 總量（事件回放/報表）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -22862,7 +22901,7 @@
           "refId": "A"
         }
       ],
-      "title": "Rows Sent (5m)",
+      "title": "MySQL Rows Sent - 5m",
       "type": "timeseries"
     },
     {
@@ -22870,7 +22909,7 @@
         "type": "prometheus",
         "uid": "dfapnaswd3vnke"
       },
-      "description": "讀取 row 與送出 row 的比值；越高代表「讀很多、回很少」（過濾效率差、Join/掃描放大、索引不佳）。",
+      "description": "優先級：P2\n用途：讀取 row 與送出 row 的比值\n判讀：越高代表「讀很多、回很少」（過濾效率差、Join/掃描放大、索引不佳）",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -22960,7 +22999,7 @@
           "refId": "A"
         }
       ],
-      "title": "Rows Read / Rows Sent Ratio",
+      "title": "MySQL Rows Read / Rows Sent Ratio - Trend",
       "type": "timeseries"
     },
     {
@@ -22968,7 +23007,7 @@
         "type": "prometheus",
         "uid": "dfapnaswd3vnke"
       },
-      "description": "每秒從臨時表讀取的 row 數（排序/Group By/Join 造成 tmp table 的強度 proxy；高值代表記憶體/磁碟臨時表壓力可能上升）。",
+      "description": "優先級：P0\n用途：每秒從臨時表讀取的 row 數（排序/Group By/Join 造成 tmp table 的強度 proxy\n判讀：高值代表記憶體/磁碟臨時表壓力可能上升）",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -23058,7 +23097,7 @@
           "refId": "A"
         }
       ],
-      "title": "Temporary Rows Read Rate",
+      "title": "MySQL Temporary Rows Read Rate - Trend",
       "type": "timeseries"
     },
     {
@@ -23066,7 +23105,7 @@
         "type": "prometheus",
         "uid": "dfapnaswd3vnke"
       },
-      "description": "過去 5 分鐘臨時表讀取總量（事件回放/報表）。",
+      "description": "優先級：P2\n用途：過去 5 分鐘臨時表讀取總量（事件回放/報表）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -23156,7 +23195,7 @@
           "refId": "A"
         }
       ],
-      "title": "Temporary Rows Read (5m)",
+      "title": "MySQL Temporary Rows Read - 5m",
       "type": "timeseries"
     },
     {
@@ -23164,7 +23203,7 @@
         "type": "prometheus",
         "uid": "dfapnaswd3vnke"
       },
-      "description": "臨時表讀取佔整體讀取比例；用於判斷工作負載是否大量依賴 tmp table。",
+      "description": "優先級：P2\n用途：臨時表讀取佔整體讀取比例\n判讀：用於判斷工作負載是否大量依賴 tmp table",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -23254,7 +23293,7 @@
           "refId": "A"
         }
       ],
-      "title": "Temporary Rows Read Share",
+      "title": "MySQL Temporary Rows Read Share - Trend",
       "type": "timeseries"
     }
   ],
