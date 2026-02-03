@@ -36,6 +36,7 @@
             "type": "datasource",
             "uid": "-- Mixed --"
           },
+          "description": "優先級：P0\n用途：觀察Global Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -57,7 +58,7 @@
             "h": 3,
             "w": 2,
             "x": 0,
-            "y": 3
+            "y": 1
           },
           "id": 1,
           "options": {
@@ -92,14 +93,14 @@
             }
           ],
           "title": "Global Up Instances Count - Trend",
-          "type": "stat",
-          "description": "優先級：P0\n用途：觀察Global Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "stat"
         },
         {
           "datasource": {
             "type": "datasource",
             "uid": "-- Mixed --"
           },
+          "description": "優先級：P0\n用途：觀察MySQL Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -121,7 +122,7 @@
             "h": 3,
             "w": 2,
             "x": 2,
-            "y": 3
+            "y": 1
           },
           "id": 3,
           "options": {
@@ -156,14 +157,14 @@
             }
           ],
           "title": "MySQL Up Instances Count - Trend",
-          "type": "stat",
-          "description": "優先級：P0\n用途：觀察MySQL Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "stat"
         },
         {
           "datasource": {
             "type": "datasource",
             "uid": "-- Mixed --"
           },
+          "description": "優先級：P0\n用途：觀察ProxySQL Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -185,7 +186,7 @@
             "h": 3,
             "w": 2,
             "x": 4,
-            "y": 3
+            "y": 1
           },
           "id": 8,
           "options": {
@@ -220,14 +221,14 @@
             }
           ],
           "title": "ProxySQL Up Instances Count - Trend",
-          "type": "stat",
-          "description": "優先級：P0\n用途：觀察ProxySQL Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "stat"
         },
         {
           "datasource": {
             "type": "datasource",
             "uid": "-- Mixed --"
           },
+          "description": "優先級：P0\n用途：觀察Redis Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -249,7 +250,7 @@
             "h": 3,
             "w": 2,
             "x": 6,
-            "y": 3
+            "y": 1
           },
           "id": 6,
           "options": {
@@ -284,14 +285,14 @@
             }
           ],
           "title": "Redis Up Instances Count - Trend",
-          "type": "stat",
-          "description": "優先級：P0\n用途：觀察Redis Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "stat"
         },
         {
           "datasource": {
             "type": "datasource",
             "uid": "-- Mixed --"
           },
+          "description": "優先級：P0\n用途：觀察MongoDB Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -313,7 +314,7 @@
             "h": 3,
             "w": 2,
             "x": 8,
-            "y": 3
+            "y": 1
           },
           "id": 10,
           "options": {
@@ -348,14 +349,14 @@
             }
           ],
           "title": "MongoDB Up Instances Count - Trend",
-          "type": "stat",
-          "description": "優先級：P0\n用途：觀察MongoDB Up Instances Count - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "stat"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P0\n用途：觀察Host Uptime - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -416,7 +417,7 @@
             "h": 7,
             "w": 14,
             "x": 10,
-            "y": 3
+            "y": 1
           },
           "id": 28,
           "options": {
@@ -451,14 +452,14 @@
             }
           ],
           "title": "Host Uptime - Trend",
-          "type": "timeseries",
-          "description": "優先級：P0\n用途：觀察Host Uptime - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Load AVG Load15 - Top 10 (15 分鐘內上升最快)的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -517,7 +518,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 938
+            "y": 8
           },
           "id": 39,
           "options": {
@@ -544,14 +545,14 @@
             }
           ],
           "title": "Load AVG Load15 - Top 10 (15 分鐘內上升最快)",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Load AVG Load15 - Top 10 (15 分鐘內上升最快)的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Load AVG Load15 - Top 10 (15 分鐘內下降最快)的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -610,7 +611,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 938
+            "y": 8
           },
           "id": 40,
           "options": {
@@ -637,14 +638,14 @@
             }
           ],
           "title": "Load AVG Load15 - Top 10 (15 分鐘內下降最快)",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Load AVG Load15 - Top 10 (15 分鐘內下降最快)的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Load AVG Host Load1 - Top 30的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -704,7 +705,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 946
+            "y": 16
           },
           "id": 33,
           "options": {
@@ -735,14 +736,14 @@
             }
           ],
           "title": "Load AVG Host Load1 - Top 30",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Load AVG Host Load1 - Top 30的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Load AVG Host Load5 - Top 30的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -802,7 +803,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 946
+            "y": 16
           },
           "id": 34,
           "options": {
@@ -833,14 +834,14 @@
             }
           ],
           "title": "Load AVG Host Load5 - Top 30",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Load AVG Host Load5 - Top 30的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Load AVG Host Load15 - Top 30的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -900,7 +901,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 946
+            "y": 16
           },
           "id": 35,
           "options": {
@@ -931,14 +932,14 @@
             }
           ],
           "title": "Load AVG Host Load15 - Top 30",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Load AVG Host Load15 - Top 30的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察CPU mode: system 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -964,7 +965,7 @@
             "h": 5,
             "w": 8,
             "x": 0,
-            "y": 955
+            "y": 25
           },
           "id": 45,
           "options": {
@@ -1004,14 +1005,14 @@
             }
           ],
           "title": "CPU mode: system 壓力 - Top 10",
-          "type": "bargauge",
-          "description": "優先級：P1\n用途：觀察CPU mode: system 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "bargauge"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察CPU mode: user 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1037,7 +1038,7 @@
             "h": 5,
             "w": 8,
             "x": 8,
-            "y": 955
+            "y": 25
           },
           "id": 48,
           "options": {
@@ -1077,14 +1078,14 @@
             }
           ],
           "title": "CPU mode: user 壓力 - Top 10",
-          "type": "bargauge",
-          "description": "優先級：P1\n用途：觀察CPU mode: user 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "bargauge"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察CPU mode: iowait 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1110,7 +1111,7 @@
             "h": 5,
             "w": 8,
             "x": 16,
-            "y": 955
+            "y": 25
           },
           "id": 47,
           "options": {
@@ -1150,14 +1151,14 @@
             }
           ],
           "title": "CPU mode: iowait 壓力 - Top 10",
-          "type": "bargauge",
-          "description": "優先級：P1\n用途：觀察CPU mode: iowait 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "bargauge"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察CPU Context Switch 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1183,7 +1184,7 @@
             "h": 6,
             "w": 24,
             "x": 0,
-            "y": 960
+            "y": 30
           },
           "id": 43,
           "options": {
@@ -1223,14 +1224,14 @@
             }
           ],
           "title": "CPU Context Switch 壓力 - Top 10",
-          "type": "bargauge",
-          "description": "優先級：P1\n用途：觀察CPU Context Switch 壓力 - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "bargauge"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察Host Memory Usage - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1291,7 +1292,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 966
+            "y": 36
           },
           "id": 12,
           "options": {
@@ -1326,14 +1327,14 @@
             }
           ],
           "title": "Host Memory Usage - Trend",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察Host Memory Usage - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察Host SWAP Used > 0 - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1394,7 +1395,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 966
+            "y": 36
           },
           "id": 30,
           "options": {
@@ -1429,14 +1430,14 @@
             }
           ],
           "title": "Host SWAP Used > 0 - Trend",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察Host SWAP Used > 0 - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察Host MemAvailable Trend - 1h/24h的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1497,7 +1498,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 966
+            "y": 36
           },
           "id": 32,
           "options": {
@@ -1531,14 +1532,14 @@
             }
           ],
           "title": "Host MemAvailable Trend - 1h/24h",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察Host MemAvailable Trend - 1h/24h的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察Mountpoint Usage (%) - Top N的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "mappings": [],
@@ -1562,7 +1563,7 @@
             "h": 11,
             "w": 8,
             "x": 0,
-            "y": 974
+            "y": 44
           },
           "id": 51,
           "options": {
@@ -1595,14 +1596,14 @@
             }
           ],
           "title": "Mountpoint Usage (%) - Top N",
-          "type": "stat",
-          "description": "優先級：P2\n用途：觀察Mountpoint Usage (%) - Top N的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "stat"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察Mountpoint Capacity (Used) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1658,7 +1659,7 @@
             "h": 11,
             "w": 8,
             "x": 8,
-            "y": 974
+            "y": 44
           },
           "id": 62,
           "options": {
@@ -1692,14 +1693,14 @@
             }
           ],
           "title": "Mountpoint Capacity (Used) - Trend",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察Mountpoint Capacity (Used) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察Mountpoint Capacity (Free) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1759,7 +1760,7 @@
             "h": 11,
             "w": 8,
             "x": 16,
-            "y": 974
+            "y": 44
           },
           "id": 63,
           "options": {
@@ -1793,14 +1794,14 @@
             }
           ],
           "title": "Mountpoint Capacity (Free) - Trend",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察Mountpoint Capacity (Free) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Disk Read IO Latency (ms) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1856,7 +1857,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 985
+            "y": 55
           },
           "id": 61,
           "options": {
@@ -1887,14 +1888,14 @@
             }
           ],
           "title": "Disk Read IO Latency (ms) - Top 10",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Disk Read IO Latency (ms) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Disk Write IO Latency (ms) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1950,7 +1951,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 985
+            "y": 55
           },
           "id": 60,
           "options": {
@@ -1981,14 +1982,14 @@
             }
           ],
           "title": "Disk Write IO Latency (ms) - Top 10",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Disk Write IO Latency (ms) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Disk Read IOPS (ops/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2044,7 +2045,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 993
+            "y": 63
           },
           "id": 59,
           "options": {
@@ -2075,14 +2076,14 @@
             }
           ],
           "title": "Disk Read IOPS (ops/s) - Top 10",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Disk Read IOPS (ops/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Disk Write IOPS (ops/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2138,7 +2139,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 993
+            "y": 63
           },
           "id": 58,
           "options": {
@@ -2169,14 +2170,14 @@
             }
           ],
           "title": "Disk Write IOPS (ops/s) - Top 10",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Disk Write IOPS (ops/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察Disk Read Bandwidth (B/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2232,7 +2233,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1001
+            "y": 71
           },
           "id": 56,
           "options": {
@@ -2263,14 +2264,14 @@
             }
           ],
           "title": "Disk Read Bandwidth (B/s) - Top 10",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察Disk Read Bandwidth (B/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察Disk Write Bandwidth (B/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2326,7 +2327,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1001
+            "y": 71
           },
           "id": 57,
           "options": {
@@ -2357,14 +2358,14 @@
             }
           ],
           "title": "Disk Write Bandwidth (B/s) - Top 10",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察Disk Write Bandwidth (B/s) - Top 10的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察Disk IO Size for Write - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2420,7 +2421,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1009
+            "y": 79
           },
           "id": 54,
           "options": {
@@ -2449,14 +2450,14 @@
             }
           ],
           "title": "Disk IO Size for Write - Trend",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察Disk IO Size for Write - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察Disk IO Size for Read - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2512,7 +2513,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1009
+            "y": 79
           },
           "id": 50,
           "options": {
@@ -2541,14 +2542,14 @@
             }
           ],
           "title": "Disk IO Size for Read - Trend",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察Disk IO Size for Read - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Disk Util / Busy - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2608,7 +2609,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 1017
+            "y": 87
           },
           "id": 49,
           "options": {
@@ -2642,14 +2643,14 @@
             }
           ],
           "title": "Disk Util / Busy - Trend",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Disk Util / Busy - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Disk Read / Busy - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2709,7 +2710,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 1017
+            "y": 87
           },
           "id": 52,
           "options": {
@@ -2743,14 +2744,14 @@
             }
           ],
           "title": "Disk Read / Busy - Trend",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Disk Read / Busy - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察Disk Write / Busy - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2810,7 +2811,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 1017
+            "y": 87
           },
           "id": 53,
           "options": {
@@ -2844,8 +2845,7 @@
             }
           ],
           "title": "Disk Write / Busy - Trend",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察Disk Write / Busy - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         }
       ],
       "title": "Global Overview - Section",
@@ -2900,7 +2900,7 @@
             "h": 5,
             "w": 24,
             "x": 0,
-            "y": 2
+            "y": 1370
           },
           "id": 158,
           "options": {
@@ -3018,7 +3018,7 @@
             "h": 8,
             "w": 6,
             "x": 0,
-            "y": 1695
+            "y": 3409
           },
           "id": 161,
           "options": {
@@ -3129,7 +3129,7 @@
             "h": 8,
             "w": 6,
             "x": 6,
-            "y": 1695
+            "y": 3409
           },
           "id": 159,
           "options": {
@@ -3227,7 +3227,7 @@
             "h": 8,
             "w": 7,
             "x": 12,
-            "y": 1695
+            "y": 3409
           },
           "id": 160,
           "options": {
@@ -3325,7 +3325,7 @@
             "h": 8,
             "w": 5,
             "x": 19,
-            "y": 1695
+            "y": 3409
           },
           "id": 166,
           "options": {
@@ -3390,7 +3390,7 @@
             "h": 8,
             "w": 4,
             "x": 0,
-            "y": 1703
+            "y": 3417
           },
           "id": 165,
           "options": {
@@ -3517,7 +3517,7 @@
             "h": 8,
             "w": 7,
             "x": 4,
-            "y": 1703
+            "y": 3417
           },
           "id": 162,
           "options": {
@@ -3619,7 +3619,7 @@
             "h": 8,
             "w": 7,
             "x": 11,
-            "y": 1703
+            "y": 3417
           },
           "id": 163,
           "options": {
@@ -3721,7 +3721,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 1703
+            "y": 3417
           },
           "id": 164,
           "options": {
@@ -3823,7 +3823,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 1711
+            "y": 3425
           },
           "id": 167,
           "options": {
@@ -3921,7 +3921,7 @@
             "h": 8,
             "w": 8,
             "x": 9,
-            "y": 1711
+            "y": 3425
           },
           "id": 168,
           "options": {
@@ -4019,7 +4019,7 @@
             "h": 8,
             "w": 7,
             "x": 17,
-            "y": 1711
+            "y": 3425
           },
           "id": 169,
           "options": {
@@ -4117,7 +4117,7 @@
             "h": 7,
             "w": 9,
             "x": 0,
-            "y": 1719
+            "y": 3433
           },
           "id": 170,
           "options": {
@@ -4215,7 +4215,7 @@
             "h": 7,
             "w": 8,
             "x": 9,
-            "y": 1719
+            "y": 3433
           },
           "id": 173,
           "options": {
@@ -4313,7 +4313,7 @@
             "h": 7,
             "w": 7,
             "x": 17,
-            "y": 1719
+            "y": 3433
           },
           "id": 171,
           "options": {
@@ -4411,7 +4411,7 @@
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 1726
+            "y": 3440
           },
           "id": 174,
           "options": {
@@ -4484,7 +4484,7 @@
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 1726
+            "y": 3440
           },
           "id": 172,
           "options": {
@@ -4600,7 +4600,7 @@
             "h": 7,
             "w": 7,
             "x": 0,
-            "y": 1733
+            "y": 3447
           },
           "id": 175,
           "options": {
@@ -4711,7 +4711,7 @@
             "h": 7,
             "w": 5,
             "x": 7,
-            "y": 1733
+            "y": 3447
           },
           "id": 176,
           "options": {
@@ -4809,7 +4809,7 @@
             "h": 7,
             "w": 5,
             "x": 12,
-            "y": 1733
+            "y": 3447
           },
           "id": 177,
           "options": {
@@ -4907,7 +4907,7 @@
             "h": 7,
             "w": 7,
             "x": 17,
-            "y": 1733
+            "y": 3447
           },
           "id": 178,
           "options": {
@@ -5005,7 +5005,7 @@
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 1740
+            "y": 3454
           },
           "id": 179,
           "options": {
@@ -5101,7 +5101,7 @@
             "h": 7,
             "w": 8,
             "x": 8,
-            "y": 1740
+            "y": 3454
           },
           "id": 180,
           "options": {
@@ -5199,7 +5199,7 @@
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 1740
+            "y": 3454
           },
           "id": 181,
           "options": {
@@ -5294,7 +5294,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 1747
+            "y": 3461
           },
           "id": 182,
           "options": {
@@ -5392,7 +5392,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 1747
+            "y": 3461
           },
           "id": 183,
           "options": {
@@ -5490,7 +5490,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 1747
+            "y": 3461
           },
           "id": 184,
           "options": {
@@ -5587,7 +5587,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 1755
+            "y": 3469
           },
           "id": 185,
           "options": {
@@ -5684,7 +5684,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 1755
+            "y": 3469
           },
           "id": 186,
           "options": {
@@ -5782,7 +5782,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 1755
+            "y": 3469
           },
           "id": 187,
           "options": {
@@ -5879,7 +5879,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 1763
+            "y": 3477
           },
           "id": 188,
           "options": {
@@ -5976,7 +5976,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 1763
+            "y": 3477
           },
           "id": 189,
           "options": {
@@ -6074,7 +6074,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 1763
+            "y": 3477
           },
           "id": 190,
           "options": {
@@ -6185,7 +6185,7 @@
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 1565
+            "y": 3279
           },
           "id": 192,
           "options": {
@@ -6221,6 +6221,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P0\n用途：觀察MongoDB Uptime - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -6281,7 +6282,7 @@
             "h": 7,
             "w": 8,
             "x": 8,
-            "y": 1565
+            "y": 3279
           },
           "id": 20,
           "options": {
@@ -6316,8 +6317,7 @@
             }
           ],
           "title": "MongoDB Uptime - Trend",
-          "type": "timeseries",
-          "description": "優先級：P0\n用途：觀察MongoDB Uptime - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -6357,7 +6357,7 @@
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 1565
+            "y": 3279
           },
           "id": 193,
           "options": {
@@ -6469,7 +6469,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 1572
+            "y": 3286
           },
           "id": 194,
           "options": {
@@ -6567,7 +6567,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 1572
+            "y": 3286
           },
           "id": 195,
           "options": {
@@ -6665,7 +6665,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 1572
+            "y": 3286
           },
           "id": 196,
           "options": {
@@ -6763,7 +6763,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1580
+            "y": 3294
           },
           "id": 197,
           "options": {
@@ -6861,7 +6861,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1580
+            "y": 3294
           },
           "id": 198,
           "options": {
@@ -6959,7 +6959,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 1588
+            "y": 3302
           },
           "id": 199,
           "options": {
@@ -7057,7 +7057,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 1588
+            "y": 3302
           },
           "id": 200,
           "options": {
@@ -7153,7 +7153,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 1588
+            "y": 3302
           },
           "id": 201,
           "options": {
@@ -7250,7 +7250,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 1596
+            "y": 3310
           },
           "id": 202,
           "options": {
@@ -7347,7 +7347,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 1596
+            "y": 3310
           },
           "id": 203,
           "options": {
@@ -7444,7 +7444,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 1596
+            "y": 3310
           },
           "id": 204,
           "options": {
@@ -7542,7 +7542,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1604
+            "y": 3318
           },
           "id": 205,
           "options": {
@@ -7638,7 +7638,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1604
+            "y": 3318
           },
           "id": 206,
           "options": {
@@ -7734,7 +7734,7 @@
             "h": 8,
             "w": 6,
             "x": 0,
-            "y": 1612
+            "y": 3326
           },
           "id": 207,
           "options": {
@@ -7830,7 +7830,7 @@
             "h": 8,
             "w": 6,
             "x": 6,
-            "y": 1612
+            "y": 3326
           },
           "id": 208,
           "options": {
@@ -7928,7 +7928,7 @@
             "h": 8,
             "w": 6,
             "x": 12,
-            "y": 1612
+            "y": 3326
           },
           "id": 209,
           "options": {
@@ -8026,7 +8026,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 1612
+            "y": 3326
           },
           "id": 210,
           "options": {
@@ -8124,7 +8124,7 @@
             "h": 8,
             "w": 6,
             "x": 0,
-            "y": 1620
+            "y": 3334
           },
           "id": 211,
           "options": {
@@ -8222,7 +8222,7 @@
             "h": 8,
             "w": 6,
             "x": 6,
-            "y": 1620
+            "y": 3334
           },
           "id": 212,
           "options": {
@@ -8320,7 +8320,7 @@
             "h": 8,
             "w": 6,
             "x": 12,
-            "y": 1620
+            "y": 3334
           },
           "id": 213,
           "options": {
@@ -8418,7 +8418,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 1620
+            "y": 3334
           },
           "id": 214,
           "options": {
@@ -8561,7 +8561,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1628
+            "y": 3342
           },
           "id": 215,
           "options": {
@@ -8708,7 +8708,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1628
+            "y": 3342
           },
           "id": 216,
           "options": {
@@ -8809,7 +8809,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1636
+            "y": 3350
           },
           "id": 218,
           "options": {
@@ -8956,7 +8956,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1636
+            "y": 3350
           },
           "id": 217,
           "options": {
@@ -9057,7 +9057,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1644
+            "y": 3358
           },
           "id": 219,
           "options": {
@@ -9155,7 +9155,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1644
+            "y": 3358
           },
           "id": 220,
           "options": {
@@ -9265,7 +9265,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1652
+            "y": 3366
           },
           "id": 221,
           "options": {
@@ -9363,7 +9363,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1652
+            "y": 3366
           },
           "id": 222,
           "options": {
@@ -9461,7 +9461,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1660
+            "y": 3374
           },
           "id": 223,
           "options": {
@@ -9559,7 +9559,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1660
+            "y": 3374
           },
           "id": 224,
           "options": {
@@ -9655,7 +9655,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1668
+            "y": 3382
           },
           "id": 225,
           "options": {
@@ -9753,7 +9753,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1668
+            "y": 3382
           },
           "id": 227,
           "options": {
@@ -9851,7 +9851,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1676
+            "y": 3390
           },
           "id": 226,
           "options": {
@@ -9949,7 +9949,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1676
+            "y": 3390
           },
           "id": 228,
           "options": {
@@ -10047,7 +10047,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1684
+            "y": 3398
           },
           "id": 229,
           "options": {
@@ -10145,7 +10145,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1684
+            "y": 3398
           },
           "id": 230,
           "options": {
@@ -10232,7 +10232,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 7456
+            "y": 9170
           },
           "id": 104,
           "options": {
@@ -10323,7 +10323,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 7456
+            "y": 9170
           },
           "id": 111,
           "options": {
@@ -10425,7 +10425,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 7456
+            "y": 9170
           },
           "id": 117,
           "options": {
@@ -10486,6 +10486,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P1\n用途：觀察ProxySQL Connection Pool Errors - 有錯誤狀態才顯示的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -10544,7 +10545,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 7464
+            "y": 9178
           },
           "id": 118,
           "options": {
@@ -10575,8 +10576,7 @@
             }
           ],
           "title": "ProxySQL Connection Pool Errors - 有錯誤狀態才顯示",
-          "type": "timeseries",
-          "description": "優先級：P1\n用途：觀察ProxySQL Connection Pool Errors - 有錯誤狀態才顯示的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -10643,7 +10643,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 7464
+            "y": 9178
           },
           "id": 110,
           "options": {
@@ -10740,7 +10740,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 7464
+            "y": 9178
           },
           "id": 116,
           "options": {
@@ -10838,7 +10838,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 7472
+            "y": 9186
           },
           "id": 112,
           "options": {
@@ -10936,7 +10936,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 7472
+            "y": 9186
           },
           "id": 113,
           "options": {
@@ -11047,7 +11047,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 7472
+            "y": 9186
           },
           "id": 114,
           "options": {
@@ -11126,7 +11126,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 7480
+            "y": 9194
           },
           "id": 105,
           "options": {
@@ -11224,7 +11224,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 7480
+            "y": 9194
           },
           "id": 109,
           "options": {
@@ -11323,7 +11323,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 7480
+            "y": 9194
           },
           "id": 108,
           "options": {
@@ -11361,6 +11361,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察ProxySQL Connection Pool – Used Connections - Avg的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -11419,7 +11420,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 7488
+            "y": 9202
           },
           "id": 106,
           "options": {
@@ -11450,8 +11451,7 @@
             }
           ],
           "title": "ProxySQL Connection Pool – Used Connections - Avg",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察ProxySQL Connection Pool – Used Connections - Avg的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -11517,7 +11517,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 7488
+            "y": 9202
           },
           "id": 107,
           "options": {
@@ -11615,7 +11615,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 7488
+            "y": 9202
           },
           "id": 115,
           "options": {
@@ -11712,7 +11712,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 7496
+            "y": 9210
           },
           "id": 119,
           "options": {
@@ -11809,7 +11809,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 7496
+            "y": 9210
           },
           "id": 120,
           "options": {
@@ -11906,7 +11906,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 7496
+            "y": 9210
           },
           "id": 121,
           "options": {
@@ -12003,7 +12003,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 7504
+            "y": 9218
           },
           "id": 122,
           "options": {
@@ -12101,7 +12101,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 7504
+            "y": 9218
           },
           "id": 123,
           "options": {
@@ -12199,7 +12199,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 7504
+            "y": 9218
           },
           "id": 124,
           "options": {
@@ -12297,7 +12297,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 7512
+            "y": 9226
           },
           "id": 125,
           "options": {
@@ -12395,7 +12395,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 7512
+            "y": 9226
           },
           "id": 126,
           "options": {
@@ -12493,7 +12493,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 7512
+            "y": 9226
           },
           "id": 127,
           "options": {
@@ -12591,7 +12591,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7520
+            "y": 9234
           },
           "id": 128,
           "options": {
@@ -12689,7 +12689,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7520
+            "y": 9234
           },
           "id": 129,
           "options": {
@@ -12787,7 +12787,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7528
+            "y": 9242
           },
           "id": 130,
           "options": {
@@ -12885,7 +12885,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7528
+            "y": 9242
           },
           "id": 131,
           "options": {
@@ -12983,7 +12983,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7536
+            "y": 9250
           },
           "id": 132,
           "options": {
@@ -13081,7 +13081,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7536
+            "y": 9250
           },
           "id": 133,
           "options": {
@@ -13179,7 +13179,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7544
+            "y": 9258
           },
           "id": 134,
           "options": {
@@ -13277,7 +13277,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7544
+            "y": 9258
           },
           "id": 135,
           "options": {
@@ -13375,7 +13375,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7552
+            "y": 9266
           },
           "id": 136,
           "options": {
@@ -13473,7 +13473,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7552
+            "y": 9266
           },
           "id": 138,
           "options": {
@@ -13571,7 +13571,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7560
+            "y": 9274
           },
           "id": 137,
           "options": {
@@ -13669,7 +13669,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7560
+            "y": 9274
           },
           "id": 139,
           "options": {
@@ -13767,7 +13767,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7568
+            "y": 9282
           },
           "id": 140,
           "options": {
@@ -13865,7 +13865,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7568
+            "y": 9282
           },
           "id": 141,
           "options": {
@@ -13963,7 +13963,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7576
+            "y": 9290
           },
           "id": 142,
           "options": {
@@ -14061,7 +14061,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7576
+            "y": 9290
           },
           "id": 143,
           "options": {
@@ -14159,7 +14159,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7584
+            "y": 9298
           },
           "id": 144,
           "options": {
@@ -14257,7 +14257,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7584
+            "y": 9298
           },
           "id": 145,
           "options": {
@@ -14355,7 +14355,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7592
+            "y": 9306
           },
           "id": 147,
           "options": {
@@ -14453,7 +14453,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7592
+            "y": 9306
           },
           "id": 146,
           "options": {
@@ -14551,7 +14551,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7600
+            "y": 9314
           },
           "id": 148,
           "options": {
@@ -14649,7 +14649,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7600
+            "y": 9314
           },
           "id": 149,
           "options": {
@@ -14747,7 +14747,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7608
+            "y": 9322
           },
           "id": 150,
           "options": {
@@ -14845,7 +14845,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7608
+            "y": 9322
           },
           "id": 156,
           "options": {
@@ -14943,7 +14943,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7616
+            "y": 9330
           },
           "id": 151,
           "options": {
@@ -15039,7 +15039,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7616
+            "y": 9330
           },
           "id": 152,
           "options": {
@@ -15135,7 +15135,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 7624
+            "y": 9338
           },
           "id": 155,
           "options": {
@@ -15233,7 +15233,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 7624
+            "y": 9338
           },
           "id": 154,
           "options": {
@@ -15345,7 +15345,7 @@
             "h": 12,
             "w": 7,
             "x": 0,
-            "y": 5
+            "y": 1373
           },
           "id": 66,
           "options": {
@@ -15414,7 +15414,7 @@
             "h": 12,
             "w": 10,
             "x": 7,
-            "y": 5
+            "y": 1373
           },
           "id": 231,
           "options": {
@@ -15516,7 +15516,7 @@
             "h": 12,
             "w": 7,
             "x": 17,
-            "y": 5
+            "y": 1373
           },
           "id": 232,
           "options": {
@@ -15647,7 +15647,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 17
+            "y": 1385
           },
           "id": 233,
           "options": {
@@ -15745,7 +15745,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 17
+            "y": 1385
           },
           "id": 234,
           "options": {
@@ -15843,7 +15843,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 25
+            "y": 1393
           },
           "id": 235,
           "options": {
@@ -15941,7 +15941,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 25
+            "y": 1393
           },
           "id": 236,
           "options": {
@@ -16039,7 +16039,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 33
+            "y": 1401
           },
           "id": 237,
           "options": {
@@ -16077,6 +16077,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察MySQL Read Ops/s - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -16136,7 +16137,7 @@
             "h": 10,
             "w": 8,
             "x": 0,
-            "y": 43
+            "y": 1411
           },
           "id": 238,
           "options": {
@@ -16167,14 +16168,14 @@
             }
           ],
           "title": "MySQL Read Ops/s - Trend",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察MySQL Read Ops/s - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察MySQL Write Ops/s - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -16234,7 +16235,7 @@
             "h": 10,
             "w": 9,
             "x": 8,
-            "y": 43
+            "y": 1411
           },
           "id": 239,
           "options": {
@@ -16265,14 +16266,14 @@
             }
           ],
           "title": "MySQL Write Ops/s - Trend",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察MySQL Write Ops/s - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察MySQL Transaction Ops/s (Commit+Rollback) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -16332,7 +16333,7 @@
             "h": 10,
             "w": 7,
             "x": 17,
-            "y": 43
+            "y": 1411
           },
           "id": 240,
           "options": {
@@ -16363,8 +16364,7 @@
             }
           ],
           "title": "MySQL Transaction Ops/s (Commit+Rollback) - Trend",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察MySQL Transaction Ops/s (Commit+Rollback) - Trend的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -16431,7 +16431,7 @@
             "h": 13,
             "w": 8,
             "x": 0,
-            "y": 53
+            "y": 1421
           },
           "id": 241,
           "options": {
@@ -16527,7 +16527,7 @@
             "h": 13,
             "w": 7,
             "x": 8,
-            "y": 53
+            "y": 1421
           },
           "id": 242,
           "options": {
@@ -16565,6 +16565,7 @@
             "type": "prometheus",
             "uid": "dfapnaswd3vnke"
           },
+          "description": "優先級：P2\n用途：觀察MySQL Throughput - Top 20的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -16624,7 +16625,7 @@
             "h": 13,
             "w": 9,
             "x": 15,
-            "y": 53
+            "y": 1421
           },
           "id": 243,
           "options": {
@@ -16655,8 +16656,7 @@
             }
           ],
           "title": "MySQL Throughput - Top 20",
-          "type": "timeseries",
-          "description": "優先級：P2\n用途：觀察MySQL Throughput - Top 20的變化。\n判讀：與歷史基準比對，異常偏高或偏低需追查。"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -16723,7 +16723,7 @@
             "h": 9,
             "w": 9,
             "x": 0,
-            "y": 66
+            "y": 1434
           },
           "id": 244,
           "options": {
@@ -16821,7 +16821,7 @@
             "h": 9,
             "w": 8,
             "x": 9,
-            "y": 66
+            "y": 1434
           },
           "id": 245,
           "options": {
@@ -16919,7 +16919,7 @@
             "h": 9,
             "w": 7,
             "x": 17,
-            "y": 66
+            "y": 1434
           },
           "id": 246,
           "options": {
@@ -17017,7 +17017,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 75
+            "y": 1443
           },
           "id": 247,
           "options": {
@@ -17115,7 +17115,7 @@
             "h": 8,
             "w": 8,
             "x": 9,
-            "y": 75
+            "y": 1443
           },
           "id": 248,
           "options": {
@@ -17213,7 +17213,7 @@
             "h": 11,
             "w": 6,
             "x": 17,
-            "y": 75
+            "y": 1443
           },
           "id": 257,
           "options": {
@@ -17311,7 +17311,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 83
+            "y": 1451
           },
           "id": 249,
           "options": {
@@ -17409,7 +17409,7 @@
             "h": 8,
             "w": 8,
             "x": 9,
-            "y": 83
+            "y": 1451
           },
           "id": 250,
           "options": {
@@ -17507,7 +17507,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 91
+            "y": 1459
           },
           "id": 251,
           "options": {
@@ -17605,7 +17605,7 @@
             "h": 8,
             "w": 11,
             "x": 9,
-            "y": 91
+            "y": 1459
           },
           "id": 252,
           "options": {
@@ -17703,7 +17703,7 @@
             "h": 11,
             "w": 8,
             "x": 0,
-            "y": 99
+            "y": 1467
           },
           "id": 254,
           "options": {
@@ -17801,7 +17801,7 @@
             "h": 11,
             "w": 8,
             "x": 8,
-            "y": 99
+            "y": 1467
           },
           "id": 255,
           "options": {
@@ -17899,7 +17899,7 @@
             "h": 11,
             "w": 8,
             "x": 16,
-            "y": 99
+            "y": 1467
           },
           "id": 256,
           "options": {
@@ -17995,7 +17995,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 110
+            "y": 1478
           },
           "id": 258,
           "options": {
@@ -18093,7 +18093,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 110
+            "y": 1478
           },
           "id": 259,
           "options": {
@@ -18191,7 +18191,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 110
+            "y": 1478
           },
           "id": 260,
           "options": {
@@ -18289,7 +18289,7 @@
             "h": 11,
             "w": 13,
             "x": 0,
-            "y": 119
+            "y": 1487
           },
           "id": 261,
           "options": {
@@ -18387,7 +18387,7 @@
             "h": 11,
             "w": 11,
             "x": 13,
-            "y": 119
+            "y": 1487
           },
           "id": 262,
           "options": {
@@ -18485,7 +18485,7 @@
             "h": 11,
             "w": 8,
             "x": 0,
-            "y": 130
+            "y": 1498
           },
           "id": 263,
           "options": {
@@ -18583,7 +18583,7 @@
             "h": 11,
             "w": 8,
             "x": 8,
-            "y": 130
+            "y": 1498
           },
           "id": 264,
           "options": {
@@ -18681,7 +18681,7 @@
             "h": 11,
             "w": 8,
             "x": 16,
-            "y": 130
+            "y": 1498
           },
           "id": 265,
           "options": {
@@ -18779,7 +18779,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 141
+            "y": 1509
           },
           "id": 266,
           "options": {
@@ -18877,7 +18877,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 141
+            "y": 1509
           },
           "id": 267,
           "options": {
@@ -18975,7 +18975,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 141
+            "y": 1509
           },
           "id": 268,
           "options": {
@@ -19073,7 +19073,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 150
+            "y": 1518
           },
           "id": 269,
           "options": {
@@ -19171,7 +19171,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 150
+            "y": 1518
           },
           "id": 270,
           "options": {
@@ -19269,7 +19269,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 158
+            "y": 1526
           },
           "id": 271,
           "options": {
@@ -19367,7 +19367,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 158
+            "y": 1526
           },
           "id": 272,
           "options": {
@@ -19465,7 +19465,7 @@
             "h": 9,
             "w": 6,
             "x": 0,
-            "y": 166
+            "y": 1534
           },
           "id": 273,
           "options": {
@@ -19563,7 +19563,7 @@
             "h": 9,
             "w": 6,
             "x": 6,
-            "y": 166
+            "y": 1534
           },
           "id": 274,
           "options": {
@@ -19661,7 +19661,7 @@
             "h": 9,
             "w": 6,
             "x": 12,
-            "y": 166
+            "y": 1534
           },
           "id": 275,
           "options": {
@@ -19759,7 +19759,7 @@
             "h": 9,
             "w": 6,
             "x": 18,
-            "y": 166
+            "y": 1534
           },
           "id": 276,
           "options": {
@@ -19857,7 +19857,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 175
+            "y": 1543
           },
           "id": 277,
           "options": {
@@ -19955,7 +19955,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 175
+            "y": 1543
           },
           "id": 278,
           "options": {
@@ -20053,7 +20053,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 175
+            "y": 1543
           },
           "id": 279,
           "options": {
@@ -20151,7 +20151,7 @@
             "h": 9,
             "w": 13,
             "x": 0,
-            "y": 184
+            "y": 1552
           },
           "id": 280,
           "options": {
@@ -20249,7 +20249,7 @@
             "h": 9,
             "w": 11,
             "x": 13,
-            "y": 184
+            "y": 1552
           },
           "id": 281,
           "options": {
@@ -20347,7 +20347,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 193
+            "y": 1561
           },
           "id": 282,
           "options": {
@@ -20445,7 +20445,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 193
+            "y": 1561
           },
           "id": 283,
           "options": {
@@ -20543,7 +20543,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 193
+            "y": 1561
           },
           "id": 284,
           "options": {
@@ -20641,7 +20641,7 @@
             "h": 5,
             "w": 12,
             "x": 0,
-            "y": 202
+            "y": 1570
           },
           "id": 285,
           "options": {
@@ -20739,7 +20739,7 @@
             "h": 5,
             "w": 12,
             "x": 12,
-            "y": 202
+            "y": 1570
           },
           "id": 286,
           "options": {
@@ -20837,7 +20837,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 207
+            "y": 1575
           },
           "id": 287,
           "options": {
@@ -20935,7 +20935,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 207
+            "y": 1575
           },
           "id": 288,
           "options": {
@@ -21033,7 +21033,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 207
+            "y": 1575
           },
           "id": 289,
           "options": {
@@ -21131,7 +21131,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 215
+            "y": 1583
           },
           "id": 290,
           "options": {
@@ -21229,7 +21229,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 215
+            "y": 1583
           },
           "id": 291,
           "options": {
@@ -21327,7 +21327,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 215
+            "y": 1583
           },
           "id": 292,
           "options": {
@@ -21424,7 +21424,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 223
+            "y": 1591
           },
           "id": 293,
           "options": {
@@ -21519,7 +21519,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 223
+            "y": 1591
           },
           "id": 294,
           "options": {
@@ -21615,7 +21615,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 231
+            "y": 1599
           },
           "id": 295,
           "options": {
@@ -21713,7 +21713,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 231
+            "y": 1599
           },
           "id": 296,
           "options": {
@@ -21785,7 +21785,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 239
+            "y": 1607
           },
           "id": 297,
           "options": {
@@ -21874,7 +21874,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 239
+            "y": 1607
           },
           "id": 298,
           "options": {
@@ -21963,7 +21963,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 247
+            "y": 1615
           },
           "id": 299,
           "options": {
@@ -22052,7 +22052,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 247
+            "y": 1615
           },
           "id": 300,
           "options": {
@@ -22181,7 +22181,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 6
+            "y": 1672
           },
           "id": 302,
           "options": {
@@ -22279,7 +22279,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 6
+            "y": 1672
           },
           "id": 303,
           "options": {
@@ -22377,7 +22377,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 14
+            "y": 1680
           },
           "id": 304,
           "options": {
@@ -22475,7 +22475,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 14
+            "y": 1680
           },
           "id": 305,
           "options": {
@@ -22507,794 +22507,794 @@
           ],
           "title": "MySQL Indexes Touched per Row Changed - Trend",
           "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "dfapnaswd3vnke"
+          },
+          "description": "優先級：P2\n用途：每秒從儲存引擎讀取的 row 數（讀取工作量 proxy\n判讀：高值常伴隨掃描/Join/回表放大）",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "rowsps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 1688
+          },
+          "id": 306,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.1",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sum by (instance) (\n  rate(mysql_global_status_rows_read{instance !~ \"pm.*\"}[5m])\n)\n",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "MySQL Rows Read Rate - Trend",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "dfapnaswd3vnke"
+          },
+          "description": "優先級：P2\n用途：過去 5 分鐘讀取的 row 總量（事件回放/報表）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "rows"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 1688
+          },
+          "id": 307,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.1",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sum by (instance) (\n  increase(mysql_global_status_rows_read{instance !~ \"pm.*\"}[5m])\n)",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "MySQL Rows Read - 5m",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "dfapnaswd3vnke"
+          },
+          "description": "優先級：P2\n用途：每秒送到 client 的 row 數（結果集大小 proxy\n判讀：高值常見於缺分頁、查太多欄位或回傳大量明細）",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "rowsps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 1696
+          },
+          "id": 308,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.1",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sum by (instance) (\n  rate(mysql_global_status_rows_sent{instance !~ \"pm.*\"}[5m])\n)",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "MySQL Rows Sent Rate - Trend",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "dfapnaswd3vnke"
+          },
+          "description": "優先級：P2\n用途：過去 5 分鐘送出的 row 總量（事件回放/報表）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "rows"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 1696
+          },
+          "id": 309,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.1",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sum by (instance) (\n  increase(mysql_global_status_rows_sent{instance !~ \"pm.*\"}[5m])\n)",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "MySQL Rows Sent - 5m",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "dfapnaswd3vnke"
+          },
+          "description": "優先級：P2\n用途：讀取 row 與送出 row 的比值\n判讀：越高代表「讀很多、回很少」（過濾效率差、Join/掃描放大、索引不佳）",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 1704
+          },
+          "id": 310,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.1",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sum by (instance) (rate(mysql_global_status_rows_read[5m]))\n/\nclamp_min(\n  sum by (instance) (rate(mysql_global_status_rows_sent[5m])),\n  1e-9\n)\n",
+              "legendFormat": "{{instance}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "MySQL Rows Read / Rows Sent Ratio - Trend",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "dfapnaswd3vnke"
+          },
+          "description": "優先級：P0\n用途：每秒從臨時表讀取的 row 數（排序/Group By/Join 造成 tmp table 的強度 proxy\n判讀：高值代表記憶體/磁碟臨時表壓力可能上升）",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "rowsps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 1711
+          },
+          "id": 311,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.1",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sum by (instance) (\n  rate(mysql_global_status_rows_tmp_read{instance!~\"pm.*\"}[5m])\n)",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "MySQL Temporary Rows Read Rate - Trend",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "dfapnaswd3vnke"
+          },
+          "description": "優先級：P2\n用途：過去 5 分鐘臨時表讀取總量（事件回放/報表）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "rows"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 1711
+          },
+          "id": 312,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.1",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sum by (instance) (\n  increase(mysql_global_status_rows_tmp_read{instance!~\"pm.*\"}[5m])\n)",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "MySQL Temporary Rows Read - 5m",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "dfapnaswd3vnke"
+          },
+          "description": "優先級：P2\n用途：臨時表讀取佔整體讀取比例\n判讀：用於判斷工作負載是否大量依賴 tmp table",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 1719
+          },
+          "id": 313,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.1",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sum by (instance) (rate(mysql_global_status_rows_tmp_read{instance!~\"pm.*\"}[5m]))\n/\nclamp_min(\n  sum by (instance) (rate(mysql_global_status_rows_read{instance!~\"pm.*\"}[5m])),\n  1e-9\n)",
+              "legendFormat": "{{instance}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "MySQL Temporary Rows Read Share - Trend",
+          "type": "timeseries"
         }
       ],
       "title": "MySQL Detail - Section",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "dfapnaswd3vnke"
-      },
-      "description": "優先級：P2\n用途：每秒從儲存引擎讀取的 row 數（讀取工作量 proxy\n判讀：高值常伴隨掃描/Join/回表放大）",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "rowsps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 6
-      },
-      "id": 306,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Last *",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (instance) (\n  rate(mysql_global_status_rows_read{instance !~ \"pm.*\"}[5m])\n)\n",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "MySQL Rows Read Rate - Trend",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "dfapnaswd3vnke"
-      },
-      "description": "優先級：P2\n用途：過去 5 分鐘讀取的 row 總量（事件回放/報表）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "rows"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 6
-      },
-      "id": 307,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Last *",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (instance) (\n  increase(mysql_global_status_rows_read{instance !~ \"pm.*\"}[5m])\n)",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "MySQL Rows Read - 5m",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "dfapnaswd3vnke"
-      },
-      "description": "優先級：P2\n用途：每秒送到 client 的 row 數（結果集大小 proxy\n判讀：高值常見於缺分頁、查太多欄位或回傳大量明細）",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "rowsps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 14
-      },
-      "id": 308,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Last *",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (instance) (\n  rate(mysql_global_status_rows_sent{instance !~ \"pm.*\"}[5m])\n)",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "MySQL Rows Sent Rate - Trend",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "dfapnaswd3vnke"
-      },
-      "description": "優先級：P2\n用途：過去 5 分鐘送出的 row 總量（事件回放/報表）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "rows"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 14
-      },
-      "id": 309,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Last *",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (instance) (\n  increase(mysql_global_status_rows_sent{instance !~ \"pm.*\"}[5m])\n)",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "MySQL Rows Sent - 5m",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "dfapnaswd3vnke"
-      },
-      "description": "優先級：P2\n用途：讀取 row 與送出 row 的比值\n判讀：越高代表「讀很多、回很少」（過濾效率差、Join/掃描放大、索引不佳）",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 22
-      },
-      "id": 310,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Last *",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (instance) (rate(mysql_global_status_rows_read[5m]))\n/\nclamp_min(\n  sum by (instance) (rate(mysql_global_status_rows_sent[5m])),\n  1e-9\n)\n",
-          "legendFormat": "{{instance}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "MySQL Rows Read / Rows Sent Ratio - Trend",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "dfapnaswd3vnke"
-      },
-      "description": "優先級：P0\n用途：每秒從臨時表讀取的 row 數（排序/Group By/Join 造成 tmp table 的強度 proxy\n判讀：高值代表記憶體/磁碟臨時表壓力可能上升）",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "rowsps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 29
-      },
-      "id": 311,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Last *",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (instance) (\n  rate(mysql_global_status_rows_tmp_read{instance!~\"pm.*\"}[5m])\n)",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "MySQL Temporary Rows Read Rate - Trend",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "dfapnaswd3vnke"
-      },
-      "description": "優先級：P2\n用途：過去 5 分鐘臨時表讀取總量（事件回放/報表）\n判讀：與歷史基準比對，異常偏高或偏低需追查。",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "rows"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 29
-      },
-      "id": 312,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Last *",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (instance) (\n  increase(mysql_global_status_rows_tmp_read{instance!~\"pm.*\"}[5m])\n)",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "MySQL Temporary Rows Read - 5m",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "dfapnaswd3vnke"
-      },
-      "description": "優先級：P2\n用途：臨時表讀取佔整體讀取比例\n判讀：用於判斷工作負載是否大量依賴 tmp table",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 37
-      },
-      "id": 313,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Last *",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (instance) (rate(mysql_global_status_rows_tmp_read{instance!~\"pm.*\"}[5m]))\n/\nclamp_min(\n  sum by (instance) (rate(mysql_global_status_rows_read{instance!~\"pm.*\"}[5m])),\n  1e-9\n)",
-          "legendFormat": "{{instance}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "MySQL Temporary Rows Read Share - Trend",
-      "type": "timeseries"
     }
   ],
   "preload": false,
@@ -23310,7 +23310,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "AWR Report",
+  "title": "AWR Report v2",
   "uid": "dd42556b-1088-46fd-9611-5c8cb47407ed",
-  "version": 493
+  "version": 510
 }
