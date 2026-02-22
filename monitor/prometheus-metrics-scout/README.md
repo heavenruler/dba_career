@@ -39,12 +39,43 @@
 6) AWR-like 自檢報告（DBA 診斷）
 7) 可直接繪圖的 time series arrays（每個查詢一組）
 
-### Service Digest（必備區塊）
-- availability：`mysql_global_status_uptime`、`mongodb_up`
-- throughput：`mysql_global_status_queries`、`mongodb_op_counters_total`
-- latency：`mysql_global_status_innodb_row_lock_time_avg`、`mongodb_mongod_op_latencies_latency_total` / `_ops_total`
-- errors：`mysql_global_status_aborted_clients`、`mongodb_asserts_total`
-- saturation：`mysql_global_status_threads_running`、`mongodb_connections{state="current"}`
+### Service Digest（必備區塊，依 target 選擇）
+MySQL：
+- availability：`mysql_global_status_uptime`
+- throughput：`mysql_global_status_queries`
+- latency：`mysql_global_status_innodb_row_lock_time_avg`
+- errors：`mysql_global_status_aborted_clients`
+- saturation：`mysql_global_status_threads_running`
+
+MongoDB：
+- availability：`mongodb_up`
+- throughput：`mongodb_op_counters_total`
+- latency：`mongodb_mongod_op_latencies_latency_total` / `_ops_total`
+- errors：`mongodb_asserts_total`
+- saturation：`mongodb_connections{state="current"}`
+
+ProxySQL：
+- availability：`proxysql_connection_pool_status`
+- throughput：`proxysql_connection_pool_queries`
+- latency：`proxysql_connection_pool_latency_us`
+- errors：`proxysql_connection_pool_conn_err`、`proxysql_mysql_status_backend_offline_during_query`
+- saturation：`proxysql_connection_pool_conn_used`、`proxysql_connection_pool_conn_free`
+
+Redis：
+- availability：`redis_up`
+- throughput：`redis_commands_processed_total`
+- latency：`redis_latency_percentiles_usec`
+- errors：`redis_errors_total`、`redis_commands_failed_calls_total`
+- saturation：`redis_connected_clients`、`redis_max_clients`
+
+作業系統（node_exporter）：
+- availability：`node_boot_time`
+- cpu：`node_cpu`
+- load：`node_load1` / `node_load5` / `node_load15`
+- memory：`node_memory_MemAvailable` / `node_memory_MemTotal`
+- disk：`node_filesystem_avail` / `node_filesystem_size` / `node_filesystem_readonly`
+- io：`node_disk_io_time_ms` / `node_disk_io_now`
+- network：`node_network_receive_bytes` / `node_network_transmit_bytes`
 
 ### AWR-like 自檢（必備區塊）
 目標為 MySQL 時使用 MySQL metrics；目標為 MongoDB 時使用 MongoDB metrics。
@@ -64,6 +95,28 @@ MongoDB 診斷重點（示例）：
 - replication：`mongodb_mongod_replset_member_replication_lag`、`mongodb_mongod_replset_member_state`
 - cache：`mongodb_mongod_wiredtiger_cache_bytes`、`mongodb_mongod_wiredtiger_cache_evicted_total`
 - op latency：`mongodb_mongod_op_latencies_latency_total` / `_ops_total`
+
+ProxySQL 診斷重點（示例）：
+- conn pool：`proxysql_connection_pool_conn_used`、`proxysql_connection_pool_conn_free`、`proxysql_connection_pool_conn_err`
+- latency：`proxysql_connection_pool_latency_us`、`proxysql_mysql_status_backend_query_time_nsec`
+- errors：`proxysql_mysql_status_backend_offline_during_query`、`proxysql_mysql_status_client_connections_aborted`
+- routing：`proxysql_connection_pool_status`、`proxysql_mysql_status_hostgroup_locked_queries`
+
+Redis 診斷重點（示例）：
+- hit/miss：`redis_keyspace_hits_total`、`redis_keyspace_misses_total`
+- latency：`redis_latency_percentiles_usec`、`redis_commands_duration_seconds_total`
+- memory：`redis_allocator_resident_bytes`、`redis_allocator_frag_ratio`
+- eviction：`redis_evicted_keys_total`、`redis_eviction_exceeded_time_ms_total`
+- clients：`redis_connected_clients`、`redis_blocked_clients`
+
+作業系統自檢重點（示例）：
+- cpu：`rate(node_cpu{mode!="idle"}[5m])`
+- load：`node_load1` / `node_load5` / `node_load15`
+- memory：`node_memory_MemAvailable` / `node_memory_MemTotal`
+- swap：`node_memory_SwapFree` / `node_memory_SwapTotal`
+- disk：`node_filesystem_avail` / `node_filesystem_size` / `node_filesystem_readonly`
+- io：`node_disk_io_time_ms` / `node_disk_io_now`
+- network：`node_network_receive_bytes` / `node_network_transmit_bytes`
 
 ### Deadlock 風險判斷（示例）
 若使用者詢問 deadlock 風險/趨勢，需計算：
@@ -238,6 +291,89 @@ Mock Response（截取部分）
     "connections": "threads_running 偏高，需關注連線池",
     "tmp_tables": "tmp_disk_tables 無異常",
     "slow_queries": "slow_queries 無顯著上升"
+  }
+}
+```
+
+### 6-1) MongoDB 範例
+```json
+{
+  "service_digest": {
+    "availability": {"mongodb_up": "OK"},
+    "throughput": {"mongodb_op_counters_total": "steady"},
+    "latency": {"mongodb_mongod_op_latencies_latency_total/_ops_total": "stable"},
+    "errors": {"mongodb_asserts_total": "low"},
+    "saturation": {"mongodb_connections{state=\"current\"}": "normal"}
+  },
+  "awr_like": {
+    "locks": "acquiring/locked 時間略升",
+    "queue": "current_queue 無尖峰",
+    "replication": "lag < 1s",
+    "cache": "evicted 稍增，需觀察",
+    "op_latency": "寫入延遲偏高"
+  }
+}
+```
+
+### 6-2) ProxySQL 範例
+```json
+{
+  "service_digest": {
+    "availability": {"proxysql_connection_pool_status": "OK"},
+    "throughput": {"proxysql_connection_pool_queries": "rising"},
+    "latency": {"proxysql_connection_pool_latency_us": "elevated"},
+    "errors": {"proxysql_connection_pool_conn_err": "spike"},
+    "saturation": {"proxysql_connection_pool_conn_used": "high"}
+  },
+  "awr_like": {
+    "conn_pool": "conn_used 持續偏高",
+    "latency": "backend_query_time 增加",
+    "errors": "backend_offline 次數上升",
+    "routing": "hostgroup_locked_queries 出現"
+  }
+}
+```
+
+### 6-3) Redis 範例
+```json
+{
+  "service_digest": {
+    "availability": {"redis_up": "OK"},
+    "throughput": {"redis_commands_processed_total": "stable"},
+    "latency": {"redis_latency_percentiles_usec": "p99 rising"},
+    "errors": {"redis_errors_total": "low"},
+    "saturation": {"redis_connected_clients": "near max"}
+  },
+  "awr_like": {
+    "hit_miss": "hit ratio 下降",
+    "latency": "commands_duration 上升",
+    "memory": "frag_ratio 偏高",
+    "eviction": "evicted_keys 上升",
+    "clients": "blocked_clients 增加"
+  }
+}
+```
+
+### 6-4) 作業系統層級範例
+```json
+{
+  "service_digest": {
+    "availability": {"node_boot_time": "OK"},
+    "cpu": {"node_cpu": "usage high"},
+    "load": {"node_load1/5/15": "load > cpu"},
+    "memory": {"node_memory_MemAvailable": "low"},
+    "disk": {"node_filesystem_avail": "< 15%"},
+    "io": {"node_disk_io_time_ms": "busy"},
+    "network": {"node_network_receive_bytes": "spike"}
+  },
+  "awr_like": {
+    "cpu": "non-idle 持續偏高",
+    "load": "長期高於 cpu 數",
+    "memory": "MemAvailable 下降",
+    "swap": "SwapFree 明顯降低",
+    "disk": "filesystem 可用率偏低",
+    "io": "io_time 升高",
+    "network": "rx/tx 增加"
   }
 }
 ```
