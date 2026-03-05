@@ -189,7 +189,7 @@ def build_full2(pages: List[Tuple[int, str]]) -> str:
     rebuilt = reflow_lines(lines)
     if rebuilt and not rebuilt[0].startswith("# "):
         rebuilt[0] = f"# {rebuilt[0]}"
-    return "\n\n".join(rebuilt) + "\n"
+    return sanitize_text("\n\n".join(rebuilt) + "\n")
 
 
 def load_pages(pdf_path: Path, ocr_lang: str, ocr_dir: Path, ocr_min_chars: int) -> List[Tuple[int, str]]:
