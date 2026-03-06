@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-sentinel
+  labels:
+    app: redis-sentinel
+spec:
+  restartPolicy: Always
+  containers:
+    - name: redis-sentinel-master-1
+      image: docker.io/library/redis:7.2-alpine
+      command:
+        - redis-server
+        - --port
+        - "6390"
+        - --appendonly
+        - "yes"
+    - name: redis-sentinel-replica-1
+      image: docker.io/library/redis:7.2-alpine
+      command:
+        - redis-server
+        - --port
+        - "6391"
+        - --replicaof
+        - 127.0.0.1
+        - "6390"
+    - name: redis-sentinel-replica-2
+      image: docker.io/library/redis:7.2-alpine
+      command:
+        - redis-server
+        - --port
+        - "6392"
+        - --replicaof
+        - 127.0.0.1
+        - "6390"
+    - name: redis-sentinel-node-1
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 26379
+          hostPort: 26379
+      command:
+        - sh
+        - -c
+        - |
+          cat >/tmp/sentinel.conf <<'EOF'
+          port 26379
+          sentinel monitor mymaster 127.0.0.1 6390 2
+          sentinel down-after-milliseconds mymaster 5000
+          sentinel failover-timeout mymaster 10000
+          sentinel parallel-syncs mymaster 1
+          EOF
+          redis-sentinel /tmp/sentinel.conf
+    - name: redis-sentinel-node-2
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 26380
+          hostPort: 26380
+      command:
+        - sh
+        - -c
+        - |
+          cat >/tmp/sentinel.conf <<'EOF'
+          port 26380
+          sentinel monitor mymaster 127.0.0.1 6390 2
+          sentinel down-after-milliseconds mymaster 5000
+          sentinel failover-timeout mymaster 10000
+          sentinel parallel-syncs mymaster 1
+          EOF
+          redis-sentinel /tmp/sentinel.conf
+    - name: redis-sentinel-node-3
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 26381
+          hostPort: 26381
+      command:
+        - sh
+        - -c
+        - |
+          cat >/tmp/sentinel.conf <<'EOF'
+          port 26381
+          sentinel monitor mymaster 127.0.0.1 6390 2
+          sentinel down-after-milliseconds mymaster 5000
+          sentinel failover-timeout mymaster 10000
+          sentinel parallel-syncs mymaster 1
+          EOF
+          redis-sentinel /tmp/sentinel.conf

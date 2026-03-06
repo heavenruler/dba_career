@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-replication
+  labels:
+    app: redis-replication
+spec:
+  restartPolicy: Always
+  containers:
+    - name: redis-replication-master-1
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 6379
+          hostPort: 6380
+      command:
+        - redis-server
+        - --port
+        - "6379"
+        - --appendonly
+        - "yes"
+    - name: redis-replication-replica-1
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 6380
+          hostPort: 6381
+      command:
+        - redis-server
+        - --port
+        - "6380"
+        - --replicaof
+        - 127.0.0.1
+        - "6379"
+        - --appendonly
+        - "yes"
+    - name: redis-replication-replica-2
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 6381
+          hostPort: 6382
+      command:
+        - redis-server
+        - --port
+        - "6381"
+        - --replicaof
+        - 127.0.0.1
+        - "6379"
+        - --appendonly
+        - "yes"

@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-cluster
+  labels:
+    app: redis-cluster
+spec:
+  restartPolicy: Always
+  containers:
+    - name: redis-cluster-node-1
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 7001
+          hostPort: 7001
+      command:
+        - redis-server
+        - --port
+        - "7001"
+        - --cluster-enabled
+        - "yes"
+        - --cluster-config-file
+        - nodes-7001.conf
+        - --cluster-node-timeout
+        - "5000"
+        - --appendonly
+        - "yes"
+    - name: redis-cluster-node-2
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 7002
+          hostPort: 7002
+      command:
+        - redis-server
+        - --port
+        - "7002"
+        - --cluster-enabled
+        - "yes"
+        - --cluster-config-file
+        - nodes-7002.conf
+        - --cluster-node-timeout
+        - "5000"
+        - --appendonly
+        - "yes"
+    - name: redis-cluster-node-3
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 7003
+          hostPort: 7003
+      command:
+        - redis-server
+        - --port
+        - "7003"
+        - --cluster-enabled
+        - "yes"
+        - --cluster-config-file
+        - nodes-7003.conf
+        - --cluster-node-timeout
+        - "5000"
+        - --appendonly
+        - "yes"
+    - name: redis-cluster-node-4
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 7004
+          hostPort: 7004
+      command:
+        - redis-server
+        - --port
+        - "7004"
+        - --cluster-enabled
+        - "yes"
+        - --cluster-config-file
+        - nodes-7004.conf
+        - --cluster-node-timeout
+        - "5000"
+        - --appendonly
+        - "yes"
+    - name: redis-cluster-node-5
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 7005
+          hostPort: 7005
+      command:
+        - redis-server
+        - --port
+        - "7005"
+        - --cluster-enabled
+        - "yes"
+        - --cluster-config-file
+        - nodes-7005.conf
+        - --cluster-node-timeout
+        - "5000"
+        - --appendonly
+        - "yes"
+    - name: redis-cluster-node-6
+      image: docker.io/library/redis:7.2-alpine
+      ports:
+        - containerPort: 7006
+          hostPort: 7006
+      command:
+        - redis-server
+        - --port
+        - "7006"
+        - --cluster-enabled
+        - "yes"
+        - --cluster-config-file
+        - nodes-7006.conf
+        - --cluster-node-timeout
+        - "5000"
+        - --appendonly
+        - "yes"
+    - name: redis-cluster-bootstrap-1
+      image: docker.io/library/redis:7.2-alpine
+      command:
+        - sh
+        - -c
+        - |
+          sleep 8
+          yes yes | redis-cli --cluster create \
+            127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 \
+            127.0.0.1:7004 127.0.0.1:7005 127.0.0.1:7006 \
+            --cluster-replicas 1 || true
+          sleep infinity
