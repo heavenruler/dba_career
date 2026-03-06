@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-standalone
+  labels:
+    app: redis-standalone
+spec:
+  containers:
+    - name: redis-standalone-1
+      image: docker.io/library/redis:7.2
+      command: ["redis-server"]
+      args: ["--appendonly", "yes", "--port", "6379"]
+      ports:
+        - containerPort: 6379
+          hostPort: 6379
+      volumeMounts:
+        - name: redis-data
+          mountPath: /data
+  volumes:
+    - name: redis-data
+      hostPath:
+        path: ./volumes/redis-standalone
+        type: DirectoryOrCreate

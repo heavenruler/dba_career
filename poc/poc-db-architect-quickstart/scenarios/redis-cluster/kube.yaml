@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-cluster
+  labels:
+    app: redis-cluster
+spec:
+  containers:
+    - &redis_node
+      name: redis-cluster-node-1
+      image: docker.io/library/redis:7.2
+      command: ["redis-server"]
+      args: ["--port", "7001", "--cluster-enabled", "yes", "--cluster-config-file", "nodes-7001.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
+      ports:
+        - containerPort: 7001
+          hostPort: 7001
+
+    - <<: *redis_node
+      name: redis-cluster-node-2
+      args: ["--port", "7002", "--cluster-enabled", "yes", "--cluster-config-file", "nodes-7002.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
+      ports:
+        - containerPort: 7002
+          hostPort: 7002
+
+    - <<: *redis_node
+      name: redis-cluster-node-3
+      args: ["--port", "7003", "--cluster-enabled", "yes", "--cluster-config-file", "nodes-7003.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
+      ports:
+        - containerPort: 7003
+          hostPort: 7003
+
+    - <<: *redis_node
+      name: redis-cluster-node-4
+      args: ["--port", "7004", "--cluster-enabled", "yes", "--cluster-config-file", "nodes-7004.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
+      ports:
+        - containerPort: 7004
+          hostPort: 7004
+
+    - <<: *redis_node
+      name: redis-cluster-node-5
+      args: ["--port", "7005", "--cluster-enabled", "yes", "--cluster-config-file", "nodes-7005.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
+      ports:
+        - containerPort: 7005
+          hostPort: 7005
+
+    - <<: *redis_node
+      name: redis-cluster-node-6
+      args: ["--port", "7006", "--cluster-enabled", "yes", "--cluster-config-file", "nodes-7006.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
+      ports:
+        - containerPort: 7006
+          hostPort: 7006
