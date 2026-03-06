@@ -1,0 +1,133 @@
+{
+    "pdf_info": [
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u66b4\u63cdELK \u75db\u6253Loki - VictoriaLogs \u642d\u5efaSyslog\u65e5\u5fd7\u6536\u96c6\u5b58\u50a8\u7cfb\u7edf\n\u7f51\u5de5\u683c\u7269 \u7f51\u5de5\u683c\u7269 2025\u5e7402\u670811\u65e5 22:05 \u6cb3\u5317 \u539f\u521b\n\u4e3a\u4ec0\u4e48\u8981\u7528VictoriaLogs \uff1f \u5fae\u4fe1\u626b\u4e00\u626b\n\u5173\u6ce8\u8be5\u516c\u4f17\u53f7\n\u2022 \u4e0eElasticsearch /Grafana Loki \u76f8\u6bd4\u51e0\u5341\u500d\u7684CPU/\u5185\u5b58/\u5b58\u50a8\u8d44\u6e90\u5360\u7528\u7684\u5dee\u8ddd\uff0c\u80fd\u6781\u5927\u7684\u8282\u7701\u786c\u4ef6\u8d44\u6e90\u3002\n\u2022 \u5355\u4f53\u8f6f\u4ef6\u53ef\u4ee5\u5b9e\u73b0ELK\u7684Web\u67e5\u8be2\u3001\u65e5\u5fd7\u538b\u7f29\u5b58\u50a8\u3001syslog \u65e5\u5fd7\u63a5\u6536\u3002\n\u5b98\u65b9\u6587\u6863\uff1ahttps://docs.victoriametrics.com/victorialogs/quickstart/\n\u5177\u4f53\u4f18\u52bf\nVictoriaLogs \u548c Elasticsearch (ES) \u90fd\u662f\u7528\u4e8e\u65e5\u5fd7\u7ba1\u7406\u7684\u5de5\u5177\uff0c\u5404\u6709\u5176\u4f18\u52bf\uff0c\u5177\u4f53\u53d6\u51b3\u4e8e\u4f7f\u7528\n\u573a\u666f\u548c\u9700\u6c42\u3002\u4ee5\u4e0b\u662f\u5b83\u4eec\u5728\u5b58\u50a8\u65b9\u9762\u7684\u4e00\u4e9b\u4f18\u52bf\u5bf9\u6bd4\uff1a\nVictoriaLogs \u7684\u4f18\u52bf\uff1a\n1. \u8d44\u6e90\u6548\u7387 \uff1aVictoriaLogs \u901a\u5e38\u8bbe\u8ba1\u4e3a\u8d44\u6e90\u9ad8\u6548\u578b\uff0c\u5728\u5185\u5b58\u548c\u5b58\u50a8\u7684\u4f7f\u7528\u4e0a\u53ef\u80fd\u66f4\u4e3a\u8282\u7701\u3002\n2. \u9ad8\u538b\u7f29\u7387 \uff1a\u5176\u5b58\u50a8\u5f15\u64ce\u53ef\u80fd\u4f7f\u7528\u66f4\u9ad8\u6548\u7684\u6570\u636e\u538b\u7f29\u6280\u672f\uff0c\u51cf\u5c0f\u5b58\u50a8\u7a7a\u95f4\u9700\u6c42\u3002\n3. \u7b80\u5355\u90e8\u7f72\u548c\u7ba1\u7406 \uff1aVictoriaLogs \u901a\u5e38\u6613\u4e8e\u90e8\u7f72\u548c\u7ba1\u7406\uff0c\u9002\u5408\u5c0f\u578b\u56e2\u961f\u6216\u4e0d\u9700\u8981\u590d\u6742\u529f\u80fd\u7684\u7528\u6237\u3002\n4. \u9762\u5411\u7279\u5b9a\u65e5\u5fd7\u573a\u666f\u4f18\u5316 \uff1a\u5982\u679c\u4f60\u7684\u9700\u6c42\u4e0e\u5176\u4f18\u5316\u573a\u666f\u4e00\u81f4\uff0c\u53ef\u80fd\u4f1a\u4f53\u9a8c\u5230\u51fa\u8272\u7684\u6027\u80fd\u3002\nElasticsearch \u7684\u4f18\u52bf\uff1a\n1. \u6210\u719f\u5ea6\u548c\u793e\u533a\u652f\u6301 \uff1aES \u662f\u4e00\u4e2a\u6210\u719f\u7684\u9879\u76ee\uff0c\u6709\u5e7f\u6cdb\u7684\u793e\u533a\u652f\u6301\u548c\u4e30\u5bcc\u7684\u6587\u6863\u3002\n2. \u6269\u5c55\u6027 \uff1aES \u652f\u6301\u5927\u89c4\u6a21\u96c6\u7fa4\uff0c\u53ef\u4ee5\u5904\u7406\u4ece\u5c0f\u578b\u5230\u5927\u89c4\u6a21\u7684\u5e94\u7528\u5f88\u597d\u7684\u6269\u5c55\u3002\n3. \u5f3a\u5927\u7684\u67e5\u8be2\u529f\u80fd \uff1aES \u63d0\u4f9b\u4e30\u5bcc\u7684\u67e5\u8be2\u8bed\u8a00\u548c\u529f\u80fd\uff0c\u80fd\u591f\u6ee1\u8db3\u590d\u6742\u6570\u636e\u5206\u6790\u7684\u9700\u6c42\u3002\n4. \u751f\u6001\u7cfb\u7edf\u5e7f\u6cdb \uff1aES \u6709\u5927\u91cf\u7684\u63d2\u4ef6\u548c\u751f\u6001\u7cfb\u7edf\u652f\u6301\uff0c\u5305\u62ec Kibana \u7b49\u5de5\u5177\uff0c\u65b9\u4fbf\u8fdb\u884c\u53ef\u89c6\u5316\u548c\u5206\u6790\u3002\n\u4f7f\u7528\u5efa\u8bae\uff1a\n\u2022 \u5982\u679c\u4f60\u7684\u9879\u76ee\u9700\u8981\u9ad8\u6548\u7684\u8d44\u6e90\u4f7f\u7528\u548c\u7b80\u5355\u7684\u65e5\u5fd7\u5904\u7406\uff0cVictoriaLogs \u53ef\u80fd\u662f\u4e00\u4e2a\u4e0d\u9519\u7684\u9009\u62e9\u3002\n\u2022 \u5982\u679c\u4f60\u7684\u9879\u76ee\u9700\u8981\u590d\u6742\u7684\u67e5\u8be2\u80fd\u529b\u3001\u5927\u89c4\u6a21\u6570\u636e\u5904\u7406\u548c\u5f3a\u5927\u7684\u793e\u533a\u652f\u6301\uff0cElasticsearch \u6216\u8bb8\u66f4\u5408\u9002\u3002\n\u6700\u7ec8\u7684\u9009\u62e9\u5e94\u57fa\u4e8e\u5177\u4f53\u7684\u9700\u6c42\u3001\u73b0\u6709\u7684\u57fa\u7840\u8bbe\u65bd\u4ee5\u53ca\u56e2\u961f\u7684\u6280\u672f\u80fd\u529b\u3002\nPS\uff1aVictoriaLogs \u5403\u5185\u5b58\u548c\u786c\u76d8\u7a7a\u95f4\u8f83\u5c0f \uff0c\u6027\u80fd\u5f88\u9ad8\u3002\u4f46\u529f\u80fd\u6ca1ES\u5b8c\u5584\uff0c\u6ca1\u6709\u96c6\u7fa4\u529f\u80fd\u7b49\uff0c\u67e5\n\u8be2\u754c\u9762\u7b80\u964b\u3002\n\u90e8\u7f72\u80cc\u666f\n\u63a5\u6536\u670d\u52a1\u5668\u6216\u7f51\u7edc\u8bbe\u5907\u53d1\u9001\u7684syslog\u534f\u8bae\u7684\u65e5\u5fd7\uff0c\u7528\u4e8e\u5b58\u50a8\u548c\u65e5\u5e38\u67e5\u8be2\u3002\nDocker \u8981\u6c42\u8f83\u65b0\u7248\u672c\uff0c\u652f\u6301compose v2\u3002\nDocker\u5b89\u88c5\u6559\u7a0b\uff1a https://yeasy.gitbook.io/docker_practice/install/centos\nDocker \u90e8\u7f72\ndocker run -d --restart always \\\n-p 9428:9428 \\\n-p 514:514/udp \\\n-v ./victoria-logs-data:/victoria-logs-data \\\n--name victoria-logs-syslog-songxwn.com \\\ndocker.io/victoriametrics/victoria-logs:latest \\\n-syslog.listenAddr.udp=:514\n# by songxwn.com\n\u2022 9428\u4e3aHTTP\u7aef\u53e3\uff0c\u7528\u4e8e\u8bbf\u95eeWeb UI\u7b49\u3002\uff08\u65e0\u5b89\u5168\u8ba4\u8bc1\uff09\n\u2022 514/udp\u4e3a syslog \u63a5\u6536\u7aef\u53e3\uff0c-syslog.listenAddr.udp=:514 \u7528\u4e8e\u5f00\u542fUDP\u63a5\u6536syslog\u3002\n\u2022 \u914d\u7f6e\u5f53\u524d\u76ee\u5f55\u4e0b\u521b\u5efa\u6570\u636e\u5b58\u50a8\u6587\u4ef6\u5939\u3002\nDocker compose \u90e8\u7f72\n\u521b\u5efaVictoriaLogs\u6587\u4ef6\u5939\uff0c\u521b\u5efa\u6587\u4ef6 docker-compose.yml\nservices:\nvictoria-logs-syslog:\nimage: docker.io/victoriametrics/victoria-logs:latest\ncontainer_name: victoria-logs-syslog\nrestart: always\nports:\n- \"9428:9428\"\n- \"514:514/udp\"\nvolumes:\n- ./victoria-logs-data:/victoria-logs-data\ncommand:\n- '-syslog.listenAddr.udp=:514'\n# by songxwn.com"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 0
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u2022 9428\u4e3aHTTP\u7aef\u53e3\uff0c\u7528\u4e8e\u8bbf\u95eeWeb UI\u7b49\u3002\uff08\u65e0\u5b89\u5168\u8ba4\u8bc1\uff09\n\u2022 514/udp\u4e3a syslog \u63a5\u6536\u7aef\u53e3\uff0c-syslog.listenAddr.udp=:514 \u7528\u4e8e\u5f00\u542fUDP\u63a5\u6536syslog\u3002\n\u2022 \u914d\u7f6e\u5f53\u524d\u76ee\u5f55\u4e0b\u521b\u5efa\u6570\u636e\u5b58\u50a8\u6587\u4ef6\u5939\u3002\ncompose \u90e8\u7f72\u793a\u4f8b\u547d\u4ee4\nmkdir VictoriaLogs\ncd VictoriaLogs\nmkdir victoria-logs-data\nvim docker-compose.yml\n# \u521b\u5efacompose\u6587\u4ef6\uff0c\u5e76\u5199\u5165\u4e0a\u9762\u7684\u5185\u5bb9\ndocker compose up -d\ncompose \u5347\u7ea7\u793a\u4f8b\u547d\u4ee4\ncd VictoriaLogs\ndocker compose down\ndocker compose pull\ndocker compose up -d\nVictoriaLogs \u65e5\u5fd7\u4fdd\u7559\u65f6\u95f4\n\u9ed8\u8ba4\u60c5\u51b5\u4e0b\uff0cVictoriaLogs \u5b58\u50a8\u65f6\u95f4\u6233\u5728\u65f6\u95f4\u8303\u56f4 \u5185\u7684\u65e5\u5fd7\u6761\u76ee\uff0c\u540c\u65f6\u5220\u9664\u7ed9 [now-7d, now]\n\u5b9a\u65f6\u95f4\u8303\u56f4\u4e4b\u5916\u7684\u65e5\u5fd7\u3002\u4f8b\u5982\u5b83\u4f7f\u75287\u5929\u7684\u4fdd\u7559\u3002\u53ef\u4ee5\u4f7f\u7528 \u547d\u4ee4\u884c\u6807\u5fd7\u914d\u7f6e\u4fdd -retentionPeriod\n\u7559\u3002\u8be5\u6807\u5fd7\u63a5\u53d7\u4ece 1d \uff08\u4e00\u5929\uff09\u5230 100y \uff08100 \u5e74\uff09\u7684\u503c\u3002\n\u4f8b\u5982\uff0c\u4ee5\u4e0b\u547d\u4ee4\u542f\u52a8 VictoriaLogs \u5e76\u4fdd\u7559 30 \u5929\uff1a\nservices:\nvictoria-logs-syslog:\nimage: docker.io/victoriametrics/victoria-logs:latest\ncontainer_name: victoria-logs-syslog-songxwn.com\nrestart: always\nports:\n- \"9428:9428\"\n- \"514:514/udp\"\nvolumes:\n- ./victoria-logs-data:/victoria-logs-data\ncommand:\n- '-syslog.listenAddr.udp=:514'\n- '--retentionPeriod=30d'\n# by songxwn.com\nhttp://localhost:9428/flags \u53ef\u67e5\u770b\u542f\u52a8\u53c2\u6570\u3002\nWeb UI \u641c\u7d22\n\u6d4f\u89c8\u5668\u8bbf\u95ee http://localhost:9428 \uff0c\u7136\u540e\u9009\u62e9 select/vmui - Web UI for VictoriaLogs \u8fdb\n\u5165\uff0c\n\u67e5\u8be2\u8bed\u6cd5\uff1a\u76f4\u63a5\u8f93\u5165\u67e5\u8be2\u53ef\u5168\u5c40\u641c\u7d22\uff0c\u53f3\u4e0a\u89d2\u9009\u62e9\u65f6\u95f4\u3002\u67e5\u8be2\u4e24\u4e2a\u5173\u952e\u8bcd\uff1a abc AND bcd\n\u6587\u6863\uff1ahttps://docs.victoriametrics.com/victorialogs/logsql/\n\u76d1\u63a7VictoriaLogs"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 1
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "VictoriaLogs \u5728 page \u4e0a\u4ee5 Prometheus \u516c\u5f00\u683c\u5f0f\u516c\u5f00\u5185\u90e8\u6307\u6807\u3002 \u5efa\u8bae\u901a\u8fc7 VictoriaMetrics\n\u8bbe\u7f6e\u5bf9\u8fd9\u4e9b\u6307\u6807\u7684\u76d1\u63a7\n\u8bbf\u95ee\u8def\u5f84 http://localhost:9428/metrics\n\u8fd0\u7ef4\u6280\u672f\u4ea4\u6d41\u7fa4\n\u53d1\u9001\u90ae\u4ef6\u5230 \u27a1\ufe0f me@songxwn.com\n\u6216\u8005\u5173\u6ce8WX\u516c\u4f17\u53f7\uff1a\u7f51\u5de5\u683c\u7269\n\u5fae\u4fe1\u626b\u7801\n\u535a\u5ba2\uff08\u6700\u5148\u66f4\u65b0\uff09\nhttps://songxwn.com/\n\u5f00\u6e90\u9879\u76ee 8 \u5f00\u6e90 9 \u65e5\u5fd7 3\n\u5f00\u6e90\u9879\u76ee \u00b7 \u76ee\u5f55\n\u4e0a\u4e00\u7bc7 \u4e0b\u4e00\u7bc7\nNetBox 4.1 VMware OVF\u5feb\u901f\u90e8\u7f72 ELK Stack 8 \u63a5\u5165ElasticFlow\n\u4e2a\u4eba\u89c2\u70b9\uff0c\u4ec5\u4f9b\u53c2\u8003\n\u9605\u8bfb\u539f\u6587"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 2
+        }
+    ]
+}

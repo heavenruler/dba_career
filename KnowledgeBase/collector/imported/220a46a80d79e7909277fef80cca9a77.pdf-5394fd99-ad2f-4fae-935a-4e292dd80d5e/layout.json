@@ -1,0 +1,434 @@
+{
+    "pdf_info": [
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u9996\u9875 \u8d44\u8baf \u6d3b\u52a8 \u5927\u4f1a \u5b66\u4e60 \u6587\u6863 \u95ee\u7b54 \u670d\u52a1 \u767b\u5f55 \u6ce8\u518c\n\u9996\u9875 / \u7528\u871c\u8702(eBPF)\u6765\u8ffd\u8e2a\u6d77\u8c5a(MySQL)\uff0c\u6027\u80fd\u8ffd\u7684\u4e0a\u5417\n\u7528\u871c\u8702(eBPF)\u6765\u8ffd\u8e2a\u6d77\u8c5a(MySQL)\uff0c\u6027\u80fd\u8ffd\u7684\u4e0a\u5417\n\u539f\u521b \u805a\u597d\u770bDBdoctor 2024-06-07 396\nDBdoctor\u6570\u636e\u5e93\u6027\u80fd\u8bca\u65ad\nDBdoctor \u57fa\u4e8e eBPF \u5b9e\u73b0\u4e86\u6570\u636e\u5e93\u53ef\u89c2\u6d4b\uff0c\u80fd\u591f\u5728 \u4e0d\u6539\u4ee3\u7801\u3001\u4e0d\u6539\u542f\u52a8\u53c2\u6570\u3001\u4e0d \u5173\u6ce8\n\u91cd\u542f\u8fdb\u7a0b \u7684\u524d\u63d0\u4e0b\u5bf9\u6570\u636e\u5e93\u5185\u6838\u8fdb\u884c\u8ffd\u8e2a\uff0c\u62ff\u5230\u66f4\u7ec6\u7c92\u5ea6\u7684\u5185\u6838\u6570\u636e\u8fdb\u884c\u6570\u636e\u5206\n86 17 17K+ \u6790\uff0c\u505a\u5230\u4e86\u6027\u80fd\u89c2\u6d4b\u7684\u6570\u5b66\u6a21\u578b\u5316\u3002\u5728\u6570\u636e\u5e93\u9886\u57df\u8fd9\u662f\u4e00\u79cd\u5168\u65b0\u7684\u6280\u672f\u624b\u6bb5\uff0c\u4f46\u5076\n\u6587\u7ae0 \u7c89\u4e1d \u6d4f\u89c8\u91cf \u5c14\u4e5f\u6709\u5c0f\u4f19\u4f34\u4f1a\u54a8\u8be2\u4e00\u4e9b\u4e0d\u89e3\uff1a\n81 \u83b7\u5f97\u4e86 \u6b21\u70b9\u8d5e eBPF\u89c2\u6d4bMySQL\u505a\u51fa\u6765\u662f\u4e0d\u662f\u4e00\u4e2a\u73a9\u5177\uff1f\u80fd\u5426\u7528\u4e8e\u751f\u4ea7\uff1f\n117 \u5185\u5bb9\u83b7\u5f97 \u6b21\u8bc4\u8bba\n\u6bcf\u4e00\u6761SQL\u6267\u884c\u8fc7\u7a0b\u90fd\u63a2\u6d4b\uff0c\u5bf9\u6570\u636e\u5e93\u7684\u6027\u80fd\u6d88\u8017\u5230\u5e95\u6709\u591a\u5927\uff1f 41 \u83b7\u5f97\u4e86 \u6b21\u6536\u85cf\n\u8ba9\u4e00\u53ea\u871c\u8702(eBPF)\u53bb\u8ffd\u6d77\u8c5a\uff08MySQL\uff09\uff0c\u80fd\u8ffd\u5f97\u4e0a\u5417\uff1f\n\u70ed\u95e8\u6587\u7ae0\n\u672c\u6587\u5c06\u7528\u6570\u636e\u8bf4\u8bdd\uff0c\u5e26\u5927\u5bb6\u4e00\u8d77\u7528\u538b\u6d4b\u5bf9\u6bd4\u7684\u65b9\u6cd5\u63ed\u5f00\u4ee5\u4e0a\u8c1c\u56e2\uff01\n\u53f2\u4e0a\u6700\u5f3a\u7684SQL\u5ba1\u6838\u5de5\u5177\uff0c\u6c42\u6311\u6218\n\u56e0\u6d4b\u8bd5\u6bd4\u8f83\u4e25\u8c28\uff0c\u5168\u6587\u6bd4\u8f83\u957f\uff0c\u5fd9\u788c\u7684\u5c0f\u4f19\u4f34\u53ef\u76f4\u63a5\u67e5\u770b\u6700\u4e0b\u65b9\u7684\u603b\u7ed3 \u3002 2024-05-25 1628\u6d4f\u89c8\n2024 DTC\u5927\u4f1a\u7cbe\u5f69\u6f14\u8bb2\uff1aDBdoctor\uff0c\u57fa\n\u4e8eeBPF\u91cd\u65b0\u5b9a\u4e49\u6570\u636e\u5e93\u53ef\u89c2\u6d4b (\u9644PPT\u548c\nAgent\u91c7\u96c6\u5904\u7406\u6d41\u7a0b\u4e2d\uff0c\u54ea\u4e9b\u73af\u8282\u4f1a\u5b58\u5728\u5f00\u9500\uff1f \u89c6\u9891\u56de\u653e) 2024-04-17 1212\u6d4f\u89c8\nJava\u8bb8\u53ef\u653f\u7b56\u518d\u53d8\uff0cOracle JDK 17 \u514d\u8d39 \u5bf9\u4e8eAgent\u6765\u8bf4\u5360\u7528\u8d44\u6e90\u662f\u4e00\u5b9a\u7684\uff0c\u90a3\u5982\u4f55\u624d\u80fd\u505a\u5230\u6700\u5c0f\u5316\u8d44\u6e90\u5360\u7528\uff1f\u4e0b\u9762\u5c06\u8be6\u7ec6\n\u671f\u5c06\u7ed3\u675f\uff01 \u5c55\u5f00DBdoctor\u662f\u600e\u6837\u8fdb\u884c\u8d44\u6e90\u6d88\u8017\u63a7\u5236\u7684\u3002\n2024-09-13 745\u6d4f\u89c8\n\u8fbe\u68a6\u4e0a\u5e02\u9996\u65e5\uff0c\u8fce\u6765\u5f3a\u529b\u76df\u53cb\u52a9\u9635\u52a0\u6301\uff01\n2024-06-03 727\u6d4f\u89c8\nMySQL\u5185\u90e8\u4e34\u65f6\u8868\uff08Using temporary\uff09\n\u6848\u4f8b\u8be6\u89e3\u53ca\u4f18\u5316\u65b9\u6cd5\n2024-08-29 712\u6d4f\u89c8\n\u5728\u7ebf\u5b9e\u8bad\u73af\u5883\u5165\u53e3\nMySQL\u5728\u7ebf\u5b9e\u8bad\u73af\u5883\n\u67e5\u770b\u8be6\u60c5\n\u6700\u65b0\u6587\u7ae0\nDBdoctor v3.3.3.0\u7248\u672c\u53d1\u5e03\uff0c\u65b0\u589e\u5bf9Redi\ns\u6570\u636e\u5e93\u7684\u652f\u6301\uff01\n2025-08-05 13\u6d4f\u89c8\nAgent\u5229\u7528eBPF\u5b9e\u73b0\u5bf9MySQL\u7684\u5185\u6838\u63a2\u6d4b\uff0c\u4ece\u539f\u7406\u673a\u5236\u4e0a\u770beBPF\u7684\u6d88\u8017\u4e3b\u8981\u5728CP\n\u63a8\u8350\u4e00\u6b3e\u514d\u8d39\u6570\u636e\u5e93\u76d1\u63a7\u8bca\u65ad\u5de5\u5177\uff01AI\u667a U\u4e0a\uff0cCPU\u7684\u6d88\u8017\u5305\u542b\u4ee5\u4e0b\u4e24\u4e2a\u65b9\u9762\uff1a \u80fd\u8bca\u65ad\u4f18\u5316\uff0c20+\u6570\u636e\u5e93\u4e00\u7ad9\u5f0f\u652f\u6301\n2025-07-30 22\u6d4f\u89c8"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 0
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "1\uff09\u5185\u6838\u6001\u63a2\u6d4b\u5f00\u9500 DBdoctor\uff1aOceanBase\u6570\u636e\u5e93\u667a\u80fd\u8fd0\u7ef4\n\u4e0e\u6027\u80fd\u4f18\u5316\u4e13\u5bb6\n2025-07-23 34\u6d4f\u89c8 \u5f53\u6211\u4eec\u5bf9MySQL\u5185\u6838\u7684\u67d0\u4e2a\u51fd\u6570\u589e\u52a0\u63a2\u6d4b\uff0c\u76f8\u5f53\u4e8e\u5728\u51fd\u6570\u7684\u8fdb\u5165\u548c\u8fd4\u56de\u90fd\u4f1a\u6267\u884c\u6211\n\u4eec\u81ea\u5b9a\u4e49\u7684eBPF\u7a0b\u5e8f\uff0c\u6267\u884c\u5b8c\u540e\u518d\u8fdb\u884cMySQL\u7684\u4e0b\u4e00\u6b65\u6267\u884c\u3002\u90a3\u8fd9\u91cc\u589e\u52a0\u7684\u5f00\u9500 SQL\u6210\u201c\u81f4\u547d\u6740\u624b\u201d\uff1fDBdoctor\u3010SQL\u9650\u6d41\n\u5c31\u662f\u51fd\u6570\u88ab\u8c03\u7528\u7684\u65f6\u5019\u6267\u884c eBPF\u7a0b\u5e8f\u4ee3\u7801 \u7684\u5f00\u9500\uff08\u5b9e\u9645\u5360\u7528\u7684\u662fMySQL\u8fdb\u7a0b\u7684CP \u65b0\u529f\u80fd\u3011\u4e00\u62db\u7cbe\u51c6\u9650\u6d41\uff0c\u5b88\u62a4\u6838\u5fc3\u4e1a\u52a1\u4e0d\n\u5b95\u673a 2025-07-18 40\u6d4f\u89c8 U\u8d44\u6e90\uff09\u3002\nDBdoctor v3.3.2.3\u7248\u672c\u53d1\u5e03\uff0c\u65b0\u589eSQL\u9650 \u4ece\u4e0a\u56fe\u6211\u4eec\u80fd\u770b\u5230\uff0c\u63a7\u5236 \u5355\u6b21\u8c03\u7528\u6d88\u8017 \u548c \u8c03\u7528\u9891\u7387 \u5c24\u4e3a\u91cd\u8981\u3002\u5728\u5b9e\u9645\u751f\u4ea7\u4e2d\u8fd9\u4e24\u4e2a \u6d41\u529f\u80fd\u3001\u652f\u6301GaussDB\u6570\u636e\u5e93\u7eb3\u7ba1\n\u6307\u6807\u7684\u6027\u80fd\u5f00\u9500\u8be5\u5982\u4f55\u63a7\u5236\u5462\uff1f 2025-07-16 40\u6d4f\u89c8\n\u7406\u89e3Agent\u5904\u7406\u6d41\u7a0b\u4ee5\u540e\uff0c\u6211\u4eec\u5e0c\u671b\u8bbe\u8ba1\u4e00\u7ec4\u6d4b\u8bd5\uff0c\u5c24\u5176\u662f\u9488\u5bf9\u6027\u80fd\u8981\u6c42\u5f88\u9ad8\u7684OLT \u76ee\u5f55\nP\u6570\u636e\u5e93\u3002\u4e0e\u4e1a\u754c\u5176\u4ed6\u53ef\u89c2\u6d4b\u5382\u5546\u6d4b\u8bd5\u65b9\u6cd5\u4e0d\u540c\uff0c\u6bd4\u5982\u57fa\u4e8eeBPF\u63a2\u6d4bAPP\u5e94\u7528\uff0c\u4e00\nAgent\u91c7\u96c6\u5904\u7406\u6d41\u7a0b\u4e2d\uff0c\u54ea\u4e9b\u73af\u8282\u4f1a\u5b58\u5728\u5f00\u9500\uff1f \u822c\u90fd\u662f\u6ce8\u5165\u591a\u5c11\u8d1f\u8f7d\u538b\u529b\u7684\u60c5\u51b5\u4e0b\u8fdb\u884c\u6d4b\u8bd5\u8bc4\u4f30\u6027\u80fd\u635f\u8017\uff0c\u6211\u4eec\u8981\u6c42\u662f\u5728\u6781\u7aef\u8d1f\u8f7d\n1\uff09\u5185\u6838\u6001\u63a2\u6d4b\u5f00\u9500 \u538b\u529b\u60c5\u51b5\u4e0b\uff08\u6570\u636e\u5e93\u6027\u80fd\u8bca\u65ad\u7684\u521d\u8877\u5c31\u662f\u8981\u5728\u6570\u636e\u5e93\u6781\u7aef\u60c5\u51b5\u4e0b\u8fdb\u884c\u5173\u952e\u6570\u636e\u91c7\n\u96c6\uff0c\u624d\u80fd\u5206\u6790\u51fa\u6027\u80fd\u95ee\u9898\u6839\u56e0\uff09\uff0c\u5e0c\u671b\u8be5\u6d4b\u8bd5\u7528\u4f8b\u80fd\u8bc4\u4f30\u4ee5\u4e0b\u51e0\u70b9\uff1a 2\uff09\u7528\u6237\u6001\u6570\u636e\u5904\u7406\u5f00\u9500\n\u5982\u4f55\u8fdb\u884c\u6d4b\u8bd5\uff0c\u624d\u80fd\u8bc4\u4f30\u51faeBPF\u5f00\u9500\uff1f Agent \u7684\u8fd0\u884c\u5bf9\u4e1a\u52a1\u6027\u80fd\u6709\u4ec0\u4e48\u6837\u7684\u5f71\u54cd\uff1f\n1\uff09\u901a\u8fc7\u5178\u578b\u4e1a\u52a1\u573a\u666f\u8bc4\u4f30 Agent \u5bf9\u4e1a\u52a1\u6027\u80fd\u7684\u5f71\u54cd\n\u4e1a\u52a1\u7684 QPS/TPS \u964d\u4f4e\u4e86\u591a\u5c11\uff1f 2\uff09\u8bc4\u4f30 Agent \u81ea\u8eab\u7684\u5904\u7406\u6027\u80fd\n\u7ed9\u6570\u636e\u5e93\u65bd\u538b\uff0cAgent\u5bf9\u4e1a\u52a1\u7684\u5f71\u54cd\u5230\u5e95\u6709\u591a\u5927\uff1f \u4e1a\u52a1\u7684 RT\uff08Response Time\uff09\u5347\u9ad8\u4e86\u591a\u5c11\uff1f\n1\uff09\u573a\u666f A - \u57fa\u51c6\u538b\u6d4b\u53ea\u8bfb\u3001\u53ea\u5199\u3001\u8bfb\u5199\u6df7\u5408\u573a\u666f\u6d4b\u8bd5\u7ed3\u679c\n\u4e1a\u52a1\u7684 CPU/MEM \u6d88\u8017\u5347\u9ad8\u4e86\u591a\u5c11\uff1f a\uff09\u8bfb\u5199\u6a21\u5f0f\nb\uff09\u53ea\u8bfb\u6a21\u5f0f Agent \u81ea\u8eab\u7684\u5904\u7406\u6027\u80fd\u5982\u4f55\uff1f\nc\uff09\u53ea\u5199\u6a21\u5f0f\n\u7279\u5b9a\u538b\u529b\u4e0b Agent \u7684 CPU/MEM \u6d88\u8017\u5982\u4f55\uff1f 2\uff09\u573a\u666f B - TPC-C \u6d4b\u8bd5\u7ed3\u679c\n3\uff09\u573a\u666f C - \u6570\u636e\u5e93\u5355\u4e2a SQL \u8bf7\u6c42\u6d88\u8017\u573a\u666f\n2\uff09\u7528\u6237\u6001\u6570\u636e\u5904\u7406\u5f00\u9500 1c1g\u7684Agent\u8fdb\u7a0b\u81ea\u8eab\u8d44\u6e90\u6d88\u8017\u5982\u4f55\uff1f\n\u603b\u7ed3 \u63a2\u9488\u91c7\u96c6\u5230\u8be6\u7ec6MySQL\u5185\u6838\u6307\u6807\u6570\u636e\u540e\uff0cagent\u9700\u8981\u5bf9\u6570\u636e\u8fdb\u884c\u7ec4\u88c5\u5904\u7406\uff0c\u6700\u540e\u518d\nDBdoctor\u63a8\u51fa\u957f\u4e45\u514d\u8d39\u7248 \u901a\u8fc7\u7f51\u7edc\u6295\u9012\u51fa\u53bb\u8fdb\u884c\u5b58\u50a8\u3002\n\u4ece\u56fe\u4e0a\u6211\u4eec\u80fd\u770b\u5230\uff0c16c16g\u89c4\u683c\u7684\u4e3b\u673a\uff0c\u6211\u4eec\u7ed9agent\u5bb9\u5668\u8d44\u6e90\u9650\u5236\u57281c1g\uff0c\u8fd9\u6837\n\u53ef\u4ee5\u4fdd\u8bc1Agent\u4e0d\u4f1a\u62a2\u5360\u4e3b\u673a\u8d44\u6e90\uff08\u7a33\u5b9a\u6027\u515c\u5e95\uff09\uff0c\u8fd9\u5757\u8d44\u6e90\u5360\u7528\u5f88\u5c0f\uff0c\u53ef\u4ee5\u5ffd\u7565\u4e0d\n\u8ba1\u3002\n\u5982\u4f55\u8fdb\u884c\u6d4b\u8bd5\uff0c\u624d\u80fd\u8bc4\u4f30\u51faeBPF\u5f00\u9500\uff1f\n\u9996\u5148\uff0c\u4e3a\u4e86\u8bc4\u4f30 Agent\u5bf9\u4e1a\u52a1\u6027\u80fd\u7684\u5f71\u54cd\uff0c\u6211\u4eec\u5e0c\u671b\u8bbe\u8ba1\u5178\u578b\u7684\u4e1a\u52a1\u573a\u666f\u6765\u8fdb\u884c\u8bc4\n\u4f30\uff0c\u5e76\u5e0c\u671b\u80fd\u8986\u76d6\u5230 Agent \u5904\u7406\u6d41\u7a0b\u4e2d\u7684\u6240\u6709\u91cd\u8981\u73af\u8282\u3002\u6211\u4eec\u4e00\u5171\u8bbe\u8ba1\u4e86\u4e24\u4e2a\u573a\n\u666f\uff0c\u5982\u4e0b\u56fe\u6240\u793a\uff1a"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 1
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "1\uff09\u901a\u8fc7\u5178\u578b\u4e1a\u52a1\u573a\u666f\u8bc4\u4f30 Agent \u5bf9\u4e1a\u52a1\u6027\u80fd\u7684\u5f71\u54cd\n\u573a\u666f A - \u57fa\u51c6\u538b\u6d4b\u53ea\u8bfb\u3001\u53ea\u5199\u3001\u8bfb\u5199\u6df7\u5408\u573a\u666f\n\u4f7f\u7528 sysbench \u4f5c\u4e3a\u538b\u529b\u5de5\u5177\uff0c\u5206\u522b\u5728\u8bfb\u5199\u3001\u53ea\u8bfb\u3001\u53ea\u5199\u6a21\u5f0f\u4e0b\u4e0d\u540c\u5e76\u53d1\u65f6\u7684\n\u6027\u80fd\uff08TPS\u3001QPS\uff09\u3002\n\u5206\u522b\u5bf94c8g(bp:4G)/8c16g(bp: 8G) \u7684MySQL \u4f7f\u75281c1g/2c1g\u7684Agent\u8fdb\n\u884c\u538b\u6d4b\uff0c\u6ca1\u6709\u90e8\u7f72Agent\u538b\u6d4b\u7684\u6d88\u8017\u6570\u636e\u4f5c\u4e3a\u5bf9\u7167\u3002\n\u5206\u522b\u5728\u5e76\u53d1\u7528\u6237\u6570\u4e3a1/2/4/8/16/32/64 \u7684\u60c5\u51b5\u4e0b\u8fdb\u884c\u6d4b\u8bd5\u3002\n\u6bcf\u4e2a\u6d4b\u8bd5\u8fd0\u884c30\u5206\u949f\uff0c\u6536\u96c6TPS\u548cQPS\u6027\u80fd\u6570\u636e\u3001Agent \u7684\u5b9e\u9645\u7269\u7406\u8d44\u6e90\n\u6d88\u8017\u6570\u636e\u3001\u5bf9MySQL CPU\u8d44\u6e90\u7684\u6d88\u8017\u6570\u636e\u3002\n\u573a\u666f B - \u5178\u578b\u8ba2\u5355\u4ea4\u6613 OLTP \u573a\u666f\n\u4ea4\u6613\u573a\u666f\u5728\u6570\u636e\u5e93\u4e2d\u662f\u6bd4\u8f83\u5178\u578b\u7684OLTP\u7c7b\u578b\uff0c\u800c\u4e14\u7ecf\u5e38\u4f1a\u6709\u6027\u80fd\u76f8\u5173\u95ee\u9898\uff0c\u7279\n\u522b\u662f\u5927\u4fc3\u7b49\u573a\u666f\u4e0b\u5c24\u4e3a\u7a81\u51fa\u3002TPC-C \u6a21\u578b\u4e0b\u7684\u538b\u6d4b\uff0c\u8bc4\u4f30Agent\u5bf9\u4e1a\u52a1\u5904\u7406\u80fd\n\u529b\u7684\u5f71\u54cd\u7a0b\u5ea6\u3002\n\u573a\u666f C - \u6570\u636e\u5e93\u5355\u4e2a SQL \u8bf7\u6c42\u6d88\u8017\u573a\u666f\nMySQL\u7684SQL\u6267\u884c\u8fc7\u7a0b\u63a2\u6d4b\uff0c\u90fd\u4f1a\u6267\u884c\u5bf9\u5e94\u7684\u63a2\u6d4b\u70b9 eBPF \u7a0b\u5e8f\uff0c\u8be5\u7a0b\u5e8f\u7684\u5f00\n\u9500\u5373\u4e1a\u52a1\u6027\u80fd\u7684\u5f71\u54cd\u5f00\u9500\u3002\u8be5\u6d4b\u8bd5\u901a\u8fc7\u7ed9\u7a0b\u5e8f\u589e\u52a0\u6253\u5370\uff08\u4ec5\u5185\u90e8\u9a8c\u8bc1\u8bc4\u4f30\u4f7f\n\u7528\uff09\u3002\u6240\u6709\u4e0a\u8ff0\u4e09\u5927\u573a\u666f\uff0c\u6211\u4eec\u5747\u4f1a\u5206\u522b\u6d4b\u8bd5\u505c\u7528 Agent\uff08\u57fa\u7ebf\uff09\u3001\u8fd0\u884cAgent\n\u4e24\u79cd\u60c5\u51b5\uff0c\u901a\u8fc7\u5bf9\u6bd4\u5f97\u51fa Agent \u5bf9\u4e1a\u52a1\u6027\u80fd\u7684\u5f71\u54cd\u3002\u53e6\u5916\uff0c\u6211\u4eec\u4e5f\u4f1a\u6ce8\u5165\u4e0d\u540c\nTPS \u7684\u538b\u529b\uff0c\u76f4\u81f3\u8fbe\u5230\u4e1a\u52a1\u6781\u9650\u5904\u7406\u80fd\u529b\uff0c\u4ee5\u8bc4\u4f30\u4e0d\u540c\u538b\u529b\u4e0b\u7684\u5f71\u54cd\u662f\u5426\u5b58\u5728\n\u5dee\u5f02\u3002\u53e6\u4e00\u65b9\u9762\uff0c\u5bf9\u4e8eAgent\u8fdb\u7a0b\u81ea\u8eab\u5904\u7406\u6027\u80fd\u7684\u8bc4\u4f30\uff0c\u6211\u4eec\u4f1a\u8bb0\u5f55\u573a\u666f A\u3001\nB\u3001C \u4e2dAgent \u8fdb\u7a0b\u7684 CPU/MEM\u5f00\u9500\u3002\u9664\u6b64\u4e4b\u5916\uff0c\u6211\u4eec\u4e5f\u5e0c\u671b\u8bbe\u8ba1\u4e00\u4e9b\u66f4\u6781\u7aef\n\u7684\u573a\u666f\uff0c\u7528\u6765\u8bc4\u4f30Agent\u5728\u8d44\u6e90\u53d7\u9650\u60c5\u51b5\u4e0b\u7684\u8d44\u6e90\u6d88\u8017\u548c\u6781\u9650\u5904\u7406\u80fd\u529b\u3002Agent\n\u7684\u5904\u7406\u4e3b\u8981\u662f\u8bfb\u53d6\u6570\u636e\u5e76\u7f51\u7edc\u6295\u9012\u7684\u5f00\u9500\uff0c\u6ca1\u6709\u505a\u5176\u4ed6\u903b\u8f91\u7684\u5904\u7406\uff0c\u6240\u6709\u5f00\u9500\u4e3b\n\u8981\u5728CPU\u4e0a\uff0c\u90a3\u4e48CPU\u7684\u5f00\u9500\u548cQPS\u6709\u5173\uff0c\u6211\u4eec\u9700\u8981\u9a8c\u8bc1QPS\u5bf9 Agent \u8d44\u6e90\u6d88\n\u8017\u7684\u5f71\u54cd\u3002\n2\uff09\u8bc4\u4f30 Agent \u81ea\u8eab\u7684\u5904\u7406\u6027\u80fd\n\u573a\u666f A - \u53ea\u91c7\u96c6\u4e3b\u673a\u6027\u80fd\u6570\u636e\n\u6211\u4eec\u53ea\u91c7\u96c6\u4e3b\u673a\u548c\u5b9e\u4f8b\u8d44\u6e90\u76f8\u5173\u7684\u6027\u80fd\u6570\u636e\uff0c\u4e0d\u5f00\u542f\u6027\u80fd\u6d1e\u5bdf\u548c\u9501\u5206\u6790\uff0c\u540c\u65f6\u7eb3\n\u7ba1\u4e00\u4e2a\u673a\u5668\u4e0a\u591a\u4e2a\u6570\u636e\u5e93\u5b9e\u4f8b\uff0c\u5e76\u8bc4\u4f30 Agent \u9700\u8981\u5360\u7528\u591a\u5c11 CPU/MEM \u8d44\u6e90\u3002"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 2
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u573a\u666f B - \u5f00\u542f\u5168\u529f\u80fd\u91c7\u96c6\u5e76\u538b\u6d4b\u5b9e\u4f8b\n\u57fa\u4e8e\u538b\u6d4b\u5de5\u5177\u4e0d\u65ad\u589e\u52a0 QPS \u7684\u91cf\uff0c\u8bc4\u4f30 Agent \u7684 CPU/MEM \u8d44\u6e90\u5360\u7528\u4e0eQPS\n\u7684\u5173\u7cfb\uff0c\u6211\u4eec\u5c06\u4f1a\u5bf9\u6240\u6709\u4e0a\u8ff0 2 \u4e2a\u573a\u666f\u7684\u6d4b\u8bd5\u65b9\u6cd5\u548c\u7ed3\u679c\u8fdb\u884c\u8be6\u7ec6\u7684\u9610\u8ff0\u3002\u6d4b\n\u8bd5\u8fc7\u7a0b\u4e2d DBdoctor Agent\u5168\u90e8\u4f7f\u7528\u9ed8\u8ba4\u914d\u7f6e\uff0c\u6ca1\u6709\u8fdb\u884c\u4efb\u4f55\u8c03\u4f18\u3002\u5e2e\u52a9\u7528\u6237\u8bc4\n\u4f30\u4e1a\u52a1\u91cf\u9700\u8981\u591a\u5c11 Agent\u8d44\u6e90\u914d\u7f6e\u3002\n\u7ed9\u6570\u636e\u5e93\u65bd\u538b\uff0cAgent\u5bf9\u4e1a\u52a1\u7684\u5f71\u54cd\u5230\u5e95\u6709\u591a\u5927\uff1f\n\u901a\u8fc7\u5206\u6790Agent\u7684\u5904\u7406\u6d41\u7a0b\uff0c\u6211\u4eec\u8bbe\u8ba1\u4e863\u5927\u573a\u666f\u8fdb\u884c\u5168\u65b9\u4f4d\u8bc4\u6d4b\u3002\n\u6d4b\u8bd5\u73af\u5883\u4fe1\u606f\uff1a\n\u6570\u636e\u5e93\u670d\u52a1\u5668\uff1aECS \u72ec\u4eabcpu\nCPU\uff1aIntel(R) Xeon(R) Platinum 8269CY CPU @ 2.50GHz\nECS\u89c4\u683c\uff1a16c16g\n\u673a\u5668\u5185\u5b58\uff1a32GB DDR4\nmysql\u7248\u672c\uff1a5.7.37\n\u64cd\u4f5c\u7cfb\u7edf\uff1aCentOS Linux 8\n\u5185\u6838\u7248\u672c\uff1a4.18.0-348.7.1.el8_5.x86_64\n1\uff09\u573a\u666f A - \u57fa\u51c6\u538b\u6d4b\u53ea\u8bfb\u3001\u53ea\u5199\u3001\u8bfb\u5199\u6df7\u5408\u573a\u666f\u6d4b\u8bd5\u7ed3\u679c\n\u4ee5\u4e0b\u6d4b\u8bd5\u5747\u662f\u672c\u5730\u8fde\u63a5\u6570\u636e\u5e93\u8fdb\u884c\uff0c\u5728\u4e0d\u540c\u5e76\u53d1\u8fde\u63a5\u5bf9 1000 \u5f20\u5355\u8868 1W \u6570\u636e\u8868\u8fdb\n\u884c\u538b\u529b\u6d4b\u8bd5\uff0c\u6d4b\u8bd5\u65f6\u95f4 30 \u5206\u949f\uff0c\u538b\u6d4b\u6570\u636e\u4e3a 5 \u6b21\u6570\u636e\u5747\u503c\u3002\u4e0b\u9762\u4ee5 MySQL 4C8\nG \u7684\u89c4\u683c\u8fdb\u884c\u538b\u6d4b\uff0cAgent \u8d44\u6e90\u9650\u5236\u5728 1C1G/2C1G\uff0c\u5bf9\u6bd4\u5f00\u542f Agent \u524d\u540e\u7684\u8bfb\n\u5199\u3001\u53ea\u8bfb\u3001\u53ea\u5199\u4e09\u79cd\u6a21\u5f0f\u4e0b\u7684\u6027\u80fd\u8868\u73b0\u3002\n\u4e0b\u9762\u6211\u4eec\u901a\u8fc7\u5bf9\u6bd4\u6298\u7ebf\u56fe\u6765\u5c55\u793a\uff0c\u6709\u65e0Agent\u6216\u8005\u589e\u52a0Agent CPU\u60c5\u51b5\u4e0b\u4e1a\u52a1QPS\n\u7684\u8868\u73b0\uff1a\na\uff09\u8bfb\u5199\u6a21\u5f0f"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 3
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "Latency(m CPU(mysql Memory(m QPS s) d) ysqld)\n\u5bf9\u7167\u7ec4 9506 143 230% 1.68G\nAgent\u7ec4 9406 146 250% 1.68G\n\u7ed3\u679c\u8bf4\u660e\uff1a\nQPS \u4e0b\u964d 1.05%\n\u65f6\u5ef6\u63d0\u9ad8 2%\n1W \u7684 QPS CPU \u5360\u7528\u63d0\u9ad8 0.2c\n\u8be5\u90e8\u5206\u8d44\u6e90\u4e3b\u8981\u6d88\u8017\u5728\u9ad8\u5e76\u53d1\u4e0b\u4ea7\u751f\u7684\u5927\u91cfperf\u4e8b\u4ef6\u63d0\u4ea4\n\u5185\u5b58\u4f7f\u7528\u65e0\u53d8\u5316\u3002\nb\uff09\u53ea\u8bfb\u6a21\u5f0f"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 4
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "Latency(m CPU(mysql Memory(m QPS s) d) ysqld)\n\u5bf9\u7167\u7ec4 46499 82 310% 1.68G\nAgent\u7ec4 44195 86 390% 1.68G\n\u7ed3\u679c\u8bf4\u660e\uff1a\n\u7eaf\u8bfb\u6a21\u5f0f\u7684 QPS \u5cf0\u503c\u53ef\u8fbe\u5230 4.5w\uff0c\u8be5\u538b\u529b\u4e0b\u9762\u6301\u7eed\u589e\u538b\u76f4\u5230CPU\u6253\u6ee1\u4e5f\u4f1a\u5bfc\n\u81f4QPS\u4e0b\u964d\u81f33.5w\uff08\u65e0 Agent \u7684\u60c5\u51b5\uff09\u3002\u800c\u5f00\u542f agent \u91c7\u96c6\u5cf0\u503c\u60c5\u51b5\u4f1a\u6d88\u8017\u66f4\n\u591a\u7684 CPU(\u76f8\u5f53\u4e8e\u5360\u7528\u4e86 MySQL \u672c\u8eab\u7684CPU,\u4f1a\u6d88\u8017 0.2*4.5=0.9c \u7528\u4e8e\u6267\u884ce\nBPF \u7a0b\u5e8f\uff0c4c8g \u7684 MySQL \u89c4\u683c\u5b9e\u9645\u80fd\u7528\u4e8e MySQL \u8fdb\u7a0b\u4f7f\u7528\u7684\u662f 3c8g \u7684\u89c4\n\u683c\uff0cCPU\u6253\u6ee1\u60c5\u51b5QPS \u53ef\u8fbe\u5230 3.2w)\uff0c\u5982\u679c\u7ed9\u8be5\u5b9e\u4f8b\u989d\u5916\u589e\u52a00.9c\u7684CPU\uff0c\u8be5\n\u6027\u80fd\u541e\u5410\u53ef\u4ee5\u8fbe\u5230\u548c\u5f53\u524d\u65e0Agent\u4e00\u81f4\u3002\n\u5185\u5b58\u4f7f\u7528\u65e0\u53d8\u5316\nc\uff09\u53ea\u5199\u6a21\u5f0f\nLatency(m CPU(mysql Memory(m QPS s) d) ysqld)\n\u5bf9\u7167\u7ec4 5587 112 210% 1.68G\nAgent\u7ec4 5656 113 220% 1.68G\n\u7ed3\u679c\u8bf4\u660e\uff1a\nQPS \u65e0\u4e0b\u964d\n\u65f6\u5ef6\u65e0\u660e\u663e\u53d8\u5316\n5k \u7684 QPS CPU \u5360\u7528\u63d0\u9ad8 0.1c"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 5
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "2\uff09\u573a\u666f B - TPC-C \u6d4b\u8bd5\u7ed3\u679c\nLatency(m CPU(mysql Memory(m QPS s) d) ysqld)\n\u5bf9\u7167\u7ec4 9120 143 230% 1.68G\nAgent\u7ec4 9003 146 250% 1.68G \u7ed3\u679c\u8bf4\n\u660e\uff1a\nQPS \u4e0b\u964d 1.28%\n\u65f6\u5ef6\u63d0\u9ad8 2%\n1w \u7684 QPS CPU \u5360\u7528\u63d0\u9ad8 0.2c\n\u573a\u666f B \u7684\u6570\u636e\u548c\u573a\u666f A \u7684\u57fa\u672c\u543b\u5408\uff0c\u8bf4\u660e Agent \u7684\u4e3b\u8981\u6d88\u8017\u6765\u81ea\u4e8e QPS\uff0c1w\n\u7684 QPS \u5360\u7528 0.2c \u7684 CPU \u8d44\u6e90\n3\uff09\u573a\u666f C - \u6570\u636e\u5e93\u5355\u4e2a SQL \u8bf7\u6c42\u6d88\u8017\u573a\u666f\nconnection-28688 [014] d... 20941.295869: bpf_trace_printk: mysql_sql_req_entry\nconnection-28688 [014] d... 20941.295956: bpf_trace_printk: mysql_sql_req_entry\nconnection-28688 [014] d... 20941.304001: bpf_trace_printk: mysql_sql_return\nconnection-28688 [014] d... 20941.304019: bpf_trace_printk: mysql_sql_return\nuprobe \u63a2\u9488\u547d\u4e2d \u6d88\u8017\u6c47\u603b Latenc \u7a0b\u5e8f\u6d88\u8017(ns) \u6d88\u8017(ns) y(ms)\nSQL\u8bf7\u6c42 119222 3000 0.122\nSQL\u8fd4\u56de 21158 4500 0.025\n\u7ed3\u679c\u8bf4\n\u660e\uff1a\n\u6dfb\u52a0 eBPF \u63a2\u9488\u540e\uff0c\u5355\u6761 SQL Latency(ms) \u589e\u52a0 0.147ms\n\u6d4b\u8bd5\u7ed3\u679c\u8868\u660e Agent\u6d88\u8017 \u53ea\u4e0e \u4e1a\u52a1\u6570\u636e\u5e93QPS \u6709\u5173\uff0c\u5728 \u8bfb\u5199\u6a21\u5f0f \u548c \u53ea\u5199\u6a21\u5f0f \u7684\u573a\u666f\n\u4e0b\u51e0\u4e4e\u65e0\u4efb\u4f55\u5f71\u54cd\u3002\u5728\u6781\u7aef \u53ea\u8bfb\u573a\u666f \u538b\u6d4b\u4e0b\uff0c\u8f7b\u91cf\u7ea7\u7684\u91c7\u96c6\u5bf9\u751f\u4ea7\u4e1a\u52a1\u7684\u5f71\u54cd 1w Q\nPS \u9700\u8981\u6d88\u8017 0.22c \u7684 CPU \u8d44\u6e90\u3002\n1c1g\u7684Agent\u8fdb\u7a0b\u81ea\u8eab\u8d44\u6e90\u6d88\u8017\u5982\u4f55\uff1f\n\u4e0a\u9762 A\u3001B\u3001C\u4e09\u4e2a\u573a\u666f\u6d4b\u8bd5\u8fc7\u7a0b\u4e2d\uff0c\u6211\u4eec\u540c\u65f6\u4e5f\u8bb0\u5f55\u4e86\u4e3b\u673a\u4e0aAgent\u8fdb\u7a0b\u81ea\u8eab\u5728\u9ad8\n\u8d1f\u8f7d\u4e0b\u7684\u8d44\u6e90\u6d88\u8017\uff0c\u89c1\u4e0b\u8868\uff1a\nCPU Memory(G)\n\u538b\u6d4b\u72b6\u6001(2500 61% 0.168 0QPS)\n\u9759\u6001(\u76d1\u6d4b\u65e0\u538b 5% 0.168 \u529b\u5b9e\u4f8b)\n\u4e0d\u7eb3\u7ba1\u5b9e\u4f8b(\u4e0d 1% 0.028 \u5f00\u542f eBPF) Agent \u81ea\u8eab\u8d44\u6e90\u5360\u7528\u60c5\u51b5:"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 6
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u53ea\u91c7\u96c6\u4e3b\u673a\u6027\u80fd\u6570\u636e\u65f6\uff0c\u4f7f CPU \u5360\u7528\u4e3a 0.01c,\u5185\u5b58\u5360\u7528 0.028G\n\u589e\u52a0\u4e00\u4e2a\u5b9e\u4f8b\uff0c\u4e14\u8be5\u5b9e\u4f8b\u65e0\u538b\u529b\u65f6\uff0cCPU \u5360\u7528\u589e\u957f 0.04c,\u5185\u5b58\u589e\u957f 0.14G\n\u91c7\u96c6\u7684\u5b9e\u4f8b\u6bcf\u589e\u52a0 1w QPS\uff0cagent \u7684 CPU \u6d88\u8017\u589e\u52a0 0.22c, \u5185\u5b58\u65e0\u589e\u957f\n\u603b\u7ed3\n\u901a\u8fc7\u516d\u4e2a\u573a\u666f\u7684\u5168\u65b9\u4f4d\u8bc4\u6d4b\uff0c\u6211\u4eec\u5bf9 Agent \u7684\u6027\u80fd\u60c5\u51b5\u6709\u4e86\u5b8c\u6574\u7684\u4e86\u89e3\uff0cDBdocto\nr\u9488\u5bf9\u91c7\u96c6\u5e26\u6765\u7684\u6d88\u8017\u7cbe\u786e\u5230QPS\u91cf\u7ea7\u4e0a\uff0c1w\u7684QPS\u6d88\u80170.2c\u7684\u8d44\u6e90\uff0c\u6574\u4f53\u6027\u80fd\u635f\n\u8017\u6b63\u5e38\u63a7\u5236\u57282%\u4ee5\u5185( \u975e\u5e38\u4f4e \u7684\u8303\u56f4)\uff0c\u540c\u65f6\u8fd8\u53ef\u4ee5\u901a\u8fc7DBdoctor\u7684\u6027\u80fd\u8bca\u65ad\u529f\u80fd\n\u4f18\u5316\u6570\u636e\u5e93\u3001\u964d\u4f4eSQL\u8d44\u6e90\u6d88\u8017 \uff0c\u80fd\u5927\u5e45\u5ea6 \u63d0\u5347\u6027\u80fd \u3002\n\u6781\u7aef\u538b\u6d4b\u7684\u6027\u80fd\u635f\u8017\u548c\u8d44\u6e90\u5bf9\u7167\uff1a\n\u5bf9MySQL\u6027\u80fd\u5f71\u54cd\uff1a\n\u5728\u53ea\u8bfb\u548c\u8bfb\u5199\u573a\u666f\u5bf9MySQL\u6027\u80fd\u5f71\u54cd\u5747\u4e0d\u660e\u663e\uff0cQPS\u548c\u65f6\u5ef6\u5747\u57282%\u5de6\u53f3\u6ce2\n\u52a8\uff0c\u5728\u8bef\u5dee\u6ce2\u52a8\u8303\u56f4\u5185\n\u5bf9MySQL\u8d44\u6e90\u5f71\u54cd\uff1a\n\u6bcf10K QPS\u4f1a\u4f7fMysql\u5360\u7528\u7684CPU\u589e\u52a00.2c\n\u5bf9MySQL\u5185\u5b58\u5360\u7528\u65e0\u5f71\u54cd\nAgent\u8fdb\u7a0b\u81ea\u8eab\u8d44\u6e90\u5360\u7528\u60c5\u51b5:\n\u5728\u4e0d\u91c7\u96c6Mysql/\u6570\u636e\u7684\u60c5\u51b5\u4e0b(\u8be5\u573a\u666f\u53ea\u91c7\u96c6\u4e3b\u673a\u8d44\u6e90\u6570\u636e)\uff0c\u4f7f\u75280.04c C\nPU\uff0c0.24G\u5185\u5b58\n\u5728\u91c7\u96c6\u72b6\u6001\u4e0b(MySQL QPS 2w)\uff0c\u4f7f\u75280.85c CPU\uff0c0.24G\u5185\u5b58\u3002\n\u4ee5\u4e0a\u6027\u80fd\u635f\u8017\u7ed3\u679c\u4e0d\u77e5\u5927\u5bb6\u770b\u4e86\u4ec0\u4e48\u611f\u53d7\uff1f\u4e0e MySQL\u81ea\u8eab\u5f00\u542fgeneral_log\u540e\u7684\u6027\n\u80fd\u635f\u8017\u76f8\u6bd4\u7b80\u76f4\u4e0d\u503c\u4e00\u63d0 \u3002\n\u5982\u6b64 \u4f4e\u7684\u6027\u80fd\u635f\u8017 \u5c31\u53ef\u4ee5\u91c7\u96c6\u5230\u5168\u91cf\u65e5\u5fd7\uff0c\u5e76\u8fdb\u884c\u5185\u6838\u7ea7\u7cbe\u786e\u7684\u8bca\u65ad\uff0c\u679c\u7136\u662f\u6280\u672f\n\u6539\u53d8\u4e16\u754c\u3002\n\u6700\u540e\uff0c\u672c\u6587\u6240\u6709\u6d4b\u8bd5\u6570\u636e\u5747\u662f\u5728 Agent \u9ed8\u8ba4\u914d\u7f6e\u4e0b\u6d4b\u5f97\u7684\u3002\u6211\u4eec\u4e5f\u671f\u5f85\u5c0f\u4f19\u4f34\u7684\u66f4\n\u591a\u8bc4\u6d4b\uff0c\u66f4\u671f\u5f85\u628a\u8bc4\u6d4b\u62a5\u544a\u4e0e\u6211\u4eec\u5171\u4eab\u3002 \u5927\u5bb6\u53ef\u4ee5\u5728\u4e0b\u65b9\u5b98\u7f51\u5730\u5740\u4e0b\u8f7dDBdocto\nr\uff0c\u8f6f\u4ef6\u96f6\u4f9d\u8d56\u3001\u4e00\u952e\u62c9\u8d77\uff0c\u4eb2\u624b\u4ea7\u51fa\u81ea\u5df1\u7684\u538b\u6d4b\u6570\u636e \u3002\nEnjoy DBdoctor\uff01Enjoy Zero Code Observability\uff01"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 7
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "DBdoctor\u63a8\u51fa\u957f\u4e45\u514d\u8d39\u7248\nDBdoctor\u662f\u4e00\u6b3e\u4f01\u4e1a\u7ea7\u6570\u636e\u5e93\u5168\u65b9\u4f4d\u6027\u80fd\u76d1\u63a7\u4e0e\u8bca\u65ad\u5e73\u53f0\uff0c\u81f4\u529b\u4e8e\u89e3\u51b3\u4e00\u5207\u6570\u636e\u5e93\n\u6027\u80fd\u95ee\u9898\u3002\u53ef\u4ee5\u5bf9\u5546\u4e1a\u6570\u636e\u5e93\u3001\u5f00\u6e90\u6570\u636e\u5e93\u3001\u56fd\u4ea7\u6570\u636e\u5e93\u8fdb\u884c\u7edf\u4e00\u6027\u80fd\u8bca\u65ad\u3002\u5177\n\u5907\uff1a SQL\u5ba1\u6838\u3001\u5de1\u68c0\u62a5\u8868\u3001\u76d1\u63a7\u544a\u8b66\u3001\u5b58\u50a8\u8bca\u65ad\u3001\u5ba1\u8ba1\u65e5\u5fd7\u3001\u6743\u9650\u7ba1\u7406 \u7b49\u514d\u8d39\u529f\n\u80fd\uff0c\u4e0d\u9650\u5b9e\u4f8b\u4e2a\u6570\uff0c\u53ef\u57fa\u4e8e\u957f\u4e45\u514d\u8d39\u7248\u5feb\u901f\u642d\u5efa\u4f01\u4e1a\u7ea7\u6570\u636e\u5e93\u76d1\u63a7\u8bca\u65ad\u5e73\u53f0\u3002\u540c\u65f6\n\u62e5\u6709\uff1a \u6027\u80fd\u6d1e\u5bdf\u3001\u9501\u5206\u6790\u3001\u6839\u56e0\u8bca\u65ad\u3001\u7d22\u5f15\u63a8\u8350\u3001SQL\u53d1\u5e03\u524d\u6027\u80fd\u8bc4\u4f30 \u7b49\u9ad8\u9636\u529f\n\u80fd\uff0c\u5b98\u7f51\u53ef\u5feb\u901f\u4e0b\u8f7d\uff0c\u96f6\u4f9d\u8d56\uff0c\u4e00\u5206\u949f\u5feb\u901f\u4e00\u952e\u90e8\u7f72\u3002\u5982\u679c\u60a8\u60f3\u8981\u8bd5\u7528\u5168\u90e8\u529f\u80fd\u53ef\n\u6dfb\u52a0\u516c\u4f17\u53f7\u81ea\u52a9\u7533\u8bf7\u4e13\u4e1a\u7248license\u3002\u6210\u4e3a\u4f01\u4e1a\u7528\u6237\u53ef\u83b7\u5f97\u4ea7\u54c1\u5b9a\u5236\u3001OpenAPI\u96c6\n\u6210\u3001\u4e00\u5bf9\u4e00\u4e13\u5bb6\u7b49\u9ad8\u9636\u670d\u52a1\u3002\u8fce\u6dfb\u52a0\u5c0f\u52a9\u624b\u5fae\u4fe1\u4e86\u89e3\u8be6\u7ec6\u4fe1\u606f\uff01\n1\ufe0f\u20e3 \u4ea7\u54c1\u4ecb\u7ecd \uff1a\n\u5185\u6838\u7ea7\u6570\u636e\u5e93\u6027\u80fd\u8bca\u65ad\u5de5\u5177DBdoctor\n2\ufe0f\u20e3 \u514d\u8d39\u4e0b\u8f7d/\u5728\u7ebf\u8bd5\u7528 \uff1a\nhttps://dbdoctor.hisensecloud.com/col.jsp?id=126\ndbdoctor ebpf mysql \u6570\u636e\u5e93\u6027\u80fd\u6d4b\u8bd5\n\u300c\u559c\u6b22\u8fd9\u7bc7\u6587\u7ae0\uff0c\u60a8\u7684\u5173\u6ce8\u548c\u8d5e\u8d4f\u662f\u7ed9\u4f5c\u8005\u6700\u597d\u7684\u9f13\u52b1\u300d\n\u5173\u6ce8\u4f5c\u8005 \u8d5e\u8d4f\n\u3010\u7248\u6743\u58f0\u660e\u3011\u672c\u6587\u4e3a\u58a8\u5929\u8f6e\u7528\u6237\u539f\u521b\u5185\u5bb9\uff0c\u8f6c\u8f7d\u65f6\u5fc5\u987b\u6807\u6ce8\u6587\u7ae0\u7684\u6765\u6e90\uff08\u58a8\u5929\u8f6e\uff09\uff0c\u6587\u7ae0\u94fe\u63a5\uff0c\u6587\u7ae0\u4f5c\u8005\u7b49\u57fa\u672c\u4fe1\n\u606f\uff0c\u5426\u5219\u4f5c\u8005\u548c\u58a8\u5929\u8f6e\u6709\u6743\u8ffd\u7a76\u8d23\u4efb\u3002\u5982\u679c\u60a8\u53d1\u73b0\u58a8\u5929\u8f6e\u4e2d\u6709\u6d89\u5acc\u6284\u88ad\u6216\u8005\u4fb5\u6743\u7684\u5185\u5bb9\uff0c\u6b22\u8fce\u53d1\u9001\u90ae\u4ef6\u81f3\uff1acontac\nt@modb.pro\u8fdb\u884c\u4e3e\u62a5\uff0c\u5e76\u63d0\u4f9b\u76f8\u5173\u8bc1\u636e\uff0c\u4e00\u7ecf\u67e5\u5b9e\uff0c\u58a8\u5929\u8f6e\u5c06\u7acb\u523b\u5220\u9664\u76f8\u5173\u5185\u5bb9\u3002\n\u8bc4\u8bba"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 8
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u76f8\u5173\u9605\u8bfb\nACDU\u5468\u5ea6\u7cbe\u9009 | \u672c\u5468\u6570\u636e\u5e93\u5708\u70ed\u70b9 + \u6280\u672f\u5e72\u8d27\u5206\u4eab\uff082025/7/25\u671f\uff09\n\u58a8\u5929\u8f6e\u5c0f\u52a9\u624b 473\u6b21\u9605\u8bfb 2025-07-25 15:54:18\nACDU\u5468\u5ea6\u7cbe\u9009 | \u672c\u5468\u6570\u636e\u5e93\u5708\u70ed\u70b9 + \u6280\u672f\u5e72\u8d27\u5206\u4eab\uff082025/7/17\u671f\uff09\n\u58a8\u5929\u8f6e\u5c0f\u52a9\u624b 442\u6b21\u9605\u8bfb 2025-07-17 15:31:18\n\u58a8\u5929\u8f6e\u300c\u5b9e\u64cd\u770b\u6211\u7684\u300d\u6570\u636e\u5e93\u4e3b\u9898\u5f81\u6587\u6d3b\u52a8\u542f\u52a8\n\u58a8\u5929\u8f6e\u7f16\u8f91\u90e8 402\u6b21\u9605\u8bfb 2025-07-22 16:11:27\nMySQL 9.4.0 \u6b63\u5f0f\u53d1\u5e03\uff0c\u652f\u6301 RHEL 10 \u548c Oracle Linux 10\n\u4e25\u5c11\u5b89 211\u6b21\u9605\u8bfb 2025-07-23 01:21:32\n\u6df1\u5ea6\u89e3\u6790MySQL\u7684\u534a\u8fde\u63a5\u8f6c\u6362\n\u542c\u89c1\u98ce\u7684\u58f0\u97f3 207\u6b21\u9605\u8bfb 2025-07-14 10:23:00\n7\u6708\u201c\u58a8\u529b\u539f\u521b\u4f5c\u8005\u8ba1\u5212\u201d\u83b7\u5956\u540d\u5355\u516c\u5e03\n\u58a8\u5929\u8f6e\u7f16\u8f91\u90e8 205\u6b21\u9605\u8bfb 2025-08-12 15:05:56\n\u7d22\u5f15\u6761\u4ef6\u4e0b\u63a8\u548c\u5206\u533a-\u4e00\u6761SQL\u8bed\u53e5\u6267\u884c\u8ba1\u5212\u7684\u5206\u6790\n\u542c\u89c1\u98ce\u7684\u58f0\u97f3 198\u6b21\u9605\u8bfb 2025-07-23 09:22:58\nnull\u548c\u5b50\u67e5\u8be2--not in\u548cnot exists\u600e\u4e48\u9009\u62e9\uff1f\n\u542c\u89c1\u98ce\u7684\u58f0\u97f3 184\u6b21\u9605\u8bfb 2025-07-21 08:54:19\n\u4f7f\u7528 MySQL Clone \u63d2\u4ef6\u4e3aMGR\u96c6\u7fa4\u6dfb\u52a0\u8282\u70b9\n\u9ec4\u5c71\u8c37 168\u6b21\u9605\u8bfb 2025-07-23 22:04:19\nMySQL\u6570\u636e\u5e93SQL\u4f18\u5316\u6848\u4f8b(\u8d70\u9519\u7d22\u5f15)\n\u9648\u4e3e\u8d85 167\u6b21\u9605\u8bfb 2025-07-17 21:24:40"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 9
+        }
+    ]
+}

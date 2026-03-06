@@ -1,0 +1,262 @@
+{
+    "pdf_info": [
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "MySQL \u5185\u5b58\u4f7f\u7528\u60c5\u51b5\u6392\u67e5\nCuihulong MySQL\u4ece1\u5f00\u59cb 2025\u5e748\u67084\u65e5 09:25 \u4e0a\u6d77\nMySQ\u4f7f\u7528\u5185\u5b58\u4e0a\u534790%\uff01\u5728\u8fd0\u7ef4\u8fc7\u7a0b\u4e2d50%\u7684\u51e0\u7387\uff0c\u4f1a\u78b0\u5230\u8fd9\u6837\u7684\u95ee\u9898\u3002\u7b97\u662f\u6bd4\u8f83\u666e\n\u904d\u7684\u73b0\u8c61\u3002\nMySQL\u5185\u5b58\u4f7f\u7528\u7387\u8fc7\u9ad8\uff0c\u6709\u8bf8\u591a\u539f\u56e0\u3002\u666e\u904d\u7684\u60c5\u51b5\u662f\u56e0\u4e3a\u4f7f\u7528\u4e0d\u5f53\u5bfc\u81f4\u7684\uff0c\u8fd8\u6709mysql\n\u672c\u8eab\u7684\u7f3a\u9677\u7684\u5bfc\u81f4\u7684\u3002\u5230\u5e95\u662f\u90a3\u65b9\u9762\u7684\u95ee\u9898\uff0c\u90a3\u5c31\u9700\u8981\u4e00\u4e2a\u4e00\u4e2a\u8fdb\u884c\u6392\u67e5\u3002\n\u4e0b\u9762\u4ecb\u7ecd\u6392\u67e5\u601d\u8def\uff1a\n1.\u53c2\u6570\u914d\u7f6e\u9700\u8981\u786e\u8ba4\u3002\u662f\u5426\u5185\u5b58\u8bbe\u7f6e\u5408\u7406.\nMySQL\u5185\u5b58\u5206\u4e3a\u5168\u5c40\u548c\u7ebf\u7a0b\u7ea7\uff1a\n\u5168\u5c40\u5185\u5b58\uff08\u5982\uff1ainnodb_buffer_pool_size\uff0ckey_buffer_size\uff0cinnodb_log_buffer\n_size\uff09\n\u7ebf\u7a0b\u7ea7\u5185\u5b58\uff1a\uff08\u5982\uff1athread\uff0cread\uff0csort\uff0cjoin,tmp \u7b49\uff09\u53ea\u662f\u5728\u9700\u8981\u7684\u65f6\u5019\u624d\u5206\n\u914d\uff0c\u5e76\u4e14\u5728\u90a3\u4e9b\u64cd\u4f5c\u505a\u5b8c\u4e4b\u540e\u5c31\u91ca\u653e)\u3002\n\u7ebf\u7a0b\u7ea7\u5185\u5b58\uff1a\u7ebf\u7a0b\u7f13\u5b58\u6bcf\u4e2a\u8fde\u63a5\u5230MySQL\u670d\u52a1\u5668\u7684\u7ebf\u7a0b\u90fd\u9700\u8981\u6709\u81ea\u5df1\u7684\u7f13\u51b2\u3002\n\u9ed8\u8ba4\u5206\u914dthread_stack\uff08256K,512k)\uff0c\u7a7a\u95f2\u65f6\u8fd9\u4e9b\u5185\u5b58\u662f\u9ed8\u8ba4\u4f7f\u7528\uff0c\u5904\u7f6e\u4e4b\u5916\n\u7f51\u7edc\u7f13\u5b58\uff0c\u8fd8\u6709\u8868\u7f13\u5b58\u7b49\u3002\u5927\u81f4\u8bc4\u4f30\u4f1a\u57281M~3M\u8fd9\u6837\u7684\u60c5\u51b5\u3002\n\u53ef\u901a\u8fc7pmap\u89c2\u5bdf\u5185\u5b58\u53d8\u5316\uff1awhile true; do pmap -d 374343 | tail -1; sleep\n2; done\nMySQL\u4ece1\u5f00\u59cb \u8d5e \u5206\u4eab \u63a8\u8350 \u5199\u7559\u8a00\nmysql> SELECT @@query_cache_size,\n@@key_buffer_size,\n@@innodb_buffer_pool_size ,\n@@innodb_log_buffer_size ,\n@@tmp_table_size ,\n@@read_buffer_size,\n@@sort_buffer_size,\n@@join_buffer_size ,\n@@read_rnd_buffer_size,\n@@binlog_cache_size,\n@@thread_stack,\n( SELECT COUNT (host) FROM information_schema.processlist where command<\n> 'Sleep' )\\G;\n*************************** 1. row ***************************\n@@query_cache_size:1048576\n@@key_buffer_size:8388608\n@@innodb_buffer_pool_size:268435456\n@@innodb_log_buffer_size:8388608\n@@tmp_table_size:16777216\n@@read_buffer_size:131072\n@@sort_buffer_size:1048576\n@@join_buffer_size:1048576\n@@read_rnd_buffer_size:2097152\n@@binlog_cache_size:8388608\n@@thread_stack:524288"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 0
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "( select count (host) from information_schema.processlist where command<> 'Slee\np' ): 1\n\u5907\u6ce8\uff1aquery_cache_size 8.0\u7248\u672c\u5df2\u7ecf\u5e9f\u5f03\u6389\u4e86\n2.\u5b58\u50a8\u8fc7\u7a0b&\u51fd\u6570&\u89e6\u53d1\u5668&\u89c6\u56fe\n\u76ee\u524d\u79ef\u7d2f\u7684\u4f7f\u7528\u7ecf\u9a8c\u4e2d\uff0c \u5b58\u50a8\u8fc7\u7a0b&\u51fd\u6570&\u89e6\u53d1\u5668&\u89c6\u56fe \u5728MySQL\u573a\u666f\u4e0b\u4e0d\u9002\u5408\u7684\u3002\u6027\n\u80fd\u53c8\u4e0d\u597d\uff0c\u53c8\u5bb9\u6613\u53d1\u73b0\u5185\u5b58\u4e0d\u91ca\u653e\u7684\u95ee\u9898\u3002\u6240\u4ee5\u5efa\u8bae\u5c3d\u91cf\u907f\u514d\u3002\n\u5b58\u50a8\u8fc7\u7a0b&\u51fd\u6570\nMySQL 5.7\nmysql> SELECT db, type , count (*)\nFROM mysql.proc\nWHERE db not in ( 'mysql' , 'information_schema' , 'performance_schema' , 'sys' )\nGROUP BY db, type ;\nMySQL 8.0\nmysql> SELECT Routine_schema, Routine_type\nFROM information_schema.Routines\nWHERE Routine_schema not in ( 'mysql' , 'information_schema' , 'performance_schem\na' , 'sys' )\nGROUP BY Routine_schema, Routine_type;\n\u89c6\u56fe\nmysql> SELECT TABLE_SCHEMA , COUNT (TABLE_NAME)\nFROM information_schema.VIEWS\nWHERE TABLE_SCHEMA not in ( 'mysql' , 'information_schema' , 'performance_schem\na' , 'sys' )\nGROUP BY TABLE_SCHEMA ;\n\u89e6\u53d1\u5668\nmysql> SELECT TRIGGER_SCHEMA, count (*)\nFROM information_schema.triggers\nWHERE TRIGGER_SCHEMA not in ( 'mysql' , 'information_schema' , 'performance_schem\na' , 'sys' )\nGROUP BY TRIGGER_SCHEMA;\n\u4e0a\u9762\u901a\u8fc7mysql\u914d\u7f6e\u53c2\u6570\u548c\u8bbe\u8ba1\u5c42\u9762\u68c0\u67e5\u4e86\u662f\u5426\u6709\u53ef\u80fd\u5185\u5b58\u6cc4\u9732\u7684\u95ee\u9898\u3002\u4e0b\n\u9762\u770b\u770b\u600e\u6837\u5206\u6790\u5b9e\u9645\u4f7f\u7528\u7684\u5185\u5b58\u60c5\u51b5\u3002\n3.\u7cfb\u7edf\u5e93\u7edf\u8ba1\u67e5\u8be2\n\u603b\u5185\u5b58\u4f7f\u7528\uff1a\nmysql> SELECT\nSUM ( CAST ( replace (current_alloc, 'MiB' , '' ) as DECIMAL ( 10 , 2 )) )\nFROM sys.memory_global_by_current_bytes\nWHERE current_alloc like '%MiB%' ;\n\u5206\u4e8b\u4ef6\u7edf\u8ba1\u5185\u5b58"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 1
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "mysql> SELECT event_name,\nSUM ( CAST ( replace (current_alloc, 'MiB' , '' ) as DECIMAL ( 10 , 2 )) )\nFROM sys.memory_global_by_current_bytes\nWHERE current_alloc like '%MiB%' GROUP BY event_name\nORDER BY SUM ( CAST ( replace (current_alloc, 'MiB' , '' ) as DECIMAL ( 10 , 2 )) ) DESC ;\nmysql> SELECT event_name,\nsys.format_bytes(CURRENT_NUMBER_OF_BYTES_USED)\nFROM performance_schema.memory_summary_global_by_event_name\nORDER BY CURRENT_NUMBER_OF_BYTES_USED DESC\nLIMIT 10 ;\n\u8d26\u53f7\u7ea7\u522b\u7edf\u8ba1\nmysql> SELECT user ,event_name,current_number_of_bytes_used/ 1024 / 1024 as MB_CURR\nENTLY_USED\nFROM performance_schema.memory_summary_by_account_by_event_name\nWHERE host<> \"localhost\"\nORDER BY current_number_of_bytes_used DESC LIMIT 10 ;\n\u5907\u6ce8\uff1a\u6709\u5fc5\u8981\u7edf\u8ba1\u7528\u6237\u7ea7\u522b\u5185\u5b58\uff0c\u56e0\u4e3a\u5f88\u591a\u73af\u5883\u5bf9\u63a5\u4e86\u7b2c\u4e09\u65b9\u63d2\u4ef6\uff0c\u6a21\u62df\u4ece\u5e93\uff0c\u8fd9\u4e9b\u63d2\n\u4ef6\u5bb9\u6613\u5185\u5b58\u4e0d\u91ca\u653e\n\u7ebf\u7a0b\u5bf9\u5e94sql \u8bed\u53e5\uff0c\u5185\u5b58\u4f7f\u7528\u7edf\u8ba1\nSELECT thread_id,\nevent_name,\nsys.format_bytes(CURRENT_NUMBER_OF_BYTES_USED)\nFROM performance_schema.memory_summary_by_thread_by_event_name\nORDER BY CURRENT_NUMBER_OF_BYTES_USED DESC\nLIMIT 20 ;\nSELECT m.thread_id tid,\nm.user,\nesc.DIGEST_TEXT,\nm.current_allocated,\nm.total_allocated\nFROM sys.memory_by_thread_by_current_bytes m,\nperformance_schema.events_statements_current esc\nWHERE m. `thread_id` = esc.THREAD_ID \\G\n\u6253\u5f00\u6240\u6709\u5185\u5b58\u6027\u80fd\u76d1\u63a7\uff0c\u4f1a\u5f71\u54cd\u6027\u80fd\u3002\u6ce8\u610f\n#\u6253\u5f00\nUPDATE performance_schema.setup_instruments SET ENABLED = 'YES' WHERE NAME LIK\nE 'memory/%' ;\n#\u5173\u95ed\nUPDATE performance_schema.setup_instruments SET ENABLED = 'NO' WHERE NAME LIKE 'm\nemory/%' ;\n#\u67e5\u770b\u4f7f\u7528\nSELECT * FROM performance_schema.memory_summary_global_by_event_name\nWHERE EVENT_NAME LIKE 'memory/%'\nORDER BY CURRENT_NUMBER_OF_BYTES_USED DESC ;\nmy.cnf\u914d\u7f6e\u6587\u4ef6\u8bbe\u7f6e\uff1a\n[mysqld]\nperformance-schema-instrument ='memory/%=COUNTED'"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 2
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u6700\u597d\u5f00\u542f\u4e4b\u540e\u91cd\u65b0\u542f\u52a8MySQL\u670d\u52a1\uff0c\u6709\u52a9\u4e8e\u51c6\u786e\u7edf\u8ba1\u3002\n\u7cfb\u7edf\u8868\u5185\u5b58\u76d1\u63a7\u4fe1\u606f\uff1a\nselect * from sys.x$memory_by_host_by_current_bytes;\nselect * from sys.x$memory_by_thread_by_current_bytes;\nselect * from sys.x$memory_by_user_by_current_bytes;\nselect * from sys.x$memory_global_by_current_bytes;\nselect * from sys.x$memory_global_total;\nselect * from performance_schema.memory_summary_by_account_by_event_name;\nselect * from performance_schema.memory_summary_by_host_by_event_name;\nselect * from performance_schema.memory_summary_by_thread_by_event_name;\nselect * from performance_schema.memory_summary_by_user_by_event_name;\nselect * from performance_schema.memory_summary_global_by_event_name;\n\u5907\u6ce8\uff1a\u627e\u5230\u5bf9\u5e94\u95ee\u9898\u4e8b\u4ef6\u6216\u7ebf\u7a0b\u540e\uff0c\u53ef\u4ee5\u8fdb\u884c\u6392\u67e5\uff0c\u89e3\u51b3\u5185\u5b58\u9ad8\u7684\u95ee\u9898\u3002\n4.\u7cfb\u7edf\u5de5\u5177\u67e5\u770b\u5185\u5b58\n1\uff09top\u547d\u4ee4\n\u663e\u793a\u7cfb\u7edf\u4e2d\u5404\u4e2a\u8fdb\u7a0b\u7684\u8d44\u6e90\u5360\u7528\u72b6\u51b5\nShift + m \u952e \u67e5\u770b\u5185\u5b58\u6392\u540d\u5b9e\u9645\u4f7f\u7528\u5185\u5b58\u60c5\u51b5\uff0c\u5173\u6ce8RES\u6307\u6807\n2\uff09free\u547d\u4ee4\nfree -h \u547d\u4ee4\u663e\u793a\u7cfb\u7edf\u5185\u5b58\u7684\u4f7f\u7528\u60c5\u51b5\uff0c\u5305\u62ec\u7269\u7406\u5185\u5b58\u3001\u4ea4\u6362\u5185\u5b58(swap)\u548c\u5185\u6838\u7f13\u51b2\u533a\n\u5185\u5b58\nused \u5217\u663e\u793a\u5df2\u7ecf\u88ab\u4f7f\u7528\u7684\u7269\u7406\u5185\u5b58\u548c\u4ea4\u6362\u7a7a\u95f4\u3002\nbuff/cache \u5217\u663e\u793a\u88ab buffer \u548c cache \u4f7f\u7528\u7684\u7269\u7406\u5185\u5b58\u5927\u5c0f\u3002\navailable \u5217\u663e\u793a\u8fd8\u53ef\u4ee5\u88ab\u5e94\u7528\u7a0b\u5e8f\u4f7f\u7528\u7684\u7269\u7406\u5185\u5b58\u5927\u5c0f\u3002\nSwap \u884c(\u7b2c\u4e09\u884c)\u662f\u4ea4\u6362\u7a7a\u95f4\u7684\u4f7f\u7528\u60c5\u51b5\u3002\n3\uff09ps\u547d\u4ee4\nmysql\u76f8\u5173\u8fdb\u7a0b\u4f7f\u7528\u5185\u5b58\u60c5\u51b5\nshell > ps eo user,pid,vsz,rss $(pgrep -f 'mysqld')\nUSER PID VSZ RSS\nroot 215945 12960 2356\nmysql 217246 1291540 241824\nroot 221056 12960 2428\nmysql 374243 1336924 408752\n4\uff09pmap \u547d\u4ee4\npmap \u662fLinux\u8c03\u8bd5\u53ca\u8fd0\u7ef4\u4e00\u4e2a\u5f88\u597d\u7684\u5de5\u5177\u3002\u67e5\u770b\u8fdb\u7a0b\u7684\u5185\u5b58\u6620\u50cf\u4fe1\u606f\n\u7528\u6cd51\uff1a\u6267\u884c\u4e00\u6bb5\u65f6\u95f4 \u8bb0\u5f55\u6570\u636e\u53d8\u5316\uff0c\u6700\u5c1120\u4e2a\u8bb0\u5f55\uff0c\u4e0b\u976222837\u662fmysql pid\nwhile true; do pmap -d 22837 | tail -1; sleep 2; done\n\u7528\u6cd52\uff1alinux \u547d\u4ee4pmap mysql pid \u5bfc\u51fa\u5185\u5b58 \uff0c\u4e0b\u976222837\u662fmysql pid\npmap -X -p 22837 > /tmp/memmysql.txt\nRSS \u5c31\u662f\u8fd9\u4e2aprocess \u5b9e\u9645\u5360\u7528\u7684\u7269\u7406\u5185\u5b58\u3002\nDirty: \u810f\u9875\u7684\u5b57\u8282\u6570\uff08\u5305\u62ec\u5171\u4eab\u548c\u79c1\u6709\u7684\uff09\u3002"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 3
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "Mapping: \u5360\u7528\u5185\u5b58\u7684\u6587\u4ef6\u3001\u6216[anon]\uff08\u5206\u914d\u7684\u5185\u5b58\uff09\u3001\u6216[stack]\uff08\u5806\u6808\uff09\u3002\nwriteable/private \u8868\u793a\u8fdb\u7a0b\u6240\u5360\u7528\u7684\u79c1\u6709\u5730\u5740\u7a7a\u95f4\u5927\u5c0f\uff0c\u4e5f\u5c31\u662f\u8be5\u8fdb\u7a0b\u5b9e\u9645\u4f7f\u7528\u7684\u5185\u5b58\n\u5927\u5c0f\u3002\n1.\u9996\u5148\u4f7f\u7528/top/free/ps\u5728\u7cfb\u7edf\u7ea7\u786e\u5b9a\u662f\u5426\u6709\u5185\u5b58\u6cc4\u9732\u3002\u5982\u6709\uff0c\u53ef\u4ee5\u4ecetop\u8f93\u51fa\u786e\u5b9a\u54ea\u4e00\n\u4e2aprocess\u3002\n2.pmap\u5de5\u5177\u662f\u80fd\u5e2e\u52a9\u786e\u5b9aprocess\u662f\u5426\u6709memory leak\u3002\u786e\u5b9amemory leak\u7684\u539f\u5219\uff1a\nwriteable/private (\u2018pmap \u2013d\u2019\u8f93\u51fa\uff09\u5982\u679c\u5728\u505a\u91cd\u590d\u7684\u64cd\u4f5c\u8fc7\u7a0b\u4e2d\u4e00\u76f4\u4fdd\u6301\u7a33\u5b9a\u589e\u957f\uff0c\n\u90a3\u4e48\u4e00\u5b9a\u6709\u5185\u5b58\u6cc4\u9732\u3002\n\u603b\u7ed3\n\u5bf9\u4e8emysql\u5185\u5b58\u6cc4\u9732\u6765\u8bf4\uff0c\n\u4ece\u53c2\u6570\u8bbe\u7f6e\u548c\u8bbe\u8ba1\u4e0a \u5c3d\u91cf\u597d\u5408\u7406\n\u9700\u8981\u901a\u8fc7ps\u5e93\u8fdb\u884c\u6392\u67e5\nlinux\u5de5\u5177\u8fdb\u884c\u8fdb\u4e00\u6b65\u786e\u8ba4\n\u5b98\u65b9bug\u91cc memory leak\u67e5\u627e\uff0c\u662f\u5426\u5b58\u5728\u4fee\u590d\u7684\u7248\u672c\n\u4ee5\u4e0a\u6392\u67e5\u91cc\u90fd\u6ca1\u6709\u627e\u5230\u539f\u56e0\uff0c\u53ef\u4ee5\u6362\u4e0b\u670d\u52a1\u5668\u6216\u4e3b\u4ece\u5207\u6362\u89c2\u5bdf\u3002\u4e5f\u53ef\u4ee5\u8fdb\u884c\u7248\u672c\u5347\u7ea7\n\uff08\u4ee3\u4ef7\u4e0d\u5c0f\uff09\u3002\n\u5982\uff1a\u80fd\u63d0\u4f9b\u4e00\u4e2a\u5b9e\u9645\u73af\u5883\uff0c\u4e5f\u53ef\u4ee5\u4e00\u6b65\u4e00\u6b65\u8fdb\u884c\u8c03\u8bd5\uff0c\u6293\u53d6\u5185\u5b58\u53d8\u5316\uff0c\u786e\u5b9a\u662f\u4ec0\u4e48\u5bfc\u81f4\n\u5185\u5b58\u6cc4\u9732\u7684\u95ee\u9898\u3002\u4e4b\u540e\u63d0\u4ea4bug\uff0c\u8ba9\u5b98\u65b9\u63d0\u4f9b\u4fee\u590d\u3002"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 4
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "Pade 6\nMySQL \u5167 \u5b58 \u4f7f \u7528 \u60c5 \u6cc1 \u6392 \u67e5\nhttps\ufe55//mp\ufe52weixin\ufe52qq\ufe52com/s/7OAD4Pnc4ydwf7AAXxJAhiA\nCaptured by Fireshot Pro\ufe55 11 1 \u6708 2025\uff0c 01\ufe551l\ufe5522\nhttps\ufe55//dgdetfireshot\ufe52com"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 5
+        }
+    ]
+}

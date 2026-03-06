@@ -1,0 +1,74 @@
+【ORACLE 优 化 索 例 】 索 引 小 把 巧 ， 存 儒 null 值
+原 刨 弁 伊 弄 伊 的 DB 柝 2026 年 2 月 21 日 07﹕13 迂 宁
+菜 景
+Oracle 中 ， 索 引 獎 汀 不 迅 丕 Null 值 。 因 此 3SQL 查 逆 紮 件 出 珍 XxxXx 1S NULL 旱 ， 即 使 走 索 引 是 最 优 解 ， 也 秀
+脊 之 力 。
+今 天 教 大 家 一 人 小 披 巧 ， 巡 索 引 也 雒 存 傳 Null 值 。
+优 化 效 果
+指 柩 ﹍ 优 化 前 ﹍ 优 化 后
+遂 翥 逵 4461 ﹍ 8
+降 幅 減 99﹒8%
+測 追 案 例
+1 刨 建 測 活 表
+﹣﹣ 刨 建 測 浪 表 ， 敷 据 量 27 万 ﹢
+CREATE TABLE SCHEMA﹍NAMNE﹒TBL﹍TEST AS SELECT z FR0M DBA﹍0BJECTS﹔
+sELECT C0UNT(1﹚ FR0M SCHEMA﹍NAME ﹒TBL﹍TEST ﹔
+﹣﹣ 274777 柿 迂 昊
+2﹒ 查 流 NULL 值 迅 昊
+sELECT C0L﹍0WNER， C0L﹍0BJECT﹍NAME
+FR0N sSCHENA﹍NAME， TBL﹍TEST
+MHERE C0L﹍0BJECT﹍ID IS NULLI
+﹣﹣ 結 果 ﹒ 25 紮 迅 昊
+拱 行 汀 划 ﹕
+| Id | 0peration | Name | Starts | E﹣Rows | A﹣Rows | A﹣Time |
+| ” | SELECT STATEMENT ﹍ | 1 | | 25 |06﹕90﹕90﹒26
+|*# 1 | TABLE ACCESS FuLL| TBL﹍TEST | 1 | 50 | 25 |90﹕99﹕99，20 |
+1 ﹣ filter(”C0L﹍0BJECT﹍ID” IS NULL﹚
+岡 題 ﹕ 走 的 是 全 表 扣 描 ， 遇 翥 清 4461。
+3﹒ 刨 建 普 通 索 引
+CREATE INDEX SCHEMA﹍NAME﹒IDX﹍0BJECT﹍ID
+0N sCHEMA﹍NAME﹒TBL﹍TEST(C0L﹍0BJECT﹍TD ﹚ ﹔
+再 欽 折 行 同 梅 的 SQL ﹕
+| Id | 0peration | Name | Starts | E﹣Rows | A﹣Rows | A﹣Time |
+| ” | SELECT sTATEMENT ﹍ | 1 | | 25 |96﹕99﹕90﹒03
+| 1 | TABLE ACCESS FULL| TBL﹍TEST | 1 | 50 | 25 |06﹕06﹕90﹒03 |
+1 ﹣ filter(”C0L﹍0B8JECT﹍ID” IS NULL﹚
+岱 題 依 日 ﹕ 返 是 全 表 打 描 ! 因 加 索 引 不 存 傳 NULL 值 。
+小 美 謎 技 巧 ﹒ 刨 建 存 值 NULL 的 索 引
+CREATE INDEX sCHEMA﹍NAME﹒IDX﹍0B8〕ECT﹍ID﹍wMITH﹍NULL
+0N sCHEMA﹍NANE﹒TBL﹍TEST( CDL﹍05jECT﹍ID， ﹚
+注 意 ﹕ 玆 里 多 了 一 人 ， 相 3 于 在 索 引 中 增 加 了 一 仁 仍 列 ， 巡 NULL 值 也 能 被 迅 丕 。
+再 欽 拱 行 SQL ﹕
+| Id | 0peration | Name | Starts | E﹣Rows | A﹣!
+| ” | sELECT sTATEMENT | | 1 | | 25 |99﹕96
+| ﹍1 | TABLE ACCEsSS BY INDEX R0wID| TBL﹍TEST | 1 | 50 |
+|# 2 | ﹣ TINDEX RANGE SCAN | IDX﹍08JECT﹍ID﹍wITH﹍NULL | 1 | 14614
+2 ﹣ access( ”C0L﹍0BJECT﹍ID” IS NULL﹚
+客 美 ﹕ 走 索 引 了 ， 遊 斟 淡 今 4461 降 到 8 !
+怠 結
+方 絨 索 引 美 型 遂 輯 清
+全 表 扣 描 兀 索 引 4461
+普 通 索 引 IDX﹍0BJECT﹍ID(C0L﹍0BJECT﹍ID﹚ 4461 魠
+存 俯 NULL 索 引 TDX﹍0BJECT﹍ID(C0L﹍0BJECT﹍ID， 0﹚ 8
+圖
+核 心 原 理 ﹕
+˙ Oracle 索 引 不 存 傭 全 NULL 的 索 引 玩
+˙ 在 索 引 中 添 加 一 仁 常 量 列 ( 如 9﹚， 巡 NULL 值 也 能 被 迄 承
+˙ 查 逆 旱 即 可 使 用 索 引 拍 描 ， 避 免 全 表 拍 掃
+建 用 城 景 ﹕
+˙ 查 逆 細 件 包 含 I﹩ NULL 或 15 N0T NULL
+˙ 忤 回 結 果 集 粥 小 的 坊 景
+宁 整 測 泰 腳 本
+&ALTER SESSI0N SET STATISTICS﹍LEVEL = ALL﹔
+DR0P TABLE SCHEMA﹍NAME，TBL﹍TEST PURGE ﹔
+CREATE TABLE SCHENA﹍NANE，TBL﹍TEST AS SELECT * FR0M DBA﹍0BJECTS﹔
+sSELECT C0L﹍0WNER， C0L﹍0BJECT﹍NANE
+FR0N sSCHEMA﹍NAME﹒ TBL﹍TEST
+WHERE C0L﹍0BJECT﹍ID 1S NULL﹔
+﹣ 普 通 索 引
+CREATE INDEX SCHEMA﹍NAME﹒IDX﹍0BJECT﹍ID
+0N sCHEMA﹍NANE﹒TBL﹍TEST( CDL﹍0B5」ECT﹍TD﹚ ﹔
+﹣﹣ 存 傳 NULL 的 索 引
+CREATE INDEX sCHEMA﹍NANE﹒IDX﹍0B8JECT﹍ID﹍wWITH﹍NULL
+0N sCHEMA﹍NANE﹒TBL﹍TEST( CDL﹍0BjECT﹍ID，9﹚ ﹔
+
