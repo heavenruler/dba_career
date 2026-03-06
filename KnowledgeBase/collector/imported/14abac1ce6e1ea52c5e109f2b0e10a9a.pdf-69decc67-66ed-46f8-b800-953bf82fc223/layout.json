@@ -1,0 +1,219 @@
+{
+    "pdf_info": [
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "MySQL\u67e5\u8be2\u4f18\u5316\u7684\u4e09\u79cd\u5904\u7406\u9636\u6bb5\uff1aIndex Key\u3001Index Filter \u548c\nTable Filter\n\u4e8c\u5e08\u5144 \u5e08\u5144\u5947\u8c08 2025\u5e749\u670828\u65e5 20:36 \u5317\u4eac \u539f\u521b\n\u5728 MySQL \u4e2d\uff0c\u7d22\u5f15\u4e3b\u8981\u7528\u4e8e\u4f18\u5316\u67e5\u8be2\u3002\u5728 MySQL \u67e5\u8be2\u4f18\u5316\u4e2d\u6d89\u53ca\u5230\u4e09\u79cd\u5904\u7406\u9636\u6bb5\uff1a \u5e08\u5144\u5947\u8c08 Index Ke \u8d5e \u5206\u4eab \u63a8\u8350 \u5199\u7559\u8a00\n\u3001 \u548c \u3002 y Index Filter Table Filter\n\u5b83\u4eec\u63cf\u8ff0\u7684\u662f\u6570\u636e\u5e93\u5728\u4f7f\u7528\u7d22\u5f15\u65f6\uff0c\u67e5\u8be2\u6761\u4ef6\u7684\u5339\u914d\u548c\u8fc7\u6ee4\u53d1\u751f\u7684\u8fc7\u7a0b\uff0c\u8fd9\u4e2a\u5206\u7c7b\u7684\u80cc\u666f\u901a\u5e38\u51fa\u73b0\n\u5728\u8ba8\u8bba\u7d22\u5f15\u4e0b\u63a8\uff08Index Condition Pushdown, ICP\uff09\u65f6\u3002\n\u5173\u4e8e\u7d22\u5f15\u4e0b\u63a8\u53ef\u53c2\u8003\u6211\u4eec\u524d\u9762\u5199\u7684\u8fd9\u7bc7\u6587\u7ae0\uff1a\u300a \u4ec0\u4e48\u662fMySQL\u7684\u7d22\u5f15\u4e0b\u63a8\u6280\u672f\uff1f \u300b\n\u4ee5\u4e0b\u662f\u5bf9\u8fd9\u4e09\u79cd\u7d22\u5f15\u5904\u7406\u9636\u6bb5\u7684\u8be6\u7ec6\u8bf4\u660e\uff1a\n1. Index Key\n\u5b9a\u4e49\uff1a\u7d22\u5f15\u952e (Index Key) \u662f\u6307\u7d22\u5f15\u7684\u5173\u952e\u5217\uff0c\u5373\u7d22\u5f15\u4e2d\u5b58\u50a8\u7684\u5b57\u6bb5\u503c\u3002\u7d22\u5f15\u952e\u662f\u7528\u6765\u5e2e\u52a9\u5b9a\u4f4d\u6570\n\u636e\u884c\u7684\uff0c\u67e5\u8be2\u901a\u5e38\u9996\u5148\u4f7f\u7528\u7d22\u5f15\u952e\u6765\u7b5b\u9009\u5339\u914d\u6700\u57fa\u7840\u6761\u4ef6\u7684\u8bb0\u5f55\u3002\n\u4f7f\u7528\u573a\u666f \uff1a\n\u5f53\u67e5\u8be2\u6761\u4ef6\u548c\u7d22\u5f15\u7684\u5b9a\u4e49\u4e00\u81f4\u65f6\uff0c\u4f8b\u5982\uff1a\nSELECT * FROM employees WHERE employee_id = 123 ;\n\u5982\u679c \u6709\u7d22\u5f15\uff0c\u6570\u636e\u5e93\u53ef\u4ee5\u901a\u8fc7\u7d22\u5f15\u952e\u5feb\u901f\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u8bb0\u5f55\u3002 employee_id\n\u7279\u6027 \uff1a"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 0
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u8fd9\u662f\u7d22\u5f15\u7684\u57fa\u672c\u529f\u80fd\uff0c\u901a\u8fc7\u7d22\u5f15\u952e\u76f4\u63a5\u5b9a\u4f4d\u6ee1\u8db3\u6761\u4ef6\u7684\u8bb0\u5f55\u3002\n\u7d22\u5f15\u952e\u68c0\u7d22\u7684\u662f\u7cbe\u786e\u5339\u914d\u6216\u8005\u8303\u56f4\u626b\u63cf\u7684\u8bb0\u5f55\u3002\n\u67e5\u8be2\u6267\u884c\u6d41\u7a0b \uff1a\n\u901a\u8fc7\u7d22\u5f15\u952e\u5feb\u901f\u5b9a\u4f4d\u5bf9\u5e94\u7684\u8bb0\u5f55\u96c6\u5408\u3002\n2. Index Filter\n\u5b9a\u4e49\uff1a\u7d22\u5f15\u8fc7\u6ee4 (Index Filter) \u662f\u5bf9\u7d22\u5f15\u5b58\u50a8\u7684\u6570\u636e\u8fdb\u884c\u8fdb\u4e00\u6b65\u8fc7\u6ee4\uff0c\u7528\u4e8e\u5b9e\u73b0\u66f4\u590d\u6742\u7684\u67e5\u8be2\u6761\n\u4ef6\uff0c\u800c\u65e0\u9700\u5148\u901a\u8fc7\u7d22\u5f15\u5b9a\u4f4d\u6240\u6709\u6570\u636e\u7136\u540e\u56de\u8868\u3002\u7d22\u5f15\u8fc7\u6ee4\u662f\u5728\u5b58\u50a8\u5f15\u64ce\u5c42\u5b8c\u6210\u7684\uff0c \u662f\u7d22\u5f15\u4e0b\u63a8\u4f18\u5316\n\u7684\u5173\u952e\u90e8\u5206 \u3002\n\u4f7f\u7528\u573a\u666f \uff1a\n\u67e5\u8be2\u6761\u4ef6\u6d89\u53ca\u591a\u4e2a\u5b57\u6bb5\uff0c\u4f46\u4e0d\u662f\u5168\u90e8\u5b57\u6bb5\u90fd\u80fd\u901a\u8fc7\u7d22\u5f15\u952e\u76f4\u63a5\u5b9a\u4f4d\u3002\u4f8b\u5982\uff1a\nSELECT * FROM employees WHERE employee_id > 100 AND salary < 50000 ;\n\u5047\u8bbe\u6709\u7d22\u5f15 \uff1a (employee_id, salary)\n\u6570\u636e\u5e93\u901a\u8fc7 \u5b9a\u4f4d\u90e8\u5206\u8303\u56f4\u7684\u8bb0\u5f55\uff1b employee_id > 100\n\u7136\u540e\u5728\u5b58\u50a8\u5c42\u901a\u8fc7 \u8fdb\u4e00\u6b65\u8fc7\u6ee4\u7d22\u5f15\u4e2d\u7684\u8bb0\u5f55\uff0c\u800c\u4e0d\u662f\u76f4\u63a5\u5c06\u6240\u6709\u5339\u914d salary < 50000 emp\n\u7684\u8bb0\u5f55\u8fd4\u56de\u5230 Server \u5c42\u3002 loyee_id > 100\n\u7279\u6027 \uff1a\n\u7d22\u5f15\u8fc7\u6ee4\u662f\u5bf9\u7d22\u5f15\u672c\u8eab\u5b58\u50a8\u7684\u6570\u636e\u8fdb\u884c\u5b57\u6bb5\u503c\u7b5b\u9009\uff0c\u800c\u4e0d\u662f\u76f4\u63a5\u8bbf\u95ee\u8868\u3002\n\u7d22\u5f15\u4e0b\u63a8\u4f18\u5316\u540e\uff0c\u5728\u5b58\u50a8\u5f15\u64ce\u5c42\u5b8c\u6210\u8fd9\u90e8\u5206\u8fc7\u6ee4\uff0c\u63d0\u9ad8\u4e86\u67e5\u8be2\u6548\u7387\u3002\n\u67e5\u8be2\u6267\u884c\u6d41\u7a0b \uff1a\n\u57fa\u4e8e\u7d22\u5f15\u952e\u5b9a\u4f4d\u5019\u9009\u8bb0\u5f55\u3002\n\u5728\u5b58\u50a8\u5c42\u8fdb\u4e00\u6b65\u7b5b\u9009\u7d22\u5f15\u4e2d\u7684\u8bb0\u5f55\uff0c\u51cf\u5c11\u4e0a\u5c42\uff08Server Layer\uff09\u9700\u8981\u5904\u7406\u7684\u6570\u636e\u91cf\u3002\n3. Table Filter\n\u5b9a\u4e49\uff1a\u8868\u8fc7\u6ee4 (Table Filter) \u662f\u6307\u6570\u636e\u5e93\u901a\u8fc7\u56de\u8868\u67e5\u8be2\u6570\u636e\u540e\uff0c\u518d\u5bf9\u8fd4\u56de\u7684\u8868\u4e2d\u6570\u636e\u8fdb\u884c\u8fc7\u6ee4\u3002\u8fd9\n\u901a\u5e38\u662f\u9488\u5bf9\u67e5\u8be2\u6761\u4ef6\u4e2d\u6d89\u53ca\u7684 \u975e\u7d22\u5f15\u5217 \uff0c\u6216\u8005\u7d22\u5f15\u672c\u8eab\u65e0\u6cd5\u8fc7\u6ee4\u7684\u60c5\u51b5\u3002\n\u4f7f\u7528\u573a\u666f \uff1a\n\u67e5\u8be2\u6761\u4ef6\u6d89\u53ca\u975e\u7d22\u5f15\u5b57\u6bb5\uff0c\u4f8b\u5982\uff1a\nSELECT * FROM employees WHERE employee_id > 100 AND department = 'Engineering' ;\n\u5047\u8bbe\u53ea\u6709\u7d22\u5f15 \uff1a (employee_id)\n\u6570\u636e\u5e93\u901a\u8fc7\u7d22\u5f15\u8303\u56f4\u67e5\u8be2 \uff1b employee_id > 100\n\u83b7\u53d6\u8bb0\u5f55\u540e\uff0c\u9700\u8981\u56de\u8868\u8bfb\u53d6 \u5217\uff0c\u5e76\u5728 Server \u5c42\u8fc7\u6ee4 department department = 'Enginee\n\u7684\u6761\u4ef6\u3002 ring'\n\u7279\u6027 \uff1a\n\u8868\u8fc7\u6ee4\u53d1\u751f\u5728 Server \u5c42\uff08\u670d\u52a1\u5c42\uff09\uff0c\u9700\u8981\u901a\u8fc7\u7d22\u5f15\u5b9a\u4f4d\u8bb0\u5f55\u540e\uff0c\u56de\u8868\u67e5\u8be2\u539f\u59cb\u8bb0\u5f55\u518d\u8fdb\u884c\u8fc7\n\u6ee4\u3002"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 1
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u5982\u679c\u67e5\u8be2\u6761\u4ef6\u4e2d\u975e\u7d22\u5f15\u5217\u8fc7\u591a\uff0c\u6216\u8005\u6570\u636e\u91cf\u8f83\u5927\uff0c\u8868\u8fc7\u6ee4\u4f1a\u5e26\u6765\u6027\u80fd\u5f00\u9500\u3002\n\u67e5\u8be2\u6267\u884c\u6d41\u7a0b \uff1a\n\u57fa\u4e8e\u7d22\u5f15\u952e\u5b9a\u4f4d\u5019\u9009\u8bb0\u5f55\u3002\n\u56de\u8868\u67e5\u8be2\u539f\u59cb\u6570\u636e\u3002\n\u5728 Server \u5c42\u5bf9\u6570\u636e\u8fdb\u884c\u8fc7\u6ee4\uff0c\u7b26\u5408\u6761\u4ef6\u7684\u8bb0\u5f55\u624d\u4f1a\u8fd4\u56de\u7ed9\u7528\u6237\u3002\n\u4e09\u7c7b\u8fc7\u6ee4\u7269\u7406\u8fc7\u7a0b\nIndex Key \u521d\u59cb\u9636\u6bb5\uff0c\u901a\u8fc7\u7d22\u5f15\u952e\u5feb\u901f\u5b9a\u4f4d\u5019\u9009\u8bb0\u5f55\u3002\nIndex Filter \u5728\u5b58\u50a8\u5f15\u64ce\u5c42\u4e0a\u5bf9\u5019\u9009\u8bb0\u5f55\u8fdb\u884c\u8fdb\u4e00\u6b65\u8fc7\u6ee4\uff0c\u51cf\u5c11\u9700\u8981\u56de\u8868\u7684\u8bb0\u5f55\u6570\u3002\nTable Filter \u5982\u679c\u67e5\u8be2\u6d89\u53ca\u975e\u7d22\u5f15\u5217\u6216\u66f4\u590d\u6742\u7684\u8fc7\u6ee4\u6761\u4ef6\uff0c\u9700\u8981\u56de\u8868\u67e5\u8be2\uff0c\u5e76\u5728\u670d\u52a1\u5668\u5c42\u6700\u7ec8\n\u8fc7\u6ee4\u3002\n\u7d22\u5f15\u4e0b\u63a8\u91cd\u8981\u70b9\nMySQL 5.6 \u4e4b\u524d\uff0c\u4e00\u65e6\u8bb0\u5f55\u5728\u7d22\u5f15 Key \u67e5\u627e\u5230\uff0c\u6240\u6709\u590d\u6742\u6761\u4ef6\u7684\u8fc7\u6ee4\u90fd\u5728 Server \u5c42\u5b8c\u6210\n\uff08\u5305\u62ec\u975e\u4e0b\u63a8\u7684 Index Filter \u548c Table Filter\uff09\u3002\nMySQL 5.6 \u5f00\u59cb\u652f\u6301\u7d22\u5f15\u4e0b\u63a8 (ICP)\uff0c\u5c06\u90e8\u5206\u8fc7\u6ee4\u903b\u8f91 (Index Filter) \u4e0b\u63a8\u5230\u5b58\u50a8\u5f15\u64ce\u5c42\uff0c\u5e76\n\u5728\u56de\u8868\u67e5\u8be2\u4e4b\u524d\u5b8c\u6210\u8fc7\u6ee4\uff0c\u663e\u8457\u51cf\u5c11\u4e86\u56de\u8868\u6b21\u6570\u548c Server \u5c42\u7684\u538b\u529b\u3002\n\u793a\u4f8b\n\u5047\u8bbe\u6709\u4e00\u4e2a\u5305\u542b\u7d22\u5f15 \u7684\u8868\uff0c\u67e5\u8be2\u5982\u4e0b\uff1a (employee_id, salary)\nSELECT * FROM employees WHERE employee_id > 100 AND salary < 50000 AND department = 'Engineering'\nIndex Key : \u7d22\u5f15\u901a\u8fc7 \u8fdb\u884c\u8303\u56f4\u626b\u63cf\uff0c\u83b7\u53d6\u5019\u9009\u8bb0\u5f55\u3002 employee_id > 100\nIndex Filter\uff08\u7d22\u5f15\u4e0b\u63a8\u5b9e\u73b0\uff09 : \u5728\u5b58\u50a8\u5c42\u8fdb\u4e00\u6b65\u901a\u8fc7 \u8fc7\u6ee4\u51fa\u6ee1\u8db3\u6761\u4ef6\u7684\u8bb0 salary < 50000\n\u5f55\uff0c\u51cf\u5c11\u56de\u8868\u7684\u6b21\u6570\u3002\nTable Filter : \u56de\u8868\u67e5\u8be2\u540e\uff0c\u5bf9 \u7684\u6761\u4ef6\u8fdb\u884c\u8fc7\u6ee4\uff0c\u6700\u7ec8\u8fd4\u56de\u7ed3 department = 'Engineering'\n\u679c\u3002\n\u5c0f\u7ed3\n\u7d22\u5f15\u4e0b\u63a8\u5229\u7528\u4e86 Index Filter \u5728\u5b58\u50a8\u5c42\u5b8c\u6210\u8fc7\u6ee4\u7684\u80fd\u529b\uff0c\u51cf\u5c11\u4e86\u56de\u8868\u6b21\u6570\u548c Server \u5c42\u5904\u7406\u6570\u636e\u7684\n\u538b\u529b\uff0c\u4ece\u800c\u4f18\u5316\u4e86\u67e5\u8be2\u6027\u80fd\u3002\u5728\u5b9e\u9645\u4f7f\u7528\u7d22\u5f15\u65f6\uff0c\u901a\u8fc7\u5408\u7406\u7684\u8986\u76d6\u7d22\u5f15\u8bbe\u8ba1\uff0c\u53ef\u8fdb\u4e00\u6b65\u51cf\u5c11\u56de\u8868\uff0c\n\u63d0\u9ad8\u6548\u7387\u3002\n\u5168\u6587\u5b8c\uff0c\u611f\u8c22\u9605\u8bfb\uff0c\u5982\u679c\u559c\u6b22\u8bf7\u4e09\u8fde\u3002\n\u8fd1\u671f\u7cbe\u9009\u6587\u7ae0 \uff1a\nMySQL\u4e2d\u7684\u6570\u636e\u53bb\u91cd\uff0c\u8be5\u7528DISTINCT\u8fd8\u662fGROUP BY\uff1f\nMySQL\u7684\u4e24\u79cd\u5206\u9875\u65b9\u5f0f\uff1aOffset/Limit\u5206\u9875\u548c\u6e38\u6807\u5206\u9875\n\u4e3a\u4ec0\u4e48MySQL\u7d22\u5f15\u4e0d\u751f\u6548\uff1f\u6765\u770b\u770b\u8fd98\u4e2a\u539f\u56e0\n\u4ec0\u4e48\u662fMySQL\u7684\u7d22\u5f15\u4e0b\u63a8\u6280\u672f\uff1f\n\u5b66\u4e60\u4e2d\u7684\u98de\u8f6e\u6548\u5e94\uff1a\u5982\u4f55\u5feb\u901f\u5b66\u4e60\u4e00\u95e8\u77e5\u8bc6\uff1f"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 2
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u25b2 \u201d\u5e08\u5144\u5947\u8c08 \u201c\uff1a\u804c\u573a&\u751f\u6d3b&\u81ea\u6211\u63d0\u5347\n\u4e2a\u4eba\u4e66\u7c4d\uff1a \u300aSpring Boot\u6280\u672f\u5185\u5e55\u300b&& \u300aDrools 8\u89c4\u5219\u5f15\u64ce\u300b\n\u5fae\u4fe1\u53f7\uff1a541075754\n\u5e08\u5144\u5947\u8c08\n\u4e00\u4e2a\u4e13\u6ce8\u804c\u573a\u3001\u804c\u4e1a\u6210\u957f\u3001\u56e2\u961f\u7ba1\u7406\u4ee5\u53ca\u81ea\u6211\u6210\u957f\u7684\u516c\u4f17\u53f7\u3002\u7b14\u8005\u4e3a\uff1a\u300aSpringBoot\u6280\u672f\u5185\u5e55\u300b\u3001\u300aDrools\n647\u7bc7\u539f\u521b\u5185\u5bb9\n\u516c\u4f17\u53f7\n\u4f5c\u8005\u65b0\u4e66\u2014\u2014 \u300aDrools 8\u89c4\u5219\u5f15\u64ce\u300b\uff1a"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 3
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "MySQL \u00b7 \u76ee\u5f55\n\u4e0a\u4e00\u7bc7 \u4e0b\u4e00\u7bc7\nMySQL\u4e2d\u7684\u6570\u636e\u53bb\u91cd\uff0c\u8be5\u7528DISTINCT\u8fd8\u662f MySQL\u4e4b\u8fdb\u9636\uff1a\u4e00\u7bc7\u6587\u7ae0\u641e\u61c2MySQL\u7d22\u5f15\u4e4b\nGROUP BY\uff1f B+\u6811"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 4
+        }
+    ]
+}

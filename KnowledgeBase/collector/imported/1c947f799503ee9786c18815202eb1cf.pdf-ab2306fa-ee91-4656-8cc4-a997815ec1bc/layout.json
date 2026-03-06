@@ -1,0 +1,133 @@
+{
+    "pdf_info": [
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u9762\u8bd5\u5b98\u6700\u7231\u95ee\u7684MySQL\u65e5\u5fd7\u95ee\u9898\uff1a3\u5927\u65e5\u5fd7\u5de5\u4f5c\u539f\u7406\u56fe\u89e3\nlz6132 \u71b5\u51cf\u540e\u7aef 2025\u5e747\u670819\u65e5 23:13 \u9655\u897f \u539f\u521b\nmysql bin log\uff0c redo log\uff0cundo log\u9762\u8bd5\u4e2d\u9891\u9891\u88ab\u63d0\u53ca\uff0c\u5b83\u4eec\u4e09\u8005\u5404\u81ea\u7684\u4f5c\u7528\u662f\n\u4ec0\u4e48\uff0c\u4e09\u8005\u4e4b\u95f4\u53c8\u6709\u600e\u6837\u7684\u8054\u7cfb\uff0c\u6211\u4eec\u6765\u4e00\u4e00\u89e3\u7b54\u3002\n\u60f3\u8981\u4e86\u89e3\u5b83\u4eec\uff0c\u5f97\u4ece\u6267\u884c\u4e00\u6761UPDATE\u8bed\u53e5\u7684\u8fc7\u7a0b\u8bf4\u8d77\uff0c\u6267\u884c\u4e00\u6761sql\u8bed\u53e5\uff0c\u7ecf\u5386\u4e86\n\u600e\u6837\u7684\u8fc7\u7a0b\u5462\uff0c\u4e14\u770b\u4e0b\u56fe:\n\u71b5\u51cf\u540e\u7aef \u8d5e \u5206\u4eab \u63a8\u8350 \u5199\u7559\u8a00\nSERVER\u5c42\u5904\u7406 \uff1a\n\u5f53\u5ba2\u6237\u7aef\u53d1\u8d77\u6570\u636e\u66f4\u65b0\u8bf7\u6c42\u65f6\uff0c\u5148\u7531mysql server\u5c42\u5904\u7406\uff0c\u4f1a\u7ecf\u5386\u4ee5\u4e0b\u51e0\u6b65\uff1a\n1\uff0c\u4ece\u8fde\u63a5\u5668\u83b7\u53d6\u8fde\u63a5,\u8fde\u63a5\u5668\u4e3b\u8981\u8fdb\u884c\u7528\u6237\u540d\u3001\u5bc6\u7801\u3001\u6743\u9650\u7684\u9a8c\u8bc1\uff0c\u9a8c\u8bc1\u6210\u529f\u8fd4\u56de\n\u8fde\u63a5\u7ed9\u5ba2\u6237\u7aef\u3002\n2\uff0c\u5ba2\u6237\u7aef\u901a\u8fc7\u8fde\u63a5\u63d0\u4ea4sql\u8bed\u53e5\uff0c\u5982\u679c\u662f\u67e5\u8be2\u8bed\u53e5\u4f1a\u5148\u68c0\u67e5\u67e5\u8be2\u7f13\u5b58\u662f\u5426\u6267\u884c\u8fc7(\u4ec5\n\u96505.7\u53ca\u4ee5\u524d\u7684\u7248\u672c\uff0c\u4e4b\u540e\u7684\u7248\u672c\u5df2\u7ecf\u53bb\u6389\u4e86\u67e5\u8be2\u7f13\u5b58)\uff0csql\u8bed\u53e5\u4ea4\u7531\u89e3\u6790\u5668\u5904\u7406\uff0c\u8fdb\u884c\n\u8bcd\u6cd5\u5206\u6790(\u6839\u636e\u5173\u952e\u5b57 \u5982UPDATE \u7b49\u786e\u5b9a\u8868\u540d\u548c\u5b57\u6bb5\u540d\u7b49)\u548c\u8bed\u6cd5\u5206\u6790(\u68c0\u67e5sql\u8bed\u53e5\u662f\u5426\n\u7b26\u5408\u8bed\u6cd5\u7ed3\u6784)\u3002\n3\uff0c\u4f18\u5316\u5668\u5904\u7406:\u751f\u6210\u6267\u884c\u8ba1\u5212\uff0c\u51b3\u5b9a\u8d70\u7d22\u5f15\u8fd8\u662f\u5168\u8868\u626b\u63cf\u3002\n4\uff0c\u6267\u884c\u5668\u5904\u7406\uff1a\u6839\u636e\u751f\u6210\u7684\u8ba1\u5212\u8c03\u7528\u5b58\u50a8\u5f15\u64ceapi\u6267\u884c\u64cd\u4f5c\uff0c\u540c\u65f6\u5c06DDL,DML\u64cd\u4f5c\n(SELECT\u9664\u5916)\u5199\u5165bin log cache\uff0c\u6700\u7ec8\u76ee\u7684\u662f\u4e3a\u4e86\u5199\u5165 bin log \uff0c bin log \u662f\u903b\u8f91\u65e5\n\u5fd7\uff0c\u8ffd\u52a0\u5199\uff0c\u4fdd\u7559\u5b8c\u6574\u65e5\u5fd7\uff0c\u5176\u4f5c\u7528\u662f \u4e3b\u4ece\u540c\u6b65\u548c\u6570\u636e\u6062\u590d \u3002\u81f3\u4e8e\u4e3a\u4ec0\u4e48\u5148\u5199\u5165 bin log\ncache\uff0c\u56e0\u4e3abin log\u5728\u78c1\u76d8\uff0c\u8ba1\u7b97\u673a\u4e3a\u4e86\u63d0\u9ad8\u5904\u7406\u901f\u5ea6\uff0c\u5f80\u5f80\u4f1a\u52a0\u5728\u5185\u5b58\u533a\u589e\u52a0\u7f13\u5b58\uff0c"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 0
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "mysql\u4e5f\u4e0d\u4f8b\u5916\u3002\u81f3\u4e8ebin log\u4f55\u65f6\u5237\u76d8\uff0c\u4e8b\u52a1\u63d0\u4ea4\u65f6\u5fc5\u5b9a\u5237\u76d8\uff0ccache\u6ee1\u65f6\u4e5f\u4f1a\u89e6\u53d1\uff0c\nInnodb\u5f15\u64ce\u662f\u5728redo log\u4e24\u9636\u6bb5\u63d0\u4ea4\u65f6\u5237\u76d8\u7684\u3002\u503c\u5f97\u6ce8\u610f\u7684\u662f\u5199\u5165bin log cache\u662f\u7531\nserver\u5c42\u5904\u7406\u7684\uff0c\u4e0d\u8bba\u91c7\u7528\u4f55\u79cd\u5b58\u50a8\u5f15\u64ce\uff0c\u8fd9\u4e00\u6b65\u90fd\u662f\u5fc5\u987b\u505a\u7684\u3002\n\u5b58\u50a8\u5f15\u64ce(Innodb)\u5c42\u5904\u7406 \uff1a\n\u5728\u8ba1\u7b97\u673a\u7cfb\u7edf\u4e2d\uff0c\u7528\u6237\u8bf7\u6c42\u4e0d\u4f1a\u76f4\u63a5\u8bfb\u5199\u78c1\u76d8\uff0c\u52a0\u5185\u5b58\u7f13\u5b58\u63d0\u901f\u65e0\u5904\u4e0d\u5728,Innodb\u5f15\n\u64ce\u5f53\u7136\u4e5f\u6709\u7f13\u5b58\uff0c \u5b83\u5c31\u662fbuffer pool\uff0c\u5176 \u8d1f\u8d23\u7f13\u5b58\u78c1\u76d8\u6570\u636e\u9875\uff0c\u901a\u8fc7\u51cf\u5c11\u78c1\u76d8 I/O \u663e\u8457\n\u63d0\u5347\u6570\u636e\u5e93\u6027\u80fd\u3002\n1\uff0c \u6570\u636e\u4fee\u6539\u524d\u5148\u5c06\u4fee\u6539\u524d\u7684\u6570\u636e\u653e\u5230buffer pool \u7684undo log page\u9875\uff0c\uff08\u540e\u7eed\u4f1a\u5237\n\u76d8\u5230undo log\uff09,undo log\u7684\u4f5c\u7528\u662f\u652f\u6301\u4e8b\u52a1\u56de\u6eda(\u4fdd\u8bc1\u4e8b\u52a1\u539f\u5b50\u6027)\u548c\u652f\u6301mvcc(mvcc\n\u7684\u5de5\u4f5c\u539f\u7406\u53ca\u4e0eundo log\u7684\u5173\u7cfb\u540e\u7eed\u4f1a\u4e13\u9898\u8bb2\u89e3)\uff1b\n2\uff0c\u4fee\u6539buffer pool\u4e2d\u7684\u6570\u636e\u9875\uff0c\u4ea7\u751f\u6570\u636e\u810f\u9875\u3002\n3\uff0c \u5199redo log buffer(\u540e\u7eed\u4f1a\u5237\u76d8\u5230redo log\uff0credo log\u662f\u4fdd\u8bc1\u6570\u636e\u4e00\u81f4\u6027\u548c\u4e8b\u52a1\n\u6301\u4e45\u6027\u7684\u6838\u5fc3\u7ec4\u4ef6\uff0c\u5f53mysql\u610f\u5916\u5d29\u6e83\u65f6\uff0c\u5229\u7528redo log\u91cd\u653e\u65e5\u5fd7\u5c06\u6570\u636e\u6062\u590d\u5230\u5d29\u6e83\u524d\n\u7684\u72b6\u6001\uff0c\u907f\u514d\u6570\u636e\u4e22\u5931\u3002redo log\u662f\u5faa\u73af\u987a\u5e8f\u5199\u7684\u7269\u7406\u65e5\u5fd7\uff0c\u5176\u8bb0\u5f55\u4e86\u6570\u636e\u9875\u505a\u4e86\u4f55\u79cd\n\u6539\u52a8\uff0c\u6709\u8f83\u9ad8\u7684\u5199\u6027\u80fd\uff0c\u9700\u6ce8\u610f\u7684\u662f\u7531\u4e8e\u5176\u5faa\u73af\u5199\uff0c\u6240\u4ee5\u4e0d\u80fd\u7528\u5b83\u505a\u6570\u636e\u6062\u590d\uff09,\u540c\u65f6\u5c06\nundo log \u8bb0\u5f55\u5199\u5230redo log buffer\u4e2d\uff0c\u4ee5\u4fbf\u540e\u7eed\u63d0\u4ea4\u4e8b\u52a1\u65f6\u89e6\u53d1undo log\u5237\u76d8(\u53e6\u5916\nundo log\u5237\u76d8\u673a\u5236\u8fd8\u6709\u540e\u53f0\u5f02\u6b65\u7ebf\u7a0b\uff0c\u548credo log\u63d0\u4ea4\u89e6\u53d1\u4e24\u8005\u5e76\u5b58)\uff1b\n4\uff0c\u63d0\u4ea4\u4e8b\u52a1\uff0c\u89e6\u53d1redo log \u4e24\u9636\u6bb5\u63d0\u4ea4\u673a\u5236\uff0c\u786e\u4fddredo log\u548cbin log\u5237\u76d8\uff0c\u4fdd\u8bc1\n\u4e00\u81f4\u6027\uff0c\u53ea\u8981bin log\u5237\u76d8\u6210\u529f\u4e86\u6570\u636e\u5c31\u4e0d\u4f1a\u4e22\u5931\uff1b\n5\uff0c\u540e\u53f0\u5f02\u6b65\u7ebf\u7a0b\u4f1a\u5c06redo log\u6570\u636e\u5199\u5165\u78c1\u76d8\u3002\nredo log\u4e24\u9636\u6bb5\u63d0\u4ea4\nredo log \u4e24\u9636\u6bb5\u63d0\u4ea4\u8fc7\u7a0b:"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 1
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "1, prepare\u9636\u6bb5:\u4fee\u6539\u6570\u636e\u540e\uff0c\u4e8b\u52a1\u63d0\u4ea4\u524d,mysql\u4f1a\u5c06\u53d8\u66f4\u5199\u5165 redo log ,\u6807\u8bb0\u65e5\u5fd7\n\u72b6\u6001\u4e3aprepare,\u6b64\u6b65\u9aa4\u786e\u4fdd\u4e8b\u52a1\u7684\u4fee\u6539\u5df2\u8bb0\u5f55\uff0c\u4f46\u672a\u63d0\u4ea4\uff1b\n2\uff0c\u4e8b\u52a1\u63d0\u4ea4\u9636\u6bb5\uff1amysql\u5c06bin log cache\u540c\u6b65\u5237\u76d8\u5230bin log, bin log\u5237\u76d8\u6210\u529f\n\u540e\uff0c\u5c06 redo log\u8bbe\u7f6e\u4e3acommit\u72b6\u6001, \u5e76\u5f02\u6b65\u5237\u76d8\uff0c\u53e6\u5916\u6b64\u65f6\u4e5f\u4f1a\u89e6\u53d1undo log\u7684\u5237\n\u76d8\u3002\n\u53e6\u5916\u5173\u4e8einnodb\u4e8b\u52a1\u8bbe\u7f6e\u6709\u4e2a\u91cd\u8981\u53c2\u6570:\ninnodb_flush_log_at_trx_commit\n\u65e5\u5fd7\u6bcf\u79d2\u6279\u91cf\u5237\u76d8\uff08\u6027\u80fd\u6700\u9ad8\uff0c\u5b95\u673a\u53ef\u80fd\u4e22\u5931\u6700\u591a1\u79d2\u6570\u636e) =0\n=1 \u9ed8\u8ba4\uff09\uff1a\u6bcf\u6b21\u4e8b\u52a1\u63d0\u4ea4\u5f3a\u5236\u5237\u76d8\uff08\u5b89\u5168\u6027\u6700\u9ad8\uff0c\u6027\u80fd\u6700\u4f4e\uff09\n=2 \u65e5\u5fd7\u5199\u5165 OS \u7f13\u5b58\uff0c\u53ea\u8981\u64cd\u4f5c\u7cfb\u7edf\u4e0d\u6302\uff0c\u6570\u636e\u5c31\u4e0d\u4f1a\u4e22\u5931\u3002\n\u7ec8\u4e8e\uff0c\u901a\u8fc7UPDATE\u8bed\u53e5\u7684\u6267\u884c\u8fc7\u7a0b\uff0c\u6211\u4eec\u5bf9mysql\u4e09\u5927\u65e5\u5fd7\u7684\u4f5c\u7528\u548c\u5de5\u4f5c\u539f\u7406\u6709\u4e86\u6e05\u6670\u7684\n\u8ba4\u8bc6\uff0c\u6709\u4e0d\u8db3\u4e4b\u5904\u5e0c\u671b\u591a\u6307\u6b63\u4ea4\u6d41\u3002\n\u6570\u636e\u5e93\u53ca\u4e2d\u95f4\u4ef6 \u00b7 \u76ee\u5f55\n\u4e0b\u4e00\u7bc7 MySQL MVCC\uff1a\u63ed\u5f00\u6570\u636e\u5e93\u9ad8\u5e76\u53d1\u7684\u795e\u79d8\u9762\u7eb1\n\u4f5c\u8005\u63d0\u793a: \u4e2a\u4eba\u89c2\u70b9\uff0c\u4ec5\u4f9b\u53c2\u8003"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 2
+        }
+    ]
+}

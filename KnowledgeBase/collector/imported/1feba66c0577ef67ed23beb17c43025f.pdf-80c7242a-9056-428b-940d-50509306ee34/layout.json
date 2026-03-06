@@ -1,0 +1,563 @@
+{
+    "pdf_info": [
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u6743\u9650\u7ba1\u63a7\uff0c\u8fd8\u53ef\u4ee5\u518d\u7b80\u5355\u70b9\n\u539f\u521b xiongcc 2024-05-25 401\n\u524d\u8a00\nPostgreSQL \u4e2d\u7684\u6743\u9650\u8bbe\u8ba1\u7565\u5fae\u590d\u6742\uff0c\u5c5e\u4e8e\u5c42\u6b21\u7ed3\u6784\uff0c\u5bf9\u4e8e\u65b0\u624b\u4e0d\u592a\u53cb\u597d\uff0c\u8001\u9e1f\u4e5f\u4f1a\u7ecf\u5e38\u4e91\n\u91cc\u96fe\u91cc\u3002\u4e3e\u4e2a\u6817\u5b50\uff0c\u5047\u5982\u4f60\u9700\u8981\u67e5\u8be2\u67d0\u4e00\u884c\u6570\u636e\u7684\u8bdd\uff0c\u8ba9\u6211\u634b\u634b\uff0c\u4f60\u5927\u6982\u9700\u8981\u7ecf\u8fc7\u8fd9\u4e48\u591a\u5c42\n\u5173\u5361\uff1a\n\u5148\u901a\u8fc7\u6570\u636e\u5e93\u9632\u706b\u5899\n\u80fd\u591f\u767b\u5f55\u5bf9\u5e94\u6570\u636e\u5e93 (LOGIN)\n\u8868\u6240\u5728\u6570\u636e\u5e93\u7684\u8fde\u63a5\u6743\u9650 (CONNECT)\n\u8868\u6240\u5728\u6a21\u5f0f\u7684\u4f7f\u7528\u6743\u9650 (USAGE)\n\u8868\u672c\u8eab\u7684\u67e5\u770b\u6743\u9650 (SELECT)\n\u5217\u7ea7\u6743\u9650 (SELECT)\n\u884c\u7ea7\u7b56\u7565 (RLS)\n\u5b9e\u540d\u529d\u9000\u4e0d\u5c11\u65b0\u624b\u5c0f\u767d\uff0c\u8fd8\u6709\u89d2\u8272 (ROLE)\u3001\u7528\u6237 (USER)\u548c\u7ec4 (GROUP) \u8fd9\u4e9b\u5341\u5206\u7c7b\u4f3c\u7684\u6982\n\u5ff5\uff0c\u66f4\u4e0d\u7528\u8bf4\u8fd8\u53ef\u4ee5\u89d2\u8272\u5957\u5a03\u4e86\u3002\u5173\u4e8e\u6743\u9650\u6211\u4e5f\u5199\u4e86\u4e0d\u5c11\u6587\u7ae0\uff1a\n\u5228\u6839\u95ee\u5e95 | \u5982\u4f55\u5220\u9664\u7528\u6237\u6700\u4f18\uff1f\n\u53c8\u88ab\u6743\u9650\u641e\u6655\u4e86\uff1f\u62ff\u634f\uff01\n\u518d\u5520\u5520\u6655\u4e4e\u7684\u6743\u9650\u4f53\u7cfb\n\u4eca\u5929\u5411\u5404\u4f4d\u5206\u4eab\u51e0\u4e2a\u5b9e\u7528\u63d2\u4ef6\uff0c\u7b80\u5355\u6613\u61c2\uff0c\u5feb\u901f\u4e0a\u624b\uff0c\u5e2e\u52a9\u5404\u4f4d\u8f7b\u677e\u62ff\u634f\u8fd9\u4e2a\u6655\u4e4e\u7684\u6743\u9650\u4f53\n\u7cfb\u3002\n\u6743\u9650\u67e5\u8be2"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 0
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "crunchy_check_access\n\u7b2c\u4e00\u4e2a\u63a8\u8350\u7684\u63d2\u4ef6\u662f crunchy_check_access\nFunctions and views to facilitate PostgreSQL object access inspection\n\u5728 MySQL \u4e2d\uff0c\u5982\u679c\u8981\u83b7\u53d6\u4e00\u4e2a\u7528\u6237\u7684\u6240\u6709\u6743\u9650\uff0c\u5f88\u65b9\u4fbf\uff0c\u4e00\u6761\u8bed\u53e5\u5c31\u53ef\u4ee5\u641e\u5b9a\uff0c\u4f46\u662f\u5728 Po\nstgreSQL \u4e2d\uff0c\u5f88\u4e0d\u5e78\uff0c\u4f60\u9700\u8981\u62fc\u63a5\u5927\u91cf\u7684\u8868\u624d\u80fd\u83b7\u53d6\u51fa\u53ef\u80fd\u5e76\u4e0d\u5b8c\u6574\u7684\u6743\u9650\u5217\u8868\uff0ccrunch\ny_check_access \u4fbf\u53ef\u4ee5\u89e3\u51b3\u8fd9\u6837\u7684\u96be\u9898\u3002\npostgres=# create extension check_access ;\nCREATE EXTENSION\npostgres=# \\dx+ check_access\nObjects in extension \"check_access\"\nObject description\n------------------------------------------\nfunction all_access()\nfunction all_access(boolean)\nfunction all_grants()\nfunction all_grants(boolean)\nfunction check_access(text,boolean)\nfunction check_access(text,boolean,text)\nfunction check_grants(text,boolean)\nfunction check_grants(text,boolean,text)\nfunction my_privs()\nfunction my_privs_sys()\nview my_privs\nview my_privs_sys\n(12 rows)\n\u6bd4\u5982\u4f60\u60f3 postgres \u7528\u6237\u5bf9\u4e8e\u8868\u7684\u76f8\u5173\u6743\u9650"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 1
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "postgres=# SELECT * FROM all_access() WHERE base_role = 'postgres' and objtype\nrole_path | base_role | as_role | objtype | objid | schemaname | objname\n-----------+-----------+----------+---------+--------+------------+-------------+----------\npostgres | postgres | postgres | table | 167849 | public | enrollments\npostgres | postgres | postgres | table | 167849 | public | enrollments\npostgres | postgres | postgres | table | 167849 | public | enrollments\npostgres | postgres | postgres | table | 167849 | public | enrollments\npostgres | postgres | postgres | table | 167849 | public | enrollments\n(5 rows)\n\u5bf9\u4e8e\u5e93\u7684\u76f8\u5173\u6743\u9650\npostgres=# SELECT * FROM all_access() WHERE base_role = 'postgres' and objtype\nrole_path | base_role | as_role | objtype | objid | schemaname | objname |\n-----------+-----------+----------+----------+-------+------------+----------+--------------------------\npostgres | postgres | postgres | database | 33405 | | postgres |\npostgres | postgres | postgres | database | 33405 | | postgres |\npostgres | postgres | postgres | database | 33405 | | postgres |\npostgres | postgres | postgres | database | 33405 | | postgres |\npostgres | postgres | postgres | database | 33405 | | postgres |\n(5 rows)\n\u66f4\u591a\u7528\u6cd5\u5404\u4f4d\u8bfb\u8005\u81ea\u884c\u5c1d\u8bd5\u5427\uff0c\u8fd8\u662f\u5341\u5206\u65b9\u4fbf\u7684\uff01\npg_permissions\n\u7b2c\u4e8c\u4e2a\u63d2\u4ef6\u662f pg_permissions\nThis extension allows you to review object permissions on a PostgreSQL database.\npg_permissions \u652f\u6301 \u6743\u9650\u5bf9\u6bd4 \uff0cDBA \u5728\u7ba1\u7406\u6743\u9650\u65f6\u53ea\u9700\u8981\u5728 permission_target \u8868\u4e2d\u5f55\n\u5165\u76f8\u5e94\u7684\u6743\u9650\uff0c\u540e\u671f\u5f00\u53d1\u4eba\u5458\u6216 DBA \u5728\u5f00\u53d1\u9636\u6bb5\u53ef\u80fd\u4f1a\u968f\u610f\u7684\u5206\u914d\u6743\u9650\uff0c\u6bd4\u5982\u6743\u9650\u8d85\u4e86\uff0c"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 2
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u53ea\u9700\u8981\u67e5\u8be2\u7ed3\u679c\u8fd8\u53ef\u4ee5\u5199\u5165\u7b49\uff0c\u90a3\u4e48 DBA \u53ea\u9700\u8981\u8fd0\u884c\u5bf9\u6bd4\u51fd\u6570\u5c31\u80fd\u53d1\u73b0\u6743\u9650\u662f\u5426\u7b26\u5408\u8bbe\u8ba1\n\u8981\u6c42\uff0c\u9632\u60a3\u4e8e\u672a\u7136\u3002\npostgres=# \\dx+ pg_permissions\nObjects in extension \"pg_permissions\"\nObject description\n-------------------------------------\nfunction permission_diffs()\nfunction permissions_trigger_func()\nsequence permission_target_id_seq\ntable permission_target\ntype obj_type\ntype perm_type\nview all_permissions\nview column_permissions\nview database_permissions\nview function_permissions\nview schema_permissions\nview sequence_permissions\nview table_permissions\nview view_permissions\n(14 rows)\n\u6743\u9650\u5bf9\u6bd4\u53c2\u7167\u5b83\u81ea\u5df1\u5c55\u793a\u7684\u4f8b\u5b50\u5373\u53ef\uff1a\nSELECT * FROM public.permission_diffs();\nmissing | role_name | object_type | schema_name | object_name | column_name |\n---------+-----------+-------------+-------------+-------------+-------------+------------\nf | laurenz | VIEW | appschema | appview | |\nt | appuser | TABLE | appschema | apptable | |\n(2 rows)\nThat means that appuser is missing the DELETE privilege on appschema.apptabl\nwhich should be granted, while user has the additional privilege e laurenz SELECT\non appschema.appview ( missing is FALSE )."
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 3
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u53e6\u5916\u4e00\u4e2a\u529f\u80fd\u7c7b\u4f3c\u4e8e crunchy_check_access\uff0c\u53ef\u4ee5\u67e5\u8be2\u67d0\u4e2a\u7528\u6237\u7684\u6743\u9650\u5217\u8868\uff0c\u5bf9\u5e94\u4e8e *_p\nermissions\u76f8\u5bf9\u5e94\u7684\u89c6\u56fe\uff0c\u6bd4\u5982\npostgres=# select * from table_permissions limit 2;\nobject_type | role_name | schema_name | object_name | column_name\n-------------+-------------------+-------------+------------------+-------------+------------+---------\nTABLE | pg_database_owner | public | pgbench_branches |\nTABLE | pg_database_owner | public | pgbench_history |\n(2 rows)\npostgres=# select * from column_permissions limit 2;\nobject_type | role_name | schema_name | object_name | column_name |\n-------------+-------------------+-------------+---------------+-------------+------------+---------\nCOLUMN | pg_database_owner | public | ptab01_202303 | id |\nCOLUMN | pg_read_all_data | public | ptab01_202303 | id |\n(2 rows)\n\u7070\u5e38\u597d\u7528\uff01\n\u5b9e\u7528 SQL\n\u5982\u679c\u5404\u4f4d\u89c9\u5f97\u88c5\u63d2\u4ef6\u9ebb\u70e6\u7684\u8bdd\uff0c\u90a3\u6709\u6ca1\u6709\u61d2\u4eba\u4e13\u7528\u7684 SQL \u5462\uff1fSure\uff01\nWITH server_permissions AS (\nSELECT\nr.rolname,\n'Server_Permissions' AS \"Level\",\nr.rolsuper,\nr.rolinherit,\nr.rolcreaterole,\nr.rolcreatedb,\nr.rolcanlogin,\nARRAY(\nSELECT b.rolname\nFROM pg_catalog.pg_auth_members m\nJOIN pg_catalog.pg_roles b ON m.roleid = b.oid"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 4
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "WHERE m.member = r.oid\n) AS memberof,\nr.rolbypassrls\nFROM pg_catalog.pg_roles r\nWHERE r.rolname !~ '^pg_'\n),\ndb_ownership AS (\nSELECT\nr.rolname,\n'DB_Ownership' AS \"Level\",\nd.datname\nFROM pg_catalog.pg_database d, pg_catalog.pg_roles r\nWHERE d.datdba = r.oid\n),\nschema_permissions AS (\nSELECT\n'Schema Permissions' AS \"Level\",\nr.rolname AS role_name,\nnspname AS schema_name,\npg_catalog.has_schema_privilege(r.rolname, nspname, 'CREATE') AS create_grant,\npg_catalog.has_schema_privilege(r.rolname, nspname, 'USAGE') AS usage_grant\nFROM pg_namespace pn, pg_catalog.pg_roles r\nWHERE array_to_string(nspacl, ',') LIKE '%' || r.rolname || '%'\nAND nspowner > 1\n),\ntable_ownership AS (\nSELECT\n'Table Ownership' AS \"Level\",\ntableowner,\nschemaname,\ntablename\nFROM pg_tables\nGROUP BY tableowner, schemaname, tablename\n),\nobject_permissions AS ("
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 5
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "SELECT\n'Object Permissions' AS \"Level\",\nCOALESCE(NULLIF(s[1], ''), 'public') AS rolname,\nn.nspname,\nrelname,\nCASE\nWHEN relkind = 'm' THEN 'Materialized View'\nWHEN relkind = 'p' THEN 'Partitioned Table'\nWHEN relkind = 'S' THEN 'Sequence'\nWHEN relkind = 'I' THEN 'Partitioned Index'\nWHEN relkind = 'v' THEN 'View'\nWHEN relkind = 'i' THEN 'Index'\nWHEN relkind = 'c' THEN 'Composite Type'\nWHEN relkind = 't' THEN 'TOAST table'\nWHEN relkind = 'r' THEN 'Table'\nWHEN relkind = 'f' THEN 'Foreign Table'\nEND AS \"Object Type\",\ns[2] AS privileges\nFROM\npg_class c\nJOIN pg_namespace n ON n.oid = relnamespace\nJOIN pg_roles r ON r.oid = relowner,\nUNNEST(COALESCE(relacl::text[], FORMAT('{%s=arwdDxt/%s}', rolname,\nREGEXP_SPLIT_TO_ARRAY(acl, '=|/') s\nWHERE relkind <> 'i' AND relkind <> 't'\n)\nSELECT\n\"Level\",\nrolname AS \"Role\",\n'N/A' AS \"Object Name\",\n'N/A' AS \"Schema Name\",\n'N/A' AS \"DB Name\",\n'N/A' AS \"Object Type\",\n'N/A' AS \"Privileges\",\nrolsuper::text AS \"Is SuperUser\",\nrolinherit::text,\nrolcreaterole::text,\nrolcreatedb::text,\nrolcanlogin::text,"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 6
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "memberof::text,\nrolbypassrls::text\nFROM server_permissions\nUNION\nSELECT\ndow.\"Level\",\ndow.rolname,\n'N/A',\n'N/A',\ndatname,\n'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A'\nFROM db_ownership AS dow\nUNION\nSELECT\n\"Level\",\nrole_name,\n'N/A',\nschema_name,\n'N/A',\n'N/A',\nCASE\nWHEN create_grant IS TRUE AND usage_grant IS TRUE THEN 'Usage+Create'\nWHEN create_grant IS TRUE AND usage_grant IS FALSE THEN 'Create'\nWHEN create_grant IS FALSE AND usage_grant IS TRUE THEN 'Usage'\nELSE 'None'\nEND,\n'N/A',\n'N/A',"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 7
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A'\nFROM schema_permissions\nUNION\nSELECT\n\"Level\",\ntableowner,\ntablename,\nschemaname,\n'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A',\n'N/A'\nFROM table_ownership\nUNION\nSELECT\n\"Level\",\nrolname,\nrelname,\nnspname,\n'N/A',\n\"Object Type\",\nprivileges,\n'N/A',\n'N/A',\n'N/A',\n'N/A',"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 8
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "'N/A',\n'N/A',\n'N/A'\nFROM object_permissions\nORDER BY \"Role\";\n\u6743\u9650\u9650\u5236\nset_user\n\u539f\u751f PostgreSQL \u6743\u9650\u6709\u5f88\u591a\"\u6f0f\u6d1e\"\uff0c\u6bd4\u5982\u65e0\u6cd5\u963b\u6b62 alter system\uff0ccopy on program \u641e\n\u7834\u574f (\u4e4b\u524d\u8fd8\u6709 CVE) \u7b49\u7b49\nThis PostgreSQL extension allows switching users and optional privilege escalation with\nenhanced logging and control. It provides an additional layer of logging and control whe\nn unprivileged users must escalate themselves to superuser or object owner roles in ord\ner to perform needed maintenance tasks.\nThe current effective user becomes . rolename\nThe role transition is logged, with a specific notation if is a superuse rolename\nr.\nsetting is set to \"all\", meaning every SQL statement executed log_statement\nwhile in this state will also get logged.\nIf is set to \"on\", commands will set_user.block_alter_system ALTER SYSTEM\nbe blocked.\nIf is set to \"on\", commands will set_user.block_copy_program COPY PROGRAM\nbe blocked.\nIf is set to \"on\", and vari set_user.block_log_statement SET log_statement\nations will be blocked.\nIf is set to \"on\" and is a database set_user.block_log_statement rolename\nsuperuser, the current setting is changed to \"all\", meaning ever log_statement"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 9
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "y SQL statement executed\nIf is set, the string value will be appended t set_user.superuser_audit_tag\no upon superuser escalation. All logs after superuser escalat log_line_prefix\nion will be tagged with the value of . This valu set_user.superuser_audit_tag\ne defaults to . 'AUDIT'\nIf is set to \"on\", the backend process will exit on ERR set_user.exit_on_error\nOR during calls to set_session_auth().\nPost-execution hook for is called if it is set. set_user\n\u8fd9\u4e2a\u63d2\u4ef6\u5c31\u662f\u63d0\u4f9b\u4e86\u4e00\u4e9b\u6b64\u7c7b\u9650\u5236\uff0c\u7528\u6cd5\u5f88\u7b80\u5355\u3002\npg_restrict\npg_restrict \u7c7b\u4f3c\uff0c\u591a\u4e86\u4e2a\u7981\u6b62\u5220\u5e93\u8fd9\u4e2a\u64cd\u4f5c\uff0c\u539f\u751f PostgreSQL \u662f\u65e0\u6cd5\u963b\u6b62\u5220\u5e93\u7684 (\u9664\u975e\n\u4f60\u8bbe\u7f6e\u4e3a\u6a21\u677f\u6570\u636e\u5e93)\n(boolean): restrict ALTER SYSTEM command to ma pg_restrict.alter_system\nster roles ( parameter). Default is false . pg_restrict.master_roles\n(boolean): restrict COPY ... PROGRAM command t pg_restrict.copy_program\no master roles ( parameter). Default is false . pg_restrict.master_roles\n(string): Roles that are allowed to execute the rest pg_restrict.master_roles\nricted commands. If there is more than one role, separate them with comma. De\nfault is postgres .\n(string): restrict DROP databases liste pg_restrict.nonremovable_databases\nd here to a master role (even if the current role is the database owner or superu\nser). Default is postgres, template1, template0 .\n(string): restrict DROP roles listed here to a pg_restrict.nonremovable_roles\nmaster role (even if the current role has CREATEROLE privilege or is a superuse\nr). Default is postgres .\npg_sulog\npg_sulog \u4e3b\u8981\u9488\u5bf9\u7684\u662f\u8d85\u7ea7\u7528\u6237\uff0c\u8ba9\u8d85\u7ea7\u7528\u6237\u4e5f\u4e0d\u80fd\u8086\u65e0\u5fcc\u60ee\u7684\u641e\u7834\u574f\u4e86\uff01\u4f46\u662f\u5f88\u4e45\u4e0d\u7ef4"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 10
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "\u62a4\u4e86\uff0c\u6709\u70b9\u8131\u88e4\u5b50\u653e\u5c41\u7684\u5473\u9053\uff0c\u4e0e\u5176\u8fd9\u6837\uff0c\u8fd8\u7ed9\u8d85\u7ea7\u7528\u6237\u7684\u6743\u9650\u505a\u4ec0\u4e48\u3002\n'BLOCK', super user role's all operation is blocked.\n'MAINTENANCE', Other than the following commands, super user operation will\nbe blocked.\nVACUUM, REINDEX, ANALYZE, CLUSTER\n'LOGGING', super user role's all operation is logged.\n\u5c0f\u7ed3\n\u6743\u9650\u8fd8\u662f\u9700\u8981\u591a\u52a8\u624b\uff0c\u591a\u6298\u817e\u51e0\u4e0b\uff0c\u5176\u5b9e\u4e5f\u5c31\u90a3\u4e48\u56de\u4e8b\u3002\n\u58a8\u529b\u8ba1\u5212\n\u300c\u559c\u6b22\u8fd9\u7bc7\u6587\u7ae0\uff0c\u60a8\u7684\u5173\u6ce8\u548c\u8d5e\u8d4f\u662f\u7ed9\u4f5c\u8005\u6700\u597d\u7684\u9f13\u52b1\u300d\n\u5173\u6ce8\u4f5c\u8005 \u8d5e\u8d4f\n\u3010\u7248\u6743\u58f0\u660e\u3011\u672c\u6587\u4e3a\u58a8\u5929\u8f6e\u7528\u6237\u539f\u521b\u5185\u5bb9\uff0c\u8f6c\u8f7d\u65f6\u5fc5\u987b\u6807\u6ce8\u6587\u7ae0\u7684\u6765\u6e90\uff08\u58a8\u5929\u8f6e\uff09\uff0c\u6587\u7ae0\u94fe\u63a5\uff0c\u6587\u7ae0\u4f5c\u8005\u7b49\u57fa\u672c\u4fe1\u606f\uff0c\u5426\u5219\u4f5c\u8005\n\u548c\u58a8\u5929\u8f6e\u6709\u6743\u8ffd\u7a76\u8d23\u4efb\u3002\u5982\u679c\u60a8\u53d1\u73b0\u58a8\u5929\u8f6e\u4e2d\u6709\u6d89\u5acc\u6284\u88ad\u6216\u8005\u4fb5\u6743\u7684\u5185\u5bb9\uff0c\u6b22\u8fce\u53d1\u9001\u90ae\u4ef6\u81f3\uff1acontact@modb.pro\u8fdb\u884c\u4e3e\u62a5\uff0c\u5e76\n\u63d0\u4f9b\u76f8\u5173\u8bc1\u636e\uff0c\u4e00\u7ecf\u67e5\u5b9e\uff0c\u58a8\u5929\u8f6e\u5c06\u7acb\u523b\u5220\u9664\u76f8\u5173\u5185\u5bb9\u3002\n\u76f8\u5173\u9605\u8bfb\n\u817e\u8bafiOA\u4f01\u4e1a\u7ea7\u5b89\u5168\u529e\u516c\u89e3\u51b3\u65b9\u6848\n2025\u5e748\u6708\u4e2d\u56fd\u6570\u636e\u5e93\u6392\u884c\u699c\uff1a\u53cc\u661f\u7ade\u5165\u4e09\u7532\u699c\uff0cTDSQL \u8fde\u8dc3\u4f4d\u6b21\u5347\n\u3010DBA\u5766\u767d\u5c40\u3011\u7b2c\u4e09\u671f\uff1a\u4f5c\u4e3aDBA\uff0c\u4f60\u52a0\u8fc7\u6700\u665a\u7684\u73ed\u662f\u5230\u51e0\u70b9\uff1f\u5728\u5e72\u4ec0\u4e48\uff1f\n2025\u5e747\u6708\u56fd\u4ea7\u6570\u636e\u5e93\u5927\u4e8b\u8bb0\uff1aGoldenDB\u521b\u5343\u4e07\u7ea7\u5927\u5355\uff0c\u53ef\u4fe1\u6570\u636e\u5e93\u5927\u4f1a\u53ec\u5f00\uff0copenGauss HyBench\u6253\u699c\u7b2c\n\u4e00\uff0c\u7535\u79d1\u91d1\u4ed3\u4e3e\u529e2025\u4ea7\u54c1\u53d1\u5e03\u4f1a\u2026\u2026"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 11
+        },
+        {
+            "para_blocks": [
+                {
+                    "bbox": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "text",
+                    "angle": 0,
+                    "lines": [
+                        {
+                            "bbox": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "spans": [
+                                {
+                                    "bbox": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "type": "text",
+                                    "content": "IDC\u62a5\u544a\uff1a2024\u4e2d\u56fd\u91d1\u878d\u884c\u4e1a\u96c6\u4e2d\u5f0f\u4e8b\u52a1\u578b\u6570\u636e\u5e93\u5e02\u573a\u783411.6\u4ebf\u5143\uff0cOracle\u9886\u8dd1\u3001\u8fbe\u68a6\u5f3a\u52bf\u8ffd\u8d76\n\u4f18\u70ab\u6570\u636e\u5e93\u5728\u5c71\u4e1c\u7701\u5bff\u5149\u5e02\u4eba\u6c11\u68c0\u5bdf\u9662\u6210\u529f\u5e94\u7528\uff01\n2025\u5e747\u6708\u56fd\u4ea7\u6570\u636e\u5e93\u4e2d\u6807\u60c5\u51b5\u4e00\u89c8\uff1a\u957f\u6c99\u94f6\u884c\u5343\u4e07\u91c7\u8d2dGoldenDB\uff0c\u79e6\u7687\u5c9b\u94f6\u884c\u8fd1\u4e03\u767e\u4e07\u91c7\u8d2dTDSQL\uff01\n\u91cd\u78c5\u53d1\u5e03\uff1aOracle ADG \u4e00\u952e\u81ea\u52a8\u5316\u642d\u5efa\u811a\u672c\n\u91cd\u78c5 | \u4e07\u91cc\u6570\u636e\u5e93GreatDB\u4eae\u76f8\u4e0a\u5408\u7ec4\u7ec7\u6570\u5b57\u7ecf\u6d4e\u8bba\u575b \u4ee5\u786c\u6838\u79d1\u6280\u5171\u7ed8\u201c\u6570\u5b57\u4e1d\u8def\u201d\u65b0\u56fe\u666f\n\u4e2d\u56fd\u4fe1\u901a\u96622025\u4e0a\u534a\u5e74\u201c\u53ef\u4fe1\u6570\u636e\u5e93\u201d\u65b0\u589e\u6807\u51c6\u89e3\u8bfb"
+                                }
+                            ]
+                        }
+                    ],
+                    "index": 0
+                }
+            ],
+            "discarded_blocks": [],
+            "page_size": [
+                0,
+                0
+            ],
+            "page_idx": 12
+        }
+    ]
+}

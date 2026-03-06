@@ -1,0 +1,275 @@
+[
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Write\nGet unlimited access to the best of Medium for less than $ 1 /week. Become a member\nSay Hello to Grafana OnCall\nA Practical Guide to Grafana OnCall\nMagsther Follow 8 min read \u00b7 Jun 11, 2023\n125\nIntroduction\nIn this post, I\u2019ll take a closer look at Grafana OnCall and demonstrate how\nyou can use it as an on-call management tool.\nWhat is Grafana OnCall?\nGrafana OnCall is an on-call management tool that is available in Grafana\nCloud and Grafana OSS (Open Source).\nGrafana OnCall gives a central view of all incidents and allows you to quickly\nsee and update the status of incidents and search for older resolved\nincidents.\nGrafana OnCall \u2014 Components\nBefore we continue, it\u2019s important that you know about the different pieces\nand learn the terminology. That is especially true, if you are coming from\nother on-call management tools like PagerDuty."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Here is an overview of the components.\nIntegrations (Alert Detection)\nIntegrations is how you connect a service / application to send alerts to\nGrafana OnCall.\nThese are the characteristics of Integrations:\nConnects to a monitoring system\nExamples can be Alertmanager, Webhooks, Datadog\nSome of the integrations are supported\nFor other integrations, you will probably need to create webhooks .\nAlert Grouping\nWith Alert grouping, Grafana OnCall receives alerts, groups them and routes\nthem according to configurable alert grouping and escalation steps. This\nprevent alert storms and reduce the noise your teams are exposed to during\nan incident.\nEscalations (Alert Routing)\nEscalation Chains are created to determine alerts are going to be handled.\nYou create chains (steps) to specify who is going to notified for an alert."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Based on the payload from the alerts, you can configure routes to send to\ndifferent escalation chains. This helps to ensure that the alerts are going to\nthe correct escalation and prevent alerts from being missed. There might be\ncases, when you monitors that have different severity (warnings, critical etc.)\nBy using routes, we can route the these alerts to different channels based on\nthe payload of the alerts.\nOnce the alert is then triggered , it will be sent to one of the notifications\nmethods.\nThese are the characteristics of Escalations:\nHow users and groups are notified when an alert notification is created.\nNotification Method (slack, sms, email , phone)\nEscalation Chains (steps that are followed in order when a notification is\ntriggered)\nA route (based on the metadata within the alert payload)\nSchedules (Notifications)\nAn on-call schedule consist of one or more rotations that contain on-call\nshifts.\nThese are the characteristics of Schedules:\nA list of people that should be part of an on-call schedule\nShifts (a period when an individual user is on-call)\nConnect the shift to a schedule\nInclude the schedule in the escalations\nGetting Started\nAn easy way to get started with Grafana OnCall is to sign up for a free trial\naccount on Grafana Cloud , which is the SaaS version of Grafana."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Once you have signed in and logged in, click on Alerts & IRM -> OnCall"
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Right now we don\u2019t have any alert groups. Let\u2019s change that by first creating\nan integration.\nIntegrations\nAs mentioned above, integrations is how you connect a service / application to\nsend alerts to Grafana OnCall."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "To create an integration, click on the New integration to receive alerts\nbutton.\nSelect an integration from the list.\nGrafana OnCall can connect directly to the monitoring services where your\nalerts originate. All currently available integrations are listed in the Grafana\nOnCall Create Integration section."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "If the integration you\u2019re looking for isn\u2019t currently listed, you can always use\none of the Webhook integrations, which we will use in this case.\nWhat\u2019s a webhook?\nThe Webhook is the Web\u2019s way to integrate completely different systems in semi-\nreal time. As time has passed, the Web (or more precisely, HTTP , the protocol used\nfor requesting and fetching the Web site you\u2019re currently reading) has become the\ndefault delivery mechanism for almost anything that\u2019s transferred over the\nInternet.\nOur new webhook integration, will give us an unique webhook URL ( as well\nas tips on how to start sending alerts to Grafana OnCall from our monitoring\nsystem."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "I always click on Send demo alert, to verify that the integration works. The\nalert will be sent to Grafana OnCall and you can find the test alert in the\nAlert Groups tab.\nYou can now find your alerts on the Alert Groups page.\nClicking on the incident will give you further details about the incident."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Escalation Chains\nOnce the integration is created and you are able to send alerts into Grafana\nOnCall, the next step is to setup an Escalation Chain to determine how these\nalerts are going to be handled.\nAn escalation chain can have many steps, or only one step.\nTo do that, go to the Escalation Chains page and create new chain.\nHere, I\u2019ve created two escalation chains; one for critical alerts and one for\nwarnings. Next step is to decided what this chain will do. It can contain one\nor more steps. To showcase how this work, I\u2019ll first notify a user (me), wait 5\nminutes and then resolve the incident automatically.\nIf you scroll further down the list, you will see that you can add more\nadvanced steps."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "For now we are good, so now we need to link this escalation chain to an\nIntegration.\nBack on the integrations page, we pick the escalation chain that we want to\nuse.\nFrom this page, you can now add additional steps in your escalation chain."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Next time an alert is sent to this integration, it will use the linked escalation\nchain. But how does Grafana knows what for notification the user has? Well,\nyou need to set this up on the user page.\nAs you can see, you can select how you would like to get notified in Default\nNotifications.\nYou can on this page also add your phone number, connect a Slack\nintegration, Teams connection and as you can see a Mobile connection :)"
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Schedules\nAs mentioned at the beginning of this post, an on-call schedule consist of\none or more rotations that contain on-call shifts.\nA schedule must be referenced in the corresponding escalation chain for alert\nnotifications to be sent to an on-call user.\nA fully configured on-call schedule consists of three main components:\nRotations : A recurring schedule containing a set of on-call shifts that\nusers rotate through.\nOn-call shifts : The period of time that an individual user is on-call for a\nparticular rotation\nEscalation Chains : Automated steps that determine who to notify of an\nalert group."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "To create a new schedule , go to the Schedules page\nWe want to create the schedule using the Grafana OnCall UI, so we use the\nSet up on-call rotation schedule\nGive a name to the schedule and pay attention to the other options on this\npage. It\u2019s quite nice to get notifications and information about the oncall\nshifts in a Slack channel."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "The schedule is created, and now we need to setup some rotation, which\nmeans adding users to the schedule."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Here, I\u2019ve added a new rotation and added one user to the schedule.\nOnce I click Create, the schedule is being created."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Note, there are many options that you can add here and in a production system,\nyou will need to carefully set these accordingly.\nAdding a schedule to an Escalation Chain\nIt\u2019s starting to look good, and we have all the pieces configured.\nNow let\u2019s add the newly created schedule to an Escalation Chain.\nAdd the step called \u201c Notify users from on-call schedule \u201d, and select the\nschedule from the list."
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "As you will notice, you can drag and drop the steps how you want. Here, I\u2019ve\nput the \u201c notification for schedule \u201d to the top.\nWhen should I use Grafana OnCall?\nFor any greenfield projects, I\u2019d say that Grafana OnCall is a no-brainer. It\u2019s\neasy to setup and manage and includes the necessary features and functions\nthat other products uses. The documentation of how to use the tool is\nstraightforward, but should you need any missing feature, a new issue can be\ncreated on their GitHub page.\nFor greenfield projects, Grafana OnCall should be\nconsidered as a no-brainer tool to achieve your goal"
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "The support from the OnCall engineers is great, and you can join their\ncommunity calls to ask questions.\nWhat if I use another on-call management tool?\nMany organisations already uses other tools, like PagerDuty. The Grafana\nOnCall team provides a migration tool that helps you to migrate PagerDuty\nconfiguration to Grafana OnCall.\nConclusion\nIn this post, we looked at Grafana OnCall which is an on-call management\ntool available in Grafana Cloud and Grafana OSS (Open Source).\nGrafana OnCall gives a central view of all incidents and allows you to quickly\nsee and update the status of incidents and search for older resolved\nincidents.\nI hope you liked this post. If you found this useful, please hit that clap\nbutton and follow me to get more articles on your feed.\nGrafana Development Incident Management Software Engineering\nOpen Source\n125\nWritten by Magsther Follow\n796 followers \u00b7 4 following\nCreator of \u201cAwesome OpenTelemetry\u201d. https://twitter.com/magsther\nNo responses yet"
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Wnlin\nWhat are your thoughts?\nCancel Respond\nMore from Magsther\nMagsther Magsther\nGrafana Alloy & OpenTelemetry How to Create and Host a Website\nwith Hugo and GitHub Pages Say Hello to Alloy\nGitHub Pages + Hugo\nMay 18, 2024 132 3 Jun 18, 2023 206 4\nMagsther In FAUN.dev \u2014 Developer Community by Magsthe\n\ufff0\uf0f0 r\nJupyterHub on Kubernetes Grafana dashboards as\nConfigMaps An introduction to JupyterHub\nGrafana Dashboard as Code\nDec 30, 2022 31 Aug 19, 2022 10\nSee all from Magsther"
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "Recommended from Medium\nThink, Write, Repeat Kedarnath Grandhe\nHow to send and query metrics Grafana Mimir as a long term\nto/from Grafana Mimir storage for Prometheus metrics \u2014\nPart 2 Two Ways to Send Metrics to Grafana Mimir As mentioned in the previous blog, we are\nhere with Part 2 of the Mimir series and this\npart covers deployment methods and hands\non\u2026 Apr 17 1 Feb 23 7\nMahernaija Batuhan Bulut\nOpenTelemetry Ultimate Guide : Kubernetes Logging with\nWith Python demo exemples OpenTelemetry + Traces\nHow to Trace, Monitor, and Log Everything in Kubernetes Logging and Tracing with Open\nYour Cloud-Native Apps with One Powerful Telemetry\nFramework\nAug 3 24 Jun 17 2\nIn System Weakness by The Outage Specialist Mochamad Gufron\nSecuring Java APIs with OAuth2 Troubleshooting #3: Alloy + Loki \u2014\nand Keycloak (Beyond the Basics) A Love Story with Silly Mistakes"
+        }
+    ],
+    [
+        {
+            "type": "text",
+            "bbox": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "angle": 0,
+            "content": "The lessons we learned implementing real- Not long ago, life was simpler. If you needed\nworld SSO to ship logs to Loki, the answer was always\nPromtail \u2014 unless you were outside\nKubernetes\u2026 Jul 14 7 1 May 4 1\nSee more recommendations\nHelp Status About Careers Press Blog Privacy Rules Terms Text to speech"
+        }
+    ]
+]

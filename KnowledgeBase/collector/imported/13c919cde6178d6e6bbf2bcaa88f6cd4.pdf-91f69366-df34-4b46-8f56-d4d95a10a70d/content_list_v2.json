@@ -1,0 +1,211 @@
+[
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001\nKibana\n\u2f46\u5948\u4f55\u67682025-03-31333\u9605\u8bfb 5 \u5206\u949f \u5173\u6ce8\nDocker\nDocker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2\u4e86\uff0c\u53c2\u8003\u5b98\u2f79\u5b66\u4e60\u5c31\u2f8f\u3002\nwww.docker.com/\ndocs.docker.com/engine/inst\u2026\n\u955c\u50cf\u4ed3\u5e93\nhub.docker.com/explore\nhub.docker.com/search?badg\u2026\nhub.docker \u5df2\u7ecf\u63d0\u4f9b\u4e86\u2fae\u5e38\u591a\u7684\u955c\u50cf\uff0c\u2f00\u822c\u60c5\u51b5\u6765\u8bb2\u4f7f\u2f64\u5b98\u2f45\u955c\u50cf\u5c31\u597d\u4e86\u3002\n\u5982\uff1ahub.docker.com/_/mysql\n\u63a2 \u7d22 \u7a00 \u2f1f \u6398 \u2fa6\n\u767b\u5f55\u2fb8\u2eda\n2025/6/4 \u51cc\u6668 12:06 Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001 KibanaDocker Docker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2  - \u6398\u2fa6\nhttps://juejin.cn/post/7487219933127245833 1/11"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u5b98\u2f45\u5199\u7684\u4e5f\u76f8\u5f53\u660e\u2f69\uff0c\u5982\u4f55\u4f7f\u2f64\u955c\u50cf\uff0c\u8fd0\u2f8f\u5bb9\u5668\u53ef\u4ee5\u914d\u7f6e\u90a3\u4e9b\u53c2\u6570\uff0c\u2f47\u5fd7\u7b49\n\u8fd8\u5305\u62ec\u8fdb\u2f0a\u5bb9\u5668\u6267\u2f8f\u547d\u540d\u3001\u67e5\u770b\u2f42\u4ef6\u7b49\u7b49\nDocker Compose\nDocker Compose \u76f8\u8f83\u4e8e\u5355\u72ec\u4f7f\u2f64  docker run  \u547d\u4ee4\u6709\u5f88\u591a\u4f18\u52bf\uff0c\u7279\u522b\u662f\u5728\u7ba1\u7406\u591a\u5bb9\u5668\u5e94\u2f64\n\u65f6\u3002\n1. \u7b80\u5316\u590d\u6742\u73af\u5883\u7684\u914d\u7f6e\n\u591a\u5bb9\u5668\u7ba1\u7406\uff1a\u5f53\u60a8\u7684\u5e94\u2f64\u7a0b\u5e8f\u7531\u591a\u4e2a\u670d\u52a1\u7ec4\u6210\uff08\u5982\u524d\u7aef\u3001\u540e\u7aef\u3001\u6570\u636e\u5e93\u7b49\uff09\uff0c\u4f7f\u2f64  docker\nrun  \u9700\u8981\u4e3a\u6bcf\u4e2a\u670d\u52a1\u5355\u72ec\u542f\u52a8\u5bb9\u5668\uff0c\u5e76\u2f3f\u52a8\u914d\u7f6e\u5b83\u4eec\u4e4b\u95f4\u7684\u2f79\u7edc\u548c\u4f9d\u8d56\u5173\u7cfb\u3002\u2f7d  Docker\nCompose  \u53ef\u4ee5\u901a\u8fc7\u2f00\u4e2a\u7b80\u5355\u7684  docker-compose.yml  \u2f42\u4ef6\u5b9a\u4e49\u6240\u6709\u670d\u52a1\u53ca\u5176\u914d\u7f6e\u3002\n\u7edf\u2f00\u914d\u7f6e\u2f42\u4ef6\uff1a\u6240\u6709\u670d\u52a1\u7684\u914d\u7f6e\u90fd\u96c6\u4e2d\u5728\u2f00\u4e2a  YAML  \u2f42\u4ef6\u4e2d\uff0c\u6613\u4e8e\u9605\u8bfb\u548c\u7ef4\u62a4\u3002\n2. \u2f83\u52a8\u5316\u670d\u52a1\u4f9d\u8d56\n\u2f83\u52a8\u5904\u7406\u4f9d\u8d56\uff1a\u5728  docker-compose.yml  \u4e2d\u53ef\u4ee5\u6307\u5b9a\u670d\u52a1\u4e4b\u95f4\u7684\u4f9d\u8d56\u5173\u7cfb\u3002\u4f8b\u5982\uff0c\u60a8\u53ef\u4ee5\n\u8bbe\u7f6e  MySQL \u670d\u52a1\u5fc5\u987b\u5728\u5e94\u2f64\u670d\u52a1\u4e4b\u524d\u542f\u52a8\u3002Docker Compose  \u4f1a\u786e\u4fdd\u8fd9\u4e9b\u4f9d\u8d56\u5173\u7cfb\u5f97\u5230\u6ee1\n\u2f9c\u3002\n\u91cd\u542f\u7b56\u7565\uff1a\u53ef\u4ee5\u5b9a\u4e49\u91cd\u542f\u7b56\u7565\u6765\u4fdd\u8bc1\u670d\u52a1\u7684\u2fbc\u53ef\u2f64\u6027\uff0c\u2f50\u5982\u67d0\u4e2a\u670d\u52a1\u5931\u8d25\u540e\u2f83\u52a8\u91cd\u542f\u3002\n3. \u2f79\u7edc\u914d\u7f6e\u7b80\u5316\n2025/6/4 \u51cc\u6668 12:06 Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001 KibanaDocker Docker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2  - \u6398\u2fa6\nhttps://juejin.cn/post/7487219933127245833 2/11"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u5185\u7f6e\u2f79\u7edc\u7ba1\u7406\uff1aDocker Compose  \u2f83\u52a8\u521b\u5efa\u2f00\u4e2a\u9ed8\u8ba4\u2f79\u7edc\u4f9b\u6240\u6709\u670d\u52a1\u4f7f\u2f64\uff0c\u4f7f\u5f97\u5bb9\u5668\u95f4\u901a\u4fe1\n\u53d8\u5f97\u2fae\u5e38\u7b80\u5355\u3002\u60a8\u4e0d\u9700\u8981\u2f3f\u52a8\u521b\u5efa\u548c\u7ba1\u7406\u2f79\u7edc\u3002\n\u2f83\u5b9a\u4e49\u2f79\u7edc\uff1a\u867d\u7136\u53ef\u4ee5\u2f3f\u52a8\u521b\u5efa\u2f79\u7edc\u5e76\u5728  docker run  \u4e2d\u6307\u5b9a\uff0c\u4f46  Docker Compose  \u63d0\u4f9b\n\u4e86\u66f4\u7b80\u6d01\u7684\u2f45\u5f0f\u6765\u2f83\u5b9a\u4e49\u2f79\u7edc\u3002\n4. \u73af\u5883\u53d8\u91cf\u7ba1\u7406\n.env \u2f42\u4ef6\u2f40\u6301\uff1aDocker Compose  \u2f40\u6301\u4ece  .env  \u2f42\u4ef6\u52a0\u8f7d\u73af\u5883\u53d8\u91cf\uff0c\u8fd9\u4f7f\u5f97\u7ba1\u7406\u548c\u5207\u6362\n\u4e0d\u540c\u73af\u5883\u4e0b\u7684\u914d\u7f6e\u66f4\u52a0\u5bb9\u6613\u3002\n\u73af\u5883\u53d8\u91cf\u2f42\u4ef6\uff1a\u8fd8\u53ef\u4ee5\u901a\u8fc7  env_file  \u6307\u4ee4\u5f15\u2f64\u5916\u90e8\u73af\u5883\u53d8\u91cf\u2f42\u4ef6\uff0c\u8fdb\u2f00\u6b65\u589e\u5f3a\u7075\u6d3b\u6027\u3002\n5. \u5377\u548c\u7ed1\u5b9a\u6302\u8f7d\u7684\u4fbf\u6377\u914d\u7f6e\n\u6301\u4e45\u5316\u5b58\u50a8\uff1a\u5728  Docker Compose  \u2f42\u4ef6\u4e2d\uff0c\u53ef\u4ee5\u901a\u8fc7\u7b80\u5355\u7684\u58f0\u660e\u6765\u914d\u7f6e\u5377\u6216\u7ed1\u5b9a\u6302\u8f7d\uff0c\u4ece\n\u2f7d\u8f7b\u677e\u5b9e\u73b0\u6570\u636e\u6301\u4e45\u5316\u3002\n\u2f00\u81f4\u7684\u5f00\u53d1\u4e0e\u2f63\u4ea7\u73af\u5883\uff1a\u53ef\u4ee5\u5728\u4e0d\u540c\u73af\u5883\u4e2d\u590d\u2f64\u76f8\u540c\u7684\u914d\u7f6e\uff0c\u53ea\u9700\u8c03\u6574\u5c11\u91cf\u53c2\u6570\u5373\u53ef\u9002\u5e94\u4e0d\n\u540c\u7684\u90e8\u7f72\u573a\u666f\u3002\n6. \u547d\u4ee4\u2f8f\u7b80\u5316\n\u5355\u547d\u4ee4\u64cd\u4f5c\u591a\u4e2a\u5bb9\u5668\uff1a\u4f7f\u2f64  docker-compose up  \u5373\u53ef\u2f00\u6b21\u6027\u542f\u52a8\u6240\u6709\u5b9a\u4e49\u7684\u670d\u52a1\uff0c\u2f7d\u2f46\u9700\n\u5206\u522b\u6267\u2f8f  docker run  \u547d\u4ee4\u3002\n\u4fbf\u6377\u7684\u2f63\u547d\u5468\u671f\u7ba1\u7406\uff1a\u9664\u4e86\u542f\u52a8\u670d\u52a1\u5916\uff0c\u8fd8\u53ef\u4ee5\u4f7f\u2f64  docker-compose down  \u6765\u505c\u2f4c\u5e76\u79fb\u9664\n\u6240\u6709\u76f8\u5173\u5bb9\u5668\u3001\u2f79\u7edc\u548c\u5377\u3002\n7. \u7248\u672c\u63a7\u5236\u53cb\u597d\nYAML \u683c\u5f0f\u4fbf\u4e8e\u7248\u672c\u63a7\u5236\uff1a\u5c06  docker-compose.yml  \u2f42\u4ef6\u7eb3\u2f0a\u7248\u672c\u63a7\u5236\u7cfb\u7edf\uff08\u5982  Git \uff09\n\u4e2d\uff0c\u4fbf\u4e8e\u56e2\u961f\u534f\u4f5c\u548c\u5386\u53f2\u8bb0\u5f55\u8ffd\u8e2a\u3002\n\u56de\u6eda\u2f45\u4fbf\uff1a\u5982\u679c\u9700\u8981\u6062\u590d\u5230\u4e4b\u524d\u7684\u914d\u7f6e\u7248\u672c\uff0c\u53ea\u9700\u5207\u6362\u5230\u76f8\u5e94\u7684\u5206\u2f40\u6216\u6807\u7b7e\u5373\u53ef\u3002\n8. \u6269\u5c55\u6027\u548c\u4f38\u7f29\u6027\n\u8f7b\u677e\u6269\u5c55\u670d\u52a1\u5b9e\u4f8b\u6570\uff1a\u901a\u8fc7  docker-compose scale  \u6216\u8005\u5728  docker-compose.yml  \u4e2d\u5b9a\u4e49\ndeploy  \u90e8\u5206\uff0c\u53ef\u4ee5\u8f7b\u677e\u5730\u589e\u52a0\u6216\u51cf\u5c11\u670d\u52a1\u5b9e\u4f8b\u7684\u6570\u91cf\u3002\n\u8d1f\u8f7d\u5747\u8861\uff1a\u5bf9\u4e8eWeb \u5e94\u2f64\u7b49\u573a\u666f\uff0cDocker Compose  \u80fd\u591f\u7ed3\u5408  Docker Swarm  \u5b9e\u73b0\u8d1f\u8f7d\u5747\n\u8861\u3002\n2025/6/4 \u51cc\u6668 12:06 Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001 KibanaDocker Docker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2  - \u6398\u2fa6\nhttps://juejin.cn/post/7487219933127245833 3/11"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u793a\u4f8b\u5bf9\u2f50\n\u5047\u8bbe\u6211\u4eec\u8981\u90e8\u7f72\u2f00\u4e2a\u5305\u542b  MySQL \u548c  Redis \u7684\u5e94\u2f64\uff1a\n\u4f7f\u2f64  docker run\n\u4f7f\u2f64  Docker Compose\n\u53ea\u9700\u8fd0\u2f8f  docker-compose up -d  \u5373\u53ef\u540c\u65f6\u542f\u52a8\u8fd9\u4e24\u4e2a\u670d\u52a1\uff0c\u5e76\u4e14\u5b83\u4eec\u4e4b\u95f4\u80fd\u591f\u2f83\u52a8\u53d1\u73b0\u5bf9\u2f45\n\uff08\u5982\u679c\u5728\u540c\u2f00\u2f79\u7edc\u4e0b\uff09\u3002\nDocker Compose  \u63d0\u4f9b\u4e86\u2f00\u79cd\u66f4\u4e3a\u2fbc\u6548\u3001\u7075\u6d3b\u7684\u2f45\u5f0f\u6765\u7ba1\u7406\u548c\u90e8\u7f72\u590d\u6742\u7684\u591a\u5bb9\u5668\u5e94\u2f64\uff0c\u7279\u522b\u9002\n\u5408\u5f00\u53d1\u3001\u6d4b\u8bd5\u4ee5\u53ca\u2f29\u89c4\u6a21\u2f63\u4ea7\u73af\u5883\u4e2d\u7684\u5feb\u901f\u90e8\u7f72\u9700\u6c42\u3002\n\u793a\u4f8b Compose\ngithub.com/wnhyang/coo\u2026\n\u4e5f\u662f\u6b64\u9879\u2f6c\u7684\u90e8\u7f72\u2f45\u5f0f\n.env\n\u4f53\u9a8c AI \u4ee3\u7801\u52a9\u2f3f\n# \u542f\u52a8  MySQL \u5bb9\u5668\ndocker run --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag\n# \u542f\u52a8  Redis \u5bb9\u5668\ndocker run --name some-redis -d redis:alpine\n1\n2\n3\n4\n5\n\u4f53\u9a8c AI \u4ee3\u7801\u52a9\u2f3f\nversion: '3'\nservices:\ndb:\nimage: mysql:tag\nenvironment:\nMYSQL_ROOT_PASSWORD: my-secret-pw\nredis:\nimage: redis:alpine\n1\n2\n3\n4\n5\n6\n7\n8\n2025/6/4 \u51cc\u6668 12:06 Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001 KibanaDocker Docker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2  - \u6398\u2fa6\nhttps://juejin.cn/post/7487219933127245833 4/11"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "docker-compose.yml\n\u4f53\u9a8c AI \u4ee3\u7801\u52a9\u2f3f\nmysql_root_password=mysql_password\nmysql_database=mysql_database\nmysql_user=mysql_user\nmysql_password=mysql_password\nredis_password=redis_password\nelasticsearch_password=elasticsearch_password\nkibana_password=kibana_password\nkibana_url=http://localhost:5601\ncoolguard_image=coolguard_image\n1\n2\n3\n4\n5\n6\n7\n8\n9\n\u4f53\u9a8c AI \u4ee3\u7801\u52a9\u2f3f\nservices:\nmysql:\nimage: mysql:8.0.36\ncontainer_name: mysql\nvolumes:\n- mysqldata:/var/lib/mysql\nports:\n- \"3306:3306\"\nenvironment:\nMYSQL_ROOT_HOST: 'localhost'\nTZ: Asia/Shanghai\nMYSQL_ROOT_PASSWORD: ${mysql_root_password}\nMYSQL_DATABASE: ${mysql_database}\nMYSQL_USER: ${mysql_user}\nMYSQL_PASSWORD: ${mysql_password}\nnetworks:\n- custom_network\nredis:\nimage: redis:7.2.7-alpine\ncontainer_name: redis\ncommand: redis-server --requirepass ${redis_password}\nvolumes:\n- redisdata:/data\nports:\n- \"6379:6379\"\nenvironment:\nTZ: Asia/Shanghai\nnetworks:\n- custom_network\nkafka:\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n2025/6/4 \u51cc\u6668 12:06 Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001 KibanaDocker Docker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2  - \u6398\u2fa6\nhttps://juejin.cn/post/7487219933127245833 5/11"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "image: apache/kafka:3.7.0\ncontainer_name: kafka\nvolumes:\n- kafkadata:/var/lib/kafka/data\nports:\n- \"9092:9092\"\n- \"9093:9093\"\nenvironment:\nKAFKA_NODE_ID: 1\nKAFKA_LOG_DIRS: /var/lib/kafka/data\nKAFKA_METADATA_LOG_REPLICATION_FACTOR: 1\nKAFKA_DEFAULT_REPLICATION_FACTOR: 1\nKAFKA_PROCESS_ROLES: broker,controller\nKAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093\nKAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092\nKAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER\nKAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT\nKAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093\nKAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1\nKAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1\nKAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1\nKAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0\nKAFKA_NUM_PARTITIONS: 3\nTZ: Asia/Shanghai\nnetworks:\n- custom_network\nelasticsearch:\nimage: docker.elastic.co/elasticsearch/elasticsearch:8.17.3\ncontainer_name: elasticsearch\nvolumes:\n- esdata:/usr/share/elasticsearch/data\nports:\n- \"9200:9200\"\n- \"9300:9300\"\nenvironment:\nES_JAVA_OPTS: \"-Xms1g -Xmx1g\"\ndiscovery.type: single-node\nELASTIC_PASSWORD: ${elasticsearch_password}\nxpack.security.enabled: \"true\"\nxpack.security.http.ssl.enabled: \"false\"\nxpack.security.transport.ssl.enabled: \"false\"\nTZ: Asia/Shanghai\nnetworks:\n- custom_network\nkibana:\ndepends_on:\n- elasticsearch\nimage: docker.elastic.co/kibana/kibana:8.17.3\n33\n34\n35\n36\n37\n38\n39\n40\n41\n42\n43\n44\n45\n46\n47\n48\n49\n50\n51\n52\n53\n54\n55\n56\n57\n58\n59\n60\n61\n62\n63\n64\n65\n66\n67\n68\n69\n70\n71\n72\n73\n74\n75\n76\n77\n78\n79\n80\n81\n82\n2025/6/4 \u51cc\u6668 12:06 Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001 KibanaDocker Docker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2  - \u6398\u2fa6\nhttps://juejin.cn/post/7487219933127245833 6/11"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u8fd0\u2f8f\n\u5728docker-compose.yml \u540c\u2f6c\u5f55\u6267\u2f8f\ncontainer_name: kibana\nvolumes:\n- kibanadata:/usr/share/kibana/data\nports:\n- \"5601:5601\"\nenvironment:\nELASTICSEARCH_HOSTS: http://elasticsearch:9200\nELASTICSEARCH_USERNAME: kibana\nELASTICSEARCH_PASSWORD: ${kibana_password}\nSERVER_PUBLICBASEURL: ${kibana_url}\nXPACK_SECURITY_ENABLED: \"true\"\nXPACK_SECURITY_HTTP_SSL_ENABLED: \"false\"\nTZ: Asia/Shanghai\nnetworks:\n- custom_network\ncoolguard:\nimage: ${coolguard_image}\ncontainer_name: coolguard\nvolumes:\n- /docker/coolguard/logs:/coolguard/logs\nports:\n- \"8081:8081\"\nenvironment:\n- \"SPRING_PROFILES_ACTIVE=demo\"\nnetworks:\n- custom_network\nvolumes:\nmysqldata:\ndriver: local\nredisdata:\ndriver: local\nkafkadata:\ndriver: local\nesdata:\ndriver: local\nkibanadata:\ndriver: local\nnetworks:\ncustom_network:\ndriver: bridge\n83\n84\n85\n86\n87\n88\n89\n90\n91\n92\n93\n94\n95\n96\n97\n98\n99\n100\n101\n102\n103\n104\n105\n106\n107\n108\n109\n110\n111\n112\n113\n114\n115\n116\n117\n118\n119\n120\n121\n122\n123\n124\n125\n2025/6/4 \u51cc\u6668 12:06 Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001 KibanaDocker Docker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2  - \u6398\u2fa6\nhttps://juejin.cn/post/7487219933127245833 7/11"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u6807\u7b7e\uff1a \u540e\u7aef \u8bdd\u9898\uff1a \u6bcf\u5929\u2f00\u4e2a\u77e5\u8bc6\u70b9\n\u8bc4\u8bba  0\n\u672c\u2f42\u6536\u5f55\u4e8e\u4ee5\u4e0b\u4e13\u680f 1 / 2\n\u4e0a\u2f00\u7bc7 \u514d\u8d39\u4f7f\u2f64\u6ee1\u2f8e\u7248 DeepSeek-R1\u2026 \u4e0b\u2f00\u7bc7 \u5f00\u6e90\u9879\u2f6c\u66f4\u65b0\u5230\u4e2a\u2f08\u4ed3\u5e93\u5e76\u4fdd\u2026\n\u8f6f\u4ef6 & \u2f2f\u5177\n\u5206\u4eab\u8f6f\u4ef6\u2f2f\u5177\n6 \u8ba2\u9605\u00b79 \u7bc7\u2f42\u7ae0\n\u8ba2\u9605\n\u4e13\u680f\u2f6c\u5f55\n0/ 1000 \u53d1\u9001\n\u62a2\u2fb8\u8bc4\uff0c\u53cb\u5584\u4ea4\u6d41\n\u767b\u5f55  / \u6ce8\u518c \u5373\u53ef\u53d1\u5e03\u8bc4\u8bba\uff01\n\u6216\u6307\u5b9a\n-f  \u53c2\u6570 \u6307\u5b9a\u2f42\u4ef6\u7684\u8def\u5f84\n-p  \u53c2\u6570 \u6307\u5b9a\u9879\u2f6c\u540d\uff0c\u9ed8\u8ba4\u4e0d\u6307\u5b9a\u65f6\u4f7f\u2f64\u5f53\u524d\u2f6c\u5f55\u540d\u4f5c\u4e3a\u9879\u2f6c\u7684\u540d\u79f0\n\u4f53\u9a8c AI \u4ee3\u7801\u52a9\u2f3f\n# \u5355\u72ec\u8fd0\u2f8f\ndocker compose up -d <service_name>\n# \u2f00\u8d77\u8fd0\u2f8f\ndocker compose up -d\n1\n2\n3\n4\n\u4f53\u9a8c AI \u4ee3\u7801\u52a9\u2f3f\ndocker-compose -f /home/user/projects/myapp/docker-compose.yml -p myapp up -d mysql redi\n1\n2025/6/4 \u51cc\u6668 12:06 Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001 KibanaDocker Docker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2  - \u6398\u2fa6\nhttps://juejin.cn/post/7487219933127245833 8/11"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u6682\u2f46\u8bc4\u8bba\u6570\u636e\n\u2f6c\u5f55 \u6536\u8d77\nDocker\n\u955c\u50cf\u4ed3\u5e93\nDocker Compose\n1. \u7b80\u5316\u590d\u6742\u73af\u5883\u7684\u914d\u7f6e\n2. \u2f83\u52a8\u5316\u670d\u52a1\u4f9d\u8d56\n3. \u2f79\u7edc\u914d\u7f6e\u7b80\u5316\n4. \u73af\u5883\u53d8\u91cf\u7ba1\u7406\n5. \u5377\u548c\u7ed1\u5b9a\u6302\u8f7d\u7684\u4fbf\u6377\u914d\u7f6e\n6. \u547d\u4ee4\u2f8f\u7b80\u5316\n7. \u7248\u672c\u63a7\u5236\u53cb\u597d\n8. \u6269\u5c55\u6027\u548c\u4f38\u7f29\u6027\n\u793a\u4f8b\u5bf9\u2f50\n\u4f7f\u2f64  docker run\n\u4f7f\u2f64  Docker Compose\n\u793a\u4f8b Compose\n.env\ndocker-compose.yml\n\u8fd0\u2f8f\n\u76f8\u5173\u63a8\u8350\n\u4e3a\u4e86\u4e0d\u518d\u88ab\u4e8b\u52a1\u5751\uff0c\u6211\u8bfb\u900f\u4e86 Spring \u7684\u4e8b\u52a1\u4f20\u64ad\u6027\u3002\n885 \u9605\u8bfb\u00a0\u00b7\u00a016 \u70b9\u8d5e\n10 \u4e2a\u6848\u4f8b\u544a\u8bc9\u4f60 mysql \u4e0d\u4f7f\u2f64\u2f26\u67e5\u8be2\u7684\u539f\u56e0\n517 \u9605\u8bfb\u00a0\u00b7\u00a06 \u70b9\u8d5e\n\u6df1\u2f0a\u7406\u89e3\u8bf7\u6c42\u9650\u6d41\u7b97\u6cd5\u7684\u5b9e\u73b0\u7ec6\u8282\n54 \u9605\u8bfb\u00a0\u00b7\u00a00 \u70b9\u8d5e\n\u535a\u5ba2\uff1a\u2f0b\u80a1\u2f42\u2f79\u7ad9\u9a8c\u8bc1\u7801\u89e3\u9501\u4e0e JWT \u767b\u5f55\u673a\u5236\u89e3\u6790 / \u524d\u7aef Vuex \u5b9e\u73b0\n47 \u9605\u8bfb\u00a0\u00b7\u00a00 \u70b9\u8d5e\nAB \u5b9e\u9a8c\uff1a\u6570\u636e\u9a71\u52a8\u51b3\u7b56\u7684\u79d1\u5b66\u2f45\u6cd5\n2025/6/4 \u51cc\u6668 12:06 Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001 KibanaDocker Docker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2  - \u6398\u2fa6\nhttps://juejin.cn/post/7487219933127245833 9/11"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "59 \u9605\u8bfb\u00a0\u00b7\u00a00 \u70b9\u8d5e\n\u4e3a\u4f60\u63a8\u8350\n\u4f7f\u2f64 Windows \u7535\u8111\u5feb\u901f\u2f0a\u2ed4 Docker\nDocker \u524d\u7aef \u5bb9\u5668\u84b8\u6c7d\u8611\u83c71 \u5e74\u524d 1.4k 5 \u8bc4\u8bba\nDocker \u2f0a\u2ed4\u7cfb\u5217 \u2e3aDockerFile \u7684\u4f7f\u2f64\n\u524d\u7aef Docker\u53f6\u77e5\u79cb\u2f546 \u2f49\u524d 2946 \u8bc4\u8bba\ndocker \u5bb9\u5668\u7531\u6d45\u2f0a\u6df1\u89e3\u6790\nDockerlcomedy \u559c\u5267 3 \u5e74\u524d 3652 \u8bc4\u8bba\nDocker \u5feb\u901f\u2f0a\u2ed4\nDocker\u738b\u5ef6\u9886 3 \u5e74\u524d 8533 \u8bc4\u8bba\ndocker \u2f0a\u2ed4\u5b66\u4e60\u2f00\nDocker5 \u2f24\u2f24\u2f24\u2f24\u96c43 \u5e74\u524d 4001 \u8bc4\u8bba\nDocker \u7cfb\u5217  - 02 - \u2f0a\u2ed4  & Nginx \u670d\u52a1  & Docker \u6982\u5ff5\u3010\u5408\u96c6\u3011\nDocker Nginxjsliang 3 \u5e74\u524d 1.7k 92\nDocker \u57fa\u7840\u4f7f\u2f64\u6559\u7a0b\nDocker \u540e\u7aef\u70ed\u2f3c\u5e02\u2ea0\u4f59\u2f633 \u5e74\u524d 39221\nDocker \u2f0a\u2ed4\u4e4b docker \u57fa\u672c\u547d\u4ee4\n\u540e\u7aef \u8fd0\u7ef4 Docker\u8bb7\u2f94\u2f02 4 \u2f49\u524d 1661 \u8bc4\u8bba\ndocker \u6280\u672f\u7684\u5b89\u88c5\u4e0e\u5e94\u2f64\nDocker \u540e\u7aefchensi21133 \u5e74\u524d 512 \u70b9\u8d5e \u8bc4\u8bba\nlinux \u670d\u52a1\u5668\u4f7f\u2f64 docker \u90e8\u7f72 Vue+Egg.js \u9879\u2f6c\nDocker \u5bb9\u5668curtain 3 \u2f49\u524d 711 \u8bc4\u8bba\nDocker \u2f0a\u2ed4\u8bb2\u89e3\nDocker\u6697\u4f59 4 \u5e74\u524d 1.3k 151\n\u6df1\u2f0a\u6d45\u51fa Docker \u5e94\u2f64 -Docker Compose \u5b9e\u6218\nDockerLunaticskytql1 \u5e74\u524d 318 \u70b9\u8d5e \u8bc4\u8bba\n\u300c Docker \u7cfb\u5217\u300d - Docker \u7684\u5b89\u88c5\u4e0e\u5e38\u2ec5\u547d\u4ee4\u7684\u4f7f\u2f64\n2025/6/4 \u51cc\u6668 12:06 Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001 KibanaDocker Docker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2  - \u6398\u2fa6\nhttps://juejin.cn/post/7487219933127245833 10/11"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "Docker \u540e\u7aef\u4f60\u7b97\u54ea\u5757\u2f29\u86cb\u7cd53 \u5e74\u524d 2971 \u8bc4\u8bba\n\u5982\u4f55\u4f7f\u2f64 docker + nginx \u6765\u90e8\u7f72\u524d\u7aef\u9879\u2f6c\n\u524d\u7aef Linux NginxsensFeng 6 \u2f49\u524d 1.5k 262\nDocker \u5b9e\u6218\u5e94\u2f64\nDockerJason \u5b66\u2ed3 4 \u5e74\u524d 9375 \u8bc4\u8bba\n2025/6/4 \u51cc\u6668 12:06 Docker \u90e8\u7f72 MySQL \u3001 Redis \u3001 Kafka \u3001 ES \u3001 KibanaDocker Docker \u7684\u57fa\u7840\u6982\u5ff5\u548c\u5b89\u88c5\u5c31\u4e0d\u591a\u8bb2  - \u6398\u2fa6\nhttps://juejin.cn/post/7487219933127245833 11/11"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ]
+]
