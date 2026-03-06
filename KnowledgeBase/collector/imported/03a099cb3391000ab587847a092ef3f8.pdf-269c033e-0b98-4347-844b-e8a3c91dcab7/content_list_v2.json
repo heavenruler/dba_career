@@ -1,0 +1,591 @@
+[
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u9996\u9875 \u8d44\u8baf \u6d3b\u52a8 \u5927\u4f1a \u5b66\u4e60 \u6587\u6863 \u95ee\u7b54 \u670d\u52a1 \u767b\u5f55 \u6ce8\u518c\n\u9996\u9875 / SysBench \u538b\u7f29\u5e76\u53d1\u6027\u80fd\u7ffb\u500d\uff1a\u5355\u673a\u7248TiDB vs MySQL 8.0.42\nSysBench \u538b\u7f29\u5e76\u53d1\u6027\u80fd\u7ffb\u500d\uff1a\u5355\u673a\u7248TiDB vs MySQL 8.0.42\n\u539f\u521b shunwah\u24c2\ufe0f 2025-09-20 177\nshunwah\u24c2\ufe0f\n\u57fa\u4e8e\u7535\u5546\u8ba2\u5355\u573a\u666f\u7684OLTP\u3001\u70b9\u67e5\u8be2\u3001\u5b58\u50a8\u6548\u7387\u53ca\u6269\u5c55\u6027\u5168\u9762\u538b\u6d4b\u5206\u6790 \u5173\u6ce8\n156 106 213K+ \u4e2a\u4eba\u7b80\u4ecb\n\u6587\u7ae0 \u7c89\u4e1d \u6d4f\u89c8\u91cf \u4f5c\u8005\uff1a ShunWah\n\u516c\u4f17\u53f7\uff1a \u201c\u987a\u534e\u661f\u8fb0\u8fd0\u7ef4\u6808\u201d\u4e3b\u7406\u4eba\u3002 1330 \u83b7\u5f97\u4e86 \u6b21\u70b9\u8d5e\n\u6301\u6709\u8ba4\u8bc1\uff1a OceanBase OBCA/OBCP\u3001MySQL OCP\u3001OpenGauss\u3001\u5d16\u5c71 DBCA\u3001\u4e9a\u4fe1 AntDB\n414 \u5185\u5bb9\u83b7\u5f97 \u6b21\u8bc4\u8bba CA\u3001\u7ff0\u9ad8 HDCA\u3001GBase 8a | 8c | 8s\u3001Galaxybase GBCA\u3001Neo4j Graph Data Science Cert\n206 \u83b7\u5f97\u4e86 \u6b21\u6536\u85cf ification\u3001NebulaGraph NGCI & NGCP\u3001\u4e1c\u65b9\u901a TongTech TCPE \u7b49\u591a\u9879\u6743\u5a01\u8ba4\u8bc1\u3002\n\u83b7\u5956\u7ecf\u5386\uff1a \u5728OceanBase&\u58a8\u5929\u8f6e\u5f81\u6587\u5927\u8d5b\u3001OpenGauss\u3001TiDB\u3001YashanDB\u3001Kingbase\u3001KW\nDB \u5f81\u6587\u7b49\u8d5b\u4e8b\u4e2d\u591a\u6b21\u65a9\u83b7\u4e00\u3001\u4e8c\u3001\u4e09\u7b49\u5956\uff0c\u539f\u521b\u6280\u672f\u6587\u7ae0\u5e38\u5e74\u88ab\u58a8\u5929\u8f6e\u3001CSDN\u3001ITPUB \u7b49\u5e73\u53f0 \u70ed\u95e8\u6587\u7ae0 \u9996\u9875\u63a8\u8350\u3002\n\u90e8\u7f72\u53cd\u5411\u4ee3\u7406\u795e\u5668 Nginx Proxy Manager\n\u914d\u7f6e\u963f\u91cc\u4e91ssl\u8bc1\u4e66\n2022-10-27 16160\u6d4f\u89c8 \u516c\u4f17\u53f7_ID\uff1a\u987a\u534e\u661f\u8fb0\u8fd0\u7ef4\u6808\nCSDN_ID\uff1a shunwahma \u7b2c\u4e00\u6b21\u5982\u4f55\u901a\u8fc7OceanBase\u521d\u7ea7OBCA\u3001\n\u58a8\u5929\u8f6e_ID\uff1ashunwah \u4e2d\u7ea7OBCP\u8ba4\u8bc1\u8003\u8bd5\n2022-06-24 11275\u6d4f\u89c8 ITPUB_ID\uff1a shunwah\nIFClub_ID\uff1ashunwah Windows\u5de5\u5177DBeaver\u8fde\u63a5OceanBase\u6570\n\u636e\u5e93\u8bbf\u95eeMySQL\u548cOracle\u79df\u6237\n2022-03-09 8303\u6d4f\u89c8\n\u4e1c\u65b9\u901a TongWeb \u4e2d\u95f4\u4ef6\u5165\u95e8\u6307\u5357\uff1a \u8f7b\u677e\n\u638c\u63e1\u4ece\u90e8\u7f72\u5230\u8ba4\u8bc1\n2025-03-19 4588\u6d4f\u89c8\n\u300c\u66f4\u6613\u7528\u7684OceanBase\u300dDocker \u90e8\u7f72 Oc\neanBase 4.0 \u6570\u636e\u5e93 \u5feb\u901f\u4f53\u9a8c\u589e\u5220\u6539\u67e5\n2022-11-25 4562\u6d4f\u89c8\n\u6700\u65b0\u6587\u7ae0\n\u300cDashboard \u6d4b\u8bc4\u300dOceanBase \u767d\u5c4f+\u9ed1\n\u5c4f obshell Dashboard \u8f7b\u91cf\u5316\u8fd0\u7ef4\n3\u5929\u524d 74\u6d4f\u89c8\n\u5341\u6708\u603b\u7ed3\uff5c\u6df1\u8015\u6570\u636e\u5e93\u793e\u533a\uff1a\u6c89\u6dc0\u6280\u672f\u5fae\n\u5149\n2025-11-02 35\u6d4f\u89c8\n\u3010TiDB \u4f53\u9a8c\u5b98\u5b9e\u6d4b\u3011 TiDB v7.1.8 \u591a\u8bed\u6cd5\n\u524d\u8a00 \u517c\u5bb9MySQL \u591a\u573a\u666f\u9a8c\u8bc1\n2025-11-01 60\u6d4f\u89c8\n\u5728\u4e0a\u4e00\u7bc7\u300aTEM \u654f\u6377\u6a21\u5f0f\uff08\u5355\u8282\u70b9\uff09\u81ea\u52a8\u5316\u90e8\u7f72 TiDB \u6570\u636e\u5e93\u6307\u5357\u300b TEM \u654f\u6377\u6a21\u5f0f\uff08\u5355\u8282 sysbench \u5b9e\u6d4b\uff1aTiDB 7.1.8 \u4e24\u526f\u672c\u7684 OL\n\u70b9\uff09\u81ea\u52a8\u5316\u90e8\u7f72 TiDB \u6570\u636e\u5e93\u6307\u5357 \u4e2d\uff0c\u6211\u6210\u529f\u642d\u5efa\u4e86 TiDB \u4e0e MySQL 8.0.42 \u7684\u6d4b\u8bd5\u73af\u5883\u3002 TP/OLAP \u89e3\u6790\n\u201c\u5de5\u6b32\u5584\u5176\u4e8b\uff0c\u5fc5\u5148\u5229\u5176\u5668\u201d\uff0c\u73af\u5883\u5c31\u7eea\u540e\uff0c\u4e0b\u4e00\u6b65\u4fbf\u662f\u901a\u8fc7\u79d1\u5b66\u7684\u6d4b\u8bd5\u6765\u91cf\u5316\u5176\u6027\u80fd\u8868\u73b0\uff0c 2025-10-27 116\u6d4f\u89c8"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u4e3a\u6280\u672f\u9009\u578b\u63d0\u4f9b\u575a\u5b9e\u7684\u6570\u636e\u652f\u6491\u3002 YashanDB \u90e8\u7f72\u592a\u590d\u6742\uff1f10\u5206\u949f\u641e\u5b9a Doc\nker \u4f53\u9a8c\u653b\u7565 \u672c\u6587\u5c06\u4ee5\u4e1a\u754c\u6807\u51c6\u7684 Sysbench \u5de5\u5177\u4e3a\u6807\u5c3a\uff0c\u5bf9\u90e8\u7f72\u597d\u7684 MySQL 8.0.42 (\u7aef\u53e3 3306) \u4e0e T 2025-10-23 116\u6d4f\u89c8\niDB (\u7aef\u53e3 4006) \u53d1\u8d77\u5168\u65b9\u4f4d\u7684\u6027\u80fd\u6311\u6218\u3002\u6d4b\u8bd5\u5c06\u56f4\u7ed5\u6570\u636e\u538b\u7f29\u6bd4\u3001OLTP\u6df7\u5408\u8bfb\u5199\u3001\u5355\u8868\u70b9\n\u67e5\u3001\u7d22\u5f15\u66f4\u65b0\u53ca\u5e76\u53d1\u6269\u5c55\u80fd\u529b\u4e94\u5927\u6838\u5fc3\u7ef4\u5ea6\u5c55\u5f00\uff0c\u65e8\u5728\u901a\u8fc7\u5ba2\u89c2\u6570\u636e\uff0c\u6df1\u5165\u5256\u6790\u4e24\u8005\u5728\u4e0d\u540c \u76ee\u5f55\n\u8d1f\u8f7d\u4e0b\u7684\u6027\u80fd\u7279\u5f81\u4e0e\u4f18\u52a3\u5dee\u5f02\uff0c\u5e2e\u52a9\u60a8\u5728\u5b9e\u9645\u4e1a\u52a1\u573a\u666f\u4e2d\u505a\u51fa\u66f4\u660e\u667a\u7684\u6570\u636e\u5e93\u9009\u62e9\u3002\n\u524d\u8a00\n\u4e00\u3001MySQL 8.0.42 \u6d4b\u8bd5 (\u7aef\u53e3 3306)\n\u4e00\u3001MySQL 8.0.42 \u6d4b\u8bd5 (\u7aef\u53e3 3306)\n1. \u51c6\u5907\u6d4b\u8bd5\u6570\u636e (Prepare)\n2. \u9884\u70ed\u7f13\u5b58 (Warm Up) \u5728\u672c\u8282\u4e2d\uff0c\u6211\u4eec\u5c06\u5bf9 MySQL 8.0.42 \u8fdb\u884c\u5168\u9762\u7684\u6027\u80fd\u6d4b\u8bd5\u3002\u6d4b\u8bd5\u73af\u5883\u4e3a\u5355\u8282\u70b9\u90e8\u7f72\uff0c\u901a\u8fc7 S\n3. OLTP \u6df7\u5408\u8bfb\u5199\u6d4b\u8bd5 (Read Write) ysbench \u6a21\u62df\u591a\u79cd\u8d1f\u8f7d\u573a\u666f\uff0c\u4ee5\u8bc4\u4f30\u5176\u5728\u4e0d\u540c\u538b\u529b\u4e0b\u7684\u8868\u73b0\u3002\u6d4b\u8bd5\u6db5\u76d6\u4e86\u6570\u636e\u51c6\u5907\u3001\u7f13\u5b58\u9884\n\u70ed\u3001OLTP \u6df7\u5408\u8bfb\u5199\u3001\u70b9\u67e5\u8be2\u3001\u7d22\u5f15\u66f4\u65b0\u4ee5\u53ca\u5e76\u53d1\u68af\u5ea6\u6d4b\u8bd5\u7b49\u591a\u4e2a\u7ef4\u5ea6\u3002 4. \u70b9\u67e5\u8be2\u6027\u80fd\u6d4b\u8bd5 (Point Select)\n7. \u6570\u636e\u538b\u7f29\u6bd4\u5206\u6790\n1. \u51c6\u5907\u6d4b\u8bd5\u6570\u636e (Prepare) \u4e8c\u3001TiDB \u6d4b\u8bd5 (\u7aef\u53e3 4006)\n1. \u51c6\u5907\u6d4b\u8bd5\u6570\u636e (Prepare)\n\u9996\u5148\uff0c\u6211\u4eec\u4f7f\u7528 Sysbench \u51c6\u5907\u6d4b\u8bd5\u6570\u636e\uff0c\u521b\u5efa 10 \u5f20\u8868\uff0c\u6bcf\u5f20\u8868\u5305\u542b 100 \u4e07\u884c\u6570\u636e\u3002\u6b64\u8fc7\n2. \u9884\u70ed\u7f13\u5b58 (Warm Up)\n\u7a0b\u4f1a\u751f\u6210\u6d4b\u8bd5\u6240\u9700\u7684\u6570\u636e\u5e76\u521b\u5efa\u76f8\u5e94\u7684\u4e8c\u7ea7\u7d22\u5f15\u3002\n4. \u70b9\u67e5\u8be2\u6027\u80fd\u6d4b\u8bd5 (Point Select)\n\u6267\u884c\u547d\u4ee4\uff1a 5. \u7d22\u5f15\u66f4\u65b0\u6d4b\u8bd5 (Update Index)\n6. \u5e76\u53d1\u538b\u529b\u68af\u5ea6\u6d4b\u8bd5 (\u5e76\u53d1\u5ea6\uff1a8, 24, 36,\nsysbench oltp_common --threads=8 --mysql-host=127.0.0.1 --mysql-port=3306 --mysql-user=root\n7. \u8bb0\u5f55\u6570\u636e\u538b\u7f29\u6bd4\n7.1 \u901a\u8fc7TiDB Dashboard\u6216\u4ee5\u4e0bSQL\u547d\u4ee4\u67e5\u770b\u5b58\u50a8\u5927\u5c0f\n\u8f93\u51fa\u7ed3\u679c\uff1a 7.3 \u67e5\u8be2 test_db \u4e2d\u6bcf\u5f20\u8868\u7684\u903b\u8f91\u5927\u5c0f\n7.4 \u7edf\u8ba1 test_db \u603b\u6570\u636e\u91cf\n[root@worker3 pingkai]# sysbench oltp_common --threads=8 --mysql-host=127.0.0.1 --mysql-port=3306\n\u4e09\u3001MySQL 8.0.42 vs TiDB \u6838\u5fc3\u6027\u80fd\u6307\u6807\u5bf9\u6bd4\u8868\nsysbench 1.0.17 (using system LuaJIT 2.0.4)\nInitializing worker threads...\nCreating table 'sbtest5'...\nCreating table 'sbtest2'...\nCreating table 'sbtest3'...\nCreating table 'sbtest7'...\nCreating table 'sbtest8'...\nCreating table 'sbtest4'...\nCreating table 'sbtest1'...\nCreating table 'sbtest6'...\nInserting 1000000 records into 'sbtest6'\nInserting 1000000 records into 'sbtest5'\nInserting 1000000 records into 'sbtest8'\nInserting 1000000 records into 'sbtest7'\nInserting 1000000 records into 'sbtest2'\nInserting 1000000 records into 'sbtest4'\nInserting 1000000 records into 'sbtest1'\nInserting 1000000 records into 'sbtest3'\nCreating a secondary index on 'sbtest3'...\nCreating a secondary index on 'sbtest2'...\nCreating a secondary index on 'sbtest1'...\nCreating a secondary index on 'sbtest7'...\nCreating a secondary index on 'sbtest6'...\nCreating a secondary index on 'sbtest5'...\nCreating a secondary index on 'sbtest4'...\nCreating a secondary index on 'sbtest8'...\nCreating table 'sbtest10'...\nInserting 1000000 records into 'sbtest10'"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "Creating table 'sbtest9'...\nInserting 1000000 records into 'sbtest9'\nCreating a secondary index on 'sbtest10'...\nCreating a secondary index on 'sbtest9'...\n[root@worker3 pingkai]#\n\u8fc7\u7a0b\u8bf4\u660e\uff1a \u6570\u636e\u51c6\u5907\u9636\u6bb5\u987a\u5229\u5b8c\u6210\uff0c\u7cfb\u7edf\u521b\u5efa\u4e8610\u5f20\u8868\u5e76\u63d2\u5165\u4e861\u4ebf\u6761\u6d4b\u8bd5\u6570\u636e\uff0c\u540c\u65f6\u4e3a\u6bcf\n\u5f20\u8868\u5efa\u7acb\u4e86\u5fc5\u8981\u7684\u4e8c\u7ea7\u7d22\u5f15\uff0c\u4e3a\u540e\u7eed\u6027\u80fd\u6d4b\u8bd5\u5960\u5b9a\u4e86\u6570\u636e\u57fa\u7840\u3002\n2. \u9884\u70ed\u7f13\u5b58 (Warm Up)\n\u4e3a\u4e86\u786e\u4fdd\u6d4b\u8bd5\u7ed3\u679c\u53cd\u6620\u6570\u636e\u5e93\u5728\u7a33\u5b9a\u72b6\u6001\u4e0b\u7684\u6027\u80fd\uff0c\u6211\u4eec\u8fdb\u884c\u4e86\u7f13\u5b58\u9884\u70ed\u3002\u8fd9\u4e00\u6b65\u901a\u8fc7\u8fd0\u884c\n\u53ea\u8bfb\u6d4b\u8bd5\u5c06\u6570\u636e\u52a0\u8f7d\u5230 InnoDB \u7f13\u51b2\u6c60\u4e2d\uff0c\u907f\u514d\u540e\u7eed\u6d4b\u8bd5\u53d7\u5230\u78c1\u76d8 I/O \u74f6\u9888\u7684\u5f71\u54cd\u3002\n\u6267\u884c\u547d\u4ee4\uff1a\nsysbench oltp_read_only --threads=16 --mysql-host=127.0.0.1 --mysql-port=3306 --mysql-user=root\n\u76d1\u63a7\u622a\u56fe\uff1a"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u8f93\u51fa\u7ed3\u679c\uff1a\n[root@worker3 pingkai]# sysbench oltp_read_only --threads=16 --mysql-host=127.0.0.1\nsysbench 1.0.17 (using system LuaJIT 2.0.4)\nRunning the test with following options:\nNumber of threads: 16\nInitializing random number generator from current time\nInitializing worker threads...\nThreads started!\nSQL statistics:\nqueries performed:\nread: 2902970\nwrite: 0\nother: 414710\ntotal: 3317680\ntransactions: 207355 (3454.61 per sec.)\nqueries: 3317680 (55273.76 per sec.)\nignored errors: 0 (0.00 per sec.)\nreconnects: 0 (0.00 per sec.)\nGeneral statistics:\ntotal time: 60.0213s\ntotal number of events: 207355\nLatency (ms):\nmin: 1.24\navg: 4.63\nmax: 411.92\n95th percentile: 12.52\nsum: 959241.78\nThreads fairness:\nevents (avg/stddev): 12959.6875/951.67"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "execution time (avg/stddev): 59.9526/0.01\n[root@worker3 pingkai]#\n\u7ed3\u679c\u5206\u6790\uff1a \u9884\u70ed\u9636\u6bb5\u8868\u73b0\u51fa\u8272\uff0c\u8fbe\u5230\u4e86 3454.61 TPS \u7684\u9ad8\u541e\u5410\u91cf\uff0c95% \u7684\u8bf7\u6c42\u5ef6\u8fdf\u5728 12.\n52ms \u4ee5\u5185\uff0c\u8868\u660e\u6570\u636e\u5df2\u5145\u5206\u52a0\u8f7d\u5230\u5185\u5b58\u4e2d\uff0c\u4e3a\u540e\u7eed\u6d4b\u8bd5\u505a\u597d\u4e86\u51c6\u5907\u3002\n3. OLTP \u6df7\u5408\u8bfb\u5199\u6d4b\u8bd5 (Read Write)\n\u63a5\u4e0b\u6765\u8fdb\u884c OLTP \u6df7\u5408\u8bfb\u5199\u6d4b\u8bd5\uff0c\u6a21\u62df\u5178\u578b\u7684\u5728\u7ebf\u4e8b\u52a1\u5904\u7406\u573a\u666f\uff0c\u5305\u542b\u8bfb\u3001\u5199\u548c\u5176\u4ed6\u64cd\u4f5c\u7684\n\u7efc\u5408\u8d1f\u8f7d\u3002\n\u6267\u884c\u547d\u4ee4\uff1a\nsysbench oltp_read_write --threads=8 --mysql-host=127.0.0.1 --mysql-port=3306 --mysql-user=root\n\u6267\u884c\u8fc7\u7a0b\uff1a\n[root@worker3 pingkai]# sysbench oltp_read_write --threads=8 --mysql-host=127.0.0.1\n[root@worker3 pingkai]#\n\u67e5\u770b\u8be6\u7ec6\u7ed3\u679c\uff1a"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "[root@worker3 pingkai]# cat mysql_8thread_rw.log\nsysbench 1.0.17 (using system LuaJIT 2.0.4)\nRunning the test with following options:\nNumber of threads: 8\nReport intermediate results every 10 second(s)\nInitializing random number generator from current time\nInitializing worker threads...\nThreads started!\n[ 10s ] thds: 8 tps: 281.92 qps: 5650.57 (r/w/o: 3955.83/1130.09/564.65) lat (ms,95%):\n...\uff08\u4e2d\u95f4\u65e5\u5fd7\u7701\u7565\uff09...\n[ 300s ] thds: 8 tps: 449.00 qps: 8975.50 (r/w/o: 6283.00/1794.60/897.90) lat (ms,95%):\nSQL statistics:\nqueries performed:\nread: 1407728\nwrite: 402208\nother: 201104\ntotal: 2011040\ntransactions: 100552 (335.15 per sec.)\nqueries: 2011040 (6703.05 per sec.)\nignored errors: 0 (0.00 per sec.)\nreconnects: 0 (0.00 per sec.)\nGeneral statistics:\ntotal time: 300.0172s\ntotal number of events: 100552\nLatency (ms):\nmin: 2.08\navg: 23.86\nmax: 2361.49\n95th percentile: 57.87\nsum: 2399512.40\nThreads fairness:\nevents (avg/stddev): 12569.0000/102.16\nexecution time (avg/stddev): 299.9390/0.01\n[root@worker3 pingkai]#"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u6027\u80fd\u5206\u6790\uff1a \u5728 300 \u79d2\u7684\u6d4b\u8bd5\u671f\u95f4\uff0cMySQL 8.0.42 \u5b9e\u73b0\u4e86\u5e73\u5747 335.15 TPS \u7684\u7a33\u5b9a\u6027\u80fd\u3002\n\u541e\u5410\u91cf\u5728\u6d4b\u8bd5\u8fc7\u7a0b\u4e2d\u9010\u6e10\u63d0\u5347\uff0c\u6700\u7ec8\u8fbe\u5230 449 TPS\uff0c\u8868\u660e\u6570\u636e\u5e93\u5728\u957f\u65f6\u95f4\u8fd0\u884c\u4e0b\u4ecd\u80fd\u4fdd\u6301\u826f\n\u597d\u7684\u6027\u80fd\u8868\u73b0\u300295% \u7684\u8bf7\u6c42\u5ef6\u8fdf\u4e3a 57.87ms\uff0c\u663e\u793a\u51fa\u8f83\u4e3a\u4e00\u81f4\u7684\u54cd\u5e94\u6027\u80fd\u3002\n4. \u70b9\u67e5\u8be2\u6027\u80fd\u6d4b\u8bd5 (Point Select)\n\u70b9\u67e5\u8be2\u6d4b\u8bd5\u8bc4\u4f30\u6570\u636e\u5e93\u5728\u4e3b\u952e\u67e5\u8be2\u573a\u666f\u4e0b\u7684\u6027\u80fd\uff0c\u8fd9\u662f\u8bb8\u591a\u5e94\u7528\u7a0b\u5e8f\u4e2d\u7684\u5e38\u89c1\u64cd\u4f5c\u6a21\u5f0f\u3002\n\u6267\u884c\u547d\u4ee4\uff1a\nsysbench oltp_point_select --threads=8 --mysql-host=127.0.0.1 --mysql-port=3306\n\u6267\u884c\u8fc7\u7a0b\uff1a\n[root@worker3 pingkai]# sysbench oltp_point_select --threads=8 --mysql-host=127.0.0.1\n[root@worker3 pingkai]#\n\u67e5\u770b\u8be6\u7ec6\u7ed3\u679c\uff1a"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "[root@worker3 pingkai]# tail -30 mysql_8thread_point_select.log\n[ 270s ] thds: 8 tps: 75252.01 qps: 75252.01 (r/w/o: 75252.01/0.00/0.00) lat (ms,95%):\n[ 280s ] thds: 8 tps: 78663.08 qps: 78663.18 (r/w/o: 78663.18/0.00/0.00) lat (ms,95%):\n[ 290s ] thds: 8 tps: 78766.09 qps: 78765.99 (r/w/o: 78765.99/0.00/0.00)\u6781\u4f4e\u7684\u5ef6\u8fdf\u6c34\u5e73\uff0c95%\n### **5. \u7d22\u5f15\u66f4\u65b0\u6d4b\u8bd5 (Update Index)**\n\u7d22\u5f15\u66f4\u65b0\u6d4b\u8bd5\u8bc4\u4f30\u6570\u636e\u5e93\u5728\u66f4\u65b0\u7d22\u5f15\u5217\u65f6\u7684\u6027\u80fd\u8868\u73b0\uff0c\u8fd9\u5bf9\u4e8e\u7ef4\u62a4\u6570\u636e\u4e00\u81f4\u6027\u548c\u67e5\u8be2\u6027\u80fd\u81f3\u5173\u91cd\u8981\u3002\n**\u6267\u884c\u547d\u4ee4\uff1a**\n```bash\nsysbench oltp_update_index --threads=8 --mysql-host=127.0.0.1 --mysql-port=3306 --mysql-user=root\n\u6267\u884c\u8fc7\u7a0b\uff1a\n[root@worker3 pingkai]# sysbench oltp_update_index --threads=8 --mysql-host=127.0.0.1\n[root@worker3 pingkai]#\n\u67e5\u770b\u8be6\u7ec6\u7ed3\u679c\uff1a\n[root@worker3 pingkai]# tail -30 mysql_8thread_update_index.log\n[ 270s ] thds: 8 tps: 849.90 qps: 849.90 (r/w/o: 0.00/849.90/0.00) lat (ms,95%):\n[ 280s ] thds: 8 tps: 937.85 qps: 937.85 (r/w/o: 0.00/937.85/0.00) lat (ms,95%):\n[ 290s ] thds: 8 tps: 721.72 qps: 721.72 (r/w/o: 0.00/721.72/\u6781\u4f4e\u7684\u5ef6\u8fdf\u6c34\u5e73\uff0c95% \u7684\u8bf7\u6c42\u5728\n### **6. \u5e76\u53d1\u538b\u529b\u68af\u5ea6\u6d4b\u8bd5**\n\u4e3a\u4e86\u8bc4\u4f30 MySQL \u5728\u4e0d\u540c\u5e76\u53d1\u538b\u529b\u4e0b\u7684\u6027\u80fd\u8868\u73b0\uff0c\u6211\u4eec\u8fdb\u884c\u4e86\u68af\u5ea6\u6d4b\u8bd5\uff0c\u9010\u6b65\u589e\u52a0\u7ebf\u7a0b\u6570\u4ece 8 \u5230 55\uff0c\u89c2\u5bdf\u7cfb\u7edf\u541e\u5410\u91cf\u548c\u54cd\u5e94\u65f6\u95f4\u7684\u53d8\u5316\u3002\n**\u6267\u884c\u547d\u4ee4\uff1a**\n```bash\nfor threads in 8 24 36 55\ndo\nsysbench oltp_read_write --threads=${threads} --mysql-host=127.0.0.1 --mysql-port=3306\ndone\n\u6267\u884c\u8fc7\u7a0b\uff1a\n[root@worker3 pingkai]# for threads in 8 24 36 55\n> do\n> sysbench oltp_read_write --threads=${threads} --mysql-host=127.0.0.1 --mysql-port=3306\n> done\n[root@worker3 pingkai]#"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u5e76\u53d1\u6d4b\u8bd5\u7ed3\u679c\u5206\u6790\uff1a\n24 \u7ebf\u7a0b\u6d4b\u8bd5\u7ed3\u679c\uff1a\n[root@worker3 pingkai]# tail -30 mysql_24thread_rw.log\n...\uff08\u8f93\u51fa\u5185\u5bb9\uff09...\ntransactions: 187421 (624.25 per sec.)\nqueries: 3748420 (12485.05 per sec.)\n...\n36 \u7ebf\u7a0b\u6d4b\u8bd5\u7ed3\u679c\uff1a\n[root@worker3 pingkai]# tail -30 mysql_36thread_rw.log\n...\uff08\u8f93\u51fa\u5185\u5bb9\uff09...\ntransactions: 211558 (703.06 per sec.)\nqueries: 4231160 (14061.24 per sec.)\n..."
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "55 \u7ebf\u7a0b\u6d4b\u8bd5\u7ed3\u679c\uff1a\n[root@worker3 pingkai]# tail -30 mysql_55thread_rw.log\n...\uff08\u8f93\u51fa\u5185\u5bb9\uff09...\ntransactions: 230840 (768.09 per sec.)\nqueries: 4616800 (15361.81 per sec.)\n...\n\u5e76\u53d1\u6027\u80fd\u8d8b\u52bf\uff1a \u968f\u7740\u5e76\u53d1\u7ebf\u7a0b\u6570\u7684\u589e\u52a0\uff0cMySQL \u5c55\u73b0\u51fa\u826f\u597d\u7684\u6269\u5c55\u6027\uff0c\u4ece 8 \u7ebf\u7a0b\u7684 335.1\n5 TPS \u9010\u6b65\u63d0\u5347\u5230 55 \u7ebf\u7a0b\u7684 768.09 TPS\uff0c\u6027\u80fd\u63d0\u5347\u4e86\u7ea6 129%\u3002\u8fd9\u8868\u660e MySQL 8.0.42\n\u80fd\u591f\u6709\u6548\u5229\u7528\u591a\u6838\u8d44\u6e90\uff0c\u5728\u9ad8\u5e76\u53d1\u573a\u666f\u4e0b\u4ecd\u80fd\u4fdd\u6301\u6027\u80fd\u7684\u7ebf\u6027\u589e\u957f\u3002"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "7. \u6570\u636e\u538b\u7f29\u6bd4\u5206\u6790\n\u6700\u540e\uff0c\u6211\u4eec\u5206\u6790\u4e86 MySQL \u7684\u6570\u636e\u5b58\u50a8\u6548\u7387\uff0c\u8bc4\u4f30\u5176\u5728\u4e0d\u540c\u5b58\u50a8\u5f15\u64ce\u4e0b\u7684\u6570\u636e\u538b\u7f29\u80fd\u529b\u3002\n\u6267\u884c\u547d\u4ee4\uff1a\nmysql -h 127.0.0.1 -P 3306 -u root -p 'Pingkai@123' -e \"SELECT table_name AS \\`Table\\`,\n\u8f93\u51fa\u7ed3\u679c\uff1a\n[root@worker3 pingkai]# mysql -h 127.0.0.1 -P 3306 -u root -p'Pingkai@123'\nmysql: [Warning] Using a password on the command line interface can be insecure.\nWelcome to the MySQL monitor. Commands end with ; or \\g.\nYour MySQL connection id is 190\nServer version: 8.0.42 MySQL Community Server - GPL\nCopyright (c) 2000, 2025, Oracle and/or its affiliates.\nOracle is a registered trademark of Oracle Corporation and/or its\naffiliates. Other names may be trademarks of their respective\nowners.\nType 'help;' or '\\h' for help. Type '\\c' to clear the current input statement.\nmysql> SELECT table_name AS `Table`,\n-> round(((data_length + index_length) / 1024 / 1024), 2) `Size (MB)`\n-> FROM information_schema.TABLES\n-> WHERE table_schema = \"test_db\";\n+----------+-----------+\n| Table | Size (MB) |\n+----------+-----------+\n| sbtest1 | 237.75 |\n| sbtest10 | 237.75 |\n| sbtest2 | 236.77 |\n| sbtest3 | 237.75 |\n| sbtest4 | 237.75 |\n| sbtest5 | 237.77 |\n| sbtest6 | 236.77 |\n| sbtest7 | 236.78 |\n| sbtest8 | 236.75 |\n| sbtest9 | 236.78 |\n+----------+-----------+\n10 rows in set (0.20 sec)\nmysql>"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u6c47\u603b\u7edf\u8ba1\uff1a\nmysql> SELECT\n-> SUM(TABLE_ROWS) AS `Total_Rows`,\n-> ROUND(SUM(DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 2) AS `Total_Size_MB`\n-> FROM information_schema.TABLES\n-> WHERE TABLE_SCHEMA = 'test_db';\n+------------+---------------+\n| Total_Rows | Total_Size_MB |\n+------------+---------------+\n| 9863995 | 2372.61 |\n+------------+---------------+\n1 row in set (0.02 sec)\nmysql>\n\u7269\u7406\u78c1\u76d8\u5360\u7528\u68c0\u67e5\uff1a"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "[root@worker3 test_db]# du -sh\n2.5G .\n[root@worker3 test_db]# pwd\n/data/pingkai/mysql/test_db\n[root@worker3 test_db]# ls\nsbtest10.ibd sbtest2.ibd sbtest4.ibd sbtest6.ibd sbtest8.ibd\nsbtest1.ibd sbtest3.ibd sbtest5.ibd sbtest7.ibd sbtest9.ibd\n[root@worker3 test_db]#\n\u5b58\u50a8\u5206\u6790\uff1a 10 \u5f20\u8868\u5171\u5b58\u50a8\u4e86\u7ea6 986 \u4e07\u884c\u6570\u636e\uff0c\u903b\u8f91\u5927\u5c0f\u4e3a 2.37GB\uff0c\u5b9e\u9645\u7269\u7406\u78c1\u76d8\u5360\u7528\u4e3a\n2.5GB\u3002MySQL 8.0 \u7684 InnoDB \u5b58\u50a8\u5f15\u64ce\u5728\u6b64\u6d4b\u8bd5\u4e2d\u663e\u793a\u4e86\u5408\u7406\u7684\u5b58\u50a8\u6548\u7387\uff0c\u903b\u8f91\u5927\u5c0f\u4e0e\u7269\n\u7406\u5927\u5c0f\u57fa\u672c\u4e00\u81f4\uff0c\u8868\u660e\u6570\u636e\u5b58\u50a8\u8f83\u4e3a\u7d27\u51d1\uff0c\u6ca1\u6709\u660e\u663e\u7684\u7a7a\u95f4\u6d6a\u8d39\u3002\n\u901a\u8fc7\u4ee5\u4e0a\u5168\u9762\u7684\u6d4b\u8bd5\uff0c\u6211\u4eec\u5bf9 MySQL 8.0.42 \u7684\u6027\u80fd\u7279\u5f81\u6709\u4e86\u6df1\u5165\u7684\u7406\u89e3\u3002\u63a5\u4e0b\u6765\u5c06\u5728\u7b2c\u4e8c\n\u90e8\u5206\u8fdb\u884c TiDB \u7684\u5bf9\u6bd4\u6d4b\u8bd5\uff0c\u4ece\u800c\u5168\u9762\u8bc4\u4f30\u4e24\u79cd\u6570\u636e\u5e93\u5728\u4e0d\u540c\u573a\u666f\u4e0b\u7684\u6027\u80fd\u8868\u73b0\u3002\n\u4e8c\u3001TiDB \u6d4b\u8bd5 (\u7aef\u53e3 4006)\n\u91cd\u8981\u63d0\u793a\uff1a TiDB\u662f\u5206\u5e03\u5f0f\u6570\u636e\u5e93\uff0c\u5176\u67b6\u6784\u4e0eMySQL\u5b8c\u5168\u4e0d\u540c\u3002Sysbench\u6d4b\u8bd5\u65f6\uff0c \u5efa\u8bae \uff1a\n\u4f7f\u7528 \u3002 --db-driver=mysql\n\u5728 \u9636\u6bb5\uff0c\u53ef\u4ee5\u589e\u52a0 \u4ee5\u907f\u514dTiDB\u81ea\u589eID\u7684\u6027\u80fd\u74f6\u9888\uff08\u4f46\u9700 prepare --auto_inc=off\n\u6ce8\u610f\u8fd9\u53ef\u80fd\u4e0eMySQL\u884c\u4e3a\u7565\u6709\u4e0d\u540c\uff0c\u53ef\u6839\u636e\u6d4b\u8bd5\u76ee\u7684\u9009\u62e9\uff09\u3002\n\u7531\u4e8eTiDB\u7684\u4e50\u89c2\u4e8b\u52a1\u6a21\u578b\uff0c\u5728\u9ad8\u5e76\u53d1\u51b2\u7a81\u573a\u666f\u4e0b\u53ef\u80fd\u56e0\u91cd\u8bd5\u673a\u5236\u5bfc\u81f4\u6027\u80fd\u6ce2\u52a8\uff0c\u8fd9\u662f\u6b63\n\u5e38\u73b0\u8c61\u3002\n1. \u51c6\u5907\u6d4b\u8bd5\u6570\u636e (Prepare)\nsysbench oltp_common --threads=8 --mysql-host=127.0.0.1 --mysql-port=4006 --mysql-user=root\n\u8f93\u51fa"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "[root@worker3 pingkai]# sysbench oltp_common --threads=8 --mysql-host=127.0.0.1 --mysql-port=4006\nsysbench 1.0.17 (using system LuaJIT 2.0.4)\nInitializing worker threads...\nCreating table 'sbtest2'...\nCreating table 'sbtest6'...\nCreating table 'sbtest1'...\nCreating table 'sbtest5'...\nCreating table 'sbtest8'...\nCreating table 'sbtest7'...\nCreating table 'sbtest3'...\nCreating table 'sbtest4'...\nInserting 1000000 records into 'sbtest4'\nInserting 1000000 records into 'sbtest1'\nInserting 1000000 records into 'sbtest7'\nInserting 1000000 records into 'sbtest3'\nInserting 1000000 records into 'sbtest2'\nInserting 1000000 records into 'sbtest6'\nInserting 1000000 records into 'sbtest5'\nInserting 1000000 records into 'sbtest8'\nCreating a secondary index on 'sbtest4'...\nCreating a secondary index on 'sbtest3'...\nCreating a secondary index on 'sbtest2'...\nCreating a secondary index on 'sbtest6'...\nCreating a secondary index on 'sbtest1'...\nCreating a secondary index on 'sbtest8'...\nCreating a secondary index on 'sbtest5'...\nCreating a secondary index on 'sbtest7'...\nCreating table 'sbtest10'...\nInserting 1000000 records into 'sbtest10'\nCreating table 'sbtest9'...\nInserting 1000000 records into 'sbtest9'\nCreating a secondary index on 'sbtest10'...\nCreating a secondary index on 'sbtest9'...\n[root@worker3 pingkai]#"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2. \u9884\u70ed\u7f13\u5b58 (Warm Up)\n*TiDB\u7684\u5b58\u50a8\u5f15\u64ceTiKV\u4e5f\u6709Block Cache\uff0c\u9884\u70ed\u540c\u6837\u91cd\u8981\u3002*\nsysbench oltp_read_only --threads=16 --mysql-host=127.0.0.1 --mysql-port=4006 --mysql-user=root\n\u8f93\u51fa\n[root@worker3 pingkai]# sysbench oltp_read_only --threads=16 --mysql-host=127.0.0.1\nsysbench 1.0.17 (using system LuaJIT 2.0.4)\nRunning the test with following options:\nNumber of threads: 16\nInitializing random number generator from current time\nInitializing worker threads...\nThreads started!\nSQL statistics:\nqueries performed:\nread: 305480\nwrite: 0\nother: 43640\ntotal: 349120\ntransactions: 21820 (363.27 per sec.)\nqueries: 349120 (5812.39 per sec.)\nignored errors: 0 (0.00 per sec.)\nreconnects: 0 (0.00 per sec.)\nGeneral statistics:\ntotal time: 60.0632s\ntotal number of events: 21820\nLatency (ms):\nmin: 14.61\navg: 44.02\nmax: 411.80\n95th percentile: 78.60\nsum: 960512.62\nThreads fairness:\nevents (avg/stddev): 1363.7500/5.54\nexecution time (avg/stddev): 60.0320/0.02\n[root@worker3 pingkai]#"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "OLTP \u6df7\u5408\u8bfb\u5199\u6d4b\u8bd5 (Read Write)\nsysbench oltp_read_write --threads=8 --mysql-host=127.0.0.1 --mysql-port=4006 --mysql-user=root\n\u8f93\u51fa\n[root@worker3 pingkai]# sysbench oltp_read_write --threads=8 --mysql-host=127.0.0.1\n[root@worker3 pingkai]#\n\u65e5\u5fd7"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "[root@worker3 pingkai]# tail -30 tidb_8thread_rw.log\n[ 270s ] thds: 8 tps: 150.30 qps: 3001.40 (r/w/o: 2100.50/600.30/300.60) lat (ms,95%):\n[ 280s ] thds: 8 tps: 188.48 qps: 3770.19 (r/w/o: 2639.88/753.34/376.97) lat (ms,95%):\n[ 290s ] thds: 8 tps: 197.82 qps: 3961.22 (r/w/o: 2773.13/792.46/395.63) lat (ms,95%):\n[ 300s ] thds: 8 tps: 126.79 qps: 2533.48 (r/w/o: 1773.11/506.78/253.59) lat (ms,95%):\nSQL statistics:\nqueries performed:\nread: 734804\nwrite: 209944\nother: 104972\ntotal: 1049720\ntransactions: 52486 (174.93 per sec.)\nqueries: 1049720 (3498.59 per sec.)\nignored errors: 0 (0.00 per sec.)\nreconnects: 0 (0.00 per sec.)\nGeneral statistics:\ntotal time: 300.0393s\ntotal number of events: 52486\nLatency (ms):\nmin: 16.35\navg: 45.72\nmax: 289.19\n95th percentile: 87.56\nsum: 2399887.73\nThreads fairness:\nevents (avg/stddev): 6560.7500/10.81\nexecution time (avg/stddev): 299.9860/0.01\n[root@worker3 pingkai]#"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "4. \u70b9\u67e5\u8be2\u6027\u80fd\u6d4b\u8bd5 (Point Select)\n*\u70b9\u67e5\u8be2\u662fTiDB\u7684\u5f3a\u9879\uff0c\u9884\u8ba1\u4f1a\u8868\u73b0\u975e\u5e38\u597d\u3002*\nsysbench oltp_point_select --threads=8 --mysql-host=127.0.0.1 --mysql-port=4006 --mysql-user=root\n\u8f93\u51fa\n[root@worker3 pingkai]# sysbench oltp_point_select --threads=8 --mysql-host=127.0.0.1\n[root@worker3 pingkai]#\n\u65e5\u5fd7\n[root@worker3 pingkai]# tail -30 tidb_8thread_point_select.log\n[ 270s ] thds: 8 tps: 7726.57 qps: 7726.57 (r/w/o: 7726.57/0.00/0.00) lat (ms,95%):\n[ 280s ] thds: 8 tps: 9696.07 qps: 9696.07 (r/w/o: 9696.07/0.00/0.00) lat (ms,95%):\n[ 290s ] thds: 8 tps: 6357.09 qps: 6357.09 (r/w/o: 6357.09/0.00/0.00) lat (ms,95%):\n[ 300s ] thds: 8 tps: 7425.78 qps: 7425.78 (r/w/o: 7425.78/0.00/0.00) lat (ms,95%):\nSQL statistics:\nqueries performed:\nread: 2295788\nwrite: 0\nother: 0\ntotal: 2295788\ntransactions: 2295788 (7652.53 per sec.)\nqueries: 2295788 (7652.53 per sec.)\nignored errors: 0 (0.00 per sec.)\nreconnects: 0 (0.00 per sec.)\nGeneral statistics:\ntotal time: 300.0024s\ntotal number of events: 2295788\nLatency (ms):\nmin: 0.21\navg: 1.04\nmax: 94.67\n95th percentile: 2.48\nsum: 2397345.08\nThreads fairness:\nevents (avg/stddev): 286973.5000/530.76\nexecution time (avg/stddev): 299.6681/0.01\n[root@worker3 pingkai]#"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "5. \u7d22\u5f15\u66f4\u65b0\u6d4b\u8bd5 (Update Index)\nsysbench oltp_update_index --threads=8 --mysql-host=127.0.0.1 --mysql-port=4006 --mysql-user=root\n\u8f93\u51fa\n[root@worker3 pingkai]# sysbench oltp_update_index --threads=8 --mysql-host=127.0.0.1\n[root@worker3 pingkai]#\n\u65e5\u5fd7"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "[root@worker3 pingkai]# tail -30 tidb_8thread_update_index.log\n[ 270s ] thds: 8 tps: 1175.56 qps: 1175.56 (r/w/o: 0.00/1175.56/0.00) lat (ms,95%):\n[ 280s ] thds: 8 tps: 691.76 qps: 691.76 (r/w/o: 0.00/691.76/0.00) lat (ms,95%):\n[ 290s ] thds: 8 tps: 871.78 qps: 871.78 (r/w/o: 0.00/871.78/0.00) lat (ms,95%):\n[ 300s ] thds: 8 tps: 991.44 qps: 991.44 (r/w/o: 0.00/991.44/0.00) lat (ms,95%):\nSQL statistics:\nqueries performed:\nread: 0\nwrite: 260561\nother: 0\ntotal: 260561\ntransactions: 260561 (868.52 per sec.)\nqueries: 260561 (868.52 per sec.)\nignored errors: 0 (0.00 per sec.)\nreconnects: 0 (0.00 per sec.)\nGeneral statistics:\ntotal time: 300.0053s\ntotal number of events: 260561\nLatency (ms):\nmin: 1.77\navg: 9.21\nmax: 194.19\n95th percentile: 21.50\nsum: 2399147.68\nThreads fairness:\nevents (avg/stddev): 32570.1250/35.07\nexecution time (avg/stddev): 299.8935/0.02\n[root@worker3 pingkai]#"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "6. \u5e76\u53d1\u538b\u529b\u68af\u5ea6\u6d4b\u8bd5 (\u5e76\u53d1\u5ea6\uff1a8, 24, 36, 55)\nfor threads in 8 24 36 55\ndo\nsysbench oltp_read_write --threads=${threads} --mysql-host=127.0.0.1 --mysql-port=4006\ndone\n\u8f93\u51fa\n[root@worker3 pingkai]# for threads in 8 24 36 55\n> do\n> sysbench oltp_read_write --threads=${threads} --mysql-host=127.0.0.1 --mysql-port=4006\n> done\n[root@worker3 pingkai]#\n\u65e5\u5fd7\n[root@worker3 pingkai]# tail -30 tidb_24thread_rw.log\n[ 270s ] thds: 24 tps: 195.38 qps: 3895.07 (r/w/o: 2724.97/779.73/390.37) lat (ms,95%):\n[ 280s ] thds: 24 tps: 191.46 qps: 3837.35 (r/w/o: 2687.18/766.95/383.23) lat (ms,95%):\n[ 290s ] thds: 24 tps: 205.40 qps: 4107.78 (r/w/o: 2874.98/821.90/410.90) lat (ms,95%):\n[ 300s ] thds: 24 tps: 204.70 qps: 4084.07 (r/w/o: 2857.55/817.81/408.71) lat (ms,95%):\nSQL statistics:\nqueries performed:\nread: 836052\nwrite: 238872\nother: 119436\ntotal: 1194360\ntransactions: 59718 (198.98 per sec.)\nqueries: 1194360 (3979.57 per sec.)\nignored errors: 0 (0.00 per sec.)\nreconnects: 0 (0.00 per sec.)\nGeneral statistics:\ntotal time: 300.1216s\ntotal number of events: 59718\nLatency (ms):\nmin: 41.18\navg: 120.58\nmax: 498.40\n95th percentile: 176.73\nsum: 7201066.00\nThreads fairness:\nevents (avg/stddev): 2488.2500/5.74\nexecution time (avg/stddev): 300.0444/0.04"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "[root@worker3 pingkai]#\n[root@worker3 pingkai]# tail -30 tidb_36thread_rw.log\n[ 270s ] thds: 36 tps: 177.08 qps: 3548.95 (r/w/o: 2485.85/708.93/354.16) lat (ms,95%):\n[ 280s ] thds: 36 tps: 160.42 qps: 3201.46 (r/w/o: 2239.85/641.17/320.44) lat (ms,95%):\n[ 290s ] thds: 36 tps: 186.69 qps: 3732.18 (r/w/o: 2613.25/745.56/373.38) lat (ms,95%):\n[ 300s ] thds: 36 tps: 198.72 qps: 3972.13 (r/w/o: 2778.50/795.99/397.64) lat (ms,95%):\nSQL statistics:\nqueries performed:\nread: 822430\nwrite: 234980\nother: 117490\ntotal: 1174900\ntransactions: 58745 (195.72 per sec.)\nqueries: 1174900 (3914.31 per sec.)\nignored errors: 0 (0.00 per sec.)\nreconnects: 0 (0.00 per sec.)\nGeneral statistics:\ntotal time: 300.1534s\ntotal number of events: 58745\nLatency (ms):\nmin: 54.66\navg: 183.90\nmax: 1000.55\n95th percentile: 277.21\nsum: 10803286.29\nThreads fairness:\nevents (avg/stddev): 1631.8056/4.56\nexecution time (avg/stddev): 300.0913/0.05"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "[root@worker3 pingkai]#\n[root@worker3 pingkai]# tail -30 tidb_55thread_rw.log\n[ 270s ] thds: 55 tps: 193.74 qps: 3883.50 (r/w/o: 2720.23/775.58/387.69) lat (ms,95%):\n[ 280s ] thds: 55 tps: 195.80 qps: 3915.49 (r/w/o: 2740.29/783.90/391.30) lat (ms,95%):\n[ 290s ] thds: 55 tps: 198.11 qps: 3952.33 (r/w/o: 2764.49/791.63/396.21) lat (ms,95%):\n[ 300s ] thds: 55 tps: 183.00 qps: 3665.41 (r/w/o: 2568.70/730.60/366.10) lat (ms,95%):\nSQL statistics:\nqueries performed:\nread: 794164\nwrite: 226904\nother: 113452\ntotal: 1134520\ntransactions: 56726 (188.83 per sec.)\nqueries: 1134520 (3776.50 per sec.)\nignored errors: 0 (0.00 per sec.)\nreconnects: 0 (0.00 per sec.)\nGeneral statistics:\ntotal time: 300.4142s\ntotal number of events: 56726\nLatency (ms):\nmin: 93.52\navg: 291.10\nmax: 1089.25\n95th percentile: 419.45\nsum: 16512668.08\nThreads fairness:\nevents (avg/stddev): 1031.3818/4.27\nexecution time (avg/stddev): 300.2303/0.13"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "[root@worker3 pingkai]#\n7. \u8bb0\u5f55\u6570\u636e\u538b\u7f29\u6bd4\n7.1 \u901a\u8fc7TiDB Dashboard\u6216\u4ee5\u4e0bSQL\u547d\u4ee4\u67e5\u770b\u5b58\u50a8\u5927\u5c0f\n\uff08\u5355\u8282\u70b9\u90e8\u7f72\u4e0b\uff0c\u6570\u636e\u90fd\u5728TiKV\u4e0a\uff09\uff1a\nSELECT\nTABLE_NAME,\nTABLE_ROWS,\nAVG_ROW_LENGTH,\nDATA_LENGTH,\nINDEX_LENGTH\nFROM\ninformation_schema.TABLES\nWHERE\nTABLE_SCHEMA = 'test_db';\n\u8f93\u51fa"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "```language\nmysql> SELECT TABLE_NAME, TABLE_ROWS, AVG_ROW_LENGTH, DATA_LENGTH,\n+------------+------------+----------------+-------------+--------------+\n| TABLE_NAME | TABLE_ROWS | AVG_ROW_LENGTH | DATA_LENGTH | INDEX_LENGTH |\n+------------+------------+----------------+-------------+--------------+\n| sbtest4 | 1000000 | 16 | 16000000 | 8000000 |\n| sbtest5 | 1000000 | 16 | 16000000 | 8000000 |\n| sbtest6 | 1000000 | 16 | 16000000 | 8000000 |\n| sbtest8 | 1000000 | 16 | 16000000 | 8000000 |\n| sbtest2 | 1000000 | 16 | 16000000 | 8000000 |\n| sbtest3 | 1000000 | 16 | 16000000 | 8000000 |\n| sbtest7 | 1000000 | 16 | 16000000 | 8000000 |\n| sbtest1 | 1000000 | 16 | 16000000 | 8000000 |\n| sbtest10 | 1000000 | 16 | 16000000 | 8000000 |\n| sbtest9 | 1000000 | 16 | 16000000 | 8000000 |\n+------------+------------+----------------+-------------+--------------+\n10 rows in set (0.04 sec)\nmysql>\n\u65e5\u5fd7\n\u9664\u4e86\u4f60\u4e4b\u524d\u4f7f\u7528\u7684 information_schema.TABLES\uff0cTiDB \u8fd8\u63d0\u4f9b\u4e86\u5176\u4ed6\u4e00\u4e9b\u7cfb\u7edf\u8868\u6765\u67e5\u770b\u5b58\u50a8\u4fe1\u606f\uff0c\u4f46\u9700\u8981\u6ce8\u610f\u5b83\u4eec\u7684\u4f30\u7b97\u6027\u8d28\u3002\n#### 7.2 \u67e5\u8be2 test_db \u6570\u636e\u5e93\u7684\u903b\u8f91\u5927\u5c0f\n\u4f60\u53ef\u4ee5\u4f7f\u7528\u4ee5\u4e0b SQL \u8bed\u53e5\u67e5\u8be2 test_db \u6570\u636e\u5e93\u7684\u903b\u8f91\u5927\u5c0f\uff08MB\uff09\uff1a\n```language\nmysql> SELECT\ntable_schema AS 'Database',\n-> table_schema AS 'Database',\n-> SUM(data_length + index_length) / 1024 / 1024 AS 'Size (MB)'\ninformation_schema.tables\n-> FROM\n-> information_schema.tables\n-> WHERE\n-> table_schema = 'test_db'\nGROUP BY table_schema; -> GROUP BY table_schema;\n+----------+--------------+\n| Database | Size (MB) |\n+----------+--------------+"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "| test_db | 228.88183594 |\n+----------+--------------+\n1 row in set (0.08 sec)\nmysql>\n7.3 \u67e5\u8be2 test_db \u4e2d\u6bcf\u5f20\u8868\u7684\u903b\u8f91\u5927\u5c0f\n\u82e5\u60f3\u4e86\u89e3 test_db \u4e2d\u6bcf\u5f20\u8868\u7684\u903b\u8f91\u5927\u5c0f\uff0c\u53ef\u4ee5\u6267\u884c\uff1a\nmysql> SELECT\n-> table_name AS 'Table',\n-> (data_length + index_length) / 1024 / 1024 AS 'Size (MB)',\n-> table_rows AS 'Rows'\n-> FROM\n-> information_schema.tables\n-> WHERE\n-> table_schema = 'test_db'\n-> ORDER BY (data_length + index_length) DESC;\n+----------+-------------+---------+\n| Table | Size (MB) | Rows |\n+----------+-------------+---------+\n| sbtest4 | 22.88818359 | 1000000 |\n| sbtest5 | 22.88818359 | 1000000 |\n| sbtest6 | 22.88818359 | 1000000 |\n| sbtest8 | 22.88818359 | 1000000 |\n| sbtest2 | 22.88818359 | 1000000 |\n| sbtest3 | 22.88818359 | 1000000 |\n| sbtest7 | 22.88818359 | 1000000 |\n| sbtest1 | 22.88818359 | 1000000 |\n| sbtest10 | 22.88818359 | 1000000 |\n| sbtest9 | 22.88818359 | 1000000 |\n+----------+-------------+---------+\n10 rows in set (0.04 sec)\nmysql>"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "*\u6ce8\u610f\uff1aTiDB\u7684\u538b\u7f29\u6bd4\u901a\u5e38\u8fdc\u9ad8\u4e8eMySQL\uff0c\u8fd9\u662f\u5176\u5e95\u5c42\u4f7f\u7528RocksDB\uff08LSM\u6811\uff09\u5e26\u6765\u7684\u5929\u7136\u4f18\u52bf\u3002*\n7.4 \u7edf\u8ba1 test_db \u603b\u6570\u636e\u91cf\n\u7edf\u8ba1\u6574\u4e2a test_db \u6570\u636e\u5e93\u7684\u603b\u884c\u6570\u548c\u603b\u5927\u5c0f\uff0c\u53ea\u9700\u4f7f\u7528 SUM() \u805a\u5408\u51fd\u6570\u5373\u53ef\u3002\n[root@worker3 pingkai]# cd /tidb-data/tikv-20160\n[root@worker3 tikv-20160]# du -sh\n2.4G .\n[root@worker3 tikv-20160]# ls\ndb last_tikv.toml raftdb.info rocksdb.info space_placeholder_file\nimport LOCK raft-engine snap\n[root@worker3 tikv-20160]#\n\u4e09\u3001MySQL 8.0.42 vs TiDB \u6838\u5fc3\u6027\u80fd\u6307\u6807\u5bf9\u6bd4\u8868\n1. \u6570\u636e\u538b\u7f29\u6bd4\u5bf9\u6bd4\uff08\u57fa\u7840\u5b58\u50a8\u6548\u7387\uff09\n\u6307\u6807 MySQL 8.0.42 TiDB \u5dee\u5f02\u500d\u6570\n\u603b\u884c\u6570 9,863,995\uff08\u4f30\u7b97\uff09 10,000,000\uff0810\u8868\u00d7100\u4e07\u884c\uff09 -\n\u903b\u8f91\u603b\u5927\u5c0f\uff08M 2372.61\uff08DATA_LENGTH+IN 228.88\uff08DATA_LENGTH+IN MySQL\u7ea610.\nB\uff09 DEX_LENGTH\uff09 DEX_LENGTH\uff09 37\u500d\n\u5b9e\u9645\u78c1\u76d8\u5360\u7528 2.5\uff08/data/pingkai/mysql/tes 2.4\uff08/tidb-data/tikv-20160\uff09 \u57fa\u672c\u6301\u5e73 \uff08GB\uff09 t_db\uff09\n\u903b\u8f91\u5927\u5c0f\u538b\u7f29\u6bd4\u8d8510\u500d\uff0c\u6d77\u91cf \u6838\u5fc3\u4f18\u52bf \u65e0\u989d\u5916\u538b\u7f29\u5f00\u9500\uff0c\u8bfb\u5199\u6027\u80fd\u76f4\u63a5 TiDB\u5360\u4f18 \u5b58\u50a8\u6210\u672c\u4f4e"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2. 8\u7ebf\u7a0b\u6838\u5fc3\u573a\u666f\u6027\u80fd\u5bf9\u6bd4\uff08\u57fa\u7840\u5e76\u53d1\u80fd\u529b\uff09\n95%\u5ef6\u8fdf\uff08m \u6d4b\u8bd5\u573a\u666f \u6570\u636e\u5e93 \u5e73\u5747TPS \u5e73\u5747QPS \u4f18\u52bf\u65b9 s\uff09\nMySQL 8.0.4 OLTP\u6df7\u5408\u8bfb\u5199 335.15 6703.05 57.87 MySQL 2\nOLTP\u6df7\u5408\u8bfb\u5199 TiDB 174.93 3498.59 87.56 MySQL\n\u5355\u8868\u70b9\u67e5\u8be2\uff08\u4e3b MySQL 8.0.4 77988.8 77988.8 MySQL\uff08\u8d8510 0.14 \u952e\uff09 2 4 4 \u500d\uff09\n\u5355\u8868\u70b9\u67e5\u8be2\uff08\u4e3b TiDB 7652.53 7652.53 2.48 MySQL \u952e\uff09\nMySQL 8.0.4 \u7d22\u5f15\u66f4\u65b0\uff08\u5b57\u6bb5k\uff09 848.21 848.21 25.28 TiDB\uff08\u7565\u4f18\uff09 2\n\u7d22\u5f15\u66f4\u65b0\uff08\u5b57\u6bb5k\uff09 TiDB 868.52 868.52 21.50 TiDB\n3. \u5e76\u53d1\u68af\u5ea6\u6027\u80fd\u5bf9\u6bd4\uff08\u6269\u5c55\u6027\u4e0e\u6297\u538b\u529b\uff09\n\u5e76\u53d1\u7ebf\u7a0b\u6570 \u6570\u636e\u5e93 \u5e73\u5747TPS 95%\u5ef6\u8fdf\uff08ms\uff09 \u6027\u80fd\u8d8b\u52bf\n8 MySQL 8.0.42 335.15 57.87 \u5ef6\u8fdf\u4f4e\uff0c\u541e\u5410\u7a33\u5b9a\n8 TiDB 174.93 87.56 \u541e\u5410\u7ea6\u4e3aMySQL\u768452%\n24 MySQL 8.0.42 624.25 71.83 TPS\u63d0\u534786%\uff0c\u5ef6\u8fdf\u589e\u957f24%\n24 TiDB 198.98 176.73 TPS\u63d0\u534714%\uff0c\u5ef6\u8fdf\u589e\u957f102%\n36 MySQL 8.0.42 703.06 95.81 TPS\u518d\u63d0\u534713%\uff0c\u5ef6\u8fdf\u53ef\u63a7\n36 TiDB 195.72 277.21 TPS\u5fae\u964d1.6%\uff0c\u5ef6\u8fdf\u9aa4\u589e57%\n55 MySQL 8.0.42 768.09 150.29 TPS\u6301\u7eed\u63d0\u53479%\uff0c\u5ef6\u8fdf\u53ef\u63a5\u53d7\n55 TiDB 188.83 419.45 TPS\u964d3.5%\uff0c\u5ef6\u8fdf\u8d85400ms\n\u56db\u3001\u6027\u80fd\u5dee\u5f02\u4e0e\u9009\u578b\u5efa\u8bae\n1. \u6838\u5fc3\u6027\u80fd\u5dee\u5f02\u603b\u7ed3\n\u4ece\u6d4b\u8bd5\u6570\u636e\u53ef\u6e05\u6670\u770b\u51fa\uff0cMySQL 8.0.42\u4e0eTiDB\u7684\u4f18\u52bf\u573a\u666f\u5448\u73b0\u663e\u8457\u5206\u5316\uff0c\u672c\u8d28\u662f\u201c\u5355\u673a\u67b6\n\u6784\u201d\u4e0e\u201c\u5206\u5e03\u5f0f\u67b6\u6784\u201d\u7684\u8bbe\u8ba1\u76ee\u6807\u5dee\u5f02\uff1a\n\uff081\uff09MySQL 8.0.42\uff1a\u5355\u673a\u6027\u80fd\u5929\u82b1\u677f\uff0c\u4f4e\u5ef6\u8fdf\u573a\u666f\u9996\u9009\n\u4f18\u52bf\u7a81\u51fa \uff1a\u5728OLTP\u6df7\u5408\u8bfb\u5199\u3001\u5355\u8868\u70b9\u67e5\u8be2\u573a\u666f\u4e0b\uff0cTPS/QPS\u5747\u8fdc\u8d85TiDB\u2014\u2014\u70b9\u67e5\u8be2QPS\n\u8fbe7.8\u4e07\uff0c95%\u5ef6\u8fdf\u4ec50.14ms\uff0c\u5b8c\u5168\u6ee1\u8db3\u201c\u8ba2\u5355\u8be6\u60c5\u9875\u3001\u7528\u6237\u4fe1\u606f\u67e5\u8be2\u201d\u7b49\u9ad8\u9891\u4f4e\u5ef6\u8fdf\u9700\n\u6c42\uff1b\u968f\u5e76\u53d1\u7ebf\u7a0b\u4ece8\u589e\u81f355\uff0cTPS\u4ece335\u63d0\u5347\u81f3768\uff0c\u589e\u957f129%\uff0c\u4e1495%\u5ef6\u8fdf\u63a7\u5236\u572815\n0ms\u5185\uff0c\u5e76\u53d1\u6269\u5c55\u6027\u4f18\u79c0\u3002\n\u77ed\u677f\u660e\u663e \uff1a\u5b58\u50a8\u6548\u7387\u4f4e\uff0c\u76f8\u540c\u6570\u636e\u91cf\u4e0b\u903b\u8f91\u5927\u5c0f\u662fTiDB\u768410\u500d\uff0c\u957f\u671f\u5b58\u50a8\u6d77\u91cf\u5386\u53f2\u6570\u636e\n\uff08\u59823\u5e74\u8ba2\u5355\uff09\u4f1a\u5bfc\u81f4\u78c1\u76d8\u6210\u672c\u9ad8\u4f01\u3002\n\uff082\uff09TiDB\uff1a\u5206\u5e03\u5f0f\u5b58\u50a8\u4e0e\u7a33\u5b9a\u6027\u4f18\u52bf\uff0c\u6d77\u91cf\u6570\u636e\u573a\u666f\u9002\u914d\n\u6838\u5fc3\u4ef7\u503c \uff1a\u5b58\u50a8\u538b\u7f29\u6bd4\u8d8510\u500d\uff0c\u903b\u8f91\u5927\u5c0f\u4ec5228.88MB\uff0c\u9002\u5408\u9700\u957f\u671f\u7559\u5b58\u6d77\u91cf\u6570\u636e\u7684\u573a\n\u666f\uff1b\u7d22\u5f15\u66f4\u65b0\u6027\u80fd\u7565\u4f18\u4e8eMySQL\uff08TPS868.52 vs 848.21\uff09\uff0c\u5f97\u76ca\u4e8eLSM\u6811\u5bf9\u5199\u5165\u7684\u4f18"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u5316\uff1b\u5ef6\u8fdf\u6ce2\u52a8\u5c0f\uff0c\u6df7\u5408\u8bfb\u5199\u573a\u666f\u65e0\u8d85300ms\u7684\u6781\u7aef\u5ef6\u8fdf\uff08MySQL\u6700\u5927\u5ef6\u8fdf2361ms\uff09\uff0c\n\u4e8b\u52a1\u7a33\u5b9a\u6027\u66f4\u4f18\u3002\n\u6027\u80fd\u74f6\u9888 \uff1a\u5206\u5e03\u5f0f\u67b6\u6784\u5e26\u6765\u7684\u201cRegion\u8def\u7531\u201d\u5f00\u9500\u5bfc\u81f4\u70b9\u67e5\u8be2\u5ef6\u8fdf\u8f83\u9ad8\uff1b\u9ad8\u5e76\u53d1\uff0836\u7ebf\u7a0b\n\u4ee5\u4e0a\uff09\u4e0bTPS\u9971\u548c\u3001\u5ef6\u8fdf\u9aa4\u589e\uff0c\u6297\u5e76\u53d1\u4e0a\u9650\u4f4e\u4e8eMySQL\uff0c\u9002\u5408\u4e2d\u5c0f\u5e76\u53d1\u573a\u666f\u3002\n2. \u4e1a\u52a1\u9009\u578b\u5efa\u8bae\n\uff081\uff09\u4f18\u5148\u9009MySQL 8.0.42\u7684\u573a\u666f\n\u4e2d\u5c0f\u89c4\u6a21\u4e1a\u52a1\uff08\u65e5\u8ba2\u5355\u91cf10\u4e07\u4ee5\u5185\uff09\uff0c\u5bf9\u67e5\u8be2\u5ef6\u8fdf\u654f\u611f\uff08\u5982\u7535\u5546\u5546\u54c1\u8be6\u60c5\u3001\u7528\u6237\u767b\u5f55\uff09\uff1b\n\u9ad8\u5e76\u53d1OLTP\u573a\u666f\uff08\u5982\u79d2\u6740\u3001\u4fc3\u9500\u5cf0\u503c\uff09\uff0c\u9700\u652f\u649150+\u7ebf\u7a0b\u5e76\u53d1\u4e14\u5ef6\u8fdf\u53ef\u63a7\uff1b\n\u5b58\u50a8\u6210\u672c\u4e0d\u654f\u611f\uff0c\u66f4\u5173\u6ce8\u201c\u5373\u5f00\u5373\u7528\u201d\u7684\u7b80\u5355\u67b6\u6784\uff08\u65e0\u9700\u7ef4\u62a4\u5206\u5e03\u5f0f\u96c6\u7fa4\uff09\u3002\n\uff082\uff09\u4f18\u5148\u9009TiDB\u7684\u573a\u666f\n\u6d77\u91cf\u6570\u636e\u5b58\u50a8\uff08\u5982\u5343\u4e07\u7ea7\u8ba2\u5355\u3001\u4ebf\u7ea7\u7528\u6237\u884c\u4e3a\u65e5\u5fd7\uff09\uff0c\u9700\u63a7\u5236\u78c1\u76d8\u6210\u672c\uff1b\n\u9700\u5f39\u6027\u6269\u5c55\u7684\u4e1a\u52a1\uff08\u5982\u4ece\u5355\u8282\u70b9\u6269\u5c55\u81f3\u591a\u8282\u70b9\uff0c\u65e0\u9700\u505c\u673a\uff09\uff1b\n\u5bf9\u4e8b\u52a1\u7a33\u5b9a\u6027\u8981\u6c42\u6781\u9ad8\uff08\u5982\u91d1\u878d\u8f6c\u8d26\u3001\u652f\u4ed8\u5bf9\u8d26\uff09\uff0c\u4e0d\u5141\u8bb8\u6781\u7aef\u5ef6\u8fdf\uff1b\n\u672a\u6765\u53ef\u80fd\u4eceOLTP\u5411HTAP\uff08\u6df7\u5408\u4e8b\u52a1/\u5206\u6790\uff09\u6269\u5c55\uff0c\u9700\u7edf\u4e00\u6570\u636e\u5b58\u50a8\uff08TiDB\u652f\u6301HTA\nP\uff09\u3002\n3. \u6d4b\u8bd5\u5c40\u9650\u6027\u4e0e\u4f18\u5316\u65b9\u5411\n\u672c\u6b21\u6d4b\u8bd5\u4e3a\u5355\u8282\u70b9TiDB\u4e0e\u5355\u673aMySQL\u5bf9\u6bd4\uff0c\u672a\u4f53\u73b0TiDB\u5206\u5e03\u5f0f\u96c6\u7fa4\u7684\u6a2a\u5411\u6269\u5c55\u80fd\u529b\uff08\u5982\u591aT\niKV\u8282\u70b9\u90e8\u7f72\u53ef\u63d0\u5347\u9ad8\u5e76\u53d1\u541e\u5410\uff09\uff1b\u82e5\u9700\u66f4\u5168\u9762\u8bc4\u4f30\uff0c\u53ef\u540e\u7eed\u8865\u5145\u201cTiDB\u96c6\u7fa4\uff083TiKV\u8282\u70b9\uff09v\ns MySQL\u4e3b\u4ece\u67b6\u6784\u201d\u7684\u5bf9\u6bd4\u6d4b\u8bd5\uff0c\u8fdb\u4e00\u6b65\u9a8c\u8bc1\u5206\u5e03\u5f0f\u67b6\u6784\u5728\u9ad8\u53ef\u7528\u3001\u6269\u5c55\u6027\u4e0a\u7684\u4f18\u52bf\u3002\n\u603b\u7ed3\u4e0e\u5c55\u671b\n\u901a\u8fc7\u4ee5\u4e0a\u5168\u65b9\u4f4d\u7684\u6d4b\u8bd5\u5bf9\u6bd4\uff0c\u6211\u4eec\u53ef\u4ee5\u5f97\u51fa\u4ee5\u4e0b\u7ed3\u8bba\uff1a\n\u4f20\u7edf\u4f18\u52bf\u9886\u57df\uff0cMySQL \u8868\u73b0\u5f3a\u52b2\uff1a\u5728\u7ecf\u5178\u7684 OLTP \u6df7\u5408\u8bfb\u5199\u3001\u5c24\u5176\u662f\u8d85\u9ad8\u5e76\u53d1\u7684\u4e3b\u952e\u70b9\u67e5\n\u8be2\u573a\u666f\u4e0b\uff0c\u5355\u673a MySQL 8.0 \u5c55\u73b0\u4e86\u538b\u5012\u6027\u7684\u6027\u80fd\u4f18\u52bf\u3002\u5176\u6210\u719f\u7684 InnoDB \u5b58\u50a8\u5f15\u64ce\u3001\u7f13\u51b2\n\u6c60\u7ba1\u7406\u4ee5\u53ca\u5728\u672c\u673a\u4e0a\u7684\u4f4e\u5ef6\u8fdf\u901a\u4fe1\uff0c\u4f7f\u5176\u5728\u5904\u7406\u8fd9\u79cd\u538b\u529b\u65f6\u5f97\u5fc3\u5e94\u624b\u3002\u5bf9\u4e8e\u4e1a\u52a1\u6a21\u578b\u4ee5\u7b80\u5355\n\u8bfb\u5199\u4e3a\u4e3b\u7684\u4f20\u7edf\u5e94\u7528\uff0cMySQL \u4f9d\u7136\u662f\u53ef\u9760\u4e14\u9ad8\u6027\u80fd\u7684\u9009\u62e9\u3002\nTiDB \u7684\u5b9a\u4f4d\u4e0e\u4f18\u52bf\uff1a\u672c\u6b21\u6d4b\u8bd5\u4e2d\uff0cTiDB \u5728\u5355\u8282\u70b9\u90e8\u7f72\u4e0b\u5e76\u672a\u5728\u6027\u80fd\u4e0a\u8d85\u8d8a MySQL\u3002\u8fd9\u6070\n\u6070\u8bf4\u660e\u4e86 TiDB \u7684\u6838\u5fc3\u4ef7\u503c\u4e0d\u5728\u4e8e\u66ff\u4ee3\u5355\u673a MySQL \u8ffd\u6c42\u6781\u81f4\u7684\u5355\u70b9\u6027\u80fd\uff0c\u800c\u5728\u4e8e\u5176\u5929\u751f\u7684\n\u5206\u5e03\u5f0f\u67b6\u6784\u6240\u5e26\u6765\u7684\u6269\u5c55\u6027\u3001\u9ad8\u53ef\u7528\u6027\u548c\u5927\u6570\u636e\u5bb9\u91cf\u5904\u7406\u80fd\u529b\u3002\u5176\u7d22\u5f15\u66f4\u65b0\u6027\u80fd\u4e0e MySQL\n\u6301\u5e73\uff0c\u4e5f\u8bc1\u660e\u4e86\u5176\u5b58\u50a8\u5f15\u64ce\u7684\u7a33\u5b9a\u6027\u3002\u6d4b\u8bd5\u4e2d\u9047\u5230\u7684\u9ad8\u5e76\u53d1\u8fde\u63a5\u95ee\u9898\uff0c\u4e5f\u63d0\u793a\u6211\u4eec\u9700\u8981\u4e3a Ti\nDB \u8fdb\u884c\u66f4\u9488\u5bf9\u6027\u7684\u53c2\u6570\u8c03\u4f18\uff08\u5982\u8fde\u63a5\u6c60\u3001\u5185\u5b58\u53c2\u6570\u7b49\uff09\u3002\n\u5982\u4f55\u9009\u62e9\uff1f\u53d6\u51b3\u4e8e\u4e1a\u52a1\u573a\u666f\uff1a\n\u5982\u679c\u4f60\u7684\u4e1a\u52a1\u662f\u4f20\u7edf\u7684\u5355\u4f53\u5e94\u7528\uff0c\u6570\u636e\u91cf\u5728 TB \u7ea7\u4ee5\u4e0b\uff0c\u4e14\u5bf9\u6781\u81f4\u7684\u4e8b\u52a1\u6027\u80fd\u548c\u4f4e\u5ef6\u8fdf\u6709\u5f88\n\u9ad8\u8981\u6c42\uff0cMySQL 8.0 \u662f\u66f4\u4f18\u7684\u9009\u62e9\u3002\n\u5982\u679c\u4f60\u7684\u4e1a\u52a1\u6b63\u5728\u5feb\u901f\u53d1\u5c55\uff0c\u9762\u4e34\u5927\u6570\u636e\u91cf\uff08TB+\uff09\u3001\u9ad8\u5e76\u53d1\u6269\u5c55\u3001\u5b9e\u65f6 HTAP \u5206\u6790\u6216\u8005\u5bf9\n\u9ad8\u53ef\u7528\u6027\u6709\u5f3a\u70c8\u8981\u6c42\uff0c\u90a3\u4e48 TiDB \u7684\u5206\u5e03\u5f0f\u67b6\u6784\u4f18\u52bf\u5c06\u8fdc\u8fdc\u8d85\u8d8a\u672c\u6b21\u6d4b\u8bd5\u6240\u5c55\u73b0\u7684\u6027\u80fd\u5dee\n\u5f02\u3002\u5b83\u5141\u8bb8\u4f60\u901a\u8fc7\u589e\u52a0\u8282\u70b9\u6765\u7ebf\u6027\u63d0\u5347\u6574\u4f53\u96c6\u7fa4\u80fd\u529b\uff0c\u8fd9\u662f\u5355\u673a MySQL \u65e0\u6cd5\u5b9e\u73b0\u7684\u3002\n\u5c55\u671b\uff1a\u672c\u6b21\u6d4b\u8bd5\u4ec5\u5728\u5355\u8282\u70b9\u73af\u5883\u4e0b\u8fdb\u884c\uff0c\u672a\u80fd\u4f53\u73b0 TiDB \u4f5c\u4e3a\u5206\u5e03\u5f0f\u6570\u636e\u5e93\u7684\u771f\u6b63\u5b9e\u529b\u3002\u672a\n\u6765\u7684\u6d4b\u8bd5\u53ef\u4ee5\u8fdb\u4e00\u6b65\u6df1\u5165\uff1a"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "\u5206\u5e03\u5f0f\u6027\u80fd\u6d4b\u8bd5\uff1a\u6784\u5efa TiDB \u591a\u8282\u70b9\u96c6\u7fa4\uff0c\u6d4b\u8bd5\u5176\u6c34\u5e73\u6269\u5c55\u80fd\u529b\u3002\n\u9ad8\u53ef\u7528\u6d4b\u8bd5\uff1a\u6a21\u62df\u8282\u70b9\u6545\u969c\uff0c\u9a8c\u8bc1\u5176\u65e0\u635f\u81ea\u52a8\u6545\u969c\u8f6c\u79fb\u80fd\u529b\u3002\nHTAP \u573a\u666f\u6d4b\u8bd5\uff1a\u5229\u7528 TiFlash \u5217\u5b58\u5f15\u64ce\uff0c\u6d4b\u8bd5\u5728\u6df7\u5408\u8d1f\u8f7d\u4e0b\u7684\u8868\u73b0\u3002\n\u5927\u6570\u636e\u91cf\u6d4b\u8bd5\uff1a\u5bfc\u5165\u767eTB\u7ea7\u522b\u6570\u636e\uff0c\u6d4b\u8bd5 MySQL \u4e0e TiDB \u7684\u53ef\u7528\u6027\u5dee\u5f02\u3002\n\u603b\u4e4b\uff0c\u6ca1\u6709\u6700\u597d\u7684\u6570\u636e\u5e93\uff0c\u53ea\u6709\u6700\u5408\u9002\u7684\u6570\u636e\u5e93\u3002\u5e0c\u671b\u672c\u7bc7\u6587\u7ae0\u7684\u6d4b\u8bd5\u6570\u636e\u80fd\u4e3a\u60a8\u52fe\u52d2\u51fa M\nySQL \u4e0e TiDB \u5728\u6027\u80fd\u4e0a\u7684\u6e05\u6670\u8fb9\u754c\uff0c\u52a9\u60a8\u4e3a\u4e1a\u52a1\u627e\u5230\u6700\u4f73\u7684\u6280\u672f\u57fa\u77f3\u3002\n\u4f5c\u8005\u6ce8 \uff1a\n\u2014\u2014\u672c\u6587\u6240\u6709\u64cd\u4f5c\u53ca\u6d4b\u8bd5\u5747\u57fa\u4e8e TEM \u654f\u6377\u6a21\u5f0f\u81ea\u52a8\u5316\u90e8\u7f72 TiDB-v7.1.8-5.2-20250630 \u548c MySQ\nL 8.0.42\u7248\u672c\u5b8c\u6210\u3002\u8bf7\u6ce8\u610f TiDB-v7.1.8 \u548cMySQL 8.0.42 \u7248\u672c\u5904\u4e8e\u6301\u7eed\u8fed\u4ee3\u4e2d\uff0c\u90e8\u5206\u8bed\u6cd5\u6216\u529f\u80fd\n\u53ef\u80fd\u968f\u66f4\u65b0\u53d1\u751f\u53d8\u5316\uff0c\u8bf7\u4ee5 TiDB \u5b98\u65b9\u6587\u6863\u6700\u65b0\u5185\u5bb9\u4e3a\u51c6\u3002\n\u2014\u2014\u4ee5\u4e0a\u4ec5\u4e3a\u4e2a\u4eba\u601d\u8003\u4e0e\u5efa\u8bae\uff0c\u4e0d\u4ee3\u8868\u884c\u4e1a\u666e\u9002\u89c2\u70b9\u3002\u4ee5\u4e0a\u6240\u6709\u64cd\u4f5c\u5747\u9700\u5728\u5177\u5907\u8db3\u591f\u6743\u9650\u7684\u73af\u5883\u4e0b\u6267\n\u884c\uff0c\u6d89\u53ca\u751f\u4ea7\u73af\u5883\u65f6\u8bf7\u63d0\u524d\u505a\u597d\u5907\u4efd\u4e0e\u6d4b\u8bd5\u3002\u6587\u4e2d\u6848\u4f8b\u4e0e\u601d\u8def\u4ec5\u4f9b\u53c2\u8003\uff0c\u82e5\u4e0e\u5b9e\u9645\u60c5\u51b5\u5de7\u5408\uff0c\u7eaf\u5c5e\n\u65e0\u610f\u3002\u671f\u5f85\u4e0e\u5404\u4f4d\u4ece\u4e1a\u8005\u5171\u540c\u63a2\u8ba8\u66f4\u591a\u53ef\u80fd\uff01\n\u58a8\u529b\u8ba1\u5212 \u6570\u636e\u5e93\u5b9e\u64cd tidb\u6570\u636e\u5e93 tidb \u654f\u6377\u6a21\u5f0f tidb\u7b2c\u56db\u5c4a\u5f81\u6587-\u8fd0\u7ef4\u5f00\u53d1\u4e4b\u65c5\n\u6700\u540e\u4fee\u6539\u65f6\u95f4\uff1a2025-09-22 09:49:06\n\u300c\u559c\u6b22\u8fd9\u7bc7\u6587\u7ae0\uff0c\u60a8\u7684\u5173\u6ce8\u548c\u8d5e\u8d4f\u662f\u7ed9\u4f5c\u8005\u6700\u597d\u7684\u9f13\u52b1\u300d\n\u5173\u6ce8\u4f5c\u8005 \u70b9\u8d5e\n\u3010\u7248\u6743\u58f0\u660e\u3011\u672c\u6587\u4e3a\u58a8\u5929\u8f6e\u7528\u6237\u539f\u521b\u5185\u5bb9\uff0c\u8f6c\u8f7d\u65f6\u5fc5\u987b\u6807\u6ce8\u6587\u7ae0\u7684\u6765\u6e90\uff08\u58a8\u5929\u8f6e\uff09\uff0c\u6587\u7ae0\u94fe\u63a5\uff0c\u6587\u7ae0\u4f5c\u8005\u7b49\u57fa\u672c\u4fe1\u606f\uff0c\u5426\u5219\u4f5c\u8005\n\u548c\u58a8\u5929\u8f6e\u6709\u6743\u8ffd\u7a76\u8d23\u4efb\u3002\u5982\u679c\u60a8\u53d1\u73b0\u58a8\u5929\u8f6e\u4e2d\u6709\u6d89\u5acc\u6284\u88ad\u6216\u8005\u4fb5\u6743\u7684\u5185\u5bb9\uff0c\u6b22\u8fce\u53d1\u9001\u90ae\u4ef6\u81f3\uff1acontact@modb.pro\u8fdb\u884c\u4e3e\u62a5\uff0c\u5e76\n\u63d0\u4f9b\u76f8\u5173\u8bc1\u636e\uff0c\u4e00\u7ecf\u67e5\u5b9e\uff0c\u58a8\u5929\u8f6e\u5c06\u7acb\u523b\u5220\u9664\u76f8\u5173\u5185\u5bb9\u3002\n\u6587\u7ae0\u88ab\u4ee5\u4e0b\u5408\u8f91\u6536\u5f55\n\u58a8\u5929\u8f6e\u300c\u5b9e\u64cd\u770b\u6211\u7684\u300d\u5f81\u6587-\u6570\u636e\u5e93\u5b9e\u64cd\u4f18\u8d28\u6587\u7ae0\u5408\u8f91\uff08\u517169\n\u7bc7\uff09 \u6536\u85cf\u5408\u8f91\n\u672c\u5408\u8f91\u6c47\u603b\u4e86\u300c\u5b9e\u64cd\u770b\u6211\u7684\u300d\u6570\u636e\u5e93\u4e3b\u9898\u5f81\u6587\u6d3b\u52a8\u4e2d\u201c\u6700\u4f73\u5b9e\u64cd\u5956\u201d \u6587\u7ae0\u53ca\u90e8\u5206\u9ad8\n\u9605\u8bfb\u91cf\u5408\u683c\u6587\u7ae0\uff0c\u6b22\u8fce\u53c2\u8003~\n\u8bc4\u8bba\njieguo\n\u5355\u673a\u786c\u4ef6\u4ec0\u4e48\u914d\u7f6e\uff1fcpu,mem,disk\uff08\u673a\u68b0\u8fd8\u662f\u56fa\u6001\uff1f\uff09\n1\u6708\u524d \u70b9\u8d5e \u8bc4\u8bba\n\u76f8\u5173\u9605\u8bfb\nPostgreSQL Patroni + Consul \u9ad8\u53ef\u7528\n\u9ec4\u5c71\u8c37 194\u6b21\u9605\u8bfb 2025-10-27 21:12:12"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "16\u4e2a\u77e5\u8bc6\u70b9\uff0c\u5b66\u4f1aMySQL\u6570\u636e\u5e93Binary Log Files !\n\u9648\u4e3e\u8d85 173\u6b21\u9605\u8bfb 2025-10-12 19:08:39\nMySQL\u542f\u7528\u900f\u660e\u9875\u538b\u7f29\uff0c\u5bfc\u81f4\u5b95\u673a\uff01\n\u9648\u4e3e\u8d85 144\u6b21\u9605\u8bfb 2025-11-09 15:13:16\n\u6570\u636e\u5e93\u4e8b\u52a1\u539f\u5b50\u6027\uff0c\u5982\u7406\u89e3\u6709\u8bef\uff0c\u53ef\u80fd\u4f1a\u4e22\u6570\u636e\uff01\n\u9648\u4e3e\u8d85 133\u6b21\u9605\u8bfb 2025-10-25 10:48:21\nsysbench \u5b9e\u6d4b\uff1aTiDB 7.1.8 \u4e24\u526f\u672c\u7684 OLTP/OLAP \u89e3\u6790\nshunwah\u24c2\ufe0f 116\u6b21\u9605\u8bfb 2025-10-27 21:38:26\nYashanDB \u90e8\u7f72\u592a\u590d\u6742\uff1f10\u5206\u949f\u641e\u5b9a Docker \u4f53\u9a8c\u653b\u7565\nshunwah\u24c2\ufe0f 116\u6b21\u9605\u8bfb 2025-10-23 09:24:17\n\u901a\u8fc7sql\u65e5\u5fd7\uff0c\u5206\u6790\u8fbe\u68a6\u6570\u636e\u5e93dexp\u5bfc\u51fa\u8868\u65f6\uff0c\u6267\u884c\u4e86\u54ea\u4e9bSQL?\n\u9648\u4e3e\u8d85 86\u6b21\u9605\u8bfb 2025-10-17 20:53:35\n\u4f7f\u7528 BR \u5907\u4efd TiDB \u5230 AWS S3 \u5b58\u50a8\nLucifer\u4e09\u601d\u800c\u540e\u884c 69\u6b21\u9605\u8bfb 2025-11-04 13:13:46\n\u3010TiDB \u4f53\u9a8c\u5b98\u5b9e\u6d4b\u3011 TiDB v7.1.8 \u591a\u8bed\u6cd5\u517c\u5bb9MySQL \u591a\u573a\u666f\u9a8c\u8bc1\nshunwah\u24c2\ufe0f 60\u6b21\u9605\u8bfb 2025-11-01 20:06:30\nTiDB \u5907\u4efd\u4e0e\u6062\u590d\u6574\u7406\nLucifer\u4e09\u601d\u800c\u540e\u884c 46\u6b21\u9605\u8bfb 2025-11-04 11:50:38"
+                    }
+                ]
+            },
+            "bbox": [
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ]
+]
