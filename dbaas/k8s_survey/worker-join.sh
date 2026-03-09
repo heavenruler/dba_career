@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 LOG_FILE="/var/log/worker-join.log"
 
-JOIN_CMD='kubeadm join 172.24.40.17:6443 --token 7gsa30.w8tr34bix6g9vm4z --discovery-token-ca-cert-hash sha256:36893d0f89e30289af4e9e5be753d922dc3dd045d85e40e84adeb36c4d542bc1'
+JOIN_CMD='kubeadm join 172.24.40.17:6443 --token {FIXME} --discovery-token-ca-cert-hash sha256:{FIXME}'
 
 log() {
   echo "[$(date '+%F %T')] $*" | tee -a "$LOG_FILE"
