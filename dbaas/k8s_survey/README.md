@@ -9,7 +9,7 @@ Nodes:
 l-k8s-labroom-1 = 172.24.40.17
 l-k8s-labroom-2 = 172.24.40.18
 l-k8s-labroom-3 = 172.24.40.19
-l-k8s-labroom-4 = 172.24.40.20a
+l-k8s-labroom-4 = 172.24.40.20
 
 # 四台都先做
 /root/k8s-lab/node-baseline.sh
