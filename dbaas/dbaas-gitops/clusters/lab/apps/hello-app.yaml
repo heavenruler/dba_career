@@ -6,9 +6,9 @@ metadata:
 spec:
   project: dbaas
   source:
-    repoURL: REPLACE_WITH_YOUR_GIT_REPO_URL
-    targetRevision: HEAD
-    path: clusters/lab/namespaces
+    repoURL: https://github.com/heavenruler/dba_career.git
+    targetRevision: master
+    path: dbaas/dbaas-gitops/clusters/lab/namespaces
   destination:
     server: https://kubernetes.default.svc
     namespace: dbaas-system
