@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: dbaas
+  namespace: argocd
+spec:
+  description: DBaaS lab GitOps project
+  sourceRepos:
+    - '*'
+  destinations:
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+    - namespace: dbaas-system
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
