@@ -1,73 +1,94 @@
-# DBaaS Program
+# DBaaS Program Proposal
 
 ---
 
-## 1. 目標與範圍
+## 1. 計畫目標與範圍
 
-### 建置目標
+### 計畫目標
 
-DBaaS 平台主要解決三個核心問題：
+本計畫擬建立企業級 DBaaS 平台，優先解決下列三項核心議題：
 
-1. **部署速度**
-   - DB Provision：3 days → 30 minutes
-2. **成本治理**
-   - DB 規格標準化
-   - 避免過度配置
-3. **多機房策略**
-   - Active / Passive 架構
-   - 標準化 HA / DR 模式
+1. **交付效率**
+   - 將 DB Provision Lead Time 由 3 days 降至 30 minutes 內
+2. **資源與成本治理**
+   - 建立規格標準化與 Quota 控制機制
+   - 降低 over-provision 與閒置資源
+3. **高可用與災難復原標準化**
+   - 建立 Active / Passive 與標準 HA / DR 模式
+   - 降低各團隊自行維運造成的架構差異
 
 ### 服務邊界
 
-DBaaS 提供資料庫基礎平台能力，並整合資料治理工具。 {待調整, 太高大上了}
+DBaaS 提供標準化資料庫申請、建置、備份、監控、擴縮、升級與下線流程，不負責應用程式邏輯、ORM 設計與商業資料模型設計。
 
-平台能力包含：
+平台交付能力如下：
 
 | 能力 | 說明 |
 |---|---|
-| Schema Migration | RD 透過平台工具執行（EX: Bytebase），DBA 協作 |
-| SQL Review / Governance | SQL 審核與治理 |
-| DB 帳號管理 | RD 使用 CRUD 帳號，DBA 保留 ALL 權限 |
-| Data Migration | DBA 執行（CDC / AWS Glue） |
-| Backup 管理 | 統一備份策略與保留政策 |
-| Replication / DR | 跨機房資料同步 |
-| DB 升級治理 | DBA 負責 Engine / Major Version 升級 |
+| DB Provision | 透過標準規格與自動化流程建立 DB Instance / Cluster |
+| Schema Migration | App Team 透過平台工具執行，DBA 依風險等級協作或審核 |
+| SQL Review / Governance | SQL 審核、變更治理與稽核追蹤 |
+| DB 帳號管理 | 提供標準角色與帳號生命週期管理 |
+| DB 升級治理 | 由 DBA 主責 Engine / Major Version 升級 |
+| Observability | 自動掛載監控、告警、審計與基礎報表 |
+| Data Migration | 提供 CDC / 批次搬移 / 切換治理流程 |
+| Backup 管理 | 統一備份策略、保留政策與還原演練 |
+| Replication / DR | 提供標準化資料同步與 DR 架構 |
+
+不在本期範圍：
+
+- 自由選版與高度客製化 DB Engine 參數服務
+- 非標準 Engine 的全面納管
+- 應用程式端 SQL 效能調校代工
+- 所有舊系統一次性遷移至 DBaaS
 
 ### DB Account Model
 
 | Role | 權限 |
 |---|---|
-| RD | CRUD |
-| DBA | ALL PRIVILEGES |
+| App Team | 應用所需 CRUD 與限定物件權限 |
+| DBA | 管理、維運、備份、還原、治理相關高權限 |
+
+原則：
+
+- 正式環境不建議長期使用高權限帳號作為應用連線帳號
+- 權限採角色化模型管理，避免以 `ALL PRIVILEGES` 作為常態設定
 
 ### DB Migration Strategy
 
-主要資料遷移方式：
+主要資料遷移策略如下：
 
-- CDC
-- AWS Glue
-- pt-online-schema-change（pt-osc）
+- 線上資料同步：CDC
+- 批次資料搬移：AWS Glue
+- 線上表結構調整：`pt-online-schema-change`
+
+所有遷移作業需具備：
+
+- Migration Plan
+- Cutover Plan
+- Rollback Plan
+- Data Validation 機制
 
 ### 納管對象
 
-分階段 DBaaS 納管資料庫：
+本期分階段納管下列資料庫與組件：
 
 - MySQL
 - ProxySQL
 - Redis
 - Redis Sentinel
-- TiDB
 
 ### 不納管對象
 
-現階段不納管：
+現階段不納入本期範圍：
 
 - PostgreSQL
 - MongoDB
+- TiDB
 
 ### 適用環境
 
-DBaaS 適用以下環境：
+DBaaS 適用以下環境，並依環境提供不同治理強度：
 
 - dev
 - staging
@@ -76,22 +97,22 @@ DBaaS 適用以下環境：
 
 ### 成功定義
 
-DBaaS 成功指標：
+本計畫成功定義如下：
 
 - DB Provision 時間 < 30 min
-- DB 架構標準化
-- HA 架構統一
-- DB 資源成本可治理
+- DB Service Catalog 標準化並可重複交付
+- HA / DR 架構具一致治理模型
+- DB 資源使用、備份與成本可被量測與治理
 
 ---
 
-# 2. Service Catalog
+# 2. 服務目錄與標準規格
 
-## Stateful / Stateless
+## 平台納管原則
 
 DBaaS 僅納管 **Stateful Service**。
 
-ProxySQL 作為 **DB HA 架構組件**。
+Redis Sentinel 與 ProxySQL 作為 **DB HA 架構組件** 使用，不列為獨立 DB 服務型號，也不單獨對外提供為一般應用服務。
 
 ---
 
@@ -101,22 +122,24 @@ ProxySQL 作為 **DB HA 架構組件**。
 |---|---|
 | MySQL | OLTP |
 | Redis | Cache |
-| Redis Sentinel | HA Control |
-| TiDB | Distributed SQL |
-| ProxySQL | Proxy |
 
 ---
 
 ## DB Service Catalog
 
-| Service ID | Architecture |
-|---|---|
-| mysql-single | MySQL Standalone |
-| mysql-ha1 | MySQL Replication + ProxySQL |
-| mysql-ha2 | MySQL Galera Cluster + ProxySQL |
-| redis-single | Redis Standalone |
-| redis-ha | Redis + Sentinel |
-| tidb-cluster | TiDB |
+| Service ID | Architecture | 適用場景 | 限制 |
+|---|---|---|---|
+| mysql-single | MySQL Standalone | dev、低風險非核心服務 | 不提供 HA 保證，不適用核心 prod |
+| mysql-ha1 | MySQL Replication + ProxySQL | 一般 OLTP、標準 prod | 需接受 failover 切換時間 |
+| mysql-ha2 | MySQL Galera Cluster + ProxySQL | 高可用寫入需求場景 | 架構複雜度與運維成本較高 |
+| redis-single | Redis Standalone | cache、dev、非關鍵場景 | 無 HA，不適用核心 cache |
+| redis-ha | Redis + Sentinel | 標準快取高可用場景 | 對網路與 Sentinel 健康度敏感 |
+
+原則：
+
+- 產品團隊優先從標準服務型號中選擇
+- 非標準架構需走例外申請流程
+- 不同 Service ID 對應不同 SLO 與治理強度
 
 ---
 
@@ -126,8 +149,6 @@ ProxySQL 作為 **DB HA 架構組件**。
 |---|---|
 | MySQL | Replication / Galera |
 | Redis | Sentinel |
-| TiDB | Native HA |
-| ProxySQL | Cluster |
 
 ---
 
@@ -137,7 +158,6 @@ ProxySQL 作為 **DB HA 架構組件**。
 |---|---|
 | MySQL | Read Replica |
 | Redis | Sentinel + Replica |
-| TiDB | Scale-out |
 
 ---
 
@@ -147,27 +167,40 @@ ProxySQL 作為 **DB HA 架構組件**。
 |---|---|
 | MySQL | 8.4 LTS |
 | Redis | 7.1 |
-| TiDB | 8.5 LTS |
 
-DB 版本 **不可由產品端自行選擇**。
+原則：
+
+- DB 版本由平台統一維護，不開放產品端自由選版
+- LTS 版本優先，降低升級碎片化風險
+- Major Upgrade 需納入年度升級計畫與驗證流程
 
 ---
 
 ## Spec 標準化
 
-DBaaS 提供標準規格：
+DBaaS 提供標準規格如下：
 
-| Spec | CPU | Memory |
-|---|---|---|
-| small | 2 | 4G |
-| medium | 4 | 8G |
-| large | 8 | 16G |
+| Spec | CPU | Memory | 適用場景 |
+|---|---|---|---|
+| small | 2 | 4Gi | dev、staging、低流量服務 |
+| medium | 4 | 8Gi | 一般業務服務 |
+| large | 8 | 16Gi | 核心業務或較高併發場景 |
+
+原則：
+
+- 先以標準規格交付，再依監控數據進行升級
+- prod 原則上不得低於經評估後的最小安全規格
 
 ---
 
 ## Storage Policy
 
-DB Storage 統一使用：standard-ssd
+DB Storage 原則統一使用 `standard-ssd`，避免因儲存型號過多造成治理成本上升。
+
+補充：
+
+- 關鍵服務可依例外流程申請更高等級 storage class
+- Storage 擴容僅允許向上調整，不支援縮容
 
 ---
 
@@ -178,16 +211,19 @@ DB Storage 統一使用：standard-ssd
 | dev | daily |
 | staging | daily |
 | prod | daily |
-| dr | none |
+| dr | 依資料同步架構決定 |
 
-Retention Policy：per day
-Backup Storage：S3 Object Storage
+補充原則：
+
+- 備份資料統一存放於 S3 Object Storage
+- Retention Policy 需依環境與資料等級細分，不建議僅以 `per day` 表示
+- 若 DR 環境以 replication 為主，仍需定義是否保留獨立備份
 
 ---
 
 ## Resource Quota Policy
 
-Quota 依 Spec 等級對應。
+Quota 依租戶或 namespace 管理，用於控制整體資源消耗。
 
 Example：
 
@@ -209,11 +245,11 @@ Spec 與 Quota 關係：
 
 ---
 
-# 3. DBaaS Workflow
+# 3. 申請與生命週期流程
 
 ## DB Lifecycle
 
-```
+```text
 Request
 → Provision
 → Operate (Day-2 Operation)
@@ -227,12 +263,13 @@ Request
 
 ---
 
-## 端到端 DBaaS 流程
+## 端到端流程
 
-```
+```text
 產品團隊提出申請
-→ Git Action 觸發 workflow
-→ 平台檢查是否符合標準規格
+→ CI Workflow 觸發
+→ 平台檢查是否符合標準規格與配額
+→ 必要時進入例外審批
 → IaC / GitOps / Operator 建置
 → DB 建置完成
 → 自動掛載監控 / 備份 / 告警
@@ -244,63 +281,90 @@ Request
 
 ## Provision
 
-透過 **Git Action** 建立 DB。
+DB Provision 透過 `CI Workflow` 與 `GitOps` 流程執行。
 
 流程：
 
-```
+```text
 提交 DB config
-→ Git Action
+→ CI Workflow
+→ Policy / Quota Check
 → IaC Deploy
 → Operator 建置 DB
 → Proxy / Endpoint 建立
+→ Monitoring / Backup / Alert 掛載
+→ 交付使用資訊
 ```
+
+交付輸出至少包含：
+
+- DB endpoint
+- 帳號資訊或帳號申請方式
+- 使用規格與容量資訊
+- 備份與監控文件入口
 
 ---
 
 ## Change
 
-可變更內容 {for now}：
+本期支援的變更項目：
 
 - Schema Migration
+
+補充原則：
+
+- 高風險變更需審批與排程
+- 所有變更需保留可追溯紀錄
 
 ---
 
 ## Scale
 
-支援：
+支援以下擴縮方式：
 
-- CPU / Memory Scale # Spec Upgrade
+- CPU / Memory Scale（Spec Upgrade）
 - Storage Scale
 - Read Replica
+
+原則：
+
+- CPU / Memory 以升級標準規格為主
+- Storage 僅支援向上調整
+- 讀流量壓力優先評估 Read Replica 或快取分流策略
 
 ---
 
 ## Backup / Restore
 
-支援：
+支援項目：
 
-- Daily Backup (phy & login backup)
+- Daily Backup（physical backup / logical backup）
+- 指定時間點前後的 restore 流程
+
+原則：
+
+- 備份可用性需透過還原演練驗證
+- Restore 操作需由 DBA / SRE 依權限流程執行
 
 ---
 
 ## Upgrade
 
-DB 升級方式：
+DB 升級策略：
 
-- DBA 手動操作
-- 藍綠部署
-- RollBack Plan
+- 由 DBA 主責規劃與執行
+- 以藍綠部署或分批升級為優先
+- 升級前需備妥 rollback plan
+- 正式環境升級需先完成 staging 驗證
 
 ---
 
 ## Failover
 
-HA 切換：
+HA 切換模式：
 
 - MySQL Replication Failover
 - Redis Sentinel Failover
-- TiDB Native Failover
 
 ---
 
@@ -308,13 +372,19 @@ HA 切換：
 
 DB 下線流程：
 
-```
+```text
 停止應用
 → 備份
+→ 確認保留期限與責任人
 → DB 下線
 → 保留資料
 → 清理資源
 ```
+
+原則：
+
+- 下線前需確認是否仍有應用連線
+- 下線後需保留 audit record 與資料保留期限
 
 ---
 
@@ -322,7 +392,7 @@ DB 下線流程：
 
 ### MySQL
 
-```
+```text
 mysql-single
 → 建立 HA cluster
 → 資料同步
@@ -333,7 +403,7 @@ mysql-single
 
 ### Redis
 
-```
+```text
 redis-single
 → 建立 Redis + Sentinel
 → 資料同步
@@ -384,10 +454,10 @@ redis-single
 
 | Severity | 說明 | 處理方式 |
 |---|---|---|
-| Sev-1 | prod 全站或核心交易中斷 | SRE 立即接手，DBA / Platform 15 分鐘內加入 |
-| Sev-2 | 單一服務降級、效能明顯異常 | SRE 主導，DBA 30 分鐘內支援 |
-| Sev-3 | 非 prod 異常或可排程處理問題 | 依工單流程排入處理 |
-| Sev-4 | 文件、報表、低風險設定調整 | 納入例行維護 |
+| P0 | prod 全站或核心交易中斷 | SRE 立即接手，DBA / Platform 15 分鐘內加入 |
+| P1 | 單一服務降級、效能明顯異常 | SRE 主導，DBA 30 分鐘內支援 |
+| P2 | 非 prod 異常或可排程處理問題 | 依工單流程排入處理 |
+| P3 | 文件、報表、低風險設定調整 | 納入例行維護 |
 
 升級路徑：
 
@@ -402,7 +472,7 @@ App Team / Monitoring Trigger
 處理原則：
 
 - 以服務恢復優先，再進行根因分析
-- 所有 Sev-1 / Sev-2 事件需產出 postmortem
+- 所有 P0 / P1 事件需產出 postmortem
 - 若涉及資料一致性，需由 DBA 確認後才可恢復寫入
 
 ## Day-2 Operation
@@ -437,7 +507,7 @@ Day-2 維運項目：
 - 以 `Quota` 控制 tenant / namespace 總量
 - prod 需保留至少 20% CPU / Memory 緩衝
 - storage 使用率達 70% 需預警，80% 需提出擴容計畫
-- Replica / TiDB Scale-out 需先確認網路與儲存資源
+- Replica 擴充前需先確認網路與儲存資源
 
 容量檢視頻率：
 
@@ -492,7 +562,6 @@ DBaaS 上線前需驗證平台附加元件的效能影響，至少包含：
 
 - MySQL 強一致 HA 切換仍可能造成短暫寫入中斷
 - Redis Sentinel 對網路抖動較敏感
-- TiDB 對節點資源與網路品質要求較高
 - 大型資料庫還原時間受資料量與 S3 頻寬影響
 - 非標準 SQL 或外掛功能不保證可攜入平台
 
