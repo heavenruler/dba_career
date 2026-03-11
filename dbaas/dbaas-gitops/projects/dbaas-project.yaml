@@ -14,6 +14,8 @@ spec:
       server: https://kubernetes.default.svc
     - namespace: percona-operator
       server: https://kubernetes.default.svc
+    - namespace: mysql-single
+      server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

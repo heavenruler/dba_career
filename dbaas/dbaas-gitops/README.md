@@ -18,10 +18,17 @@ dbaas-gitops/
         kustomization.yaml
         hello-app.yaml
         percona-operator.yaml
+        mysql-single.yaml
       operators/
         percona/
           kustomization.yaml
           namespace.yaml
+      services/
+        mysql-single/
+          kustomization.yaml
+          namespace.yaml
+          secrets.yaml
+          cluster.yaml
 ```
 
 ## 第一步
@@ -37,3 +44,4 @@ dbaas-gitops/
 
 - `percona-operator.yaml` 會讓 Argo CD 佈署 Percona Operator
 - Operator 安裝 namespace 預設為 `percona-operator`
+- `mysql-single.yaml` 會建立最小 MySQL POC
