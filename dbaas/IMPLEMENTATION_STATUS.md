@@ -17,6 +17,7 @@
 | MySQL Operator | done | 使用 `Percona XtraDB Cluster Operator` |
 | mysql-single | done | 單節點 PXC + HAProxy |
 | SQL 驗證 | done | 已完成建庫、建表、寫入與查詢 |
+| MySQL Metrics Exporter | planned | 透過 `mysqld-exporter` 提供 metrics 給 VictoriaMetrics |
 
 ## 目前部署元件
 
@@ -77,6 +78,7 @@ Lab 環境規劃導入：
 
 - `VictoriaMetrics Single` 作為 metrics backend
 - `Grafana` 作為 dashboard 入口
+- `mysqld-exporter` 作為 `mysql-single` metrics exporter
 - 預設 namespace：`monitoring`
 - Lab 對外入口預計：
   - Grafana: `172.24.40.17:30300`
