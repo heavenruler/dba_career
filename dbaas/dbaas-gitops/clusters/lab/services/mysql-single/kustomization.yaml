@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - secrets.yaml
   - cluster.yaml
+  - nodeport-service.yaml

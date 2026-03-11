@@ -29,6 +29,7 @@ dbaas-gitops/
           namespace.yaml
           secrets.yaml
           cluster.yaml
+          nodeport-service.yaml
 ```
 
 ## 第一步
@@ -45,3 +46,4 @@ dbaas-gitops/
 - `percona-operator.yaml` 會讓 Argo CD 佈署 Percona Operator
 - Operator 安裝 namespace 預設為 `percona-operator`
 - `mysql-single.yaml` 會建立最小 MySQL POC
+- `nodeport-service.yaml` 會暴露 Lab MySQL 對外入口 `30306`
