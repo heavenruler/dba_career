@@ -1,0 +1,31 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: percona-webhook-secret-access
+  namespace: percona-operator
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: percona-webhook-secret-access
+  namespace: percona-operator
+subjects:
+  - kind: ServiceAccount
+    name: percona-xtradb-cluster-operator
+    namespace: percona-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: percona-webhook-secret-access
