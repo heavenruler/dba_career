@@ -17,6 +17,11 @@ dbaas-gitops/
       apps/
         kustomization.yaml
         hello-app.yaml
+        percona-operator.yaml
+      operators/
+        percona/
+          kustomization.yaml
+          namespace.yaml
 ```
 
 ## 第一步
@@ -27,3 +32,8 @@ dbaas-gitops/
 
 - Argo CD 應出現 `dbaas-root` 與 `hello-app`
 - 叢集應建立 `dbaas-system` namespace
+
+## 下一步
+
+- `percona-operator.yaml` 會讓 Argo CD 佈署 Percona Operator
+- Operator 安裝 namespace 預設為 `percona-operator`
