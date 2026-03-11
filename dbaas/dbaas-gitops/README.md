@@ -19,6 +19,8 @@ dbaas-gitops/
         hello-app.yaml
         percona-operator.yaml
         mysql-single.yaml
+        victoria-metrics.yaml
+        grafana.yaml
       operators/
         percona/
           kustomization.yaml
@@ -47,3 +49,4 @@ dbaas-gitops/
 - Operator 安裝 namespace 預設為 `percona-operator`
 - `mysql-single.yaml` 會建立最小 MySQL POC
 - `nodeport-service.yaml` 會暴露 Lab MySQL 對外入口 `30306`
+- `victoria-metrics.yaml` 與 `grafana.yaml` 會建立 Lab 監控入口

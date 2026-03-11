@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: victoria-metrics
+  namespace: argocd
+spec:
+  project: dbaas
+  source:
+    repoURL: https://victoriametrics.github.io/helm-charts
+    chart: victoria-metrics-single
+    targetRevision: 0.32.0
+    helm:
+      releaseName: victoria-metrics
+      values: |
+        server:
+          fullnameOverride: victoria-metrics-server
+          retentionPeriod: 7d
+          persistentVolume:
+            enabled: true
+            storageClassName: local-path
+            size: 20Gi
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1
+              memory: 2Gi
+          scrape:
+            enabled: true
+          service:
+            type: NodePort
+            servicePort: 8428
+            nodePort: 30428
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
