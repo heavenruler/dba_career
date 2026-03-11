@@ -42,6 +42,10 @@ spec:
                 jsonData:
                   nodeGraph:
                     enabled: true
+                  serviceMap:
+                    datasourceUid: victoriametrics
+                  tracesToMetrics:
+                    datasourceUid: victoriametrics
         testFramework:
           enabled: false
   destination:
