@@ -70,3 +70,14 @@ mysql -h 172.24.40.17 -P 30306 -uroot -p
 1. 導入 `redis-single` GitOps POC
 2. 補 `backup / restore` 驗證流程
 3. 收斂正式環境 RBAC、Secret 管理與對外入口策略
+
+## 監控規劃
+
+Lab 環境規劃導入：
+
+- `VictoriaMetrics Single` 作為 metrics backend
+- `Grafana` 作為 dashboard 入口
+- 預設 namespace：`monitoring`
+- Lab 對外入口預計：
+  - Grafana: `172.24.40.17:30300`
+  - VictoriaMetrics: `172.24.40.17:30428`
