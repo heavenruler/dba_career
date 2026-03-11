@@ -12,10 +12,6 @@ spec:
     metadata:
       labels:
         app: mysqld-exporter
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9104"
-        prometheus.io/path: /metrics
     spec:
       containers:
         - name: mysqld-exporter
@@ -49,7 +45,7 @@ metadata:
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "9104"
-    prometheus.io/path: /metrics
+    prometheus.io/path: "/metrics"
 spec:
   selector:
     app: mysqld-exporter

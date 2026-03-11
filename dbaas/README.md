@@ -818,6 +818,8 @@ Audit 需留存：
 | MySQL Operator | done | 使用 `Percona XtraDB Cluster Operator` |
 | mysql-single | done | 單節點 PXC + HAProxy |
 | SQL 驗證 | done | 已完成建庫、建表、寫入與查詢 |
+| MySQL Metrics Exporter | done | `mysqld-exporter` 已提供 metrics 給 VictoriaMetrics |
+| VictoriaMetrics Query | done | `mysql_up=1` 查詢已成功 |
 
 ## 目前部署元件
 
@@ -827,6 +829,7 @@ Audit 需留存：
 | Argo CD App | `percona-operator` | `argocd` |
 | Argo CD App | `mysql-single` | `argocd` |
 | DB Cluster | `minimal-cluster` | `mysql-single` |
+| Exporter | `mysqld-exporter` | `mysql-single` |
 
 ## MySQL 存取方式
 
@@ -858,6 +861,20 @@ kubectl run -n mysql-single mysql-client --rm -it --image=mysql:8.0 --restart=Ne
 
 ```bash
 mysql -h 172.24.40.17 -P 30306 -uroot -p
+```
+
+## 監控驗證
+
+已完成以下監控驗證：
+
+- `mysqld-exporter` 已部署於 `mysql-single`
+- `VictoriaMetrics` 已成功抓取 `mysql_up=1`
+- 為避免重複時間序列，目前保留 `service-endpoints` 單一路徑抓取 exporter
+
+查詢範例：
+
+```bash
+curl -s "http://172.24.40.17:30428/api/v1/query?query=mysql_up" | python3 -m json.tool
 ```
 
 ## Lab 限制
