@@ -1,0 +1,91 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: otel-demo
+  namespace: argocd
+spec:
+  project: dbaas
+  source:
+    repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+    chart: opentelemetry-demo
+    targetRevision: 0.40.5
+    helm:
+      releaseName: otel-demo
+      values: |
+        default:
+          env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: "metadata.labels['app.kubernetes.io/component']"
+            - name: OTEL_COLLECTOR_NAME
+              value: alloy-otlp.monitoring
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+        opentelemetry-collector:
+          enabled: false
+        jaeger:
+          enabled: false
+        prometheus:
+          enabled: false
+        grafana:
+          enabled: false
+        opensearch:
+          enabled: false
+        components:
+          frontend-proxy:
+            service:
+              type: NodePort
+              port: 8080
+              nodePort: 30080
+            env:
+              - name: ENVOY_PORT
+                value: "8080"
+              - name: ENVOY_ADDR
+                value: "0.0.0.0"
+              - name: ENVOY_ADMIN_PORT
+                value: "10000"
+              - name: FLAGD_HOST
+                value: flagd
+              - name: FLAGD_PORT
+                value: "8013"
+              - name: FLAGD_UI_HOST
+                value: flagd
+              - name: FLAGD_UI_PORT
+                value: "4000"
+              - name: FRONTEND_HOST
+                value: frontend
+              - name: FRONTEND_PORT
+                value: "8080"
+              - name: GRAFANA_HOST
+                value: grafana.monitoring
+              - name: GRAFANA_PORT
+                value: "3000"
+              - name: IMAGE_PROVIDER_HOST
+                value: image-provider
+              - name: IMAGE_PROVIDER_PORT
+                value: "8081"
+              - name: JAEGER_HOST
+                value: tempo.monitoring
+              - name: JAEGER_UI_PORT
+                value: "3200"
+              - name: LOCUST_WEB_HOST
+                value: load-generator
+              - name: LOCUST_WEB_PORT
+                value: "8089"
+              - name: OTEL_COLLECTOR_HOST
+                value: alloy-otlp.monitoring
+              - name: OTEL_COLLECTOR_PORT_GRPC
+                value: "4317"
+              - name: OTEL_COLLECTOR_PORT_HTTP
+                value: "4318"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: otel-demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
