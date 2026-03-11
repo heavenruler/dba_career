@@ -14,6 +14,8 @@ spec:
       values: |
         adminUser: admin
         adminPassword: admin123456
+        initChownData:
+          enabled: false
         persistence:
           enabled: true
           storageClassName: local-path
