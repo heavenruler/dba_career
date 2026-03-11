@@ -21,9 +21,6 @@ dbaas-gitops/
         mysql-single.yaml
         victoria-metrics.yaml
         grafana.yaml
-        tempo.yaml
-        alloy.yaml
-        otel-demo.yaml
       operators/
         percona/
           kustomization.yaml
@@ -53,4 +50,3 @@ dbaas-gitops/
 - `mysql-single.yaml` 會建立最小 MySQL POC
 - `nodeport-service.yaml` 會暴露 Lab MySQL 對外入口 `30306`
 - `victoria-metrics.yaml` 與 `grafana.yaml` 會建立 Lab 監控入口
-- `tempo.yaml`、`alloy.yaml`、`otel-demo.yaml` 會建立 OTel trace demo 鏈路

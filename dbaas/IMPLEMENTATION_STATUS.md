@@ -86,13 +86,6 @@ Lab 環境規劃導入：
   - Grafana: `172.24.40.17:30300`
   - VictoriaMetrics: `172.24.40.17:30428`
 
-## OpenTelemetry 顯化規劃
-
-- `Tempo` 作為 trace backend
-- `Grafana Alloy` 作為 OTLP receiver 與 telemetry router
-- `opentelemetry-demo` 作為 trace 顯化樣板應用
-- 預設入口：`http://172.24.40.17:30080`
-
 目前已驗證：
 
 - `mysql_up=1` 可由 VictoriaMetrics 查詢
