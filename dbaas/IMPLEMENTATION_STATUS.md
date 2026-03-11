@@ -17,7 +17,8 @@
 | MySQL Operator | done | 使用 `Percona XtraDB Cluster Operator` |
 | mysql-single | done | 單節點 PXC + HAProxy |
 | SQL 驗證 | done | 已完成建庫、建表、寫入與查詢 |
-| MySQL Metrics Exporter | planned | 透過 `mysqld-exporter` 提供 metrics 給 VictoriaMetrics |
+| MySQL Metrics Exporter | done | `mysqld-exporter` 已提供 metrics 給 VictoriaMetrics |
+| VictoriaMetrics Query | done | `mysql_up=1` 查詢已成功 |
 
 ## 目前部署元件
 
@@ -27,6 +28,7 @@
 | Argo CD App | `percona-operator` | `argocd` |
 | Argo CD App | `mysql-single` | `argocd` |
 | DB Cluster | `minimal-cluster` | `mysql-single` |
+| Exporter | `mysqld-exporter` | `mysql-single` |
 
 ## MySQL 存取方式
 
@@ -83,3 +85,8 @@ Lab 環境規劃導入：
 - Lab 對外入口預計：
   - Grafana: `172.24.40.17:30300`
   - VictoriaMetrics: `172.24.40.17:30428`
+
+目前已驗證：
+
+- `mysql_up=1` 可由 VictoriaMetrics 查詢
+- 目前保留 `service-endpoints` 單一路徑抓取 `mysqld-exporter`
