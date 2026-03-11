@@ -27,10 +27,23 @@ spec:
             apiVersion: 1
             datasources:
               - name: VictoriaMetrics
+                uid: victoriametrics
                 type: prometheus
                 access: proxy
                 url: http://victoria-metrics-server.monitoring:8428
                 isDefault: true
+              - name: Tempo
+                uid: tempo
+                type: tempo
+                access: proxy
+                url: http://tempo.monitoring:3200
+                jsonData:
+                  nodeGraph:
+                    enabled: true
+                  serviceMap:
+                    datasourceUid: victoriametrics
+                  tracesToMetrics:
+                    datasourceUid: victoriametrics
         testFramework:
           enabled: false
   destination:

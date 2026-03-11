@@ -888,3 +888,19 @@ curl -s "http://172.24.40.17:30428/api/v1/query?query=mysql_up" | python3 -m jso
 1. 導入 `redis-single` GitOps POC
 2. 補 `backup / restore` 驗證流程
 3. 收斂正式環境 RBAC、Secret 管理與對外入口策略
+
+## OpenTelemetry 顯化
+
+Lab 環境規劃以下鏈路用於顯化 OpenTelemetry 能力：
+
+- `otel-demo` 產生 trace 與 metrics
+- `Grafana Alloy` 接收 OTLP 資料
+- `Tempo` 儲存 traces
+- `VictoriaMetrics` 儲存 metrics
+- `Grafana` 同時查詢 Tempo 與 VictoriaMetrics
+
+預計對外入口：
+
+- `otel-demo`: `http://172.24.40.17:30080`
+- `Grafana`: `http://172.24.40.17:30300`
+- `VictoriaMetrics`: `http://172.24.40.17:30428`
