@@ -12,6 +12,8 @@ spec:
       server: https://kubernetes.default.svc
     - namespace: dbaas-system
       server: https://kubernetes.default.svc
+    - namespace: percona-operator
+      server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

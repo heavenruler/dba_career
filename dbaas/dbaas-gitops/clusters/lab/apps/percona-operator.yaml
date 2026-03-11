@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: percona-operator
+  namespace: argocd
+spec:
+  project: dbaas
+  source:
+    repoURL: https://github.com/heavenruler/dba_career.git
+    targetRevision: master
+    path: dbaas/dbaas-gitops/clusters/lab/operators/percona
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: percona-operator
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
