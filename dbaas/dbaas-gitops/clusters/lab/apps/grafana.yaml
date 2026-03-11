@@ -39,6 +39,9 @@ spec:
                 type: tempo
                 access: proxy
                 url: http://tempo.monitoring:3200
+                jsonData:
+                  nodeGraph:
+                    enabled: true
         testFramework:
           enabled: false
   destination:
