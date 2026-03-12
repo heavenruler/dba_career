@@ -13,8 +13,7 @@ spec:
       releaseName: tidb-operator
       values: |
         scheduler:
-          create: true
-          replicas: 1
+          create: false
         controllerManager:
           replicas: 1
         advancedStatefulSet:
