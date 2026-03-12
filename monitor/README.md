@@ -1,5 +1,9 @@
 # 合理的監控應該包含哪些資訊
 
+## 測試索引
+
+- `powa_pg17_remote_lab/README.md`: macOS + Podman 建立 PoWA remote monitor PostgreSQL 17 測試環境
+
 ## 抽象化的定義
 
 - Number of Errors(錯誤數)
