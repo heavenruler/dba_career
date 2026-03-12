@@ -21,6 +21,49 @@
 
 DBaaS 提供標準化資料庫申請、建置、備份、監控、擴縮、升級與下線流程，不負責應用程式邏輯、ORM 設計與商業資料模型設計。
 
+### dbaas 結構目錄
+
+```text
+dbaas/
+  README.md
+  IMPLEMENTATION_STATUS.md
+  Makefile
+  dbaas-gitops/
+    bootstrap/
+    projects/
+    clusters/lab/apps/
+    clusters/lab/operators/
+    clusters/lab/services/
+  k8s_survey/
+```
+
+| 路徑 | 用途 |
+|---|---|
+| `README.md` | 專案計畫書、範圍、架構與 Lab 現況總覽 |
+| `IMPLEMENTATION_STATUS.md` | 目前已完成項目、驗證結果與後續規劃 |
+| `Makefile` | Lab 重建、檢查與驗證指令入口 |
+| `dbaas-gitops/bootstrap/` | Argo CD root application 等 bootstrap 設定 |
+| `dbaas-gitops/projects/` | Argo CD AppProject 與 namespace / repo 邊界設定 |
+| `dbaas-gitops/clusters/lab/apps/` | 各 Argo CD Application 定義 |
+| `dbaas-gitops/clusters/lab/operators/` | Operator 級資源，如 Percona Operator |
+| `dbaas-gitops/clusters/lab/services/` | DB 服務實例設定，如 MySQL / TiDB |
+| `k8s_survey/` | 叢集調查、盤點或前期驗證資料 |
+
+主要子目錄說明：
+
+| 路徑 | 用途 |
+|---|---|
+| `dbaas-gitops/clusters/lab/apps/percona-operator.yaml` | 佈署 Percona MySQL Operator |
+| `dbaas-gitops/clusters/lab/apps/mysql-single.yaml` | 建立 `mysql-single` Argo CD Application |
+| `dbaas-gitops/clusters/lab/services/mysql-single/` | MySQL Cluster、Secret、NodePort、Exporter 設定 |
+| `dbaas-gitops/clusters/lab/apps/tidb-operator.yaml` | 佈署 PingCAP TiDB Operator |
+| `dbaas-gitops/clusters/lab/apps/tidb-cluster.yaml` | 建立 `tidb-cluster` Argo CD Application |
+| `dbaas-gitops/clusters/lab/services/tidb-cluster/` | TiDB Cluster 最小 POC 設定 |
+| `dbaas-gitops/clusters/lab/apps/redis-operator.yaml` | 佈署 OT-CONTAINER-KIT Redis Operator |
+| `dbaas-gitops/clusters/lab/apps/redis-single.yaml` | 建立 `redis-single` Argo CD Application |
+| `dbaas-gitops/clusters/lab/apps/victoria-metrics.yaml` | 佈署 VictoriaMetrics |
+| `dbaas-gitops/clusters/lab/apps/grafana.yaml` | 佈署 Grafana 與 datasource 設定 |
+
 平台交付能力如下：
 
 | 能力 | 說明 |
