@@ -19,6 +19,8 @@ dbaas-gitops/
         hello-app.yaml
         percona-operator.yaml
         mysql-single.yaml
+        redis-operator.yaml
+        redis-single.yaml
         victoria-metrics.yaml
         grafana.yaml
       operators/
@@ -48,5 +50,7 @@ dbaas-gitops/
 - `percona-operator.yaml` 會讓 Argo CD 佈署 Percona Operator
 - Operator 安裝 namespace 預設為 `percona-operator`
 - `mysql-single.yaml` 會建立最小 MySQL POC
+- `redis-operator.yaml` 會佈署 OT-CONTAINER-KIT Redis Operator
+- `redis-single.yaml` 會建立最小 Redis Standalone POC
 - `nodeport-service.yaml` 會暴露 Lab MySQL 對外入口 `30306`
 - `victoria-metrics.yaml` 與 `grafana.yaml` 會建立 Lab 監控入口

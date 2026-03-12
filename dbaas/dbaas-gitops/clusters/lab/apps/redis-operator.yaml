@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis-operator
+  namespace: argocd
+spec:
+  project: dbaas
+  source:
+    repoURL: https://ot-container-kit.github.io/helm-charts
+    chart: redis-operator
+    targetRevision: 0.23.0
+    helm:
+      releaseName: redis-operator
+      values: |
+        redisOperator:
+          webhook: false
+          watchNamespace: ""
+          imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: redis-operator
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

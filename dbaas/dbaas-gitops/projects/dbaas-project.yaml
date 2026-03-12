@@ -16,6 +16,10 @@ spec:
       server: https://kubernetes.default.svc
     - namespace: mysql-single
       server: https://kubernetes.default.svc
+    - namespace: redis-operator
+      server: https://kubernetes.default.svc
+    - namespace: redis-single
+      server: https://kubernetes.default.svc
     - namespace: monitoring
       server: https://kubernetes.default.svc
   clusterResourceWhitelist:

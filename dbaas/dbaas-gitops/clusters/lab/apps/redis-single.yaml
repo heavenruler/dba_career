@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis-single
+  namespace: argocd
+spec:
+  project: dbaas
+  source:
+    repoURL: https://ot-container-kit.github.io/helm-charts
+    chart: redis
+    targetRevision: 0.16.9
+    helm:
+      releaseName: redis-single
+      values: |
+        redisStandalone:
+          name: redis-single
+          serviceType: ClusterIP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+        externalService:
+          enabled: true
+          serviceType: NodePort
+          port: 6379
+          nodePort: 30379
+        redisExporter:
+          enabled: true
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: local-path
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 2Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: redis-single
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
