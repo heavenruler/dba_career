@@ -1,4 +1,4 @@
-.PHONY: help apps namespaces pvc pv rebuild-delete rebuild-bootstrap rebuild-wait rebuild-verify mysql-check redis-check monitoring-check rebuild-all
+.PHONY: help apps namespaces pvc pv rebuild-delete rebuild-bootstrap rebuild-wait rebuild-verify mysql-check redis-check redis-ping redis-info redis-info-short monitoring-check rebuild-all
 
 KUBECTL ?= kubectl
 ARGOCD_NS ?= argocd
@@ -17,6 +17,9 @@ help:
 	  'make rebuild-verify     # 驗證 mysql / redis / monitoring 狀態' \
 	  'make mysql-check        # 檢查 mysql-single 狀態' \
 	  'make redis-check        # 檢查 redis-single 狀態' \
+	  'make redis-ping         # 測試 redis-single ping' \
+	  'make redis-info         # 顯示 redis-single info' \
+	  'make redis-info-short   # 顯示 redis 關鍵資訊' \
 	  'make monitoring-check   # 檢查 monitoring 狀態'
 
 apps:
@@ -55,6 +58,15 @@ mysql-check:
 redis-check:
 	$(KUBECTL) get redis -n redis-single
 	$(KUBECTL) get pods,svc,pvc -n redis-single
+
+redis-ping:
+	$(KUBECTL) run -n redis-single redis-client --rm -i --restart=Never --image=redis:7.0 -- redis-cli -h redis-single -p 6379 ping
+
+redis-info:
+	$(KUBECTL) run -n redis-single redis-client --rm -i --restart=Never --image=redis:7.0 -- redis-cli -h redis-single -p 6379 info
+
+redis-info-short:
+	$(KUBECTL) run -n redis-single redis-client --rm -i --restart=Never --image=redis:7.0 -- sh -c 'redis-cli -h redis-single -p 6379 info server | egrep "redis_version|process_id|tcp_port|uptime_in_seconds"'
 
 monitoring-check:
 	$(KUBECTL) get pods,svc,pvc -n monitoring
