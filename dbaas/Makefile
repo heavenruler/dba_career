@@ -1,11 +1,11 @@
-.PHONY: help apps namespaces pvc pv rebuild-delete rebuild-bootstrap rebuild-wait rebuild-verify mysql-check tidb-check redis-check redis-ping redis-info redis-info-short monitoring-check rebuild-all
+.PHONY: help apps namespaces pvc pv rebuild-delete rebuild-bootstrap rebuild-wait rebuild-verify mysql-check tidb-check tidb-info tidb-info-short redis-check redis-ping redis-info redis-info-short monitoring-check rebuild-all
 
 KUBECTL ?= kubectl
 ARGOCD_NS ?= argocd
 DBAAS_ROOT ?= /root/dba_career/dbaas
 PROJECT_FILE ?= $(DBAAS_ROOT)/dbaas-gitops/projects/dbaas-project.yaml
 ROOT_APP_FILE ?= $(DBAAS_ROOT)/dbaas-gitops/bootstrap/root-application.yaml
-WORKLOAD_NAMESPACES ?= dbaas-system mysql-single percona-operator tidb-operator redis-single redis-operator monitoring
+WORKLOAD_NAMESPACES ?= dbaas-system mysql-single percona-operator tidb-operator tidb-cluster redis-single redis-operator monitoring
 
 help:
 	@printf '%s\n' \
@@ -17,6 +17,8 @@ help:
 	  'make rebuild-verify     # 驗證 mysql / redis / monitoring 狀態' \
 	  'make mysql-check        # 檢查 mysql-single 狀態' \
 	  'make tidb-check         # 檢查 tidb-operator 狀態' \
+	  'make tidb-info          # 顯示 tidb-cluster 基本資訊' \
+	  'make tidb-info-short    # 顯示 tidb_version()' \
 	  'make redis-check        # 檢查 redis-single 狀態' \
 	  'make redis-ping         # 測試 redis-single ping' \
 	  'make redis-info         # 顯示 redis-single info' \
@@ -39,7 +41,7 @@ pv:
 rebuild-delete:
 	$(KUBECTL) delete application -n $(ARGOCD_NS) dbaas-root --ignore-not-found || true
 	@sleep 5
-	$(KUBECTL) delete application -n $(ARGOCD_NS) grafana hello-app mysql-single percona-operator tidb-operator redis-operator redis-single victoria-metrics --ignore-not-found || true
+	$(KUBECTL) delete application -n $(ARGOCD_NS) grafana hello-app mysql-single percona-operator tidb-operator tidb-cluster redis-operator redis-single victoria-metrics --ignore-not-found || true
 	$(KUBECTL) get applications -n $(ARGOCD_NS)
 
 rebuild-bootstrap:
@@ -59,6 +61,13 @@ mysql-check:
 tidb-check:
 	$(KUBECTL) get pods -n tidb-operator
 	$(KUBECTL) get crd | grep pingcap.com || true
+
+tidb-info:
+	$(KUBECTL) get tc -n tidb-cluster
+	$(KUBECTL) get pods,svc,pvc -n tidb-cluster
+
+tidb-info-short:
+	$(KUBECTL) run -n tidb-cluster mysql-client --rm -i --restart=Never --image=mysql:8.0 -- mysql -h basic-tidb -P 4000 -u root -e "select tidb_version();"
 
 redis-check:
 	$(KUBECTL) get redis -n redis-single
