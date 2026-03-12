@@ -808,6 +808,7 @@ Audit 需留存：
 - `Argo CD` 已可自 GitHub 同步 GitOps 設定
 - `Percona XtraDB Cluster Operator` 已可於 cluster 內運作
 - `mysql-single` 已成功建立並完成 SQL 驗證
+- `OT-CONTAINER-KIT Redis Operator` 已成功建立 `redis-single`
 
 ## 已完成元件
 
@@ -818,6 +819,8 @@ Audit 需留存：
 | MySQL Operator | done | 使用 `Percona XtraDB Cluster Operator` |
 | mysql-single | done | 單節點 PXC + HAProxy |
 | SQL 驗證 | done | 已完成建庫、建表、寫入與查詢 |
+| Redis Operator | done | 使用 `OT-CONTAINER-KIT redis-operator` |
+| redis-single | done | Standalone Redis + exporter + NodePort |
 | MySQL Metrics Exporter | done | `mysqld-exporter` 已提供 metrics 給 VictoriaMetrics |
 | VictoriaMetrics Query | done | `mysql_up=1` 查詢已成功 |
 
@@ -828,7 +831,10 @@ Audit 需留存：
 | Argo CD App | `dbaas-root` | `argocd` |
 | Argo CD App | `percona-operator` | `argocd` |
 | Argo CD App | `mysql-single` | `argocd` |
+| Argo CD App | `redis-operator` | `argocd` |
+| Argo CD App | `redis-single` | `argocd` |
 | DB Cluster | `minimal-cluster` | `mysql-single` |
+| Redis | `redis-single` | `redis-single` |
 | Exporter | `mysqld-exporter` | `mysql-single` |
 
 ## MySQL 存取方式
@@ -877,6 +883,31 @@ mysql -h 172.24.40.17 -P 30306 -uroot -p
 curl -s "http://172.24.40.17:30428/api/v1/query?query=mysql_up" | python3 -m json.tool
 ```
 
+## Redis 存取方式
+
+叢集內服務：
+
+- Host: `redis-single.redis-single`
+- Port: `6379`
+
+Lab 對外服務：
+
+- Host: `172.24.40.17`
+- Port: `30379`
+- Service: `redis-single-external-service`
+
+叢集內測試：
+
+```bash
+kubectl run -n redis-single redis-client --rm -it --image=redis:7.0 --restart=Never -- redis-cli -h redis-single -p 6379 ping
+```
+
+叢集外測試：
+
+```bash
+redis-cli -h 172.24.40.17 -p 30379 ping
+```
+
 ## Lab 限制
 
 - Storage 使用 `local-path`，僅適合 lab / POC
@@ -885,6 +916,6 @@ curl -s "http://172.24.40.17:30428/api/v1/query?query=mysql_up" | python3 -m jso
 
 ## 下一步
 
-1. 導入 `redis-single` GitOps POC
+1. 補 `redis-sentinel / redis-ha` 驗證流程
 2. 補 `backup / restore` 驗證流程
 3. 收斂正式環境 RBAC、Secret 管理與對外入口策略

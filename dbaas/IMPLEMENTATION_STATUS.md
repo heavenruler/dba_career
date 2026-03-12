@@ -7,6 +7,7 @@
 - `Argo CD` 已可從 GitHub 同步 GitOps 設定
 - `Percona Operator` 已可在 cluster 內運作
 - `mysql-single` 已成功建立並完成 SQL 驗證
+- `OT-CONTAINER-KIT Redis Operator` 已成功建立 `redis-single`
 
 ## 已完成項目
 
@@ -17,6 +18,8 @@
 | MySQL Operator | done | 使用 `Percona XtraDB Cluster Operator` |
 | mysql-single | done | 單節點 PXC + HAProxy |
 | SQL 驗證 | done | 已完成建庫、建表、寫入與查詢 |
+| Redis Operator | done | 使用 `OT-CONTAINER-KIT redis-operator` |
+| redis-single | done | Standalone Redis + exporter + NodePort |
 | MySQL Metrics Exporter | done | `mysqld-exporter` 已提供 metrics 給 VictoriaMetrics |
 | VictoriaMetrics Query | done | `mysql_up=1` 查詢已成功 |
 
@@ -27,7 +30,10 @@
 | Argo CD App | `dbaas-root` | `argocd` |
 | Argo CD App | `percona-operator` | `argocd` |
 | Argo CD App | `mysql-single` | `argocd` |
+| Argo CD App | `redis-operator` | `argocd` |
+| Argo CD App | `redis-single` | `argocd` |
 | DB Cluster | `minimal-cluster` | `mysql-single` |
+| Redis | `redis-single` | `redis-single` |
 | Exporter | `mysqld-exporter` | `mysql-single` |
 
 ## MySQL 存取方式
@@ -67,10 +73,11 @@ mysql -h 172.24.40.17 -P 30306 -uroot -p
 - Storage 使用 `local-path`，僅適合 lab / POC
 - `percona-operator` 目前以較寬鬆 RBAC 運作，不適合直接進正式環境
 - `mysql-single` 密碼目前存放於 GitOps secret manifest，後續需改為安全憑證管理機制
+- `redis-operator` 目前使用 `ServerSideApply=true` 避免大型 CRD annotation 問題
 
 ## 下一步建議
 
-1. 導入 `redis-single` GitOps POC
+1. 補 `redis-sentinel / redis-ha` 驗證流程
 2. 補 `backup / restore` 驗證流程
 3. 收斂正式環境 RBAC、Secret 管理與對外入口策略
 
