@@ -7,8 +7,8 @@
 - `Argo CD` 已可從 GitHub 同步 GitOps 設定
 - `Percona Operator` 已可在 cluster 內運作
 - `mysql-single` 已成功建立並完成 SQL 驗證
-- `TiDB Operator` 已納入 GitOps 佈署骨架
-- `tidb-cluster` 已納入最小 POC 佈署骨架
+- `TiDB Operator` 已可於 cluster 內運作
+- `tidb-cluster` 已成功建立並完成 SQL 驗證
 - `OT-CONTAINER-KIT Redis Operator` 已成功建立 `redis-single`
 
 ## 已完成項目
@@ -20,8 +20,9 @@
 | MySQL Operator | done | 使用 `Percona XtraDB Cluster Operator` |
 | mysql-single | done | 單節點 PXC + HAProxy |
 | SQL 驗證 | done | 已完成建庫、建表、寫入與查詢 |
-| TiDB Operator | done | 已加入 `PingCAP tidb-operator` GitOps 定義 |
-| tidb-cluster | done | 已加入最小 TiDB Cluster GitOps 定義 |
+| TiDB Operator | done | 使用 `PingCAP tidb-operator` |
+| tidb-cluster | done | 最小 TiDB Cluster POC 已成功建立 |
+| TiDB SQL 驗證 | done | `select version(); show databases;` 已成功 |
 | Redis Operator | done | 使用 `OT-CONTAINER-KIT redis-operator` |
 | redis-single | done | Standalone Redis + exporter + NodePort |
 | MySQL Metrics Exporter | done | `mysqld-exporter` 已提供 metrics 給 VictoriaMetrics |
@@ -40,9 +41,28 @@
 | Argo CD App | `redis-operator` | `argocd` |
 | Argo CD App | `redis-single` | `argocd` |
 | DB Cluster | `minimal-cluster` | `mysql-single` |
+| DB Cluster | `basic` | `tidb-cluster` |
 | Redis | `redis-single` | `redis-single` |
 | Exporter | `mysqld-exporter` | `mysql-single` |
 | Exporter | `redis-exporter` | `redis-single` |
+
+## TiDB 存取方式
+
+叢集內服務：
+
+- Host: `basic-tidb.tidb-cluster`
+- Port: `4000`
+
+Lab 對外服務：
+
+- Host: `172.24.40.17`
+- Port: `30400`
+
+測試指令：
+
+```bash
+make tidb-info-short
+```
 
 ## MySQL 存取方式
 
@@ -82,11 +102,12 @@ mysql -h 172.24.40.17 -P 30306 -uroot -p
 - `percona-operator` 目前以較寬鬆 RBAC 運作，不適合直接進正式環境
 - `mysql-single` 密碼目前存放於 GitOps secret manifest，後續需改為安全憑證管理機制
 - `redis-operator` 目前使用 `ServerSideApply=true` 避免大型 CRD annotation 問題
+- `tidb-operator` 目前停用 `tidb-scheduler`，僅保留與 `Kubernetes 1.29` 相容的最小 operator 組態
 
 ## 下一步建議
 
-1. 驗證 `tidb-cluster` 最小 POC 可用性
-2. 補 `redis-sentinel / redis-ha` 驗證流程
+1. 補 `redis-sentinel / redis-ha` 驗證流程
+2. 收斂 TiDB scheduler 與正式版相容性策略
 3. 收斂正式環境 RBAC、Secret 管理與對外入口策略
 
 ## 監控規劃
@@ -107,3 +128,13 @@ Lab 環境規劃導入：
 - `mysql_up=1` 可由 VictoriaMetrics 查詢
 - 目前保留 `service-endpoints` 單一路徑抓取 `mysqld-exporter`
 - `redis_up=1` 應可由 VictoriaMetrics 查詢
+
+## Lab 架構摘要
+
+- MySQL：`Percona Operator + mysql-single + mysqld-exporter`
+- Redis：`OT-CONTAINER-KIT redis-operator + redis-single + redis-exporter`
+- TiDB：`PingCAP tidb-operator + tidb-cluster`
+- GitOps：`Argo CD + GitHub`
+- Storage：`local-path` (`/data`)
+- Metrics：`VictoriaMetrics`
+- Dashboard：`Grafana`
