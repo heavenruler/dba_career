@@ -22,6 +22,7 @@
 | redis-single | done | Standalone Redis + exporter + NodePort |
 | MySQL Metrics Exporter | done | `mysqld-exporter` 已提供 metrics 給 VictoriaMetrics |
 | VictoriaMetrics Query | done | `mysql_up=1` 查詢已成功 |
+| Redis Metrics Exporter | done | `redis-exporter` 已提供 metrics 給 VictoriaMetrics |
 
 ## 目前部署元件
 
@@ -35,6 +36,7 @@
 | DB Cluster | `minimal-cluster` | `mysql-single` |
 | Redis | `redis-single` | `redis-single` |
 | Exporter | `mysqld-exporter` | `mysql-single` |
+| Exporter | `redis-exporter` | `redis-single` |
 
 ## MySQL 存取方式
 
@@ -88,6 +90,7 @@ Lab 環境規劃導入：
 - `VictoriaMetrics Single` 作為 metrics backend
 - `Grafana` 作為 dashboard 入口
 - `mysqld-exporter` 作為 `mysql-single` metrics exporter
+- `redis-exporter` 作為 `redis-single` metrics exporter
 - 預設 namespace：`monitoring`
 - Lab 對外入口預計：
   - Grafana: `172.24.40.17:30300`
@@ -97,3 +100,4 @@ Lab 環境規劃導入：
 
 - `mysql_up=1` 可由 VictoriaMetrics 查詢
 - 目前保留 `service-endpoints` 單一路徑抓取 `mysqld-exporter`
+- `redis_up=1` 應可由 VictoriaMetrics 查詢

@@ -12,6 +12,10 @@ spec:
     helm:
       releaseName: redis-single
       values: |
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "9121"
+          prometheus.io/path: "/metrics"
         redisStandalone:
           name: redis-single
           serviceType: ClusterIP

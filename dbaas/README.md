@@ -876,6 +876,13 @@ mysql -h 172.24.40.17 -P 30306 -uroot -p
 - `mysqld-exporter` 已部署於 `mysql-single`
 - `VictoriaMetrics` 已成功抓取 `mysql_up=1`
 - 為避免重複時間序列，目前保留 `service-endpoints` 單一路徑抓取 exporter
+- `redis-single` 已透過 `redis-exporter` 暴露 `9121` metrics
+
+Redis metrics 查詢範例：
+
+```bash
+curl -s "http://172.24.40.17:30428/api/v1/query?query=redis_up" | python3 -m json.tool
+```
 
 查詢範例：
 
@@ -907,6 +914,11 @@ kubectl run -n redis-single redis-client --rm -it --image=redis:7.0 --restart=Ne
 ```bash
 redis-cli -h 172.24.40.17 -p 30379 ping
 ```
+
+Redis exporter metrics：
+
+- Service: `redis-single:9121`
+- 指標查詢：`redis_up`
 
 ## Lab 限制
 
