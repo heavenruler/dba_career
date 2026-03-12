@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tidb-operator
+  namespace: argocd
+spec:
+  project: dbaas
+  source:
+    repoURL: https://charts.pingcap.org
+    chart: tidb-operator
+    targetRevision: 1.7.0-alpha.10
+    helm:
+      releaseName: tidb-operator
+      values: |
+        scheduler:
+          create: true
+          replicas: 1
+        controllerManager:
+          replicas: 1
+        advancedStatefulSet:
+          create: false
+        admissionWebhook:
+          create: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tidb-operator
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
