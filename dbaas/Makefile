@@ -67,7 +67,7 @@ tidb-info:
 	$(KUBECTL) get pods,svc,pvc -n tidb-cluster
 
 tidb-info-short:
-	$(KUBECTL) run -n tidb-cluster mysql-client --rm -i --restart=Never --image=mysql:8.0 -- mysql -h basic-tidb -P 4000 -u root -e "select tidb_version();"
+	$(KUBECTL) run -n tidb-cluster mysql-client --rm -i --restart=Never --image=mysql:8.0 -- mysql -h basic-tidb -P 4000 -u root -e "select version(); show databases;"
 
 redis-check:
 	$(KUBECTL) get redis -n redis-single
