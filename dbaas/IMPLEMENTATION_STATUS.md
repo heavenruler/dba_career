@@ -8,6 +8,7 @@
 - `Percona Operator` 已可在 cluster 內運作
 - `mysql-single` 已成功建立並完成 SQL 驗證
 - `TiDB Operator` 已納入 GitOps 佈署骨架
+- `tidb-cluster` 已納入最小 POC 佈署骨架
 - `OT-CONTAINER-KIT Redis Operator` 已成功建立 `redis-single`
 
 ## 已完成項目
@@ -20,6 +21,7 @@
 | mysql-single | done | 單節點 PXC + HAProxy |
 | SQL 驗證 | done | 已完成建庫、建表、寫入與查詢 |
 | TiDB Operator | done | 已加入 `PingCAP tidb-operator` GitOps 定義 |
+| tidb-cluster | done | 已加入最小 TiDB Cluster GitOps 定義 |
 | Redis Operator | done | 使用 `OT-CONTAINER-KIT redis-operator` |
 | redis-single | done | Standalone Redis + exporter + NodePort |
 | MySQL Metrics Exporter | done | `mysqld-exporter` 已提供 metrics 給 VictoriaMetrics |
@@ -34,6 +36,7 @@
 | Argo CD App | `percona-operator` | `argocd` |
 | Argo CD App | `mysql-single` | `argocd` |
 | Argo CD App | `tidb-operator` | `argocd` |
+| Argo CD App | `tidb-cluster` | `argocd` |
 | Argo CD App | `redis-operator` | `argocd` |
 | Argo CD App | `redis-single` | `argocd` |
 | DB Cluster | `minimal-cluster` | `mysql-single` |
@@ -82,8 +85,8 @@ mysql -h 172.24.40.17 -P 30306 -uroot -p
 
 ## 下一步建議
 
-1. 補 `redis-sentinel / redis-ha` 驗證流程
-2. 補 `backup / restore` 驗證流程
+1. 驗證 `tidb-cluster` 最小 POC 可用性
+2. 補 `redis-sentinel / redis-ha` 驗證流程
 3. 收斂正式環境 RBAC、Secret 管理與對外入口策略
 
 ## 監控規劃

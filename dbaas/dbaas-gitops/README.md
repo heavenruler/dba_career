@@ -20,6 +20,7 @@ dbaas-gitops/
         percona-operator.yaml
         mysql-single.yaml
         tidb-operator.yaml
+        tidb-cluster.yaml
         redis-operator.yaml
         redis-single.yaml
         victoria-metrics.yaml
@@ -35,6 +36,10 @@ dbaas-gitops/
           secrets.yaml
           cluster.yaml
           nodeport-service.yaml
+        tidb-cluster/
+          kustomization.yaml
+          namespace.yaml
+          tidb-cluster.yaml
 ```
 
 ## 第一步
@@ -52,6 +57,7 @@ dbaas-gitops/
 - Operator 安裝 namespace 預設為 `percona-operator`
 - `mysql-single.yaml` 會建立最小 MySQL POC
 - `tidb-operator.yaml` 會佈署 PingCAP TiDB Operator
+- `tidb-cluster.yaml` 會建立最小 TiDB Cluster POC
 - `redis-operator.yaml` 會佈署 OT-CONTAINER-KIT Redis Operator
 - `redis-single.yaml` 會建立最小 Redis Standalone POC
 - `nodeport-service.yaml` 會暴露 Lab MySQL 對外入口 `30306`

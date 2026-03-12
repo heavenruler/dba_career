@@ -18,6 +18,8 @@ spec:
       server: https://kubernetes.default.svc
     - namespace: tidb-operator
       server: https://kubernetes.default.svc
+    - namespace: tidb-cluster
+      server: https://kubernetes.default.svc
     - namespace: redis-operator
       server: https://kubernetes.default.svc
     - namespace: redis-single
