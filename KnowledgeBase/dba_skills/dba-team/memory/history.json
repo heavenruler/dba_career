@@ -1,0 +1,117 @@
+{
+  "tasks": [
+    {
+      "id": "task-2026-0001",
+      "title": "MySQL replication lag triage",
+      "category": "troubleshooting",
+      "status": "completed",
+      "objective": "分析 replica 延遲原因並提出止血方案",
+      "related_systems": ["mysql-order-db"],
+      "summary": "確認延遲主因為大交易與磁碟 I/O 飽和，已調整批次與 worker 配置。",
+      "artifacts": [
+        "references/mysql-replication-lag-runbook.md"
+      ],
+      "created_at": "2026-03-01T09:00:00Z",
+      "last_updated": "2026-03-01T12:00:00Z"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "decision-2026-0001",
+      "decision_key": "core-oltp-db-selection",
+      "title": "核心交易系統維持 MySQL 8.0",
+      "status": "approved",
+      "scope": "order-platform",
+      "options": ["mysql-8.0", "postgresql-16", "tidb-7.x"],
+      "chosen": "mysql-8.0",
+      "why": [
+        "現有團隊維運熟悉度最高",
+        "短期內無明確分散式 SQL 需求",
+        "導入成本與改造風險最低"
+      ],
+      "risks": [
+        "跨區一致性能力有限",
+        "需額外規劃 HA 與 DR"
+      ],
+      "owner": "dba-director",
+      "date": "2026-02-15",
+      "references": [
+        "references/poc/core-oltp-db-selection-2026-q1.md"
+      ]
+    }
+  ],
+  "incidents": [
+    {
+      "id": "incident-2026-0001",
+      "title": "Redis eviction surge during traffic peak",
+      "severity": "sev-2",
+      "status": "resolved",
+      "impact": "部分 API 回應延遲升高，快取命中率下降",
+      "systems": ["redis-session-prod"],
+      "root_cause": "大量短時間寫入造成記憶體耗盡且 TTL 設計不一致",
+      "mitigation": [
+        "調整 maxmemory-policy",
+        "清理 big keys",
+        "修正應用 TTL 策略"
+      ],
+      "follow_up": [
+        "建立 big key 定期巡檢",
+        "補充快取治理 SOP"
+      ],
+      "started_at": "2026-01-10T11:20:00Z",
+      "resolved_at": "2026-01-10T13:10:00Z"
+    }
+  ],
+  "migrations": [
+    {
+      "id": "migration-2026-0001",
+      "title": "Oracle 12c to 19c upgrade assessment",
+      "status": "planned",
+      "source": {
+        "engine": "oracle",
+        "version": "12c"
+      },
+      "target": {
+        "engine": "oracle",
+        "version": "19c"
+      },
+      "scope": "finance-system",
+      "strategy": "in-place-upgrade-with-dg-fallback",
+      "compatibility_findings": [
+        "部分舊版驅動需驗證",
+        "需重新檢查統計資訊與執行計畫"
+      ],
+      "rollback_plan": "保留 Data Guard standby 作為回退路徑",
+      "validation_items": [
+        "核心批次作業",
+        "報表 SQL",
+        "Data Guard log apply"
+      ],
+      "last_updated": "2026-03-05T08:00:00Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-2026-0001",
+      "review_type": "architecture",
+      "title": "PostgreSQL HA design review",
+      "status": "completed",
+      "scope": "customer-profile-platform",
+      "findings": [
+        "目前方案缺少明確 PITR 演練流程",
+        "監控告警尚未涵蓋 replication lag threshold"
+      ],
+      "actions": [
+        "補充 WAL 備份與 restore 演練",
+        "新增 lag 與磁碟告警"
+      ],
+      "reviewers": ["postgresql-expert", "dba-director"],
+      "date": "2026-02-20"
+    }
+  ],
+  "metadata": {
+    "owner": "dba-team",
+    "source": "manual-template",
+    "last_updated": "2026-03-13T00:00:00Z"
+  }
+}

@@ -1,0 +1,24 @@
+all:
+  vars:
+    env: prod
+    timezone: Asia/Taipei
+    db_admin_user: "<admin-user>"
+    db_port: 5432
+  children:
+    database_primary:
+      hosts:
+        db-primary-01:
+          ansible_host: 10.0.10.11
+          db_role: primary
+    database_replica:
+      hosts:
+        db-replica-01:
+          ansible_host: 10.0.10.21
+          db_role: replica
+        db-replica-02:
+          ansible_host: 10.0.10.22
+          db_role: replica
+    monitoring:
+      hosts:
+        monitor-01:
+          ansible_host: 10.0.20.10

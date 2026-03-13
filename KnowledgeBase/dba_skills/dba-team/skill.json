@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0",
+  "name": "dba-team",
+  "display_name": "DBA Team",
+  "version": "0.1.0",
+  "description": "Enterprise DBA Team multi-expert skill for OpenCode, focused on database architecture, operations, troubleshooting, migration, documentation, and memory-driven collaboration.",
+  "primary_language": "zh-TW",
+  "secondary_languages": [
+    "en"
+  ],
+  "entrypoint": {
+    "default_role": "dba-assistant",
+    "prompt_file": "prompts/dba-assistant.md"
+  },
+  "files": {
+    "skill_spec": "SKILL.md",
+    "memory_spec": "memory.md",
+    "workflow_spec": "workflows.md",
+    "references_root": "references",
+    "memory_root": "memory"
+  },
+  "capabilities": [
+    "database-selection",
+    "architecture-design",
+    "sql-tuning",
+    "ha-dr-planning",
+    "operations-runbook",
+    "incident-troubleshooting",
+    "migration-upgrade-poc",
+    "documentation-generation",
+    "multi-expert-routing",
+    "memory-aware-response"
+  ],
+  "routing": {
+    "default_role": "dba-assistant",
+    "director_role": "dba-director",
+    "supports_multi_expert": true,
+    "routing_mode": "intent-and-product-based"
+  },
+  "prompts": [
+    {
+      "role_name": "dba-assistant",
+      "path": "prompts/dba-assistant.md",
+      "category": "coordination",
+      "default": true
+    },
+    {
+      "role_name": "dba-director",
+      "path": "prompts/dba-director.md",
+      "category": "coordination"
+    },
+    {
+      "role_name": "oracle-expert",
+      "path": "prompts/oracle-expert.md",
+      "category": "database-product"
+    },
+    {
+      "role_name": "mysql-expert",
+      "path": "prompts/mysql-expert.md",
+      "category": "database-product"
+    },
+    {
+      "role_name": "postgresql-expert",
+      "path": "prompts/postgresql-expert.md",
+      "category": "database-product"
+    },
+    {
+      "role_name": "tidb-expert",
+      "path": "prompts/tidb-expert.md",
+      "category": "database-product"
+    },
+    {
+      "role_name": "tdsql-expert",
+      "path": "prompts/tdsql-expert.md",
+      "category": "database-product"
+    },
+    {
+      "role_name": "mongodb-expert",
+      "path": "prompts/mongodb-expert.md",
+      "category": "database-product"
+    },
+    {
+      "role_name": "redis-expert",
+      "path": "prompts/redis-expert.md",
+      "category": "database-product"
+    },
+    {
+      "role_name": "clickhouse-expert",
+      "path": "prompts/clickhouse-expert.md",
+      "category": "database-product"
+    },
+    {
+      "role_name": "sql-server-expert",
+      "path": "prompts/sql-server-expert.md",
+      "category": "database-product"
+    },
+    {
+      "role_name": "mariadb-expert",
+      "path": "prompts/mariadb-expert.md",
+      "category": "database-product"
+    },
+    {
+      "role_name": "performance-engineer",
+      "path": "prompts/performance-engineer.md",
+      "category": "cross-functional"
+    },
+    {
+      "role_name": "ha-dr-expert",
+      "path": "prompts/ha-dr-expert.md",
+      "category": "cross-functional"
+    },
+    {
+      "role_name": "migration-architect",
+      "path": "prompts/migration-architect.md",
+      "category": "cross-functional"
+    },
+    {
+      "role_name": "platform-automation-expert",
+      "path": "prompts/platform-automation-expert.md",
+      "category": "cross-functional"
+    }
+  ],
+  "memory_files": [
+    "memory/env.json",
+    "memory/history.json",
+    "memory/preferences.json"
+  ],
+  "workflow_files": [
+    "workflows.md"
+  ],
+  "references": {
+    "root": "references",
+    "readme": "references/README.md"
+  },
+  "tags": [
+    "dba",
+    "database",
+    "solution-architect",
+    "knowledge-base",
+    "memory-system",
+    "enterprise"
+  ],
+  "maintainers": [
+    {
+      "name": "dba-team",
+      "role": "owner"
+    }
+  ]
+}

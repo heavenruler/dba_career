@@ -1,0 +1,35 @@
+{
+  "name": "dba-team",
+  "display_name": "DBA Team",
+  "version": "0.1.0",
+  "type": "skill",
+  "manifest": "skill.json",
+  "entry_role": "dba-assistant",
+  "summary": "Multi-expert DBA team skill for architecture, operations, troubleshooting, migration, PoC, and documentation.",
+  "primary_language": "zh-TW",
+  "search_keywords": [
+    "DBA",
+    "MySQL",
+    "PostgreSQL",
+    "Oracle",
+    "Redis",
+    "MongoDB",
+    "TiDB",
+    "ClickHouse",
+    "HA",
+    "DR",
+    "migration",
+    "performance"
+  ],
+  "categories": [
+    "database",
+    "architecture",
+    "operations",
+    "knowledge-base"
+  ],
+  "paths": {
+    "root": ".",
+    "manifest": "skill.json",
+    "readme": "README.md"
+  }
+}
