@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: private-demo
+  namespace: private-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: private-demo
+  template:
+    metadata:
+      labels:
+        app: private-demo
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
