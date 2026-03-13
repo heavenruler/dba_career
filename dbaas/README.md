@@ -1061,6 +1061,47 @@ kubectl run -n private-demo curltest --rm -it --image=curlimages/curl --restart=
 - `service/private-demo` = `ClusterIP`
 - `HTTP/1.1 200 OK`
 
+GitOps 變更範例（將 `private-demo` 擴為 3 pods）：
+
+1. 修改 Git manifest：
+
+```yaml
+spec:
+  replicas: 3
+```
+
+對應檔案：
+
+```text
+dbaas/dbaas-gitops/clusters/lab/services/private-demo/deployment.yaml
+```
+
+2. 提交並 push：
+
+```bash
+git add dbaas/dbaas-gitops/clusters/lab/services/private-demo/deployment.yaml
+git commit -m "scale private-demo to three replicas"
+git push origin master
+```
+
+3. Argo CD 自動或手動同步：
+
+```bash
+argocd app sync private-demo
+```
+
+4. 驗證結果：
+
+```bash
+kubectl get deploy,pods -n private-demo -o wide
+kubectl rollout status deployment/private-demo -n private-demo
+```
+
+說明：
+
+- 正式 GitOps 操作以修改 Git 為主，不建議直接用 `kubectl scale` 當最終變更來源
+- `kubectl scale` 可作為暫時測試，但後續仍會被 Argo CD 對齊回 Git 狀態
+
 用途：
 
 - 後續新增 GitHub Actions / 自助申請流程時，可先用 `private-demo` 驗證 GitOps 鏈路
