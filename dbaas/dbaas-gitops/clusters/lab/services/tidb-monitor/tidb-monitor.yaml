@@ -17,10 +17,6 @@ spec:
   grafana:
     baseImage: grafana/grafana
     version: 7.5.11
-    service:
-      type: NodePort
-      portName: http-grafana
-      nodePort: 30310
   initializer:
     baseImage: pingcap/tidb-monitor-initializer
     version: v8.5.3
