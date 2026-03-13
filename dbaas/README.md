@@ -1003,7 +1003,7 @@ mysql -h 172.24.40.17 -P 30400 -u root -e "select tidb_version();"
 
 TiDB Monitor 預設入口：
 
-- Grafana: `http://172.24.40.17:30310`
+- Grafana: `http://172.24.40.17:32159`
 
 Redis exporter metrics：
 
