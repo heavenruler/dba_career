@@ -21,6 +21,13 @@
 
 DBaaS 提供標準化資料庫申請、建置、備份、監控、擴縮、升級與下線流程，不負責應用程式邏輯、ORM 設計與商業資料模型設計。
 
+針對多產品接入場景，平台可提供：
+
+- 每個 application 使用各自獨立 namespace 與 DB 實例
+- 每個 DB 實例對應獨立 internal service 與 external endpoint
+- 以相同 CRD、不同 CR 方式批次建立多組資料庫端點
+- 後續可逐步套用各自 RBAC、Quota、NetworkPolicy 與下線流程
+
 ### dbaas 結構目錄
 
 ```text
@@ -56,6 +63,9 @@ dbaas/
 | `dbaas-gitops/clusters/lab/apps/percona-operator.yaml` | 佈署 Percona MySQL Operator |
 | `dbaas-gitops/clusters/lab/apps/mysql-single.yaml` | 建立 `mysql-single` Argo CD Application |
 | `dbaas-gitops/clusters/lab/services/mysql-single/` | MySQL Cluster、Secret、NodePort、Exporter 設定 |
+| `dbaas-gitops/clusters/lab/apps/mysql-singles.yaml` | 建立 `mysql-single-1..10` 的 app-of-apps |
+| `dbaas-gitops/clusters/lab/services/mysql-singles/apps/` | `mysql-single-1..10` 子 Application 定義 |
+| `dbaas-gitops/clusters/lab/services/mysql-singles/instances/` | 每個產品一套獨立 namespace / CR / Service 設定 |
 | `dbaas-gitops/clusters/lab/apps/tidb-operator.yaml` | 佈署 PingCAP TiDB Operator |
 | `dbaas-gitops/clusters/lab/apps/tidb-cluster.yaml` | 建立 `tidb-cluster` Argo CD Application |
 | `dbaas-gitops/clusters/lab/services/tidb-cluster/` | TiDB Cluster 最小 POC 設定 |
@@ -111,6 +121,7 @@ dbaas/
 | |- hello-app                                                                       |
 | |- percona-operator                                                                |
 | |- mysql-single                                                                    |
+| |- mysql-singles                                                                   |
 | |- redis-operator                                                                  |
 | |- redis-single                                                                    |
 | |- tidb-operator                                                                   |
@@ -126,6 +137,7 @@ dbaas/
 |-----------------------------------------------------------------------------------|
 | percona-operator -> Percona controller                                             |
 | mysql-single     -> PXC / HAProxy / mysqld-exporter                               |
+| mysql-single-1~10 -> 各產品獨立 namespace / PXC / HAProxy / NodePort              |
 | redis-operator   -> OT-CONTAINER-KIT controller                                    |
 | redis-single     -> Redis / redis-exporter                                         |
 | tidb-operator    -> tidb-controller-manager                                        |

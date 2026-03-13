@@ -1,0 +1,14 @@
+apiVersion: pxc.percona.com/v1
+kind: PerconaXtraDBCluster
+metadata: {name: mysql-single-7, namespace: mysql-single-7}
+spec:
+  crVersion: 1.16.1
+  secretsName: mysql-single-7-secrets
+  unsafeFlags: {tls: true, pxcSize: true, proxySize: true}
+  upgradeOptions: {apply: disabled, schedule: "0 4 * * *"}
+  tls: {enabled: false}
+  pxc: {size: 1, image: percona/percona-xtradb-cluster:8.0.39-30.1, resources: {requests: {cpu: 250m, memory: 512Mi}, limits: {cpu: 500m, memory: 1Gi}}, volumeSpec: {persistentVolumeClaim: {storageClassName: local-path, resources: {requests: {storage: 2Gi}}}}}
+  haproxy: {enabled: true, size: 1, image: percona/haproxy:2.8.11, resources: {requests: {cpu: 50m, memory: 64Mi}, limits: {cpu: 250m, memory: 256Mi}}}
+  proxysql: {enabled: false}
+  logcollector: {enabled: false}
+  backup: {image: percona/percona-xtradb-cluster-operator:1.16.1-pxc8.0-backup-pxb8.0.35}

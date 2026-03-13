@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - mysql-single-1.yaml
+  - mysql-single-2.yaml
+  - mysql-single-3.yaml
+  - mysql-single-4.yaml
+  - mysql-single-5.yaml
+  - mysql-single-6.yaml
+  - mysql-single-7.yaml
+  - mysql-single-8.yaml
+  - mysql-single-9.yaml
+  - mysql-single-10.yaml

@@ -16,6 +16,26 @@ spec:
       server: https://kubernetes.default.svc
     - namespace: mysql-single
       server: https://kubernetes.default.svc
+    - namespace: mysql-single-1
+      server: https://kubernetes.default.svc
+    - namespace: mysql-single-2
+      server: https://kubernetes.default.svc
+    - namespace: mysql-single-3
+      server: https://kubernetes.default.svc
+    - namespace: mysql-single-4
+      server: https://kubernetes.default.svc
+    - namespace: mysql-single-5
+      server: https://kubernetes.default.svc
+    - namespace: mysql-single-6
+      server: https://kubernetes.default.svc
+    - namespace: mysql-single-7
+      server: https://kubernetes.default.svc
+    - namespace: mysql-single-8
+      server: https://kubernetes.default.svc
+    - namespace: mysql-single-9
+      server: https://kubernetes.default.svc
+    - namespace: mysql-single-10
+      server: https://kubernetes.default.svc
     - namespace: tidb-operator
       server: https://kubernetes.default.svc
     - namespace: tidb-cluster

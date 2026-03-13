@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mysql-single-1
+  namespace: argocd
+spec:
+  project: dbaas
+  source:
+    repoURL: https://github.com/heavenruler/dba_career.git
+    targetRevision: master
+    path: dbaas/dbaas-gitops/clusters/lab/services/mysql-singles/instances/mysql-single-1
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mysql-single-1
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    syncOptions: [CreateNamespace=true]
