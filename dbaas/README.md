@@ -1024,6 +1024,7 @@ Audit 需留存：
 | Argo CD App | `dbaas-root` | `argocd` |
 | Argo CD App | `percona-operator` | `argocd` |
 | Argo CD App | `mysql-single` | `argocd` |
+| Argo CD App | `mysql-singles` | `argocd` |
 | Argo CD App | `tidb-operator` | `argocd` |
 | Argo CD App | `tidb-cluster` | `argocd` |
 | Argo CD App | `tidb-monitor` | `argocd` |
@@ -1065,6 +1066,45 @@ kubectl run -n mysql-single mysql-client --rm -it --image=mysql:8.0 --restart=Ne
 ```bash
 mysql -h 172.24.40.17 -P 30306 -uroot -p
 ```
+
+## MySQL 多產品 endpoint 驗證
+
+`mysql-single-1..10` 採用相同 CRD、不同 CR、不同 namespace 的設計，方便模擬 10 個 application 各自接入獨立資料庫 endpoint。
+
+| 產品 | Namespace | Internal Endpoint | External Endpoint |
+|---|---|---|---|
+| Product A | `mysql-single-1` | `mysql-single-1-haproxy.mysql-single-1:3306` | `172.24.40.17:30311` |
+| Product B | `mysql-single-2` | `mysql-single-2-haproxy.mysql-single-2:3306` | `172.24.40.17:30312` |
+| Product C | `mysql-single-3` | `mysql-single-3-haproxy.mysql-single-3:3306` | `172.24.40.17:30313` |
+| Product D | `mysql-single-4` | `mysql-single-4-haproxy.mysql-single-4:3306` | `172.24.40.17:30314` |
+| Product E | `mysql-single-5` | `mysql-single-5-haproxy.mysql-single-5:3306` | `172.24.40.17:30315` |
+| Product F | `mysql-single-6` | `mysql-single-6-haproxy.mysql-single-6:3306` | `172.24.40.17:30316` |
+| Product G | `mysql-single-7` | `mysql-single-7-haproxy.mysql-single-7:3306` | `172.24.40.17:30317` |
+| Product H | `mysql-single-8` | `mysql-single-8-haproxy.mysql-single-8:3306` | `172.24.40.17:30318` |
+| Product I | `mysql-single-9` | `mysql-single-9-haproxy.mysql-single-9:3306` | `172.24.40.17:30319` |
+| Product J | `mysql-single-10` | `mysql-single-10-haproxy.mysql-single-10:3306` | `172.24.40.17:30320` |
+
+用途：
+
+- 驗證多產品接入時的 namespace 邊界
+- 驗證 K8s 內部 DNS endpoint 命名規則
+- 驗證對外 NodePort 暴露模式
+- 後續可逐步替換為實際產品名稱與真實 DB 帳號
+
+產品對應模板：
+
+| Product | Namespace | Owner | Internal Endpoint | External Endpoint | 備註 |
+|---|---|---|---|---|---|
+| Product A | `mysql-single-1` | TBD | `mysql-single-1-haproxy.mysql-single-1:3306` | `172.24.40.17:30311` | |
+| Product B | `mysql-single-2` | TBD | `mysql-single-2-haproxy.mysql-single-2:3306` | `172.24.40.17:30312` | |
+| Product C | `mysql-single-3` | TBD | `mysql-single-3-haproxy.mysql-single-3:3306` | `172.24.40.17:30313` | |
+| Product D | `mysql-single-4` | TBD | `mysql-single-4-haproxy.mysql-single-4:3306` | `172.24.40.17:30314` | |
+| Product E | `mysql-single-5` | TBD | `mysql-single-5-haproxy.mysql-single-5:3306` | `172.24.40.17:30315` | |
+| Product F | `mysql-single-6` | TBD | `mysql-single-6-haproxy.mysql-single-6:3306` | `172.24.40.17:30316` | |
+| Product G | `mysql-single-7` | TBD | `mysql-single-7-haproxy.mysql-single-7:3306` | `172.24.40.17:30317` | |
+| Product H | `mysql-single-8` | TBD | `mysql-single-8-haproxy.mysql-single-8:3306` | `172.24.40.17:30318` | |
+| Product I | `mysql-single-9` | TBD | `mysql-single-9-haproxy.mysql-single-9:3306` | `172.24.40.17:30319` | |
+| Product J | `mysql-single-10` | TBD | `mysql-single-10-haproxy.mysql-single-10:3306` | `172.24.40.17:30320` | |
 
 ## 監控驗證
 
