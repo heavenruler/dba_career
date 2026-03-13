@@ -1,11 +1,11 @@
-.PHONY: help apps namespaces pvc pv rebuild-delete rebuild-bootstrap rebuild-wait rebuild-verify mysql-check tidb-check tidb-info tidb-info-short tidb-monitor-check redis-check redis-ping redis-info redis-info-short monitoring-check rebuild-all
+.PHONY: help apps namespaces pvc pv rebuild-delete rebuild-bootstrap rebuild-wait rebuild-verify mysql-check mysql-singles-check tidb-check tidb-info tidb-info-short tidb-monitor-check redis-check redis-ping redis-info redis-info-short monitoring-check rebuild-all
 
 KUBECTL ?= kubectl
 ARGOCD_NS ?= argocd
 DBAAS_ROOT ?= /root/dba_career/dbaas
 PROJECT_FILE ?= $(DBAAS_ROOT)/dbaas-gitops/projects/dbaas-project.yaml
 ROOT_APP_FILE ?= $(DBAAS_ROOT)/dbaas-gitops/bootstrap/root-application.yaml
-WORKLOAD_NAMESPACES ?= dbaas-system mysql-single percona-operator tidb-operator tidb-cluster redis-single redis-operator monitoring
+WORKLOAD_NAMESPACES ?= dbaas-system mysql-single mysql-single-1 mysql-single-2 mysql-single-3 mysql-single-4 mysql-single-5 mysql-single-6 mysql-single-7 mysql-single-8 mysql-single-9 mysql-single-10 percona-operator tidb-operator tidb-cluster redis-single redis-operator monitoring
 
 help:
 	@printf '%s\n' \
@@ -16,6 +16,7 @@ help:
 	  'make rebuild-wait       # 觀察 applications / pods' \
 	  'make rebuild-verify     # 驗證 mysql / redis / monitoring 狀態' \
 	  'make mysql-check        # 檢查 mysql-single 狀態' \
+	  'make mysql-singles-check # 檢查 mysql-single-1/2...10 狀態' \
 	  'make tidb-check         # 檢查 tidb-operator 狀態' \
 	  'make tidb-info          # 顯示 tidb-cluster 基本資訊' \
 	  'make tidb-info-short    # 顯示 tidb_version()' \
@@ -42,7 +43,7 @@ pv:
 rebuild-delete:
 	$(KUBECTL) delete application -n $(ARGOCD_NS) dbaas-root --ignore-not-found || true
 	@sleep 5
-	$(KUBECTL) delete application -n $(ARGOCD_NS) grafana hello-app mysql-single percona-operator tidb-operator tidb-cluster tidb-monitor redis-operator redis-single victoria-metrics --ignore-not-found || true
+	$(KUBECTL) delete application -n $(ARGOCD_NS) grafana hello-app mysql-single mysql-singles mysql-single-1 mysql-single-2 mysql-single-3 mysql-single-4 mysql-single-5 mysql-single-6 mysql-single-7 mysql-single-8 mysql-single-9 mysql-single-10 percona-operator tidb-operator tidb-cluster tidb-monitor redis-operator redis-single victoria-metrics --ignore-not-found || true
 	$(KUBECTL) get applications -n $(ARGOCD_NS)
 
 rebuild-bootstrap:
@@ -58,6 +59,11 @@ rebuild-wait:
 mysql-check:
 	$(KUBECTL) get pxc -n mysql-single
 	$(KUBECTL) get pods,svc,pvc -n mysql-single
+
+mysql-singles-check:
+	$(KUBECTL) get applications -n $(ARGOCD_NS) | egrep 'mysql-singles|mysql-single-[0-9]+' || true
+	$(KUBECTL) get pxc -A | egrep 'mysql-single-[0-9]+' || true
+	$(KUBECTL) get svc -A | egrep 'mysql-single-[0-9]+-haproxy-nodeport' || true
 
 tidb-check:
 	$(KUBECTL) get pods -n tidb-operator

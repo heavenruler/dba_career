@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Service
+metadata: {name: mysql-single-9-haproxy-nodeport, namespace: mysql-single-9}
+spec:
+  type: NodePort
+  selector: {app.kubernetes.io/component: haproxy, app.kubernetes.io/instance: mysql-single-9, app.kubernetes.io/managed-by: percona-xtradb-cluster-operator, app.kubernetes.io/name: percona-xtradb-cluster, app.kubernetes.io/part-of: percona-xtradb-cluster}
+  ports: [{name: mysql, port: 3306, targetPort: 3306, nodePort: 30319}]
