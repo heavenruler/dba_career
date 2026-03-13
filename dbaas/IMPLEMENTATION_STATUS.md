@@ -28,6 +28,7 @@
 | MySQL Metrics Exporter | done | `mysqld-exporter` 已提供 metrics 給 VictoriaMetrics |
 | VictoriaMetrics Query | done | `mysql_up=1` 查詢已成功 |
 | Redis Metrics Exporter | done | `redis-exporter` 已提供 metrics 給 VictoriaMetrics |
+| metrics-server | done | `kubectl top nodes/pods` 已可用 |
 
 ## 目前部署元件
 
@@ -103,6 +104,7 @@ mysql -h 172.24.40.17 -P 30306 -uroot -p
 - `mysql-single` 密碼目前存放於 GitOps secret manifest，後續需改為安全憑證管理機制
 - `redis-operator` 目前使用 `ServerSideApply=true` 避免大型 CRD annotation 問題
 - `tidb-operator` 目前停用 `tidb-scheduler`，僅保留與 `Kubernetes 1.29` 相容的最小 operator 組態
+- `metrics-server` 已安裝，但尚未納入 GitOps 管理
 
 ## 下一步建議
 
@@ -128,6 +130,7 @@ Lab 環境規劃導入：
 - `mysql_up=1` 可由 VictoriaMetrics 查詢
 - 目前保留 `service-endpoints` 單一路徑抓取 `mysqld-exporter`
 - `redis_up=1` 應可由 VictoriaMetrics 查詢
+- `kubectl top nodes` 已可觀察節點 CPU / memory 使用量
 
 ## Lab 架構摘要
 
@@ -137,4 +140,5 @@ Lab 環境規劃導入：
 - GitOps：`Argo CD + GitHub`
 - Storage：`local-path` (`/data`)
 - Metrics：`VictoriaMetrics`
+- Cluster Metrics：`metrics-server`
 - Dashboard：`Grafana`

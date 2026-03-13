@@ -871,6 +871,7 @@ Audit 需留存：
 | redis-single | done | Standalone Redis + exporter + NodePort |
 | MySQL Metrics Exporter | done | `mysqld-exporter` 已提供 metrics 給 VictoriaMetrics |
 | VictoriaMetrics Query | done | `mysql_up=1` 查詢已成功 |
+| metrics-server | done | `kubectl top nodes/pods` 已可用 |
 
 ## 目前部署元件
 
@@ -928,6 +929,7 @@ mysql -h 172.24.40.17 -P 30306 -uroot -p
 - `VictoriaMetrics` 已成功抓取 `mysql_up=1`
 - 為避免重複時間序列，目前保留 `service-endpoints` 單一路徑抓取 exporter
 - `redis-single` 已透過 `redis-exporter` 暴露 `9121` metrics
+- `metrics-server` 已安裝，`kubectl top nodes/pods` 已可用
 
 Redis metrics 查詢範例：
 
@@ -1007,6 +1009,7 @@ Redis exporter metrics：
 - `percona-operator` 目前以較寬鬆 RBAC 運作，不適合直接進正式環境
 - `mysql-single` 密碼目前存放於 GitOps secret manifest，後續需改為安全憑證管理機制
 - `tidb-operator` 目前停用 `tidb-scheduler`，僅保留與 `Kubernetes 1.29` 相容的最小 operator 組態
+- `metrics-server` 已安裝，但尚未納入 GitOps 管理
 
 ## 下一步
 
@@ -1027,4 +1030,5 @@ Redis exporter metrics：
 - GitOps：`Argo CD + GitHub`
 - Storage：`local-path` (`/data`)
 - Metrics：`VictoriaMetrics`
+- Cluster Metrics：`metrics-server`
 - Dashboard：`Grafana`
