@@ -13,7 +13,6 @@ spec:
     reserveDays: 1
     requests:
       storage: 4Gi
-    storageClassName: local-path
   grafana:
     baseImage: grafana/grafana
     version: 7.5.11
