@@ -1,0 +1,59 @@
+{
+  "language": {
+    "primary": "zh-TW",
+    "secondary": ["en"],
+    "tone": "professional-concise"
+  },
+  "output_style": {
+    "answer_order": [
+      "conclusion",
+      "assumptions",
+      "steps",
+      "commands_or_sql",
+      "validation",
+      "risks"
+    ],
+    "prefer_bullets": true,
+    "prefer_tables_for_comparison": true,
+    "include_risk_section": true,
+    "include_next_steps": true
+  },
+  "prefer_commands_first": true,
+  "prefer_architecture_first": false,
+  "preferred_formats": {
+    "documents": ["markdown"],
+    "checklists": true,
+    "code_blocks": ["sh", "sql", "json", "yaml"],
+    "diagrams": ["text-outline"]
+  },
+  "preferred_databases": [
+    "mysql",
+    "postgresql",
+    "redis",
+    "clickhouse"
+  ],
+  "default_assumptions": {
+    "environment": "enterprise-internal",
+    "change_policy": "prefer-safe-rollout",
+    "documentation_required": true,
+    "production_changes_require_validation": true,
+    "version_must_be_verified": true
+  },
+  "risk_tolerance": {
+    "level": "medium-low",
+    "prefer_rollback_ready": true,
+    "allow_experimental_for_poc": true,
+    "production_bias": "stability-first"
+  },
+  "change_log": [
+    {
+      "date": "2026-03-13",
+      "change": "初始化 dba-team 預設偏好模板"
+    }
+  ],
+  "metadata": {
+    "owner": "dba-team",
+    "source": "manual-template",
+    "last_updated": "2026-03-13T00:00:00Z"
+  }
+}
