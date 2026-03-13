@@ -993,6 +993,7 @@ Audit 需留存：
 - `Argo CD` 已可自 GitHub 同步 GitOps 設定
 - `Percona XtraDB Cluster Operator` 已可於 cluster 內運作
 - `mysql-single` 已成功建立並完成 SQL 驗證
+- `private-demo` 已完成 GitOps bootstrap 驗證
 - `TiDB Operator` 已可於 cluster 內運作
 - `tidb-cluster` 已成功建立並完成 SQL 驗證
 - `tidb-monitor` 已納入最小 POC 佈署骨架
@@ -1004,6 +1005,7 @@ Audit 需留存：
 |---|---|---|
 | StorageClass | done | 使用 `local-path` 對應各 node `/data` |
 | GitOps | done | 使用 `Argo CD + GitHub` |
+| GitOps Bootstrap 驗證 | done | `private-demo` 已成功建立並回應 `HTTP 200` |
 | MySQL Operator | done | 使用 `Percona XtraDB Cluster Operator` |
 | mysql-single | done | 單節點 PXC + HAProxy |
 | SQL 驗證 | done | 已完成建庫、建表、寫入與查詢 |
@@ -1023,6 +1025,7 @@ Audit 需留存：
 |---|---|---|
 | Argo CD App | `dbaas-root` | `argocd` |
 | Argo CD App | `percona-operator` | `argocd` |
+| Argo CD App | `private-demo` | `argocd` |
 | Argo CD App | `mysql-single` | `argocd` |
 | Argo CD App | `mysql-singles` | `argocd` |
 | Argo CD App | `tidb-operator` | `argocd` |
@@ -1034,6 +1037,34 @@ Audit 需留存：
 | DB Cluster | `basic` | `tidb-cluster` |
 | Redis | `redis-single` | `redis-single` |
 | Exporter | `mysqld-exporter` | `mysql-single` |
+
+## GitOps Bootstrap 驗證
+
+`private-demo` 作為最小 GitOps smoke test 樣板，用於驗證以下流程：
+
+- AppProject 允許 namespace 與 destination
+- root application 可自 GitHub 正確拉取 child app
+- Argo CD 可自動建立 namespace / deployment / service
+- 叢集內 service 可正常連線並回應 `HTTP 200`
+
+已驗證指令：
+
+```bash
+kubectl run -n private-demo curltest --rm -it --image=curlimages/curl --restart=Never -- \
+  curl -I http://private-demo
+```
+
+驗證結果：
+
+- `private-demo` = `Synced / Healthy`
+- `deployment/private-demo` = `1/1`
+- `service/private-demo` = `ClusterIP`
+- `HTTP/1.1 200 OK`
+
+用途：
+
+- 後續新增 GitHub Actions / 自助申請流程時，可先用 `private-demo` 驗證 GitOps 鏈路
+- 適合作為 bootstrap、repo 權限、Argo CD 對 GitHub 存取與 namespace governance 的 smoke test
 
 ## MySQL 存取方式
 
