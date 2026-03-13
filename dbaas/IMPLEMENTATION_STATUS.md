@@ -72,6 +72,11 @@ TiDB Monitor 預設入口：
 
 - Grafana: `http://172.24.40.17:32159`
 
+目前已驗證：
+
+- `curl -s http://172.24.40.17:32159/api/health` 可正常回傳
+- TiDB Monitor Grafana 版本為 `7.5.11`
+
 ## MySQL 存取方式
 
 叢集內服務：
