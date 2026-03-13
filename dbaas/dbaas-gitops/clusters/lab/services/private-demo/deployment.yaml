@@ -4,7 +4,7 @@ metadata:
   name: private-demo
   namespace: private-demo
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: private-demo
