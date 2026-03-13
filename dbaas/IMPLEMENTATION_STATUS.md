@@ -70,7 +70,7 @@ make tidb-info-short
 
 TiDB Monitor 預設入口：
 
-- Grafana: `http://172.24.40.17:30310`
+- Grafana: `http://172.24.40.17:32159`
 
 ## MySQL 存取方式
 
