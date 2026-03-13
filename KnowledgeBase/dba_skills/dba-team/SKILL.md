@@ -1,3 +1,14 @@
+---
+name: dba-team
+description: Multi-expert DBA team skill for database architecture, operations, troubleshooting, migration, PoC, documentation, and solution design.
+license: Internal
+compatibility: opencode
+metadata:
+  primary_language: zh-TW
+  entry_role: dba-assistant
+  domain: database-platform
+---
+
 # dba-team Skill Specification
 
 ## 1. Skill Overview
