@@ -1102,6 +1102,30 @@ kubectl rollout status deployment/private-demo -n private-demo
 - 正式 GitOps 操作以修改 Git 為主，不建議直接用 `kubectl scale` 當最終變更來源
 - `kubectl scale` 可作為暫時測試，但後續仍會被 Argo CD 對齊回 Git 狀態
 
+Argo CD 變更偵測最佳化：
+
+目前 Lab 環境可將 Argo CD reconciliation interval 調整為 `30s`，讓 `git push -> Argo CD 發現差異` 的時間縮短。
+
+設定方式：
+
+```bash
+kubectl -n argocd patch configmap argocd-cm --type merge -p '{
+  "data": {
+    "timeout.reconciliation": "30s"
+  }
+}'
+
+kubectl -n argocd rollout restart deployment argocd-server
+kubectl -n argocd rollout restart deployment argocd-repo-server
+kubectl -n argocd rollout restart statefulset argocd-application-controller
+```
+
+驗證：
+
+```bash
+kubectl -n argocd get configmap argocd-cm -o yaml | grep timeout.reconciliation
+```
+
 用途：
 
 - 後續新增 GitHub Actions / 自助申請流程時，可先用 `private-demo` 驗證 GitOps 鏈路
