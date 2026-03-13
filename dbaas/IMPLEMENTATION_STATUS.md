@@ -9,6 +9,7 @@
 - `mysql-single` 已成功建立並完成 SQL 驗證
 - `TiDB Operator` 已可於 cluster 內運作
 - `tidb-cluster` 已成功建立並完成 SQL 驗證
+- `tidb-monitor` 已納入最小 POC 佈署骨架
 - `OT-CONTAINER-KIT Redis Operator` 已成功建立 `redis-single`
 
 ## 已完成項目
@@ -23,6 +24,7 @@
 | TiDB Operator | done | 使用 `PingCAP tidb-operator` |
 | tidb-cluster | done | 最小 TiDB Cluster POC 已成功建立 |
 | TiDB SQL 驗證 | done | `select version(); show databases;` 已成功 |
+| tidb-monitor | done | 已加入最小 TiDB Monitor GitOps 定義 |
 | Redis Operator | done | 使用 `OT-CONTAINER-KIT redis-operator` |
 | redis-single | done | Standalone Redis + exporter + NodePort |
 | MySQL Metrics Exporter | done | `mysqld-exporter` 已提供 metrics 給 VictoriaMetrics |
@@ -39,6 +41,7 @@
 | Argo CD App | `mysql-single` | `argocd` |
 | Argo CD App | `tidb-operator` | `argocd` |
 | Argo CD App | `tidb-cluster` | `argocd` |
+| Argo CD App | `tidb-monitor` | `argocd` |
 | Argo CD App | `redis-operator` | `argocd` |
 | Argo CD App | `redis-single` | `argocd` |
 | DB Cluster | `minimal-cluster` | `mysql-single` |
@@ -64,6 +67,10 @@ Lab 對外服務：
 ```bash
 make tidb-info-short
 ```
+
+TiDB Monitor 預設入口：
+
+- Grafana: `http://172.24.40.17:30310`
 
 ## MySQL 存取方式
 

@@ -1,4 +1,4 @@
-.PHONY: help apps namespaces pvc pv rebuild-delete rebuild-bootstrap rebuild-wait rebuild-verify mysql-check tidb-check tidb-info tidb-info-short redis-check redis-ping redis-info redis-info-short monitoring-check rebuild-all
+.PHONY: help apps namespaces pvc pv rebuild-delete rebuild-bootstrap rebuild-wait rebuild-verify mysql-check tidb-check tidb-info tidb-info-short tidb-monitor-check redis-check redis-ping redis-info redis-info-short monitoring-check rebuild-all
 
 KUBECTL ?= kubectl
 ARGOCD_NS ?= argocd
@@ -19,6 +19,7 @@ help:
 	  'make tidb-check         # 檢查 tidb-operator 狀態' \
 	  'make tidb-info          # 顯示 tidb-cluster 基本資訊' \
 	  'make tidb-info-short    # 顯示 tidb_version()' \
+	  'make tidb-monitor-check # 檢查 tidb-monitor 狀態' \
 	  'make redis-check        # 檢查 redis-single 狀態' \
 	  'make redis-ping         # 測試 redis-single ping' \
 	  'make redis-info         # 顯示 redis-single info' \
@@ -41,7 +42,7 @@ pv:
 rebuild-delete:
 	$(KUBECTL) delete application -n $(ARGOCD_NS) dbaas-root --ignore-not-found || true
 	@sleep 5
-	$(KUBECTL) delete application -n $(ARGOCD_NS) grafana hello-app mysql-single percona-operator tidb-operator tidb-cluster redis-operator redis-single victoria-metrics --ignore-not-found || true
+	$(KUBECTL) delete application -n $(ARGOCD_NS) grafana hello-app mysql-single percona-operator tidb-operator tidb-cluster tidb-monitor redis-operator redis-single victoria-metrics --ignore-not-found || true
 	$(KUBECTL) get applications -n $(ARGOCD_NS)
 
 rebuild-bootstrap:
@@ -68,6 +69,10 @@ tidb-info:
 
 tidb-info-short:
 	$(KUBECTL) run -n tidb-cluster mysql-client --rm -i --restart=Never --image=mysql:8.0 -- mysql -h basic-tidb -P 4000 -u root -e "select version(); show databases;"
+
+tidb-monitor-check:
+	$(KUBECTL) get tidbmonitors.pingcap.com -n tidb-cluster
+	$(KUBECTL) get pods,svc,pvc -n tidb-cluster | egrep 'monitor|grafana|prometheus' || true
 
 redis-check:
 	$(KUBECTL) get redis -n redis-single

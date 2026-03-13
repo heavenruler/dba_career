@@ -21,6 +21,7 @@ dbaas-gitops/
         mysql-single.yaml
         tidb-operator.yaml
         tidb-cluster.yaml
+        tidb-monitor.yaml
         redis-operator.yaml
         redis-single.yaml
         victoria-metrics.yaml
@@ -40,6 +41,9 @@ dbaas-gitops/
           kustomization.yaml
           namespace.yaml
           tidb-cluster.yaml
+        tidb-monitor/
+          kustomization.yaml
+          tidb-monitor.yaml
 ```
 
 ## 第一步
@@ -58,6 +62,7 @@ dbaas-gitops/
 - `mysql-single.yaml` 會建立最小 MySQL POC
 - `tidb-operator.yaml` 會佈署 PingCAP TiDB Operator
 - `tidb-cluster.yaml` 會建立最小 TiDB Cluster POC
+- `tidb-monitor.yaml` 會建立最小 TiDB Monitor POC
 - `redis-operator.yaml` 會佈署 OT-CONTAINER-KIT Redis Operator
 - `redis-single.yaml` 會建立最小 Redis Standalone POC
 - `nodeport-service.yaml` 會暴露 Lab MySQL 對外入口 `30306`
