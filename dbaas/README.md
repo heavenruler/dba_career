@@ -135,6 +135,65 @@ dbaas/
 +-----------------------------------------------------------------------------------+
 ```
 
+### Operator / CRD / Pod 關聯圖
+
+```text
+Argo CD Application
+  |
+  +-- percona-operator ------------------------------+
+  |                                                  |
+  |   CRD: PerconaXtraDBCluster                      |
+  |     -> CR: minimal-cluster                       |
+  |       -> StatefulSet/Service/PVC                |
+  |         -> Pod: minimal-cluster-pxc-*           |
+  |         -> Pod: minimal-cluster-haproxy-*       |
+  |
+  +-- redis-operator --------------------------------+
+  |                                                  |
+  |   CRD: Redis                                     |
+  |     -> CR: redis-single                         |
+  |       -> StatefulSet/Service/PVC                |
+  |         -> Pod: redis-single-*                  |
+  |         -> Exporter: redis-exporter             |
+  |
+  +-- tidb-operator ---------------------------------+
+  |                                                  |
+  |   CRD: TidbCluster / TidbMonitor                |
+  |     -> CR: basic (TidbCluster)                  |
+  |       -> StatefulSet/Service/PVC                |
+  |         -> Pod: basic-pd-*                      |
+  |         -> Pod: basic-tikv-*                    |
+  |         -> Pod: basic-tidb-*                    |
+  |     -> CR: basic (TidbMonitor)                  |
+  |       -> Pod: basic-monitor-0                   |
+  |
+  +-- victoria-metrics ------------------------------+
+  |   -> Pod: victoria-metrics-server-*             |
+  |
+  +-- grafana ---------------------------------------+
+      -> Pod: grafana-*                             |
+```
+
+### 對外入口圖
+
+```text
+User / DBA / RD
+  |
+  +-- Argo CD --------------------> https://172.24.40.17:31559
+  |
+  +-- Grafana --------------------> http://172.24.40.17:30300
+  |
+  +-- VictoriaMetrics ------------> http://172.24.40.17:30428
+  |
+  +-- MySQL mysql-single ---------> 172.24.40.17:30306
+  |
+  +-- Redis redis-single ---------> 172.24.40.17:30379
+  |
+  +-- TiDB basic -----------------> 172.24.40.17:30400
+  |
+  +-- TiDB Monitor Grafana -------> http://172.24.40.17:32159
+```
+
 平台交付能力如下：
 
 | 能力 | 說明 |
