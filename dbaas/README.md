@@ -64,6 +64,77 @@ dbaas/
 | `dbaas-gitops/clusters/lab/apps/victoria-metrics.yaml` | 佈署 VictoriaMetrics |
 | `dbaas-gitops/clusters/lab/apps/grafana.yaml` | 佈署 Grafana 與 datasource 設定 |
 
+### Lab 架構圖
+
+```text
++-----------------------------------------------------------------------------------+
+| VM / Worker Nodes                                                                 |
+|-----------------------------------------------------------------------------------|
+| 172.24.40.17 control-plane                                                        |
+| 172.24.40.18 worker                                                                |
+| 172.24.40.19 worker                                                                |
+| 172.24.40.20 worker                                                                |
++-----------------------------------------+-----------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+| Kubernetes Cluster                                                                 |
+|-----------------------------------------------------------------------------------|
+| control-plane: API Server / Scheduler / Controller Manager / etcd                |
+| workers: DB Pods / Operator Pods / Monitoring Pods / PVC(local-path)             |
++-----------------------------------------+-----------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+| CRD / Operators                                                                    |
+|-----------------------------------------------------------------------------------|
+| Percona:      pxc.percona.com/*                                                    |
+| Redis:        redis.redis.opstreelabs.in/*                                         |
+| PingCAP:      pingcap.com/*                                                        |
++-----------------------------------------+-----------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+| Argo CD Project                                                                    |
+|-----------------------------------------------------------------------------------|
+| AppProject: dbaas                                                                  |
+| Allowed namespaces: argocd / dbaas-system / mysql-single / redis-single /         |
+|                    redis-operator / percona-operator / tidb-operator /            |
+|                    tidb-cluster / monitoring                                      |
++-----------------------------------------+-----------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+| Argo CD Applications                                                               |
+|-----------------------------------------------------------------------------------|
+| dbaas-root                                                                         |
+| |- hello-app                                                                       |
+| |- percona-operator                                                                |
+| |- mysql-single                                                                    |
+| |- redis-operator                                                                  |
+| |- redis-single                                                                    |
+| |- tidb-operator                                                                   |
+| |- tidb-cluster                                                                    |
+| |- tidb-monitor                                                                    |
+| |- victoria-metrics                                                                |
+| |- grafana                                                                         |
++-----------------------------------------+-----------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+| Namespaces / Workloads                                                             |
+|-----------------------------------------------------------------------------------|
+| percona-operator -> Percona controller                                             |
+| mysql-single     -> PXC / HAProxy / mysqld-exporter                               |
+| redis-operator   -> OT-CONTAINER-KIT controller                                    |
+| redis-single     -> Redis / redis-exporter                                         |
+| tidb-operator    -> tidb-controller-manager                                        |
+| tidb-cluster     -> PD / TiKV / TiDB / TidbMonitor                                |
+| monitoring       -> VictoriaMetrics / Grafana                                      |
+| dbaas-system     -> platform shared namespace                                      |
++-----------------------------------------------------------------------------------+
+```
+
 平台交付能力如下：
 
 | 能力 | 說明 |
