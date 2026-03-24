@@ -75,12 +75,32 @@
 - 目前尚未看到完整的 tenant RBAC、NetworkPolicy、Secret rotation、審計鏈路
 - 這頁建議明確標示「Lab 可跑」與「正式可治理」之間的差距
 
-## 11. 目前已知問題
-- `local-path` storage 不適合正式高可用與災難復原場景
-- `tidb-operator` 目前停用 `tidb-scheduler`，僅保留與 `Kubernetes 1.29` 相容的最小組態
-- `metrics-server` 已安裝，但尚未納入 GitOps 管理
-- 大型 CRD 套件已有特殊處理，例如 Redis Operator 使用 `ServerSideApply=true`
-- 現況對外入口以 NodePort 為主，正式版仍需收斂 ingress、LB、private endpoint 策略
+## 11. 目前已知問題 & Todo Items
+- DB Service Provision 規格設計規劃
+- 節省多少費用 / 節省多少工時
+- 哪些資料使用屬性不適合進入 K8s DBaaS 環境
+- 效能損耗比 (Compare to VM with K8s pods)
+- `local-path` storage 不適合正式高可用與災難復原場景 ; 接入 Shared Storage 對效能的影響
+- K8s 叢集需要與現行的 Workers 同住或獨立 (HVM & K8s 維運團隊看法探測)
+  - 如果需要獨立存在，預算範圍需要哪些考量？
+  - 拆解階段上線，起步叢集資源不用太多，後續完成擴張即可。
+
+- 資料可攜規劃下設計
+  - Active/Standby Active/Passive witch one?
+  - 資料同步已不依賴原生 Replica 的下階段資料非同步處理
+    - CDC
+
+- GitOps pull 策略
+  - Schedule PR merges on business days between 19:00 and 20:00 to trigger deployment.
+
+- Others
+  - 使用 Operators 還是需要自己刻 CRD Config
+  - `tidb-operator` 目前停用 `tidb-scheduler`，僅保留與 `Kubernetes 1.29` 相容的最小組態
+  - 大型 CRD 套件已有特殊處理，例如 Redis Operator 使用 `ServerSideApply=true`
+  - 現況對外入口以 NodePort 為主，正式版仍需收斂 ingress、LB、private endpoint 策略
+
+- Scale 策略設計及規劃
+- 計費模型
 
 ## 12. 下一步與演進方向
 - 補 `redis-sentinel / redis-ha` 驗證，完成 Redis HA 最小閉環
