@@ -91,13 +91,6 @@ flowchart TB
 - Metrics 查詢入口為 VictoriaMetrics：`http://172.24.40.17:30428`
 - 資料庫對外入口目前已驗證 MySQL `30306`、Redis `30379`、TiDB `30400`
 
-## 控制平面現況
-- 目前沒有獨立自建 Portal、Provision API、Auth Service、Scheduler
-- 現階段控制平面由 Git repo、Argo CD、AppProject、Kustomize 與 Operator 共同組成
-- `bootstrap/root-application.yaml` 負責啟動 `dbaas-root`
-- `projects/dbaas-project.yaml` 定義 namespace destination 與資源邊界
-- 申請流程仍偏工程導向，本質是修改 Git manifest 後由 Argo CD 同步
-
 ## 資料平面現況
 - MySQL 採 `Percona XtraDB Cluster Operator`，已完成 `mysql-single` 與 `mysql-single-1..10`
 - Redis 採 `OT-CONTAINER-KIT redis-operator`，已完成 `redis-single + redis-exporter`
@@ -106,7 +99,6 @@ flowchart TB
 - 目前已實作的是 DB workload 與 endpoint 暴露，不是完整多租戶 DBaaS 產品介面
 
 ## 已完成的實作能力
-- GitOps bootstrap 已驗證，`private-demo` 可作為 smoke test 樣板
 - MySQL 已完成建庫、建表、寫入、查詢與外部連線驗證
 - Redis 已完成 `PING`、資訊查詢與 exporter metrics 暴露
 - TiDB 已完成 `select version(); show databases;` 與 Monitor 健康檢查
@@ -156,6 +148,7 @@ flowchart TB
   - `tidb-operator` 目前停用 `tidb-scheduler`，僅保留與 `Kubernetes 1.29` 相容的最小組態
   - 大型 CRD 套件已有特殊處理，例如 Redis Operator 使用 `ServerSideApply=true`
   - 現況對外入口以 NodePort 為主，正式版仍需收斂 ingress、LB、private endpoint 策略
+    - Database Service NodePort expose  因為是隨機產生 ; 規劃服務部署不過 A10 的設計方式減少服務建立依賴與耦合
 
 - Scale 策略設計及規劃
 - 計費模型
