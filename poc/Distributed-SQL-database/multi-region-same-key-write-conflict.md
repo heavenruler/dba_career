@@ -1,6 +1,6 @@
 # Multi-Region 同 Key 同時寫入機制比較（TiDB vs YugabyteDB）
 
-## 0. 3 分鐘摘要
+## 0. TL;DR
 
 - `same key` 的多地同時寫入，本質是單 key 序列化（serialization）問題，不只是多區部署問題
 - TiDB 以 **PD 配發 TSO** 作為全域排序基礎，再透過 **Percolator + 2PC + lock** 處理衝突
