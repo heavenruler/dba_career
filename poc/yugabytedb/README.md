@@ -50,10 +50,10 @@ make destroy-all-lab      一次清掉單機、cluster、HA 全部實驗環境
 
 ## 架構說明
 
-本目錄提供 3 種 YugabyteDB POC 拓樸：
-
 ![](https://docs.yugabyte.com/images/architecture/layered-architecture.png)
 [Reference](https://docs.yugabyte.com/stable/architecture/)
+
+本目錄提供 3 種 YugabyteDB POC 拓樸：
 
 ### 1. 單機 POC
 
