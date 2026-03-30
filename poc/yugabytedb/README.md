@@ -70,6 +70,46 @@ make destroy-all-lab
 - `PARTITION ... TABLESPACE ts_azX` 把 partition 綁到對應 zone 的 tablespace
 - 這表示「資料放在哪裡」，不代表應用程式流量會自動導到對應 zone
 
+## 指令速查表
+
+### 單機 POC
+
+```bash
+make init
+make health
+make seed
+make query
+make sql
+make destroy
+```
+
+### 三區模擬叢集
+
+```bash
+make init-cluster
+make health-cluster
+make query-cluster
+make geo-cluster
+make destroy-cluster
+```
+
+### HA 模擬叢集
+
+```bash
+make init-cluster-ha
+make health-cluster-ha
+make query-cluster-ha
+make geo-cluster-ha
+make failover-test-ha
+make destroy-cluster-ha
+```
+
+### 全域清理
+
+```bash
+make destroy-all-lab
+```
+
 ## Start
 
 ```bash
