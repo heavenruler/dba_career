@@ -76,8 +76,10 @@ Follower reads ≠ Active/Active Write
 ## 3. TiDB：Follower Read 的定位
 
 > 備註：
-> TiDB 若要由 follower 承接 read 流量，通常前提是業務可接受一定程度的 stale read（非最新資料）。
-> 若需求是最強一致、最新值優先，讀取策略通常仍需回到 leader 或受一致性讀取模式限制。
+> TiDB 的 follower read 能否成立，不只是業務是否接受 stale read，
+> 還取決於 follower 是否已追上可安全讀取的版本時間點。
+> 因此它比較像是「可在某個安全時間戳之前做本地讀取」，
+> 核心依據是 TiDB / TiKV 的 MVCC 版本、TSO 與副本同步進度。
 
 ### 3.1 核心概念
 
@@ -137,8 +139,10 @@ TiDB 比較適合：
 ## 4. YugabyteDB：Follower Reads / Replica Reads 的定位
 
 > 備註：
-> YugabyteDB 若要由 follower / replica 承接 read 流量，通常前提是業務可接受一定程度的 stale read（非最新資料）。
-> 若需求是最強一致、最新值優先，讀流量通常仍需回到 leader 或受一致性讀取策略限制。
+> YugabyteDB 的 follower / replica read 能否成立，不只是業務是否接受 stale read，
+> 還取決於該 replica 是否已經推進到可安全服務讀取的 hybrid time（safe time）。
+> 因此它比較像是「可在某個 safe hybrid time 之前做本地讀取」，
+> 核心依據是 HLC、Raft 複寫進度與 replica 的 safe time。
 
 ### 4.1 核心概念
 
