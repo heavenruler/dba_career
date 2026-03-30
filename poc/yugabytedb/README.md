@@ -5,29 +5,47 @@ Compose file: `compose.yml`
 ## Make Targets
 
 ```bash
-make init
-make health
-make seed
-make query
-make status
-make sql
-make logs
-make destroy
-make destroy-all
-make init-cluster
-make status-cluster
-make health-cluster
-make query-cluster
-make geo-cluster
-make destroy-cluster
-make init-cluster-ha
-make status-cluster-ha
-make health-cluster-ha
-make query-cluster-ha
-make geo-cluster-ha
-make failover-test-ha
-make destroy-cluster-ha
-make destroy-all-lab
+=== 單機 POC ===
+make init                 啟動單機 YugabyteDB POC 環境
+make wait                 等待單機 YSQL 就緒
+make health               檢查單機 YSQL、7000、9000 健康狀態
+make status               顯示單機 compose 與 port 狀態
+make logs                 追蹤單機 YugabyteDB logs
+make sql                  進入單機 ysqlsh
+make query                執行單機查詢，預設查 demo.accounts LIMIT 5
+make seed                 套用 init.sql 範例資料
+make restart              重建單機環境
+make destroy              停止單機環境
+make destroy-all          停止單機環境並刪除 volume
+
+=== 三區模擬叢集 ===
+make init-cluster         啟動 1 master + 3 tserver 三區模擬叢集
+make wait-cluster         等待三區模擬叢集 YSQL 就緒
+make health-cluster       檢查三區模擬叢集 YSQL 與 UI 健康狀態
+make status-cluster       顯示三區模擬叢集 compose 狀態
+make logs-cluster         追蹤三區模擬叢集 logs
+make query-cluster        查詢三區模擬叢集節點拓樸
+make geo-cluster          套用 geo-partition 範例 SQL 到三區模擬叢集
+make restart-cluster      重建三區模擬叢集
+make destroy-cluster      停止三區模擬叢集
+make destroy-cluster-all  停止三區模擬叢集並刪除 volumes
+
+=== HA 模擬叢集 ===
+make init-cluster-ha      啟動 3 master + 3 tserver HA 模擬叢集
+make wait-cluster-ha      等待 HA 模擬叢集 YSQL 就緒
+make configure-cluster-ha 對 HA 模擬叢集套用 RF=3 placement
+make health-cluster-ha    檢查 HA 模擬叢集 YSQL 與 UI 健康狀態
+make status-cluster-ha    顯示 HA 模擬叢集 compose 狀態
+make logs-cluster-ha      追蹤 HA 模擬叢集 logs
+make query-cluster-ha     查詢 HA 模擬叢集節點拓樸
+make geo-cluster-ha       套用 geo-partition 範例 SQL 到 HA 模擬叢集
+make failover-test-ha     模擬 HA 節點故障並驗證查詢仍可用
+make restart-cluster-ha   重建 HA 模擬叢集
+make destroy-cluster-ha   停止 HA 模擬叢集
+make destroy-cluster-ha-all 停止 HA 模擬叢集並刪除 volumes
+
+=== 全域清理 ===
+make destroy-all-lab      一次清掉單機、cluster、HA 全部實驗環境
 ```
 
 ## 架構說明
