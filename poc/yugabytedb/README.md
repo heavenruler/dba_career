@@ -290,6 +290,285 @@ make destroy-all-lab
 - `TABLESPACE ... replica_placement` 只控制資料放置位置，不會自動把應用程式流量導到對應 zone；若要流量在地化，仍需搭配 client/driver 的 topology-aware 設定。
 - 多區 schema 若 `JOIN` / `FK` 沒有把 `geo_partition` 或相同 distribution key 納入設計，查詢與寫入可能出現跨 zone 延遲。
 
+## JOIN 與 FK 對分散式資料庫的影響
+
+### 核心概念
+
+在 YugabyteDB 這類分散式 SQL 資料庫中：
+
+- `JOIN` 與 `FK` 不只是 SQL 語法問題
+- 本質上是查詢與驗證是否需要跨 tablet、跨節點、跨 zone
+- schema 結構會直接影響延遲、吞吐、交易衝突與擴展性
+
+簡單說：
+
+- `JOIN` 主要影響查詢成本
+- `FK` 主要影響寫入成本
+- schema key 設計不對時，系統雖然能跑，但會付出跨網路與分散式交易的代價
+
+### JOIN 的影響
+
+`JOIN` 成本主要取決於：
+
+- join key 是否對齊
+- 資料是否落在相近的 shard / tablet
+- 是否跨 zone
+
+常見情況：
+
+#### 1. Join key 對齊
+
+例如 parent / child 都用相同業務 key 與相同 geo key：
+
+```sql
+accounts(account_id, geo_partition)
+bank_txn(account_id, geo_partition, ...)
+```
+
+優點：
+
+- 查詢比較容易命中相近資料位置
+- distributed join 成本較低
+- 網路搬移較少
+
+#### 2. Join key 不對齊
+
+例如：
+
+- parent 用 `account_id HASH`
+- child 用 `txn_id HASH`
+- 查詢卻常用 `JOIN account_id`
+
+可能結果：
+
+- 系統要從多個 tablet 拉資料再 join
+- 查詢 latency 上升
+- 大查詢容易放大 hash join / sort join 成本
+
+#### 3. 跨 zone join
+
+若一張表的資料主要落在 `az1`，另一張表的資料在 `az2`：
+
+- join 時可能產生跨 zone 存取
+- WAN / cross-zone RTT 會直接反映在查詢時間上
+- 小查詢變慢，大查詢更明顯
+
+### FK 的影響
+
+`FK` 主要影響寫入與刪除。
+
+每次 `INSERT` / `UPDATE` child 時，系統要驗證：
+
+- parent key 是否存在
+- parent 被 `DELETE` / `UPDATE` 時是否有 child 依賴
+
+在單機 PostgreSQL：
+
+- 通常只是本機索引檢查
+
+在分散式資料庫：
+
+- 這個檢查可能是一次分散式讀取
+- 若 parent / child 不在同 shard 或同 zone，會增加網路往返
+- 高併發下更容易形成 contention
+
+實務上：
+
+- `FK` 很有價值，但不是零成本
+- 核心交易表可以保留 FK
+- 大量事件流、流水明細表要評估是否全部都需要 FK
+
+### Schema 結構最關鍵的地方
+
+#### 1. 主鍵與 distribution key
+
+主鍵不只影響唯一性，也影響：
+
+- shard 分布
+- join 局部性
+- FK 驗證成本
+
+不理想例子：
+
+```sql
+CREATE TABLE accounts (
+  account_id bigint PRIMARY KEY
+);
+
+CREATE TABLE bank_txn (
+  txn_id bigint PRIMARY KEY,
+  account_id bigint NOT NULL REFERENCES accounts(account_id)
+);
+```
+
+問題：
+
+- `accounts` 與 `bank_txn` 很可能分布在不同 tablet
+- `JOIN` 與 `FK` 驗證都可能跨節點
+
+較佳例子：
+
+```sql
+CREATE TABLE accounts (
+  account_id bigint NOT NULL,
+  geo_partition text NOT NULL,
+  account_name text NOT NULL,
+  PRIMARY KEY (account_id HASH, geo_partition)
+);
+
+CREATE TABLE bank_txn (
+  txn_id bigint NOT NULL,
+  account_id bigint NOT NULL,
+  geo_partition text NOT NULL,
+  amount numeric(12,2) NOT NULL,
+  PRIMARY KEY (account_id HASH, txn_id, geo_partition),
+  FOREIGN KEY (account_id, geo_partition)
+    REFERENCES accounts(account_id, geo_partition)
+);
+```
+
+優點：
+
+- parent / child 使用相同業務 key 與 geo key
+- join 條件與資料分布方向較一致
+- FK 驗證比較有機會在相近資料位置完成
+
+#### 2. 是否把 geo key 放進 PK / FK
+
+在多區場景，這非常重要。
+
+若沒放：
+
+- 系統無法保證 parent / child 同區
+- 邏輯上屬於 `AZ1` 的資料，驗證可能跑去 `AZ2`
+
+若有放：
+
+- schema 本身就表達了區域邊界
+- parent / child 關係更容易在同區完成
+- 比較符合 geo-partition 的設計目標
+
+#### 3. 分區方式是否對齊查詢模式
+
+如果常見查詢是：
+
+```sql
+SELECT *
+FROM bank_txn
+WHERE geo_partition = 'AZ1'
+  AND account_id = 10001;
+```
+
+那 schema 最好讓：
+
+- `geo_partition`
+- `account_id`
+
+成為主要定位條件。
+
+否則即使功能正確，查詢路徑也可能很分散。
+
+### 在 YugabyteDB 上的具體影響
+
+#### 對 JOIN
+
+- key 對齊：查詢較穩定
+- key 不對齊：distributed join 成本升高
+- 跨 zone：查詢 latency 增加
+- 大表 join：更容易放大 network shuffle 與記憶體使用
+
+#### 對 FK
+
+- parent / child 同 key、同 zone：寫入成本較低
+- parent / child 分散：每次 child 寫入都可能遠端驗證
+- delete parent：若 child 多且分散，成本更高
+
+#### 對交易
+
+- 單筆交易若碰到多 tablet、多 zone
+- 兩階段提交成本更高
+- 衝突、重試與延遲都更明顯
+
+#### 對擴展性
+
+- 若 schema 天然造成 cross-shard join / FK
+- 節點變多不一定更快
+- 有時只是把查詢壓力分散到更多網路 hops
+
+### 設計建議
+
+#### 1. 先以 access pattern 設計 schema
+
+先回答：
+
+- 最常查什麼
+- 最常寫什麼
+- 哪些資料必須同區
+- 哪些關聯真的需要 FK
+
+不要只照傳統 ERD 直接搬進分散式資料庫。
+
+#### 2. Parent / child 盡量共用 distribution key
+
+最佳做法通常是：
+
+- child FK 包含 parent 的 distribution key
+- 多區時把 `geo_partition` 納入 FK
+
+#### 3. 常 join 的表要對齊 join key
+
+避免這種情況：
+
+- parent hash by `account_id`
+- child hash by `txn_id`
+- 卻常常 `JOIN account_id`
+
+這通常代表查詢模式與資料分布方向不一致。
+
+#### 4. FK 用在重要一致性，不要全部濫用
+
+建議：
+
+- 核心主資料、交易資料可保留 FK
+- 高吞吐明細、事件流資料要評估寫入成本
+
+#### 5. Geo-partition 是資料放置，不是自動流量導向
+
+即使 partition 已經放到 `az1`：
+
+- client 若一直連 `az3`
+- driver 若不支援 topology-aware
+
+仍然可能發生跨區流量。
+
+所以正式環境還需要：
+
+- topology-aware driver
+- 合理的 service discovery / load balancer
+- 與資料落點一致的應用部署策略
+
+### 一句話總結
+
+如果 schema 讓：
+
+- join key 不一致
+- FK 沒帶 geo key
+- parent / child 跨區隨機分布
+
+那 YugabyteDB 會能跑，但通常會變成：
+
+- 查詢更慢
+- 寫入更慢
+- 交易更重
+
+如果 schema 讓：
+
+- parent / child 用同一組分布 key
+- geo key 進 PK / FK
+- 常用 join 與資料放置方向一致
+
+那分散式結構才會真正發揮效果。
+
 ### HA 測試限制
 
 - `make failover-test-ha` 是單節點故障模擬，驗證的是查詢可用性，不等同正式 production failover 測試或完整 SLA 驗證。
