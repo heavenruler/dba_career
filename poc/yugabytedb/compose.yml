@@ -1,0 +1,22 @@
+services:
+  yugabytedb:
+    image: docker.io/yugabytedb/yugabyte:latest
+    container_name: yugabytedb-local
+    hostname: yugabytedb
+    restart: unless-stopped
+    command:
+      - bin/yugabyted
+      - start
+      - --advertise_address=127.0.0.1
+      - --base_dir=/home/yugabyte/yb_data
+      - --background=false
+    ports:
+      - "5433:5433"
+      - "9042:9042"
+      - "7000:7000"
+      - "9000:9000"
+    volumes:
+      - yb_data:/home/yugabyte/yb_data
+
+volumes:
+  yb_data:
