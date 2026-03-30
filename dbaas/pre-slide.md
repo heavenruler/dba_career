@@ -32,7 +32,7 @@ flowchart TB
             app7[tidb-cluster]
             app8[tidb-monitor]
             app9[victoria-metrics]
-            app10[grafana]
+            app10[grafana-app]
         end
 
         subgraph operators[Operators]
@@ -50,7 +50,7 @@ flowchart TB
 
         subgraph obs[Observability]
             vm[VictoriaMetrics]
-            grafana[Grafana]
+            grafanaui[Grafana]
             metrics[metrics-server]
         end
     end
@@ -71,9 +71,9 @@ flowchart TB
 
     mysql1 --> vm
     redis1 --> vm
-    tidb1 --> grafana
-    vm --> grafana
-    metrics --> grafana
+    tidb1 --> grafanaui
+    vm --> grafanaui
+    metrics --> grafanaui
 ```
 
 ## 目前目錄與元件對應
@@ -117,38 +117,38 @@ flowchart TB
 - `metrics-server` 已安裝，可用 `kubectl top nodes/pods`
 - 維運入口以 `Makefile` 為主，已有重建、檢查與資訊查詢指令
 
-## 高可用、災難復原與現實差距
+## 高可用、災難復原與現況差距
 - 簡報需明講：目前完成的是 Lab MVP，不是正式可承諾 SLA 的 DBaaS 平台
 - MySQL 雖使用 PXC/operator，但簡報內容不應過度宣稱正式 HA 治理已完成
 - Redis 目前為 `redis-single`，`redis-sentinel / redis-ha` 尚未補齊
 - 備份、還原、跨區 DR、RPO / RTO 與自動故障切換流程，目前多數仍停留在規劃層
 - 若要對 104Corp 說明，建議把「已驗證」與「規劃中」分成兩欄呈現
 
-## 目前已知問題 & Todo Items
+## 目前已知問題與待辦事項
 - DB Service Provision 規格設計規劃
 - 節省多少費用 / 節省多少工時
   - 使用配額與 CRD 設定的差異
 - 哪些資料使用屬性不適合進入 K8s DBaaS 環境
-- 效能損耗比 (Compare to VM with K8s pods)
-- `local-path` storage 不適合正式高可用與災難復原場景 ; 接入 Shared Storage 對效能的影響
-- K8s 叢集需要與現行的 Workers 同住或獨立 (HVM & K8s 維運團隊看法探測)
+- 效能損耗比（比較 VM 與 K8s Pods）
+- `local-path` storage 不適合正式高可用與災難復原場景；接入 shared storage 對效能的影響仍需評估
+- K8s 叢集需要與現行 workers 同住或獨立部署（需蒐集 HVM 與 K8s 維運團隊意見）
   - 如果需要獨立存在，預算範圍需要哪些考量？
-  - 拆解階段上線，起步叢集資源不用太多，後續完成擴張即可。
+  - 可分階段上線，初期叢集資源不必過多，後續再擴張。
 
-- 資料可攜規劃下設計
-  - Active/Standby Active/Passive witch one?
-  - 資料同步已不依賴原生 Replica 的下階段資料非同步處理
+- 資料可攜與容災規劃設計
+  - Active/Standby、Active/Passive 採哪一種？
+  - 若資料同步不依賴原生 replica，下階段的非同步資料處理方式為何？
     - CDC
 
 - GitOps pull 策略
-  - Schedule PR merges on business days between 19:00 and 20:00 to trigger deployment.
+  - 建議於上班日 19:00 到 20:00 合併 PR，以觸發部署。
 
-- Others
-  - 使用 Operators 還是需要自己刻 CRD Config & RBAC Re-design
+- 其他
+  - 使用 Operators，或自行設計 CRD、Config 與 RBAC
   - `tidb-operator` 目前停用 `tidb-scheduler`，僅保留與 `Kubernetes 1.29` 相容的最小組態
   - 大型 CRD 套件已有特殊處理，例如 Redis Operator 使用 `ServerSideApply=true`
   - 現況對外入口以 NodePort 為主，正式版仍需收斂 ingress、LB、private endpoint 策略
-    - Database Service NodePort expose  因為是隨機產生 ; 規劃服務部署不過 A10 的設計方式減少服務建立依賴與耦合
+    - Database Service 的 NodePort 會隨機產生；需規劃不經 A10 也能降低服務建立依賴與耦合的設計方式
 
 - Scale 策略設計及規劃
 - 計費模型
@@ -174,4 +174,3 @@ flowchart TB
 - 尚未完成正式資安治理，包括 Secret 管理、細緻 RBAC、NetworkPolicy 與審計
 - 尚未完成正式對外入口策略，目前仍以 Lab NodePort 為主
 - 尚未把所有維運元件完全納入 GitOps 與標準 Runbook
-
