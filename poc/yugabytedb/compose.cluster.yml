@@ -1,0 +1,130 @@
+services:
+  yb-master:
+    image: docker.io/yugabytedb/yugabyte:latest
+    container_name: yb-master
+    hostname: yb-master
+    restart: unless-stopped
+    command:
+      - bin/yb-master
+      - --fs_data_dirs=/home/yugabyte/data
+      - --master_addresses=yb-master:7100
+      - --rpc_bind_addresses=yb-master:7100
+      - --server_broadcast_addresses=yb-master:7100
+      - --replication_factor=3
+      - --placement_cloud=cloud1
+      - --placement_region=region1
+      - --placement_zone=control
+      - --webserver_interface=0.0.0.0
+      - --webserver_port=7000
+      - --memory_limit_hard_bytes=268435456
+      - --default_memory_limit_to_ram_ratio=0.10
+      - --use_memory_defaults_optimized_for_ysql=true
+    ports:
+      - "17000:7000"
+    volumes:
+      - yb_master_data:/home/yugabyte/data
+
+  yb-tserver-az1:
+    image: docker.io/yugabytedb/yugabyte:latest
+    container_name: yb-tserver-az1
+    hostname: yb-tserver-az1
+    restart: unless-stopped
+    depends_on:
+      - yb-master
+    command:
+      - bin/yb-tserver
+      - --fs_data_dirs=/home/yugabyte/data
+      - --tserver_master_addrs=yb-master:7100
+      - --rpc_bind_addresses=yb-tserver-az1:9100
+      - --server_broadcast_addresses=yb-tserver-az1:9100
+      - --start_pgsql_proxy
+      - --pgsql_proxy_bind_address=0.0.0.0:5433
+      - --cql_proxy_bind_address=0.0.0.0:9042
+      - --placement_cloud=cloud1
+      - --placement_region=region1
+      - --placement_zone=az1
+      - --webserver_interface=0.0.0.0
+      - --webserver_port=9000
+      - --memory_limit_hard_bytes=402653184
+      - --default_memory_limit_to_ram_ratio=0.10
+      - --ysql_num_shards_per_tserver=1
+      - --yb_num_shards_per_tserver=1
+      - --use_memory_defaults_optimized_for_ysql=true
+    ports:
+      - "15433:5433"
+      - "19042:9042"
+      - "19000:9000"
+    volumes:
+      - yb_tserver_az1_data:/home/yugabyte/data
+
+  yb-tserver-az2:
+    image: docker.io/yugabytedb/yugabyte:latest
+    container_name: yb-tserver-az2
+    hostname: yb-tserver-az2
+    restart: unless-stopped
+    depends_on:
+      - yb-master
+    command:
+      - bin/yb-tserver
+      - --fs_data_dirs=/home/yugabyte/data
+      - --tserver_master_addrs=yb-master:7100
+      - --rpc_bind_addresses=yb-tserver-az2:9100
+      - --server_broadcast_addresses=yb-tserver-az2:9100
+      - --start_pgsql_proxy
+      - --pgsql_proxy_bind_address=0.0.0.0:5433
+      - --cql_proxy_bind_address=0.0.0.0:9042
+      - --placement_cloud=cloud1
+      - --placement_region=region2
+      - --placement_zone=az2
+      - --webserver_interface=0.0.0.0
+      - --webserver_port=9000
+      - --memory_limit_hard_bytes=402653184
+      - --default_memory_limit_to_ram_ratio=0.10
+      - --ysql_num_shards_per_tserver=1
+      - --yb_num_shards_per_tserver=1
+      - --use_memory_defaults_optimized_for_ysql=true
+    ports:
+      - "15434:5433"
+      - "19043:9042"
+      - "19001:9000"
+    volumes:
+      - yb_tserver_az2_data:/home/yugabyte/data
+
+  yb-tserver-az3:
+    image: docker.io/yugabytedb/yugabyte:latest
+    container_name: yb-tserver-az3
+    hostname: yb-tserver-az3
+    restart: unless-stopped
+    depends_on:
+      - yb-master
+    command:
+      - bin/yb-tserver
+      - --fs_data_dirs=/home/yugabyte/data
+      - --tserver_master_addrs=yb-master:7100
+      - --rpc_bind_addresses=yb-tserver-az3:9100
+      - --server_broadcast_addresses=yb-tserver-az3:9100
+      - --start_pgsql_proxy
+      - --pgsql_proxy_bind_address=0.0.0.0:5433
+      - --cql_proxy_bind_address=0.0.0.0:9042
+      - --placement_cloud=cloud1
+      - --placement_region=region3
+      - --placement_zone=az3
+      - --webserver_interface=0.0.0.0
+      - --webserver_port=9000
+      - --memory_limit_hard_bytes=402653184
+      - --default_memory_limit_to_ram_ratio=0.10
+      - --ysql_num_shards_per_tserver=1
+      - --yb_num_shards_per_tserver=1
+      - --use_memory_defaults_optimized_for_ysql=true
+    ports:
+      - "15435:5433"
+      - "19044:9042"
+      - "19002:9000"
+    volumes:
+      - yb_tserver_az3_data:/home/yugabyte/data
+
+volumes:
+  yb_master_data:
+  yb_tserver_az1_data:
+  yb_tserver_az2_data:
+  yb_tserver_az3_data:
