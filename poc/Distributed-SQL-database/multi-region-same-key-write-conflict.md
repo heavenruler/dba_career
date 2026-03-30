@@ -281,6 +281,7 @@ YSQL 可透過以下函式讀到目前節點的 hybrid time：
 ```sql
 SELECT yb_get_current_hybrid_time_lsn();
 ```
+[Reference](https://yugabytedb.tips/peeking-into-yugabytedbs-hybrid-logical-clock-hlc)
 
 它回傳的是一個 `bigint`，本質上是目前 **HLC 的 64-bit 整數表示**，不是 PostgreSQL WAL LSN。
 
