@@ -52,6 +52,8 @@ make destroy-all-lab      一次清掉單機、cluster、HA 全部實驗環境
 
 本目錄提供 3 種 YugabyteDB POC 拓樸：
 
+[](!https://docs.yugabyte.com/images/architecture/layered-architecture.png)
+
 ### 1. 單機 POC
 
 - Compose: `compose.yml`
