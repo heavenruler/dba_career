@@ -1,0 +1,188 @@
+services:
+  yb-master-ha-1:
+    image: docker.io/yugabytedb/yugabyte:latest
+    container_name: yb-master-ha-1
+    hostname: yb-master-ha-1
+    restart: unless-stopped
+    command:
+      - bin/yb-master
+      - --fs_data_dirs=/home/yugabyte/data
+      - --master_addresses=yb-master-ha-1:7100,yb-master-ha-2:7100,yb-master-ha-3:7100
+      - --rpc_bind_addresses=yb-master-ha-1:7100
+      - --server_broadcast_addresses=yb-master-ha-1:7100
+      - --replication_factor=3
+      - --placement_cloud=cloud1
+      - --placement_region=region1
+      - --placement_zone=az1
+      - --webserver_interface=0.0.0.0
+      - --webserver_port=7000
+      - --memory_limit_hard_bytes=201326592
+      - --default_memory_limit_to_ram_ratio=0.10
+      - --use_memory_defaults_optimized_for_ysql=true
+    ports:
+      - "27000:7000"
+    volumes:
+      - yb_master_ha_1_data:/home/yugabyte/data
+
+  yb-master-ha-2:
+    image: docker.io/yugabytedb/yugabyte:latest
+    container_name: yb-master-ha-2
+    hostname: yb-master-ha-2
+    restart: unless-stopped
+    command:
+      - bin/yb-master
+      - --fs_data_dirs=/home/yugabyte/data
+      - --master_addresses=yb-master-ha-1:7100,yb-master-ha-2:7100,yb-master-ha-3:7100
+      - --rpc_bind_addresses=yb-master-ha-2:7100
+      - --server_broadcast_addresses=yb-master-ha-2:7100
+      - --replication_factor=3
+      - --placement_cloud=cloud1
+      - --placement_region=region2
+      - --placement_zone=az2
+      - --webserver_interface=0.0.0.0
+      - --webserver_port=7000
+      - --memory_limit_hard_bytes=201326592
+      - --default_memory_limit_to_ram_ratio=0.10
+      - --use_memory_defaults_optimized_for_ysql=true
+    ports:
+      - "27001:7000"
+    volumes:
+      - yb_master_ha_2_data:/home/yugabyte/data
+
+  yb-master-ha-3:
+    image: docker.io/yugabytedb/yugabyte:latest
+    container_name: yb-master-ha-3
+    hostname: yb-master-ha-3
+    restart: unless-stopped
+    command:
+      - bin/yb-master
+      - --fs_data_dirs=/home/yugabyte/data
+      - --master_addresses=yb-master-ha-1:7100,yb-master-ha-2:7100,yb-master-ha-3:7100
+      - --rpc_bind_addresses=yb-master-ha-3:7100
+      - --server_broadcast_addresses=yb-master-ha-3:7100
+      - --replication_factor=3
+      - --placement_cloud=cloud1
+      - --placement_region=region3
+      - --placement_zone=az3
+      - --webserver_interface=0.0.0.0
+      - --webserver_port=7000
+      - --memory_limit_hard_bytes=201326592
+      - --default_memory_limit_to_ram_ratio=0.10
+      - --use_memory_defaults_optimized_for_ysql=true
+    ports:
+      - "27002:7000"
+    volumes:
+      - yb_master_ha_3_data:/home/yugabyte/data
+
+  yb-tserver-ha-1:
+    image: docker.io/yugabytedb/yugabyte:latest
+    container_name: yb-tserver-ha-1
+    hostname: yb-tserver-ha-1
+    restart: unless-stopped
+    depends_on:
+      - yb-master-ha-1
+      - yb-master-ha-2
+      - yb-master-ha-3
+    command:
+      - bin/yb-tserver
+      - --fs_data_dirs=/home/yugabyte/data
+      - --tserver_master_addrs=yb-master-ha-1:7100,yb-master-ha-2:7100,yb-master-ha-3:7100
+      - --rpc_bind_addresses=yb-tserver-ha-1:9100
+      - --server_broadcast_addresses=yb-tserver-ha-1:9100
+      - --start_pgsql_proxy
+      - --pgsql_proxy_bind_address=0.0.0.0:5433
+      - --cql_proxy_bind_address=0.0.0.0:9042
+      - --placement_cloud=cloud1
+      - --placement_region=region1
+      - --placement_zone=az1
+      - --webserver_interface=0.0.0.0
+      - --webserver_port=9000
+      - --memory_limit_hard_bytes=268435456
+      - --default_memory_limit_to_ram_ratio=0.10
+      - --ysql_num_shards_per_tserver=1
+      - --yb_num_shards_per_tserver=1
+      - --use_memory_defaults_optimized_for_ysql=true
+    ports:
+      - "25433:5433"
+      - "29042:9042"
+      - "29000:9000"
+    volumes:
+      - yb_tserver_ha_1_data:/home/yugabyte/data
+
+  yb-tserver-ha-2:
+    image: docker.io/yugabytedb/yugabyte:latest
+    container_name: yb-tserver-ha-2
+    hostname: yb-tserver-ha-2
+    restart: unless-stopped
+    depends_on:
+      - yb-master-ha-1
+      - yb-master-ha-2
+      - yb-master-ha-3
+    command:
+      - bin/yb-tserver
+      - --fs_data_dirs=/home/yugabyte/data
+      - --tserver_master_addrs=yb-master-ha-1:7100,yb-master-ha-2:7100,yb-master-ha-3:7100
+      - --rpc_bind_addresses=yb-tserver-ha-2:9100
+      - --server_broadcast_addresses=yb-tserver-ha-2:9100
+      - --start_pgsql_proxy
+      - --pgsql_proxy_bind_address=0.0.0.0:5433
+      - --cql_proxy_bind_address=0.0.0.0:9042
+      - --placement_cloud=cloud1
+      - --placement_region=region2
+      - --placement_zone=az2
+      - --webserver_interface=0.0.0.0
+      - --webserver_port=9000
+      - --memory_limit_hard_bytes=268435456
+      - --default_memory_limit_to_ram_ratio=0.10
+      - --ysql_num_shards_per_tserver=1
+      - --yb_num_shards_per_tserver=1
+      - --use_memory_defaults_optimized_for_ysql=true
+    ports:
+      - "25434:5433"
+      - "29043:9042"
+      - "29001:9000"
+    volumes:
+      - yb_tserver_ha_2_data:/home/yugabyte/data
+
+  yb-tserver-ha-3:
+    image: docker.io/yugabytedb/yugabyte:latest
+    container_name: yb-tserver-ha-3
+    hostname: yb-tserver-ha-3
+    restart: unless-stopped
+    depends_on:
+      - yb-master-ha-1
+      - yb-master-ha-2
+      - yb-master-ha-3
+    command:
+      - bin/yb-tserver
+      - --fs_data_dirs=/home/yugabyte/data
+      - --tserver_master_addrs=yb-master-ha-1:7100,yb-master-ha-2:7100,yb-master-ha-3:7100
+      - --rpc_bind_addresses=yb-tserver-ha-3:9100
+      - --server_broadcast_addresses=yb-tserver-ha-3:9100
+      - --start_pgsql_proxy
+      - --pgsql_proxy_bind_address=0.0.0.0:5433
+      - --cql_proxy_bind_address=0.0.0.0:9042
+      - --placement_cloud=cloud1
+      - --placement_region=region3
+      - --placement_zone=az3
+      - --webserver_interface=0.0.0.0
+      - --webserver_port=9000
+      - --memory_limit_hard_bytes=268435456
+      - --default_memory_limit_to_ram_ratio=0.10
+      - --ysql_num_shards_per_tserver=1
+      - --yb_num_shards_per_tserver=1
+      - --use_memory_defaults_optimized_for_ysql=true
+    ports:
+      - "25435:5433"
+      - "29044:9042"
+      - "29002:9000"
+    volumes:
+      - yb_tserver_ha_3_data:/home/yugabyte/data
+
+volumes:
+  yb_master_ha_1_data:
+  yb_master_ha_2_data:
+  yb_master_ha_3_data:
+  yb_tserver_ha_1_data:
+  yb_tserver_ha_2_data:
+  yb_tserver_ha_3_data:

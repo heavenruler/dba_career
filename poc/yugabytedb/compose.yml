@@ -7,7 +7,7 @@ services:
     command:
       - bin/yugabyted
       - start
-      - --advertise_address=127.0.0.1
+      - --advertise_address=yugabytedb
       - --base_dir=/home/yugabyte/yb_data
       - --background=false
     ports:
