@@ -75,6 +75,10 @@ Follower reads ≠ Active/Active Write
 
 ## 3. TiDB：Follower Read 的定位
 
+> 備註：
+> TiDB 若要由 follower 承接 read 流量，通常前提是業務可接受一定程度的 stale read（非最新資料）。
+> 若需求是最強一致、最新值優先，讀取策略通常仍需回到 leader 或受一致性讀取模式限制。
+
 ### 3.1 核心概念
 
 TiDB 底層由 TiKV + Raft 組成，每個 Region 有：
@@ -131,6 +135,10 @@ TiDB 比較適合：
 ---
 
 ## 4. YugabyteDB：Follower Reads / Replica Reads 的定位
+
+> 備註：
+> YugabyteDB 若要由 follower / replica 承接 read 流量，通常前提是業務可接受一定程度的 stale read（非最新資料）。
+> 若需求是最強一致、最新值優先，讀流量通常仍需回到 leader 或受一致性讀取策略限制。
 
 ### 4.1 核心概念
 
