@@ -11,3 +11,7 @@
 ## 說明
 
 本目錄中的內容以實驗與驗證為主，不代表最終正式版本。
+
+## 目前 PoC
+
+- `poc-opencode-multi-session-handoff`：驗證多個 OpenCode session 在同一個 repo 中，以不同角色分工、透過 commit 與文件進行溝通與協作
