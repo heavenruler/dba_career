@@ -47,3 +47,16 @@
 ## 文件
 
 - `HANDOFF_LOG.md`：跨 session 交接主紀錄
+- `RUNBOOK.md`：本 PoC 的執行步驟
+- `PROMPT_A.md`：提供給 A session 的固定 prompt
+- `PROMPT_B.md`：提供給 B session 的固定 prompt
+- `result.txt`：A/B session 共用的數數結果檔
+
+## 實驗案例
+
+目前提供第一個可直接執行的案例：
+
+- A session 只能寫奇數
+- B session 只能寫偶數
+- 共同目標是從 `0` 數到 `100`
+- 兩個 session 透過 `result.txt` 與 commit 交接
