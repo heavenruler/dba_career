@@ -1,5 +1,9 @@
 # [分散式資料庫架構 PoC](https://104corp.atlassian.net/browse/ITDBA-3596)
 
+```
+opencode -s ses_28f349b65ffesqMOs3ScraWUt4
+```
+
 ## 1. PoC 目標
 
 本 PoC 用於驗證分散式資料庫架構是否可滿足 104Corp 既有業務系統需求。
