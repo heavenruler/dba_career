@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql-standalone
+  labels:
+    app: mysql-standalone
+spec:
+  restartPolicy: Always
+  containers:
+    - name: mysql-standalone-1
+      image: __MYSQL_IMAGE__
+      ports:
+        - containerPort: 3306
+          hostPort: 3306
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+        - name: MYSQL_DATABASE
+          value: appdb
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-standalone-data
+  volumes:
+    - name: mysql-standalone-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mysql-standalone/data
+        type: DirectoryOrCreate

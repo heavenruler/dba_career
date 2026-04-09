@@ -1,0 +1,206 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql-innodb-cluster
+  labels:
+    app: mysql-innodb-cluster
+spec:
+  restartPolicy: Always
+  containers:
+    - name: mysql-innodb-cluster-node-1
+      image: __MYSQL_IMAGE__
+      ports:
+        - containerPort: 3306
+          hostPort: 3330
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+        - name: MYSQL_ROOT_HOST
+          value: "%"
+        - name: MYSQL_DATABASE
+          value: appdb
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-innodb-cluster.cnf <<'EOF'
+          [mysqld]
+          port=3306
+          bind-address=0.0.0.0
+          server-id=31
+          log_bin=mysql-bin
+          binlog_format=ROW
+          gtid_mode=ON
+          enforce_gtid_consistency=ON
+          loose-group_replication_group_name=bbbbbbbb-cccc-dddd-eeee-ffffffffffff
+          loose-group_replication_start_on_boot=OFF
+          loose-group_replication_local_address=127.0.0.1:14306
+          loose-group_replication_group_seeds=127.0.0.1:14306,127.0.0.1:14307,127.0.0.1:14308
+          loose-group_replication_bootstrap_group=OFF
+          loose-group_replication_single_primary_mode=ON
+          loose-group_replication_enforce_update_everywhere_checks=OFF
+          loose-group_replication_ip_allowlist=127.0.0.1/8
+          loose-group_replication_ssl_mode=DISABLED
+          loose-group_replication_recovery_get_public_key=ON
+          plugin_load_add=group_replication.so
+          mysqlx=OFF
+          report_host=127.0.0.1
+          skip-name-resolve
+          EOF
+          exec docker-entrypoint.sh mysqld
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-innodb-cluster-node1-data
+    - name: mysql-innodb-cluster-node-2
+      image: __MYSQL_IMAGE__
+      ports:
+        - containerPort: 3307
+          hostPort: 3331
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+        - name: MYSQL_ROOT_HOST
+          value: "%"
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-innodb-cluster.cnf <<'EOF'
+          [mysqld]
+          port=3307
+          bind-address=0.0.0.0
+          server-id=32
+          log_bin=mysql-bin
+          binlog_format=ROW
+          gtid_mode=ON
+          enforce_gtid_consistency=ON
+          loose-group_replication_group_name=bbbbbbbb-cccc-dddd-eeee-ffffffffffff
+          loose-group_replication_start_on_boot=OFF
+          loose-group_replication_local_address=127.0.0.1:14307
+          loose-group_replication_group_seeds=127.0.0.1:14306,127.0.0.1:14307,127.0.0.1:14308
+          loose-group_replication_bootstrap_group=OFF
+          loose-group_replication_single_primary_mode=ON
+          loose-group_replication_enforce_update_everywhere_checks=OFF
+          loose-group_replication_ip_allowlist=127.0.0.1/8
+          loose-group_replication_ssl_mode=DISABLED
+          loose-group_replication_recovery_get_public_key=ON
+          plugin_load_add=group_replication.so
+          mysqlx=OFF
+          report_host=127.0.0.1
+          skip-name-resolve
+          EOF
+          exec docker-entrypoint.sh mysqld
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-innodb-cluster-node2-data
+    - name: mysql-innodb-cluster-node-3
+      image: __MYSQL_IMAGE__
+      ports:
+        - containerPort: 3308
+          hostPort: 3332
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+        - name: MYSQL_ROOT_HOST
+          value: "%"
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-innodb-cluster.cnf <<'EOF'
+          [mysqld]
+          port=3308
+          bind-address=0.0.0.0
+          server-id=33
+          log_bin=mysql-bin
+          binlog_format=ROW
+          gtid_mode=ON
+          enforce_gtid_consistency=ON
+          loose-group_replication_group_name=bbbbbbbb-cccc-dddd-eeee-ffffffffffff
+          loose-group_replication_start_on_boot=OFF
+          loose-group_replication_local_address=127.0.0.1:14308
+          loose-group_replication_group_seeds=127.0.0.1:14306,127.0.0.1:14307,127.0.0.1:14308
+          loose-group_replication_bootstrap_group=OFF
+          loose-group_replication_single_primary_mode=ON
+          loose-group_replication_enforce_update_everywhere_checks=OFF
+          loose-group_replication_ip_allowlist=127.0.0.1/8
+          loose-group_replication_ssl_mode=DISABLED
+          loose-group_replication_recovery_get_public_key=ON
+          plugin_load_add=group_replication.so
+          mysqlx=OFF
+          report_host=127.0.0.1
+          skip-name-resolve
+          EOF
+          exec docker-entrypoint.sh mysqld
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-innodb-cluster-node3-data
+    - name: mysql-innodb-cluster-bootstrap-1
+      image: __MYSQL_IMAGE__
+      command:
+        - sh
+        - -c
+        - |
+          for port in 3306 3307 3308; do
+            until mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'SELECT 1' >/dev/null 2>&1; do
+              sleep 2
+            done
+          done
+          for port in 3306 3307 3308; do
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e "INSTALL PLUGIN group_replication SONAME 'group_replication.so';" >/dev/null 2>&1 || true
+          done
+          mysql -h127.0.0.1 -P3306 -uroot -prootpass <<'EOF'
+          CREATE USER IF NOT EXISTS 'repl'@'%' IDENTIFIED BY 'replpass';
+          GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
+          GRANT CONNECTION_ADMIN, BACKUP_ADMIN, GROUP_REPLICATION_STREAM ON *.* TO 'repl'@'%';
+          CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'apppass';
+          GRANT ALL PRIVILEGES ON appdb.* TO 'appuser'@'%';
+          CREATE USER IF NOT EXISTS 'icadmin'@'%' IDENTIFIED BY 'clusterpass';
+          GRANT ALL PRIVILEGES ON *.* TO 'icadmin'@'%' WITH GRANT OPTION;
+          FLUSH PRIVILEGES;
+          EOF
+          for port in 3307 3308; do
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'RESET MASTER;' >/dev/null 2>&1 || mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'RESET BINARY LOGS AND GTIDS;' >/dev/null 2>&1 || true
+          done
+          for port in 3306 3307 3308; do
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e "CHANGE REPLICATION SOURCE TO SOURCE_USER='repl', SOURCE_PASSWORD='replpass' FOR CHANNEL 'group_replication_recovery';"
+          done
+          mysql -h127.0.0.1 -P3306 -uroot -prootpass -e "SET GLOBAL group_replication_bootstrap_group=ON; START GROUP_REPLICATION; SET GLOBAL group_replication_bootstrap_group=OFF;"
+          sleep 5
+          mysql -h127.0.0.1 -P3307 -uroot -prootpass -e "START GROUP_REPLICATION;"
+          until mysql -h127.0.0.1 -P3306 -uroot -prootpass -Nse "SELECT COUNT(*) FROM performance_schema.replication_group_members WHERE MEMBER_STATE='ONLINE';" | grep -q '^2$'; do
+            sleep 2
+          done
+          sleep 10
+          mysql -h127.0.0.1 -P3308 -uroot -prootpass -e "START GROUP_REPLICATION;"
+          sleep 10
+          mysqlsh icadmin:clusterpass@127.0.0.1:3306 --js --execute "shell.connect('icadmin:clusterpass@127.0.0.1:3306'); var cluster = dba.createCluster('labCluster', {adoptFromGR: true}); print(cluster.status());" >/tmp/cluster-status.txt 2>&1 || cat /tmp/cluster-status.txt
+          sleep infinity
+    - name: mysql-innodb-cluster-router-1
+      image: __MYSQL_ROUTER_IMAGE__
+      ports:
+        - containerPort: 6446
+          hostPort: 6446
+        - containerPort: 6447
+          hostPort: 6447
+      command:
+        - sh
+        - -c
+        - |
+          until mysqlrouter --bootstrap icadmin:clusterpass@127.0.0.1:3306 --directory /tmp/mysqlrouter --user=root --force >/tmp/mysqlrouter-bootstrap.log 2>&1; do
+            sleep 5
+          done
+          exec mysqlrouter --config /tmp/mysqlrouter/mysqlrouter.conf
+  volumes:
+    - name: mysql-innodb-cluster-node1-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mysql-innodb-cluster/node1
+        type: DirectoryOrCreate
+    - name: mysql-innodb-cluster-node2-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mysql-innodb-cluster/node2
+        type: DirectoryOrCreate
+    - name: mysql-innodb-cluster-node3-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mysql-innodb-cluster/node3
+        type: DirectoryOrCreate

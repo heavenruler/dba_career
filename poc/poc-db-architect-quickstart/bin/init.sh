@@ -7,7 +7,20 @@ mkdir -p "${ROOT_DIR}/volumes" \
   "${ROOT_DIR}/volumes/redis-standalone" \
   "${ROOT_DIR}/volumes/redis-replication" \
   "${ROOT_DIR}/volumes/redis-sentinel" \
-  "${ROOT_DIR}/volumes/redis-cluster"
+  "${ROOT_DIR}/volumes/redis-cluster" \
+  "${ROOT_DIR}/volumes/mysql-standalone/data" \
+  "${ROOT_DIR}/volumes/mysql-replication/master" \
+  "${ROOT_DIR}/volumes/mysql-replication/replica1" \
+  "${ROOT_DIR}/volumes/mysql-replication/replica2" \
+  "${ROOT_DIR}/volumes/mysql-proxysql/master" \
+  "${ROOT_DIR}/volumes/mysql-proxysql/replica1" \
+  "${ROOT_DIR}/volumes/mysql-proxysql/replica2" \
+  "${ROOT_DIR}/volumes/mysql-group-replication/node1" \
+  "${ROOT_DIR}/volumes/mysql-group-replication/node2" \
+  "${ROOT_DIR}/volumes/mysql-group-replication/node3" \
+  "${ROOT_DIR}/volumes/mysql-innodb-cluster/node1" \
+  "${ROOT_DIR}/volumes/mysql-innodb-cluster/node2" \
+  "${ROOT_DIR}/volumes/mysql-innodb-cluster/node3"
 
 if ! command -v podman >/dev/null 2>&1; then
   echo "[ERROR] 找不到 podman，請先執行: brew install podman"

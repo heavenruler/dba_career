@@ -1,0 +1,180 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql-proxysql
+  labels:
+    app: mysql-proxysql
+spec:
+  restartPolicy: Always
+  containers:
+    - name: mysql-proxysql-master-1
+      image: __MYSQL_IMAGE__
+      ports:
+        - containerPort: 3306
+          hostPort: 3310
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+        - name: MYSQL_ROOT_HOST
+          value: "%"
+        - name: MYSQL_DATABASE
+          value: appdb
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-replication.cnf <<'EOF'
+          [mysqld]
+          port=3306
+          bind-address=0.0.0.0
+          server-id=11
+          log_bin=mysql-bin
+          binlog_format=ROW
+          gtid_mode=ON
+          enforce_gtid_consistency=ON
+          mysqlx=OFF
+          skip-name-resolve
+          EOF
+          exec docker-entrypoint.sh mysqld
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-proxysql-master-data
+    - name: mysql-proxysql-replica-1
+      image: __MYSQL_IMAGE__
+      ports:
+        - containerPort: 3307
+          hostPort: 3311
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+        - name: MYSQL_ROOT_HOST
+          value: "%"
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-replication.cnf <<'EOF'
+          [mysqld]
+          port=3307
+          bind-address=0.0.0.0
+          server-id=12
+          log_bin=mysql-bin
+          relay_log=relay-bin
+          log_slave_updates=ON
+          binlog_format=ROW
+          gtid_mode=ON
+          enforce_gtid_consistency=ON
+          mysqlx=OFF
+          skip-name-resolve
+          EOF
+          exec docker-entrypoint.sh mysqld
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-proxysql-replica1-data
+    - name: mysql-proxysql-replica-2
+      image: __MYSQL_IMAGE__
+      ports:
+        - containerPort: 3308
+          hostPort: 3312
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+        - name: MYSQL_ROOT_HOST
+          value: "%"
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-replication.cnf <<'EOF'
+          [mysqld]
+          port=3308
+          bind-address=0.0.0.0
+          server-id=13
+          log_bin=mysql-bin
+          relay_log=relay-bin
+          log_slave_updates=ON
+          binlog_format=ROW
+          gtid_mode=ON
+          enforce_gtid_consistency=ON
+          mysqlx=OFF
+          skip-name-resolve
+          EOF
+          exec docker-entrypoint.sh mysqld
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-proxysql-replica2-data
+    - name: mysql-proxysql-1
+      image: __PROXYSQL_IMAGE__
+      ports:
+        - containerPort: 6032
+          hostPort: 6032
+        - containerPort: 6033
+          hostPort: 6033
+    - name: mysql-proxysql-bootstrap-1
+      image: __MYSQL_IMAGE__
+      command:
+        - sh
+        - -c
+        - |
+          for port in 3306 3307 3308; do
+            until mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'SELECT 1' >/dev/null 2>&1; do
+              sleep 2
+            done
+          done
+          until mysql -h127.0.0.1 -P6032 -uadmin -padmin -e 'SELECT 1' >/dev/null 2>&1; do
+            sleep 2
+          done
+          mysql -h127.0.0.1 -P3306 -uroot -prootpass <<'EOF'
+          CREATE USER IF NOT EXISTS 'repl'@'%' IDENTIFIED BY 'replpass';
+          GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'repl'@'%';
+          CREATE USER IF NOT EXISTS 'monitor'@'%' IDENTIFIED BY 'monitorpass';
+          GRANT USAGE, REPLICATION CLIENT ON *.* TO 'monitor'@'%';
+          CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'apppass';
+          GRANT ALL PRIVILEGES ON appdb.* TO 'appuser'@'%';
+          FLUSH PRIVILEGES;
+          EOF
+          for port in 3307 3308; do
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'STOP REPLICA;' >/dev/null 2>&1 || true
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'STOP SLAVE;' >/dev/null 2>&1 || true
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'RESET REPLICA ALL;' >/dev/null 2>&1 || true
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'RESET SLAVE ALL;' >/dev/null 2>&1 || true
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e "CHANGE REPLICATION SOURCE TO SOURCE_HOST='127.0.0.1', SOURCE_PORT=3306, SOURCE_USER='repl', SOURCE_PASSWORD='replpass', GET_SOURCE_PUBLIC_KEY=1, SOURCE_AUTO_POSITION=1; START REPLICA;" >/dev/null 2>&1 || \
+              mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e "CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=3306, MASTER_USER='repl', MASTER_PASSWORD='replpass', GET_MASTER_PUBLIC_KEY=1, MASTER_AUTO_POSITION=1; START SLAVE;"
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e "SET GLOBAL read_only=ON; SET GLOBAL super_read_only=ON;" >/dev/null 2>&1 || true
+          done
+          mysql -h127.0.0.1 -P6032 -uadmin -padmin <<'EOF'
+          DELETE FROM mysql_servers;
+          DELETE FROM mysql_users;
+          DELETE FROM mysql_query_rules;
+          DELETE FROM mysql_replication_hostgroups;
+          INSERT INTO mysql_servers(hostgroup_id, hostname, port) VALUES (10, '127.0.0.1', 3306);
+          INSERT INTO mysql_servers(hostgroup_id, hostname, port) VALUES (20, '127.0.0.1', 3307);
+          INSERT INTO mysql_servers(hostgroup_id, hostname, port) VALUES (20, '127.0.0.1', 3308);
+          INSERT INTO mysql_replication_hostgroups(writer_hostgroup, reader_hostgroup, check_type, comment) VALUES (10, 20, 'read_only', 'local mysql replication');
+          INSERT INTO mysql_users(username, password, default_hostgroup, transaction_persistent) VALUES ('appuser', 'apppass', 10, 1);
+          INSERT INTO mysql_query_rules(rule_id, active, match_digest, destination_hostgroup, apply) VALUES (1, 1, '^SELECT.*', 20, 1);
+          UPDATE global_variables SET variable_value='monitor' WHERE variable_name='mysql-monitor_username';
+          UPDATE global_variables SET variable_value='monitorpass' WHERE variable_name='mysql-monitor_password';
+          LOAD MYSQL VARIABLES TO RUNTIME;
+          SAVE MYSQL VARIABLES TO DISK;
+          LOAD MYSQL SERVERS TO RUNTIME;
+          SAVE MYSQL SERVERS TO DISK;
+          LOAD MYSQL USERS TO RUNTIME;
+          SAVE MYSQL USERS TO DISK;
+          LOAD MYSQL QUERY RULES TO RUNTIME;
+          SAVE MYSQL QUERY RULES TO DISK;
+          EOF
+          sleep infinity
+  volumes:
+    - name: mysql-proxysql-master-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mysql-proxysql/master
+        type: DirectoryOrCreate
+    - name: mysql-proxysql-replica1-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mysql-proxysql/replica1
+        type: DirectoryOrCreate
+    - name: mysql-proxysql-replica2-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mysql-proxysql/replica2
+        type: DirectoryOrCreate

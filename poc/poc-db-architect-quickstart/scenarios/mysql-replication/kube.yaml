@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql-replication
+  labels:
+    app: mysql-replication
+spec:
+  restartPolicy: Always
+  containers:
+    - name: mysql-replication-master-1
+      image: __MYSQL_IMAGE__
+      ports:
+        - containerPort: 3306
+          hostPort: 3307
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+        - name: MYSQL_ROOT_HOST
+          value: "%"
+        - name: MYSQL_DATABASE
+          value: appdb
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-replication.cnf <<'EOF'
+          [mysqld]
+          port=3306
+          bind-address=0.0.0.0
+          server-id=1
+          log_bin=mysql-bin
+          binlog_format=ROW
+          gtid_mode=ON
+          enforce_gtid_consistency=ON
+          mysqlx=OFF
+          skip-name-resolve
+          EOF
+          exec docker-entrypoint.sh mysqld
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-replication-master-data
+    - name: mysql-replication-replica-1
+      image: __MYSQL_IMAGE__
+      ports:
+        - containerPort: 3307
+          hostPort: 3308
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+        - name: MYSQL_ROOT_HOST
+          value: "%"
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-replication.cnf <<'EOF'
+          [mysqld]
+          port=3307
+          bind-address=0.0.0.0
+          server-id=2
+          log_bin=mysql-bin
+          relay_log=relay-bin
+          log_slave_updates=ON
+          binlog_format=ROW
+          gtid_mode=ON
+          enforce_gtid_consistency=ON
+          mysqlx=OFF
+          skip-name-resolve
+          EOF
+          exec docker-entrypoint.sh mysqld
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-replication-replica1-data
+    - name: mysql-replication-replica-2
+      image: __MYSQL_IMAGE__
+      ports:
+        - containerPort: 3308
+          hostPort: 3309
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+        - name: MYSQL_ROOT_HOST
+          value: "%"
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-replication.cnf <<'EOF'
+          [mysqld]
+          port=3308
+          bind-address=0.0.0.0
+          server-id=3
+          log_bin=mysql-bin
+          relay_log=relay-bin
+          log_slave_updates=ON
+          binlog_format=ROW
+          gtid_mode=ON
+          enforce_gtid_consistency=ON
+          mysqlx=OFF
+          skip-name-resolve
+          EOF
+          exec docker-entrypoint.sh mysqld
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-replication-replica2-data
+    - name: mysql-replication-bootstrap-1
+      image: __MYSQL_IMAGE__
+      command:
+        - sh
+        - -c
+        - |
+          for port in 3306 3307 3308; do
+            until mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'SELECT 1' >/dev/null 2>&1; do
+              sleep 2
+            done
+          done
+          mysql -h127.0.0.1 -P3306 -uroot -prootpass <<'EOF'
+          CREATE USER IF NOT EXISTS 'repl'@'%' IDENTIFIED BY 'replpass';
+          GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'repl'@'%';
+          CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'apppass';
+          GRANT ALL PRIVILEGES ON appdb.* TO 'appuser'@'%';
+          FLUSH PRIVILEGES;
+          EOF
+          for port in 3307 3308; do
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'STOP REPLICA;' >/dev/null 2>&1 || true
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'STOP SLAVE;' >/dev/null 2>&1 || true
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'RESET REPLICA ALL;' >/dev/null 2>&1 || true
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'RESET SLAVE ALL;' >/dev/null 2>&1 || true
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e "CHANGE REPLICATION SOURCE TO SOURCE_HOST='127.0.0.1', SOURCE_PORT=3306, SOURCE_USER='repl', SOURCE_PASSWORD='replpass', GET_SOURCE_PUBLIC_KEY=1, SOURCE_AUTO_POSITION=1; START REPLICA;" >/dev/null 2>&1 || \
+              mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e "CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=3306, MASTER_USER='repl', MASTER_PASSWORD='replpass', GET_MASTER_PUBLIC_KEY=1, MASTER_AUTO_POSITION=1; START SLAVE;"
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e "SET GLOBAL read_only=ON; SET GLOBAL super_read_only=ON;" >/dev/null 2>&1 || true
+          done
+          sleep infinity
+  volumes:
+    - name: mysql-replication-master-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mysql-replication/master
+        type: DirectoryOrCreate
+    - name: mysql-replication-replica1-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mysql-replication/replica1
+        type: DirectoryOrCreate
+    - name: mysql-replication-replica2-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mysql-replication/replica2
+        type: DirectoryOrCreate
