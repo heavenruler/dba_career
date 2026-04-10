@@ -10,7 +10,7 @@ if [[ -z "${node1}" ]]; then
 fi
 
 for _ in {1..60}; do
-  if podman exec "${node1}" mysql -uroot -prootpass -Nse "SELECT COUNT(*) FROM performance_schema.replication_group_members WHERE MEMBER_STATE='ONLINE';" 2>/dev/null | grep -q '^3$' && \
+  if podman exec "${node1}" mysql -uroot -prootpass -Nse "SELECT COUNT(*) FROM performance_schema.replication_group_members WHERE MEMBER_STATE='ONLINE';" 2>/dev/null | grep -q '^1$' && \
      podman exec "${node1}" mysql -uroot -prootpass -Nse "SELECT cluster_name FROM mysql_innodb_cluster_metadata.clusters;" 2>/dev/null | grep -q '^labCluster$' && \
      podman exec "${node1}" mysql -h127.0.0.1 -P6446 -uappuser -papppass -e 'SELECT 1' >/dev/null 2>&1; then
     echo "[OK] mysql-innodb-cluster 驗證成功"

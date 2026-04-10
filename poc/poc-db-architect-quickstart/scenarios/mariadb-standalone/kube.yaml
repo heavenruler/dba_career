@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mariadb-standalone
+  labels:
+    app: mariadb-standalone
+spec:
+  restartPolicy: Always
+  containers:
+    - name: mariadb-standalone-1
+      image: __MARIADB_IMAGE__
+      ports:
+        - containerPort: 3306
+          hostPort: 3316
+      env:
+        - name: MARIADB_ROOT_PASSWORD
+          value: rootpass
+        - name: MARIADB_DATABASE
+          value: appdb
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mariadb-standalone-data
+  volumes:
+    - name: mariadb-standalone-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mariadb-standalone/data
+        type: DirectoryOrCreate

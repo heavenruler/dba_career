@@ -9,6 +9,16 @@ mkdir -p "${ROOT_DIR}/volumes" \
   "${ROOT_DIR}/volumes/redis-sentinel" \
   "${ROOT_DIR}/volumes/redis-cluster" \
   "${ROOT_DIR}/volumes/mysql-standalone/data" \
+  "${ROOT_DIR}/volumes/mariadb-standalone/data" \
+  "${ROOT_DIR}/volumes/mariadb-replication/master" \
+  "${ROOT_DIR}/volumes/mariadb-replication/replica1" \
+  "${ROOT_DIR}/volumes/mariadb-replication/replica2" \
+  "${ROOT_DIR}/volumes/mariadb-proxysql/master" \
+  "${ROOT_DIR}/volumes/mariadb-proxysql/replica1" \
+  "${ROOT_DIR}/volumes/mariadb-proxysql/replica2" \
+  "${ROOT_DIR}/volumes/mariadb-galera/node1" \
+  "${ROOT_DIR}/volumes/mariadb-galera/node2" \
+  "${ROOT_DIR}/volumes/mariadb-galera/node3" \
   "${ROOT_DIR}/volumes/mysql-replication/master" \
   "${ROOT_DIR}/volumes/mysql-replication/replica1" \
   "${ROOT_DIR}/volumes/mysql-replication/replica2" \

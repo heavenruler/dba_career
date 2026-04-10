@@ -7,6 +7,10 @@
 - `scenarios/redis-sentinel/login.md`
 - `scenarios/redis-cluster/login.md`
 - `scenarios/mysql-standalone/login.md`
+- `scenarios/mariadb-standalone/login.md`
+- `scenarios/mariadb-replication/login.md`
+- `scenarios/mariadb-proxysql/login.md`
+- `scenarios/mariadb-galera/login.md`
 - `scenarios/mysql-replication/login.md`
 - `scenarios/mysql-proxysql/login.md`
 - `scenarios/mysql-group-replication/login.md`

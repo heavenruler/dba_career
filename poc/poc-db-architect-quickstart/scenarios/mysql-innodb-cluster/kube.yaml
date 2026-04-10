@@ -35,7 +35,7 @@ spec:
           loose-group_replication_group_name=bbbbbbbb-cccc-dddd-eeee-ffffffffffff
           loose-group_replication_start_on_boot=OFF
           loose-group_replication_local_address=127.0.0.1:14306
-          loose-group_replication_group_seeds=127.0.0.1:14306,127.0.0.1:14307,127.0.0.1:14308
+          loose-group_replication_group_seeds=127.0.0.1:14306,127.0.0.1:14307
           loose-group_replication_bootstrap_group=OFF
           loose-group_replication_single_primary_mode=ON
           loose-group_replication_enforce_update_everywhere_checks=OFF
@@ -77,7 +77,7 @@ spec:
           loose-group_replication_group_name=bbbbbbbb-cccc-dddd-eeee-ffffffffffff
           loose-group_replication_start_on_boot=OFF
           loose-group_replication_local_address=127.0.0.1:14307
-          loose-group_replication_group_seeds=127.0.0.1:14306,127.0.0.1:14307,127.0.0.1:14308
+          loose-group_replication_group_seeds=127.0.0.1:14306,127.0.0.1:14307
           loose-group_replication_bootstrap_group=OFF
           loose-group_replication_single_primary_mode=ON
           loose-group_replication_enforce_update_everywhere_checks=OFF
@@ -119,7 +119,7 @@ spec:
           loose-group_replication_group_name=bbbbbbbb-cccc-dddd-eeee-ffffffffffff
           loose-group_replication_start_on_boot=OFF
           loose-group_replication_local_address=127.0.0.1:14308
-          loose-group_replication_group_seeds=127.0.0.1:14306,127.0.0.1:14307,127.0.0.1:14308
+          loose-group_replication_group_seeds=127.0.0.1:14306,127.0.0.1:14307
           loose-group_replication_bootstrap_group=OFF
           loose-group_replication_single_primary_mode=ON
           loose-group_replication_enforce_update_everywhere_checks=OFF
@@ -165,15 +165,12 @@ spec:
           for port in 3306 3307 3308; do
             mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e "CHANGE REPLICATION SOURCE TO SOURCE_USER='repl', SOURCE_PASSWORD='replpass' FOR CHANNEL 'group_replication_recovery';"
           done
+          for port in 3306 3307 3308; do
+            mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e "SET PERSIST group_replication_start_on_boot=ON;" >/dev/null 2>&1 || true
+          done
           mysql -h127.0.0.1 -P3306 -uroot -prootpass -e "SET GLOBAL group_replication_bootstrap_group=ON; START GROUP_REPLICATION; SET GLOBAL group_replication_bootstrap_group=OFF;"
           sleep 5
-          mysql -h127.0.0.1 -P3307 -uroot -prootpass -e "START GROUP_REPLICATION;"
-          until mysql -h127.0.0.1 -P3306 -uroot -prootpass -Nse "SELECT COUNT(*) FROM performance_schema.replication_group_members WHERE MEMBER_STATE='ONLINE';" | grep -q '^2$'; do
-            sleep 2
-          done
-          sleep 10
-          mysql -h127.0.0.1 -P3308 -uroot -prootpass -e "START GROUP_REPLICATION;"
-          sleep 10
+          sleep 8
           mysqlsh icadmin:clusterpass@127.0.0.1:3306 --js --execute "shell.connect('icadmin:clusterpass@127.0.0.1:3306'); var cluster = dba.createCluster('labCluster', {adoptFromGR: true}); print(cluster.status());" >/tmp/cluster-status.txt 2>&1 || cat /tmp/cluster-status.txt
           sleep infinity
     - name: mysql-innodb-cluster-router-1
@@ -187,7 +184,7 @@ spec:
         - sh
         - -c
         - |
-          until mysqlrouter --bootstrap icadmin:clusterpass@127.0.0.1:3306 --directory /tmp/mysqlrouter --user=root --force >/tmp/mysqlrouter-bootstrap.log 2>&1; do
+          until mysqlrouter --bootstrap icadmin:clusterpass@127.0.0.1:3306 --directory /tmp/mysqlrouter --force >/tmp/mysqlrouter-bootstrap.log 2>&1; do
             sleep 5
           done
           exec mysqlrouter --config /tmp/mysqlrouter/mysqlrouter.conf

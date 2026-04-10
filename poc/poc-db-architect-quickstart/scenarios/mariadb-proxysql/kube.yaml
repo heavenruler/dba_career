@@ -1,0 +1,136 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mariadb-proxysql
+  labels:
+    app: mariadb-proxysql
+spec:
+  restartPolicy: Always
+  containers:
+    - name: mariadb-proxysql-master-1
+      image: __MARIADB_IMAGE__
+      ports:
+        - containerPort: 3306
+          hostPort: 3327
+      env:
+        - name: MARIADB_ROOT_PASSWORD
+          value: rootpass
+        - name: MARIADB_DATABASE
+          value: appdb
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-replication.cnf <<'EOF'
+          [mariadb]
+          port=3306
+          bind-address=0.0.0.0
+          server_id=111
+          log_bin=mysql-bin
+          binlog_format=ROW
+          skip_name_resolve=ON
+          EOF
+          exec docker-entrypoint.sh mariadbd
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mariadb-proxysql-master-data
+    - name: mariadb-proxysql-replica-1
+      image: __MARIADB_IMAGE__
+      ports:
+        - containerPort: 3307
+          hostPort: 3328
+      env:
+        - name: MARIADB_ROOT_PASSWORD
+          value: rootpass
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-replication.cnf <<'EOF'
+          [mariadb]
+          port=3307
+          bind-address=0.0.0.0
+          server_id=112
+          log_bin=mysql-bin
+          relay_log=relay-bin
+          log_slave_updates=ON
+          read_only=ON
+          skip_name_resolve=ON
+          EOF
+          exec docker-entrypoint.sh mariadbd
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mariadb-proxysql-replica1-data
+    - name: mariadb-proxysql-replica-2
+      image: __MARIADB_IMAGE__
+      ports:
+        - containerPort: 3308
+          hostPort: 3329
+      env:
+        - name: MARIADB_ROOT_PASSWORD
+          value: rootpass
+      command:
+        - sh
+        - -c
+        - |
+          cat >/etc/mysql/conf.d/z-replication.cnf <<'EOF'
+          [mariadb]
+          port=3308
+          bind-address=0.0.0.0
+          server_id=113
+          log_bin=mysql-bin
+          relay_log=relay-bin
+          log_slave_updates=ON
+          read_only=ON
+          skip_name_resolve=ON
+          EOF
+          exec docker-entrypoint.sh mariadbd
+      volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mariadb-proxysql-replica2-data
+    - name: mariadb-proxysql-1
+      image: __PROXYSQL_IMAGE__
+      ports:
+        - containerPort: 6032
+          hostPort: 6034
+        - containerPort: 6033
+          hostPort: 6035
+    - name: mariadb-proxysql-bootstrap-1
+      image: __MARIADB_IMAGE__
+      command:
+        - sh
+        - -c
+        - |
+          for port in 3306 3307 3308; do
+            until mariadb -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'SELECT 1' >/dev/null 2>&1; do
+              sleep 2
+            done
+          done
+          until mariadb -h127.0.0.1 -P6032 -uadmin -padmin -e 'SELECT 1' >/dev/null 2>&1; do
+            sleep 2
+          done
+          for port in 3306 3307 3308; do
+            mariadb -h127.0.0.1 -P"${port}" -uroot -prootpass -e "CREATE USER IF NOT EXISTS 'repl'@'%' IDENTIFIED BY 'replpass'; GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'repl'@'%'; CREATE USER IF NOT EXISTS 'monitor'@'%' IDENTIFIED BY 'monitorpass'; GRANT USAGE, REPLICATION CLIENT ON *.* TO 'monitor'@'%'; CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'apppass'; GRANT ALL PRIVILEGES ON appdb.* TO 'appuser'@'%'; FLUSH PRIVILEGES;"
+          done
+          master_log_file="$(mariadb -h127.0.0.1 -P3306 -uroot -prootpass -Nse 'SHOW MASTER STATUS' | awk '{print $1}')"
+          master_log_pos="$(mariadb -h127.0.0.1 -P3306 -uroot -prootpass -Nse 'SHOW MASTER STATUS' | awk '{print $2}')"
+          for port in 3307 3308; do
+            mariadb -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'STOP SLAVE;' >/dev/null 2>&1 || true
+            mariadb -h127.0.0.1 -P"${port}" -uroot -prootpass -e 'RESET SLAVE ALL;' >/dev/null 2>&1 || true
+            mariadb -h127.0.0.1 -P"${port}" -uroot -prootpass -e "CHANGE MASTER TO MASTER_HOST='127.0.0.1', MASTER_PORT=3306, MASTER_USER='repl', MASTER_PASSWORD='replpass', MASTER_LOG_FILE='${master_log_file}', MASTER_LOG_POS=${master_log_pos}; START SLAVE;"
+          done
+          mariadb -h127.0.0.1 -P6032 -uadmin -padmin -e "DELETE FROM mysql_servers; DELETE FROM mysql_users; DELETE FROM mysql_query_rules; DELETE FROM mysql_replication_hostgroups; INSERT INTO mysql_servers(hostgroup_id, hostname, port) VALUES (10, '127.0.0.1', 3306); INSERT INTO mysql_servers(hostgroup_id, hostname, port) VALUES (20, '127.0.0.1', 3307); INSERT INTO mysql_servers(hostgroup_id, hostname, port) VALUES (20, '127.0.0.1', 3308); INSERT INTO mysql_replication_hostgroups(writer_hostgroup, reader_hostgroup, check_type, comment) VALUES (10, 20, 'read_only', 'local mariadb replication'); INSERT INTO mysql_users(username, password, default_hostgroup, transaction_persistent, active) VALUES ('appuser', 'apppass', 10, 1, 1); INSERT INTO mysql_query_rules(rule_id, active, match_digest, destination_hostgroup, apply) VALUES (1, 1, '^SELECT.*', 20, 1); UPDATE global_variables SET variable_value='monitor' WHERE variable_name='mysql-monitor_username'; UPDATE global_variables SET variable_value='monitorpass' WHERE variable_name='mysql-monitor_password'; LOAD MYSQL VARIABLES TO RUNTIME; SAVE MYSQL VARIABLES TO DISK; LOAD MYSQL SERVERS TO RUNTIME; SAVE MYSQL SERVERS TO DISK; LOAD MYSQL USERS TO RUNTIME; SAVE MYSQL USERS TO DISK; LOAD MYSQL QUERY RULES TO RUNTIME; SAVE MYSQL QUERY RULES TO DISK;"
+          sleep infinity
+  volumes:
+    - name: mariadb-proxysql-master-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mariadb-proxysql/master
+        type: DirectoryOrCreate
+    - name: mariadb-proxysql-replica1-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mariadb-proxysql/replica1
+        type: DirectoryOrCreate
+    - name: mariadb-proxysql-replica2-data
+      hostPath:
+        path: __ROOT_DIR__/volumes/mariadb-proxysql/replica2
+        type: DirectoryOrCreate

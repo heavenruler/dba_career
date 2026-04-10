@@ -7,6 +7,10 @@
 - `redis-sentinel`: 高可用哨兵
 - `redis-cluster`: 分散式叢集
 - `mysql-standalone`: 單機 MySQL
+- `mariadb-standalone`: 單機 MariaDB
+- `mariadb-replication`: MariaDB 非同步複寫
+- `mariadb-proxysql`: MariaDB + ProxySQL
+- `mariadb-galera`: MariaDB Galera Cluster
 - `mysql-replication`: MySQL 非同步複寫
 - `mysql-proxysql`: MySQL + ProxySQL
 - `mysql-group-replication`: MySQL Group Replication
