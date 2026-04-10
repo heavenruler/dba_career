@@ -82,10 +82,6 @@ wait_ready "mysql-innodb-cluster-node-1"
 wait_ready "mysql-innodb-cluster-node-2"
 wait_ready "mysql-innodb-cluster-node-3"
 
-for name in mysql-innodb-cluster-node-1 mysql-innodb-cluster-node-2 mysql-innodb-cluster-node-3; do
-  podman exec "${name}" mysql -uroot -prootpass -e "INSTALL PLUGIN group_replication SONAME 'group_replication.so';" >/dev/null 2>&1 || true
-done
-
 podman exec "mysql-innodb-cluster-node-1" mysql -uroot -prootpass <<'EOF'
 CREATE USER IF NOT EXISTS 'repl'@'%' IDENTIFIED BY 'replpass';
 GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
