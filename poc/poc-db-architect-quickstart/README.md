@@ -1,5 +1,7 @@
 # poc-db-architect-quickstart
-
+```
+opencode -s ses_28f084d32ffek6E3U9OHMnUKjU
+```
 Scenario-driven 的本機資料庫架構 PoC 實驗室，專為 macOS + Podman 設計。
 
 目前支援 Redis、MySQL、MariaDB standalone 與 4 類 MySQL HA scenario。
