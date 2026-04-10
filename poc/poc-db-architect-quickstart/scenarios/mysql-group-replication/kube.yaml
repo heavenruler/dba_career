@@ -71,6 +71,7 @@ spec:
           bind-address=0.0.0.0
           server-id=22
           log_bin=mysql-bin
+          relay_log=relay-bin
           binlog_format=ROW
           gtid_mode=ON
           enforce_gtid_consistency=ON
@@ -113,6 +114,7 @@ spec:
           bind-address=0.0.0.0
           server-id=23
           log_bin=mysql-bin
+          relay_log=relay-bin
           binlog_format=ROW
           gtid_mode=ON
           enforce_gtid_consistency=ON

@@ -71,6 +71,7 @@ spec:
           bind-address=0.0.0.0
           server-id=32
           log_bin=mysql-bin
+          relay_log=relay-bin
           binlog_format=ROW
           gtid_mode=ON
           enforce_gtid_consistency=ON
@@ -113,6 +114,7 @@ spec:
           bind-address=0.0.0.0
           server-id=33
           log_bin=mysql-bin
+          relay_log=relay-bin
           binlog_format=ROW
           gtid_mode=ON
           enforce_gtid_consistency=ON
@@ -169,7 +171,6 @@ spec:
             mysql -h127.0.0.1 -P"${port}" -uroot -prootpass -e "SET PERSIST group_replication_start_on_boot=ON;" >/dev/null 2>&1 || true
           done
           mysql -h127.0.0.1 -P3306 -uroot -prootpass -e "SET GLOBAL group_replication_bootstrap_group=ON; START GROUP_REPLICATION; SET GLOBAL group_replication_bootstrap_group=OFF;"
-          sleep 5
           sleep 8
           mysqlsh icadmin:clusterpass@127.0.0.1:3306 --js --execute "shell.connect('icadmin:clusterpass@127.0.0.1:3306'); var cluster = dba.createCluster('labCluster', {adoptFromGR: true}); print(cluster.status());" >/tmp/cluster-status.txt 2>&1 || cat /tmp/cluster-status.txt
           sleep infinity
