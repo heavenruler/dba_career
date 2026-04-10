@@ -9,7 +9,15 @@ if [[ -z "${SCENARIO}" ]]; then
   exit 1
 fi
 
+SCENARIO_DOWN_SCRIPT="${ROOT_DIR}/scenarios/${SCENARIO}/down.sh"
 KUBE_FILE="${ROOT_DIR}/scenarios/${SCENARIO}/kube.yaml"
+
+if [[ -x "${SCENARIO_DOWN_SCRIPT}" ]]; then
+  "${SCENARIO_DOWN_SCRIPT}"
+  echo "[OK] Scenario 已停止並移除: ${SCENARIO}"
+  exit 0
+fi
+
 [[ -f "${KUBE_FILE}" ]] || { echo "[ERROR] 找不到 scenario: ${SCENARIO}"; exit 1; }
 
 podman kube down "${KUBE_FILE}"

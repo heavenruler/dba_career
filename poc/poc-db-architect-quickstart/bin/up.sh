@@ -31,8 +31,8 @@ fi
 SCENARIO="${1:-}"
 [[ -n "${SCENARIO}" ]] || { usage; exit 1; }
 
+SCENARIO_UP_SCRIPT="${ROOT_DIR}/scenarios/${SCENARIO}/up.sh"
 KUBE_FILE="${ROOT_DIR}/scenarios/${SCENARIO}/kube.yaml"
-[[ -f "${KUBE_FILE}" ]] || { echo "[ERROR] 找不到 scenario: ${SCENARIO}"; exit 1; }
 
 REDIS_VERSION="${REDIS_VERSION:-7.2-alpine}"
 REDIS_IMAGE="docker.io/library/redis:${REDIS_VERSION}"
@@ -64,6 +64,15 @@ if [[ "${SCENARIO}" == "mysql-innodb-cluster" && -z "${MYSQL_ROUTER_IMAGE}" ]]; 
   echo "[ERROR] mysql-innodb-cluster 找不到對應的 MySQL Router image"
   exit 1
 fi
+
+if [[ -x "${SCENARIO_UP_SCRIPT}" ]]; then
+  "${SCENARIO_UP_SCRIPT}"
+  echo "[OK] Scenario 已啟動: ${SCENARIO}"
+  echo "[INFO] REDIS_IMAGE=${REDIS_IMAGE} MYSQL_IMAGE=${MYSQL_IMAGE} MARIADB_IMAGE=${MARIADB_IMAGE} PROXYSQL_IMAGE=${PROXYSQL_IMAGE} MYSQL_ROUTER_IMAGE=${MYSQL_ROUTER_IMAGE}"
+  exit 0
+fi
+
+[[ -f "${KUBE_FILE}" ]] || { echo "[ERROR] 找不到 scenario: ${SCENARIO}"; exit 1; }
 
 TMP_KUBE_FILE="$(mktemp)"
 trap 'rm -f "${TMP_KUBE_FILE}"' EXIT
