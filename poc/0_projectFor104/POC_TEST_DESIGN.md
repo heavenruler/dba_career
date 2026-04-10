@@ -222,19 +222,6 @@ CREATE INDEX idx_tenant_id ON account(tenant_id);
 
 ## 8. 核心 Metrics
 
-必收指標：
-
-- p95 latency
-- p99 latency
-- commit latency
-- retry count
-- conflict rate
-- abort rate
-- stale lag
-- time to new leader
-- write unavailability window
-- cross-region network bytes
-
 ### 8.1 必收指標與 PoC 驗收重要性
 
 | 指標 | 驗收標準重要性 |
