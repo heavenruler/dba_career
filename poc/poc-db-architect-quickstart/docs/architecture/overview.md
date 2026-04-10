@@ -13,8 +13,8 @@
 - `mariadb-galera`: MariaDB Galera Cluster
 - `mysql-replication`: MySQL 非同步複寫
 - `mysql-proxysql`: MySQL + ProxySQL
-- `mysql-group-replication`: MySQL Group Replication
-- `mysql-innodb-cluster`: MySQL InnoDB Cluster
+- `mysql-group-replication`: MySQL Group Replication (`stable: 2-node`)
+- `mysql-innodb-cluster`: MySQL InnoDB Cluster (`stable: single-node + router`)
 
 已確認後續規劃的 MySQL HA 類別：
 

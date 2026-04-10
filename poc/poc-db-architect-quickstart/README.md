@@ -184,8 +184,8 @@ make logs SCENARIO=<name>
 - `mysql-standalone`: 單機 MySQL
 - `mysql-replication`: MySQL 非同步複寫
 - `mysql-proxysql`: MySQL + ProxySQL
-- `mysql-group-replication`: MySQL Group Replication
-- `mysql-innodb-cluster`: MySQL InnoDB Cluster
+- `mysql-group-replication`: MySQL Group Replication (`stable: 2-node`)
+- `mysql-innodb-cluster`: MySQL InnoDB Cluster (`stable: single-node + router`)
 - `mariadb-standalone`: 單機 MariaDB
 - `mariadb-replication`: MariaDB 非同步複寫
 - `mariadb-proxysql`: MariaDB + ProxySQL

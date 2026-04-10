@@ -21,8 +21,12 @@ make up SCENARIO=mysql-replication MYSQL_VERSION=8.4
 make verify SCENARIO=mysql-replication
 make up SCENARIO=mysql-proxysql MYSQL_VERSION=8.4 PROXYSQL_VERSION=2.6.6
 make verify SCENARIO=mysql-proxysql
+
+# stable: 2-node
 make up SCENARIO=mysql-group-replication MYSQL_VERSION=8.4
 make verify SCENARIO=mysql-group-replication
+
+# stable: single-node cluster + router
 make up SCENARIO=mysql-innodb-cluster MYSQL_VERSION=8.4
 make verify SCENARIO=mysql-innodb-cluster
 make down SCENARIO=redis-standalone
