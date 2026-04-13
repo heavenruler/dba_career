@@ -6,13 +6,14 @@
 
 適用前提：
 
-- 部署型態：VMware (vSphere)
+- 部署型態：VMware (vSphere) + GCP
 - 作業系統：AlmaLinux
 - IaC 工具：Terraform + Ansible
 - PoC 產品：TiDB、YugabyteDB
-- 網路拓樸：
-  - (Option1) IDC `172.24.*.*` <-> EDC `172.26.*.*`
-  - (Option2) IDC `172.24.*.*` <-> GCP `10.160.*.*`
+- 架構圖層次：Logical Architecture + Physical Deployment
+- 網路拓樸：IDC `172.24.*.*` <-> GCP `10.160.*.*`
+- VM 總數限制：5 VMs
+- 站點分布：IDC 3 VMs + GCP 2 VMs
 
 ## 2. 輸出目標
 
@@ -20,6 +21,7 @@
 
 - Terraform：GCP / vSphere 基礎資源建立
 - Ansible：主機基線、套件安裝、系統參數、產品部署、測試前置設定
+- 架構圖輸入資料：Logical / Physical deployment 所需節點與連線資訊
 - Test Case 執行清單：可逐項落地執行
 - 驗證結果保存目錄與命名規則
 - 環境可重建、可抽換、可重跑
@@ -37,7 +39,6 @@
 │   │   └── vsphere/
 │   └── ansible/
 │       ├── inventories/
-│       │   ├── idc-edc/
 │       │   └── idc-gcp/
 │       ├── group_vars/
 │       ├── roles/
@@ -58,7 +59,8 @@
 - 所有 OS 設定、套件安裝、DB 部署與測試前置，優先透過 Ansible 完成
 - 測試資料、測試腳本、故障注入步驟需可重複執行
 - 任何手動操作都要能在文件中被追蹤
-- 同一份 Runbook 要能套用在 `IDC-EDC` 與 `IDC-GCP` 兩種場景
+- 同一套 5 VM 骨架需可重建為 TiDB 或 YugabyteDB 環境
+- 本 Runbook 以 PoC mixed-role deployment 為前提，不等同 production 最佳實務
 
 ## 5. 環境實作項目
 
@@ -66,23 +68,24 @@
 
 | 欄位 | 內容 |
 | --- | --- |
-| Objective | 建立可重建的 GCP / vSphere 基礎設施模板 |
+| Objective | 建立可重建的 IDC-GCP PoC 基礎設施模板 |
 | Scope | VM、CPU、Memory、Disk、NIC、Subnet、Security Rule、DNS / hostname |
 | Deliverable | `infra/terraform/gcp`、`infra/terraform/vsphere` |
-| 完成標準 | 能以變數切換 `IDC-EDC` 與 `IDC-GCP` 拓樸，並成功建立對應節點 |
+| 完成標準 | 能成功建立 IDC 3 台 + GCP 2 台 VM，並輸出 inventory 所需資訊 |
 
 實作項目：
 
 - 建立 `terraform.tfvars` 範本
-- 抽出共用變數：`region_pair`、`vm_count`、`vm_cpu`、`vm_memory_gb`、`vm_disk_gb`
+- 抽出共用變數：`site_pair`、`vm_count`、`vm_cpu`、`vm_memory_gb`、`vm_disk_gb`
 - 建立命名規則：`poc-<product>-<site>-<role>-<seq>`
 - 輸出 inventory 所需資訊：IP、hostname、role、site
+- 固定支援 `idc-gcp` 站點組合
 
 ### EC-02 Ansible 主機基線
 
 | 欄位 | 內容 |
 | --- | --- |
-| Objective | 建立 Rocky / AlmaLinux 標準化主機基線 |
+| Objective | 建立 AlmaLinux 標準化主機基線 |
 | Scope | 使用者、SSH、NTP、sysctl、ulimit、firewalld、SELinux、必要套件 |
 | Deliverable | `infra/ansible/roles/common_baseline` |
 | 完成標準 | 新建主機可透過單一 playbook 完成 baseline 設定 |
@@ -106,34 +109,68 @@
 
 實作項目：
 
-- 建立 site matrix：`IDC <-> EDC`、`IDC <-> GCP`
+- 建立 site matrix：`IDC <-> GCP`
 - 測試節點間 ICMP / TCP 連線
 - 量測 baseline RTT 與封包穩定度
 - 確認 DB / 管理 port 可雙向通訊
 
-## 6. TiDB 實作項目
+## 6. 架構圖輸入資訊
+
+### AD-01 共用 VM 規劃
+
+| VM | Site | 建議規格 | 用途 |
+| --- | --- | --- | --- |
+| `vm01` | IDC | 4 vCPU / 16 GB / 200 GB | DB node 1 |
+| `vm02` | IDC | 4 vCPU / 16 GB / 200 GB | DB node 2 |
+| `vm03` | IDC | 4 vCPU / 16 GB / 200 GB | DB node 3 |
+| `vm04` | GCP | 4 vCPU / 16 GB / 200 GB | DB node 4 |
+| `vm05` | GCP | 4 vCPU / 16 GB / 200 GB | DB node 5 / test client |
+
+說明：
+
+- 本配置以 5 VM PoC 為前提，採 mixed-role deployment
+- 同一套 5 VM 骨架建議分批部署 TiDB 與 YugabyteDB，不建議同時常駐
+- 架構圖需同時表達 logical 與 physical deployment
+
+## 7. TiDB 實作項目
 
 ### TC-DEP-01 TiDB 拓樸與節點規劃
 
 | 欄位 | 內容 |
 | --- | --- |
-| Objective | 定義 TiDB PoC 在兩種 site 組合下的節點角色與放置策略 |
+| Objective | 定義 TiDB PoC 在 IDC-GCP 5VM 條件下的節點角色與放置策略 |
 | Scope | PD、TiDB、TiKV、monitoring |
 | Deliverable | 拓樸 YAML、inventory、site mapping |
 | 完成標準 | 可明確知道每一節點的 role、site、IP、用途 |
 
-建議最小配置：
+推薦節點配置：
 
-- PD x 3
-- TiDB x 2~3
-- TiKV x 3~6
-- Monitoring x 1
+| VM | Site | 角色 | 備註 |
+| --- | --- | --- | --- |
+| `vm01` | IDC | `PD + TiDB + TiKV` | 控制面 + SQL 入口 + 儲存 |
+| `vm02` | IDC | `PD + TiKV` | 控制面 + 儲存 |
+| `vm03` | IDC | `PD + TiKV` | 控制面 + 儲存 |
+| `vm04` | GCP | `TiDB + TiKV` | 遠端 SQL 入口 + 儲存 |
+| `vm05` | GCP | `TiDB + TiKV + Test Client` | 遠端 SQL 入口 + 儲存 + 壓測節點 |
+
+架構圖標註重點：
+
+- PD quorum in IDC
+- SQL entry in IDC and GCP
+- Cross-site TiKV Raft replication
+- Client -> TiDB: `TCP/4000`
+- TiDB -> PD: `TCP/2379`
+- PD peer: `TCP/2380`
+- TiDB -> TiKV: `TCP/20160`
+- TiKV -> PD: `TCP/2379`
+- TiKV <-> TiKV: `TCP/20160`
 
 實作項目：
 
 - 產出 `topology.yaml`
-- 定義 PD 與 TiKV 的跨站分布
-- 預留獨立 client node 供壓測與故障注入使用
+- 定義 PD 固定落在 IDC
+- 定義 TiKV 橫跨 IDC 與 GCP
+- 定義 vm05 同時作為 test client
 
 ### TC-DEP-02 TiDB 自動化部署
 
@@ -150,6 +187,7 @@
 - 建立資料目錄與 log 目錄
 - 建立 health check 步驟
 - 收集 deployment artifact 與版本資訊
+- 輸出 logical / physical architecture 所需節點與 port 資訊
 
 ### TC-DEP-03 TiDB 測試前置條件
 
@@ -167,28 +205,63 @@
 - 建立測試用 DB user
 - 驗證 follower read / stale read 所需設定
 
-## 7. YugabyteDB 實作項目
+### TC-DEP-04 TiDB 架構圖輸入資訊
+
+| 欄位 | 內容 |
+| --- | --- |
+| Objective | 產出可直接用於繪製 TiDB logical / physical architecture 的資訊 |
+| Scope | node、role、site、flow、port / protocol |
+| Deliverable | 架構圖文字版、節點表、連線表 |
+| 完成標準 | 可直接轉成 draw.io / Mermaid 架構圖 |
+
+實作項目：
+
+- 整理 physical deployment node table
+- 整理 logical architecture layer
+- 整理 client / control plane / storage replication flow
+- 整理 port / protocol 對照表
+
+## 8. YugabyteDB 實作項目
 
 ### YC-DEP-01 YugabyteDB 拓樸與節點規劃
 
 | 欄位 | 內容 |
 | --- | --- |
-| Objective | 定義 YugabyteDB PoC 的 master / tserver / placement 規劃 |
+| Objective | 定義 YugabyteDB PoC 在 IDC-GCP 5VM 條件下的 master / tserver / placement 規劃 |
 | Scope | master、tserver、client、placement policy |
 | Deliverable | node mapping、placement 規劃、inventory |
 | 完成標準 | 可清楚定義各節點 site 與 RF / placement 條件 |
 
-建議最小配置：
+推薦節點配置：
 
-- master x 3
-- tserver x 3~6
-- client x 1~2
+| VM | Site | 角色 | 備註 |
+| --- | --- | --- | --- |
+| `vm01` | IDC | `yb-master + yb-tserver` | 控制面 + 資料節點 |
+| `vm02` | IDC | `yb-master + yb-tserver` | 控制面 + 資料節點 |
+| `vm03` | IDC | `yb-master + yb-tserver` | 控制面 + 資料節點 |
+| `vm04` | GCP | `yb-tserver` | 遠端資料節點 |
+| `vm05` | GCP | `yb-tserver + Test Client` | 遠端資料節點 + 壓測節點 |
+
+架構圖標註重點：
+
+- Master quorum in IDC
+- TServer across IDC and GCP
+- Raft replication across sites
+- Client -> YSQL: `TCP/5433`
+- yb-master UI / HTTP: `TCP/7000`
+- yb-master RPC: `TCP/7100`
+- yb-tserver UI / HTTP: `TCP/9000`
+- yb-tserver RPC: `TCP/9100`
+- yb-master <-> yb-master: `TCP/7100`
+- yb-master <-> yb-tserver: `TCP/7100,9100`
+- yb-tserver <-> yb-tserver: `TCP/9100`
 
 實作項目：
 
-- 明確定義各 site 的 master / tserver 分布
+- 明確定義 master 固定落在 IDC
+- 明確定義 tserver 橫跨 IDC 與 GCP
 - 規劃 RF=3 與 region-aware placement
-- 預留測試用 client node
+- 定義 vm05 同時作為 test client
 
 ### YC-DEP-02 YugabyteDB 自動化部署
 
@@ -205,6 +278,7 @@
 - 設定 master / tserver 啟動參數
 - 建立 cluster init 與 join 流程
 - 收集 cluster health 與版本資訊
+- 輸出 logical / physical architecture 所需節點與 port 資訊
 
 ### YC-DEP-03 YugabyteDB 測試前置條件
 
@@ -222,7 +296,23 @@
 - 配置 placement policy / tablespace
 - 驗證 follower read 測試所需條件
 
-## 8. Common Test Case 落地執行項目
+### YC-DEP-04 YugabyteDB 架構圖輸入資訊
+
+| 欄位 | 內容 |
+| --- | --- |
+| Objective | 產出可直接用於繪製 YugabyteDB logical / physical architecture 的資訊 |
+| Scope | node、role、site、flow、port / protocol |
+| Deliverable | 架構圖文字版、節點表、連線表 |
+| 完成標準 | 可直接轉成 draw.io / Mermaid 架構圖 |
+
+實作項目：
+
+- 整理 physical deployment node table
+- 整理 logical architecture layer
+- 整理 client / control plane / storage replication flow
+- 整理 port / protocol 對照表
+
+## 9. Common Test Case 落地執行項目
 
 ### EX-01 壓測框架
 
@@ -284,13 +374,13 @@
 - 建立 client log 格式
 - 定義 DB metrics 抓取清單
 - 定義 OS metrics 抓取方式
-- 將測試結果歸檔至 `results/` |
+- 將測試結果歸檔至 `results/`
 
-## 9. IaC 落地需求
+## 10. IaC 落地需求
 
 ### IAC-01 Terraform 變數抽象
 
-- site pair：`idc-edc`、`idc-gcp`
+- site pair：`idc-gcp`
 - product：`tidb`、`yugabytedb`
 - role：`pd`、`tidb`、`tikv`、`master`、`tserver`、`client`
 - resource sizing：CPU、RAM、Disk、NIC
@@ -309,34 +399,34 @@
 - 測試腳本不得寫死 IP
 - DB 連線資訊改由變數注入
 
-## 10. 執行順序
+## 11. 執行順序
 
 1. 建立 Terraform 模板
 2. 建立 Ansible baseline
 3. 完成網路 precheck
 4. 完成 TiDB / YugabyteDB 自動化部署
-5. 完成 schema 與 seed data 初始化
-6. 完成 workload runner 與 metrics 收集
-7. 完成 failure injection 腳本
-8. 依 `POC_TEST_DESIGN.md` 執行 test cases
-9. 整理結果與輸出報告
+5. 產出 logical / physical architecture 所需資訊
+6. 完成 schema 與 seed data 初始化
+7. 完成 workload runner 與 metrics 收集
+8. 完成 failure injection 腳本
+9. 依 `POC_TEST_DESIGN.md` 執行 test cases
+10. 整理結果與輸出報告
 
-## 11. 開工前仍需補齊資訊
+## 12. 開工前仍需補齊資訊
 
 以下資訊若補齊，可直接進入實作：
 
 - vSphere 環境資訊：Datacenter、Cluster、Datastore、Template 名稱
 - GCP 專案資訊：Project ID、VPC、Subnet、Service Account
-- 各 site 可用主機數或 VM quota
+- GCP 與 vSphere 各自可用的 VM quota / resource pool
 - 各 site 允許開放的 port 清單
-- 是否已有 Bastion / Jump Host
 - 是否已有監控系統可直接接入
 - 測試 client 預計使用語言或工具
 - 是否需要將結果匯入既有報表平台
 
-## 12. 建議下一步
+## 13. 建議下一步
 
 1. 先建立 `infra/terraform` 與 `infra/ansible` 目錄骨架
-2. 先決定第一階段 PoC 先跑 `IDC-EDC` 還是 `IDC-GCP`
-3. 先定 TiDB / YugabyteDB 的最小節點數與 VM 規格
+2. 先固定 `IDC-GCP` 的 IP、hostname 與 site mapping
+3. 先定 TiDB / YugabyteDB 的 5VM 節點配置
 4. 再開始產出 Terraform / Ansible 初版
