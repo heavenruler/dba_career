@@ -28,3 +28,8 @@
 [Reference](https://github.com/heavenruler/dba_career/blob/master/poc/0_projectFor104/README.md#221-survey-%E8%A9%95%E4%BC%B0%E9%9D%A2%E5%90%91)
 
 ## 如何繼續跟進討論
+
+PoC 專案週會同步 ( 1 ~ 2 times / weekly ; 1 ~ 2 hours)
+討論內容包含但不限
+ - PoC 專案進度
+ - 相關分散式架構技術與原理跟進
