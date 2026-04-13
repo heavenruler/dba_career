@@ -116,6 +116,11 @@
 
 ## 6. 架構圖輸入資訊
 
+架構圖草稿檔案：
+
+- TiDB：[`TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
+- YugabyteDB：[`YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
+
 ### AD-01 共用 VM 規劃
 
 | VM | Site | 建議規格 | 用途 |
@@ -221,6 +226,8 @@
 - 整理 client / control plane / storage replication flow
 - 整理 port / protocol 對照表
 
+參考草稿：[`TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
+
 ## 8. YugabyteDB 實作項目
 
 ### YC-DEP-01 YugabyteDB 拓樸與節點規劃
@@ -311,6 +318,8 @@
 - 整理 logical architecture layer
 - 整理 client / control plane / storage replication flow
 - 整理 port / protocol 對照表
+
+參考草稿：[`YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
 
 ## 9. Common Test Case 落地執行項目
 
