@@ -12,4 +12,19 @@
 
 - 補完 PGSQL 體系對照
 
+## 在這個專案可以了解 PoC 場域必須 Survey 評估面向
+
+```
+1. 系統定位
+2. Multi-Region 寫入模型
+3. 衝突處理機制
+4. MVCC 與 Read 行為
+5. Failover / HA
+6. 擴展與 Hotspot
+7. DDL / Schema 行為
+8. 運維能力
+9. 成本模型
+```
+[Reference](https://github.com/heavenruler/dba_career/blob/master/poc/0_projectFor104/README.md#221-survey-%E8%A9%95%E4%BC%B0%E9%9D%A2%E5%90%91)
+
 ## 如何繼續跟進討論
