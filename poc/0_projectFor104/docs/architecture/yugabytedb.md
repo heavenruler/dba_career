@@ -1,4 +1,4 @@
-# YugabyteDB IDC-GCP Mermaid Draft
+# YugabyteDB IDC-GCP Architecture
 
 ## 1. Logical Architecture
 
@@ -6,21 +6,13 @@
 flowchart LR
     C1[App Client / Test Client]
 
-    subgraph API[YSQL Layer]
-        Y1[YSQL on vm01 IDC]
-        Y2[YSQL on vm02 IDC]
-        Y3[YSQL on vm03 IDC]
-        Y4[YSQL on vm04 GCP]
-        Y5[YSQL on vm05 GCP]
-    end
-
-    subgraph MASTER[Control Plane]
+    subgraph MASTER[Control Plane - yb-master Raft]
         M1[yb-master vm01 IDC]
         M2[yb-master vm02 IDC]
         M3[yb-master vm03 IDC]
     end
 
-    subgraph TSERVER[Storage / Query Nodes]
+    subgraph TSERVER[yb-tserver - YSQL + Storage]
         S1[yb-tserver vm01 IDC]
         S2[yb-tserver vm02 IDC]
         S3[yb-tserver vm03 IDC]
@@ -28,24 +20,36 @@ flowchart LR
         S5[yb-tserver vm05 GCP]
     end
 
-    C1 -->|TCP/5433 YSQL| Y1
-    C1 -->|TCP/5433 YSQL| Y4
-    C1 -->|TCP/5433 YSQL| Y5
+    C1 -->|TCP/5433 YSQL| S1
+    C1 -->|TCP/5433 YSQL| S4
+    C1 -->|TCP/5433 YSQL| S5
 
-    M1 <-->|TCP/7100 master RPC| M2
-    M2 <-->|TCP/7100 master RPC| M3
+    M1 <-->|TCP/7100 Raft| M2
+    M1 <-->|TCP/7100 Raft| M3
+    M2 <-->|TCP/7100 Raft| M3
 
-    M1 -->|TCP/7100 / 9100 control| S1
-    M1 -->|TCP/7100 / 9100 control| S2
-    M1 -->|TCP/7100 / 9100 control| S3
-    M1 -->|TCP/7100 / 9100 control| S4
-    M1 -->|TCP/7100 / 9100 control| S5
+    M1 -->|TCP/7100 / 9100 tablet mgmt| S1
+    M1 -->|TCP/7100 / 9100 tablet mgmt| S2
+    M1 -->|TCP/7100 / 9100 tablet mgmt| S3
+    M1 -->|TCP/7100 / 9100 tablet mgmt| S4
+    M1 -->|TCP/7100 / 9100 tablet mgmt| S5
+    M2 -->|TCP/7100 / 9100 tablet mgmt| S1
+    M2 -->|TCP/7100 / 9100 tablet mgmt| S4
+    M3 -->|TCP/7100 / 9100 tablet mgmt| S2
+    M3 -->|TCP/7100 / 9100 tablet mgmt| S5
 
-    S1 <-->|TCP/9100 Raft replication| S2
-    S2 <-->|TCP/9100 Raft replication| S3
-    S3 <-->|TCP/9100 Raft replication| S4
-    S4 <-->|TCP/9100 Raft replication| S5
+    S1 <-->|TCP/9100 Raft RF=3| S2
+    S1 <-->|TCP/9100 Raft RF=3| S4
+    S2 <-->|TCP/9100 Raft RF=3| S3
+    S2 <-->|TCP/9100 Raft RF=3| S5
+    S3 <-->|TCP/9100 Raft RF=3 cross-site| S4
 ```
+
+**Notes:**
+- YSQL is the PostgreSQL-compatible SQL engine running **inside** yb-tserver; it is not a separate process or layer
+- Any yb-tserver can accept client connections (TCP/5433); cross-site connections shown are representative
+- yb-master leader handles tablet placement and load balancing; all masters participate in Raft and heartbeat with tservers
+- Each tablet Raft group has RF=3 replicas; with geo-placement policy, replicas span IDC and GCP
 
 ## 2. Physical Deployment
 
@@ -62,25 +66,27 @@ flowchart TB
         VM5[vm05\nyb-tserver + Test Client]
     end
 
-    VM1 <-->|TCP/7100 master RPC| VM2
-    VM2 <-->|TCP/7100 master RPC| VM3
+    VM1 <-->|TCP/7100 master Raft| VM2
+    VM1 <-->|TCP/7100 master Raft| VM3
+    VM2 <-->|TCP/7100 master Raft| VM3
 
-    VM1 <-->|TCP/9100 tserver RPC| VM2
-    VM2 <-->|TCP/9100 tserver RPC| VM3
-    VM3 <-->|TCP/9100 tserver RPC| VM4
-    VM4 <-->|TCP/9100 tserver RPC| VM5
+    VM1 <-->|TCP/9100 tserver Raft| VM2
+    VM1 <-->|TCP/9100 tserver Raft| VM3
+    VM2 <-->|TCP/9100 tserver Raft| VM3
+    VM3 <-->|TCP/9100 tserver Raft cross-site| VM4
+    VM3 <-->|TCP/9100 tserver Raft cross-site| VM5
+    VM4 <-->|TCP/9100 tserver Raft| VM5
 
-    VM1 -->|TCP/7100 / 9100 control| VM4
-    VM1 -->|TCP/7100 / 9100 control| VM5
-
-    VM5 -->|TCP/5433 YSQL traffic| VM4
-    VM5 -->|TCP/5433 YSQL traffic| VM1
+    VM1 -->|TCP/7100 / 9100 tablet mgmt| VM4
+    VM1 -->|TCP/7100 / 9100 tablet mgmt| VM5
+    VM2 -->|TCP/7100 / 9100 tablet mgmt| VM4
+    VM3 -->|TCP/7100 / 9100 tablet mgmt| VM5
 ```
 
 ## 3. Drawing Notes
 
-- Master quorum in IDC
-- TServer distributed across IDC and GCP
-- Cross-site Raft replication between IDC and GCP
-- Placement policy directly affects failover and write latency
+- Master quorum in IDC (3 nodes); master leader manages tablet placement across all tservers
+- YSQL runs inside yb-tserver — no separate SQL proxy process
+- Tablet Raft groups (RF=3) span IDC and GCP; cross-site replication latency directly affects commit latency
+- Placement policy (tablespace) controls which sites hold tablet leaders, affecting write latency distribution
 - PoC mixed-role deployment, not production best practice
