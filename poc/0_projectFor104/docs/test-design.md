@@ -142,7 +142,7 @@ CREATE INDEX idx_tenant_id ON account(tenant_id);
 
 ### 6.1 建議拓樸
 
-架構草稿參考：[`TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
+架構草稿參考：[`docs/architecture/tidb.md`](./architecture/tidb.md)
 
 - 3 PD
 - 3 TiDB
@@ -185,7 +185,7 @@ CREATE INDEX idx_tenant_id ON account(tenant_id);
 
 ### 7.1 建議拓樸
 
-架構草稿參考：[`YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
+架構草稿參考：[`docs/architecture/yugabytedb.md`](./architecture/yugabytedb.md)
 
 - 3 master
 - 6 tserver
@@ -299,8 +299,6 @@ CREATE INDEX idx_tenant_id ON account(tenant_id);
 
 ## 11. 後續待補
 
-- TiDB Mermaid / draw.io 架構圖可參考：[`TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
-- YugabyteDB Mermaid / draw.io 架構圖可參考：[`YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
 - 實際部署拓樸
 - 測試腳本
 - 指標收集方式

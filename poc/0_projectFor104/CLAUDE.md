@@ -12,12 +12,12 @@ This is a **Proof-of-Concept (PoC)** project (Jira: ITDBA-3596) evaluating distr
 
 Start with these files in order:
 
-1. `README.md` — PoC scope, goals, and technology survey/comparison matrix (TiDB vs. YugabyteDB vs. Vitess)
-2. `NAVIGATION.md` — Map of all docs and their purpose
-3. `POC_TEST_DESIGN.md` — Test case definitions, metrics, and acceptance criteria
-4. `POC_EXECUTION_RUNBOOK.md` — Deployment procedure, IaC requirements, and phase breakdown
-5. `TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md` — TiDB logical and physical deployment diagrams (Mermaid)
-6. `YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md` — YugabyteDB equivalent
+1. `README.md` — PoC goals, current status, and doc index
+2. `docs/survey.md` — 9-dimension technology comparison matrix (TiDB vs. YugabyteDB vs. Vitess)
+3. `docs/test-design.md` — Test case definitions, metrics, and acceptance criteria
+4. `docs/execution-runbook.md` — Deployment procedure, IaC requirements, and phase breakdown
+5. `docs/architecture/tidb.md` — TiDB logical and physical deployment diagrams (Mermaid)
+6. `docs/architecture/yugabytedb.md` — YugabyteDB equivalent
 
 ## Target Architecture
 

@@ -2,7 +2,7 @@
 
 ## 1. 文件目的
 
-本文件將 `POC_TEST_DESIGN.md` 轉換為可落地執行的實作項目，供 PoC 建置、測試、驗證與環境重建使用。
+本文件將 `docs/test-design.md` 轉換為可落地執行的實作項目，供 PoC 建置、測試、驗證與環境重建使用。
 
 適用前提：
 
@@ -26,13 +26,18 @@
 - 驗證結果保存目錄與命名規則
 - 環境可重建、可抽換、可重跑
 
-## 3. 目錄建議
+## 3. 目錄結構
 
 ```text
 0_projectFor104/
 ├── README.md
-├── POC_TEST_DESIGN.md
-├── POC_EXECUTION_RUNBOOK.md
+├── docs/
+│   ├── survey.md
+│   ├── test-design.md
+│   ├── execution-runbook.md
+│   └── architecture/
+│       ├── tidb.md
+│       └── yugabytedb.md
 ├── infra/
 │   ├── terraform/
 │   │   ├── gcp/
@@ -118,8 +123,8 @@
 
 架構圖草稿檔案：
 
-- TiDB：[`TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
-- YugabyteDB：[`YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
+- TiDB：[`docs/architecture/tidb.md`](./architecture/tidb.md)
+- YugabyteDB：[`docs/architecture/yugabytedb.md`](./architecture/yugabytedb.md)
 
 ### AD-01 共用 VM 規劃
 
@@ -201,7 +206,7 @@
 | Objective | 完成 TiDB test case 所需前置設定 |
 | Scope | schema、seed data、metrics、慢查詢、dashboard 存取 |
 | Deliverable | 初始化 SQL、測試帳號、metrics baseline |
-| 完成標準 | 可直接開始執行 `POC_TEST_DESIGN.md` 中 TiDB test cases |
+| 完成標準 | 可直接開始執行 `docs/test-design.md` 中 TiDB test cases |
 
 實作項目：
 
@@ -226,7 +231,7 @@
 - 整理 client / control plane / storage replication flow
 - 整理 port / protocol 對照表
 
-參考草稿：[`TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./TIDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
+參考草稿：[`docs/architecture/tidb.md`](./architecture/tidb.md)
 
 ## 8. YugabyteDB 實作項目
 
@@ -294,7 +299,7 @@
 | Objective | 完成 YugabyteDB test case 所需前置設定 |
 | Scope | schema、seed data、YSQL 連線、metrics、placement policy |
 | Deliverable | 初始化 SQL、測試帳號、placement 設定 |
-| 完成標準 | 可直接開始執行 `POC_TEST_DESIGN.md` 中 YugabyteDB test cases |
+| 完成標準 | 可直接開始執行 `docs/test-design.md` 中 YugabyteDB test cases |
 
 實作項目：
 
@@ -319,7 +324,7 @@
 - 整理 client / control plane / storage replication flow
 - 整理 port / protocol 對照表
 
-參考草稿：[`YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md`](./YUGABYTEDB_IDC_GCP_ARCHITECTURE_DRAFT.md)
+參考草稿：[`docs/architecture/yugabytedb.md`](./architecture/yugabytedb.md)
 
 ## 9. Common Test Case 落地執行項目
 
@@ -418,7 +423,7 @@
 6. 完成 schema 與 seed data 初始化
 7. 完成 workload runner 與 metrics 收集
 8. 完成 failure injection 腳本
-9. 依 `POC_TEST_DESIGN.md` 執行 test cases
+9. 依 `docs/test-design.md` 執行 test cases
 10. 整理結果與輸出報告
 
 ## 12. 開工前仍需補齊資訊
