@@ -2,6 +2,7 @@
 
 ```
 opencode -s ses_28f349b65ffesqMOs3ScraWUt4
+claude --resume 39164c14-87bc-4b78-a426-385135878d3f
 ```
 
 ## PoC 目標
