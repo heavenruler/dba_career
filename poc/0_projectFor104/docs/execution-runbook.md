@@ -442,5 +442,305 @@
 
 1. 先建立 `infra/terraform` 與 `infra/ansible` 目錄骨架
 2. 先固定 `IDC-GCP` 的 IP、hostname 與 site mapping
-3. 先定 TiDB / YugabyteDB 的 5VM 節點配置
+3. 先定 TiDB / YugabyteDB 的 5VM 節點配置與 Route 選擇
 4. 再開始產出 Terraform / Ansible 初版
+
+---
+
+## 14. Multi-Site Scenario 設定項目
+
+本章對應 `docs/test-design.md` Section 12 的四個情境，記錄各情境所需的實際設定步驟。
+
+### 14.1 情境與 Route 對照
+
+| 情境 | 專線 | 流量 | 需用 Route |
+|------|------|------|-----------|
+| S1 | 正常 | 50/50 | A 或 B |
+| S2 | 正常 | 全切 GCP | A 或 B |
+| S3 | 中斷 | IDC 繼續 | **Route A** |
+| S4 | 中斷 | GCP 繼續 | **Route B** |
+
+S3 與 S4 需分兩次部署分別驗證。同一套 5 VM 無法同時滿足兩者。
+
+---
+
+### 14.2 TiDB Route A 設定（S1 / S2 / S3）
+
+#### SC-TIDB-A-01 節點角色分配
+
+| VM | Site | PD | TiDB | TiKV |
+|----|------|----|------|------|
+| vm01 | IDC | ✅ | ✅ | ✅ |
+| vm02 | IDC | ✅ | — | ✅ |
+| vm03 | IDC | ✅ | — | ✅ |
+| vm04 | GCP | — | ✅ | ✅ |
+| vm05 | GCP | — | ✅ | ✅ |
+
+#### SC-TIDB-A-02 TiKV Node Label 設定
+
+在各 VM 的 `tikv.toml` 加入：
+
+```toml
+# vm01 / vm02 / vm03 (IDC)
+[server]
+labels = { region = "idc" }
+
+# vm04 / vm05 (GCP)
+[server]
+labels = { region = "gcp" }
+```
+
+PD 設定啟用 location-aware 排程：
+
+```toml
+# pd.toml
+[replication]
+location-labels = ["region"]
+```
+
+#### SC-TIDB-A-03 PD Placement Rule（2 IDC + 1 GCP per Region）
+
+```bash
+# 建立 route-a-rules.json
+cat > route-a-rules.json << 'EOF'
+[
+  {
+    "group_id": "pd", "id": "idc-voter",
+    "role": "voter", "count": 2,
+    "label_constraints": [{"key": "region", "op": "in", "values": ["idc"]}]
+  },
+  {
+    "group_id": "pd", "id": "gcp-voter",
+    "role": "voter", "count": 1,
+    "label_constraints": [{"key": "region", "op": "in", "values": ["gcp"]}]
+  }
+]
+EOF
+
+pd-ctl config placement-rules rule-bundle set pd --in=route-a-rules.json
+```
+
+#### SC-TIDB-A-04 Ansible 實作項目
+
+- `group_vars/idc.yml`：`tikv_labels: { region: idc }`
+- `group_vars/gcp.yml`：`tikv_labels: { region: gcp }`
+- `roles/tidb/tasks/pd_placement_rules.yml`：部署後自動套用 placement rule
+- 驗收：`pd-ctl store` 確認 label 已套用，`pd-ctl region` 確認 replica 分布
+
+---
+
+### 14.3 TiDB Route B 設定（S1 / S2 / S4）
+
+#### SC-TIDB-B-01 節點角色分配
+
+| VM | Site | PD | TiDB | TiKV |
+|----|------|----|------|------|
+| vm01 | IDC | ✅ | ✅ | ✅ |
+| vm02 | IDC | — | — | ✅ |
+| vm03 | IDC | — | — | ✅ |
+| vm04 | GCP | ✅ | ✅ | ✅ |
+| vm05 | GCP | ✅ | ✅ | ✅ |
+
+#### SC-TIDB-B-02 TiKV Node Label 設定
+
+同 Route A（region label 相同），僅 PD 部署位置不同。
+
+#### SC-TIDB-B-03 PD Placement Rule（1 IDC + 2 GCP per Region）
+
+```bash
+cat > route-b-rules.json << 'EOF'
+[
+  {
+    "group_id": "pd", "id": "idc-voter",
+    "role": "voter", "count": 1,
+    "label_constraints": [{"key": "region", "op": "in", "values": ["idc"]}]
+  },
+  {
+    "group_id": "pd", "id": "gcp-voter",
+    "role": "voter", "count": 2,
+    "label_constraints": [{"key": "region", "op": "in", "values": ["gcp"]}]
+  }
+]
+EOF
+
+pd-ctl config placement-rules rule-bundle set pd --in=route-b-rules.json
+```
+
+#### SC-TIDB-B-04 Route A → Route B 切換程序（不停機）
+
+```bash
+# 1. 在 vm04 啟動新 PD，加入現有 cluster
+pd-ctl member add <vm04-ip>:2380
+
+# 2. 在 vm05 啟動新 PD，加入現有 cluster
+pd-ctl member add <vm05-ip>:2380
+
+# 3. 確認 5 個 PD 皆 healthy
+pd-ctl member
+
+# 4. 移除 vm02 PD
+pd-ctl member delete name pd-vm02
+
+# 5. 移除 vm03 PD
+pd-ctl member delete name pd-vm03
+
+# 6. 確認剩 3 個 PD（vm01/vm04/vm05），quorum 正常
+pd-ctl member
+
+# 7. 更新 placement rule 為 Route B
+pd-ctl config placement-rules rule-bundle set pd --in=route-b-rules.json
+```
+
+---
+
+### 14.4 YugabyteDB Route A 設定（S1 / S2 / S3）
+
+#### SC-YB-A-01 節點角色分配
+
+| VM | Site | yb-master | yb-tserver |
+|----|------|-----------|-----------|
+| vm01 | IDC | ✅ | ✅ |
+| vm02 | IDC | ✅ | ✅ |
+| vm03 | IDC | ✅ | ✅ |
+| vm04 | GCP | — | ✅ |
+| vm05 | GCP | — | ✅ |
+
+#### SC-YB-A-02 Placement 啟動參數
+
+```bash
+# IDC nodes (vm01 / vm02 / vm03) — yb-master 與 yb-tserver
+--placement_cloud=on-prem
+--placement_region=idc
+--placement_zone=idc-a
+
+# GCP nodes (vm04 / vm05) — yb-tserver only
+--placement_cloud=gcp
+--placement_region=gcp-region
+--placement_zone=gcp-a
+```
+
+#### SC-YB-A-03 Tablespace（2 IDC + 1 GCP per tablet）
+
+```sql
+CREATE TABLESPACE idc_primary WITH (
+  replica_placement = '{
+    "num_replicas": 3,
+    "placement_blocks": [
+      {"cloud": "on-prem", "region": "idc",        "zone": "idc-a", "min_num_replicas": 2},
+      {"cloud": "gcp",     "region": "gcp-region", "zone": "gcp-a", "min_num_replicas": 1}
+    ]
+  }'
+);
+
+ALTER TABLE account SET TABLESPACE idc_primary;
+```
+
+#### SC-YB-A-04 Ansible 實作項目
+
+- `group_vars/idc.yml`：`yb_placement_cloud: on-prem`, `yb_placement_region: idc`, `yb_placement_zone: idc-a`
+- `group_vars/gcp.yml`：`yb_placement_cloud: gcp`, `yb_placement_region: gcp-region`, `yb_placement_zone: gcp-a`
+- `roles/yugabytedb/tasks/tablespace.yml`：部署後自動建立 tablespace 並 ALTER TABLE
+- 驗收：`yb-admin list_all_masters` 確認 3 masters 皆在 IDC
+
+---
+
+### 14.5 YugabyteDB Route B 設定（S1 / S2 / S4）
+
+#### SC-YB-B-01 節點角色分配
+
+| VM | Site | yb-master | yb-tserver |
+|----|------|-----------|-----------|
+| vm01 | IDC | ✅ | ✅ |
+| vm02 | IDC | — | ✅ |
+| vm03 | IDC | — | ✅ |
+| vm04 | GCP | ✅ | ✅ |
+| vm05 | GCP | ✅ | ✅ |
+
+#### SC-YB-B-02 Placement 啟動參數
+
+```bash
+# vm01 (IDC) — yb-master + yb-tserver
+--placement_cloud=on-prem --placement_region=idc --placement_zone=idc-a
+
+# vm02 / vm03 (IDC) — yb-tserver only（不啟動 yb-master）
+--placement_cloud=on-prem --placement_region=idc --placement_zone=idc-a
+
+# vm04 / vm05 (GCP) — yb-master + yb-tserver
+--placement_cloud=gcp --placement_region=gcp-region --placement_zone=gcp-a
+```
+
+#### SC-YB-B-03 Tablespace（1 IDC + 2 GCP per tablet）
+
+```sql
+CREATE TABLESPACE gcp_primary WITH (
+  replica_placement = '{
+    "num_replicas": 3,
+    "placement_blocks": [
+      {"cloud": "on-prem", "region": "idc",        "zone": "idc-a", "min_num_replicas": 1},
+      {"cloud": "gcp",     "region": "gcp-region", "zone": "gcp-a", "min_num_replicas": 2}
+    ]
+  }'
+);
+
+ALTER TABLE account SET TABLESPACE gcp_primary;
+```
+
+#### SC-YB-B-04 Route A → Route B 切換程序（不停機）
+
+```bash
+# 1. 在 vm04 以 master 模式啟動，加入現有 cluster
+yb-admin -master_addresses <vm01,vm02,vm03>:7100 \
+  change_master_config ADD_SERVER <vm04-ip> 7100
+
+# 2. 在 vm05 以 master 模式啟動，加入現有 cluster
+yb-admin -master_addresses <vm01,vm02,vm03,vm04>:7100 \
+  change_master_config ADD_SERVER <vm05-ip> 7100
+
+# 3. 確認 5 個 master 皆 healthy
+yb-admin -master_addresses <all-5> list_all_masters
+
+# 4. 移除 vm02 master
+yb-admin -master_addresses <all-5> change_master_config REMOVE_SERVER <vm02-ip> 7100
+
+# 5. 移除 vm03 master
+yb-admin -master_addresses <vm01,vm04,vm05> change_master_config REMOVE_SERVER <vm03-ip> 7100
+
+# 6. 確認剩 3 個 master（vm01/vm04/vm05），quorum 正常
+yb-admin -master_addresses <vm01,vm04,vm05> list_all_masters
+
+# 7. 更新 tablespace 為 gcp_primary
+ALTER TABLE account SET TABLESPACE gcp_primary;
+```
+
+---
+
+### 14.6 網路中斷模擬（TC-MS-03 / TC-MS-04 用）
+
+在測試節點上以 `iptables` 模擬 IDC↔GCP 專線中斷：
+
+```bash
+# 在 IDC 節點封鎖所有 GCP 來源（以 GCP subnet 為例）
+iptables -I INPUT  -s 10.160.0.0/16 -j DROP
+iptables -I OUTPUT -d 10.160.0.0/16 -j DROP
+
+# 恢復
+iptables -D INPUT  -s 10.160.0.0/16 -j DROP
+iptables -D OUTPUT -d 10.160.0.0/16 -j DROP
+```
+
+注意事項：
+- 封鎖須同時在 IDC 側與 GCP 側執行，確保完全隔離
+- 封鎖前先確認 client workload 已在兩站持續執行
+- 保留封鎖前後的 metrics snapshot 作為 baseline 對照
+- 恢復後等待 30 秒再進行資料一致性驗證
+
+---
+
+### 14.7 Scenario 執行順序建議
+
+```
+1. 部署 Route A → 執行 TC-MS-01（S1）→ TC-MS-02（S2）→ TC-MS-03（S3）
+2. 執行 Route A → Route B 切換程序（SC-TIDB-B-04 / SC-YB-B-04）
+3. 執行 TC-MS-01（S1）→ TC-MS-02（S2）→ TC-MS-04（S4）
+4. 比較兩種 Route 下 S1 / S2 的 latency 差異（control plane 位置影響）
+```

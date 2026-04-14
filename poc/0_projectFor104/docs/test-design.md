@@ -304,3 +304,106 @@ CREATE INDEX idx_tenant_id ON account(tenant_id);
 - 指標收集方式
 - 驗收門檻
 - 測試時程與執行順序
+
+---
+
+## 12. Multi-Site Scenario Test Cases
+
+### 12.1 情境定義
+
+| # | 專線 | 流量 | 適用 Route | 驗證重點 |
+|---|------|------|-----------|---------|
+| S1 | 正常 | IDC 50% / GCP 50% | A 或 B | 兩站同時寫入，延遲與衝突行為 |
+| S2 | 正常 | 全切至 GCP（計劃性） | A 或 B | 流量遷移期間無寫入中斷 |
+| S3 | 中斷 | 流量維持在 IDC | **Route A only** | IDC 獨立運作；GCP 應 fail-closed |
+| S4 | 中斷 | 流量維持在 GCP | **Route B only** | GCP 獨立運作；IDC 應 fail-closed |
+
+Route A / B 設定差異見：
+- TiDB：[`docs/architecture/tidb.md`](./architecture/tidb.md)
+- YugabyteDB：[`docs/architecture/yugabytedb.md`](./architecture/yugabytedb.md)
+
+---
+
+### TC-MS-01：S1 — 專線正常，雙站各 50% 流量
+
+| 欄位 | 內容 |
+| --- | --- |
+| Objective | 驗證兩站同時承載寫入時的延遲差異、衝突行為與 Raft replication 穩定性 |
+| 適用 Route | A 或 B（結果會因 control plane 位置而有差異，建議兩種都跑） |
+| Setup | IDC client 連 IDC TiDB / tserver；GCP client 連 GCP TiDB / tserver；各承擔 50% 寫入量 |
+| Steps | 1. 啟動兩站 client，各執行標準寫入 workload。2. 持續 10 min，保持相同 concurrency。3. 分別收集 IDC 與 GCP client 的延遲、error、retry 資料。4. 對照 control plane 位置，解釋延遲差異 |
+| Metrics | 各站 p95 / p99 write latency、commit latency、TSO / master RTT、cross-site network bytes、conflict rate |
+| Pass / Fail Criteria | Pass：兩站皆可穩定寫入，延遲差異可對應 control plane 位置（IDC 側較低）解釋。Fail：任一站出現非預期錯誤或延遲無法量測 |
+
+---
+
+### TC-MS-02：S2 — 專線正常，計劃性將流量從 IDC 切換至 GCP
+
+| 欄位 | 內容 |
+| --- | --- |
+| Objective | 驗證計劃性流量切換期間是否出現寫入中斷，並觀察切換後 GCP 承擔全量流量的行為 |
+| 適用 Route | A 或 B（link OK，兩種 Route 皆可驗證） |
+| Setup | 初始狀態：IDC 100% 流量。切換目標：GCP 100% 流量。切換方式：逐步將 IDC client 流量導向 GCP（模擬 LB 或 DNS 切換） |
+| Steps | 1. 啟動 IDC client 執行持續寫入。2. 逐步將流量從 IDC client 遷移至 GCP client（建議分 3 步：100/0 → 50/50 → 0/100）。3. 全程持續收集兩站 error、latency、retry 資料。4. 確認切換完成後 GCP 承擔全量寫入的穩定性 |
+| Metrics | 切換期間 write error 數量、latency spike、retry count、GCP 全量承載後的 p95 write latency |
+| Pass / Fail Criteria | Pass：切換期間寫入不中斷（允許短暫 retry），GCP 全量承載後運作穩定。Fail：切換期間出現不可恢復錯誤、長時間中斷、或全切後 GCP 持續異常 |
+
+---
+
+### TC-MS-03：S3 — 專線中斷，IDC 流量繼續運作
+
+| 欄位 | 內容 |
+| --- | --- |
+| Objective | 驗證 IDC 在 link 中斷後可獨立維持寫入；確認 GCP 呈現 fail-closed 而非接受不安全寫入 |
+| **前提：必須使用 Route A（IDC primary）** | PD / master quorum 在 IDC，TiKV / tserver 每個 Raft group ≥2 replica 在 IDC |
+| Setup | 兩站皆有 client 執行持續寫入（從 S1 狀態開始） |
+| Steps | 1. 確認 Route A 已設定（placement rule 驗證）。2. 啟動兩站持續寫入 workload。3. 切斷 IDC↔GCP 網路連線（使用 `iptables` 或 `tc`）。4. 持續觀察 IDC 與 GCP 各自行為 10 min。5. 恢復連線，確認資料一致性 |
+| Metrics | IDC write 可用性（是否持續）、GCP write 行為（是否 fail-closed）、斷線後 IDC Raft group 狀態、reconnect 後資料 diff |
+| Pass / Fail Criteria | Pass：IDC 持續寫入；GCP 停止寫入且無資料不一致跡象（fail-closed）。Fail：IDC 中斷、GCP 仍接受寫入（split-brain 風險）、或 reconnect 後有資料衝突 |
+| 注意 | 若使用 Route B 執行本 TC，IDC 在斷線後因 PD / master 只剩 1 節點而失去 quorum，結果會與預期相反（IDC 停止、GCP 繼續），這是設計行為非缺陷 |
+
+---
+
+### TC-MS-04：S4 — 專線中斷，GCP 流量繼續運作
+
+| 欄位 | 內容 |
+| --- | --- |
+| Objective | 驗證 GCP 在 link 中斷後可獨立維持寫入；確認 IDC 呈現 fail-closed 而非接受不安全寫入 |
+| **前提：必須使用 Route B（GCP primary）** | PD / master quorum 在 GCP，TiKV / tserver 每個 Raft group ≥2 replica 在 GCP |
+| Setup | 兩站皆有 client 執行持續寫入（從 S1 狀態開始） |
+| Steps | 1. 確認 Route B 已設定（placement rule 驗證）。2. 啟動兩站持續寫入 workload。3. 切斷 IDC↔GCP 網路連線。4. 持續觀察 GCP 與 IDC 各自行為 10 min。5. 恢復連線，確認資料一致性 |
+| Metrics | GCP write 可用性（是否持續）、IDC write 行為（是否 fail-closed）、斷線後 GCP Raft group 狀態、reconnect 後資料 diff |
+| Pass / Fail Criteria | Pass：GCP 持續寫入；IDC 停止寫入且無資料不一致跡象（fail-closed）。Fail：GCP 中斷、IDC 仍接受寫入（split-brain 風險）、或 reconnect 後有資料衝突 |
+| 注意 | 若使用 Route A 執行本 TC，GCP 在斷線後因無 PD / master quorum 而停止，IDC 繼續，這是 Route A 的設計行為 |
+
+---
+
+### 12.2 S3 / S4 前置驗證（執行前必做）
+
+在執行 TC-MS-03 / TC-MS-04 之前，需確認 placement rule 已生效：
+
+**TiDB 驗證指令**
+
+```bash
+# 確認 TiKV label 已設定
+pd-ctl store --jq '.stores[] | {id: .store.id, labels: .store.labels, address: .store.address}'
+
+# 確認 placement rule 已套用
+pd-ctl config placement-rules show
+
+# 確認每個 Region 的 replica 分布符合 Route 設定
+pd-ctl region --jq '.regions[] | {id: .id, peers: [.peers[] | .store_id]}'
+```
+
+**YugabyteDB 驗證指令**
+
+```bash
+# 確認 master placement
+yb-admin -master_addresses <masters> list_all_masters
+
+# 確認 tablet replica 分布
+yb-admin -master_addresses <masters> list_tablets_for_table ysql.<db> account
+
+# 確認 tablespace placement policy
+SELECT * FROM pg_tablespace;
+```
