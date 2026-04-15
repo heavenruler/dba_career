@@ -22,7 +22,6 @@
 | **YugabyteDB** | PostgreSQL-compatible | DocDB + HLC |
 
 - 同時評估兩條技術路線，避免單一選型受既有習慣限制
-- Vitess 已排除（sharding middleware，非原生分散式 SQL）
 
 ---
 
@@ -99,11 +98,11 @@
 
 ---
 
-## 09　需要管理階層確認的事項
+## 09　待確認的事項
 
 1. **技術路線偏好**：MySQL-compatible（TiDB）或 PostgreSQL-compatible（YugabyteDB）目前無明確傾向，PoC 結果出爐前維持雙線評估
 2. **原廠 / 顧問參與**：TiDB / YugabyteDB 在台灣均無直接溝通窗口；若需提升結論可信度，需提前確認是否引入外部資源
-3. **工程大學課程排期**：開發端學習準備建議提前規劃，不等 PoC 結果
+3. **工程大學課程排期**：Y25 or Y26 執行
 
 ---
 
