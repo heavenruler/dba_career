@@ -7,7 +7,8 @@ INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
         apply-all destroy-all \
         vm-create vm-destroy inventory-refresh ansible-ping ansible-setup \
         gcp-create gcp-destroy gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure \
-        gcp-inventory-refresh inventory-refresh-all
+        gcp-inventory-refresh inventory-refresh-all \
+        tidb-deploy
 
 help:
 	@echo "=== Global ==="
@@ -29,6 +30,9 @@ help:
 	@echo "=== Ansible ==="
 	@echo "  make ansible-ping           - 重建全部清單 + 確認 tunnel + ping 所有 VM"
 	@echo "  make ansible-setup          - 執行 site.yml (base 設定)"
+	@echo ""
+	@echo "=== TiDB ==="
+	@echo "  make tidb-deploy            - 部署 TiDB cluster (tidb.yml)"
 
 ## Global
 apply-all:
@@ -94,3 +98,9 @@ gcp-inventory-refresh:
 inventory-refresh-all: inventory-refresh gcp-inventory-refresh
 	@echo "==> Final inventory:"
 	@cat $(INVENTORY)
+
+## TiDB
+tidb-deploy: gcp-tunnel-ensure
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb.ini

@@ -1,0 +1,16 @@
+---
+# Pre-flight: gather facts from all cluster nodes
+- name: Gather facts from all TiDB cluster nodes
+  hosts: tidb_pd:tidb_server:tidb_kv
+  become: true
+  gather_facts: true
+
+# Deploy from control node (l-test-poc-1)
+- name: Deploy TiDB cluster
+  hosts: tidb_control
+  become: true
+  vars:
+    tidb_cluster_name: tidb-poc
+    tidb_version: v8.5.2
+  roles:
+    - tidb_deploy

@@ -1,0 +1,69 @@
+---
+## SSH key setup on control node
+- name: Generate SSH keypair on control node
+  ansible.builtin.user:
+    name: root
+    generate_ssh_key: true
+    ssh_key_bits: 4096
+    ssh_key_file: /root/.ssh/id_rsa
+
+- name: Fetch control node public key
+  ansible.builtin.slurp:
+    src: /root/.ssh/id_rsa.pub
+  register: control_pubkey
+
+## Install TiUP
+- name: Download and install TiUP
+  ansible.builtin.shell: |
+    curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
+  args:
+    creates: /root/.tiup/bin/tiup
+  environment:
+    https_proxy: "{{ lookup('env', 'https_proxy') | default('') }}"
+
+- name: Add TiUP to PATH
+  ansible.builtin.lineinfile:
+    path: /root/.bash_profile
+    line: 'export PATH=$PATH:/root/.tiup/bin'
+    create: true
+
+- name: Install tiup cluster component
+  ansible.builtin.shell: /root/.tiup/bin/tiup cluster
+  environment:
+    PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+  changed_when: false
+  failed_when: false
+
+## Distribute control node pubkey to all cluster nodes
+- name: Authorize control node SSH key on cluster nodes
+  ansible.posix.authorized_key:
+    user: root
+    key: "{{ control_pubkey.content | b64decode }}"
+    state: present
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['tidb_pd'] + groups['tidb_server'] + groups['tidb_kv'] | unique }}"
+
+## Generate topology
+- name: Render topology.yml
+  ansible.builtin.template:
+    src: topology.yml.j2
+    dest: /root/tidb-topology.yml
+    mode: '0644'
+
+## Deploy cluster
+- name: Deploy TiDB cluster via TiUP
+  ansible.builtin.shell: |
+    /root/.tiup/bin/tiup cluster deploy {{ tidb_cluster_name }} {{ tidb_version }} \
+      /root/tidb-topology.yml --yes \
+      -i /root/.ssh/id_rsa
+  environment:
+    PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+  register: tiup_deploy
+  changed_when: tiup_deploy.rc == 0
+
+- name: Start TiDB cluster
+  ansible.builtin.shell: |
+    /root/.tiup/bin/tiup cluster start {{ tidb_cluster_name }}
+  environment:
+    PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+  changed_when: true

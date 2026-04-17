@@ -1,18 +1,55 @@
 ---
-- name: GCP-specific configuration
-  hosts: gcp_poc
+- name: Set proxy for vSphere hosts
+  hosts: poc_db
   become: true
-  tasks:
+  vars:
+    proxy_url: http://sproxy.104-dev.com.tw:3128
+    no_proxy: "localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+  tasks: &proxy_tasks
     - name: Set proxy in yum.conf and dnf.conf
       ansible.builtin.ini_file:
         path: "{{ item }}"
         section: main
         option: proxy
-        value: http://gproxy.104-dev.com.tw:3128
+        value: "{{ proxy_url }}"
         mode: '0644'
       loop:
         - /etc/yum.conf
         - /etc/dnf/dnf.conf
+
+    - name: Set proxy in /etc/environment
+      ansible.builtin.blockinfile:
+        path: /etc/environment
+        create: true
+        mode: '0644'
+        marker: "# {mark} ANSIBLE PROXY"
+        block: |
+          http_proxy={{ proxy_url }}
+          https_proxy={{ proxy_url }}
+          HTTP_PROXY={{ proxy_url }}
+          HTTPS_PROXY={{ proxy_url }}
+          no_proxy={{ no_proxy }}
+          NO_PROXY={{ no_proxy }}
+
+    - name: Set proxy in /etc/profile.d/proxy.sh
+      ansible.builtin.copy:
+        dest: /etc/profile.d/proxy.sh
+        mode: '0644'
+        content: |
+          export http_proxy={{ proxy_url }}
+          export https_proxy={{ proxy_url }}
+          export HTTP_PROXY={{ proxy_url }}
+          export HTTPS_PROXY={{ proxy_url }}
+          export no_proxy={{ no_proxy }}
+          export NO_PROXY={{ no_proxy }}
+
+- name: Set proxy for GCP hosts
+  hosts: gcp_poc
+  become: true
+  vars:
+    proxy_url: http://gproxy.104-dev.com.tw:3128
+    no_proxy: "localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+  tasks: *proxy_tasks
 
 - name: Base configuration for all DB hosts
   hosts: all

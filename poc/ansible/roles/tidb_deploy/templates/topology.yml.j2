@@ -1,0 +1,34 @@
+global:
+  user: tidb
+  ssh_port: 22
+  deploy_dir: /opt/tidb/deploy
+  data_dir: /opt/tidb/data
+  arch: amd64
+
+server_configs:
+  pd:
+    replication.max-replicas: 3
+
+pd_servers:
+{% for host in groups['tidb_pd'] %}
+  - host: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+{% endfor %}
+
+tidb_servers:
+{% for host in groups['tidb_server'] %}
+  - host: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+{% endfor %}
+
+tikv_servers:
+{% for host in groups['tidb_kv'] %}
+  - host: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+{% endfor %}
+
+monitoring_servers:
+  - host: {{ hostvars[groups['tidb_control'][0]]['ansible_default_ipv4']['address'] }}
+
+grafana_servers:
+  - host: {{ hostvars[groups['tidb_control'][0]]['ansible_default_ipv4']['address'] }}
+
+alertmanager_servers:
+  - host: {{ hostvars[groups['tidb_control'][0]]['ansible_default_ipv4']['address'] }}
