@@ -1,0 +1,95 @@
+---
+## User & directories
+- name: Create yugabyte user
+  ansible.builtin.user:
+    name: yugabyte
+    shell: /bin/bash
+    create_home: true
+
+- name: Create YugabyteDB directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: yugabyte
+    group: yugabyte
+    mode: '0755'
+  loop:
+    - /opt/yugabyte
+    - /opt/yugabyte/data
+    - /opt/yugabyte/logs
+
+## Download & install
+- name: Download YugabyteDB tarball
+  ansible.builtin.get_url:
+    url: "https://downloads.yugabyte.com/releases/{{ yb_version }}/yugabyte-{{ yb_version }}-b{{ yb_build }}-linux-x86_64.tar.gz"
+    dest: "/tmp/yugabyte-{{ yb_version }}.tar.gz"
+    mode: '0644'
+  environment:
+    https_proxy: "{{ yb_proxy | default('') }}"
+    http_proxy:  "{{ yb_proxy | default('') }}"
+
+- name: Extract YugabyteDB
+  ansible.builtin.unarchive:
+    src: "/tmp/yugabyte-{{ yb_version }}.tar.gz"
+    dest: /opt/yugabyte
+    remote_src: true
+    extra_opts: [--strip-components=1]
+    creates: /opt/yugabyte/bin/yugabyted
+    owner: yugabyte
+    group: yugabyte
+
+- name: Run post-install script
+  ansible.builtin.command: /opt/yugabyte/bin/post_install.sh
+  args:
+    creates: /opt/yugabyte/.post_install_done
+  become_user: yugabyte
+  failed_when: false
+
+## Bootstrap node
+- name: Start yugabyted on bootstrap node
+  ansible.builtin.shell: |
+    /opt/yugabyte/bin/yugabyted start \
+      --advertise_address={{ yb_actual_ip }} \
+      --cloud_location={{ yb_cloud }}.{{ yb_region }}.{{ yb_zone }} \
+      --fault_tolerance=zone \
+      --data_dir=/opt/yugabyte/data \
+      --log_dir=/opt/yugabyte/logs \
+      --daemon=true
+  become_user: yugabyte
+  args:
+    creates: /opt/yugabyte/data/yugabyted.pid
+  when: inventory_hostname in groups['yb_bootstrap']
+
+- name: Wait for bootstrap node to be ready
+  ansible.builtin.wait_for:
+    host: "{{ yb_actual_ip }}"
+    port: 7000
+    timeout: 120
+  when: inventory_hostname in groups['yb_bootstrap']
+
+## Join nodes
+- name: Start yugabyted on join nodes
+  ansible.builtin.shell: |
+    /opt/yugabyte/bin/yugabyted start \
+      --advertise_address={{ yb_actual_ip }} \
+      --cloud_location={{ yb_cloud }}.{{ yb_region }}.{{ yb_zone }} \
+      --fault_tolerance=zone \
+      --join={{ yb_bootstrap_ip }} \
+      --data_dir=/opt/yugabyte/data \
+      --log_dir=/opt/yugabyte/logs \
+      --daemon=true
+  become_user: yugabyte
+  args:
+    creates: /opt/yugabyte/data/yugabyted.pid
+  when: inventory_hostname in groups['yb_join']
+
+## Placement policy (run once on bootstrap)
+- name: Set placement policy RF=3 (idc×2 + gcp×1)
+  ansible.builtin.shell: |
+    /opt/yugabyte/bin/yb-admin \
+      --master_addresses {{ yb_master_addresses }} \
+      modify_placement_info \
+      {{ yb_cloud }}.{{ yb_region }}.idc:2,{{ yb_cloud }}.{{ yb_region }}.gcp:1 3
+  become_user: yugabyte
+  run_once: true
+  when: inventory_hostname in groups['yb_bootstrap']

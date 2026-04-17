@@ -1,0 +1,20 @@
+---
+- name: Gather facts from all YugabyteDB nodes
+  hosts: yb_cluster
+  become: true
+  gather_facts: true
+
+- name: Deploy YugabyteDB cluster
+  hosts: yb_cluster
+  become: true
+  vars:
+    yb_version: "2.20.2.1"
+    yb_build: "2"
+    yb_cloud: "poc"
+    yb_region: "poc-region"
+    yb_bootstrap_ip: "172.24.40.32"
+    yb_master_addresses: "172.24.40.32:7100,172.24.40.33:7100,10.160.152.11:7100"
+    # proxy: idc/gcp 各自在 /etc/profile.d/proxy.sh 已設定
+    yb_proxy: ""
+  roles:
+    - yugabyte_deploy
