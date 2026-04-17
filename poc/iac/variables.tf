@@ -13,9 +13,13 @@ variable "vsphere_server" {
   default = "sd-vcsa.e104.com.tw"
 }
 
-variable "vm_name" {
-  type    = string
-  default = "l-test-poc-1"
+variable "vms" {
+  description = "VM name => IPv4 address"
+  default = {
+    "l-test-poc-1" = "172.24.40.32"
+    "l-test-poc-2" = "172.24.40.33"
+    "l-test-poc-3" = "172.24.40.34"
+  }
 }
 
 variable "vm_cpu" {
@@ -31,11 +35,6 @@ variable "vm_memory" {
 variable "vm_disk_size" {
   type    = number
   default = 30
-}
-
-variable "vm_ip" {
-  type    = string
-  default = "172.24.40.32"
 }
 
 variable "vm_netmask" {
@@ -61,7 +60,7 @@ variable "vm_domain" {
 variable "vm_custom_attrs" {
   description = "Custom Attributes"
   default = {
-    "AZ"            = "AZ_LAB_DB"
+    "AZ"            = "AZ_INFRA_DB"
     "BillDomain"    = "unknow1"
     "BillUnit"      = "unknow2"
     "DeveloperOwner" = "unknow3"

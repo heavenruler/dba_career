@@ -40,7 +40,9 @@ data "vsphere_virtual_machine" "template" {
 }
 
 resource "vsphere_virtual_machine" "poc" {
-  name             = var.vm_name
+  for_each = var.vms
+
+  name             = each.key
   resource_pool_id = data.vsphere_resource_pool.pool.id
   datastore_id     = data.vsphere_datastore.vm_ds.id
 
@@ -66,11 +68,11 @@ resource "vsphere_virtual_machine" "poc" {
 
     customize {
       linux_options {
-        host_name = var.vm_name
+        host_name = each.key
         domain    = var.vm_domain
       }
       network_interface {
-        ipv4_address = var.vm_ip
+        ipv4_address = each.value
         ipv4_netmask = var.vm_netmask
       }
       ipv4_gateway    = var.vm_gateway
@@ -88,14 +90,14 @@ resource "vsphere_virtual_machine" "poc" {
   wait_for_guest_ip_timeout  = 5
 }
 
-output "vm_name" {
-  value = vsphere_virtual_machine.poc.name
+output "vm_names" {
+  value = { for k, v in vsphere_virtual_machine.poc : k => v.name }
 }
 
-output "vm_uuid" {
-  value = vsphere_virtual_machine.poc.id
+output "vm_uuids" {
+  value = { for k, v in vsphere_virtual_machine.poc : k => v.id }
 }
 
-output "vm_ip" {
-  value = vsphere_virtual_machine.poc.default_ip_address
+output "vm_ips" {
+  value = { for k, v in vsphere_virtual_machine.poc : k => v.default_ip_address }
 }
