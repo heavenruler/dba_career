@@ -4,11 +4,16 @@ ANSIBLE_DIR := ansible
 INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
 
 .PHONY: help \
+        apply-all destroy-all \
         vm-create vm-destroy inventory-refresh ansible-ping ansible-setup \
         gcp-create gcp-destroy gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure \
         gcp-inventory-refresh inventory-refresh-all
 
 help:
+	@echo "=== Global ==="
+	@echo "  make apply-all              - 建立全部 VM (vSphere + GCP)"
+	@echo "  make destroy-all            - 刪除全部 VM (vSphere + GCP)"
+	@echo ""
 	@echo "=== vSphere ==="
 	@echo "  make vm-create              - Terraform apply (建立 VM)"
 	@echo "  make vm-destroy             - Terraform destroy (刪除 VM)"
@@ -24,6 +29,15 @@ help:
 	@echo "=== Ansible ==="
 	@echo "  make ansible-ping           - 重建全部清單 + 確認 tunnel + ping 所有 VM"
 	@echo "  make ansible-setup          - 執行 site.yml (base 設定)"
+
+## Global
+apply-all:
+	$(MAKE) -j2 vm-create gcp-create
+	@echo "==> All VMs created"
+
+destroy-all:
+	$(MAKE) -j2 vm-destroy gcp-destroy
+	@echo "==> All VMs destroyed"
 
 ## vSphere Terraform
 vm-create:
