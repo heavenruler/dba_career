@@ -101,6 +101,7 @@
 - name: Set CPU governor to performance
   ansible.builtin.command: cpupower frequency-set -g performance
   changed_when: true
+  failed_when: false
 
 ## I/O scheduler (mq-deadline for HDD/SSD; none for NVMe)
 - name: Set I/O scheduler for block devices

@@ -1,10 +1,4 @@
 ---
-- name: Base configuration for all DB hosts
-  hosts: all
-  become: true
-  roles:
-    - db_base
-
 - name: GCP-specific configuration
   hosts: gcp_poc
   become: true
@@ -19,3 +13,9 @@
       loop:
         - /etc/yum.conf
         - /etc/dnf/dnf.conf
+
+- name: Base configuration for all DB hosts
+  hosts: all
+  become: true
+  roles:
+    - db_base
