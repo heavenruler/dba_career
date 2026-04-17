@@ -1,0 +1,40 @@
+---
+- name: Set timezone to Asia/Taipei
+  community.general.timezone:
+    name: Asia/Taipei
+
+- name: Ensure essential packages installed
+  ansible.builtin.dnf:
+    name:
+      - vim
+      - curl
+      - wget
+      - net-tools
+      - lsof
+      - sysstat
+      - nfs-utils
+      - chrony
+    state: present
+
+- name: Enable and start chronyd
+  ansible.builtin.service:
+    name: chronyd
+    state: started
+    enabled: true
+
+- name: Disable swap
+  ansible.builtin.command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Remove swap from fstab
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\sswap\s.*)'
+    replace: '# \1'
+
+- name: Set vm.swappiness to 1
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: "1"
+    state: present
+    reload: true

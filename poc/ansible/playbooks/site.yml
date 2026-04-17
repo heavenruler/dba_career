@@ -1,0 +1,6 @@
+---
+- name: Base configuration for all DB hosts
+  hosts: poc_db
+  become: true
+  roles:
+    - db_base
