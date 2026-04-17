@@ -9,7 +9,7 @@ resource "google_compute_instance" "poc" {
   count = 2
 
   name         = "g-test-poc-${count.index + 1}"
-  machine_type = "e2-standard-2"
+  machine_type = "e2-standard-4"
   zone         = local.instance_configs[count.index].zone
   project      = var.project
 
@@ -56,9 +56,20 @@ resource "google_compute_instance" "poc" {
     enable_vtpm                 = true
   }
 
+  allow_stopping_for_update = true
+
   tags = local.instance_configs[count.index].tags
 
   metadata = {
-    ssh-keys = "root:${var.ssh_public_key}"
+    ssh-keys       = "root:${var.ssh_public_key}"
+    startup-script = <<-EOF
+      #!/bin/bash
+      STARTUP_DONE="/var/lib/startup-done"
+      if [ ! -f "$STARTUP_DONE" ]; then
+        sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+        systemctl restart sshd
+        touch "$STARTUP_DONE"
+      fi
+    EOF
   }
 }
