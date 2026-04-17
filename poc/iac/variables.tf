@@ -57,3 +57,15 @@ variable "vm_domain" {
   type    = string
   default = "db.104dc-dev.com"
 }
+
+variable "vm_custom_attrs" {
+  description = "Custom Attributes"
+  default = {
+    "AZ"            = "AZ_LAB_DB"
+    "BillDomain"    = "unknow1"
+    "BillUnit"      = "unknow2"
+    "DeveloperOwner" = "unknow3"
+    "Group"         = "unknow4"
+    "SystemOwner"   = "unknow5"
+  }
+}

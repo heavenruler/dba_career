@@ -29,6 +29,11 @@ data "vsphere_resource_pool" "pool" {
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
+data "vsphere_custom_attribute" "attrs" {
+  for_each = var.vm_custom_attrs
+  name     = each.key
+}
+
 data "vsphere_virtual_machine" "template" {
   name          = "temp-almalinux-10.1"
   datacenter_id = data.vsphere_datacenter.dc.id
@@ -72,6 +77,11 @@ resource "vsphere_virtual_machine" "poc" {
       dns_server_list = [var.vm_dns]
       dns_suffix_list = [var.vm_domain]
     }
+  }
+
+  custom_attributes = {
+    for k, v in var.vm_custom_attrs :
+    data.vsphere_custom_attribute.attrs[k].id => v
   }
 
   wait_for_guest_net_timeout = 5
