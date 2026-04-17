@@ -1,6 +1,21 @@
 ---
 - name: Base configuration for all DB hosts
-  hosts: poc_db
+  hosts: all
   become: true
   roles:
     - db_base
+
+- name: GCP-specific configuration
+  hosts: gcp_poc
+  become: true
+  tasks:
+    - name: Set proxy in yum.conf and dnf.conf
+      ansible.builtin.ini_file:
+        path: "{{ item }}"
+        section: main
+        option: proxy
+        value: http://gproxy.104-dev.com.tw:3128
+        mode: '0644'
+      loop:
+        - /etc/yum.conf
+        - /etc/dnf/dnf.conf

@@ -1,8 +1,10 @@
 ---
+## Timezone
 - name: Set timezone to Asia/Taipei
   community.general.timezone:
     name: Asia/Taipei
 
+## Packages
 - name: Ensure essential packages installed
   ansible.builtin.dnf:
     name:
@@ -12,16 +14,31 @@
       - net-tools
       - lsof
       - sysstat
-      - nfs-utils
       - chrony
     state: present
 
+## Time sync
 - name: Enable and start chronyd
   ansible.builtin.service:
     name: chronyd
     state: started
     enabled: true
 
+## SELinux
+- name: Set SELinux to permissive
+  ansible.posix.selinux:
+    policy: targeted
+    state: permissive
+
+## Firewalld
+- name: Disable firewalld
+  ansible.builtin.service:
+    name: firewalld
+    state: stopped
+    enabled: false
+  failed_when: false
+
+## Swap
 - name: Disable swap
   ansible.builtin.command: swapoff -a
   when: ansible_swaptotal_mb > 0
@@ -32,9 +49,73 @@
     regexp: '^([^#].*\sswap\s.*)'
     replace: '# \1'
 
-- name: Set vm.swappiness to 1
+## Transparent Huge Pages
+- name: Disable THP at runtime
+  ansible.builtin.shell: |
+    echo never > /sys/kernel/mm/transparent_hugepage/enabled
+    echo never > /sys/kernel/mm/transparent_hugepage/defrag
+  changed_when: true
+
+- name: Persist THP disable via rc.local
+  ansible.builtin.blockinfile:
+    path: /etc/rc.local
+    create: true
+    mode: '0755'
+    marker: "# {mark} ANSIBLE THP"
+    block: |
+      echo never > /sys/kernel/mm/transparent_hugepage/enabled
+      echo never > /sys/kernel/mm/transparent_hugepage/defrag
+
+## Kernel parameters
+- name: Set sysctl parameters
   ansible.posix.sysctl:
-    name: vm.swappiness
-    value: "1"
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
     state: present
     reload: true
+  loop:
+    - { name: vm.swappiness,              value: "0" }
+    - { name: vm.max_map_count,           value: "262144" }
+    - { name: fs.file-max,                value: "1000000" }
+    - { name: net.core.somaxconn,         value: "32768" }
+    - { name: net.ipv4.tcp_syncookies,    value: "0" }
+
+## ulimits
+- name: Set system-wide ulimits for DB
+  ansible.builtin.blockinfile:
+    path: /etc/security/limits.d/90-db.conf
+    create: true
+    marker: "# {mark} ANSIBLE DB LIMITS"
+    block: |
+      * soft nofile 1000000
+      * hard nofile 1000000
+      * soft nproc  1000000
+      * hard nproc  1000000
+
+## CPU governor
+- name: Install cpupower
+  ansible.builtin.dnf:
+    name: kernel-tools
+    state: present
+
+- name: Set CPU governor to performance
+  ansible.builtin.command: cpupower frequency-set -g performance
+  changed_when: true
+
+## I/O scheduler (mq-deadline for HDD/SSD; none for NVMe)
+- name: Set I/O scheduler for block devices
+  ansible.builtin.shell: |
+    for dev in $(lsblk -d -o NAME,TYPE | awk '$2=="disk"{print $1}'); do
+      rotational=$(cat /sys/block/$dev/queue/rotational 2>/dev/null)
+      if [ "$rotational" = "0" ]; then
+        scheduler=$(cat /sys/block/$dev/queue/scheduler 2>/dev/null)
+        if echo "$scheduler" | grep -q "none"; then
+          echo none > /sys/block/$dev/queue/scheduler
+        else
+          echo mq-deadline > /sys/block/$dev/queue/scheduler
+        fi
+      else
+        echo mq-deadline > /sys/block/$dev/queue/scheduler
+      fi
+    done
+  changed_when: true
