@@ -46,16 +46,36 @@
   failed_when: false
 
 ## python requirements (yugabyted requires `python` + distutils)
-- name: Install python3-setuptools (provides distutils for Python 3.12)
+- name: Install python3 dependencies for yugabyted/ycqlsh
   ansible.builtin.dnf:
-    name: python3-setuptools
+    name:
+      - python3-setuptools
+      - python3-six
+      - python3-pip
     state: present
+
+- name: Install cassandra-driver for ycqlsh (Python 3.12 compatible)
+  ansible.builtin.pip:
+    name: "cassandra-driver>=3.28"
+    executable: pip3
+    extra_args: "--proxy {{ yb_proxy | default('') }}"
 
 - name: Create python symlink for yugabyted
   ansible.builtin.file:
     src: /usr/bin/python3
     dest: /usr/bin/python
     state: link
+
+- name: Replace bundled six with Python 3.12 compatible version
+  ansible.builtin.shell: |
+    python3 -c "
+    import zipfile, six
+    z = zipfile.ZipFile('/opt/yugabyte/lib/six-1.16.0-py3-none-any.zip', 'w')
+    z.write(six.__file__, 'six.py')
+    z.close()
+    "
+  args:
+    creates: /opt/yugabyte/lib/six-1.16.0-py3-none-any.zip
 
 ## Bootstrap node
 - name: Start yugabyted on bootstrap node

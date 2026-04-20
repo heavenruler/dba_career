@@ -4,6 +4,7 @@ ANSIBLE_DIR := ansible
 INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
 
 .PHONY: help \
+        yuga \
         apply-all destroy-all \
         vm-create vm-destroy inventory-refresh ansible-ping ansible-setup \
         gcp-create gcp-destroy gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure \
@@ -11,6 +12,9 @@ INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
         tidb-deploy yugabyte-deploy yugabyte-status
 
 help:
+	@echo "=== Pipeline ==="
+	@echo "  make yuga                   - 完整 YugabyteDB 重建流程"
+	@echo ""
 	@echo "=== Global ==="
 	@echo "  make apply-all              - 建立全部 VM (vSphere + GCP)"
 	@echo "  make destroy-all            - 刪除全部 VM (vSphere + GCP)"
@@ -37,6 +41,15 @@ help:
 	@echo "=== YugabyteDB ==="
 	@echo "  make yugabyte-deploy        - 部署 YugabyteDB cluster (yugabyte.yml)"
 	@echo "  make yugabyte-status        - 初始化密碼 + cluster status 檢查"
+
+## Pipeline
+yuga:
+	$(MAKE) destroy-all
+	$(MAKE) apply-all
+	$(MAKE) ansible-ping
+	$(MAKE) ansible-setup
+	$(MAKE) yugabyte-deploy
+	$(MAKE) yugabyte-status
 
 ## Global
 apply-all:

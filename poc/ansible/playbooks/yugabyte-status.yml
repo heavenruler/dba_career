@@ -65,8 +65,8 @@
       changed_when: false
 
     - name: "[6] YCQL keyspaces"
-      ansible.builtin.command: >
-        {{ yb_bin }}/ycqlsh {{ yb_host }} -e "DESCRIBE KEYSPACES;"
+      ansible.builtin.shell: >
+        CQLSH_NO_BUNDLED=1 {{ yb_bin }}/ycqlsh {{ yb_host }} -e "DESCRIBE KEYSPACES;" 2>&1 | grep -v DeprecationWarning
       register: r_keyspaces
       changed_when: false
 
