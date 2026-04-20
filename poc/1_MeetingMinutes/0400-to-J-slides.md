@@ -57,7 +57,7 @@
 
 - 模擬高併發訂單交易：建立訂單、付款、查詢、庫存更新
 - 直接量測：吞吐量（tpmC）、交易延遲（p95/p99）、衝突率、故障恢復時間
-- 選用理由：結果可與業界 case study 直接對照，管理階層決策有外部參照依據
+- 選用理由：結果可與業界 case study 直接對照，相關資訊決策參照亦有原廠數據支撐
 
 **補充：為什麼不用 sysbench？**
 
@@ -71,7 +71,7 @@
 [TiDB TPC-C Reference](https://docs.pingcap.com/zh/tidb/stable/benchmark-tidb-using-tpcc/)
 [YugabyteDB TPC-C Reference](https://docs.yugabyte.com/stable/benchmark/tpcc/)
 
-sysbench 適合快速效能檢查，不建議適合作為架構選型的決策依據。
+架構選型的決策依據，sysbench 適合快速效能檢查，TPC-C 滿足面向產品業務場景。
 
 ---
 
