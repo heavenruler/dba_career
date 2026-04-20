@@ -7,7 +7,7 @@ global:
 
 server_configs:
   pd:
-    replication.max-replicas: 3
+    replication.max-replicas: 2
 
 pd_servers:
 {% for host in groups['tidb_pd'] %}

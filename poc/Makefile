@@ -4,15 +4,16 @@ ANSIBLE_DIR := ansible
 INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
 
 .PHONY: help \
-        yuga \
+        yuga tidb \
         apply-all destroy-all \
         vm-create vm-destroy inventory-refresh ansible-ping ansible-setup \
         gcp-create gcp-destroy gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure \
         gcp-inventory-refresh inventory-refresh-all \
-        tidb-deploy yugabyte-deploy yugabyte-status
+        tidb-deploy tidb-status yugabyte-deploy yugabyte-status
 
 help:
 	@echo "=== Pipeline ==="
+	@echo "  make tidb                   - 完整 TiDB 重建流程"
 	@echo "  make yuga                   - 完整 YugabyteDB 重建流程"
 	@echo ""
 	@echo "=== Global ==="
@@ -37,12 +38,21 @@ help:
 	@echo ""
 	@echo "=== TiDB ==="
 	@echo "  make tidb-deploy            - 部署 TiDB cluster (tidb.yml)"
+	@echo "  make tidb-status            - 初始化密碼 + cluster status 檢查"
 	@echo ""
 	@echo "=== YugabyteDB ==="
 	@echo "  make yugabyte-deploy        - 部署 YugabyteDB cluster (yugabyte.yml)"
 	@echo "  make yugabyte-status        - 初始化密碼 + cluster status 檢查"
 
 ## Pipeline
+tidb:
+	$(MAKE) destroy-all
+	$(MAKE) apply-all
+	$(MAKE) ansible-ping
+	$(MAKE) ansible-setup
+	$(MAKE) tidb-deploy
+	$(MAKE) tidb-status
+
 yuga:
 	$(MAKE) destroy-all
 	$(MAKE) apply-all
@@ -119,6 +129,11 @@ inventory-refresh-all: inventory-refresh gcp-inventory-refresh
 ## TiDB
 tidb-deploy: gcp-tunnel-ensure
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb.ini
+
+tidb-status:
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-status.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb.ini
 
