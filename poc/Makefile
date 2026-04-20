@@ -8,7 +8,7 @@ INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
         vm-create vm-destroy inventory-refresh ansible-ping ansible-setup \
         gcp-create gcp-destroy gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure \
         gcp-inventory-refresh inventory-refresh-all \
-        tidb-deploy yugabyte-deploy
+        tidb-deploy yugabyte-deploy yugabyte-status
 
 help:
 	@echo "=== Global ==="
@@ -36,6 +36,7 @@ help:
 	@echo ""
 	@echo "=== YugabyteDB ==="
 	@echo "  make yugabyte-deploy        - 部署 YugabyteDB cluster (yugabyte.yml)"
+	@echo "  make yugabyte-status        - 初始化密碼 + cluster status 檢查"
 
 ## Global
 apply-all:
@@ -111,5 +112,10 @@ tidb-deploy: gcp-tunnel-ensure
 ## YugabyteDB
 yugabyte-deploy: gcp-tunnel-ensure
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte.ini
+
+yugabyte-status: gcp-tunnel-ensure
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/yugabyte.ini
