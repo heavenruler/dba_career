@@ -1,0 +1,88 @@
+---
+- name: YugabyteDB init password & status check
+  hosts: yb_bootstrap
+  become: true
+  become_user: yugabyte
+  vars_files:
+    - ../vars/secrets.yml
+  vars:
+    master_addresses: "172.24.40.32:7100,172.24.40.33:7100,10.160.152.11:7100"
+    yb_bin: /opt/yugabyte/bin
+    yb_host: 172.24.40.32
+    yb_user: yugabyte
+
+  tasks:
+    ## Password init
+    - name: Set yugabyte superuser password
+      ansible.builtin.shell: |
+        {{ yb_bin }}/ysqlsh -h {{ yb_host }} -U {{ yb_user }} \
+          -c "ALTER USER yugabyte WITH PASSWORD '{{ yb_pass }}';"
+      changed_when: true
+      no_log: true
+
+    - name: Write .pgpass for passwordless ysqlsh
+      ansible.builtin.copy:
+        dest: /home/yugabyte/.pgpass
+        mode: '0600'
+        content: "{{ yb_host }}:5433:*:{{ yb_user }}:{{ yb_pass }}\n"
+      no_log: true
+
+    ## Status checks
+    - name: "[1] yugabyted node status"
+      ansible.builtin.command: "{{ yb_bin }}/yugabyted status"
+      register: r_status
+      changed_when: false
+
+    - name: "[2] Masters list"
+      ansible.builtin.command: >
+        {{ yb_bin }}/yb-admin
+        --master_addresses {{ master_addresses }}
+        list_all_masters
+      register: r_masters
+      changed_when: false
+
+    - name: "[3] Tablet servers list"
+      ansible.builtin.command: >
+        {{ yb_bin }}/yb-admin
+        --master_addresses {{ master_addresses }}
+        list_all_tablet_servers
+      register: r_tservers
+      changed_when: false
+
+    - name: "[4] YSQL version"
+      ansible.builtin.shell: |
+        PGPASSWORD={{ yb_pass }} {{ yb_bin }}/ysqlsh \
+          -h {{ yb_host }} -U {{ yb_user }} -c "SELECT version();"
+      register: r_version
+      changed_when: false
+      no_log: false
+
+    - name: "[5] YSQL database list"
+      ansible.builtin.shell: |
+        PGPASSWORD={{ yb_pass }} {{ yb_bin }}/ysqlsh \
+          -h {{ yb_host }} -U {{ yb_user }} -c "\l"
+      register: r_dblist
+      changed_when: false
+
+    - name: "[6] YCQL keyspaces"
+      ansible.builtin.command: >
+        {{ yb_bin }}/ycqlsh {{ yb_host }} -e "DESCRIBE KEYSPACES;"
+      register: r_keyspaces
+      changed_when: false
+
+    ## Report
+    - name: "=== STATUS REPORT ==="
+      ansible.builtin.debug:
+        msg:
+          - "--- [1] Node Status ---"
+          - "{{ r_status.stdout_lines }}"
+          - "--- [2] Masters ---"
+          - "{{ r_masters.stdout_lines }}"
+          - "--- [3] Tablet Servers ---"
+          - "{{ r_tservers.stdout_lines }}"
+          - "--- [4] YSQL Version ---"
+          - "{{ r_version.stdout_lines }}"
+          - "--- [5] Databases ---"
+          - "{{ r_dblist.stdout_lines }}"
+          - "--- [6] YCQL Keyspaces ---"
+          - "{{ r_keyspaces.stdout_lines }}"
