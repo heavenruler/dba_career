@@ -68,6 +68,9 @@
 | 分散式場景代表性 | 易被單一 region 或 cache 最佳化，數字失真 | 交易依賴關係強制跨節點協調，行為難以迴避 |
 | 外部對照 | 原廠少用 sysbench 發布正式 benchmark | TiDB / YugabyteDB 原廠均有 TPC-C 公開數字，可直接對照 |
 
+[TiDB TPC-C Reference](https://docs.pingcap.com/zh/tidb/stable/benchmark-tidb-using-tpcc/)
+[YugabyteDB TPC-C Reference](https://docs.yugabyte.com/stable/benchmark/tpcc/)
+
 結論：sysbench 適合快速健康檢查，不適合作為架構選型的決策依據。
 
 ---
