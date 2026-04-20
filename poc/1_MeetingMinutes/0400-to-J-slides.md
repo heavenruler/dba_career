@@ -18,8 +18,8 @@
 
 | 系統 | 相容性 | 核心機制 |
 |------|--------|---------|
-| **TiDB** | MySQL-compatible | Percolator + PD TSO |
-| **YugabyteDB** | PostgreSQL-compatible | DocDB + HLC |
+| **TiDB** | MySQL-compatible | [Percolator + PD TSO](https://docs.pingcap.com/zh/tidb/stable/tso/) |
+| **YugabyteDB** | PostgreSQL-compatible | [DocDB + HLC](https://docs.yugabyte.com/stable/architecture/transactions/transactions-overview/) |
 
 - 同時評估兩條技術路線，避免單一選型受既有習慣限制
 
