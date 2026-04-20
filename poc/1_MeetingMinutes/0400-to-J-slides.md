@@ -66,12 +66,12 @@
 | 交易模型 | 單表單行操作（point read / write） | 五種跨表關聯交易（New Order、Payment 等） |
 | 讀寫混合 | 可設定但人工，非場景驅動 | 固定比例（45% New Order），反映真實 OLTP 負載 |
 | 分散式場景代表性 | 易被單一 region 或 cache 最佳化，數字失真 | 交易依賴關係強制跨節點協調，行為難以迴避 |
-| 外部對照 | 原廠少用 sysbench 發布正式 benchmark | TiDB / YugabyteDB 原廠均有 TPC-C 公開數字，可直接對照 |
+| 外部對照 | 原廠少用 sysbench 發布正式 benchmark | TiDB / YugabyteDB 原廠均有 TPC-C 公開數字，原廠資訊對照佐證 |
 
 [TiDB TPC-C Reference](https://docs.pingcap.com/zh/tidb/stable/benchmark-tidb-using-tpcc/)
 [YugabyteDB TPC-C Reference](https://docs.yugabyte.com/stable/benchmark/tpcc/)
 
-結論：sysbench 適合快速健康檢查，不適合作為架構選型的決策依據。
+sysbench 適合快速效能檢查，不建議適合作為架構選型的決策依據。
 
 ---
 
