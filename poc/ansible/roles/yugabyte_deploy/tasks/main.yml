@@ -20,13 +20,13 @@
 
 ## Download & install
 - name: Download YugabyteDB tarball
-  ansible.builtin.get_url:
-    url: "https://downloads.yugabyte.com/releases/{{ yb_version }}/yugabyte-{{ yb_version }}-b{{ yb_build }}-linux-x86_64.tar.gz"
-    dest: "/tmp/yugabyte-{{ yb_version }}.tar.gz"
-    mode: '0644'
-  environment:
-    https_proxy: "{{ yb_proxy | default('') }}"
-    http_proxy:  "{{ yb_proxy | default('') }}"
+  ansible.builtin.shell: |
+    curl -4 -fSL \
+      --proxy "{{ yb_proxy | default('') }}" \
+      -o /tmp/yugabyte-{{ yb_version }}.tar.gz \
+      "{{ yb_download_url }}"
+  args:
+    creates: "/tmp/yugabyte-{{ yb_version }}.tar.gz"
 
 - name: Extract YugabyteDB
   ansible.builtin.unarchive:
@@ -44,6 +44,18 @@
     creates: /opt/yugabyte/.post_install_done
   become_user: yugabyte
   failed_when: false
+
+## python requirements (yugabyted requires `python` + distutils)
+- name: Install python3-setuptools (provides distutils for Python 3.12)
+  ansible.builtin.dnf:
+    name: python3-setuptools
+    state: present
+
+- name: Create python symlink for yugabyted
+  ansible.builtin.file:
+    src: /usr/bin/python3
+    dest: /usr/bin/python
+    state: link
 
 ## Bootstrap node
 - name: Start yugabyted on bootstrap node
