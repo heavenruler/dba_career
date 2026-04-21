@@ -9,12 +9,36 @@ INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
         vm-create vm-destroy inventory-refresh ansible-ping ansible-setup \
         gcp-create gcp-destroy gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure \
         gcp-inventory-refresh inventory-refresh-all \
-        tidb-deploy tidb-status yugabyte-deploy yugabyte-status
+        tidb-deploy tidb-status yugabyte-deploy yugabyte-status \
+        tidb-tc1 tidb-tc2 tidb-tc3 \
+        yuga-tc1 yuga-tc2 yuga-tc3
 
 help:
 	@echo "=== Pipeline ==="
-	@echo "  make tidb                   - 完整 TiDB 重建流程"
-	@echo "  make yuga                   - 完整 YugabyteDB 重建流程"
+	@echo "  make tidb                   - TiDB demo (destroy→deploy→status)"
+	@echo "  make yuga                   - YugabyteDB demo (destroy→deploy→status)"
+	@echo "  make tidb-tc1               - TiDB TC1: Single IDC HA  (PD×3/TiDB×2/TiKV×3 RF=3)"
+	@echo "  make tidb-tc2               - TiDB TC2: Cross-zone min (PD×3/TiDB×2/TiKV×2 RF=2)"
+	@echo "  make tidb-tc3               - TiDB TC3: Cross-zone full(PD×3/TiDB×3/TiKV×5 RF=3)"
+	@echo "  make yuga-tc1               - YugabyteDB TC1: Single zone RF3 (3 nodes)"
+	@echo "  make yuga-tc2               - YugabyteDB TC2: Cross-zone RF3 (5 nodes)"
+	@echo "  make yuga-tc3               - YugabyteDB TC3: Cross-zone RF5 (5 nodes, 100GB)"
+	@echo ""
+	@echo "┌─────────────────────────────────────────────────────────────────────────────────────────────────┐"
+	@echo "│  TC Summary                                                                                     │"
+	@echo "├──────────────┬──────────────────────┬────────────────────┬─────────────────────┬───────────────┤"
+	@echo "│ Target       │ PD / Masters         │ TiDB / TServers    │ TiKV                │ RF / Disk     │"
+	@echo "├──────────────┼──────────────────────┼────────────────────┼─────────────────────┼───────────────┤"
+	@echo "│ tidb-tc1     │ poc-1/2/3            │ poc-1/2            │ poc-1/2/3           │ RF=3 / 30GB   │"
+	@echo "│ tidb-tc2     │ poc-1/2 + gcp-1      │ poc-1 + gcp-1      │ poc-1 + gcp-1       │ RF=2 / 30GB   │"
+	@echo "│ tidb-tc3     │ poc-1/2 + gcp-1      │ poc-1/2 + gcp-1    │ all 5               │ RF=3 / 30GB   │"
+	@echo "├──────────────┼──────────────────────┼────────────────────┼─────────────────────┼───────────────┤"
+	@echo "│ yuga-tc1     │ poc-1/2/3            │ poc-1/2/3          │ -                   │ RF=3 / 30GB   │"
+	@echo "│ yuga-tc2     │ poc-1/2 + gcp-1      │ all 5              │ -                   │ RF=3 / 30GB   │"
+	@echo "│ yuga-tc3     │ poc-1/2 + gcp-1      │ all 5              │ -                   │ RF=5 / 100GB  │"
+	@echo "└──────────────┴──────────────────────┴────────────────────┴─────────────────────┴───────────────┘"
+	@echo "  RF (Replication Factor)：每筆資料保存的副本數，RF=3 表示 3 份副本分散於不同節點"
+	@echo "  容錯能力 = RF-1，RF=3 可容忍 1 節點故障；RF=5 可容忍 2 節點故障"
 	@echo ""
 	@echo "=== Global ==="
 	@echo "  make apply-all              - 建立全部 VM (vSphere + GCP)"
@@ -147,3 +171,90 @@ yugabyte-status: gcp-tunnel-ensure
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/yugabyte.ini
+
+## TiDB Test Cases
+tidb-tc1: gcp-tunnel-ensure
+	$(MAKE) destroy-all
+	$(MAKE) apply-all
+	$(MAKE) ansible-ping
+	$(MAKE) ansible-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc1.ini \
+	  -e tidb_rf=3
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-status.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc1.ini
+
+tidb-tc2: gcp-tunnel-ensure
+	$(MAKE) destroy-all
+	$(MAKE) apply-all
+	$(MAKE) ansible-ping
+	$(MAKE) ansible-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc2.ini \
+	  -e tidb_rf=2
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-status.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc2.ini
+
+tidb-tc3: gcp-tunnel-ensure
+	$(MAKE) destroy-all
+	$(MAKE) apply-all
+	$(MAKE) ansible-ping
+	$(MAKE) ansible-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc3.ini \
+	  -e tidb_rf=3
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-status.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc3.ini
+
+## YugabyteDB Test Cases
+yuga-tc1:
+	$(MAKE) destroy-all
+	$(MAKE) apply-all
+	$(MAKE) ansible-ping
+	$(MAKE) ansible-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte-tc1.ini \
+	  -e yb_rf=3 \
+	  -e yb_placement="poc.poc-region.idc:3" \
+	  -e yb_master_addresses="172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100"
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte-tc1.ini
+
+yuga-tc2: gcp-tunnel-ensure
+	$(MAKE) destroy-all
+	$(MAKE) apply-all
+	$(MAKE) ansible-ping
+	$(MAKE) ansible-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte-tc2.ini \
+	  -e yb_rf=3 \
+	  -e yb_placement="poc.poc-region.idc:2,poc.poc-region.gcp:1" \
+	  -e yb_master_addresses="172.24.40.32:7100,172.24.40.33:7100,10.160.152.11:7100"
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte-tc2.ini
+
+yuga-tc3: gcp-tunnel-ensure
+	$(MAKE) destroy-all
+	cd $(IAC_DIR) && terraform apply -auto-approve -var "vm_disk_size=100"
+	cd $(GCP_IAC_DIR) && terraform apply -auto-approve -var "disk_size=100"
+	$(MAKE) ansible-ping
+	$(MAKE) ansible-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte-tc3.ini \
+	  -e yb_rf=5 \
+	  -e yb_placement="poc.poc-region.idc:3,poc.poc-region.gcp:2" \
+	  -e yb_master_addresses="172.24.40.32:7100,172.24.40.33:7100,10.160.152.11:7100"
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte-tc3.ini

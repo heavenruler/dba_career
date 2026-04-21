@@ -116,12 +116,12 @@
   when: inventory_hostname in groups['yb_join']
 
 ## Placement policy (run once on bootstrap)
-- name: Set placement policy RF=3 (idc×2 + gcp×1)
+- name: Set placement policy
   ansible.builtin.shell: |
     /opt/yugabyte/bin/yb-admin \
       --master_addresses {{ yb_master_addresses }} \
       modify_placement_info \
-      {{ yb_cloud }}.{{ yb_region }}.idc:2,{{ yb_cloud }}.{{ yb_region }}.gcp:1 3
+      {{ yb_placement }} {{ yb_rf }}
   become_user: yugabyte
   run_once: true
   when: inventory_hostname in groups['yb_bootstrap']
