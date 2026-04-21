@@ -1,0 +1,6 @@
+---
+- name: Deploy HAProxy for TiDB
+  hosts: haproxy
+  become: true
+  roles:
+    - haproxy_deploy

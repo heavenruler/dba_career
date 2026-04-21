@@ -10,6 +10,7 @@ INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
         gcp-create gcp-destroy gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure \
         gcp-inventory-refresh inventory-refresh-all \
         tidb-deploy tidb-status yugabyte-deploy yugabyte-status \
+        tidb-haproxy-tc1 tidb-haproxy-tc3 \
         tidb-tc1 tidb-tc2 tidb-tc3 \
         yuga-tc1 yuga-tc2 yuga-tc3
 
@@ -52,6 +53,18 @@ help:
 	@echo "  │             │ → follower reads 啟用 (staleness=10s)，讀取本地副本              │"
 	@echo "  └─────────────┴──────────────────────────────────────────────────────────────────┘"
 	@echo ""
+	@echo "  HAProxy 規劃："
+	@echo "  ┌─────────────┬──────────┬─────────────────────────────────────────────────────┐"
+	@echo "  │ Target      │ HAProxy  │ 說明                                                │"
+	@echo "  ├─────────────┼──────────┼─────────────────────────────────────────────────────┤"
+	@echo "  │ tidb-tc1    │ poc-3    │ :4000 → roundrobin poc-1/2:4000                     │"
+	@echo "  │ tidb-tc2    │ 不需要   │ 每 zone 單一 TiDB 節點，直連即可                    │"
+	@echo "  │ tidb-tc3    │ poc-3    │ IDC :4000 → poc-1/2:4000                            │"
+	@echo "  │             │ gcp-2    │ GCP :4000 → gcp-1:4000                              │"
+	@echo "  ├─────────────┼──────────┼─────────────────────────────────────────────────────┤"
+	@echo "  │ yuga-tc*    │ (待規劃) │ yuga-haproxy-tcX                                    │"
+	@echo "  └─────────────┴──────────┴─────────────────────────────────────────────────────┘"
+	@echo ""
 	@echo "=== Global ==="
 	@echo "  make apply-all              - 建立全部 VM (vSphere + GCP)"
 	@echo "  make destroy-all            - 刪除全部 VM (vSphere + GCP)"
@@ -75,6 +88,8 @@ help:
 	@echo "=== TiDB ==="
 	@echo "  make tidb-deploy            - 部署 TiDB cluster (tidb.yml)"
 	@echo "  make tidb-status            - 初始化密碼 + cluster status 檢查"
+	@echo "  make tidb-haproxy-tc1       - 部署 HAProxy on poc-3 → poc-1/2:4000 (tc1)"
+	@echo "  make tidb-haproxy-tc3       - 部署 HAProxy on poc-3(IDC) + gcp-2(GCP) (tc3)"
 	@echo ""
 	@echo "=== YugabyteDB ==="
 	@echo "  make yugabyte-deploy        - 部署 YugabyteDB cluster (yugabyte.yml)"
@@ -162,6 +177,17 @@ inventory-refresh-all: inventory-refresh gcp-inventory-refresh
 	@echo "==> Final inventory:"
 	@cat $(INVENTORY)
 
+## HAProxy
+tidb-haproxy-tc1:
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/haproxy.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc1.ini
+
+tidb-haproxy-tc3: gcp-tunnel-ensure
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/haproxy.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc3.ini
+
 ## TiDB
 tidb-deploy: gcp-tunnel-ensure
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb.yml \
@@ -194,6 +220,7 @@ tidb-tc1: gcp-tunnel-ensure
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc1.ini \
 	  -e tidb_rf=3
+	$(MAKE) tidb-haproxy-tc1
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-status.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc1.ini
@@ -222,6 +249,7 @@ tidb-tc3: gcp-tunnel-ensure
 	  -i inventory/tidb-tc3.ini \
 	  -e tidb_rf=3 \
 	  -e tidb_use_zones=true
+	$(MAKE) tidb-haproxy-tc3
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-status.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc3.ini

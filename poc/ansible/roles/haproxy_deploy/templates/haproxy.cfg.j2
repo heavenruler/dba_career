@@ -1,0 +1,18 @@
+global
+  daemon
+
+defaults
+  mode tcp
+  timeout connect 5s
+  timeout client  30s
+  timeout server  30s
+
+frontend tidb
+  bind *:4000
+  default_backend tidb_nodes
+
+backend tidb_nodes
+  balance roundrobin
+{% for backend in haproxy_backends.split(',') %}
+  server tidb{{ loop.index }} {{ backend }} check inter 2s
+{% endfor %}
