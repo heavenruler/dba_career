@@ -8,6 +8,17 @@ global:
 server_configs:
   pd:
     replication.max-replicas: {{ tidb_rf | default(3) }}
+{% if tidb_use_zones | default(false) %}
+    replication.location-labels: ["zone"]
+{% endif %}
+{% if tidb_use_zones | default(false) %}
+  tidb:
+    labels:
+      zone: "placeholder"   # overridden per-node below
+  tikv:
+    server.labels:
+      zone: "placeholder"   # overridden per-node below
+{% endif %}
 
 pd_servers:
 {% for host in groups['tidb_pd'] %}
@@ -17,11 +28,21 @@ pd_servers:
 tidb_servers:
 {% for host in groups['tidb_server'] %}
   - host: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+{% if tidb_use_zones | default(false) and hostvars[host]['tidb_zone'] is defined %}
+    config:
+      labels:
+        zone: {{ hostvars[host]['tidb_zone'] }}
+{% endif %}
 {% endfor %}
 
 tikv_servers:
 {% for host in groups['tidb_kv'] %}
   - host: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+{% if tidb_use_zones | default(false) and hostvars[host]['tidb_zone'] is defined %}
+    config:
+      server.labels:
+        zone: {{ hostvars[host]['tidb_zone'] }}
+{% endif %}
 {% endfor %}
 
 monitoring_servers:

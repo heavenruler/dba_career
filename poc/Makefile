@@ -40,6 +40,18 @@ help:
 	@echo "  RF (Replication Factor)：每筆資料保存的副本數，RF=3 表示 3 份副本分散於不同節點"
 	@echo "  容錯能力 = RF-1，RF=3 可容忍 1 節點故障；RF=5 可容忍 2 節點故障"
 	@echo ""
+	@echo "  Zone-aware Routing："
+	@echo "  ┌─────────────┬──────────────────────────────────────────────────────────────────┐"
+	@echo "  │ Target      │ 說明                                                             │"
+	@echo "  ├─────────────┼──────────────────────────────────────────────────────────────────┤"
+	@echo "  │ tidb-tc1    │ 單一 IDC，無跨區設定                                             │"
+	@echo "  │ tidb-tc2/3  │ location-labels=zone；TiDB/TiKV 標記 idc/gcp zone               │"
+	@echo "  │             │ → poc 流量優先讀取 idc 副本，避免繞道 GCP                        │"
+	@echo "  │ yuga-tc1    │ 單一 IDC，無跨區設定                                             │"
+	@echo "  │ yuga-tc2/3  │ cloud_location 標記各節點 zone；placement policy 限制 master 分佈 │"
+	@echo "  │             │ → follower reads 啟用 (staleness=10s)，讀取本地副本              │"
+	@echo "  └─────────────┴──────────────────────────────────────────────────────────────────┘"
+	@echo ""
 	@echo "=== Global ==="
 	@echo "  make apply-all              - 建立全部 VM (vSphere + GCP)"
 	@echo "  make destroy-all            - 刪除全部 VM (vSphere + GCP)"
@@ -194,7 +206,8 @@ tidb-tc2: gcp-tunnel-ensure
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc2.ini \
-	  -e tidb_rf=2
+	  -e tidb_rf=2 \
+	  -e tidb_use_zones=true
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-status.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc2.ini
@@ -207,7 +220,8 @@ tidb-tc3: gcp-tunnel-ensure
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc3.ini \
-	  -e tidb_rf=3
+	  -e tidb_rf=3 \
+	  -e tidb_use_zones=true
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-status.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc3.ini
@@ -241,7 +255,8 @@ yuga-tc2: gcp-tunnel-ensure
 	  -e yb_master_addresses="172.24.40.32:7100,172.24.40.33:7100,10.160.152.11:7100"
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
 	  -i inventory/hosts.ini \
-	  -i inventory/yugabyte-tc2.ini
+	  -i inventory/yugabyte-tc2.ini \
+	  -e yb_enable_follower_reads=true
 
 yuga-tc3: gcp-tunnel-ensure
 	$(MAKE) destroy-all
@@ -257,4 +272,5 @@ yuga-tc3: gcp-tunnel-ensure
 	  -e yb_master_addresses="172.24.40.32:7100,172.24.40.33:7100,10.160.152.11:7100"
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
 	  -i inventory/hosts.ini \
-	  -i inventory/yugabyte-tc3.ini
+	  -i inventory/yugabyte-tc3.ini \
+	  -e yb_enable_follower_reads=true

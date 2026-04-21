@@ -27,6 +27,16 @@
         content: "{{ yb_host }}:5433:*:{{ yb_user }}:{{ yb_pass }}\n"
       no_log: true
 
+    ## Follower reads (cross-zone TCs only)
+    - name: "Enable follower reads (yb_enable_follower_reads=true)"
+      ansible.builtin.shell: |
+        PGPASSWORD={{ yb_pass }} {{ yb_bin }}/ysqlsh \
+          -h {{ yb_host }} -U {{ yb_user }} \
+          -c "ALTER DATABASE yugabyte SET yb_read_from_followers = true;" \
+          -c "ALTER DATABASE yugabyte SET yb_follower_read_staleness_ms = 10000;"
+      changed_when: true
+      when: yb_enable_follower_reads | default(false) | bool
+
     ## Status checks
     - name: "[1] yugabyted node status"
       ansible.builtin.command: "{{ yb_bin }}/yugabyted status"
@@ -70,19 +80,26 @@
       register: r_keyspaces
       changed_when: false
 
+    - name: "[7] Follower read settings"
+      ansible.builtin.shell: |
+        PGPASSWORD={{ yb_pass }} {{ yb_bin }}/ysqlsh \
+          -h {{ yb_host }} -U {{ yb_user }} \
+          -c "SELECT name, setting FROM pg_settings WHERE name IN ('yb_read_from_followers','yb_follower_read_staleness_ms');"
+      register: r_follower_read
+      changed_when: false
+      when: yb_enable_follower_reads | default(false) | bool
+
     ## Report
     - name: "=== STATUS REPORT ==="
       ansible.builtin.debug:
-        msg:
-          - "--- [1] Node Status ---"
-          - "{{ r_status.stdout_lines }}"
-          - "--- [2] Masters ---"
-          - "{{ r_masters.stdout_lines }}"
-          - "--- [3] Tablet Servers ---"
-          - "{{ r_tservers.stdout_lines }}"
-          - "--- [4] YSQL Version ---"
-          - "{{ r_version.stdout_lines }}"
-          - "--- [5] Databases ---"
-          - "{{ r_dblist.stdout_lines }}"
-          - "--- [6] YCQL Keyspaces ---"
-          - "{{ r_keyspaces.stdout_lines }}"
+        msg: >-
+          {{
+            ["--- [1] Node Status ---", r_status.stdout_lines,
+             "--- [2] Masters ---", r_masters.stdout_lines,
+             "--- [3] Tablet Servers ---", r_tservers.stdout_lines,
+             "--- [4] YSQL Version ---", r_version.stdout_lines,
+             "--- [5] Databases ---", r_dblist.stdout_lines,
+             "--- [6] YCQL Keyspaces ---", r_keyspaces.stdout_lines]
+            + (["--- [7] Follower Read Settings ---", r_follower_read.stdout_lines]
+               if (yb_enable_follower_reads | default(false) | bool) else [])
+          }}
