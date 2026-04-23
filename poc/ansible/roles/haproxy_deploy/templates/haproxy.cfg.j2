@@ -7,12 +7,12 @@ defaults
   timeout client  30s
   timeout server  30s
 
-frontend tidb
-  bind *:4000
-  default_backend tidb_nodes
+frontend {{ haproxy_frontend | default('db') }}
+  bind *:{{ haproxy_port | default(4000) }}
+  default_backend db_nodes
 
-backend tidb_nodes
+backend db_nodes
   balance roundrobin
 {% for backend in haproxy_backends.split(',') %}
-  server tidb{{ loop.index }} {{ backend }} check inter 2s
+  server node{{ loop.index }} {{ backend }} check inter 2s
 {% endfor %}

@@ -11,6 +11,7 @@ INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
         gcp-inventory-refresh inventory-refresh-all \
         tidb-deploy tidb-status yugabyte-deploy yugabyte-status \
         tidb-haproxy-tc1 tidb-haproxy-tc3 \
+        yuga-haproxy-tc1 yuga-haproxy-tc3 \
         tidb-tc1 tidb-tc2 tidb-tc3 \
         yuga-tc1 yuga-tc2 yuga-tc3
 
@@ -62,7 +63,10 @@ help:
 	@echo "  │ tidb-tc3    │ poc-3    │ IDC :4000 → poc-1/2:4000                            │"
 	@echo "  │             │ gcp-2    │ GCP :4000 → gcp-1:4000                              │"
 	@echo "  ├─────────────┼──────────┼─────────────────────────────────────────────────────┤"
-	@echo "  │ yuga-tc*    │ (待規劃) │ yuga-haproxy-tcX                                    │"
+	@echo "  │ yuga-tc1    │ poc-1    │ :15433 → roundrobin poc-1/2/3:5433                  │"
+	@echo "  │ yuga-tc2    │ 不需要   │ 每 zone 單一 TServer，直連即可                      │"
+	@echo "  │ yuga-tc3    │ poc-1    │ IDC :15433 → poc-1/2/3:5433                         │"
+	@echo "  │             │ gcp-1    │ GCP :15433 → gcp-1/2:5433                           │"
 	@echo "  └─────────────┴──────────┴─────────────────────────────────────────────────────┘"
 	@echo ""
 	@echo "=== Global ==="
@@ -94,6 +98,8 @@ help:
 	@echo "=== YugabyteDB ==="
 	@echo "  make yugabyte-deploy        - 部署 YugabyteDB cluster (yugabyte.yml)"
 	@echo "  make yugabyte-status        - 初始化密碼 + cluster status 檢查"
+	@echo "  make yuga-haproxy-tc1       - 部署 HAProxy on poc-1:15433 → poc-1/2/3:5433 (tc1)"
+	@echo "  make yuga-haproxy-tc3       - 部署 HAProxy on poc-1:15433(IDC) + gcp-1:15433(GCP) (tc3)"
 
 ## Pipeline
 tidb:
@@ -188,6 +194,16 @@ tidb-haproxy-tc3: gcp-tunnel-ensure
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc3.ini
 
+yuga-haproxy-tc1:
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/haproxy.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte-tc1.ini
+
+yuga-haproxy-tc3: gcp-tunnel-ensure
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/haproxy.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte-tc3.ini
+
 ## TiDB
 tidb-deploy: gcp-tunnel-ensure
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb.yml \
@@ -266,6 +282,7 @@ yuga-tc1:
 	  -e yb_rf=3 \
 	  -e yb_placement="poc.poc-region.idc:3" \
 	  -e yb_master_addresses="172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100"
+	$(MAKE) yuga-haproxy-tc1
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/yugabyte-tc1.ini
@@ -298,6 +315,7 @@ yuga-tc3: gcp-tunnel-ensure
 	  -e yb_rf=5 \
 	  -e yb_placement="poc.poc-region.idc:3,poc.poc-region.gcp:2" \
 	  -e yb_master_addresses="172.24.40.32:7100,172.24.40.33:7100,10.160.152.11:7100"
+	$(MAKE) yuga-haproxy-tc3
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/yugabyte-tc3.ini \
