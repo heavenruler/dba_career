@@ -144,3 +144,74 @@ results/
 | 故障注入無 Makefile target | S-HA / S-PART / S-IDC-SOLO / S-CHAOS-* | 補 `make fault-*` targets | ⏳ |
 | 結果歸檔腳本未建立 | 全部 | 補 `tests/common/collect.sh` | ⏳ |
 | k6 / go-tpc 腳本未建立 | 全部 | 補 `tests/common/` 與 `tests/tidb/` / `tests/yugabytedb/` | ⏳ |
+
+---
+
+## 8. VM vs K8s TPC-C 效能比較（待實作）
+
+### 8.1 目的
+
+量化相同硬體下，DB 部署在裸 VM 與 K8s 之間的 TPC-C 效能損耗或差異，作為架構選型依據。
+
+### 8.2 比較框架
+
+**受控變數（兩者保持一致）**
+
+- 硬體：同一批 VM（poc-1/2/3，sequential 執行）
+- DB 版本：相同
+- TPC-C 參數：warehouses、concurrency、duration 一致
+- 儲存：K8s 使用 local-path PV，掛載路徑對齊 VM 資料目錄
+
+**測試變數（K8s 引入的差異）**
+
+| 層次 | VM | K8s | 預期影響 |
+|------|-----|-----|---------|
+| 運算 | 直接 CPU/RAM | containerd + cgroup | resource limits 策略決定 |
+| 網路 | 直接 IP | CNI overlay（flannel） | cross-node commit latency ↑ |
+| 儲存 | 直接路徑 | PV/PVC → local-path | 差異最小化 |
+| 排程 | 無 | kube-scheduler + kubelet | 固定背景消耗，約 1 vCPU / 1~2 GB |
+
+**K8s resource limits 策略（兩輪）**
+
+| 輪次 | limits 設定 | 量測目的 |
+|------|------------|---------|
+| K8s-unlimit | 不設 limits | container / CNI 純開銷下限 |
+| K8s-limit | limits = VM 可用量 | 實際生產部署場景 |
+
+### 8.3 主要量測指標
+
+| 指標 | 說明 |
+|------|------|
+| `tpmC` | TPC-C 主指標，三組比較（VM / K8s-unlimit / K8s-limit） |
+| `p99 commit latency` | CNI overlay 對尾延遲的影響最明顯 |
+| `CPU utilization delta` | 相同 tpmC 下的 CPU 消耗差異 |
+| `inter-node RTT` | VM 直連 vs CNI overlay 的網路延遲基線 |
+
+### 8.4 已知限制
+
+- K8s control plane 跑在 poc-1，佔用約 1 vCPU / 1~2 GB RAM，**納入**比較而非排除；結果需標記此 overhead
+- 本比較不涵蓋：K8s 獨立 control plane 節點、雲端 managed K8s（GKE）vs VM
+
+### 8.5 執行順序（tc1 範圍）
+
+```
+1. make tidb-tc1       → TPC-C (VM baseline)
+2. make destroy-all
+3. make apply-all + ansible-setup
+4. make k8s-setup      ← 待實作（k3s on poc-1/2/3）
+5. make tidb-tc1-k8s   ← 待實作（TiDB Operator，K8s-unlimit）
+6. make tidb-tc1-k8s   ← 待實作（TiDB Operator，K8s-limit）
+7. 比對 tpmC / p99 / CPU delta
+```
+
+### 8.6 待補實作項目
+
+| 項目 | 狀態 |
+|------|------|
+| Ansible role：k3s server / agent 安裝 | ⏳ |
+| Makefile target：`k8s-setup` | ⏳ |
+| TiDB Operator + TidbCluster CRD（tc1 規格） | ⏳ |
+| YugabyteDB Helm chart（tc1 規格） | ⏳ |
+| Makefile target：`tidb-tc1-k8s` / `yuga-tc1-k8s` | ⏳ |
+| TPC-C 執行腳本（go-tpc wrapper） | ⏳ |
+| 結果比較報告模板 | ⏳ |
