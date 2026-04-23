@@ -10,10 +10,10 @@ INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
         gcp-create gcp-destroy gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure \
         gcp-inventory-refresh inventory-refresh-all \
         tidb-deploy tidb-status yugabyte-deploy yugabyte-status \
-        tidb-haproxy-tc1 tidb-haproxy-tc3 \
-        yuga-haproxy-tc1 yuga-haproxy-tc3 \
-        tidb-tc1 tidb-tc2 tidb-tc3 \
-        yuga-tc1 yuga-tc2 yuga-tc3
+        tidb-haproxy-tc1 tidb-haproxy-tc3 tidb-haproxy-tc4 \
+        yuga-haproxy-tc1 yuga-haproxy-tc3 yuga-haproxy-tc4 \
+        tidb-tc1 tidb-tc2 tidb-tc3 tidb-tc4 \
+        yuga-tc1 yuga-tc2 yuga-tc3 yuga-tc4
 
 help:
 	@echo "=== Pipeline ==="
@@ -22,9 +22,11 @@ help:
 	@echo "  make tidb-tc1               - TiDB TC1: Single IDC HA  (PD×3/TiDB×2/TiKV×3 RF=3)"
 	@echo "  make tidb-tc2               - TiDB TC2: Cross-zone min (PD×3/TiDB×2/TiKV×2 RF=2)"
 	@echo "  make tidb-tc3               - TiDB TC3: Cross-zone full(PD×3/TiDB×3/TiKV×5 RF=3)"
+	@echo "  make tidb-tc4               - TiDB TC4: Cross-zone GCP primary (PD×3: 1IDC+2GCP, TiKV×5 RF=3)"
 	@echo "  make yuga-tc1               - YugabyteDB TC1: Single zone RF3 (3 nodes)"
 	@echo "  make yuga-tc2               - YugabyteDB TC2: Cross-zone RF3 (5 nodes)"
 	@echo "  make yuga-tc3               - YugabyteDB TC3: Cross-zone RF5 (5 nodes, 100GB)"
+	@echo "  make yuga-tc4               - YugabyteDB TC4: Cross-zone GCP primary (masters: 1IDC+2GCP, RF=3)"
 	@echo ""
 	@echo "┌─────────────────────────────────────────────────────────────────────────────────────────────────┐"
 	@echo "│  TC Summary                                                                                     │"
@@ -34,10 +36,12 @@ help:
 	@echo "│ tidb-tc1     │ poc-1/2/3            │ poc-1/2            │ poc-1/2/3           │ RF=3 / 30GB   │"
 	@echo "│ tidb-tc2     │ poc-1/2 + gcp-1      │ poc-1 + gcp-1      │ poc-1 + gcp-1       │ RF=2 / 30GB   │"
 	@echo "│ tidb-tc3     │ poc-1/2 + gcp-1      │ poc-1/2 + gcp-1    │ all 5               │ RF=3 / 30GB   │"
+	@echo "│ tidb-tc4     │ poc-1 + gcp-1/2      │ poc-1 + gcp-1/2    │ all 5               │ RF=3 / 30GB   │"
 	@echo "├──────────────┼──────────────────────┼────────────────────┼─────────────────────┼───────────────┤"
 	@echo "│ yuga-tc1     │ poc-1/2/3            │ poc-1/2/3          │ -                   │ RF=3 / 30GB   │"
 	@echo "│ yuga-tc2     │ poc-1/2 + gcp-1      │ all 5              │ -                   │ RF=3 / 30GB   │"
 	@echo "│ yuga-tc3     │ poc-1/2 + gcp-1      │ all 5              │ -                   │ RF=5 / 100GB  │"
+	@echo "│ yuga-tc4     │ poc-1 + gcp-1/2      │ all 5              │ -                   │ RF=3 / 30GB   │"
 	@echo "└──────────────┴──────────────────────┴────────────────────┴─────────────────────┴───────────────┘"
 	@echo "  RF (Replication Factor)：每筆資料保存的副本數，RF=3 表示 3 份副本分散於不同節點"
 	@echo "  容錯能力 = RF-1，RF=3 可容忍 1 節點故障；RF=5 可容忍 2 節點故障"
@@ -62,10 +66,14 @@ help:
 	@echo "  │ tidb-tc2    │ 不需要   │ 每 zone 單一 TiDB 節點，直連即可                    │"
 	@echo "  │ tidb-tc3    │ poc-3    │ IDC :4000 → poc-1/2:4000                            │"
 	@echo "  │             │ gcp-2    │ GCP :4000 → gcp-1:4000                              │"
+	@echo "  │ tidb-tc4    │ poc-3    │ IDC :4000 → poc-1:4000                              │"
+	@echo "  │             │ 直連     │ GCP 直連 gcp-1/gcp-2:4000                           │"
 	@echo "  ├─────────────┼──────────┼─────────────────────────────────────────────────────┤"
 	@echo "  │ yuga-tc1    │ poc-1    │ :15433 → roundrobin poc-1/2/3:5433                  │"
 	@echo "  │ yuga-tc2    │ 不需要   │ 每 zone 單一 TServer，直連即可                      │"
 	@echo "  │ yuga-tc3    │ poc-1    │ IDC :15433 → poc-1/2/3:5433                         │"
+	@echo "  │             │ gcp-1    │ GCP :15433 → gcp-1/2:5433                           │"
+	@echo "  │ yuga-tc4    │ poc-1    │ IDC :15433 → poc-1/2/3:5433                         │"
 	@echo "  │             │ gcp-1    │ GCP :15433 → gcp-1/2:5433                           │"
 	@echo "  └─────────────┴──────────┴─────────────────────────────────────────────────────┘"
 	@echo ""
@@ -94,12 +102,14 @@ help:
 	@echo "  make tidb-status            - 初始化密碼 + cluster status 檢查"
 	@echo "  make tidb-haproxy-tc1       - 部署 HAProxy on poc-3 → poc-1/2:4000 (tc1)"
 	@echo "  make tidb-haproxy-tc3       - 部署 HAProxy on poc-3(IDC) + gcp-2(GCP) (tc3)"
+	@echo "  make tidb-haproxy-tc4       - 部署 HAProxy on poc-3(IDC) only；GCP 直連 (tc4)"
 	@echo ""
 	@echo "=== YugabyteDB ==="
 	@echo "  make yugabyte-deploy        - 部署 YugabyteDB cluster (yugabyte.yml)"
 	@echo "  make yugabyte-status        - 初始化密碼 + cluster status 檢查"
 	@echo "  make yuga-haproxy-tc1       - 部署 HAProxy on poc-1:15433 → poc-1/2/3:5433 (tc1)"
 	@echo "  make yuga-haproxy-tc3       - 部署 HAProxy on poc-1:15433(IDC) + gcp-1:15433(GCP) (tc3)"
+	@echo "  make yuga-haproxy-tc4       - 部署 HAProxy on poc-1:15433(IDC) + gcp-1:15433(GCP) (tc4)"
 
 ## Pipeline
 tidb:
@@ -194,6 +204,11 @@ tidb-haproxy-tc3: gcp-tunnel-ensure
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc3.ini
 
+tidb-haproxy-tc4:
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/haproxy.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc4.ini
+
 yuga-haproxy-tc1:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/haproxy.yml \
 	  -i inventory/hosts.ini \
@@ -203,6 +218,11 @@ yuga-haproxy-tc3: gcp-tunnel-ensure
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/haproxy.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/yugabyte-tc3.ini
+
+yuga-haproxy-tc4: gcp-tunnel-ensure
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/haproxy.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte-tc4.ini
 
 ## TiDB
 tidb-deploy: gcp-tunnel-ensure
@@ -270,6 +290,21 @@ tidb-tc3: gcp-tunnel-ensure
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc3.ini
 
+tidb-tc4: gcp-tunnel-ensure
+	$(MAKE) destroy-all
+	$(MAKE) apply-all
+	$(MAKE) ansible-ping
+	$(MAKE) ansible-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc4.ini \
+	  -e tidb_rf=3 \
+	  -e tidb_use_zones=true
+	$(MAKE) tidb-haproxy-tc4
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-status.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc4.ini
+
 ## YugabyteDB Test Cases
 yuga-tc1:
 	$(MAKE) destroy-all
@@ -319,4 +354,21 @@ yuga-tc3: gcp-tunnel-ensure
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/yugabyte-tc3.ini \
+	  -e yb_enable_follower_reads=true
+
+yuga-tc4: gcp-tunnel-ensure
+	$(MAKE) destroy-all
+	$(MAKE) apply-all
+	$(MAKE) ansible-ping
+	$(MAKE) ansible-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte-tc4.ini \
+	  -e yb_rf=3 \
+	  -e yb_placement="poc.poc-region.idc:1,poc.poc-region.gcp:2" \
+	  -e yb_master_addresses="172.24.40.32:7100,10.160.152.11:7100,10.160.152.12:7100"
+	$(MAKE) yuga-haproxy-tc4
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yugabyte-tc4.ini \
 	  -e yb_enable_follower_reads=true
