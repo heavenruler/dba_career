@@ -14,7 +14,7 @@ INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
         yuga-haproxy-tc1 yuga-haproxy-tc3 yuga-haproxy-tc4 \
         tidb-tc1 tidb-tc2 tidb-tc3 tidb-tc4 \
         yuga-tc1 yuga-tc2 yuga-tc3 yuga-tc4 \
-        k8s-setup tidb-tc1-k8s tidb-tc1-k8s-limit
+        k8s-setup tidb-tc1-k8s tidb-tc1-k8s-limit tidb-k8s-status
 
 help:
 	@echo "=== Pipeline ==="
@@ -116,6 +116,7 @@ help:
 	@echo "  make k8s-setup              - destroy→VM→k3s v1.29 cluster (poc-1 server / poc-2/3 agents)"
 	@echo "  make tidb-tc1-k8s           - k8s-setup→TiDB Operator v1.6.5→TidbCluster (K8s-unlimit)"
 	@echo "  make tidb-tc1-k8s-limit     - 重部署 TiDB with resource limits (K8s-limit round)"
+	@echo "  make tidb-k8s-status        - 顯示 nodes / TidbCluster / pods / resource limits / endpoint"
 
 ## Pipeline
 tidb:
@@ -394,8 +395,14 @@ tidb-tc1-k8s:
 	$(MAKE) k8s-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
 	  -i inventory/tidb-tc1-k8s.ini
+	$(MAKE) tidb-k8s-status
 
 tidb-tc1-k8s-limit:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
 	  -i inventory/tidb-tc1-k8s.ini \
 	  -e k8s_resource_limits=true
+	$(MAKE) tidb-k8s-status
+
+tidb-k8s-status:
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s-status.yml \
+	  -i inventory/tidb-tc1-k8s.ini

@@ -1,0 +1,48 @@
+---
+- name: Show TiDB K8s cluster status
+  hosts: k3s_server
+  become: true
+  tasks:
+    - name: Get k3s nodes
+      ansible.builtin.command: k3s kubectl get nodes -o wide
+      register: r_nodes
+      changed_when: false
+
+    - name: "[K8s] Nodes"
+      ansible.builtin.debug:
+        msg: "{{ r_nodes.stdout_lines }}"
+
+    - name: Get TidbCluster status
+      ansible.builtin.command: >
+        k3s kubectl get tidbcluster tidb-poc -n tidb-cluster
+      register: r_tc
+      changed_when: false
+
+    - name: "[K8s] TidbCluster"
+      ansible.builtin.debug:
+        msg: "{{ r_tc.stdout_lines }}"
+
+    - name: Get pods
+      ansible.builtin.command: >
+        k3s kubectl get pods -n tidb-cluster -o wide
+      register: r_pods
+      changed_when: false
+
+    - name: "[K8s] Pods"
+      ansible.builtin.debug:
+        msg: "{{ r_pods.stdout_lines }}"
+
+    - name: Get resource limits (requests/limits)
+      ansible.builtin.shell: |
+        k3s kubectl get pods -n tidb-cluster -o jsonpath=\
+        '{range .items[*]}{.metadata.name}{"\t"}{range .spec.containers[*]}{.name}{"  cpu="}{.resources.limits.cpu}{"  mem="}{.resources.limits.memory}{"\n"}{end}{end}'
+      register: r_limits
+      changed_when: false
+
+    - name: "[K8s] Resource limits"
+      ansible.builtin.debug:
+        msg: "{{ r_limits.stdout_lines }}"
+
+    - name: Show TiDB endpoint
+      ansible.builtin.debug:
+        msg: "TiDB endpoint: mysql -h {{ ansible_default_ipv4.address }} -P 30004 -u root"
