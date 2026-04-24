@@ -11,7 +11,7 @@
 ## TiDB Operator CRDs
 - name: Apply TiDB Operator CRDs
   ansible.builtin.shell: |
-    k3s kubectl apply -f \
+    k3s kubectl apply --server-side -f \
       https://raw.githubusercontent.com/pingcap/tidb-operator/{{ tidb_operator_version }}/manifests/crd.yaml
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml

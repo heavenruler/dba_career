@@ -387,10 +387,16 @@ k8s-setup:
 
 tidb-tc1-k8s:
 	$(MAKE) destroy-all
-	$(MAKE) apply-all
+	$(MAKE) vm-create
+	$(MAKE) inventory-refresh
 	$(MAKE) ansible-ping
 	$(MAKE) ansible-setup
 	$(MAKE) k8s-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc1-k8s.ini
+
+tidb-operator-deploy:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc1-k8s.ini
