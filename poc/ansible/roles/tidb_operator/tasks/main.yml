@@ -1,0 +1,77 @@
+---
+## Helm
+- name: Install Helm
+  ansible.builtin.shell: |
+    curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  args:
+    creates: /usr/local/bin/helm
+  environment:
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+
+## TiDB Operator CRDs
+- name: Check if TiDB Operator CRDs already exist
+  ansible.builtin.command: >
+    k3s kubectl get crd tidbclusters.pingcap.com
+  register: crd_check
+  failed_when: false
+  changed_when: false
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Create TiDB Operator CRDs (first install)
+  ansible.builtin.shell: |
+    k3s kubectl create -f \
+      https://raw.githubusercontent.com/pingcap/tidb-operator/{{ tidb_operator_version }}/manifests/crd.yaml
+  when: crd_check.rc != 0
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+    NO_PROXY: "{{ k3s_no_proxy }}"
+  changed_when: true
+
+- name: Replace TiDB Operator CRDs (upgrade)
+  ansible.builtin.shell: |
+    k3s kubectl replace -f \
+      https://raw.githubusercontent.com/pingcap/tidb-operator/{{ tidb_operator_version }}/manifests/crd.yaml
+  when: crd_check.rc == 0
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+    NO_PROXY: "{{ k3s_no_proxy }}"
+  changed_when: true
+
+## TiDB Operator via Helm
+- name: Add pingcap Helm repo
+  ansible.builtin.shell: |
+    helm repo add pingcap https://charts.pingcap.org/ && helm repo update
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+  changed_when: true
+
+- name: Install / upgrade TiDB Operator
+  ansible.builtin.shell: |
+    helm upgrade --install tidb-operator pingcap/tidb-operator \
+      --namespace tidb-admin \
+      --create-namespace \
+      --version {{ tidb_operator_version }} \
+      --set scheduler.create=false \
+      --wait --timeout 5m
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+    NO_PROXY: "{{ k3s_no_proxy }}"
+  changed_when: true
+
+- name: Wait for tidb-controller-manager to be ready
+  ansible.builtin.shell: |
+    k3s kubectl -n tidb-admin get pod \
+      -l app.kubernetes.io/name=tidb-operator \
+      -o jsonpath='{.items[0].status.phase}'
+  register: op_status
+  until: op_status.stdout == "Running"
+  retries: 24
+  delay: 5
+  changed_when: false
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml

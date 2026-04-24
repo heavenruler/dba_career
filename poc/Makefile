@@ -14,6 +14,7 @@ INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
         yuga-haproxy-tc1 yuga-haproxy-tc3 yuga-haproxy-tc4 \
         tidb-tc1 tidb-tc2 tidb-tc3 tidb-tc4 \
         yuga-tc1 yuga-tc2 yuga-tc3 yuga-tc4 \
+        k8s-setup tidb-tc1-k8s tidb-tc1-k8s-limit
 
 help:
 	@echo "=== Pipeline ==="
@@ -110,7 +111,11 @@ help:
 	@echo "  make yuga-haproxy-tc1       - 部署 HAProxy on poc-1:15433 → poc-1/2/3:5433 (tc1)"
 	@echo "  make yuga-haproxy-tc3       - 部署 HAProxy on poc-1:15433(IDC) + gcp-1:15433(GCP) (tc3)"
 	@echo "  make yuga-haproxy-tc4       - 部署 HAProxy on poc-1:15433(IDC) + gcp-1:15433(GCP) (tc4)"
-
+	@echo ""
+	@echo "=== K8s (VM vs K8s TPC-C 比較) ==="
+	@echo "  make k8s-setup              - destroy→VM→k3s v1.29 cluster (poc-1 server / poc-2/3 agents)"
+	@echo "  make tidb-tc1-k8s           - k8s-setup→TiDB Operator v1.6.5→TidbCluster (K8s-unlimit)"
+	@echo "  make tidb-tc1-k8s-limit     - 重部署 TiDB with resource limits (K8s-limit round)"
 
 ## Pipeline
 tidb:
@@ -374,3 +379,23 @@ yuga-tc4: gcp-tunnel-ensure
 	  -i inventory/yugabyte-tc4.ini \
 	  -e yb_enable_follower_reads=true
 
+## K8s
+k8s-setup:
+	$(MAKE) destroy-all
+	$(MAKE) vm-create
+	$(MAKE) inventory-refresh
+	$(MAKE) ansible-ping
+	$(MAKE) ansible-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/k8s.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tidb-tc1-k8s.ini
+
+tidb-tc1-k8s:
+	$(MAKE) k8s-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
+	  -i inventory/tidb-tc1-k8s.ini
+
+tidb-tc1-k8s-limit:
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
+	  -i inventory/tidb-tc1-k8s.ini \
+	  -e k8s_resource_limits=true

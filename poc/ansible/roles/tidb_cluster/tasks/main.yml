@@ -1,0 +1,74 @@
+---
+- name: Create tidb-cluster namespace
+  ansible.builtin.shell: |
+    k3s kubectl create namespace tidb-cluster --dry-run=client -o yaml | \
+      k3s kubectl apply -f -
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: true
+
+- name: Render TidbCluster manifest
+  ansible.builtin.template:
+    src: tidbcluster.yaml.j2
+    dest: /root/tidbcluster.yaml
+    mode: '0644'
+
+- name: Apply TidbCluster
+  ansible.builtin.shell: |
+    k3s kubectl apply -f /root/tidbcluster.yaml
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: true
+
+- name: Wait for PD to be Normal
+  ansible.builtin.shell: |
+    k3s kubectl get tidbcluster tidb-poc -n tidb-cluster \
+      -o jsonpath='{.status.pd.phase}'
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: pd_phase
+  until: pd_phase.stdout == "Normal"
+  retries: 36
+  delay: 10
+  changed_when: false
+
+- name: Wait for TiKV to be Normal
+  ansible.builtin.shell: |
+    k3s kubectl get tidbcluster tidb-poc -n tidb-cluster \
+      -o jsonpath='{.status.tikv.phase}'
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: tikv_phase
+  until: tikv_phase.stdout == "Normal"
+  retries: 36
+  delay: 10
+  changed_when: false
+
+- name: Wait for TiDB to be healthy (2/2 pods Ready)
+  ansible.builtin.shell: |
+    k3s kubectl get pods -n tidb-cluster \
+      -l app.kubernetes.io/component=tidb \
+      --no-headers | grep -c '2/2'
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: tidb_ready
+  until: tidb_ready.stdout | int >= 2
+  retries: 60
+  delay: 10
+  changed_when: false
+
+- name: Show cluster pod status
+  ansible.builtin.shell: |
+    k3s kubectl get pods -n tidb-cluster -o wide
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: r_pods
+  changed_when: false
+
+- name: "[K8s] TiDB cluster pods"
+  ansible.builtin.debug:
+    msg: "{{ r_pods.stdout_lines }}"
+
+- name: Show TiDB endpoint
+  ansible.builtin.debug:
+    msg: "TiDB endpoint: mysql -h {{ ansible_default_ipv4.address }} -P 30004 -u root"

@@ -1,0 +1,122 @@
+---
+- name: Create data dir for TiKV / PV
+  ansible.builtin.file:
+    path: /opt/tidb/data
+    state: directory
+    mode: '0755'
+
+## AlmaLinux 10 uses nftables; ensure iptables kernel modules are loaded
+- name: Install iptables for k3s/kube-proxy
+  ansible.builtin.dnf:
+    name: iptables
+    state: present
+
+- name: Load required iptables kernel modules
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - ip_tables
+    - iptable_nat
+    - iptable_filter
+    - nf_nat
+
+- name: Persist iptables modules on boot
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k3s-iptables.conf
+    content: |
+      ip_tables
+      iptable_nat
+      iptable_filter
+      nf_nat
+    mode: '0644'
+
+## Uninstall existing k3s if present (clean reinstall)
+- name: Check if k3s-uninstall script exists
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s-uninstall.sh
+  register: k3s_uninstall
+
+- name: Uninstall previous k3s installation
+  ansible.builtin.shell: /usr/local/bin/k3s-uninstall.sh
+  when: k3s_uninstall.stat.exists
+  changed_when: true
+
+## Flush stale flannel routes left by previous installations
+- name: Flush stale pod CIDR routes from previous k3s installs
+  ansible.builtin.shell: |
+    ip route show | awk '/10\.42\.[0-9]+\.0\/24/ && /via/ {print $1}' | \
+      xargs -r -I{} ip route del {}
+  changed_when: false
+
+- name: Create systemd override dir for k3s
+  ansible.builtin.file:
+    path: /etc/systemd/system/k3s.service.d
+    state: directory
+    mode: '0755'
+
+- name: Create systemd proxy override for k3s (image pull only)
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/k3s.service.d/proxy.conf
+    content: |
+      [Service]
+      Environment="HTTP_PROXY={{ k3s_proxy }}"
+      Environment="HTTPS_PROXY={{ k3s_proxy }}"
+      Environment="NO_PROXY={{ k3s_no_proxy }}"
+    mode: '0644'
+
+- name: Install k3s server (v1.29, host-gw flannel)
+  ansible.builtin.shell: |
+    curl -sfL https://get.k3s.io | sh -s - server \
+      --node-ip={{ ansible_default_ipv4.address }} \
+      --flannel-iface={{ ansible_default_ipv4.interface }} \
+      --flannel-backend=host-gw \
+      --disable=traefik \
+      --disable=servicelb \
+      --write-kubeconfig-mode=644
+  args:
+    creates: /usr/local/bin/k3s
+  environment:
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+    NO_PROXY: "{{ k3s_no_proxy }}"
+
+- name: Wait for k3s to be ready
+  ansible.builtin.command: k3s kubectl get nodes
+  register: result
+  until: result.rc == 0
+  retries: 24
+  delay: 5
+  changed_when: false
+
+- name: Wait for local-path-provisioner to be ready
+  ansible.builtin.shell: |
+    k3s kubectl -n kube-system get pod \
+      -l app=local-path-provisioner \
+      -o jsonpath='{.items[0].status.phase}'
+  register: lpp_status
+  until: lpp_status.stdout == "Running"
+  retries: 24
+  delay: 5
+  changed_when: false
+
+- name: Configure local-path-provisioner data dir
+  ansible.builtin.shell: |
+    k3s kubectl patch configmap local-path-config \
+      -n kube-system \
+      --type merge \
+      -p '{"data":{"config.json":"{\"nodePathMap\":[{\"node\":\"DEFAULT_PATH_FOR_NON_LISTED_NODES\",\"paths\":[\"/opt/tidb/data\"]}]}"}}'
+  changed_when: true
+
+- name: Ensure .kube dir exists for root
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    mode: '0700'
+
+- name: Set up kubeconfig for root
+  ansible.builtin.copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /root/.kube/config
+    remote_src: true
+    mode: '0600'

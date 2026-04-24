@@ -1,0 +1,19 @@
+---
+- name: Deploy TiDB Operator
+  hosts: k3s_server
+  become: true
+  vars:
+    tidb_operator_version: "v1.6.5"
+    k3s_proxy: "http://sproxy.104-dev.com.tw:3128"
+    k3s_no_proxy: "172.24.40.32,172.24.40.33,172.24.40.34,10.42.0.0/16,10.43.0.0/16,127.0.0.1,localhost,.svc,.cluster.local,kubernetes"
+  roles:
+    - tidb_operator
+
+- name: Deploy TiDB Cluster
+  hosts: k3s_server
+  become: true
+  vars:
+    tidb_version: "v8.5.2"
+    k8s_resource_limits: false   # override with -e k8s_resource_limits=true for K8s-limit round
+  roles:
+    - tidb_cluster
