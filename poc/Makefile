@@ -398,6 +398,7 @@ tidb-tc1-k8s:
 	$(MAKE) tidb-k8s-status
 
 tidb-tc1-k8s-limit:
+	$(MAKE) k8s-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
 	  -i inventory/tidb-tc1-k8s.ini \
 	  -e k8s_resource_limits=true
