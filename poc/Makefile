@@ -3,6 +3,28 @@ GCP_IAC_DIR := gcp-iac/envs/dev
 ANSIBLE_DIR := ansible
 INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
 
+## TPC-C defaults (override: make test-tpcc-vm WAREHOUSES=50)
+TIDB_USER    ?= root
+TIDB_PASS    ?=
+WAREHOUSES   ?= 10
+DURATION     ?= 10m
+THREADS      ?= 16 32 64
+WARMUP       ?= 5m
+TOPO         ?= tidb-tc1
+SCENARIO     ?= S-BASE
+RESULT_BASE  ?= results
+
+## tc1 connection endpoints
+TIDB_HOST_VM  := 172.24.40.34
+TIDB_PORT_VM  := 4000
+TIDB_HOST_K8S := 172.24.40.32
+TIDB_PORT_K8S := 30004
+
+TPCC_ENV = TIDB_USER="$(TIDB_USER)" TIDB_PASS="$(TIDB_PASS)" \
+           WAREHOUSES="$(WAREHOUSES)" DURATION="$(DURATION)" \
+           THREADS_LIST="$(THREADS)" WARMUP="$(WARMUP)" \
+           TOPO="$(TOPO)" SCENARIO="$(SCENARIO)" RESULT_BASE="$(RESULT_BASE)"
+
 .PHONY: help \
         yuga tidb \
         apply-all destroy-all \
@@ -14,7 +36,10 @@ INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
         yuga-haproxy-tc1 yuga-haproxy-tc3 yuga-haproxy-tc4 \
         tidb-tc1 tidb-tc2 tidb-tc3 tidb-tc4 \
         yuga-tc1 yuga-tc2 yuga-tc3 yuga-tc4 \
-        k8s-setup tidb-tc1-k8s tidb-tc1-k8s-limit tidb-k8s-status
+        k8s-setup tidb-tc1-k8s tidb-tc1-k8s-limit tidb-k8s-status \
+        tpcc-prepare-vm tpcc-prepare-k8s \
+        test-tpcc-vm test-tpcc-k8s test-tpcc-k8s-limit \
+        tpcc-report
 
 help:
 	@echo "=== Pipeline ==="
@@ -111,6 +136,15 @@ help:
 	@echo "  make yuga-haproxy-tc1       - 部署 HAProxy on poc-1:15433 → poc-1/2/3:5433 (tc1)"
 	@echo "  make yuga-haproxy-tc3       - 部署 HAProxy on poc-1:15433(IDC) + gcp-1:15433(GCP) (tc3)"
 	@echo "  make yuga-haproxy-tc4       - 部署 HAProxy on poc-1:15433(IDC) + gcp-1:15433(GCP) (tc4)"
+	@echo ""
+	@echo "=== TPC-C (VM vs K8s 比較；共用 tests/common/tpcc.sh) ==="
+	@echo "  make tpcc-prepare-vm        - 建立 tpcc schema + 載入資料 (VM)"
+	@echo "  make tpcc-prepare-k8s       - 建立 tpcc schema + 載入資料 (K8s)"
+	@echo "  make test-tpcc-vm           - 執行 TPC-C warmup+run (VARIANT=vm)"
+	@echo "  make test-tpcc-k8s          - 執行 TPC-C warmup+run (VARIANT=k8s-unlimit)"
+	@echo "  make test-tpcc-k8s-limit    - 執行 TPC-C warmup+run (VARIANT=k8s-limit)"
+	@echo "  make tpcc-report            - 產生最新一次結果的 summary.md"
+	@echo "  Override: WAREHOUSES=50 DURATION=5m THREADS='32 64' VARIANT=vm"
 	@echo ""
 	@echo "=== K8s (VM vs K8s TPC-C 比較) ==="
 	@echo "  make k8s-setup              - destroy→VM→k3s v1.29 cluster (poc-1 server / poc-2/3 agents)"
@@ -407,3 +441,29 @@ tidb-tc1-k8s-limit:
 tidb-k8s-status:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s-status.yml \
 	  -i inventory/tidb-tc1-k8s.ini
+
+## TPC-C
+tpcc-prepare-vm:
+	TIDB_HOST=$(TIDB_HOST_VM) TIDB_PORT=$(TIDB_PORT_VM) \
+	  $(TPCC_ENV) bash tests/common/tpcc.sh prepare
+
+tpcc-prepare-k8s:
+	TIDB_HOST=$(TIDB_HOST_K8S) TIDB_PORT=$(TIDB_PORT_K8S) \
+	  $(TPCC_ENV) bash tests/common/tpcc.sh prepare
+
+test-tpcc-vm:
+	TIDB_HOST=$(TIDB_HOST_VM) TIDB_PORT=$(TIDB_PORT_VM) VARIANT=vm \
+	  $(TPCC_ENV) bash tests/common/tpcc.sh run
+
+test-tpcc-k8s:
+	TIDB_HOST=$(TIDB_HOST_K8S) TIDB_PORT=$(TIDB_PORT_K8S) VARIANT=k8s-unlimit \
+	  $(TPCC_ENV) bash tests/common/tpcc.sh run
+
+test-tpcc-k8s-limit:
+	TIDB_HOST=$(TIDB_HOST_K8S) TIDB_PORT=$(TIDB_PORT_K8S) VARIANT=k8s-limit \
+	  $(TPCC_ENV) bash tests/common/tpcc.sh run
+
+tpcc-report:
+	@latest=$$(ls -td $(RESULT_BASE)/$(TOPO)/$(SCENARIO)/$(VARIANT)/*/ 2>/dev/null | head -1); \
+	  if [[ -z "$$latest" ]]; then echo "No results found in $(RESULT_BASE)/$(TOPO)/$(SCENARIO)/$(VARIANT)/"; exit 1; fi; \
+	  bash tests/common/report.sh "$$latest"
