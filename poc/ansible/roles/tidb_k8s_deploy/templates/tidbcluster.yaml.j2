@@ -1,0 +1,59 @@
+apiVersion: pingcap.com/v1alpha1
+kind: TidbCluster
+metadata:
+  name: tidb-poc
+  namespace: tidb
+spec:
+  version: "{{ tidb_version | default('v8.5.2') }}"
+  timezone: Asia/Taipei
+  pvReclaimPolicy: Delete
+  enableDynamicConfiguration: true
+  configUpdateStrategy: RollingUpdate
+
+  pd:
+    replicas: 3
+    storageClassName: local-path
+    requests:
+      storage: 10Gi
+{% if k8s_resource_limits | default(false) | bool %}
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: "500m"
+      memory: 1Gi
+      storage: 10Gi
+{% endif %}
+    config:
+      replication.max-replicas: 3
+
+  tidb:
+    replicas: 2
+    service:
+      type: NodePort
+      mysqlNodePort: 30004
+{% if k8s_resource_limits | default(false) | bool %}
+    limits:
+      cpu: "1"
+      memory: 3Gi
+    requests:
+      cpu: "500m"
+      memory: 1Gi
+{% endif %}
+
+  tikv:
+    replicas: 3
+    storageClassName: local-path
+    requests:
+      storage: 30Gi
+{% if k8s_resource_limits | default(false) | bool %}
+    limits:
+      cpu: "2"
+      memory: 8Gi
+    requests:
+      cpu: "1"
+      memory: 4Gi
+      storage: 30Gi
+{% endif %}
+    config:
+      storage.reserve-space: "0MB"

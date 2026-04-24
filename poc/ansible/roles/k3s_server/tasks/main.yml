@@ -1,0 +1,60 @@
+---
+- name: Create data dir for TiKV / PV
+  ansible.builtin.file:
+    path: /opt/tidb/data
+    state: directory
+    mode: '0755'
+
+- name: Create systemd proxy override for k3s (image pull)
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/k3s.service.d/proxy.conf
+    content: |
+      [Service]
+      Environment="HTTP_PROXY={{ k3s_proxy }}"
+      Environment="HTTPS_PROXY={{ k3s_proxy }}"
+      Environment="NO_PROXY={{ k3s_no_proxy }}"
+    mode: '0644'
+  notify: reload systemd
+
+- name: Install k3s server
+  ansible.builtin.shell: |
+    curl -sfL https://get.k3s.io | sh -s - server \
+      --node-ip={{ ansible_default_ipv4.address }} \
+      --flannel-iface={{ ansible_default_ipv4.interface }} \
+      --disable=traefik \
+      --disable=servicelb \
+      --write-kubeconfig-mode=644
+  args:
+    creates: /usr/local/bin/k3s
+  environment:
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+    NO_PROXY: "{{ k3s_no_proxy }}"
+
+- name: Wait for k3s to be ready
+  ansible.builtin.command: k3s kubectl get nodes
+  register: result
+  until: result.rc == 0
+  retries: 24
+  delay: 5
+  changed_when: false
+
+- name: Configure local-path-provisioner data dir
+  ansible.builtin.shell: |
+    k3s kubectl patch configmap local-path-config \
+      -n kube-system \
+      --type merge \
+      -p '{"data":{"config.json":"{\"nodePathMap\":[{\"node\":\"DEFAULT_PATH_FOR_NON_LISTED_NODES\",\"paths\":[\"/opt/tidb/data\"]}]}"}}'
+  changed_when: true
+
+- name: Set up kubeconfig for root
+  ansible.builtin.copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /root/.kube/config
+    remote_src: true
+    mode: '0600'
+
+- name: Ensure .kube dir exists for root
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    mode: '0700'
