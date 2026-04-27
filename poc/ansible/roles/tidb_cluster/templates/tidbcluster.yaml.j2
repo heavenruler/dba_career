@@ -56,7 +56,7 @@ spec:
     replicas: 3
     storageClassName: local-path
     requests:
-      storage: 30Gi
+      storage: 100Gi
     config:
       storage.reserve-space: "0MB"
       rocksdb.max-open-files: 256
@@ -68,5 +68,5 @@ spec:
     requests:
       cpu: "1"
       memory: 4Gi
-      storage: 30Gi
+      storage: 100Gi
 {% endif %}

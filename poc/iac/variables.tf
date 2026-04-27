@@ -34,7 +34,7 @@ variable "vm_memory" {
 
 variable "vm_disk_size" {
   type    = number
-  default = 30
+  default = 100
 }
 
 variable "vm_netmask" {

@@ -19,7 +19,7 @@ resource "google_compute_instance" "poc" {
 
     initialize_params {
       image = "projects/almalinux-cloud/global/images/family/almalinux-10"
-      size  = 30
+      size  = var.disk_size
       type  = "pd-standard"
     }
 

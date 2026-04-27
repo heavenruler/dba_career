@@ -20,6 +20,11 @@ variable "ssh_public_key" {
   sensitive   = true
 }
 
+variable "disk_size" {
+  type    = number
+  default = 100
+}
+
 variable "root_password" {
   description = "Root password for VM instances"
   type        = string
