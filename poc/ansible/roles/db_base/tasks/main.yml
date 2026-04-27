@@ -5,8 +5,12 @@
     name: cloud-utils-growpart
     state: present
 
-- name: Grow root partition /dev/sda3 if needed
-  ansible.builtin.shell: growpart /dev/sda 3
+- name: Grow root partition if needed
+  ansible.builtin.shell: |
+    root_dev=$(findmnt -n -o SOURCE /)
+    disk=$(echo "$root_dev" | sed 's/p\?[0-9]*$//')
+    part=$(echo "$root_dev" | grep -o '[0-9]*$')
+    growpart "$disk" "$part"
   register: growpart_result
   changed_when: "'CHANGED' in growpart_result.stdout"
   failed_when: growpart_result.rc != 0 and 'NOCHANGE' not in growpart_result.stdout
