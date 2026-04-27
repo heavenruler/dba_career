@@ -63,7 +63,7 @@ YUGA_TPCC_ENV = YUGA_USER="$(YUGA_USER)" YUGA_PASS="$(YUGA_PASS)" \
         tpcc-cleanup-yuga-vm tpcc-cleanup-yuga-k8s \
         tpcc-prepare-yuga-vm tpcc-prepare-yuga-k8s \
         test-tpcc-yuga-vm test-tpcc-yuga-k8s test-tpcc-yuga-k8s-limit \
-        tpcc-report
+        tpcc-report tpcc-compare
 
 help:
 	@echo "=== Pipeline ==="
@@ -174,6 +174,7 @@ help:
 	@echo "  make test-tpcc-k8s          - 執行 TPC-C warmup+run (VARIANT=k8s-unlimit)"
 	@echo "  make test-tpcc-k8s-limit    - 執行 TPC-C warmup+run (VARIANT=k8s-limit)"
 	@echo "  make tpcc-report            - 產生最新一次結果的 summary.md"
+	@echo "  make tpcc-compare           - 從 vm/k8s-unlimit/k8s-limit summary 產對照表 (TOPO/SCENARIO)"
 	@echo "  Override: WAREHOUSES=50 DURATION=5m THREADS='32 64' VARIANT=vm"
 	@echo ""
 	@echo "=== K8s (VM vs K8s TPC-C 比較) ==="
@@ -575,3 +576,6 @@ tpcc-report:
 	@latest=$$(ls -td $(RESULT_BASE)/$(TOPO)/$(SCENARIO)/$(VARIANT)/*/ 2>/dev/null | head -1); \
 	  if [[ -z "$$latest" ]]; then echo "No results found in $(RESULT_BASE)/$(TOPO)/$(SCENARIO)/$(VARIANT)/"; exit 1; fi; \
 	  bash tests/common/report.sh "$$latest"
+
+tpcc-compare:
+	@bash tests/common/compare.sh $(RESULT_BASE) $(TOPO) $(SCENARIO)
