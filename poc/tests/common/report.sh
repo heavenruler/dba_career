@@ -16,20 +16,20 @@ TOPO=${TOPO:-unknown}
 SCENARIO=${SCENARIO:-unknown}
 TIMESTAMP=${TIMESTAMP:-$(basename "${OUTPUT_DIR}")}
 
-# extract a single Summary field from a log file
-# usage: _extract_field <file> <txn_type> <field>
-# field: TPM | Avg | 95th | 99th | Max
-_extract_field() {
-  local file=$1 txn=$2 field=$3
+# extract p99 latency for a given txn type from a log file
+_extract_p99() {
+  local file=$1 txn=$2
   grep "^\[Summary\] ${txn}" "${file}" \
-    | grep -oP "${field}\(ms\): \K[0-9.]+" \
+    | awk -F'99th\\(ms\\): ' '{print $2}' \
+    | awk -F',' '{print $1}' \
     | head -1
 }
 
 _extract_tpmc() {
   local file=$1
-  grep "^\[Summary\] tpmC" "${file}" \
-    | grep -oP "tpmC: \K[0-9.]+" \
+  grep "^tpmC:" "${file}" \
+    | awk '{print $2}' \
+    | tr -d ',' \
     | head -1
 }
 
@@ -39,11 +39,11 @@ declare -A TPMC P99_NO P99_PAY CPU_ROWS
 
 for log in "${OUTPUT_DIR}"/tpcc-c*.log; do
   [[ -f "${log}" ]] || continue
-  c=$(basename "${log}" | grep -oP 'c\K[0-9]+')
+  c=$(basename "${log}" | sed 's/tpcc-c\([0-9]*\)\.log/\1/')
   THREADS_FOUND+=("${c}")
   TPMC["${c}"]=$(_extract_tpmc "${log}")
-  P99_NO["${c}"]=$(_extract_field "${log}" "NEW_ORDER" "99th")
-  P99_PAY["${c}"]=$(_extract_field "${log}" "PAYMENT" "99th")
+  P99_NO["${c}"]=$(_extract_p99 "${log}" "NEW_ORDER")
+  P99_PAY["${c}"]=$(_extract_p99 "${log}" "PAYMENT")
 done
 
 # write summary.md

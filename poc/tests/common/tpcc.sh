@@ -38,22 +38,27 @@ DB_NAME=${DB_NAME:-tpcc}
 TIMESTAMP=$(date +%Y%m%d-%H%M)
 OUTPUT_DIR="${RESULT_BASE}/${TOPO}/${SCENARIO}/${VARIANT}/${TIMESTAMP}"
 
-_go_tpc() {
+# go-tpc global flags go BEFORE subcommand: go-tpc [global] tpcc [tpcc-flags] prepare|run
+_go_tpc_base() {
+  local threads=$1 extra_global=$2; shift 2
   local pass_flag=""
   [[ -n "${TIDB_PASS}" ]] && pass_flag="-p ${TIDB_PASS}"
-  go-tpc tpcc \
+  go-tpc \
     -H "${TIDB_HOST}" \
     -P "${TIDB_PORT}" \
     -U "${TIDB_USER}" \
+    -T "${threads}" \
     ${pass_flag} \
-    --db "${DB_NAME}" \
+    ${extra_global} \
+    tpcc \
     --warehouses "${WAREHOUSES}" \
+    --db "${DB_NAME}" \
     "$@"
 }
 
 cmd_prepare() {
   echo "==> [tpcc] prepare: ${TIDB_HOST}:${TIDB_PORT} warehouses=${WAREHOUSES}"
-  _go_tpc prepare --threads 8
+  _go_tpc_base 8 "" prepare
   echo "==> [tpcc] prepare done"
 }
 
@@ -61,7 +66,6 @@ cmd_run() {
   mkdir -p "${OUTPUT_DIR}"
   echo "==> [tpcc] output dir: ${OUTPUT_DIR}"
 
-  # record connection info
   cat > "${OUTPUT_DIR}/env.txt" <<EOF
 TIDB_HOST=${TIDB_HOST}
 TIDB_PORT=${TIDB_PORT}
@@ -78,14 +82,12 @@ EOF
 
   # warmup (results discarded)
   echo "==> [tpcc] warmup ${WARMUP} threads=16"
-  _go_tpc run --threads 16 --time "${WARMUP}" > /dev/null 2>&1 || true
+  _go_tpc_base 16 "--time ${WARMUP}" run > /dev/null 2>&1 || true
 
   # run per concurrency level
   for THREADS in ${THREADS_LIST}; do
     echo "==> [tpcc] run threads=${THREADS} duration=${DURATION}"
-    _go_tpc run \
-      --threads "${THREADS}" \
-      --time "${DURATION}" \
+    _go_tpc_base "${THREADS}" "--time ${DURATION}" run \
       2>&1 | tee "${OUTPUT_DIR}/tpcc-c${THREADS}.log"
     echo "==> [tpcc] threads=${THREADS} done"
   done
@@ -95,7 +97,7 @@ EOF
 
 cmd_cleanup() {
   echo "==> [tpcc] cleanup db=${DB_NAME}"
-  _go_tpc cleanup
+  _go_tpc_base 1 "" cleanup
   echo "==> [tpcc] cleanup done"
 }
 
