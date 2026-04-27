@@ -463,7 +463,7 @@ yuga-tc4: gcp-tunnel-ensure
 
 ## K8s
 k8s-setup:
-	$(MAKE) destroy-all
+	$(MAKE) vm-destroy
 	$(MAKE) vm-create
 	$(MAKE) inventory-refresh
 	$(MAKE) ansible-ping
