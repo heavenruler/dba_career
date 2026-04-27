@@ -1,4 +1,20 @@
 ---
+## Disk expansion (template clone → 100GB disk but partition only 28.4G)
+- name: Install cloud-utils-growpart
+  ansible.builtin.dnf:
+    name: cloud-utils-growpart
+    state: present
+
+- name: Grow root partition /dev/sda3 if needed
+  ansible.builtin.shell: growpart /dev/sda 3
+  register: growpart_result
+  changed_when: "'CHANGED' in growpart_result.stdout"
+  failed_when: growpart_result.rc != 0 and 'NOCHANGE' not in growpart_result.stdout
+
+- name: Resize XFS filesystem to fill partition
+  ansible.builtin.shell: xfs_growfs /
+  when: growpart_result.changed
+
 ## Timezone
 - name: Set timezone to Asia/Taipei
   community.general.timezone:
