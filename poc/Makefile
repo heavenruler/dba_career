@@ -47,7 +47,7 @@ YUGA_TPCC_ENV = YUGA_USER="$(YUGA_USER)" YUGA_PASS="$(YUGA_PASS)" \
 .PHONY: help \
         yuga tidb \
         apply-all destroy-all \
-        vm-create vm-destroy inventory-refresh ansible-ping ansible-setup \
+        vm-create vm-destroy inventory-refresh ansible-ping ansible-setup vm-ping vm-setup \
         gcp-create gcp-destroy gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure \
         gcp-inventory-refresh inventory-refresh-all \
         tidb-deploy tidb-status yugabyte-deploy yugabyte-status \
@@ -247,6 +247,14 @@ ansible-ping: inventory-refresh-all gcp-tunnel-ensure
 ansible-setup:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/site.yml
 
+## vSphere-only (no GCP) — for TC1 / K8s targets
+vm-ping: inventory-refresh
+	cd $(ANSIBLE_DIR) && ansible poc_db -m ping
+
+vm-setup:
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/site.yml \
+	  -i inventory/hosts.ini
+
 ## GCP Terraform
 gcp-create:
 	cd $(GCP_IAC_DIR) && terraform init -upgrade && terraform apply -auto-approve
@@ -335,11 +343,11 @@ yugabyte-status: gcp-tunnel-ensure
 	  -i inventory/yugabyte.ini
 
 ## TiDB Test Cases
-tidb-tc1: gcp-tunnel-ensure
-	$(MAKE) destroy-all
-	$(MAKE) apply-all
-	$(MAKE) ansible-ping
-	$(MAKE) ansible-setup
+tidb-tc1:
+	$(MAKE) vm-destroy
+	$(MAKE) vm-create
+	$(MAKE) vm-ping
+	$(MAKE) vm-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc1.ini \
@@ -395,10 +403,10 @@ tidb-tc4: gcp-tunnel-ensure
 
 ## YugabyteDB Test Cases
 yuga-tc1:
-	$(MAKE) destroy-all
-	$(MAKE) apply-all
-	$(MAKE) ansible-ping
-	$(MAKE) ansible-setup
+	$(MAKE) vm-destroy
+	$(MAKE) vm-create
+	$(MAKE) vm-ping
+	$(MAKE) vm-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/yugabyte-tc1.ini \
@@ -465,9 +473,8 @@ yuga-tc4: gcp-tunnel-ensure
 k8s-setup:
 	$(MAKE) vm-destroy
 	$(MAKE) vm-create
-	$(MAKE) inventory-refresh
-	$(MAKE) ansible-ping
-	$(MAKE) ansible-setup
+	$(MAKE) vm-ping
+	$(MAKE) vm-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/k8s.yml \
 	  -i inventory/hosts.ini \
 	  -i inventory/tidb-tc1-k8s.ini
