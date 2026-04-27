@@ -16,11 +16,19 @@
         name: mariadb
         state: present
 
-    ## Clear root password (idempotent — works whether current password is set or empty)
+    ## Remove stale .my.cnf so old password is not auto-read
+    - name: Remove .my.cnf
+      ansible.builtin.file:
+        path: /root/.my.cnf
+        state: absent
+
+    ## Clear root password — try empty password first, then no-password flag
     - name: Clear root password
       ansible.builtin.shell: |
         mysql -h {{ tidb_host }} -P {{ tidb_port }} -u {{ tidb_user }} \
-          -e "ALTER USER 'root'@'%' IDENTIFIED BY '';" 2>/dev/null || true
+          --password='' -e "ALTER USER 'root'@'%' IDENTIFIED BY '';" 2>/dev/null || \
+        mysql -h {{ tidb_host }} -P {{ tidb_port }} -u {{ tidb_user }} \
+          --skip-password -e "ALTER USER 'root'@'%' IDENTIFIED BY '';" 2>/dev/null || true
       changed_when: true
 
     ## Status checks
@@ -34,25 +42,29 @@
 
     - name: "[2] TiDB version"
       ansible.builtin.shell: |
-        mysql -e "SELECT tidb_version()\G"
+        mysql -h {{ tidb_host }} -P {{ tidb_port }} -u {{ tidb_user }} --password='' \
+          -e "SELECT tidb_version()\G"
       register: r_version
       changed_when: false
 
     - name: "[3] Cluster status"
       ansible.builtin.shell: |
-        mysql -e "SHOW STATUS LIKE 'uptime';"
+        mysql -h {{ tidb_host }} -P {{ tidb_port }} -u {{ tidb_user }} --password='' \
+          -e "SHOW STATUS LIKE 'uptime';"
       register: r_status
       changed_when: false
 
     - name: "[4] Database list"
       ansible.builtin.shell: |
-        mysql -e "SHOW DATABASES;"
+        mysql -h {{ tidb_host }} -P {{ tidb_port }} -u {{ tidb_user }} --password='' \
+          -e "SHOW DATABASES;"
       register: r_dblist
       changed_when: false
 
     - name: "[5] Store engines"
       ansible.builtin.shell: |
-        mysql -e "SHOW ENGINES;"
+        mysql -h {{ tidb_host }} -P {{ tidb_port }} -u {{ tidb_user }} --password='' \
+          -e "SHOW ENGINES;"
       register: r_engines
       changed_when: false
 
