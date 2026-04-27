@@ -3,12 +3,12 @@ GCP_IAC_DIR := gcp-iac/envs/dev
 ANSIBLE_DIR := ansible
 INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
 
-## TPC-C defaults (override: make test-tpcc-vm WAREHOUSES=50)
+## TPC-C defaults (override: make test-tpcc-vm WAREHOUSES=200 THREADS='32 64 128')
 TIDB_USER    ?= root
 TIDB_PASS    ?=
-WAREHOUSES   ?= 10
+WAREHOUSES   ?= 128
 DURATION     ?= 10m
-THREADS      ?= 16 32 64
+THREADS      ?= 16 32 64 128
 WARMUP       ?= 5m
 TOPO         ?= tidb-tc1
 SCENARIO     ?= S-BASE
