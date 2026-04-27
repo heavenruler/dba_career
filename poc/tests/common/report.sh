@@ -57,7 +57,7 @@ cat <<EOF
 |---------|------|--------------------|-----------------|
 EOF
 
-for c in "${THREADS_FOUND[@]}"; do
+for c in $(printf '%s\n' "${THREADS_FOUND[@]}" | sort -n); do
   printf "| %-7s | %-4s | %-18s | %-15s |\n" \
     "${c}" \
     "${TPMC[${c}]:-n/a}" \

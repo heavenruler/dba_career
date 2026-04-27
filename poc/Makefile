@@ -20,6 +20,14 @@ TIDB_PORT_VM  := 4000
 TIDB_HOST_K8S := 172.24.40.32
 TIDB_PORT_K8S := 30004
 
+## YugabyteDB connection endpoints (VM=HAProxy, K8s=NodePort)
+YUGA_HOST_VM  := 172.24.40.32
+YUGA_PORT_VM  := 15433
+YUGA_HOST_K8S := 172.24.40.32
+YUGA_PORT_K8S := 30005
+YUGA_USER     ?= yugabyte
+YUGA_PASS     ?=
+
 ## TPC-C remote client node — 172.24.40.31 (l-dbm-labroom-1, dedicated, not a DB node)
 ## Must NOT use 172.24.40.32/33/34 (DB nodes) to avoid resource contention
 REMOTE_HOST ?= root@172.24.40.31
@@ -29,6 +37,12 @@ TPCC_ENV = TIDB_USER="$(TIDB_USER)" TIDB_PASS="$(TIDB_PASS)" \
            THREADS_LIST="$(THREADS)" WARMUP="$(WARMUP)" \
            TOPO="$(TOPO)" SCENARIO="$(SCENARIO)" RESULT_BASE="$(RESULT_BASE)" \
            REMOTE_HOST="$(REMOTE_HOST)"
+
+YUGA_TPCC_ENV = YUGA_USER="$(YUGA_USER)" YUGA_PASS="$(YUGA_PASS)" \
+                WAREHOUSES="$(WAREHOUSES)" DURATION="$(DURATION)" \
+                THREADS_LIST="$(THREADS)" WARMUP="$(WARMUP)" \
+                TOPO="$(TOPO)" SCENARIO="$(SCENARIO)" RESULT_BASE="$(RESULT_BASE)" \
+                REMOTE_HOST="$(REMOTE_HOST)"
 
 .PHONY: help \
         yuga tidb \
@@ -42,9 +56,13 @@ TPCC_ENV = TIDB_USER="$(TIDB_USER)" TIDB_PASS="$(TIDB_PASS)" \
         tidb-tc1 tidb-tc2 tidb-tc3 tidb-tc4 \
         yuga-tc1 yuga-tc2 yuga-tc3 yuga-tc4 \
         k8s-setup tidb-tc1-k8s tidb-tc1-k8s-limit tidb-k8s-status \
+        yuga-tc1-k8s yuga-tc1-k8s-limit yuga-k8s-status \
         tpcc-cleanup-vm tpcc-cleanup-k8s \
         tpcc-prepare-vm tpcc-prepare-k8s \
         test-tpcc-vm test-tpcc-k8s test-tpcc-k8s-limit \
+        tpcc-cleanup-yuga-vm tpcc-cleanup-yuga-k8s \
+        tpcc-prepare-yuga-vm tpcc-prepare-yuga-k8s \
+        test-tpcc-yuga-vm test-tpcc-yuga-k8s test-tpcc-yuga-k8s-limit \
         tpcc-report
 
 help:
@@ -163,6 +181,23 @@ help:
 	@echo "  make tidb-tc1-k8s           - k8s-setup→TiDB Operator v1.6.5→TidbCluster (K8s-unlimit)"
 	@echo "  make tidb-tc1-k8s-limit     - 重部署 TiDB with resource limits (K8s-limit round)"
 	@echo "  make tidb-k8s-status        - 顯示 nodes / TidbCluster / pods / resource limits / endpoint"
+	@echo "  make yuga-tc1-k8s           - k8s-setup→YugabyteDB Helm 部署 (no limits)→status"
+	@echo "  make yuga-tc1-k8s-limit     - k8s-setup→YugabyteDB Helm 部署 with resource limits→status"
+	@echo "  make yuga-k8s-status        - 顯示 nodes / pods / services / YSQL endpoint"
+	@echo ""
+	@echo "=== YugabyteDB TPC-C (BenchmarkSQL; VM:HAProxy:15433 / K8s:NodePort:30005) ==="
+	@echo "  VM  round  : tpcc-prepare-yuga-vm  → test-tpcc-yuga-vm       → tpcc-report VARIANT=yuga-vm"
+	@echo "  K8s round  : tpcc-prepare-yuga-k8s → test-tpcc-yuga-k8s     → tpcc-report VARIANT=yuga-k8s"
+	@echo "  K8s-limit  : tpcc-prepare-yuga-k8s → test-tpcc-yuga-k8s-limit → tpcc-report VARIANT=yuga-k8s-limit"
+	@echo ""
+	@echo "  make tpcc-cleanup-yuga-vm   - 清除 benchmarksql DB (VM)"
+	@echo "  make tpcc-cleanup-yuga-k8s  - 清除 benchmarksql DB (K8s)"
+	@echo "  make tpcc-prepare-yuga-vm   - 建表+載料 (VM)"
+	@echo "  make tpcc-prepare-yuga-k8s  - 建表+載料 (K8s)"
+	@echo "  make test-tpcc-yuga-vm          - warmup+run (VARIANT=yuga-vm)"
+	@echo "  make test-tpcc-yuga-k8s         - warmup+run (VARIANT=yuga-k8s)"
+	@echo "  make test-tpcc-yuga-k8s-limit   - warmup+run (VARIANT=yuga-k8s-limit)"
+	@echo "  Override: WAREHOUSES=50 DURATION=5m THREADS='32 64' YUGA_USER=yugabyte"
 
 ## Pipeline
 tidb:
@@ -454,6 +489,23 @@ tidb-k8s-status:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s-status.yml \
 	  -i inventory/tidb-tc1-k8s.ini
 
+yuga-tc1-k8s:
+	$(MAKE) k8s-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-k8s.yml \
+	  -i inventory/yuga-tc1-k8s.ini
+	$(MAKE) yuga-k8s-status
+
+yuga-tc1-k8s-limit:
+	$(MAKE) k8s-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-k8s.yml \
+	  -i inventory/yuga-tc1-k8s.ini \
+	  -e yb_resource_limits=true
+	$(MAKE) yuga-k8s-status
+
+yuga-k8s-status:
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-k8s-status.yml \
+	  -i inventory/yuga-tc1-k8s.ini
+
 ## TPC-C
 tpcc-cleanup-vm:
 	TIDB_HOST=$(TIDB_HOST_VM) TIDB_PORT=$(TIDB_PORT_VM) \
@@ -482,6 +534,35 @@ test-tpcc-k8s:
 test-tpcc-k8s-limit:
 	TIDB_HOST=$(TIDB_HOST_K8S) TIDB_PORT=$(TIDB_PORT_K8S) VARIANT=k8s-limit \
 	  $(TPCC_ENV) bash tests/common/tpcc.sh run
+
+## YugabyteDB TPC-C (BenchmarkSQL)
+tpcc-cleanup-yuga-vm:
+	YUGA_HOST=$(YUGA_HOST_VM) YUGA_PORT=$(YUGA_PORT_VM) VARIANT=yuga-vm \
+	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh cleanup
+
+tpcc-cleanup-yuga-k8s:
+	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=yuga-k8s \
+	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh cleanup
+
+tpcc-prepare-yuga-vm:
+	YUGA_HOST=$(YUGA_HOST_VM) YUGA_PORT=$(YUGA_PORT_VM) VARIANT=yuga-vm \
+	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh prepare
+
+tpcc-prepare-yuga-k8s:
+	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=yuga-k8s \
+	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh prepare
+
+test-tpcc-yuga-vm:
+	YUGA_HOST=$(YUGA_HOST_VM) YUGA_PORT=$(YUGA_PORT_VM) VARIANT=yuga-vm \
+	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh run
+
+test-tpcc-yuga-k8s:
+	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=yuga-k8s \
+	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh run
+
+test-tpcc-yuga-k8s-limit:
+	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=yuga-k8s-limit \
+	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh run
 
 tpcc-report:
 	@latest=$$(ls -td $(RESULT_BASE)/$(TOPO)/$(SCENARIO)/$(VARIANT)/*/ 2>/dev/null | head -1); \

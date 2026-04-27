@@ -1,0 +1,82 @@
+---
+## Helm repo
+- name: Add yugabytedb Helm repo
+  ansible.builtin.shell: |
+    helm repo add yugabytedb https://charts.yugabyte.com && helm repo update
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+  changed_when: true
+
+## Namespace
+- name: Create yb-demo namespace
+  ansible.builtin.shell: |
+    k3s kubectl create namespace yb-demo --dry-run=client -o yaml | \
+      k3s kubectl apply -f -
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: true
+
+## Helm values
+- name: Render YugabyteDB Helm values
+  ansible.builtin.template:
+    src: yb-values.yaml.j2
+    dest: /root/yb-values.yaml
+    mode: '0644'
+
+## Install / upgrade
+- name: Install / upgrade YugabyteDB via Helm
+  ansible.builtin.shell: |
+    helm upgrade --install yugabyte yugabytedb/yugabyte \
+      --namespace yb-demo \
+      --version {{ yb_operator_version }} \
+      -f /root/yb-values.yaml \
+      --wait --timeout 10m
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+    NO_PROXY: "{{ k3s_no_proxy }}"
+  changed_when: true
+
+## Wait for masters
+- name: Wait for yb-master pods to be Ready (3/3)
+  ansible.builtin.shell: |
+    k3s kubectl get pods -n yb-demo -l app=yb-master \
+      --no-headers | grep -c '1/1'
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: master_ready
+  until: master_ready.stdout | int >= 3
+  retries: 60
+  delay: 10
+  changed_when: false
+
+## Wait for tservers
+- name: Wait for yb-tserver pods to be Ready (3/3)
+  ansible.builtin.shell: |
+    k3s kubectl get pods -n yb-demo -l app=yb-tserver \
+      --no-headers | grep -c '1/1'
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: tserver_ready
+  until: tserver_ready.stdout | int >= 3
+  retries: 60
+  delay: 10
+  changed_when: false
+
+## Show status
+- name: Show pod status
+  ansible.builtin.shell: |
+    k3s kubectl get pods -n yb-demo -o wide
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: r_pods
+  changed_when: false
+
+- name: "[K8s] YugabyteDB pods"
+  ansible.builtin.debug:
+    msg: "{{ r_pods.stdout_lines }}"
+
+- name: Show YSQL endpoint
+  ansible.builtin.debug:
+    msg: "YSQL endpoint: psql -h {{ ansible_default_ipv4.address }} -p 30005 -U yugabyte yugabyte"
