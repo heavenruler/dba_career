@@ -2,8 +2,6 @@
 - name: TiDB init password & status check
   hosts: tidb_control
   become: true
-  vars_files:
-    - ../vars/secrets.yml
   vars:
     tidb_host: 172.24.40.32
     tidb_port: 4000
@@ -18,26 +16,12 @@
         name: mariadb
         state: present
 
-    ## Password init
-    - name: Set root password
+    ## Clear root password (idempotent — works whether current password is set or empty)
+    - name: Clear root password
       ansible.builtin.shell: |
         mysql -h {{ tidb_host }} -P {{ tidb_port }} -u {{ tidb_user }} \
-          -e "ALTER USER 'root'@'%' IDENTIFIED BY '{{ tidb_pass }}';"
-      no_log: true
+          -e "ALTER USER 'root'@'%' IDENTIFIED BY '';" 2>/dev/null || true
       changed_when: true
-      failed_when: false
-
-    - name: Write .my.cnf for passwordless mysql
-      ansible.builtin.copy:
-        dest: /root/.my.cnf
-        mode: '0600'
-        content: |
-          [client]
-          host={{ tidb_host }}
-          port={{ tidb_port }}
-          user={{ tidb_user }}
-          password={{ tidb_pass }}
-      no_log: true
 
     ## Status checks
     - name: "[1] TiUP cluster display"
