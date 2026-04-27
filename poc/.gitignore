@@ -1,1 +1,6 @@
 ansible/vars/secrets.yml
+
+# TPC-C raw results (logs, snapshots) — only compare.md is tracked
+results/*/*/vm/
+results/*/*/k8s-unlimit/
+results/*/*/k8s-limit/
