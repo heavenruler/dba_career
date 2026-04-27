@@ -97,13 +97,21 @@ _go_tpc_base() {
     "$@"
 }
 
+_elapsed() {
+  local start=$1 end=$2
+  local s=$(( end - start ))
+  printf "%dm%02ds" $(( s / 60 )) $(( s % 60 ))
+}
+
 cmd_prepare() {
+  local t0=$SECONDS
   echo "==> [tpcc] prepare: ${TIDB_HOST}:${TIDB_PORT} warehouses=${WAREHOUSES}"
   _go_tpc_base 8 "" prepare
-  echo "==> [tpcc] prepare done"
+  echo "==> [tpcc] prepare done ($(_elapsed $t0 $SECONDS))"
 }
 
 cmd_run() {
+  local t_total=$SECONDS
   mkdir -p "${OUTPUT_DIR}"
   echo "==> [tpcc] output dir: ${OUTPUT_DIR}"
 
@@ -122,24 +130,28 @@ TIMESTAMP=${TIMESTAMP}
 EOF
 
   # warmup (results discarded)
+  local t0=$SECONDS
   echo "==> [tpcc] warmup ${WARMUP} threads=16"
   _go_tpc_base 16 "--time ${WARMUP}" run > /dev/null 2>&1 || true
+  echo "==> [tpcc] warmup done ($(_elapsed $t0 $SECONDS))"
 
   # run per concurrency level
   for THREADS in ${THREADS_LIST}; do
+    t0=$SECONDS
     echo "==> [tpcc] run threads=${THREADS} duration=${DURATION}"
     _go_tpc_base "${THREADS}" "--time ${DURATION}" run \
       2>&1 | tee "${OUTPUT_DIR}/tpcc-c${THREADS}.log"
-    echo "==> [tpcc] threads=${THREADS} done"
+    echo "==> [tpcc] threads=${THREADS} done ($(_elapsed $t0 $SECONDS))"
   done
 
-  echo "==> [tpcc] all runs complete: ${OUTPUT_DIR}"
+  echo "==> [tpcc] all runs complete: ${OUTPUT_DIR} (total $(_elapsed $t_total $SECONDS))"
 }
 
 cmd_cleanup() {
+  local t0=$SECONDS
   echo "==> [tpcc] cleanup db=${DB_NAME}"
   _go_tpc_base 1 "" cleanup
-  echo "==> [tpcc] cleanup done"
+  echo "==> [tpcc] cleanup done ($(_elapsed $t0 $SECONDS))"
 }
 
 case "${CMD}" in
