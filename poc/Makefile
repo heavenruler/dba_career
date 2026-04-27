@@ -42,6 +42,7 @@ TPCC_ENV = TIDB_USER="$(TIDB_USER)" TIDB_PASS="$(TIDB_PASS)" \
         tidb-tc1 tidb-tc2 tidb-tc3 tidb-tc4 \
         yuga-tc1 yuga-tc2 yuga-tc3 yuga-tc4 \
         k8s-setup tidb-tc1-k8s tidb-tc1-k8s-limit tidb-k8s-status \
+        tpcc-cleanup-vm tpcc-cleanup-k8s \
         tpcc-prepare-vm tpcc-prepare-k8s \
         test-tpcc-vm test-tpcc-k8s test-tpcc-k8s-limit \
         tpcc-report
@@ -143,6 +144,12 @@ help:
 	@echo "  make yuga-haproxy-tc4       - 部署 HAProxy on poc-1:15433(IDC) + gcp-1:15433(GCP) (tc4)"
 	@echo ""
 	@echo "=== TPC-C (VM vs K8s 比較；共用 tests/common/tpcc.sh) ==="
+	@echo "  VM round  : tpcc-prepare-vm → test-tpcc-vm → tpcc-report VARIANT=vm"
+	@echo "  K8s round : tpcc-cleanup-k8s → tpcc-prepare-k8s → test-tpcc-k8s → tpcc-report VARIANT=k8s-unlimit"
+	@echo "  K8s-limit : tpcc-cleanup-k8s → tpcc-prepare-k8s → test-tpcc-k8s-limit → tpcc-report VARIANT=k8s-limit"
+	@echo ""
+	@echo "  make tpcc-cleanup-vm        - 清除 tpcc schema (VM TiDB)"
+	@echo "  make tpcc-cleanup-k8s       - 清除 tpcc schema (K8s TiDB)"
 	@echo "  make tpcc-prepare-vm        - 建立 tpcc schema + 載入資料 (VM)"
 	@echo "  make tpcc-prepare-k8s       - 建立 tpcc schema + 載入資料 (K8s)"
 	@echo "  make test-tpcc-vm           - 執行 TPC-C warmup+run (VARIANT=vm)"
@@ -448,6 +455,14 @@ tidb-k8s-status:
 	  -i inventory/tidb-tc1-k8s.ini
 
 ## TPC-C
+tpcc-cleanup-vm:
+	TIDB_HOST=$(TIDB_HOST_VM) TIDB_PORT=$(TIDB_PORT_VM) \
+	  $(TPCC_ENV) bash tests/common/tpcc.sh cleanup
+
+tpcc-cleanup-k8s:
+	TIDB_HOST=$(TIDB_HOST_K8S) TIDB_PORT=$(TIDB_PORT_K8S) \
+	  $(TPCC_ENV) bash tests/common/tpcc.sh cleanup
+
 tpcc-prepare-vm:
 	TIDB_HOST=$(TIDB_HOST_VM) TIDB_PORT=$(TIDB_PORT_VM) \
 	  $(TPCC_ENV) bash tests/common/tpcc.sh prepare
