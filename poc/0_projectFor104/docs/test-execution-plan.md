@@ -155,6 +155,18 @@ results/
 
 ### 8.2 比較框架
 
+### TPC-C Client Node 規範
+
+| 項目 | 決定 |
+|------|------|
+| **指定節點** | `172.24.40.31`（l-dbm-labroom-1） |
+| **理由** | 172.24.40.32/33/34 為 DB 節點，在其上跑 go-tpc 會造成 CPU/網路資源競爭，污染效能數據 |
+| **RTT** | < 0.5ms（同 LAN） |
+| **Makefile 預設** | `REMOTE_HOST=root@172.24.40.31` |
+| **覆蓋方式** | `make test-tpcc-k8s REMOTE_HOST=root@other` |
+
+---
+
 **受控變數（兩者保持一致）**
 
 - 硬體：同一批 VM（poc-1/2/3，sequential 執行）

@@ -20,10 +20,15 @@ TIDB_PORT_VM  := 4000
 TIDB_HOST_K8S := 172.24.40.32
 TIDB_PORT_K8S := 30004
 
+## TPC-C remote client node — 172.24.40.31 (l-dbm-labroom-1, dedicated, not a DB node)
+## Must NOT use 172.24.40.32/33/34 (DB nodes) to avoid resource contention
+REMOTE_HOST ?= root@172.24.40.31
+
 TPCC_ENV = TIDB_USER="$(TIDB_USER)" TIDB_PASS="$(TIDB_PASS)" \
            WAREHOUSES="$(WAREHOUSES)" DURATION="$(DURATION)" \
            THREADS_LIST="$(THREADS)" WARMUP="$(WARMUP)" \
-           TOPO="$(TOPO)" SCENARIO="$(SCENARIO)" RESULT_BASE="$(RESULT_BASE)"
+           TOPO="$(TOPO)" SCENARIO="$(SCENARIO)" RESULT_BASE="$(RESULT_BASE)" \
+           REMOTE_HOST="$(REMOTE_HOST)"
 
 .PHONY: help \
         yuga tidb \
