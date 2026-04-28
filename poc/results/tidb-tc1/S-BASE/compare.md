@@ -66,24 +66,19 @@ xychart-beta
 
 ### 建議
 
-#### K8s resource limit 的定位
+Resource limit 體現的是**底層效能管制機制**。DB Pod 是否需要 limit，取決於叢集規劃策略：
 
-Resource limit 在 K8s 中體現的是**底層效能管制機制**，而非效能目標本身。對於資料庫 Pod（TiDB / TiKV）有兩種截然不同的使用策略：
+| 策略 | requests / limits | 適用情境 | 注意事項 |
+|------|-------------------|----------|----------|
+| **Guaranteed QoS** | requests = limits | 生產 DB、容量已知、需穩定 p99 | 需事先壓測確認合理值，否則過嚴反成瓶頸（本次即此問題） |
+| **limit 作為 Scale 觸發器** | requests < limits | 負載動態變化、搭配 VPA/擴節點 | 觸頂需有自動因應（VPA 調整或 TiKV 水平擴節點），不可靜態卡住 |
+| **不設 limit** | 僅 requests | 測試環境、效能基線量測 | 節點資源競爭無保護，不適合生產 |
 
-| 策略 | 說明 | 適用情境 |
-|------|------|----------|
-| **Guaranteed QoS**（requests = limits） | Pod 獲得固定 CPU 配額，排除 burst 干擾，行為可預期 | 生產 DB、需穩定 p99、容量已知 |
-| **Burstable + limit 作為 Scale 觸發器** | limit 設為合理上限，觸頂即觸發 VPA/擴節點 | 彈性場景、負載動態變化 |
+本次 `2c/8Gi` 設定既非 Guaranteed（requests 僅 1c/4Gi），也未配合 scale 策略，TiKV 從 16t 即觸頂卻無自動因應，形成**硬性效能上限**。
 
-本次測試的 `2c/8Gi` 設定既非 Guaranteed（requests 僅 1c/4Gi），也未配合 scale 策略，導致 TiKV 在 16t 起即觸頂卻無自動因應，形成**硬性效能上限而非彈性管制**。
-
-#### 行動建議
-
-- **方案 A**：TiKV limit 上調至 `3c/12Gi` 重測，驗證 tpmC 損耗能否壓至 < 10%
-- **方案 B**：DB Pod 改用 **Guaranteed QoS**（requests = limits），消除 burst 競爭、穩定 p99
+- **方案 A**：TiKV limit 上調至 `3c/12Gi` 重測，目標 tpmC 損耗 < 10%
+- **方案 B**：改用 Guaranteed QoS（requests = limits），穩定 p99、消除 burst 競爭
 - **方案 C**：✅ [VM 128t 反降根因已確認](#vm-128t-反降根因分析)（AUTO ANALYZE + co-location）
-- 若採彈性架構，應搭配 **VPA**（垂直擴展 TiKV requests/limits）或 **TiKV 水平擴節點** 作為觸頂後的 scale 策略，而非靜態卡住 limit
-- 不建議生產採用目前的 k8s-limit 靜態配置
 
 ---
 
