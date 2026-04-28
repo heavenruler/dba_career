@@ -259,9 +259,10 @@ EOF
 cmd_cleanup() {
   local t0=$SECONDS
   echo "==> [yuga-tpcc] cleanup db=${DB_NAME}"
-  PGPASSWORD="${YUGA_PASS}" psql \
-    -h "${YUGA_HOST}" -p "${YUGA_PORT}" -U "${YUGA_USER}" \
-    -c "DROP DATABASE IF EXISTS ${DB_NAME}"
+  local _ysql="PGPASSWORD=${YUGA_PASS} psql -h ${YUGA_HOST} -p ${YUGA_PORT} -U ${YUGA_USER}"
+  # terminate existing connections before drop
+  eval "$_ysql -c \"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='${DB_NAME}' AND pid <> pg_backend_pid();\"" 2>/dev/null || true
+  eval "$_ysql -c 'DROP DATABASE IF EXISTS ${DB_NAME}'"
   echo "==> [yuga-tpcc] cleanup done ($(_elapsed $t0 $SECONDS))"
 }
 
