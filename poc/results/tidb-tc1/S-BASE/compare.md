@@ -33,7 +33,7 @@
 TiKV 觀測到 ~2c 飽和於 18,842 tpmC（unlimit 峰值），現行 limit `2c/8Gi` 過嚴。
 - **方案 A**：limit 上調至 `3c/12Gi` 重測，目標 tpmC 損耗 < 10%
 - **方案 B**：DB Pod 改用 **Guaranteed QoS**（requests=limits），消除 burst 抖動
-- **方案 C**：調查 VM 在 128t 出現 -9% 反降原因（可能與 coprocessor / Raft 衝突有關）
+- **方案 C**：✅ VM 128t 反降根因已確認（見下方「VM 128t 反降根因分析」）
 - 不建議生產採用目前的 k8s-limit 配置
 
 ---
@@ -201,4 +201,44 @@ k8s-limit 配置不適合此工作負載，需依 TL;DR 建議調整。
 **結論**：
 - 容器化（k8s-unlimit）對 TPC-C 影響有限，可接受
 - 現行 k8s-limit 過嚴，需依 TL;DR 方案調整後重測
-- VM 在 128t 反降為意外觀察，不影響整體結論但值得後續調查
+- VM 在 128t 反降根因已確認（AUTO ANALYZE + co-location），不影響整體結論
+
+---
+
+## VM 128t 反降根因分析
+
+> 調查時間：2026-04-28；資料來源：.32/.33/.34 TiKV log（`tikv.log`）
+
+### 觀測數據
+
+| 指標 | 64t 視窗 (16:49-16:59) | 128t 視窗 (17:00-17:09) |
+|------|------------------------|-------------------------|
+| `analyze_full_sampling` slow-query (.32) | 0 筆 | **15 筆** |
+| `analyze_full_sampling` slow-query (.33) | 0 筆 | **7 筆** |
+| `analyze_full_sampling` slow-query (.34) | 0 筆 | **2 筆** |
+| Raft `became leader` 重選（三節點合計） | 31 次 | 40 次（+29%） |
+| TiKV `server is busy` / scheduler 滿載 | 0 | 0 |
+
+### 根因
+
+**主因：TiDB AUTO ANALYZE 背景作業（17:04 爆發）在相同 4 vCPU 節點上與 128 條 TPC-C 連線爭搶 coprocessor CPU/IO。**
+
+- AUTO ANALYZE（`connection_id=0`）在測試期間呈週期性爆發：16:20、16:44-46、**17:04**
+- 64t 視窗（16:49-16:59）恰好落在兩次 ANALYZE 之間的空窗期，得到最乾淨的資源，因此成為 VM peak
+- 128t 視窗（17:00-17:09）命中下一波 ANALYZE，每次 full sampling 耗時 2~3.5 秒，15 筆並行掃描直接壓縮 TiKV coprocessor 可用 CPU
+- Raft 重選略增（+29%）但無 `server is busy`，確認非 scheduler 飽和，是 coprocessor 層競爭
+
+### 架構根因（符合原假設）
+
+VM 部署中 TiDB + TiKV 共置於同一台 4 vCPU 節點（.32、.33）。  
+ANALYZE 屬 TiDB 統計資訊維護，在 K8s 容器化部署中同樣會發生，但本次 k8s-unlimit 測試時間（12:xx）的 ANALYZE 週期與 128t 視窗未重疊，故未觀察到此現象。
+
+### 結論
+
+| 因素 | 影響 |
+|------|------|
+| AUTO ANALYZE 爆發於 128t 視窗 | **主因**：coprocessor CPU/IO 被 background 作業佔用 |
+| TiDB+TiKV 同節點共 4 vCPU | **放大因素**：co-location 使背景作業直接侵蝕前台資源 |
+| Raft 重選略增 | 次要因素，不構成瓶頸 |
+
+若要消除此干擾，可在 TPC-C 測試前執行 `SET GLOBAL tidb_auto_analyze_ratio = 0` 暫停 AUTO ANALYZE，或於測試後重跑 128t 驗證基線。
