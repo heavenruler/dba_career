@@ -129,6 +129,12 @@ SCENARIO=${SCENARIO}
 TIMESTAMP=${TIMESTAMP}
 EOF
 
+  # disable AUTO ANALYZE during test to avoid background coprocessor interference
+  local mysql_cli="mysql -h${TIDB_HOST} -P${TIDB_PORT} -u${TIDB_USER} ${TIDB_PASS:+-p${TIDB_PASS}} --connect-timeout=5 -e"
+  $mysql_cli "SET GLOBAL tidb_auto_analyze_ratio = 0;" 2>/dev/null && \
+    echo "==> [tpcc] AUTO ANALYZE disabled" || \
+    echo "==> [tpcc] WARN: failed to disable AUTO ANALYZE (non-fatal)"
+
   # warmup (results discarded)
   local t0=$SECONDS
   echo "==> [tpcc] warmup ${WARMUP} threads=16"
@@ -145,6 +151,11 @@ EOF
   done
 
   echo "==> [tpcc] all runs complete: ${OUTPUT_DIR} (total $(_elapsed $t_total $SECONDS))"
+
+  # restore AUTO ANALYZE
+  $mysql_cli "SET GLOBAL tidb_auto_analyze_ratio = 0.5;" 2>/dev/null && \
+    echo "==> [tpcc] AUTO ANALYZE restored (ratio=0.5)" || \
+    echo "==> [tpcc] WARN: failed to restore AUTO ANALYZE (non-fatal)"
 }
 
 cmd_cleanup() {
