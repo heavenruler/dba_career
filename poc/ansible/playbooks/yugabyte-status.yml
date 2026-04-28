@@ -3,8 +3,6 @@
   hosts: yb_bootstrap
   become: true
   become_user: yugabyte
-  vars_files:
-    - ../vars/secrets.yml
   vars:
     master_addresses: "172.24.40.32:7100,172.24.40.33:7100,10.160.152.11:7100"
     yb_bin: /opt/yugabyte/bin
@@ -12,25 +10,22 @@
     yb_user: yugabyte
 
   tasks:
-    ## Password init
-    - name: Set yugabyte superuser password
+    ## Password init — empty password (matches YUGA_PASS="" default)
+    - name: Set yugabyte superuser password to empty
       ansible.builtin.shell: |
         {{ yb_bin }}/ysqlsh -h {{ yb_host }} -U {{ yb_user }} \
-          -c "ALTER USER yugabyte WITH PASSWORD '{{ yb_pass }}';"
+          -c "ALTER USER yugabyte WITH PASSWORD '';"
       changed_when: true
-      no_log: true
 
-    - name: Write .pgpass for passwordless ysqlsh
-      ansible.builtin.copy:
-        dest: /home/yugabyte/.pgpass
-        mode: '0600'
-        content: "{{ yb_host }}:5433:*:{{ yb_user }}:{{ yb_pass }}\n"
-      no_log: true
+    - name: Remove .pgpass (no password needed)
+      ansible.builtin.file:
+        path: /home/yugabyte/.pgpass
+        state: absent
 
     ## Follower reads (cross-zone TCs only)
     - name: "Enable follower reads (yb_enable_follower_reads=true)"
       ansible.builtin.shell: |
-        PGPASSWORD={{ yb_pass }} {{ yb_bin }}/ysqlsh \
+        {{ yb_bin }}/ysqlsh \
           -h {{ yb_host }} -U {{ yb_user }} \
           -c "ALTER DATABASE yugabyte SET yb_read_from_followers = true;" \
           -c "ALTER DATABASE yugabyte SET yb_follower_read_staleness_ms = 10000;"
@@ -61,15 +56,14 @@
 
     - name: "[4] YSQL version"
       ansible.builtin.shell: |
-        PGPASSWORD={{ yb_pass }} {{ yb_bin }}/ysqlsh \
+        {{ yb_bin }}/ysqlsh \
           -h {{ yb_host }} -U {{ yb_user }} -c "SELECT version();"
       register: r_version
       changed_when: false
-      no_log: false
 
     - name: "[5] YSQL database list"
       ansible.builtin.shell: |
-        PGPASSWORD={{ yb_pass }} {{ yb_bin }}/ysqlsh \
+        {{ yb_bin }}/ysqlsh \
           -h {{ yb_host }} -U {{ yb_user }} -c "\l"
       register: r_dblist
       changed_when: false
@@ -82,7 +76,7 @@
 
     - name: "[7] Follower read settings"
       ansible.builtin.shell: |
-        PGPASSWORD={{ yb_pass }} {{ yb_bin }}/ysqlsh \
+        {{ yb_bin }}/ysqlsh \
           -h {{ yb_host }} -U {{ yb_user }} \
           -c "SELECT name, setting FROM pg_settings WHERE name IN ('yb_read_from_followers','yb_follower_read_staleness_ms');"
       register: r_follower_read
