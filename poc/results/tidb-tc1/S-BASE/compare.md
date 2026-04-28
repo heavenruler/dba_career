@@ -171,6 +171,8 @@ xychart-beta
   line [11156, 11508, 11729, 11823]
 ```
 
+> 🔵 vm　　🟢 k8s-unlimit　　🔴 k8s-limit
+
 ### NEW_ORDER p99 (ms)
 
 | threads | vm | k8s-unlimit | k8s-limit |
@@ -190,6 +192,8 @@ xychart-beta
   line [96.5, 201.3, 352.3, 704.6]
 ```
 
+> 🔵 vm　　🟢 k8s-unlimit　　🔴 k8s-limit
+
 ### PAYMENT p99 (ms)
 
 | threads | vm | k8s-unlimit | k8s-limit |
@@ -208,6 +212,8 @@ xychart-beta
   line [37.7, 75.5, 176.2, 385.9]
   line [65.0, 134.2, 268.4, 637.5]
 ```
+
+> 🔵 vm　　🟢 k8s-unlimit　　🔴 k8s-limit
 
 > 參數：WAREHOUSES=128，DURATION=10m，WARMUP=5m
 > 來源：
