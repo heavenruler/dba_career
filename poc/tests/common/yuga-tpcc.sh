@@ -128,7 +128,7 @@ _ensure_bsl() {
 # reducing per-transaction round-trips. Without it, long-running JDBC batch transactions
 # age past YugabyteDB's MVCC snapshot window (HLC advances → kSnapshotTooOld on bmsql_customer load).
 _write_props() {
-  local threads=$1 duration_sec=$2 props_file=$3
+  local threads=$1 duration_sec=$2 props_file=$3 load_workers=${4:-8}
   local pass_line="password=${YUGA_PASS}"
 
   cat > "${props_file}" <<EOF
@@ -139,7 +139,7 @@ user=${YUGA_USER}
 ${pass_line}
 
 warehouses=${WAREHOUSES}
-loadWorkers=16
+loadWorkers=${load_workers}
 terminals=${threads}
 runTxnsPerTerminal=0
 runMins=$(( duration_sec / 60 ))
