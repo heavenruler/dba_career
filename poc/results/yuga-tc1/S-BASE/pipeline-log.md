@@ -51,6 +51,28 @@ sudo -u yugabyte /opt/yugabyte/bin/yugabyted start \
 - `loadWorkers` 8 → **16**
 - `ALTER DATABASE benchmarksql SET yb_disable_transactional_writes = true`（bulk load bypass Raft write path）
 - 載入完成後 `RESET yb_disable_transactional_writes`
+- JDBC URL 加入 `?reWriteBatchedInserts=true`
+
+### 為什麼需要 `reWriteBatchedInserts=true`
+
+BenchmarkSQL 預設使用 JDBC `addBatch()` / `executeBatch()`，PostgreSQL JDBC driver 會對每筆 row 發出獨立的 `INSERT INTO t VALUES (?)`，多筆合併為一個 transaction 但仍是多次 round-trip。
+
+`reWriteBatchedInserts=true` 讓 driver 把同一批次改寫為：
+
+```sql
+INSERT INTO t VALUES (v1), (v2), ..., (vN)
+```
+
+**效果**：單一 round-trip 寫入更多資料 → 每個 transaction 持續時間大幅縮短。
+
+**不加此參數的後果（實際觀察）**：載入 `bmsql_customer`（128 倉 × 10 district × 3000 customers = 3,840,000 rows）時，16 個 worker 並行開啟長時間 transaction。YugabyteDB 使用 HLC（Hybrid Logical Clock）管理 MVCC，當 transaction 持續時間超過 tablet 的 snapshot 保留窗口，HLC 會推進至新的最小讀取點，舊 snapshot 被清除，觸發：
+
+```
+ERROR: Snapshot too old. delta (usec): ~39,434,167
+kSnapshotTooOld
+```
+
+加入 `reWriteBatchedInserts=true` 後每筆 transaction 在 snapshot 過期前完成，問題消除。
 
 ---
 
