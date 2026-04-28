@@ -86,6 +86,7 @@
       --fault_tolerance=zone \
       --data_dir=/opt/yugabyte/data \
       --log_dir=/opt/yugabyte/logs \
+      --ui=false \
       --daemon=true
   become_user: yugabyte
   args:
@@ -109,6 +110,7 @@
       --join={{ yb_bootstrap_ip }} \
       --data_dir=/opt/yugabyte/data \
       --log_dir=/opt/yugabyte/logs \
+      --ui=false \
       --daemon=true
   become_user: yugabyte
   args:
