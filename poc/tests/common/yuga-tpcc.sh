@@ -126,8 +126,7 @@ _ensure_bsl() {
 # write props file for current run
 _write_props() {
   local threads=$1 duration_sec=$2 props_file=$3
-  local pass_line=""
-  [[ -n "${YUGA_PASS}" ]] && pass_line="password=${YUGA_PASS}"
+  local pass_line="password=${YUGA_PASS}"
 
   cat > "${props_file}" <<EOF
 db=postgres
@@ -187,12 +186,10 @@ cmd_prepare() {
   echo "==> [yuga-tpcc] prepare: ${YUGA_HOST}:${YUGA_PORT} db=${DB_NAME} warehouses=${WAREHOUSES}"
 
   # create DB if not exists
-  PGPASSWORD="${YUGA_PASS}" psql \
-    -h "${YUGA_HOST}" -p "${YUGA_PORT}" -U "${YUGA_USER}" \
-    -c "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" | grep -q 1 || \
-    PGPASSWORD="${YUGA_PASS}" psql \
-      -h "${YUGA_HOST}" -p "${YUGA_PORT}" -U "${YUGA_USER}" \
-      -c "CREATE DATABASE ${DB_NAME}"
+  local _psql="PGPASSWORD=${YUGA_PASS} psql -h ${YUGA_HOST} -p ${YUGA_PORT} -U ${YUGA_USER}"
+  if ! eval "$_psql -tAc \"SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'\"" | grep -q 1; then
+    eval "$_psql -c \"CREATE DATABASE ${DB_NAME}\""
+  fi
 
   local props=$(mktemp /tmp/bsl-prepare.XXXXXX.props)
   _write_props 8 600 "${props}"
