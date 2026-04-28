@@ -131,7 +131,7 @@ _write_props() {
   cat > "${props_file}" <<EOF
 db=postgres
 driver=org.postgresql.Driver
-conn=jdbc:postgresql://${YUGA_HOST}:${YUGA_PORT}/${DB_NAME}
+conn=jdbc:postgresql://${YUGA_HOST}:${YUGA_PORT}/${DB_NAME}?reWriteBatchedInserts=true
 user=${YUGA_USER}
 ${pass_line}
 
