@@ -136,7 +136,7 @@ user=${YUGA_USER}
 ${pass_line}
 
 warehouses=${WAREHOUSES}
-loadWorkers=8
+loadWorkers=16
 terminals=${threads}
 runTxnsPerTerminal=0
 runMins=$(( duration_sec / 60 ))
@@ -185,18 +185,24 @@ cmd_prepare() {
   local t0=$SECONDS
   echo "==> [yuga-tpcc] prepare: ${YUGA_HOST}:${YUGA_PORT} db=${DB_NAME} warehouses=${WAREHOUSES}"
 
-  # create DB if not exists
-  local _psql="PGPASSWORD=${YUGA_PASS} psql -h ${YUGA_HOST} -p ${YUGA_PORT} -U ${YUGA_USER}"
-  if ! eval "$_psql -tAc \"SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'\"" | grep -q 1; then
-    eval "$_psql -c \"CREATE DATABASE ${DB_NAME}\""
-  fi
+  # create DB if not exists (ignore "already exists" error)
+  local _ysql="PGPASSWORD=${YUGA_PASS} psql -h ${YUGA_HOST} -p ${YUGA_PORT} -U ${YUGA_USER}"
+  eval "$_ysql -c 'CREATE DATABASE ${DB_NAME}'" 2>&1 | grep -v "already exists" || true
+
+  # enable bulk-load optimisation (skip Raft path for INSERT during load)
+  eval "$_ysql -d ${DB_NAME} -c 'ALTER DATABASE ${DB_NAME} SET yb_disable_transactional_writes = true;'" 2>&1
+  echo "==> [yuga-tpcc] yb_disable_transactional_writes=true (bulk load mode)"
 
   local props=$(mktemp /tmp/bsl-prepare.XXXXXX.props)
-  _write_props 8 600 "${props}"
+  _write_props 16 600 "${props}"
 
   cd "${BSL_DIR}/run"
   ./runDatabaseBuild.sh "${props}"
   rm -f "${props}"
+
+  # restore transactional writes for normal operation
+  eval "$_ysql -d ${DB_NAME} -c 'ALTER DATABASE ${DB_NAME} RESET yb_disable_transactional_writes;'" 2>&1
+  echo "==> [yuga-tpcc] yb_disable_transactional_writes restored"
   echo "==> [yuga-tpcc] prepare done ($(_elapsed $t0 $SECONDS))"
 }
 
