@@ -111,12 +111,15 @@ _ensure_bsl() {
   command -v java >/dev/null || { echo "ERROR: java not found"; exit 1; }
   command -v unzip >/dev/null || apt-get install -y unzip 2>/dev/null || dnf install -y unzip
 
+  command -v ant >/dev/null || dnf install -y ant 2>/dev/null || apt-get install -y ant
+
   local tmp=$(mktemp -d)
   curl -fsSL -o "${tmp}/bsl.zip" "${BSL_URL}"
   unzip -q "${tmp}/bsl.zip" -d "${tmp}"
   mkdir -p "$(dirname "${BSL_DIR}")"
   mv "${tmp}/benchmarksql-${BSL_VERSION}" "${BSL_DIR}"
   rm -rf "${tmp}"
+  ant -q -f "${BSL_DIR}/build.xml"
   echo "==> [yuga-tpcc] BenchmarkSQL installed"
 }
 
