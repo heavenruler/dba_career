@@ -28,6 +28,18 @@
 | k8s-unlimit  | 13,668 | 16,992 | 18,456 | **18,842** | +38% (128t) |
 | k8s-limit    | 11,156 | 11,508 | 11,729 | **11,823** | +6%（觸頂） |
 
+```mermaid
+xychart-beta
+  title "tpmC Scaling vs Threads"
+  x-axis ["16t", "32t", "64t", "128t"]
+  y-axis "tpmC" 0 --> 22000
+  line [13993, 17939, 20816, 18923]
+  line [13668, 16992, 18456, 18842]
+  line [11156, 11508, 11729, 11823]
+```
+
+> 🔵 vm（64t 峰值後反降）　　🟢 k8s-unlimit（持續增長）　　🔴 k8s-limit（近水平，CPU 觸頂）
+
 ### p99 延遲對照
 
 #### NEW_ORDER p99 (ms)
