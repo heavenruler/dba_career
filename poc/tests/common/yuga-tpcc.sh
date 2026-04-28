@@ -192,10 +192,11 @@ cmd_prepare() {
   local _ysql="PGPASSWORD=${YUGA_PASS} psql -h ${YUGA_HOST} -p ${YUGA_PORT} -U ${YUGA_USER}"
   eval "$_ysql -c 'CREATE DATABASE ${DB_NAME}'" 2>&1 | grep -v "already exists" || true
 
-  # enable bulk-load optimisation (skip Raft path for INSERT during load)
-  eval "$_ysql -d ${DB_NAME} -c 'ALTER DATABASE ${DB_NAME} SET yb_disable_transactional_writes = true;'" 2>&1
-  echo "==> [yuga-tpcc] yb_disable_transactional_writes=true (bulk load mode)"
-
+  # NOTE: yb_disable_transactional_writes intentionally NOT used here.
+  # It bypasses the Raft transaction coordinator, which removes the "in-flight
+  # transaction" protection on MVCC compaction. Long-running BenchmarkSQL load
+  # transactions then see kSnapshotTooOld because RocksDB compacts away their
+  # read point. reWriteBatchedInserts=true in the JDBC URL compensates for speed.
   local props=$(mktemp /tmp/bsl-prepare.XXXXXX.props)
   _write_props 16 600 "${props}"
 
@@ -203,9 +204,6 @@ cmd_prepare() {
   ./runDatabaseBuild.sh "${props}"
   rm -f "${props}"
 
-  # restore transactional writes for normal operation
-  eval "$_ysql -d ${DB_NAME} -c 'ALTER DATABASE ${DB_NAME} RESET yb_disable_transactional_writes;'" 2>&1
-  echo "==> [yuga-tpcc] yb_disable_transactional_writes restored"
   echo "==> [yuga-tpcc] prepare done ($(_elapsed $t0 $SECONDS))"
 }
 
