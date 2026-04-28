@@ -198,7 +198,7 @@ cmd_prepare() {
   # transactions then see kSnapshotTooOld because RocksDB compacts away their
   # read point. reWriteBatchedInserts=true in the JDBC URL compensates for speed.
   local props=$(mktemp /tmp/bsl-prepare.XXXXXX.props)
-  _write_props 16 600 "${props}"
+  _write_props 8 600 "${props}"
 
   cd "${BSL_DIR}/run"
   ./runDatabaseBuild.sh "${props}"
