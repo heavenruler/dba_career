@@ -124,6 +124,9 @@ _ensure_bsl() {
 }
 
 # write props file for current run
+# reWriteBatchedInserts=true: merges N×INSERT VALUES(?) into INSERT VALUES(v1),(v2),...
+# reducing per-transaction round-trips. Without it, long-running JDBC batch transactions
+# age past YugabyteDB's MVCC snapshot window (HLC advances → kSnapshotTooOld on bmsql_customer load).
 _write_props() {
   local threads=$1 duration_sec=$2 props_file=$3
   local pass_line="password=${YUGA_PASS}"
