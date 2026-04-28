@@ -76,10 +76,6 @@ Resource limit 體現的是**底層效能管制機制**。DB Pod 是否需要 li
 
 本次 `2c/8Gi` 設定既非 Guaranteed（requests 僅 1c/4Gi），也未配合 scale 策略，TiKV 從 16t 即觸頂卻無自動因應，形成**硬性效能上限**。
 
-- **方案 A**：TiKV limit 上調至 `3c/12Gi` 重測，目標 tpmC 損耗 < 10%
-- **方案 B**：改用 Guaranteed QoS（requests = limits），穩定 p99、消除 burst 競爭
-- **方案 C**：✅ [VM 128t 反降根因已確認](#vm-128t-反降根因分析)（AUTO ANALYZE + co-location）
-
 ---
 
 ## 架構規格
