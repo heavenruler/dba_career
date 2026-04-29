@@ -154,8 +154,6 @@ deliveryWeight=4
 stockLevelWeight=4
 
 resultDirectory=${result_dir}
-osCollectorScript=./misc/os_collector_linux.py
-osCollectorInterval=1
 EOF
 }
 
