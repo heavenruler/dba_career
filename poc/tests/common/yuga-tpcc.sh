@@ -130,7 +130,7 @@ _ensure_bsl() {
 _write_props() {
   local threads=$1 duration_sec=$2 props_file=$3 load_workers=${4:-8}
   local pass_line="password=${YUGA_PASS}"
-  local result_dir; result_dir=$(mktemp -d /tmp/bsl-result.XXXXXX)
+  local result_dir; result_dir=$(mktemp -u /tmp/bsl-result.XXXXXX)
 
   cat > "${props_file}" <<EOF
 db=postgres
