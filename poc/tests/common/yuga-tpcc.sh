@@ -130,6 +130,7 @@ _ensure_bsl() {
 _write_props() {
   local threads=$1 duration_sec=$2 props_file=$3 load_workers=${4:-8}
   local pass_line="password=${YUGA_PASS}"
+  local result_dir; result_dir=$(mktemp -d /tmp/bsl-result.XXXXXX)
 
   cat > "${props_file}" <<EOF
 db=postgres
@@ -152,7 +153,7 @@ orderStatusWeight=4
 deliveryWeight=4
 stockLevelWeight=4
 
-resultDirectory=%tpc-c_result%
+resultDirectory=${result_dir}
 osCollectorScript=./misc/os_collector_linux.py
 osCollectorInterval=1
 EOF
