@@ -503,3 +503,78 @@ YUGA_HOST=172.24.40.32 YUGA_PORT=5433 \
 2. **拓撲不影響根因**：3-node 28 萬 vs 1-node 15.6 萬 unique errors，量級相同 → 不是 Raft / 跨節點問題。
 3. **環境前置不影響根因**：完整套用官方前置仍復發 → 不是 OS 層 limits / THP 引起。
 4. **唯一未試過的變因**：`ysql_enable_packed_row` 三次皆為預設 true → 下一輪以對策 A（`ysql_enable_packed_row=false`）驗證。
+
+## 對齊官方 TPC-C 文件（2026-05-04）
+
+閱讀來源：
+- https://docs.yugabyte.com/stable/benchmark/tpcc/
+- https://docs.yugabyte.com/stable/benchmark/tpcc/running-tpcc/
+- https://docs.yugabyte.com/stable/benchmark/tpcc/horizontal-scaling/
+- https://docs.yugabyte.com/stable/benchmark/tpcc/high-scale-workloads/
+- https://docs.yugabyte.com/stable/benchmark/
+- https://docs.yugabyte.com/stable/explore/linear-scalability/scaling-transactions/
+
+### 我們現況 vs 官方建議的關鍵 gap
+
+| 維度 | 我們 | 官方 | 落差 |
+|------|------|------|------|
+| 工具 | BenchmarkSQL (jTPCC) on .31 | `/opt/yugabyte/bin/tpccbenchmark`（YB 內建，OLTPBench 衍生）| 不同 fork，官方發布結果用前者 |
+| 節點規格 | 3 × 4 vCPU / 16GB | 最小 3 × 2 vCPU（10 warehouse），mid 3 × 16 vCPU（100/1000 warehouse）| 規格嚴重不足 |
+| WAREHOUSES | 128 | 10 (3×2vCPU) / 100 (3×16vCPU) / 1000 (3×16vCPU) | 對 4 vCPU 拍 128，過載 |
+| `loaderthreads` | 8 | ≈ 全叢集核心數 | 3-node × 4 vCPU = 12 → 應 12 |
+| 連線數/節點 | 16/32/64/128 thread total | ~67 conn/node（500w/3n=200, 1000w/4n=266）| 每節點 5–43 連線，偏少 |
+| Warmup | 5m | 60s 或 300s（多 client 才 300s）| OK |
+| 階層測試 | 同一 prepare 跑 4 tier | 每 tier 前 `--create=true` 重建（horizontal scaling 明文）| 累積 compaction → 放大 schema packing |
+| `ysql_enable_packed_row` | 預設 true | 文件未提（TPC-C 段落）| 可能 2.20.1.3 已知 bug 而非 config 議題 |
+
+### 官方公布成績的硬體基準（對照組）
+
+| Scale | Cluster | Hardware | tpmC | 效率 | YBDB 版本 |
+|-------|---------|----------|------|------|-----------|
+| 100K warehouse | 59 nodes | c5d.9xlarge (36 vCPU / 72GB / NVMe) | 1,283,804 | 99.83% | 2.18.0 |
+| 150K warehouse | 75 nodes | c5d.12xlarge (48 vCPU / 96GB) | ~1M | 99.3% | 2.18.0 |
+| 1K warehouse | 3 nodes | 16 vCPU each | — | — | — |
+| 100 warehouse | 3 nodes | 16 vCPU each | — | — | — |
+| 10 warehouse | 3 nodes | 2 vCPU each | — | — | — |
+
+我們 3 × 4 vCPU / 16GB 是 100K 紀錄組的 1/9 vCPU、1/4 RAM。
+
+### 多 client 分擔載入（規模 >1000 warehouse 才需要）
+
+```
+--warehouses=2500           # per-client 切片
+--total-warehouses=10000    # 全資料集規模
+--start-warehouse-id=1/2501/5001/7501  # 切片起點
+--initial-delay-secs=0/30/60/90        # 錯開避免 master catalog overload
+--loaderthreads=16          # 每個 client
+--num-connections=90        # execute 階段
+```
+
+我們規模未達門檻，單 client (.31) OK。
+
+### 三個重規劃方向
+
+**方向 A：縮規模符合硬體**
+- WAREHOUSES 降至 10–32
+- THREADS_LIST 單一 tier（如 48 = 3-node × 16）
+- 每 tier 前 cleanup + prepare 重建
+- 續用 BenchmarkSQL
+- 目的：取得乾淨 baseline，避免 Schema packing 蓋掉訊號
+
+**方向 B：換用官方 tpccbenchmark 工具**
+- `/opt/yugabyte/bin/tpccbenchmark`
+- 旗標：`--create=true → --load=true → --execute=true --warmup-time-secs=60 --num-connections=N`
+- 風險：重寫 yuga-tpcc.sh wrapper、result 落地格式不同
+- 目的：對齊官方 code path，排除 BenchmarkSQL JDBC 行為差異
+
+**方向 C：先驗對策 A（`ysql_enable_packed_row=false`）**
+- 不動工具、不改規模
+- 在 .32 重啟加 tserver flag → cleanup → prepare → run
+- 目的：快速驗證根因 + 取得無 schema packing 的對照吞吐
+- 缺點：不解決規格不足
+
+### 採用順序：C → A（先治根，再縮規模）
+
+1. **先 C**：1 小時驗 packed_row=false 是否清掉 Schema packing。錯誤歸零 → 取得可信 baseline。
+2. **再 A**：規格匹配（warehouse=32、threads=48 單階、3-node RF=3），得到乾淨對照。
+3. **B 暫緩**：換工具成本高，先不為未確認相關性的問題改流程。
