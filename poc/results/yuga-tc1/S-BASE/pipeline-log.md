@@ -1,5 +1,78 @@
 # YugabyteDB TPC-C Pipeline 作業紀錄
 
+**結論**：YugabyteDB TPC-C 測試卡在 packed-row schema packing bug，已確認非 Raft/環境問題，下一步驗 `ysql_enable_packed_row=false`。
+
+---
+
+## TL;DR — YugabyteDB TPC-C Pipeline 進度彙整
+
+### 一、目前遇到的核心問題
+
+| # | 問題 | 嚴重度 | 影響 |
+|---|------|-------|------|
+| 1 | **Schema packing not found: 0, available_versions: [5]** | 🔴 阻斷 | 4 tier 累計 15.6–48 萬 unique errors，錯誤率 10–60%，tpmC 嚴重低估 |
+| 2 | 硬體規格不足對齊官方基準 | 🟡 結構性 | 3×4vCPU/16GB 是官方 100K 紀錄組的 1/9 vCPU、1/4 RAM |
+| 3 | BenchmarkSQL 與官方 tpccbenchmark 工具不一致 | 🟡 方法論 | 結果無法直接對照官方公佈數據 |
+| 4 | MVCC 衝突殘留（Restart read / serialize fail） | 🟢 可接受 | TPC-C 本質高衝突，比例已大幅下降 |
+
+### 二、根因分析（已確認）
+
+| 假設 | 驗證方式 | 結論 |
+|------|---------|------|
+| Raft / 跨節點 schema 同步問題 | 單節點 RF=1 重測 | ❌ 否定 — 單節點仍復發 28 萬 errors |
+| OS 層環境設定不當（THP/limits/core_pattern）| 完整對齊官方 prerequisite | ❌ 否定 — 完整套用後仍復發 |
+| 測試時間過短未觸發 | 5m vs 10m 對比 | ✅ 印證 — 5m 未觸發、10m 必觸發 |
+| **DocDB packed-row + compaction 清除舊 schema metadata** | 三階段橫向比對 | ✅ **確認根因** |
+
+**機制**：prepare 階段 `CREATE TABLE / CREATE INDEX / ALTER` 累積 schema version v0→v5，早期 row 用 v0 packed 編碼；major compaction rewrite SST 時只保留當前 schema metadata，v0 metadata 被清 → 讀取時報錯。
+
+### 三、已解決問題（15 項）
+
+| 類別 | 已解決項目 |
+|------|----------|
+| 環境/工具 | HAProxy port 衝突、psql/JDK 缺失、BenchmarkSQL 需編譯、props password 處理、CREATE DATABASE 判斷邏輯、cleanup pkill、locale `%tp` 解析、osCollector python 依賴 |
+| 叢集穩定 | destroy 殘留 conf 重建流程、`yb_disable_transactional_writes` 移除、`reWriteBatchedInserts=true` 縮短 txn |
+| 效能調校 | loadWorkers 16→8、`timestamp_history_retention_interval_sec` 7200、`ysql_num_shards_per_tserver=3`、RF=1 bulk load 策略 |
+| MVCC 衝突 | `yb_enable_read_committed_isolation=true`、`enable_wait_queues=true` runtime set |
+| 環境前置 | THP=always+defer+madvise（systemd 持久化）、limits 1048576/12000、kernel.core_pattern + cores 目錄 |
+
+### 四、三階段測試成果對比
+
+| 階段 | 拓撲 | 峰值 tpmC | 錯誤率峰值 | 主要錯誤類型 |
+|------|------|----------|----------|-------------|
+| 20260429-1636 | 3-node RF=3 | 3,863 (16t/5m) | 1.1% | MVCC 衝突 |
+| 20260430-1341 | 3-node RF=3 | 12,259 (128t/10m) | 60.0% | **Schema packing** |
+| 20260504-0230 | 1-node RF=1 | 6,772 (32t/10m) | 38.5% | **Schema packing** |
+
+### 五、下一步測試方向
+
+#### 🎯 優先順序 C → A → B
+
+| 優先 | 方向 | 動作 | 目的 | 預估時程 |
+|------|------|------|------|---------|
+| **1️⃣ C** | 驗根因對策 | `.32` tserver 加 `--ysql_enable_packed_row=false` 重啟 → cleanup → prepare → run | 確認 Schema packing 是否歸零，取得乾淨 baseline | ~1h |
+| **2️⃣ A** | 規格匹配 | WAREHOUSES=32、THREADS=48 單階（3-node × 16）、3-node RF=3、每 tier 前重建 | 與硬體規格對齊，取得可信吞吐曲線 | ~2h |
+| 3️⃣ B | 換工具 | 改用 `/opt/yugabyte/bin/tpccbenchmark`（官方 OLTPBench fork） | 對齊官方 code path | 暫緩 |
+
+#### 驗收條件
+
+| 指標 | 通過門檻 | 備註 |
+|------|---------|------|
+| Schema packing not found | **= 0** | 必要條件 |
+| 整體錯誤率 | < 5% | MVCC 衝突可接受殘留 |
+| tpmC（32t）| ≥ 6,500 | 與 20260504 baseline 同等或更高 |
+| storage 增量 | < 30% | packed_row=false 會略增儲存 |
+
+### 六、風險與限制
+
+| 風險 | 緩解 |
+|------|------|
+| `ysql_enable_packed_row=false` 是非預設組態，可能影響生產相容性 | POC 階段可接受；正式環境需等 YugabyteDB 修復 packed-row + compaction bug |
+| 單節點驗證通過不代表 3-node 必通過 | C 通過後立即在 3-node RF=3 重跑驗證 |
+| 規格不足無法達官方公佈 tpmC 水平 | 目標調整為「取得內部可重現基準」而非追平官方 |
+
+---
+
 **日期**: 2026-04-28 / 2026-04-29  
 **拓撲**: yuga-tc1（3 VM，RF=3，fault_tolerance=zone）  
 **節點**: poc-1 (.32 bootstrap), poc-2 (.33 join), poc-3 (.34 join)  
