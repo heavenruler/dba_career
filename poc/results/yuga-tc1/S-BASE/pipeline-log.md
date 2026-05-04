@@ -24,6 +24,9 @@
 | 10 | `kSnapshotTooOld` delta 220–344s，所有 worker 同一 timestamp | CPU 飽和（load 6.3/4vCPU）→ Raft heartbeat timeout → 4 tablet 同時 leader re-election → HLC 大幅跳進 → 所有 in-flight snapshot 失效 | `loadWorkers` 16→8；`timestamp_history_retention_interval_sec` 900→7200；改用 HAProxy 入口 |
 | 11 | `loadWorkers` 改成參數後仍顯示 16 | `_write_props` heredoc 內硬寫 `loadWorkers=16`，第 4 個參數未傳入 | 新增 `load_workers=${4:-8}` 參數，heredoc 改為 `loadWorkers=${load_workers}` |
 | 12 | `multiple primary keys` / 資料重複載入 | 未 cleanup 就跑第二次 prepare，兩次 prepare 跑在同一 DB | 每次 prepare 前必須執行 cleanup，確認 DB 不存在後再 prepare |
+| 13 | `Failed to create directory '下午c-c_result%'` | Java `String.format()` 把 `%tp` 解析為 locale AM/PM（中文環境 = 下午/上午） | `resultDirectory` 改為 `$(mktemp -u /tmp/bsl-result.XXXXXX)`，unique path 且不預先建立目錄 |
+| 14 | `Cannot run program "python"` | `osCollectorScript` 需要 `python` binary，節點未安裝 | 移除 props 中的 `osCollectorScript` 與 `osCollectorInterval` |
+| 15 | `Unknown transaction, could be recently aborted` / 大量 conflict error | `yb_enable_read_committed_isolation=false`（預設）→ READ COMMITTED 無 statement-level retry；`enable_wait_queues=false`（預設）→ 衝突直接 abort | `yb-ts-cli set_flag --force yb_enable_read_committed_isolation true`；`set_flag --force enable_wait_queues true`（3 節點均執行，runtime 生效無需重啟） |
 
 ### 叢集重建指令（問題 7 處理）
 
@@ -186,3 +189,246 @@ Runtime 修改（不需重啟，--force 繞過 not-safe 限制）：
 /opt/yugabyte/bin/yb-ts-cli --server_address=<node>:9100 \
   set_flag --force <flag_name> <value>
 ```
+
+---
+
+## Benchmark 結果（yuga-vm，2026-04-29）
+
+### 叢集狀態（benchmark 前確認）
+
+- RF=3，9 tablets/table（ysql_num_shards_per_tserver=3）
+- `yb_enable_read_committed_isolation=true`（runtime set）
+- `enable_wait_queues=true`（runtime set）
+- `timestamp_history_retention_interval_sec=7200`（runtime set）
+
+### 第一次有效跑（20260429-1636）
+
+| 參數 | 值 |
+|------|----|
+| threads | 16 |
+| duration | 5m |
+| warehouses | 128 |
+| warmup | 5m |
+
+| 指標 | 值 |
+|------|----|
+| **tpmC** | **3,863.75** |
+| tpmTOTAL | 8,566.17 |
+| p99 NEW_ORDER | n/a（CSV 解析待修）|
+| p99 PAYMENT | n/a |
+
+**狀態**：conflict error 仍存在（`enable_wait_queues=true` 剛啟用，待 16t re-run 確認改善幅度）。
+
+### 全量跑（20260430-1341，THREADS_LIST="16 32 64 128"）
+
+| threads | tpmC | Schema packing err (v5) | Schema packing err (v3) | serialize err | kAborted |
+|---------|------|------------------------|------------------------|---------------|---------|
+| 16 | 9,563 | 127,223 | 299 | 2 | 0 |
+| 32 | 9,545 | 88,714 | 5,783 | 1,861 | 44 |
+| 64 | 11,161 | 96,720 | 16,467 | 2,306 | 50 |
+| 128 | 12,260 | 105,050 | 15,700 | 8,025 | 227 |
+
+**結果無效**：`Schema packing not found: 0, available_versions: [5]` 大量出現（~10 萬次/run），retry 消耗大量 CPU/connection，tpmC 嚴重低估。
+
+### Schema packing 問題技術原理
+
+YugabyteDB DocDB 用 packed row 格式：每筆 row 用 binary blob 存，並記錄該 row 用哪個 schema version 編碼。BenchmarkSQL `runDatabaseBuild.sh` 過程中 schema version 從 v0 累積到 v5（CREATE TABLE / CREATE INDEX 各自 +1）。早期載入的 row 用 v0 編碼，但 DocDB major compaction rewrite SST file 時只保留「目前 schema version 的 packing metadata」，v0 metadata 被清掉後 v0 編碼的 row 就讀不了。
+
+### 對策（待選）
+
+| 優先 | 方案 | 前提 | 效果 |
+|------|------|------|------|
+| ✅ 首選 | go-tpc + PG driver | 確認 driver 支援 | 工具與 TiDB 對齊，schema version 不疊加 |
+| ✅ 次選 | `yb-admin compact_table` | 不重跑 prepare | rewrite all row 至當前 schema version |
+| ⚠️ 備用 | `ysql_enable_packed_row=false` | 須重跑 prepare | 改用 legacy row format，徹底但 storage 略大 |
+
+---
+
+## 環境重建（2026-05-03）
+
+### 觸發原因
+
+20260430-1341 的 packed row schema mismatch 無法靠 runtime flag 修復，決定：停服務 → 清 data dir → 重新依官方 manual provisioning checklist 對齊環境後再裝叢集。
+
+### 官方 prerequisite check 結果（3 節點 .32/.33/.34）
+
+| 項目 | 官方要求 | 實際 | 狀態 |
+|------|---------|------|------|
+| OS | RHEL/AlmaLinux 8/9 | AlmaLinux **10.1** | ⚠️ 過新但相容 |
+| yugabyte UID | 一致 | 1000 | ✅ |
+| Python | 3.5–3.9 | **3.12.12**（系統內建） | ⚠️ 只報 SyntaxWarning，不影響執行 |
+| chrony 同步 | 必要 | 同步 172.19.254.7，誤差 <100μs | ✅ |
+| vm.swappiness | 0 | 0 | ✅ |
+| vm.max_map_count | 262144 | 262144 | ✅ |
+| **THP** | madvise / always（yugabyted 工具實際只接受 `always`） | `[never]` → 改為 `[always]` + `[defer+madvise]` | ❌→✅ |
+| SELinux | 停用 | Disabled | ✅ |
+| firewalld | 停用 | inactive | ✅ |
+| nofile | 1048576 | 1000000（ansible 寫的） → **修正為 1048576** | ❌→✅ |
+| nproc | 12000 | 65535（ansible 寫的） | ✅（高於要求） |
+| **kernel.core_pattern** | `/home/yugabyte/cores/...` | `systemd-coredump` → 改為 `/home/yugabyte/cores/core_%p_%t_%E` | ❌→✅ |
+| /home/yugabyte/cores | 存在 | 不存在 → 已建立 yugabyte:yugabyte 755 | ❌→✅ |
+
+### 修正動作（3 節點皆執行）
+
+```bash
+# 1. core_pattern (persist)
+cat > /etc/sysctl.d/99-yugabyte.conf <<EOF
+kernel.core_pattern = /home/yugabyte/cores/core_%p_%t_%E
+EOF
+sysctl -p /etc/sysctl.d/99-yugabyte.conf
+
+# 2. cores dir
+install -d -o yugabyte -g yugabyte -m 755 /home/yugabyte/cores
+
+# 4. THP 設為 always（yugabyted 工具檢查 [always] 才放行）
+echo always > /sys/kernel/mm/transparent_hugepage/enabled
+echo defer+madvise > /sys/kernel/mm/transparent_hugepage/defrag
+
+cat > /etc/systemd/system/disable-thp-never.service <<'UNIT'
+[Unit]
+Description=Set transparent_hugepage=always (YugabyteDB requirement)
+After=sysinit.target local-fs.target
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "echo always > /sys/kernel/mm/transparent_hugepage/enabled"
+ExecStart=/bin/sh -c "echo defer+madvise > /sys/kernel/mm/transparent_hugepage/defrag"
+RemainAfterExit=yes
+[Install]
+WantedBy=basic.target
+UNIT
+systemctl daemon-reload && systemctl enable --now disable-thp-never.service
+
+# 3. 完整 limits（取代 ansible 99-db.conf）
+cat > /etc/security/limits.d/99-yugabyte.conf <<EOF
+*  -  core       unlimited
+*  -  data       unlimited
+*  -  fsize      unlimited
+*  -  nofile     1048576
+*  -  nproc      12000
+*  -  locks      unlimited
+*  -  memlock    64
+*  -  msgqueue   819200
+*  -  stack      8192
+EOF
+```
+
+驗證（以 yugabyte 身份）：`ulimit -n=1048576`、`ulimit -u=12000`、`ulimit -l=64`。
+
+### 服務停止 + 清空 data dir
+
+```bash
+for node in 172.24.40.32 172.24.40.33 172.24.40.34; do
+  ssh root@${node} "sudo -u yugabyte /opt/yugabyte/bin/yugabyted stop"
+  ssh root@${node} "rm -rf /opt/yugabyte/data /home/yugabyte/var/conf"
+done
+```
+
+確認 3 節點無任何 yb-master / yb-tserver / yugabyted / postgres process。
+
+### .32 單節點重建（2026-05-03）
+
+```bash
+ssh root@172.24.40.32 "sudo -u yugabyte /opt/yugabyte/bin/yugabyted start \
+  --advertise_address=172.24.40.32 \
+  --cloud_location=gcp.asia-east1.asia-east1-a \
+  --fault_tolerance=none \
+  --base_dir=/opt/yugabyte/data \
+  --ui=false"
+```
+
+| 項目 | 值 |
+|------|----|
+| Version | 2.20.1.3-b0 |
+| Status | Running |
+| RF | 1 |
+| Universe UUID | `f926eca1-2b34-4a3f-88bb-5eae9b871db8` |
+| YSQL | `172.24.40.32:5433` |
+| Web console | `http://172.24.40.32:7000` |
+
+### 踩坑：stop+wipe+start 同 SSH session race
+
+第一次重啟把 `stop && rm && start` 串在同一個 `ssh` 命令裡，stop 回傳後 child process 還沒完全清掉，後續 yb-master/yb-tserver 撞到舊 port → fatal log "Address already in use"。yugabyted 仍舊把不一致的 conf 落地（`advertise_address=""`、`cluster_uuid` 與 API 對不上）。
+
+**正確流程**：先 `pkill -9 -f 'yb-master|yb-tserver|yugabyted'` → `rm -rf data/conf` → 確認 process 清空 → 再 `yugabyted start`。
+
+---
+
+## 單節點驗證（2026-05-03 → 2026-05-04 完成）
+
+### 目的
+
+驗證 Schema packing not found 在**單節點 RF=1** 是否仍復發。若仍復發，代表這是 DocDB compaction 機制本身的問題（不是 Raft / 跨節點 schema 同步問題），需走 `ysql_enable_packed_row=false` 或 `compact_table` 對策。
+
+### 環境
+
+- 連線：`.31 → .32:5433`（HAProxy 已停）
+- HAProxy on .32 已 `systemctl stop`
+- 未調整 packed_row 與 num_shards（保持預設，先觀察 baseline）
+
+### 測試指令（在 .31 tmux 執行）
+
+```bash
+# cleanup
+YUGA_HOST=172.24.40.32 YUGA_PORT=5433 \
+  VARIANT=yuga-vm TOPO=yuga-tc1 SCENARIO=S-BASE \
+  bash /tmp/yuga-tpcc-runner/yuga-tpcc.sh cleanup
+
+# prepare
+YUGA_HOST=172.24.40.32 YUGA_PORT=5433 \
+  WAREHOUSES=128 VARIANT=yuga-vm TOPO=yuga-tc1 SCENARIO=S-BASE \
+  bash /tmp/yuga-tpcc-runner/yuga-tpcc.sh prepare
+
+# run
+YUGA_HOST=172.24.40.32 YUGA_PORT=5433 \
+  WAREHOUSES=128 DURATION=10m THREADS_LIST="16 32 64 128" \
+  WARMUP=5m VARIANT=yuga-vm TOPO=yuga-tc1 SCENARIO=S-BASE \
+  RESULT_BASE=/tmp/yuga-results \
+  bash /tmp/yuga-tpcc-runner/yuga-tpcc.sh run
+```
+
+### prepare 期間負載快照（單節點）
+
+| 指標 | 值 | 比較 |
+|------|----|----|
+| Load avg (1m) | 12.03 | 4 vCPU 3× overload |
+| CPU us/sy/id | 57% / 23% / 20% | 充分運轉 |
+| context switch | 145k/s | 高 |
+| yb-tserver CPU | ~26%（1 核） | — |
+| 連線數 | 8 個 INSERT backend (.31) | loadWorkers=8 確認生效 |
+
+對比 3-node prepare（load ~6.3）：單節點 load 翻倍。原因：`ysql_num_shards_per_tserver` 預設 1 → 每張表只有 1 tablet，所有 INSERT 集中打單一 leader。
+
+### 結果（20260504-0230，run 總計 45m33s）
+
+#### tpmC 對比（128 warehouse / 5m warmup / 10m duration）
+
+| Threads | 單節點 RF=1 tpmC | 3-node RF=3 tpmC | 比例 |
+|--------:|-----------------:|------------------:|-----:|
+| 16  | **4732.36** | 9563  | 49% |
+| 32  | **6771.98** | 9545  | 71% |
+| 64  | **5954.85** | 11161 | 53% |
+| 128 | **5788.77** | 12260 | 47% |
+
+單節點在 32 thread 觸頂後即下降，符合 4 vCPU CPU-bound 預期。
+
+#### Schema packing error 計數（**單節點仍大量復發**）
+
+| Threads | 錯誤總數 | 主要交易類型 |
+|--------:|---------:|-------------|
+| 16  | 22,368  | NEW_ORDER / PAYMENT |
+| 32  | 104,082 | NEW_ORDER / PAYMENT |
+| 64  | 69,129  | NEW_ORDER / PAYMENT |
+| 128 | 87,617  | NEW_ORDER 21k / PAYMENT 18k / DELIVERY 2k / ORDER_STATUS 2k |
+| **合計** | **283,196** | — |
+
+錯誤訊息一致：`Schema packing not found: 0, available_versions: [5]`（要求 schema_version=0，僅剩 v5）。
+
+### 結論：根因確認 + 對策選擇
+
+1. **Schema packing 不是 Raft / 跨節點 schema 同步問題**——單節點 RF=1 仍大量復發（且總數比 3-node 還高）。
+2. **根因確認**：DocDB 在 schema 變更（prepare 階段 ALTER TABLE 加 PK / FK）後，舊 schema metadata 在 compaction 中被清除；packed-row 格式仍引用舊 schema_version → 讀取時 metadata 找不到 → 報錯。
+3. **採用對策 A**：下一輪測試前在 .32 yb-tserver 加 `--ysql_enable_packed_row=false` 重啟 → cleanup → prepare → run。
+   - A 是治本（packed row 是 schema packing 機制本身）
+   - B（`yb-admin compact_table`）是反應式且不一定根除
+   - C（換 go-tpc）規避而非解決
+4. **次要結論**：單節點 4 vCPU 跑 128 warehouse TPC-C，最佳吞吐落在 32 thread（6772 tpmC），thread 上去後 context switch 反而拖累，這是後續 yb-tc1 容量規劃的參考點。
