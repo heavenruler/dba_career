@@ -432,3 +432,74 @@ YUGA_HOST=172.24.40.32 YUGA_PORT=5433 \
    - B（`yb-admin compact_table`）是反應式且不一定根除
    - C（換 go-tpc）規避而非解決
 4. **次要結論**：單節點 4 vCPU 跑 128 warehouse TPC-C，最佳吞吐落在 32 thread（6772 tpmC），thread 上去後 context switch 反而拖累，這是後續 yb-tc1 容量規劃的參考點。
+
+## 三階段對比（2026-04-29 → 2026-05-04）
+
+### 設定差異
+
+| 項目 | 20260429-1636 | 20260430-1341 | 20260504-0230 |
+|------|---------------|---------------|---------------|
+| 拓撲 | 3-node RF=3 | 3-node RF=3 | **1-node RF=1** |
+| 連線路徑 | `.31 → .32:5433` 直連 | `.31 → HAProxy:15433` | `.31 → .32:5433` 直連 |
+| WAREHOUSES | 128 | 128 | 128 |
+| DURATION | **5m** | 10m | 10m |
+| WARMUP | 5m | 5m | 5m |
+| THREADS_LIST | `16` 單階 | `16 32 64 128` | `16 32 64 128` |
+| 總執行時間 | ~10m | ~60m | ~45m |
+| 環境前置 | 未做（THP=never） | 部分（THP=madvise，錯） | **完整**（THP=always+defer+madvise + limits + core_pattern + cores 目錄）|
+| `ysql_enable_packed_row` | 預設 true | 預設 true | 預設 true |
+
+### tpmC
+
+| Threads | 20260429-1636 | 20260430-1341 | 20260504-0230 |
+|--------:|--------------:|--------------:|--------------:|
+| 16  | 3863.75 | **9563.19** | 4732.36 |
+| 32  | — | 9545.02 | **6771.98** |
+| 64  | — | **11160.99** | 5954.85 |
+| 128 | — | **12259.50** | 5788.77 |
+
+### 錯誤率（unique JDBC exceptions / 完成 txn）
+
+| Tier | 20260429-1636 | 20260430-1341 | 20260504-0230 |
+|------|--------------:|--------------:|--------------:|
+| c16  | 489 / 42857 = **1.1%** | 127535 / 212391 = **60.0%** | 11254 / 105199 = **10.7%** |
+| c32  | — | 98305 / 212588 = 46.2% | 55378 / 151408 = 36.6% |
+| c64  | — | 117969 / 248813 = 47.4% | 38888 / 132880 = 29.3% |
+| c128 | — | 137264 / 272812 = 50.3% | 50438 / 130849 = 38.5% |
+
+### 錯誤類型
+
+| 階段 | 主要錯誤 |
+|------|---------|
+| 20260429 | **無 Schema packing**；MVCC 競爭：`Restart read required` (31)、`could not serialize access` (54)、`Unknown transaction` (10)、`Transaction aborted` (7) |
+| 20260430 | **Schema packing not found** 暴量（4 tier 各 ~10 萬+），其他 MVCC 錯誤 < 10 |
+| 20260504 | 同 20260430 模式：Schema packing 為主，MVCC 殘留 |
+
+### 各階段遭遇問題
+
+#### 20260429-1636 — 試水溫
+- 3-node 叢集已建好，能跑通 16 thread / 5m
+- 只跑 1 階，DURATION=5m 太短，未進入 compaction 時間窗 → Schema packing **未觸發**
+- 環境前置幾乎沒做（THP=never、無 kernel.core_pattern、limits 預設）
+- 主要錯誤：MVCC restart read / serialize fail（TPC-C 高衝突量本質）
+
+#### 20260430-1341 — 全量 baseline
+- 跑完 4 tier × 10m，獲得吞吐曲線（峰值 12260 tpmC @ 128 thread）
+- **Schema packing not found 災難級** — 4 tier 累計 48 萬 unique errors，錯誤率 46–60%；tpmC 嚴重低估（實際正確完成的交易少一半）
+- THP 設成 `madvise` 而非 `always`（yugabyted 啟動時警告但仍跑）
+- 過 HAProxy 走 15433 → 增加一層轉送
+- 開機資源限制部分套用，但未持久化（重啟即失效）
+
+#### 20260504-0230 — 單節點根因驗證
+- 環境完全對齊官方（THP=always + defer+madvise + systemd 持久、nofile/nproc/memlock、core_pattern + cores 目錄）
+- 直連 .32:5433（HAProxy 停）；單機 Universe `f926eca1-...`
+- 過程中遭遇 stop+wipe+start 在同一 SSH chain 的 race condition（yb-master/tserver pid 殘留 → conf 落地不一致），改用 pkill -9 後分段執行解決
+- **Schema packing 仍復發**（4 tier 累計 15.6 萬 unique errors，錯誤率 10–38%）→ 確認是 DocDB packed-row + compaction 機制問題，與多節點 Raft 無關
+- tpmC 比 3-node 低 47–71%，符合單機 4 vCPU CPU-bound 預期；峰值在 32 thread（6772）後遞減
+
+### 跨階段關鍵發現
+
+1. **20260429 沒有 Schema packing**：prepare 完成後馬上跑且只跑 5m，compaction 還沒清舊 schema metadata；後兩次跑滿 4 階 + 10m，compaction 必然觸發 → 錯誤是「時間累積」而非「立即性 bug」。
+2. **拓撲不影響根因**：3-node 28 萬 vs 1-node 15.6 萬 unique errors，量級相同 → 不是 Raft / 跨節點問題。
+3. **環境前置不影響根因**：完整套用官方前置仍復發 → 不是 OS 層 limits / THP 引起。
+4. **唯一未試過的變因**：`ysql_enable_packed_row` 三次皆為預設 true → 下一輪以對策 A（`ysql_enable_packed_row=false`）驗證。
