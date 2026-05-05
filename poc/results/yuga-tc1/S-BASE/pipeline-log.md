@@ -1,6 +1,6 @@
 # YugabyteDB TPC-C Pipeline 作業紀錄
 
-**結論**：Strategy C（`ysql_enable_packed_row=false`）+ 換 tpccbenchmark 工具，128 warehouse 載入 40m45s 完成、Schema packing errors 歸零；整合性 3.84M customer 完整，待 execute 階段驗證 runtime 表現。
+**結論**：Strategy C（`ysql_enable_packed_row=false`）+ tpccbenchmark v2.4 在單節點驗證載入零錯誤；3-node RF=3 叢集已恢復（zone-a/b/c + HAProxy roundrobin 入口，新 UUID `128cf909-...`），待 3-node 拓撲再驗證一次 baseline。
 
 ---
 
@@ -726,3 +726,89 @@ YUGA_HOST=172.24.40.32 YUGA_PORT=5433 \
 | 配置確認 | `workload_all.xml` `<runtime>` 欄位（預設 1800s/30m）| 對齊原計畫的 10m/tier 需先改 XML |
 
 ---
+
+## 3-node 叢集恢復（2026-05-05）
+
+### 一、動機
+
+單節點 Strategy C 已驗證 packed_row=false 能清掉 Schema packing；恢復 3-node RF=3 拓撲到 .32/.33/.34，準備在原始目標規格上再次驗證。
+
+### 二、設計（最佳化優先，非 POC 妥協）
+
+| 項目 | 設計 |
+|------|------|
+| 拓撲 | 3-node RF=3，`fault_tolerance=zone` |
+| Zone 切分 | `.32 → asia-east1-a`、`.33 → b`、`.34 → c`（zone 級故障容忍） |
+| 入口 | HAProxy on `.32:15433`，TCP roundrobin → 三節點 5433 |
+| Universe UUID | `128cf909-001c-4034-a18a-8476883af6f8`（新建） |
+
+### 三、tserver 啟動旗標（三節點一致）
+
+| Flag | 值 | 目的 |
+|------|----|------|
+| `ysql_enable_packed_row` | false | **避免 DocDB packed-row + compaction Schema packing bug**（已驗證） |
+| `rocksdb_max_write_buffer_number` | 4 | 消除 load 階段 write stall（預設 2 不夠） |
+| `yb_enable_read_committed_isolation` | true | READ COMMITTED statement-level retry |
+| `enable_wait_queues` | true | 衝突 wait 而非直接 abort |
+| `timestamp_history_retention_interval_sec` | 7200 | 長壓測避免 kSnapshotTooOld |
+| `ysql_num_shards_per_tserver` | 3 | 對齊 4 vCPU/16GB 小硬體 |
+
+注：`ysql_num_shards_per_tserver` yugabyted 預設 `=1`，--tserver_flags 帶 `=3` 後 gflags 取最後值，實際生效為 3。
+
+### 四、執行流程
+
+```bash
+# 1. 全節點停服 + pkill 確認 + 清資料
+ssh root@<ip> "/opt/yugabyte/bin/yugabyted stop --base_dir=/opt/yugabyte/data; pkill -9 -f 'yb-master|yb-tserver|yugabyted'; rm -rf /opt/yugabyte/data /home/yugabyte/var/conf"
+
+# 2. .32 bootstrap (zone-a)
+sudo -u yugabyte /opt/yugabyte/bin/yugabyted start \
+  --advertise_address=172.24.40.32 \
+  --cloud_location=gcp.asia-east1.asia-east1-a \
+  --fault_tolerance=zone --base_dir=/opt/yugabyte/data --ui=false \
+  --tserver_flags='ysql_enable_packed_row=false,rocksdb_max_write_buffer_number=4,yb_enable_read_committed_isolation=true,enable_wait_queues=true,timestamp_history_retention_interval_sec=7200,ysql_num_shards_per_tserver=3'
+
+# 3. .33 / .34 join（zone-b / zone-c，相同 tserver_flags）
+... --cloud_location=gcp.asia-east1.asia-east1-b/c --join=172.24.40.32 ...
+
+# 4. 強制 placement
+yb-admin --master_addresses 172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100 \
+  modify_placement_info gcp.asia-east1.asia-east1-a:1,gcp.asia-east1.asia-east1-b:1,gcp.asia-east1.asia-east1-c:1 3
+
+# 5. HAProxy
+systemctl start haproxy
+```
+
+### 五、HAProxy 設定（已存在於 .32:/etc/haproxy/haproxy.cfg）
+
+```
+defaults
+  mode tcp
+  timeout connect 5s
+  timeout client  30s
+  timeout server  30s
+
+frontend ysql
+  bind *:15433
+  default_backend db_nodes
+
+backend db_nodes
+  balance roundrobin
+  server node1 172.24.40.32:5433 check inter 2s
+  server node2 172.24.40.33:5433 check inter 2s
+  server node3 172.24.40.34:5433 check inter 2s
+```
+
+**模式**：純 roundrobin（mode tcp + balance roundrobin）。**無 session stickiness**（沒有 stick-table / stick on / cookie）；每條新 TCP 連線獨立輪詢，連線生命週期內固定後端。
+
+### 六、驗收
+
+| 檢查 | 指令 | 結果 |
+|------|------|------|
+| 三節點 ALIVE | `yb-admin list_all_tablet_servers` | 3 ✓ |
+| Placement RF=3 | `yb-admin get_universe_config` | 3 zone × minNumReplicas=1 ✓ |
+| HAProxy listen | `ss -tlnp \| grep 15433` | LISTEN ✓ |
+| 連線可達 | `psql -h 172.24.40.32 -p 15433 -c 'select * from yb_servers()'` | 3 rows ALIVE ✓ |
+| Roundrobin 分散 | 9 次連線 `select inet_server_addr()` 計次 | 3:3:3 ✓ |
+| tserver flags | 三節點 `ps -ef \| grep yb-tserver` | 6 旗標皆生效 ✓ |
+
