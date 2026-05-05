@@ -57,11 +57,11 @@
 
 ### 六、下一步測試方向
 
-#### 🎯 進度：C 載入階段已驗證，待 execute；A 後置
+#### 🎯 進度：C 完成（含 execute）；無 think-time 跑一次取 ceiling；A 後置
 
 | 優先 | 方向 | 動作 | 進度 |
 |------|------|------|------|
-| **1️⃣ C** | 驗根因對策 | `.32` tserver `ysql_enable_packed_row=false` → tpccbenchmark load 128w | ✅ 載入 40m45s 完成、Schema packing=0、資料完整。**待 execute 驗 runtime tpmC** |
+| **1️⃣ C** | 驗根因對策 | `.32` tserver `ysql_enable_packed_row=false` → tpccbenchmark load + execute 4-tier | ✅ **完成**：Schema packing=0（3-node RF=3 驗證通過），tpmC 1,637–1,655（think-time 限制）；**待關閉 think/keying time 測 DB ceiling** |
 | **附帶 B** | 換工具 | BenchmarkSQL run 失敗（C_LAST 缺）→ 換 YB 官方 tpccbenchmark v2.4 | ✅ 已部署於 .31，Java 11 路徑修妥 |
 | **2️⃣ A** | 規格匹配 | WAREHOUSES=32、THREADS=48 單階、3-node RF=3、每 tier 前重建 | C 完成後再進 |
 
@@ -812,3 +812,50 @@ backend db_nodes
 | Roundrobin 分散 | 9 次連線 `select inet_server_addr()` 計次 | 3:3:3 ✓ |
 | tserver flags | 三節點 `ps -ef \| grep yb-tserver` | 6 旗標皆生效 ✓ |
 
+
+---
+
+## Strategy C Execute 驗證（20260505-1200，3-node RF=3）
+
+### 一、設定
+
+| 項目 | 值 |
+|------|-----|
+| 拓撲 | 3-node RF=3，zone-a/b/c |
+| 工具 | tpccbenchmark v2.4 |
+| 入口 | HAProxy `.32:15433` roundrobin |
+| warehouses | 128 |
+| warmup | 300s |
+| runtime | 600s / tier |
+| tiers | 16 / 32 / 64 / 128 connections |
+| useKeyingTime | true |
+| useThinkTime | true |
+
+### 二、結果
+
+| Tier | NewOrder | tpmC | Efficiency | NewOrder P99 | Delivery P99 |
+|------|---------|------|-----------|-------------|-------------|
+| c=16 | 16,553 | 1,655 | 100.56% | 23.47ms | 104.36ms |
+| c=32 | 16,410 | 1,641 | 99.69% | 23.67ms | 105.08ms |
+| c=64 | 16,370 | 1,637 | 99.45% | 23.97ms | 105.07ms |
+| c=128 | 16,512 | 1,651 | 100.31% | 26.67ms | 117.15ms |
+
+### 三、關鍵驗收
+
+| 指標 | 結果 |
+|------|------|
+| **Schema packing errors** | **= 0（四個 tier 全部）✅** |
+| Efficiency | ~100%，DB 健康 |
+| 整體錯誤率 | 無 ERROR / FATAL |
+
+### 四、分析
+
+**tpmC 完全平坦**（1,637–1,655）：`useKeyingTime=true` + `useThinkTime=true` 使 1,280 虛擬 terminal 的 cycle 時間由 keying（avg 9.6s）+ think（avg 12s）主導，DB 未被壓滿。connection pool 16→128 對吞吐無影響 = **瓶頸在 client think-time**，非 DB 容量。
+
+**結論**：Strategy C（packed_row=false）在 3-node RF=3 拓撲 execute 階段驗證通過。下一步關閉 think/keying time 測試 DB 真實上限。
+
+### 五、下一步
+
+- 修改 `workload_all.xml`：`<useKeyingTime>false</useKeyingTime>` + `<useThinkTime>false</useThinkTime>`
+- 重跑 4-tier execute（同資料，不需重 load）
+- 目標：取得無 think-time 限制的 tpmC ceiling
