@@ -44,7 +44,18 @@
 | 20260430-1341 | 3-node RF=3 | 12,259 (128t/10m) | 60.0% | **Schema packing** |
 | 20260504-0230 | 1-node RF=1 | 6,772 (32t/10m) | 38.5% | **Schema packing** |
 
-### 五、下一步測試方向
+### 五、歷史 prepare / load 時長對比
+
+| 階段 | 工具 | 拓撲 | packed_row | 耗時 |
+|------|------|------|-----------|------|
+| 20260430-1341 | BenchmarkSQL | 3-node RF=3 | true | ~190m |
+| 20260504-0230 | BenchmarkSQL | 1-node RF=1 | true | ~225m |
+| 20260504-1041 | BenchmarkSQL | 1-node RF=1 | false | 390m（撞 Customer not found） |
+| 20260504-2155 | tpccbenchmark | 1-node RF=1 | false | **40m45s** ✅ |
+
+**關鍵觀察**：tpccbenchmark vs BenchmarkSQL 在同等 packed_row=false 條件下 **9.6× 加速**；BenchmarkSQL 與 packed_row=false 不相容（run 階段 C_LAST 缺料 FATAL）。
+
+### 六、下一步測試方向
 
 #### 🎯 進度：C 載入階段已驗證，待 execute；A 後置
 
@@ -63,7 +74,7 @@
 | tpmC（32t）| ≥ 6,500 | 與 20260504 baseline 同等或更高 |
 | storage 增量 | < 30% | packed_row=false 會略增儲存 |
 
-### 六、風險與限制
+### 七、風險與限制
 
 | 風險 | 緩解 |
 |------|------|
