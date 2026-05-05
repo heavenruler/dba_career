@@ -1,6 +1,6 @@
 # YugabyteDB TPC-C Pipeline 作業紀錄
 
-**結論**：YugabyteDB TPC-C 測試卡在 packed-row schema packing bug，已確認非 Raft/環境問題，下一步驗 `ysql_enable_packed_row=false`。
+**結論**：Strategy C（`ysql_enable_packed_row=false`）+ 換 tpccbenchmark 工具，128 warehouse 載入 40m45s 完成、Schema packing errors 歸零；整合性 3.84M customer 完整，待 execute 階段驗證 runtime 表現。
 
 ---
 
@@ -46,13 +46,13 @@
 
 ### 五、下一步測試方向
 
-#### 🎯 優先順序 C → A → B
+#### 🎯 進度：C 載入階段已驗證，待 execute；A 後置
 
-| 優先 | 方向 | 動作 | 目的 | 預估時程 |
-|------|------|------|------|---------|
-| **1️⃣ C** | 驗根因對策 | `.32` tserver 加 `--ysql_enable_packed_row=false` 重啟 → cleanup → prepare → run | 確認 Schema packing 是否歸零，取得乾淨 baseline | ~1h |
-| **2️⃣ A** | 規格匹配 | WAREHOUSES=32、THREADS=48 單階（3-node × 16）、3-node RF=3、每 tier 前重建 | 與硬體規格對齊，取得可信吞吐曲線 | ~2h |
-| 3️⃣ B | 換工具 | 改用 `/opt/yugabyte/bin/tpccbenchmark`（官方 OLTPBench fork） | 對齊官方 code path | 暫緩 |
+| 優先 | 方向 | 動作 | 進度 |
+|------|------|------|------|
+| **1️⃣ C** | 驗根因對策 | `.32` tserver `ysql_enable_packed_row=false` → tpccbenchmark load 128w | ✅ 載入 40m45s 完成、Schema packing=0、資料完整。**待 execute 驗 runtime tpmC** |
+| **附帶 B** | 換工具 | BenchmarkSQL run 失敗（C_LAST 缺）→ 換 YB 官方 tpccbenchmark v2.4 | ✅ 已部署於 .31，Java 11 路徑修妥 |
+| **2️⃣ A** | 規格匹配 | WAREHOUSES=32、THREADS=48 單階、3-node RF=3、每 tier 前重建 | C 完成後再進 |
 
 #### 驗收條件
 
@@ -651,3 +651,67 @@ YUGA_HOST=172.24.40.32 YUGA_PORT=5433 \
 1. **先 C**：1 小時驗 packed_row=false 是否清掉 Schema packing。錯誤歸零 → 取得可信 baseline。
 2. **再 A**：規格匹配（warehouse=32、threads=48 單階、3-node RF=3），得到乾淨對照。
 3. **B 暫緩**：換工具成本高，先不為未確認相關性的問題改流程。
+
+---
+
+## Strategy C 執行 + 工具切換（2026-05-04 → 2026-05-05）
+
+### 一、Strategy C 動作（.32 單節點 RF=1）
+
+| 步驟 | 動作 | 結果 |
+|------|------|------|
+| 1 | `yugabyted stop` → 加 `--tserver_flags='ysql_enable_packed_row=false'` 重啟 | OK |
+| 2 | `yb_admin … list_all_tablet_servers` 確認 flag 生效 | OK |
+| 3 | BenchmarkSQL cleanup + prepare（128 warehouse）| ⚠️ prepare 耗時 **386m40s（6.5h）** |
+| 4 | BenchmarkSQL run | ❌ FATAL `Customer(s) for C_W_ID=28 C_D_ID=8 C_LAST=PRESANTIBAR not found` |
+
+**判斷**：BenchmarkSQL 自身載入路徑與 packed_row=false 不相容（NURand C_LOAD=220 / C_RUN=125 valid，但載入完整性破損）。停損切換工具。
+
+### 二、換用 YB 官方 tpccbenchmark v2.4
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | GitHub Releases v2.4（YB OLTPBench fork，20MB tarball） |
+| 部署 | 走 .31 為 client，下載至 `/tmp/tpcc/` |
+| 障礙 | `UnsupportedClassVersionError: class file version 55.0 / runtime supports 52.0` |
+| 修復 | 修改 `tpccbenchmark` launcher，Java 路徑寫死 `/usr/lib/jvm/java-11-openjdk-11.0.25.0.9-2.el8.x86_64/bin/java` |
+| 設定 | `dbtype=yugabyte`、port=5433、isolation=`TRANSACTION_REPEATABLE_READ`、batchSize=128 |
+
+### 三、載入結果（packed_row=false 持續啟用）
+
+| 階段 | warehouses | 耗時 | Schema packing errors | 狀態 |
+|------|-----------|------|----------------------|------|
+| Smoke test | 8 | **2m40s** | 0 | ✅ |
+| 正式載入 | 128 | **40m45s** | 0 | ✅ |
+
+**對比 BenchmarkSQL prepare 6.5h**：tpccbenchmark 9.6× 加速。
+
+### 四、資料完整性驗證（128 warehouse）
+
+| Table | Rows | 備註 |
+|-------|------|------|
+| warehouse | 128 | ✅ |
+| district | 1,280 | 128 × 10 ✅ |
+| customer | 3,840,000 | 128 × 30,000，每 wh 整 3 萬，無缺口 ✅ |
+| item | 100,000 | ✅ |
+| stock | 12,800,000 | 128 × 100,000 ✅ |
+| oorder | 3,840,000 | ✅ |
+| new_order | 1,152,000 | 128 × 9,000 ✅ |
+| order_line | 38,398,557 | 接近 3.84M × 10 ✅ |
+| history | 3,840,000 | ✅ |
+
+### 五、載入期觀察
+
+- RocksDB WARNING：`Stopping writes because we have 2 immutable memtables, max_write_buffer_number is set to 2`（write stall，非阻斷）
+- 後續啟動建議：`--tserver_flags='ysql_enable_packed_row=false,rocksdb_max_write_buffer_number=4'` 一併持久化
+- Background task `bc3fvkvcy` exit code 0
+
+### 六、下一步
+
+| 項目 | 動作 | 驗收 |
+|------|------|------|
+| Phase 3 execute | tpccbenchmark `--execute=true --num-connections=N` | runtime 全程 Schema packing = 0、tpmC 取得乾淨 baseline |
+| 階層策略 | 待定：5m smoke → 4 階（16/32/64/128 conn）或直接 4 階 | 同上 |
+| 配置確認 | `workload_all.xml` `<runtime>` 欄位（預設 1800s/30m）| 對齊原計畫的 10m/tier 需先改 XML |
+
+---
