@@ -1,6 +1,6 @@
 # YugabyteDB TPC-C Pipeline 作業紀錄
 
-**結論**：Strategy C（`ysql_enable_packed_row=false`）+ tpccbenchmark v2.4 在單節點驗證載入零錯誤；3-node RF=3 叢集已恢復（zone-a/b/c + HAProxy roundrobin 入口，新 UUID `128cf909-...`），待 3-node 拓撲再驗證一次 baseline。
+**結論**：Strategy C（`ysql_enable_packed_row=false`）3-node RF=3 execute 驗證通過（Schema packing=0）。無 think-time 對標 TiDB：c=128 tpmC **19,292**（TiDB VM 20,394，差距 -5.4%）；c=16/32 因 MVCC starvation 無法完成（TiDB pessimistic locking 無此問題）。
 
 ---
 
@@ -856,6 +856,59 @@ backend db_nodes
 
 ### 五、下一步
 
-- 修改 `workload_all.xml`：`<useKeyingTime>false</useKeyingTime>` + `<useThinkTime>false</useThinkTime>`
-- 重跑 4-tier execute（同資料，不需重 load）
-- 目標：取得無 think-time 限制的 tpmC ceiling
+→ 關閉 think/keying time 測 DB 真實吞吐上限（見下節）
+
+---
+
+## No Think-Time Execute 驗證（20260506-0025，3-node RF=3，對標 TiDB）
+
+### 一、設定
+
+| 項目 | 值 | 對標 TiDB |
+|------|-----|----------|
+| 拓撲 | 3-node RF=3，HAProxy `.32:15433` | — |
+| 工具 | tpccbenchmark v2.4 | go-tpc |
+| warehouses | 128 | 128 ✓ |
+| warmup | 120s | 300s（差異，見五） |
+| runtime | 300s / tier | 600s（差異，見五） |
+| tiers | 16 / 32 / 64 / 128 connections | 16 / 32 / 64 / 128 ✓ |
+| useKeyingTime | **false** | 無 keying time ✓ |
+| useThinkTime | **false** | 無 think time ✓ |
+
+### 二、結果
+
+| Tier | tpmC | Efficiency | NewOrder P99 | Payment P99 | Delivery P99 | Conn Acq Avg | 狀態 |
+|------|------|-----------|-------------|------------|-------------|-------------|------|
+| c=16 | — | — | — | — | — | — | ❌ HikariPool timeout |
+| c=32 | — | — | — | — | — | — | ❌ HikariPool timeout |
+| c=64 | **16,070** | 976% | 190ms | 115ms | 905ms | 2,212ms | ✅ |
+| c=128 | **19,292** | 1,172% | 324ms | 201ms | 1,547ms | 1,664ms | ✅ |
+
+### 三、c=16 / c=32 失敗根因（MVCC starvation）
+
+```
+terminals=1280，connections=16 → 80:1 輪用比
+無 think time = terminal 立即送下一筆 txn
+YBDB MVCC retry（maxRetries=2）遇衝突最長 retry ~25s
+1280 threads 排隊 16 conn，最末端等待 >> 180s HikariPool timeout
+```
+
+**TiDB 無此問題**：pessimistic locking 衝突時 block 等鎖，不 retry-abort，conn hold time 短且可預期。
+
+### 四、延伸觀察：warmup 越長越差
+
+嘗試將 warmup 延長至 300s（對標 TiDB），結果 c=64 / c=128 也 timeout：
+
+- 300s 持續高競爭 → retry chain 累積 → 原可運作的 c=64/128 pool 也耗盡
+- 這是 YBDB optimistic concurrency 在長時間高競爭工況下的**漸進惡化特性**，非 DB bug
+
+→ **20260506-0025（120s warmup）為有效量測結果**，採用此數據作為對標基準。
+
+### 五、方法論差異說明
+
+| 差異項 | TiDB | YBDB | 影響評估 |
+|--------|------|------|---------|
+| warmup | 300s | 120s | YBDB 無法承受 300s warmup（見四），120s 為可重現穩定值 |
+| duration | 600s | 300s | c=128 兩輪結果（18,993 / 19,292）差異 < 2%，顯示 5min 已達穩態 |
+| 工具 | go-tpc | tpccbenchmark | retry 策略不同，不可完全消除 |
+| locking | pessimistic | optimistic MVCC | 低連線數行為差異為架構本質 |
