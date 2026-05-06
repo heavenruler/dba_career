@@ -52,7 +52,7 @@
 | CPU | 4vCPU (Xeon Gold 6346) | 4vCPU (Xeon Gold 6346) |
 | RAM | 16GB | 16GB |
 | max_connections | 無限 | 300/tserver |
-| 特殊 flags | — | packed_row=false, wait_queues=true, read_committed=true |
+| 特殊 flags | tidb_auto_analyze_ratio=0 (no-analyze variant 測試期間停用) | packed_row=false, wait_queues=true, read_committed=true |
 
 ---
 
