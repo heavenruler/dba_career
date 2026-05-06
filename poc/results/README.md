@@ -16,8 +16,8 @@
 | vm-1node (no-analyze) | VM×1 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
 | vm-3node | VM×3 | HAProxy :4000 | — | ⏳ | — | — | — | — | — |
 | vm-3node-direct | VM×3 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
-| k8s-unlimit | K8s×3 | Service | 無 | ⏳ | — | — | — | — | — |
-| k8s-limit | K8s×3 | Service | TiKV Nc | ⏳ | — | — | — | — | — |
+| k8s-3node-unlimit | K8s×3 | HAProxy :4000 | 無 | ⏳ | — | — | — | — | — |
+| k8s-3node-limit | K8s×3 | HAProxy :4000 | TiKV Nc | ⏳ | — | — | — | — | — |
 
 
 ### YugabyteDB (yuga-tc1) 🔄 進行中
