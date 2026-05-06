@@ -36,11 +36,11 @@
 
 | 維度 | TiDB variant | YBDB variant | 說明 |
 |------|-------------|-------------|------|
-| 單機 VM 基線 | vm-no-analyze | vm-1node | 最純粹的單節點效能 |
-| 多節點 VM | — | vm-3node | YBDB 特有：RF=3 Raft 開銷 |
-| HAProxy overhead | — | vm-3node vs vm-3node-direct | 隔離 proxy 成本 |
-| K8s 無限制 | k8s-unlimit | k8s-3node-unlimit | 容器化 overhead |
-| K8s 資源限制 | k8s-limit | k8s-3node-limit | 資源管制影響 |
+| 單機 VM 基線 | vm-1node (no-analyze) | vm-1node | 最純粹的單節點效能 |
+| 多節點 VM | vm-3node | vm-3node | RF=3 多節點 Raft 開銷 |
+| HAProxy overhead | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | 隔離 proxy 成本；模擬生產環境 load balancer 對連線延遲與吞吐的影響 |
+| K8s 無限制 | k8s-3node-unlimit | k8s-3node-unlimit | 容器化 overhead |
+| K8s 資源限制 | k8s-3node-limit | k8s-3node-limit | 資源管制影響 |
 
 ---
 
