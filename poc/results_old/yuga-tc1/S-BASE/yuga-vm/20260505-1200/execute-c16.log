@@ -1,0 +1,76 @@
++ ./tpccbenchmark -c config/workload_all.xml --execute=true --nodes=172.24.40.32 --warehouses=128 --num-connections=16 --warmup-time-secs=300
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+12:00:16,254 (DBWorkload.java:217) INFO  - Configuration -> nodes: [172.24.40.32], port: 15433, startWH: 1, warehouses: 128, total warehouses across shards: 128, terminals: 1280, dbConnections: 16, loaderThreads: 10
+12:00:16,617 (DBWorkload.java:247) INFO  - ======================================================================
+
+{
+    Benchmark = TPCC {BenchmarkModule}
+    Configuration = config/workload_all.xml
+    Driver = com.yugabyte.Driver
+    URL = [172.24.40.32]
+    Isolation = TRANSACTION_REPEATABLE_READ
+    Scale Factor = 128
+}
+
+12:00:16,617 (DBWorkload.java:248) INFO  - ======================================================================
+12:00:16,629 (DBWorkload.java:478) INFO  - Creating 1280 virtual terminals...
+12:00:16,825 (DBWorkload.java:484) INFO  - Launching the TPCC Benchmark with 1 Phase...
+12:00:17,551 (ThreadBench.java:310) INFO  - [0;1mPHASE START[0;0m :: [Workload=TPCC] [Serial=false] [Time=600] [WarmupTime=300] [Rate=10000] [Arrival=REGULAR] [Ratios=[45.0, 43.0, 4.0, 4.0, 4.0]] [ActiveWorkers=1280]
+12:05:17,550 (ThreadBench.java:456) INFO  - [0;1mMEASURE[0;0m :: Warmup complete, starting measurements.
+12:15:17,554 (ThreadBench.java:414) INFO  - [0;1mTERMINATE[0;0m :: Waiting for all terminals to finish ..
+12:16:46,649 (ThreadBench.java:473) INFO  - Attempting to stop worker threads and collect measurements
+12:16:46,650 (ThreadBench.java:224) INFO  - Starting WatchDogThread
+12:16:46,675 (DBWorkload.java:521) INFO  - ======================================================================
+12:16:46,679 (DBWorkload.java:532) INFO  - 
+================RESULTS================
+             TPM-C |            1655.30
+        Efficiency |            100.56%
+Throughput (req/s) |              61.08
+
+12:16:46,712 (DBWorkload.java:699) INFO  - 
+======================LATENCIES (INCLUDE RETRY ATTEMPTS)=====================
+ Transaction |  Count   | Avg. Latency | P99 Latency | Connection Acq Latency
+    NewOrder |    16553 |        15.22 |       23.47 |                   0.35
+     Payment |    15727 |         9.16 |       14.16 |                   0.35
+ OrderStatus |     1446 |         4.31 |        7.28 |                   0.35
+    Delivery |     1451 |        50.24 |      104.36 |                   0.34
+  StockLevel |     1472 |         5.37 |        8.94 |                   0.35
+        All  |    36649 |        13.18 |       72.18 |                   0.35
+
+12:16:46,779 (DBWorkload.java:643) INFO  - 
+=======================WORKER TASK LATENCIES=======================
+ Transaction |     Task     |  Count   | Avg. Latency | P99 Latency
+    NewOrder |   Fetch Work |    16553 |         0.00 |        0.00
+    NewOrder |       Keying |    16553 |     18000.09 |    18000.15
+    NewOrder |Op With Retry |    16553 |        15.59 |       24.03
+    NewOrder |     Thinking |    16553 |     11790.92 |    53326.07
+     Payment |   Fetch Work |    15748 |         0.00 |        0.00
+     Payment |       Keying |    15748 |      3000.09 |     3000.15
+     Payment |Op With Retry |    15748 |         9.52 |       14.68
+     Payment |     Thinking |    15748 |     11993.76 |    55283.08
+ OrderStatus |   Fetch Work |     1446 |         0.00 |        0.00
+ OrderStatus |       Keying |     1446 |      2000.09 |     2000.16
+ OrderStatus |Op With Retry |     1446 |         4.67 |        7.73
+ OrderStatus |     Thinking |     1446 |      9847.33 |    45782.07
+    Delivery |   Fetch Work |     1451 |         0.00 |        0.00
+    Delivery |       Keying |     1451 |      2000.10 |     2000.17
+    Delivery |Op With Retry |     1451 |        50.60 |      104.63
+    Delivery |     Thinking |     1451 |      4990.52 |    21914.06
+  StockLevel |   Fetch Work |     1472 |         0.00 |        0.00
+  StockLevel |       Keying |     1472 |      2000.09 |     2000.17
+  StockLevel |Op With Retry |     1472 |         5.73 |        9.42
+  StockLevel |     Thinking |     1472 |      5172.77 |    24499.08
+        All  |   Fetch Work |    36670 |         0.00 |        0.00
+        All  |       Keying |    36670 |      9652.01 |    18000.13
+        All  |Op with Retry |    36670 |        13.54 |       72.59
+        All  |     Thinking |    36670 |     11266.64 |    52851.08
+        All  |          All |    36670 |     20932.19 |    65527.87
+
+12:16:46,811 (JsonMetricsHelper.java:102) INFO  - Output json data into file: /tmp/tpcc/results/json/output.json
+12:16:46,812 (DBWorkload.java:456) INFO  - Output Raw data into file: results/oltpbench.csv
+
+real	16m30.945s
+user	2m5.185s
+sys	0m12.617s
