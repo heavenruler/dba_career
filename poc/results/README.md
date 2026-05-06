@@ -8,19 +8,18 @@
 
 ## 測試矩陣
 
-### TiDB (tidb-tc1) ✅ 已完成
+### TiDB (tidb-tc1) 🔄 進行中
 
 | variant | 拓撲 | 入口 | resource limit | 狀態 | 16t | 32t | 64t | 128t | peak |
 |---------|------|------|----------------|------|-----|-----|-----|------|------|
-| vm-1node | VM×1 | 直連 :4000 | — | ✅ | 13,993 | 17,939 | **20,816** | 18,923¹ | 20,816 |
-| vm-1node (no-analyze) | VM×1 | 直連 :4000 | — | ✅ | 14,236 | 18,067 | 20,020 | **20,394** | 20,394 |
-| vm-3node | N/A² | — | — | — | — | — | — | — | — |
-| vm-3node-direct | N/A² | — | — | — | — | — | — | — | — |
-| k8s-unlimit | K8s×3 | Service | 無 | ✅ | 13,668 | 16,992 | 18,456 | **18,842** | 18,842 |
-| k8s-limit | K8s×3 | Service | TiKV 2c | ✅ | 11,156 | 11,508 | 11,729 | **11,823** | 11,823 |
+| vm-1node | VM×1 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
+| vm-1node (no-analyze) | VM×1 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
+| vm-3node | N/A¹ | — | — | — | — | — | — | — | — |
+| vm-3node-direct | N/A¹ | — | — | — | — | — | — | — | — |
+| k8s-unlimit | K8s×3 | Service | 無 | ⏳ | — | — | — | — | — |
+| k8s-limit | K8s×3 | Service | TiKV Nc | ⏳ | — | — | — | — | — |
 
-> ¹ 128t 反降原因：AUTO ANALYZE 干擾；no-analyze 停用後恢復正常  
-> ² TiDB 架構不區分 1-node/3-node（永遠是分散式叢集），vm-3node/vm-3node-direct 欄位保留供 YBDB 對標用
+> ¹ TiDB 架構不區分 1-node/3-node（永遠是分散式叢集），vm-3node/vm-3node-direct 欄位保留供 YBDB 對標用
 
 ### YugabyteDB (yuga-tc1) 🔄 進行中
 
