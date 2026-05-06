@@ -14,12 +14,11 @@
 |---------|------|------|----------------|------|-----|-----|-----|------|------|
 | vm-1node | VM×1 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
 | vm-1node (no-analyze) | VM×1 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
-| vm-3node | N/A¹ | — | — | — | — | — | — | — | — |
-| vm-3node-direct | N/A¹ | — | — | — | — | — | — | — | — |
+| vm-3node | VM×3 | HAProxy :4000 | — | ⏳ | — | — | — | — | — |
+| vm-3node-direct | VM×3 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
 | k8s-unlimit | K8s×3 | Service | 無 | ⏳ | — | — | — | — | — |
 | k8s-limit | K8s×3 | Service | TiKV Nc | ⏳ | — | — | — | — | — |
 
-> ¹ TiDB 架構不區分 1-node/3-node（永遠是分散式叢集），vm-3node/vm-3node-direct 欄位保留供 YBDB 對標用
 
 ### YugabyteDB (yuga-tc1) 🔄 進行中
 
