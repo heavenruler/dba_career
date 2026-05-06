@@ -50,3 +50,11 @@ go-tpc 無 think time → goroutine 連續送出交易，沒有自然間隔 → 
 衝突越多 → 重試越多 → 持鎖時間越長 → 更多衝突（正回饋惡化）。
 
 額外加劇因素：`ysql_num_shards_per_tserver=3` 在單節點只建了 3 個 tablets，128 個 warehouse 分散到 3 個 tablet，每個 tablet 平均承載 42~43 個 warehouse 的熱點流量，tablet 層競爭極為集中。
+
+### 測試方法補充：為何不開 think time
+
+**Think time 的作用**：TPC-C 標準定義每筆交易前後有 keying time（均值 18s）與 think time（均值 12s），模擬真實用戶操作節奏。開啟後每個 goroutine 大部分時間處於 sleep，128 個 goroutine 任意瞬間真正在 DB 執行的只有約 8 個，有效並發大幅降低，MVCC 碰撞機率趨近於零，tpmC 會顯著回升。
+
+**但這不是我們要的**：本測試目的是找 DB 在持續滿載下的吞吐上限，而非模擬用戶節奏。Think time 會把問題藏起來 — YBDB 在低有效並發下表現良好，但生產環境的連線池通常是持續發送請求的，沒有自然間隔。無 think time 才能暴露 optimistic MVCC 在高競爭下的架構限制，這正是 YBDB vs TiDB（悲觀鎖）對比的關鍵觀測點。
+
+**工具限制**：go-tpc 不支援 think time flag，無法在同一工具內做對照實驗，此項對照測試略過。
