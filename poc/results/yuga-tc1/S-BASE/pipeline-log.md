@@ -58,3 +58,50 @@ go-tpc 無 think time → goroutine 連續送出交易，沒有自然間隔 → 
 **但這不是我們要的**：本測試目的是找 DB 在持續滿載下的吞吐上限，而非模擬用戶節奏。Think time 會把問題藏起來 — YBDB 在低有效並發下表現良好，但生產環境的連線池通常是持續發送請求的，沒有自然間隔。無 think time 才能暴露 optimistic MVCC 在高競爭下的架構限制，這正是 YBDB vs TiDB（悲觀鎖）對比的關鍵觀測點。
 
 **工具限制**：go-tpc 不支援 think time flag，無法在同一工具內做對照實驗，此項對照測試略過。
+
+---
+
+## vm-3node-direct — 2026-05-07
+
+### 環境
+- 節點：.32/.33/.34 三節點 RF=3，zone=asia-east1-{a,b,c}
+- 啟動：`yugabyted start --fault_tolerance=zone`，.32 為 bootstrap，.33/.34 透過 `--join=172.24.40.32` 加入
+- tserver flags：與 vm-1node 相同
+- 連線入口：直連 172.24.40.32:5433（**不過 HAProxy**）
+- Warehouses：128 | Warmup：5m | Duration：10m | Threads：16/32/64/128
+- 結果目錄：`vm-3node-direct/20260507-0229/`
+
+### Prepare
+- 時間：28m00s（128W），比 vm-1node 的 47m51s 快近一倍 — 三節點分擔寫入
+- 警告：`driver: bad connection` — 一致性檢查 SQL 是跨表聚合（condition 3.3.2.x），單條查詢時間長，prepare 階段透過 HAProxy 連線（:15433），HAProxy `timeout server 30s` 切斷未完成的 check 查詢；data load 本體已完成無誤
+
+### Execute 結果
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | 1024.2 | 2,281.9 | 62.2% | 880.8 | 2,013 |
+| 32 | 1016.4 | 2,272.0 | 61.7% | 1,773.6 | 5,369 |
+| 64 | 1003.2 | 2,241.0 | 60.9% | 3,461.0 | 13,422 |
+| 128 | 964.7 | 2,168.9 | 58.6% | 6,358.4 | 16,106 |
+
+### vs vm-1node 對比
+
+| threads | vm-1node tpmC | vm-3node-direct tpmC | 倍數 |
+|---------|---------------|----------------------|------|
+| 16 | 414.7 | 1,024.2 | 2.47× |
+| 32 | 394.8 | 1,016.4 | 2.57× |
+| 64 | 378.6 | 1,003.2 | 2.65× |
+| 128 | 370.4 | 964.7 | 2.60× |
+
+### 觀察
+
+- **吞吐穩定 ~1000 tpmC**：16~128t 之間 tpmC 浮動 < 6%（1024 → 964），不像 vm-1node 那樣大幅劣化。三節點橫向擴展讓總吞吐天花板顯著拉高。
+- **三節點對單節點約 2.5x**：理論上 RF=3 三節點寫入要做 Raft consensus（兩個 follower 確認），不會純線性 3x。實測 2.5x 是合理的水位。
+- **NO avg 仍翻倍**：881 → 1,774 → 3,461 → 6,358ms，與 vm-1node 同樣的線性翻倍模式。MVCC 競爭天花板沒有消失，只是被推高。
+- **128t P95/P99 全壓 16,106ms**：與 vm-1node 128t 相同現象，go-tpc 16s 上限被持續觸發。
+- **efficiency 60% 正常**：高於 TPC-C 標準的 45%，代表 NEW_ORDER 在這個並發水位下相對其他交易仍流暢。
+- **STOCK_LEVEL_ERR × 1（64t/128t 各 1）**：MVCC `Restart read required`，量極少。
+
+### 結論
+
+vm-3node-direct 證實 **YBDB 橫向擴展對 OLTP 寫入是有效的**，在無 think time 高壓場景下相比單節點吞吐約 2.5×。但 MVCC 競爭曲線形狀不變 — 並發增加會拉高 latency，只是天花板被推高。
