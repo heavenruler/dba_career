@@ -61,7 +61,7 @@
 
 | variant | 拓撲 | RF | 入口 | resource limit | 狀態 | 16t | 32t | 64t | 128t | peak |
 |---------|------|----|------|----------------|------|-----|-----|-----|------|------|
-| vm-1node | VM×1 | 1 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
+| vm-1node | VM×1 | 1 | 直連 :4000 | — | ✅ | 11,895.0 | 12,766.7 | 13,355.4 | 13,078.8 | **13,355.4** |
 | vm-1node (no-analyze) | VM×1 | 1 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
 | vm-3node | VM×3 | 3 | HAProxy :4000 | — | ⏳ | — | — | — | — | — |
 | vm-3node-direct | VM×3 | 3 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
@@ -70,7 +70,7 @@
 
 > `vm-1node (no-analyze)`：停用資料庫自動統計分析（背景工作），讓測試結果排除排程干擾，呈現最純粹的效能數字。
 
-> **目前進度**：YBDB VM 測試完成，TiDB 測試進行中。
+> **目前進度**：YBDB VM 測試完成，TiDB vm-1node 完成（peak **13,355 tpmC**），其他 5 組進行中。
 
 ### YugabyteDB (yuga-tc1) 🔄 進行中
 
@@ -149,6 +149,7 @@
 
 ## 參考
 
-- TiDB 詳細分析: `results_old/tidb-tc1/S-BASE/compare.md`
-- YBDB 歷史 pipeline log: `results_old/yuga-tc1/S-BASE/pipeline-log.md`
+- TiDB 本輪測試紀錄: `tidb-tc1/S-BASE/pipeline-log.md`
 - YBDB 本輪測試紀錄: `yuga-tc1/S-BASE/pipeline-log.md`
+- TiDB 歷史分析: `results_old/tidb-tc1/S-BASE/compare.md`
+- YBDB 歷史 pipeline log: `results_old/yuga-tc1/S-BASE/pipeline-log.md`
