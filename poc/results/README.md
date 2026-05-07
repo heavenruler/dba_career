@@ -28,12 +28,14 @@
 
 | variant | 拓撲 | RF | 入口 | resource limit | 狀態 | 16t | 32t | 64t | 128t | peak |
 |---------|------|----|------|----------------|------|-----|-----|-----|------|------|
-| vm-1node | VM×1 | 1 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
+| vm-1node | VM×1 | 1 | 直連 :4000（TiDB SQL 服務端口）| — | ⏳ | — | — | — | — | — |
 | vm-1node (no-analyze) | VM×1 | 1 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
 | vm-3node | VM×3 | 3 | HAProxy :4000 | — | ⏳ | — | — | — | — | — |
 | vm-3node-direct | VM×3 | 3 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
 | k8s-3node-unlimit | K8s×3 | 3 | HAProxy :4000 | 無 | ⏳ | — | — | — | — | — |
-| k8s-3node-limit | K8s×3 | 3 | HAProxy :4000 | TiKV Nc | ⏳ | — | — | — | — | — |
+| k8s-3node-limit | K8s×3 | 3 | HAProxy :4000 | TiKV Nc（限制 TiKV 儲存元件可用的 CPU 核心數）| ⏳ | — | — | — | — | — |
+
+> `vm-1node (no-analyze)`：停用資料庫自動統計分析（背景工作），讓測試結果排除排程干擾，呈現最純粹的效能數字。
 
 > **目前進度**：YBDB VM 測試完成，TiDB 測試進行中。
 
@@ -43,11 +45,11 @@
 
 | variant | 拓撲 | RF | 入口 | resource limit | 狀態 | 16t | 32t | 64t | 128t | peak |
 |---------|------|----|------|----------------|------|-----|-----|-----|------|------|
-| vm-1node | VM×1 | RF=1 | 直連 :5433 | — | ✅ | 414.7 | 394.8 | 378.6 | 370.4 | **414.7** |
-| vm-3node | VM×3 | RF=3 | HAProxy :15433 | — | ✅ | 1036.7 | 971.4 | 965.7 | 915.8 | **1036.7** |
+| vm-1node | VM×1 | RF=1 | 直連 :5433（YBDB SQL 服務端口）| — | ✅ | 414.7 | 394.8 | 378.6 | 370.4 | **414.7** |
+| vm-3node | VM×3 | RF=3 | HAProxy :15433（HAProxy 代理端口，流量由此轉發至後端節點）| — | ✅ | 1036.7 | 971.4 | 965.7 | 915.8 | **1036.7** |
 | vm-3node-direct | VM×3 | RF=3 | 直連 :5433 | — | ✅ | 1024.2 | 1016.4 | 1003.2 | 964.7 | **1024.2** |
 | k8s-3node-unlimit | K8s×3 | RF=3 | HAProxy :15433 | 無 | ⏳ | — | — | — | — | — |
-| k8s-3node-limit | K8s×3 | RF=3 | HAProxy :15433 | tserver Nc | ⏳ | — | — | — | — | — |
+| k8s-3node-limit | K8s×3 | RF=3 | HAProxy :15433 | tserver Nc（限制 YugabyteDB 資料節點可用的 CPU 核心數）| ⏳ | — | — | — | — | — |
 
 > **YBDB 摘要**：三節點架構（vm-3node / vm-3node-direct）比單節點（vm-1node）吞吐量高約 **2.5 倍**，證實水平擴展對 OLTP 寫入有效；HAProxy 入口層額外成本約 3-5%（vm-3node vs vm-3node-direct），在可接受範圍。
 
@@ -72,7 +74,7 @@
 | 節點組成 | TiDB + TiKV×3 + PD（**TiDB**=SQL 接收層；**TiKV**=資料儲存層 ×3 副本；**PD（Placement Driver）**=叢集元資料管理與排程器）| 3-node (**tserver**=資料儲存與 SQL 執行；**master**=叢集元資料與排程) / 1-node |
 | CPU | 4 vCPU (Xeon Gold 6346) | 4 vCPU (Xeon Gold 6346) |
 | RAM | 16GB | 16GB |
-| max_connections | 無限 | 300 / tserver（每個資料節點上限 300 條連線）|
+| max_connections | 無限**（測試環境設定，生產部署通常會依資源配置設定上限）** | 300 / tserver（每個資料節點上限 300 條連線）|
 | 特殊 flags | tidb_auto_analyze_ratio=0 **（停用自動統計分析，避免測試期間背景工作干擾結果，僅 no-analyze variant 啟用）** | packed_row=false **（關閉壓縮儲存，用標準格式確保相容性）**、wait_queues=true **（啟用鎖等待排隊，避免高並發下衝突無限重試）**、read_committed=true **（套用標準的 read committed 隔離等級，與 PostgreSQL 預設一致）** |
 
 ---
