@@ -105,3 +105,67 @@ go-tpc 無 think time → goroutine 連續送出交易，沒有自然間隔 → 
 ### 結論
 
 vm-3node-direct 證實 **YBDB 橫向擴展對 OLTP 寫入是有效的**，在無 think time 高壓場景下相比單節點吞吐約 2.5×。但 MVCC 競爭曲線形狀不變 — 並發增加會拉高 latency，只是天花板被推高。
+
+---
+
+## vm-3node — 2026-05-07
+
+### 環境
+- 節點：與 vm-3node-direct 同一個叢集（資料未重建）
+- 連線入口：HAProxy 172.24.40.32:15433 → roundrobin 三節點 :5433
+- HAProxy 設定（**已調整**）：
+  ```
+  timeout connect 10s
+  timeout client  600s    # 從 30s 拉高
+  timeout server  600s    # 從 30s 拉高
+  option clitcpka         # TCP keepalive client side
+  option srvtcpka         # TCP keepalive server side
+  ```
+- 結果目錄：`vm-3node/20260507-0812/`
+
+### Execute 結果
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | 1,036.7 | 2,295.9 | 63.0% | 869.6 | 1,946 |
+| 32 | 971.4 | 2,146.1 | 59.0% | 1,866.6 | 5,906 |
+| 64 | 965.7 | 2,127.2 | 58.7% | 3,669.4 | 15,569 |
+| 128 | 915.8 | 2,062.4 | 55.6% | 6,390.8 | 16,106 |
+
+### vs vm-3node-direct 對比（HAProxy overhead）
+
+| threads | vm-3node-direct | vm-3node (HAProxy) | 差距 |
+|---------|-----------------|---------------------|------|
+| 16 | 1,024.2 | 1,036.7 | +1.2% |
+| 32 | 1,016.4 | 971.4 | -4.4% |
+| 64 | 1,003.2 | 965.7 | -3.7% |
+| 128 | 964.7 | 915.8 | -5.1% |
+
+### HAProxy timeout 故障排除（重要紀錄）
+
+**初次 vm-3node 測試（舊 HAProxy 設定）128t 卡死無法結束**：
+- 測試啟動：`go-tpc --time 10m`，10 分鐘到期後預期退出
+- 實際：process hang 75+ 分鐘無 Summary 輸出，必須手動 kill
+- log 在 10m timer 觸發時刻凍住，無新 [Current] 區間輸出
+
+**根因鏈**：
+1. NEW_ORDER 是多語句交易（INSERT + 多 UPDATE），128 thread 高競爭下 MVCC 重試讓單筆交易 >30s
+2. HAProxy `timeout server 30s` 看到 TCP idle（DB 端在重試處理中）→ 主動切斷連線
+3. lib/pq driver 沒收到 RST 包，TCP socket 變半開狀態，goroutine 卡在 `Read()` 等永不到的回應
+4. go-tpc `--time 10m` 觸發後 `WaitGroup.Wait()` 等所有 goroutine 退出 → 卡死的 goroutine 永不退出 → 主程序 hang
+
+**修復**：
+- `timeout client/server` 從 30s 拉高到 600s，比任何單筆交易都長，HAProxy 不會中途切連線
+- 加 `clitcpka/srvtcpka` 啟用 TCP keepalive，連線真的死掉時能在分鐘級偵測到
+
+**驗證結果**：128t 在 10m10s 正常結束並輸出 Summary，hang 問題消失。
+
+### 觀察
+
+- **HAProxy overhead 約 3-5%**：除 16t 外，其他並發水位 vm-3node 比 direct 低 3.7~5.1%。原因是多一層 TCP proxy + tcpka 心跳。
+- **trend 與 direct 一致**：tpmC 在 1037 → 916 之間衰減，曲線形狀同 vm-3node-direct，HAProxy 不改變 MVCC 競爭曲線。
+- **128t 順利完成**：無 hang，total 45m18s，與 vm-3node-direct 的 45m15s 相當。
+
+### 結論
+
+HAProxy 在 OLTP 高壓場景下要把 timeout 拉到比最壞交易時間還長（這裡 600s）才能避免半開連線 hang。實測 HAProxy roundrobin 對 YBDB 三節點的 overhead 在 5% 內，可接受。
