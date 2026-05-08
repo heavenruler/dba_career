@@ -53,6 +53,7 @@
   - `:4000` — TiDB SQL 服務端口；同時也是 TiDB HAProxy 監聽端口（**proxy 部署在獨立主機**，與 TiDB 節點不衝突，流量由此轉發至後端 TiDB:4000）
   - `:5433` — YBDB SQL 服務端口
   - `:15433` — YBDB HAProxy 監聽端口（與 YBDB 共用同一台主機，避用 5433），流量由此轉發至後端 YBDB:5433
+  - `:26257` — CockroachDB SQL 服務端口（PostgreSQL 協定相容）
 
 - **資源限制標記**：
   - `TiKV Nc` — 限制 TiKV 儲存元件可用的 CPU 核心數
@@ -105,13 +106,13 @@
 
 ## 對標維度
 
-| 維度 | TiDB variant | YBDB variant | 說明 |
-|------|-------------|-------------|------|
-| 單機 VM 基線 | vm-1node (no-analyze) | vm-1node | 最純粹的單節點效能（無資料複製、無負載均衡） |
-| 多節點 VM | vm-3node | vm-3node | 三節點 RF=3 部署，含資料複製到三個節點的成本 |
-| HAProxy overhead | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | 量測連線代理（負載均衡器）的中介成本 |
-| K8s 無限制 | k8s-3node-unlimit | k8s-3node-unlimit | 容器化平台的額外效能損耗（容器網路 + 排程開銷） |
-| K8s 資源限制 | k8s-3node-limit | k8s-3node-limit | 啟用容器資源管制（CPU/記憶體上限）後的影響 |
+| 維度 | TiDB variant | CockroachDB variant | YBDB variant | 說明 |
+|------|-------------|---------------------|-------------|------|
+| 單機 VM 基線 | vm-1node (no-analyze) | vm-1node | vm-1node | 最純粹的單節點效能（無資料複製、無負載均衡） |
+| 多節點 VM | vm-3node | (規劃中) | vm-3node | 三節點 RF=3 部署，含資料複製到三個節點的成本 |
+| HAProxy overhead | vm-3node vs vm-3node-direct | (規劃中) | vm-3node vs vm-3node-direct | 量測連線代理（負載均衡器）的中介成本 |
+| K8s 無限制 | k8s-3node-unlimit | (規劃中) | k8s-3node-unlimit | 容器化平台的額外效能損耗（容器網路 + 排程開銷） |
+| K8s 資源限制 | k8s-3node-limit | (規劃中) | k8s-3node-limit | 啟用容器資源管制（CPU/記憶體上限）後的影響 |
 
 ### 補充說明
 
@@ -123,12 +124,12 @@
 
 ## 環境規格
 
-| 項目 | TiDB | YBDB |
-|------|------|------|
-| 節點組成 | TiDB + TiKV×3 + PD | 3-node (tserver + master) / 1-node |
-| CPU | 4 vCPU (Xeon Gold 6346) | 4 vCPU (Xeon Gold 6346) |
-| RAM | 16GB | 16GB |
-| max_connections | 無限 | 300 / tserver |
+| 項目 | TiDB | CockroachDB | YBDB |
+|------|------|-------------|------|
+| 節點組成 | TiDB + TiKV×3 + PD | cockroach single-node（v26.1.4，單一 binary 整合 SQL + 儲存 + 元資料） | 3-node (tserver + master) / 1-node |
+| CPU | 4 vCPU (Xeon Gold 6346) | 4 vCPU (Xeon Gold 6346) | 4 vCPU (Xeon Gold 6346) |
+| RAM | 16GB | 16GB | 16GB |
+| max_connections | 無限 | 預設（CRDB 動態管理，未調整） | 300 / tserver |
 
 ### 節點元件說明
 
@@ -138,6 +139,10 @@
 - **TiKV**：資料儲存層 ×3 副本
 - **PD（Placement Driver）**：叢集元資料管理與排程器
 
+**CockroachDB**
+
+- **cockroach**：單一 binary 同時負責 SQL 接收、資料儲存、叢集元資料管理（架構比 TiDB / YBDB 簡單，無獨立元件）
+
 **YBDB**
 
 - **tserver**：資料儲存與 SQL 執行
@@ -146,6 +151,7 @@
 ### 連線數補充
 
 - **TiDB max_connections=無限**：測試環境設定，生產部署通常會依資源配置設定上限。
+- **CockroachDB max_connections=預設**：CRDB 動態管理連線資源，未明確設定上限。
 - **YBDB max_connections=300/tserver**：每個資料節點上限 300 條連線。
 
 ### 特殊 flags
@@ -153,6 +159,12 @@
 **TiDB**
 
 - `tidb_enable_auto_analyze = OFF` — 停用自動統計分析，避免測試期間背景工作干擾結果（僅 no-analyze variant 啟用；v8.5+ 以此 flag 取代舊的 `tidb_auto_analyze_ratio=0`，後者已不接受 0 值）
+
+**CockroachDB**
+
+- `sql.txn.read_committed_isolation.enabled = true` — 啟用 READ COMMITTED 隔離（CRDB 預設為 SERIALIZABLE，本次切 RC 是為了與 YBDB 對齊比較基準）
+- `default_transaction_isolation = 'read committed'` — 將 RC 設為預設交易隔離等級
+- `--insecure` — 啟用無 TLS 模式（測試環境簡化，正式部署應啟用加密）
 
 **YBDB**
 
@@ -165,6 +177,7 @@
 ## 參考
 
 - TiDB 本輪測試紀錄: `tidb-tc1/S-BASE/pipeline-log.md`
+- CockroachDB 本輪測試紀錄: `cockroach-tc1/S-BASE/pipeline-log.md`
 - YBDB 本輪測試紀錄: `yuga-tc1/S-BASE/pipeline-log.md`
 - TiDB 歷史分析: `results_old/tidb-tc1/S-BASE/compare.md`
 - YBDB 歷史 pipeline log: `results_old/yuga-tc1/S-BASE/pipeline-log.md`

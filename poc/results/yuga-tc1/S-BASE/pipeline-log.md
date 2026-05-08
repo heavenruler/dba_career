@@ -10,7 +10,7 @@
 
 **TiDB 與 YBDB 在 warmup 階段影響最大的元件不同**：
 - **TiDB 影響較大的元件是 TiKV**：底層儲存 RocksDB 有 block cache（記憶體資料塊快取），冷啟動時所有讀取都要去硬碟撈，warmup 期間 cache 才被熱資料填滿。**另一關鍵**：TPC-C 高壓寫入會讓 TiKV 自動進行 Region 分裂（把熱點資料拆散到不同節點），主要發生在 warmup 期間；跳過會導致正式測試前段大量分裂風暴，數字嚴重失真。
-- **YBDB 影響較大的元件是 DocDB tablet cache**：底層儲存 DocDB 同樣基於 RocksDB，tablet（資料分片）的 cache 需要 warmup 填充。本測試已預先設定 `ysql_num_shards_per_tserver=3`（固定分片數），動態分裂比 TiDB 少，warmup 主要作用是 cache 預熱。相對 TiDB，YBDB 受 warmup 影響的幅度略小，但 MVCC 版本鏈的初始建立也集中在這個階段。
+- **YBDB 影響較大的元件是 DocDB tablet cache**：底層儲存 DocDB 同樣基於 RocksDB，tablet（資料分片）的 cache 需要 warmup 填充。本測試已預先設定 `ysql_num_shards_per_tserver=3`（固定分片數），動態分裂比 TiDB 少，warmup 主要作用是 cache 預熱。相對 TiDB，YBDB 受 warmup 影響的幅度略小，但 MVCC（樂觀多版本併發控制）版本鏈（交易衝突偵測的內部記錄結構）的初始建立也集中在這個階段。
 
 > **白話**：TiDB 的暖機主要讓「資料分裂」在正式測試前完成，YBDB 的暖機主要讓「記憶體快取」填滿。兩者都需要，但 TiDB 跳過暖機的代價更大。
 
@@ -26,7 +26,7 @@
   - `yb_enable_read_committed_isolation=true`（啟用標準讀取隔離，與 PostgreSQL 相容）
   - `enable_wait_queues=true`（啟用等待佇列，避免交易衝突時直接失敗）
   - `ysql_num_shards_per_tserver=3`（每個節點建 3 個資料分片，單節點測試時此值偏低，會加劇競爭）
-- 測試工具：go-tpc (`-d postgres --conn-params sslmode=disable`)
+- 測試工具：go-tpc (`-d postgres --conn-params sslmode=disable`)（測試環境關閉 SSL 連線加密以簡化設定，正式部署應啟用加密，不影響本次效能數據）
 - 連線入口：直連 172.24.40.32:5433
 - Warehouses：128 | Warmup：5m | Duration：10m | Threads：16/32/64/128
 - 結果目錄：`vm-1node/20260506-1546/`
@@ -167,7 +167,7 @@ vm-3node-direct 證實 **YBDB 橫向擴展對 OLTP 寫入是有效的**，在無
 
 ### 環境
 - 節點：與 vm-3node-direct 同一個叢集（資料未重建——**沿用同一份資料是刻意的，兩次測試在同等資料量下才可以直接對比，TPC-C 設計允許這樣做，不影響吞吐量結果的有效性**）
-- 連線入口：HAProxy 172.24.40.32:15433 → roundrobin 三節點 :5433
+- 連線入口：HAProxy 172.24.40.32:15433 → roundrobin（輪流分配：每個新連線輪流送到下一個節點，平均分散流量）三節點 :5433
 
 > HAProxy 是連線代理的設定。這次調整了兩個重點：① 把「等待回應的逾時時間」從 30 秒拉高到 600 秒；② 啟用連線保活（keepalive），讓空閒連線不會被誤判為已中斷。原因詳見下方故障排除說明。
 

@@ -12,7 +12,7 @@
 - TiDB 版本：v8.5.2
 - 配置：**`tidb_rf=1`**（RF = Replication Factor 資料複本數，=1 代表資料只存一份、不容錯，本 variant 用來測單節點純效能上限）
 - **AUTO ANALYZE**（資料庫自動統計分析，幫助查詢最佳化）：**啟用**（預設 ratio=0.5，代表資料變動超過 50% 才觸發一次重算；本 variant 保持啟用作為標準基線）
-- 測試工具：go-tpc（MySQL driver）
+- 測試工具：go-tpc（MySQL driver）（TiDB 原生支援 MySQL 連線協定，測試工具直接透過 MySQL 介面連線，與 MySQL 資料庫本身無關）
 - 連線入口：直連 172.24.40.32:4000
 - Warehouses：128 | Warmup：5m | Duration：10m | Threads：16/32/64/128
 - 結果目錄：`vm-1node/20260507-2308/`
