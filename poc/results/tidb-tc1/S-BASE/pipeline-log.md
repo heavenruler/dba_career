@@ -92,9 +92,11 @@ TiDB 在 row 鎖層排隊處理，每筆順序執行；YBDB 在 commit 時偵測
 
 ## vm-1node-no-analyze — 2026-05-08
 
+> **本區塊目的**：對照實驗——關閉 AUTO ANALYZE（自動統計分析）後，重新執行相同的 TPC-C 壓測，確認該功能是否影響交易吞吐量。
+
 ### 環境
 - 同 vm-1node 環境
-- AUTO ANALYZE：**停用** (`SET GLOBAL tidb_enable_auto_analyze = OFF`)
+- AUTO ANALYZE：**停用** (`SET GLOBAL tidb_enable_auto_analyze = OFF`，執行此資料庫指令關閉自動統計分析功能)
 - tpcc.sh 已修：改用 `tidb_enable_auto_analyze` flag（v8.5+ `tidb_auto_analyze_ratio=0` 不被接受）
 - 結果目錄：`vm-1node-no-analyze/20260508-0627/`
 
@@ -104,6 +106,8 @@ TiDB 在 row 鎖層排隊處理，每筆順序執行；YBDB 在 commit 時偵測
 
 ### Execute 結果
 
+> （tpmC：越高越好；NO avg / NO P99：越低越好）
+
 | threads | tpmC | NO avg(ms) | NO P99(ms) |
 |---------|------|------------|------------|
 | 16 | 11,380.6 | 40.9 | 71.3 |
@@ -112,6 +116,8 @@ TiDB 在 row 鎖層排隊處理，每筆順序執行；YBDB 在 commit 時偵測
 | 128 | 13,191.7 | 264.3 | 520.1 |
 
 ### vs vm-1node 對比
+
+> **差異 = no-analyze 相對 baseline（vm-1node）的 tpmC 變動；負值代表略低，正值代表略高；全部落在 ±5% 以內，屬正常波動範圍（即差異可忽略）。**
 
 | threads | vm-1node | vm-1node-no-analyze | 差異 |
 |---------|----------|---------------------|------|
@@ -124,13 +130,15 @@ TiDB 在 row 鎖層排隊處理，每筆順序執行；YBDB 在 commit 時偵測
 
 **10 分鐘 TPC-C 測試期間，AUTO ANALYZE 對 tpmC 影響可忽略**。
 
-- 預期 AUTO ANALYZE 在背景跑 ANALYZE TABLE 會吃 CPU 與 I/O，影響 OLTP 吞吐
-- 實測差異 < 5%，落在 noise 範圍內
-- 原因：AUTO ANALYZE 觸發條件是「modify_count / total_count > tidb_auto_analyze_ratio (0.5)」，128W 資料量下 10 分鐘的修改量達不到 50% 閾值
-- 16t 略低（-4.3%）的可能原因：沒有 AUTO ANALYZE 重新統計，query plan 持續使用 prepare 後的初始 stats，少數 plan 偏差累計影響低併發吞吐；高併發（32t+）下其他開銷主導，差異消失
+- 預期 AUTO ANALYZE 在背景跑 ANALYZE TABLE（重新計算整張資料表的統計資訊的資料庫指令）會吃 CPU 與 I/O，影響 OLTP 吞吐
+- 實測差異 < 5%，落在 noise 範圍內（統計誤差範圍，即數值差距小到無法判斷是真實效能差距）
+- 原因：AUTO ANALYZE 的觸發條件是「當資料表的修改筆數超過總筆數 50% 才會觸發」，128W 資料量下 10 分鐘的修改量達不到此閾值
+- 16t 略低（-4.3%）的可能原因：沒有 AUTO ANALYZE 重新統計，query plan（資料庫查詢計畫）持續使用 prepare 後的初始 stats（統計資訊，資料庫據此決定最佳查詢路徑），少數 plan 偏差累計影響低併發吞吐；高併發（32t+）下其他開銷主導，差異消失
 
 ### 對未來測試的啟示
 
+> **白話結論**：關閉或開啟 AUTO ANALYZE，對 10 分鐘的壓測結果幾乎沒有影響（差距 < 5%）。這是因為短時間測試修改的資料量，根本不足以達到 AUTO ANALYZE 的觸發門檻。因此，這個功能本身運作正常，只是在短測中沒有機會啟動。
+
 - 短時間（<1h）TPC-C 測試開不開 AUTO ANALYZE 結果差異不大
-- 但長時間或資料持續變動的場景，AUTO ANALYZE 仍是必要功能（避免 stats 過時導致 query plan 退化）
+- 但長時間或資料持續變動的場景，AUTO ANALYZE 仍是必要功能（避免 stats 過時導致 query plan 退化——資料庫查詢計畫變差，選了較慢的執行路徑）
 - 建議：標準測試保留 AUTO ANALYZE，no-analyze variant 作為對照組驗證 AUTO ANALYZE 「無背景干擾」效果
