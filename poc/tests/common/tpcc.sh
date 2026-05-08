@@ -130,8 +130,9 @@ TIMESTAMP=${TIMESTAMP}
 EOF
 
   # disable AUTO ANALYZE during test to avoid background coprocessor interference
+  # (TiDB v8.5+: tidb_auto_analyze_ratio min is 0.000010, must use tidb_enable_auto_analyze)
   local mysql_cli="mysql -h${TIDB_HOST} -P${TIDB_PORT} -u${TIDB_USER} ${TIDB_PASS:+-p${TIDB_PASS}} --connect-timeout=5 -e"
-  $mysql_cli "SET GLOBAL tidb_auto_analyze_ratio = 0;" 2>/dev/null && \
+  $mysql_cli "SET GLOBAL tidb_enable_auto_analyze = OFF;" 2>/dev/null && \
     echo "==> [tpcc] AUTO ANALYZE disabled" || \
     echo "==> [tpcc] WARN: failed to disable AUTO ANALYZE (non-fatal)"
 
@@ -153,8 +154,8 @@ EOF
   echo "==> [tpcc] all runs complete: ${OUTPUT_DIR} (total $(_elapsed $t_total $SECONDS))"
 
   # restore AUTO ANALYZE
-  $mysql_cli "SET GLOBAL tidb_auto_analyze_ratio = 0.5;" 2>/dev/null && \
-    echo "==> [tpcc] AUTO ANALYZE restored (ratio=0.5)" || \
+  $mysql_cli "SET GLOBAL tidb_enable_auto_analyze = ON;" 2>/dev/null && \
+    echo "==> [tpcc] AUTO ANALYZE restored (ON)" || \
     echo "==> [tpcc] WARN: failed to restore AUTO ANALYZE (non-fatal)"
 }
 

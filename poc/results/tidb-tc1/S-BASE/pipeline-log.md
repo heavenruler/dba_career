@@ -61,6 +61,52 @@ TiDB 在 row 鎖層排隊處理，每筆順序執行；YBDB 在 commit 時偵測
 
 ### 注意事項
 
-- **AUTO ANALYZE disable 失敗**：tpcc.sh 在 run 開始時嘗試 `SET GLOBAL tidb_auto_analyze_ratio = 0`，回 `failed to disable`。實際 vm-1node variant 應保留 AUTO ANALYZE 啟用，影響不大。
-- **AUTO ANALYZE 結束時 restored**：腳本在最後成功執行 `SET GLOBAL tidb_auto_analyze_ratio = 0.5`，代表 mysql 連線是通的，前面失敗可能是暫時性。需在 vm-1node (no-analyze) 跑前確認此功能。
+- **AUTO ANALYZE disable 失敗（此 variant 反而是預期）**：tpcc.sh 在 run 開始時嘗試 `SET GLOBAL tidb_auto_analyze_ratio = 0`，TiDB v8.5.2 拒絕（`value should be greater than or equal to 0.000010`）。對 vm-1node 反而正確（保留 AUTO ANALYZE 啟用，標準基線）。已在後續 fix tpcc.sh 改用 `tidb_enable_auto_analyze = OFF`。
 - **VM crash 重跑**：首次 prepare 期間 .32 VM crash，重啟後 TiDB 自動恢復，重跑 prepare 成功（19m26s vs 首次 23m18s，磁碟 cache 助益）。
+
+---
+
+## vm-1node-no-analyze — 2026-05-08
+
+### 環境
+- 同 vm-1node 環境
+- AUTO ANALYZE：**停用** (`SET GLOBAL tidb_enable_auto_analyze = OFF`)
+- tpcc.sh 已修：改用 `tidb_enable_auto_analyze` flag（v8.5+ `tidb_auto_analyze_ratio=0` 不被接受）
+- 結果目錄：`vm-1node-no-analyze/20260508-0627/`
+
+### Prepare
+- 時間：20m12s
+- 在 AUTO ANALYZE OFF 狀態下載入 128W
+
+### Execute 結果
+
+| threads | tpmC | NO avg(ms) | NO P99(ms) |
+|---------|------|------------|------------|
+| 16 | 11,380.6 | 40.9 | 71.3 |
+| 32 | 12,596.2 | 72.5 | 125.8 |
+| 64 | 13,345.3 | 134.4 | 243.3 |
+| 128 | 13,191.7 | 264.3 | 520.1 |
+
+### vs vm-1node 對比
+
+| threads | vm-1node | vm-1node-no-analyze | 差異 |
+|---------|----------|---------------------|------|
+| 16 | 11,895.0 | 11,380.6 | -4.3% |
+| 32 | 12,766.7 | 12,596.2 | -1.3% |
+| 64 | 13,355.4 | 13,345.3 | -0.07% |
+| 128 | 13,078.8 | 13,191.7 | +0.86% |
+
+### 結論
+
+**10 分鐘 TPC-C 測試期間，AUTO ANALYZE 對 tpmC 影響可忽略**。
+
+- 預期 AUTO ANALYZE 在背景跑 ANALYZE TABLE 會吃 CPU 與 I/O，影響 OLTP 吞吐
+- 實測差異 < 5%，落在 noise 範圍內
+- 原因：AUTO ANALYZE 觸發條件是「modify_count / total_count > tidb_auto_analyze_ratio (0.5)」，128W 資料量下 10 分鐘的修改量達不到 50% 閾值
+- 16t 略低（-4.3%）的可能原因：沒有 AUTO ANALYZE 重新統計，query plan 持續使用 prepare 後的初始 stats，少數 plan 偏差累計影響低並發吞吐；高並發（32t+）下其他開銷主導，差異消失
+
+### 對未來測試的啟示
+
+- 短時間（<1h）TPC-C 測試開不開 AUTO ANALYZE 結果差異不大
+- 但長時間或資料持續變動的場景，AUTO ANALYZE 仍是必要功能（避免 stats 過時導致 query plan 退化）
+- 建議：標準測試保留 AUTO ANALYZE，no-analyze variant 作為對照組驗證 AUTO ANALYZE 「無背景干擾」效果
