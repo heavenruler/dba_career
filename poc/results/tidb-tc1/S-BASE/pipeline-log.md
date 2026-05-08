@@ -1,13 +1,17 @@
 # TiDB TPC-C Pipeline Log — tidb-tc1 / S-BASE
 
+> **本測試結論**：TiDB 單節點在同等硬體下，吞吐量比 YugabyteDB 高出約 30 倍，延遲控制在 1 秒以內；悲觀鎖設計在高併發下避免了 YBDB 的重試風暴。
+
+---
+
 ## vm-1node — 2026-05-07
 
 ### 環境
-- 節點：.32 (172.24.40.32) 單節點，PD + TiDB + TiKV 同主機部署
-- 部署工具：TiUP v1.x（透過 ansible playbook `tidb.yml` + `inventory/tidb-vm1.ini`）
+- 節點：.32 (172.24.40.32) 單節點，**PD + TiDB + TiKV 同主機部署**（三個元件共用一台伺服器：PD 是排程器、TiDB 是 SQL 接收層、TiKV 是儲存層；這是測試環境的簡化配置，不代表正式部署方式）
+- 部署工具：**TiUP v1.x**（TiDB 官方部署管理工具，類似安裝精靈，管理層不需理解細節）— 透過 ansible playbook `tidb.yml` + `inventory/tidb-vm1.ini`
 - TiDB 版本：v8.5.2
-- 配置：`tidb_rf=1`（單副本，因僅 1 個 TiKV）
-- AUTO ANALYZE：**啟用**（預設 ratio=0.5，本 variant 不關閉，作為標準基線）
+- 配置：**`tidb_rf=1`**（RF = Replication Factor 資料複本數，=1 代表資料只存一份、不容錯，本 variant 用來測單節點純效能上限）
+- **AUTO ANALYZE**（資料庫自動統計分析，幫助查詢最佳化）：**啟用**（預設 ratio=0.5，代表資料變動超過 50% 才觸發一次重算；本 variant 保持啟用作為標準基線）
 - 測試工具：go-tpc（MySQL driver）
 - 連線入口：直連 172.24.40.32:4000
 - Warehouses：128 | Warmup：5m | Duration：10m | Threads：16/32/64/128
@@ -19,6 +23,8 @@
 
 ### Execute 結果
 
+> ⚠️ **注意**：efficiency 欄位在無 think time（等待間隔）的壓力測試下會遠超 100%，這是正常現象，不代表計算錯誤。詳見表格下方說明。
+
 | threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
 |---------|------|----------|------------|------------|------------|
 | 16 | 11,895.0 | 26,348.7 | 722.6% | 39.3 | 65.0 |
@@ -27,8 +33,21 @@
 | 128 | 13,078.8 | 28,955.6 | 794.5% | 267.6 | 520.1 |
 
 > **efficiency 說明**：go-tpc 用「tpmC / (warehouses × 12.86)」計算，理論上限對應 TPC-C 標準的 think time + keying time 設定下的人均吞吐。本測試無 think time，goroutine 持續滿載，因此遠超 100% 是正常現象。
+>
+> **白話**：這個數字代表「資料庫有多繁忙」，超過 100% 是因為我們刻意用持續滿載模式壓測，移除了真實用戶操作之間的等待時間，讓資料庫一刻不停地工作。
+
+### Execute 結果白話解讀
+
+| 併發 | 白話解讀 |
+|------|---------|
+| 16t | 表現出色（延遲 39ms，不到 0.04 秒） |
+| 32t | 持續成長（延遲 72ms，吞吐仍在上升） |
+| 64t | 效能頂峰（13,355 tpmC，延遲 135ms，最佳甜蜜點） |
+| 128t | 略降但仍健康（13,079 tpmC，延遲 268ms，低於 0.3 秒） |
 
 ### vs YBDB vm-1node 對比
+
+> **TiDB / YBDB 倍數 = TiDB tpmC ÷ YBDB tpmC，越高代表 TiDB 相對 YBDB 的優勢越大。**
 
 | threads | TiDB tpmC | YBDB tpmC | TiDB / YBDB |
 |---------|-----------|-----------|-------------|
@@ -46,23 +65,28 @@
 
 ### 觀察
 
-- **tpmC 隨並發溫和成長**：16 → 64t 從 11,895 提升到 13,355（+12.3%），128t 微降至 13,079，呈現典型的 OLTP 飽和曲線；無 YBDB 那樣的崩潰式下滑。
-- **NO avg latency 線性可控**：TiDB 雖然延遲也隨並發增加（39 → 268 ms），但維持在 sub-second 層級；YBDB 同條件已達 15s+ 並打到 go-tpc 16s 上限。
+> **管理層摘要**：TiDB 在同等硬體下的每分鐘交易量約為 YugabyteDB 的 30 倍，延遲保持在 0.3 秒以內。差距來自鎖定機制的根本設計不同：TiDB 讓衝突的請求排隊等候，不重做整筆交易；YugabyteDB 在衝突時整筆重試，高併發下重試不斷堆積導致延遲爆炸。
+
+- **tpmC 隨併發溫和成長**：16 → 64t 從 11,895 提升到 13,355（+12.3%），128t 微降至 13,079，呈現典型的 OLTP 飽和曲線；無 YBDB 那樣的崩潰式下滑。
+- **NO avg latency 線性可控**：TiDB 雖然延遲也隨併發增加（39 → 268 ms），但維持在 sub-second（不到一秒）層級；YBDB 同條件已達 15s+ 並打到 go-tpc 16s 上限。
 - **efficiency 700-810%**：遠高於 YBDB 的 22-25%，代表 NEW_ORDER 處理流暢，retry/wait 開銷低。
-- **64t 為 sweet spot**：13,355 tpmC 為峰值，128t 開始略降但仍在合理範圍。
+- **64t 為 sweet spot（最佳工作點，效能與資源使用的最佳平衡）**：13,355 tpmC 為峰值，128t 開始略降但仍在合理範圍。
 
 ### 根因：架構差異
 
-TiDB 採用 **悲觀鎖（pessimistic locking）**：衝突時後到的 transaction 排隊等鎖，不重試整筆交易。  
-YBDB 採用 **樂觀 MVCC**：衝突時整筆 rollback 重試，無 think time + 高並發下重試鏈累積 → latency 爆炸。
+TiDB 採用 **悲觀鎖（pessimistic locking）**：衝突時後到的 transaction 排隊等鎖，不重試整筆交易。**比喻：類似「先排隊取號，輪到才動作」**。
 
-NEW_ORDER 必更新 `district.D_NEXT_O_ID`（每 warehouse × district = 1280 熱點 row），這是 TPC-C 最大競爭點。  
-TiDB 在 row 鎖層排隊處理，每筆順序執行；YBDB 在 commit 時偵測衝突，多 goroutine 撞同一 row 就互相 rollback。
+YBDB 採用 **樂觀 MVCC（Multi-Version Concurrency Control）**：衝突時整筆 rollback 重試。**比喻：類似「先做事，結帳時才確認有沒有衝突，衝突就整筆重做」**。無 think time + 高併發下重試鏈累積 → latency 爆炸。
+
+NEW_ORDER 必更新某個訂單流水號欄位（`district.D_NEXT_O_ID`，每個倉庫區域共用，是 TPC-C 競爭最集中的熱點；每 warehouse × district = 1280 熱點 row）。  
+TiDB 在 row 鎖層排隊處理，每筆順序執行；YBDB 在 commit 時偵測衝突，多個 goroutine（程式內的並行執行單元，每個對應一個同時進行的資料庫請求）撞同一 row 就互相 rollback。
 
 ### 注意事項
 
-- **AUTO ANALYZE disable 失敗（此 variant 反而是預期）**：tpcc.sh 在 run 開始時嘗試 `SET GLOBAL tidb_auto_analyze_ratio = 0`，TiDB v8.5.2 拒絕（`value should be greater than or equal to 0.000010`）。對 vm-1node 反而正確（保留 AUTO ANALYZE 啟用，標準基線）。已在後續 fix tpcc.sh 改用 `tidb_enable_auto_analyze = OFF`。
-- **VM crash 重跑**：首次 prepare 期間 .32 VM crash，重啟後 TiDB 自動恢復，重跑 prepare 成功（19m26s vs 首次 23m18s，磁碟 cache 助益）。
+> **整體結論：以下為測試過程中的技術備註，均已解決，不影響最終測試數據的有效性。**
+
+- **AUTO ANALYZE disable 失敗（此 variant 反而是預期）**（此失敗不影響本 variant 的測試目的，本 variant 本來就保留 AUTO ANALYZE 啟用作為基線）：tpcc.sh 在 run 開始時嘗試 `SET GLOBAL tidb_auto_analyze_ratio = 0`，TiDB v8.5.2 拒絕（`value should be greater than or equal to 0.000010`）。已在後續 fix tpcc.sh 改用 `tidb_enable_auto_analyze = OFF`。
+- **VM crash 重跑**（虛擬機器意外重啟，TiDB 自動恢復後重跑 prepare，最終數據完整有效）：首次 prepare 期間 .32 VM crash，重啟後 TiDB 自動恢復，重跑 prepare 成功（19m26s vs 首次 23m18s，磁碟 cache 助益）。
 
 ---
 
@@ -103,7 +127,7 @@ TiDB 在 row 鎖層排隊處理，每筆順序執行；YBDB 在 commit 時偵測
 - 預期 AUTO ANALYZE 在背景跑 ANALYZE TABLE 會吃 CPU 與 I/O，影響 OLTP 吞吐
 - 實測差異 < 5%，落在 noise 範圍內
 - 原因：AUTO ANALYZE 觸發條件是「modify_count / total_count > tidb_auto_analyze_ratio (0.5)」，128W 資料量下 10 分鐘的修改量達不到 50% 閾值
-- 16t 略低（-4.3%）的可能原因：沒有 AUTO ANALYZE 重新統計，query plan 持續使用 prepare 後的初始 stats，少數 plan 偏差累計影響低並發吞吐；高並發（32t+）下其他開銷主導，差異消失
+- 16t 略低（-4.3%）的可能原因：沒有 AUTO ANALYZE 重新統計，query plan 持續使用 prepare 後的初始 stats，少數 plan 偏差累計影響低併發吞吐；高併發（32t+）下其他開銷主導，差異消失
 
 ### 對未來測試的啟示
 
