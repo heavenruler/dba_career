@@ -2,11 +2,14 @@
 
 ## 本報告摘要
 
-我們用業界標準的 OLTP 壓力測試（TPC-C，模擬電商訂單處理）比較兩款分散式資料庫（TiDB、YugabyteDB）在不同部署架構下的吞吐量。
+我們用業界標準的 OLTP 壓力測試（TPC-C，模擬電商訂單處理）比較三款分散式資料庫（TiDB、CockroachDB、YugabyteDB）在不同部署架構下的吞吐量。
 
-目前 YugabyteDB 三組 VM 部署測試完成，數字顯示三節點架構比單節點吞吐量高約 **2.5 倍**。
+**單節點 vm-1node 對比**（相同硬體、READ COMMITTED 隔離）：
+- **TiDB peak 13,355 tpmC**（64t），延遲 39-268ms
+- **CockroachDB peak 8,732 tpmC**（32t），延遲 62-565ms（~ TiDB 65%）
+- **YugabyteDB peak 414.7 tpmC**（16t），延遲 2,225-15,655ms（~ TiDB 3%）
 
-下一步將完成 TiDB 剩餘 4 組測試，並視需要追加 K8s 容器化環境測試。
+下一步將完成 TiDB 剩餘 4 組測試，並視需要追加 CockroachDB 多節點與 K8s 容器化測試。
 
 ---
 
@@ -87,6 +90,16 @@
 | k8s-3node-limit | K8s×3 | RF=3 | HAProxy :15433 | tserver Nc | ⏳ | — | — | — | — | — |
 
 > **YBDB 摘要**：三節點架構（vm-3node / vm-3node-direct）比單節點（vm-1node）吞吐量高約 **2.5 倍**，證實水平擴展對 OLTP 寫入有效；HAProxy 入口層額外成本約 3-5%（vm-3node vs vm-3node-direct），在可接受範圍。
+
+### CockroachDB (cockroach-tc1) 🔄 進行中
+
+> 各併發水位（16/32/64/128 同時連線）的 tpmC 數值，**越高越好**；peak = 各併發中的最高吞吐量。READ COMMITTED 隔離（與 YBDB 對齊）。
+
+| variant | 拓撲 | RF | 入口 | resource limit | 狀態 | 16t | 32t | 64t | 128t | peak |
+|---------|------|----|------|----------------|------|-----|-----|-----|------|------|
+| vm-1node | VM×1 | 1 | 直連 :26257 | — | ✅ | 8,559.5 | 8,732.5 | 8,555.3 | 8,133.4 | **8,732.5** |
+
+> **CockroachDB 摘要**：單節點 peak **8,732 tpmC**，介於 TiDB 與 YBDB 之間；採 READ COMMITTED 隔離後無 abort 重試（首次 SERIALIZABLE 測試曾觀察到 ~0.1% NEW_ORDER abort，切 RC 後消失）。
 
 ---
 
