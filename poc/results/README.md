@@ -70,7 +70,9 @@
 
 > `vm-1node (no-analyze)`：停用資料庫自動統計分析（背景工作），讓測試結果排除排程干擾，呈現最純粹的效能數字。
 
-> **目前進度**：YBDB VM 測試完成，TiDB 兩組 vm-1node 完成（with/without AUTO ANALYZE 差異 < 5%，10 分鐘測試內 modify 量未達 AUTO ANALYZE 觸發閾值），其他 4 組進行中。
+> **目前進度**：YBDB VM 測試完成，TiDB 兩組 vm-1node 完成（peak **13,355 tpmC**，約為同等硬體 YBDB 單節點的 32 倍；with/without AUTO ANALYZE 差異 < 5%，10 分鐘測試內 modify 量未達 AUTO ANALYZE 觸發閾值），其他 4 組進行中。
+
+> **TiDB vs YBDB 初步對比（單節點 VM）**：TiDB vm-1node 峰值 **13,355 tpmC**，YBDB vm-1node 峰值 **414.7 tpmC**，TiDB 約為 YBDB 的 **32 倍**。延遲方面，TiDB 128t 平均延遲 268ms；YBDB 128t 平均延遲 15,655ms。完整對比待 TiDB 其他 5 組完成後更新。
 
 ### YugabyteDB (yuga-tc1) 🔄 進行中
 
