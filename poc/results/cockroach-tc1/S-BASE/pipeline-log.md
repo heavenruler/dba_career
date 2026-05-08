@@ -100,4 +100,98 @@ TPC-C `district.D_NEXT_O_ID` 熱點 row 在 RC 下排隊處理，每筆順序執
 ### 注意事項
 
 - **首次 SERIALIZABLE 測試**（同日稍早，5m 部分數據）：tpmC ~8,200，但每秒約 0.1% 的新訂單交易因 `WriteTooOldError`（讀寫衝突錯誤）被資料庫**中止整筆交易**（abort）。改 RC 後此情況消失，吞吐略升至 8,732。
+
+---
+
+## vm-3node-direct — 2026-05-08
+
+### 環境
+- 節點：.32/.33/.34 三節點，每節點 `cockroach start --insecure --join=...`，**無中央元件**（CRDB 對稱架構，每個節點同時負責 SQL/儲存/元資料）
+- 預設 RF=3（系統與使用者資料各三副本）
+- READ COMMITTED + go-tpc `--isolation 2`（同 vm-1node）
+- 連線入口：直連 .32:26257（**不過 HAProxy**）
+- 結果目錄：`vm-3node-direct/20260508-2336/`
+
+### Prepare
+- 時間：10m57s（128W），比 vm-1node 的 12m46s 快 — 三節點分擔寫入
+
+### Execute 結果
+
+> （tpmC：越高越好；NO avg / NO P99：越低越好）
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | 9,142.5 | 20,265.7 | 555.4% | 61.4 | 134.2 |
+| 32 | 10,144.4 | 22,514.3 | 616.3% | 107.8 | 260.0 |
+| 64 | 10,892.4 | 24,207.6 | 661.7% | 194.8 | 469.8 |
+| 128 | 11,142.6 | 24,707.9 | 676.9% | 381.4 | 906.0 |
+
+### vs vm-1node 對比
+
+> **倍數 = 三節點 tpmC ÷ 單節點 tpmC，越高越好，代表加台伺服器後效能提升的幅度。**
+
+| threads | vm-1node | vm-3node-direct | 倍數 |
+|---------|----------|----------------|------|
+| 16 | 8,559 | 9,142 | 1.07× |
+| 32 | 8,732 | 10,144 | 1.16× |
+| 64 | 8,555 | 10,892 | 1.27× |
+| 128 | 8,133 | 11,142 | 1.37× |
+
+### 觀察
+
+- **隨並發 scale up**：與 vm-1node 不同（單節點 16~128t 浮動 < 7%），三節點直連在高並發下持續成長 — 高並發釋放更多 RPC 並行度。
+- **峰值在 128t**（11,142），與 vm-1node 峰值 32t 不同 — 多節點吃掉更多 thread 才開始飽和。
+- **延遲較單節點高**：原因是 SQL 全部走 .32 的 gateway，但 leaseholder 分散在三節點，每筆查詢需 cross-node RPC。
+
+---
+
+## vm-3node — 2026-05-09
+
+### 環境
+- 節點：與 vm-3node-direct 同一個叢集（資料未重建——沿用同一份資料是刻意的，兩次測試在同等資料量下才可以直接對比）
+- 連線入口：HAProxy 172.24.40.32:15257 → roundrobin（輪流分配）三節點 :26257
+- HAProxy 設定：與 YBDB 相同（`timeout 600s` + `clitcpka/srvtcpka`），僅 backend port 改為 :26257
+- 結果目錄：`vm-3node/20260509-0027/`
+
+### Execute 結果
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | 9,958.3 | 22,167.5 | 605.0% | 57.7 | 117.4 |
+| 32 | 11,933.4 | 26,450.8 | 725.0% | 96.9 | 218.1 |
+| 64 | 12,661.7 | 28,114.4 | 769.2% | 180.8 | 402.7 |
+| 128 | **14,014.7** | 31,130.4 | 851.4% | 321.0 | 771.8 |
+
+### vs vm-3node-direct 對比（HAProxy "提升"，反向於 YBDB）
+
+> **差距 = vm-3node (HAProxy) 相對 vm-3node-direct 的 tpmC 增減，正數代表 HAProxy 版本比直連快。**
+
+| threads | vm-3node-direct | vm-3node (HAProxy) | 差距 |
+|---------|----------------|--------------------|------|
+| 16 | 9,142 | 9,958 | +8.9% |
+| 32 | 10,144 | 11,933 | +17.6% |
+| 64 | 10,892 | 12,661 | +16.2% |
+| 128 | 11,142 | **14,014** | **+25.8%** |
+
+### 觀察
+
+- **HAProxy 反而更快**（與 YBDB 相反）：YBDB direct 比 HAProxy 快 3-5%，CRDB HAProxy 比 direct 快 9-26%。
+- **原因（CRDB symmetric architecture）**：CRDB 每個節點都能完整處理 SQL（parse/plan/route），HAProxy roundrobin 將 SQL 處理分散到三節點，各自就近處理 1/3 的 leaseholder，反而比集中於 .32 處理高效。
+- **128t peak 14,014**：超越 TiDB vm-1node 峰值 13,355，**CRDB 三節點 + HAProxy 是其 sweet spot**。
+
+### CRDB vs TiDB / YBDB 多節點 scaling 對比
+
+| | vm-1node peak | vm-3node-direct peak | vm-3node (HAProxy) peak | 3-node scaling |
+|--|---|---|---|---|
+| TiDB | 13,355 | TBD | TBD | TBD |
+| **CRDB** | **8,732** | **11,142** | **14,014** | **1.6× peak** |
+| YBDB | 414.7 | 1,024.2 | 1,036.7 | **2.5× peak** |
+
+- YBDB scaling 倍數最高（單節點低基數 → 多節點放大效果明顯）
+- CRDB 絕對數字最高（單節點已強，多節點再 scale）
+- TiDB 待測
+
+### 結論
+
+CRDB 三節點橫向擴展不只「有效」，而是「最優部署模式」。CRDB symmetric architecture 讓 HAProxy roundrobin 不只是負載均衡，更是 **SQL 處理層的橫向分散**。生產環境使用 HAProxy 是首選。
 - **insecure 模式**：本測試走無 TLS，TLS 對 OLTP 影響通常 < 5%；正式部署時應用 secure 模式。

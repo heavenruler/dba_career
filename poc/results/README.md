@@ -9,7 +9,12 @@
 - **CockroachDB peak 8,732 tpmC**（32t），延遲 62-565ms（~ TiDB 65%）
 - **YugabyteDB peak 414.7 tpmC**（16t），延遲 2,225-15,655ms（~ TiDB 3%）
 
-下一步將完成 TiDB 剩餘 4 組測試，並視需要追加 CockroachDB 多節點與 K8s 容器化測試。
+**三節點 vm-3node 部分結果**（HAProxy roundrobin）：
+- **CockroachDB peak 14,014 tpmC**（128t）— **超越 TiDB 單節點峰值**；CRDB symmetric architecture 讓 HAProxy 比直連快 9-26%
+- **YugabyteDB peak 1,036.7 tpmC**（16t）— 比單節點快 2.5×，但仍受 MVCC 競爭天花板限制
+- TiDB 三節點數字待測
+
+下一步將完成 TiDB 剩餘 4 組測試，並視需要追加 K8s 容器化測試。
 
 ---
 
@@ -99,8 +104,10 @@
 | variant | 拓撲 | RF | 入口 | resource limit | 狀態 | 16t | 32t | 64t | 128t | peak |
 |---------|------|----|------|----------------|------|-----|-----|-----|------|------|
 | vm-1node | VM×1 | 1 | 直連 :26257 | — | ✅ | 8,559.5 | 8,732.5 | 8,555.3 | 8,133.4 | **8,732.5** |
+| vm-3node | VM×3 | 3 | HAProxy :15257 | — | ✅ | 9,958.3 | 11,933.4 | 12,661.7 | 14,014.7 | **14,014.7** |
+| vm-3node-direct | VM×3 | 3 | 直連 :26257 | — | ✅ | 9,142.5 | 10,144.4 | 10,892.4 | 11,142.6 | **11,142.6** |
 
-> **CockroachDB 摘要**：單節點 peak **8,732 tpmC**，介於 TiDB 與 YBDB 之間；採 READ COMMITTED 隔離後無 abort 重試（首次 SERIALIZABLE 測試曾觀察到 ~0.1% NEW_ORDER abort，切 RC 後消失）。
+> **CockroachDB 摘要**：單節點 peak **8,732 tpmC**；三節點 + HAProxy peak **14,014 tpmC**（**超越 TiDB vm-1node 峰值 13,355**）。CRDB symmetric architecture 讓 HAProxy roundrobin 將 SQL 處理層分散到三節點，**HAProxy 比直連快 9-26%**（與 YBDB 反向：YBDB direct 略快於 HAProxy）。
 
 ---
 
@@ -109,8 +116,8 @@
 | 維度 | TiDB variant | CockroachDB variant | YBDB variant | 說明 |
 |------|-------------|---------------------|-------------|------|
 | 單機 VM 基線 | vm-1node (no-analyze) | vm-1node | vm-1node | 最純粹的單節點效能（無資料複製、無負載均衡） |
-| 多節點 VM | vm-3node | (規劃中) | vm-3node | 三節點 RF=3 部署，含資料複製到三個節點的成本 |
-| HAProxy overhead | vm-3node vs vm-3node-direct | (規劃中) | vm-3node vs vm-3node-direct | 量測連線代理（負載均衡器）的中介成本 |
+| 多節點 VM | vm-3node | vm-3node | vm-3node | 三節點 RF=3 部署，含資料複製到三個節點的成本 |
+| HAProxy overhead | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | 量測連線代理（負載均衡器）的中介成本（CRDB 反而 HAProxy 較快——symmetric architecture 把 SQL 處理層也分散） |
 | K8s 無限制 | k8s-3node-unlimit | (規劃中) | k8s-3node-unlimit | 容器化平台的額外效能損耗（容器網路 + 排程開銷） |
 | K8s 資源限制 | k8s-3node-limit | (規劃中) | k8s-3node-limit | 啟用容器資源管制（CPU/記憶體上限）後的影響 |
 
