@@ -24,6 +24,8 @@
 ### Execute 結果
 
 > ⚠️ **注意**：efficiency 欄位在無 think time（等待間隔）的壓力測試下會遠超 100%，這是正常現象，不代表計算錯誤。詳見表格下方說明。
+>
+> （tpmC / tpmTotal：越高越好；NO avg / NO P99：越低越好；efficiency 見下方說明）
 
 | threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
 |---------|------|----------|------------|------------|------------|

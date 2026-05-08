@@ -6,7 +6,7 @@
 
 目前 YugabyteDB 三組 VM 部署測試完成，數字顯示三節點架構比單節點吞吐量高約 **2.5 倍**。
 
-下一步將完成 K8s 容器化環境測試，以及啟動 TiDB 全部六組對照組測試。
+下一步將完成 TiDB 剩餘 4 組測試，並視需要追加 K8s 容器化環境測試。
 
 ---
 
@@ -139,7 +139,7 @@
 
 **TiDB**
 
-- `tidb_auto_analyze_ratio=0` — 停用自動統計分析，避免測試期間背景工作干擾結果（僅 no-analyze variant 啟用）
+- `tidb_enable_auto_analyze = OFF` — 停用自動統計分析，避免測試期間背景工作干擾結果（僅 no-analyze variant 啟用；v8.5+ 以此 flag 取代舊的 `tidb_auto_analyze_ratio=0`，後者已不接受 0 值）
 
 **YBDB**
 

@@ -19,7 +19,7 @@
 ## vm-1node — 2026-05-06
 
 ### 環境
-- 節點：.32 (172.24.40.32) 單節點 RF=1
+- 節點：.32 (172.24.40.32) 單節點 RF=1（RF = Replication Factor 資料複本數，=1 代表資料只存一份、不容錯，用來測單節點純效能上限）
 - 啟動：`yugabyted start --advertise_address=172.24.40.32 --base_dir=/opt/yugabyte/data --ui=false`
 - tserver flags：
   - `ysql_enable_packed_row=false`（關閉資料壓縮，使用標準格式）
@@ -72,13 +72,13 @@
 - **NO avg 線性翻倍**：每次 thread 數加倍，NEW_ORDER 平均延遲幾乎同步翻倍（2,225 → 4,686 → 9,548 → 15,655ms）。代表每新增一個 thread，等待時間與競爭成本等比上升。
 - **128t 全壓逾時上限**：128t 的 NO P50/P90/P95/P99 全部是 16,106ms，意即超過一半的 NEW_ORDER 都在等 16 秒後才回應（已達 go-tpc 逾時，實際 DB 端可能更長）。
 - **efficiency 偏低（~25%）**：理論上 NEW_ORDER 佔所有交易的 45%，efficiency 25% 表示 DB 在 NEW_ORDER 上花了異常多時間，其他交易相對順暢，符合 NEW_ORDER 衝突最集中的預期。
-- **STOCK_LEVEL_ERR × 1（128t）**：`Restart read required`，MVCC 讀取衝突，go-tpc 不重試直接計錯誤。
+- **STOCK_LEVEL_ERR × 1（128t）**：`Restart read required`，MVCC 讀取衝突，go-tpc 不重試直接計錯誤（庫存查詢交易遭遇 MVCC 讀取衝突被計為錯誤，go-tpc 不重試；此錯誤量極少，不影響整體結論）。
 
 ### 根因分析
 
 > **管理層摘要（非技術版）**：YugabyteDB 的設計是：交易完成後才確認有沒有衝突（類似「先下單，結帳時再確認庫存」）。當同時有很多人在搶同一筆資料時，衝突就會不斷發生，每次衝突都要重來，越塞越慢。這次測試就是在驗證這個限制。
 
-YBDB 使用 **optimistic MVCC（樂觀多版本併發控制）**：事務在 commit 時才偵測衝突，衝突則整筆 rollback 後重試。  
+YBDB 使用 **optimistic MVCC（樂觀多版本併發控制）**：事務在 commit 時才偵測衝突，衝突則整筆**取消並重做**（rollback，即資料庫回滾：撤銷整筆交易的所有變更，重新開始）。  
 go-tpc 無 think time → goroutine（程式內的並行執行單元，每個對應一個同時進行的資料庫請求）連續送出交易，沒有自然間隔 → 多個 goroutine 同時競爭同一 warehouse 的列鎖。
 
 衝突越多 → 重試越多 → 持鎖時間越長 → 更多衝突（正回饋惡化）。
