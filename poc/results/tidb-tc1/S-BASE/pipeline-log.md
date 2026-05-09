@@ -144,3 +144,97 @@ TiDB 在 row 鎖層排隊處理，每筆順序執行；YBDB 在 commit 時偵測
 - 短時間（<1h）TPC-C 測試開不開 AUTO ANALYZE 結果差異不大
 - 但長時間或資料持續變動的場景，AUTO ANALYZE 仍是必要功能（避免 stats 過時導致 query plan 退化——資料庫查詢計畫變差，選了較慢的執行路徑）
 - 建議：標準測試保留 AUTO ANALYZE，no-analyze variant 作為對照組驗證 AUTO ANALYZE 「無背景干擾」效果
+
+---
+
+## vm-3node-direct — 2026-05-09
+
+### 環境
+- 節點：.32/.33/.34 三節點（拓撲：PD×3 / TiDB SQL×2 (.32 .33) / TiKV×3 / HAProxy on .34）
+- 部署工具：TiUP via ansible (`tidb.yml + tidb-tc1.ini -e tidb_rf=3`)
+- 配置：`tidb_rf=3`（TiKV 三副本，標準容錯部署）
+- AUTO ANALYZE：停用（同 vm-1node-no-analyze）
+- 連線入口：直連 .32:4000（**不過 HAProxy**）
+- 結果目錄：`vm-3node-direct/20260509-2335/`
+
+### Prepare
+- 時間：15m21s（128W）— 比 vm-1node 19m26s 快，三節點 TiKV 平行寫入
+
+### Execute 結果
+
+> （tpmC / tpmTotal：越高越好；NO avg / NO P99：越低越好）
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | 12,882.2 | 28,663.9 | 782.6% | 37.0 | 62.9 |
+| 32 | 14,385.6 | 31,905.0 | 873.9% | 65.0 | 117.4 |
+| 64 | 13,204.3 | 29,345.9 | 802.2% | 138.9 | 285.2 |
+| 128 | 14,779.6 | 32,877.1 | 897.9% | 240.3 | 486.5 |
+
+### vs vm-1node 對比
+
+| threads | vm-1node | vm-3node-direct | 倍數 |
+|---------|----------|-----------------|------|
+| 16 | 11,895 | 12,882 | 1.08× |
+| 32 | 12,766 | 14,385 | 1.13× |
+| 64 | 13,355 | 13,204 | 0.99× |
+| 128 | 13,078 | 14,779 | 1.13× |
+
+### 觀察
+
+- **scaling 增益較小**（vs CRDB 與 YBDB）：TiDB 單節點已強，三節點直連僅 +13%（CRDB +37%、YBDB +147%）。
+- **64t 略降**：cross-node 2PC 與 PD 元資料 RPC 開銷在中度並發時主導。
+- **峰值 128t**（14,779）：與 vm-1node 64t 峰值相近，但有更高的吞吐天花板。
+
+---
+
+## vm-3node — 2026-05-10
+
+### 環境
+- 節點：與 vm-3node-direct 同一個叢集（資料未重建）
+- 連線入口：HAProxy 172.24.40.34:4000（位於獨立 proxy 主機 .34，輪流轉發至 .32:4000 / .33:4000 — 注意 .34 沒跑 TiDB SQL，只有 PD + TiKV + HAProxy）
+- 結果目錄：`vm-3node/20260510-0021/`
+
+### Execute 結果
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | 13,957.6 | 31,027.5 | 847.9% | 35.2 | 56.6 |
+| 32 | 18,393.2 | 40,943.4 | 1117.4% | 52.2 | 96.5 |
+| 64 | 21,523.0 | 47,788.5 | 1307.5% | 87.4 | 176.2 |
+| 128 | **21,875.0** | 48,646.8 | 1328.9% | 166.7 | 369.1 |
+
+### vs vm-3node-direct 對比（HAProxy 提升）
+
+> **差距 = vm-3node (HAProxy) 相對 vm-3node-direct 的 tpmC 增減，正數代表 HAProxy 版本比直連快。**
+
+| threads | vm-3node-direct | vm-3node (HAProxy) | 差距 |
+|---------|-----------------|---------------------|------|
+| 16 | 12,882 | 13,957 | +8.3% |
+| 32 | 14,385 | 18,393 | +27.9% |
+| 64 | 13,204 | 21,523 | **+63.0%** |
+| 128 | 14,779 | **21,875** | **+48.0%** |
+
+### 觀察
+
+- **HAProxy 大幅優於 direct**（+8% ~ +63%）：與 CRDB 同向（CRDB +9% ~ +26%），與 YBDB 反向。
+- **原因**：TiDB SQL 節點只有 .32 與 .33，direct 全部 SQL 集中在 .32 處理，HAProxy roundrobin 將 SQL 平均分散到兩個節點，整體 SQL parsing/planning 容量翻倍。
+- **64t / 128t peak ~21,800 tpmC**：兩個 TiDB SQL 節點在 64t 後達飽和。
+- **128t NO P99 369ms**：遠低於 go-tpc 16s 上限，無 hang 風險。
+
+### 三家 vm-3node 對比
+
+| | TiDB peak | CRDB peak | YBDB peak |
+|--|---|---|---|
+| vm-3node-direct | 14,779 (128t) | 11,142 (128t) | 1,024 (16t) |
+| **vm-3node (HAProxy)** | **21,875 (128t)** | **14,014 (128t)** | **1,036 (16t)** |
+| HAProxy / direct | **+48%** | +26% | +1% |
+
+- **TiDB**：HAProxy 增益最高（+48%），SQL 節點分散最有效
+- **CRDB**：symmetric architecture 任一節點都能服務 SQL，HAProxy 也有 +26% 增益
+- **YBDB**：tserver 既是儲存又是 SQL，HAProxy 增益最小（+1%），且 direct 與 HAProxy 差異 < 5%
+
+### 結論
+
+TiDB 三節點 + HAProxy 是 **OLTP 高並發場景的最佳部署模式**。peak 21,875 tpmC 為單節點 13,355 的 **1.64×**，超越 CRDB 同等部署 1.56×。  
+TiDB SQL/儲存層分離設計讓「加台機器跑 SQL」效益最大化，這是與 CRDB（symmetric）和 YBDB（tserver 一體）架構最大的差異。

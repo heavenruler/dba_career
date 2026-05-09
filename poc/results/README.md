@@ -9,12 +9,12 @@
 - **CockroachDB peak 8,732 tpmC**（32t），延遲 62-565ms（~ TiDB 65%）
 - **YugabyteDB peak 414.7 tpmC**（16t），延遲 2,225-15,655ms（~ TiDB 3%）
 
-**三節點 vm-3node 部分結果**（HAProxy roundrobin）：
-- **CockroachDB peak 14,014 tpmC**（128t）— **超越 TiDB 單節點峰值**；CRDB symmetric architecture 讓 HAProxy 比直連快 9-26%
-- **YugabyteDB peak 1,036.7 tpmC**（16t）— 比單節點快 2.5×，但仍受 MVCC 競爭天花板限制
-- TiDB 三節點數字待測
+**三節點 vm-3node 完整結果**（HAProxy roundrobin）：
+- **TiDB peak 21,875 tpmC**（128t）— 三家最高；vm-3node-direct → HAProxy 提升 **+48%**（SQL 節點 .32/.33 分散處理）
+- **CockroachDB peak 14,014 tpmC**（128t）— symmetric architecture，HAProxy 比直連 +26%
+- **YugabyteDB peak 1,036.7 tpmC**（16t）— tserver 一體設計，HAProxy 與 direct 差異僅 +1%（受 MVCC 競爭天花板限制）
 
-下一步將完成 TiDB 剩餘 4 組測試，並視需要追加 K8s 容器化測試。
+下一步將完成 K8s 容器化環境測試。
 
 ---
 
@@ -72,16 +72,16 @@
 |---------|------|----|------|----------------|------|-----|-----|-----|------|------|
 | vm-1node | VM×1 | 1 | 直連 :4000 | — | ✅ | 11,895.0 | 12,766.7 | 13,355.4 | 13,078.8 | **13,355.4** |
 | vm-1node (no-analyze) | VM×1 | 1 | 直連 :4000 | — | ✅ | 11,380.6 | 12,596.2 | 13,345.3 | 13,191.7 | **13,345.3** |
-| vm-3node | VM×3 | 3 | HAProxy :4000 | — | ⏳ | — | — | — | — | — |
-| vm-3node-direct | VM×3 | 3 | 直連 :4000 | — | ⏳ | — | — | — | — | — |
+| vm-3node | VM×3 | 3 | HAProxy :4000 | — | ✅ | 13,957.6 | 18,393.2 | 21,523.0 | 21,875.0 | **21,875.0** |
+| vm-3node-direct | VM×3 | 3 | 直連 :4000 | — | ✅ | 12,882.2 | 14,385.6 | 13,204.3 | 14,779.6 | **14,779.6** |
 | k8s-3node-unlimit | K8s×3 | 3 | HAProxy :4000 | 無 | ⏳ | — | — | — | — | — |
 | k8s-3node-limit | K8s×3 | 3 | HAProxy :4000 | TiKV Nc | ⏳ | — | — | — | — | — |
 
 > `vm-1node (no-analyze)`：停用資料庫自動統計分析（背景工作），讓測試結果排除排程干擾，呈現最純粹的效能數字。
 
-> **目前進度**：YBDB VM 測試完成，TiDB 兩組 vm-1node 完成（peak **13,355 tpmC**，約為同等硬體 YBDB 單節點的 32 倍；with/without AUTO ANALYZE 差異 < 5%，10 分鐘測試內 modify 量未達 AUTO ANALYZE 觸發閾值），其他 4 組進行中。
+> **目前進度**：TiDB / YBDB VM 三組（vm-1node / vm-3node / vm-3node-direct）全部完成；K8s variant 進行中。
 
-> **TiDB vs YBDB 初步對比（單節點 VM）**：TiDB vm-1node 峰值 **13,355 tpmC**，YBDB vm-1node 峰值 **414.7 tpmC**，TiDB 約為 YBDB 的 **32 倍**。延遲方面，TiDB 128t 平均延遲 268ms；YBDB 128t 平均延遲 15,655ms。完整對比待 TiDB 其他 5 組完成後更新。
+> **TiDB vs CRDB vs YBDB 對比（vm-3node HAProxy）**：TiDB peak **21,875 tpmC**、CRDB peak **14,014 tpmC**、YBDB peak **1,036 tpmC**。TiDB SQL/儲存分離設計讓「加台機器跑 SQL」效益最大化（HAProxy 比直連 +48%），CRDB symmetric architecture 也有 +26% 增益，YBDB 因 tserver 一體設計增益僅 +1%。
 
 ### YugabyteDB (yuga-tc1) 🔄 進行中
 
