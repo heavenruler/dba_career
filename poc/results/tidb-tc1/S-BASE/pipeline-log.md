@@ -238,3 +238,48 @@ TiDB 在 row 鎖層排隊處理，每筆順序執行；YBDB 在 commit 時偵測
 
 TiDB 三節點 + HAProxy 是 **OLTP 高並發場景的最佳部署模式**。peak 21,875 tpmC 為單節點 13,355 的 **1.64×**，超越 CRDB 同等部署 1.56×。  
 TiDB SQL/儲存層分離設計讓「加台機器跑 SQL」效益最大化，這是與 CRDB（symmetric）和 YBDB（tserver 一體）架構最大的差異。
+
+---
+
+## vm-3node-verify — 2026-05-10（128t 獨立驗證）
+
+### 目的
+驗證 vm-3node 128t = 21,875 是否為「16/32/64t 連跑後 cache warm 累積灌水」造成的虛高，獨立跑 128t 從 fresh state 比較。
+
+### 環境
+- 同 vm-3node 叢集（`.32` reboot 後 fresh state，無前段累積）
+- 連線入口：HAProxy `.34:4000`
+- THREADS_LIST：**僅 128**（warmup 5min @ 16t → 直接跑 128t）
+- 結果目錄：`vm-3node-verify/20260510-0119/`
+
+### Execute 結果
+
+| threads | tpmC | tpmTotal | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|
+| 128 | **23,746.4** | 52,728.6 | 154.3 | 335.5 |
+
+### 對比
+
+| 測試模式 | tpmC | 差異 |
+|---------|------|------|
+| vm-3node 連跑 128t（接續 16/32/64t）| 21,875 | baseline |
+| **vm-3node-verify 獨立 128t**（fresh state）| **23,746** | **+8.6%** |
+
+### 結論：21,875 為「保守值」
+
+獨立跑（cold start，僅 5min warmup）反而**比連跑高 8.6%**，反證：
+
+1. **21,875 不是 cache warm 灌水**：若為灌水，獨立跑應該更低；實測更高，邏輯反向。
+2. **連跑模式 60 分鐘累積效應拉低末段數字**：可能來自 TiKV transaction log 累積、GC pressure 升高、Region 分裂在前段 tier 進行時佔用 IOPS。
+3. **TiDB vm-3node HAProxy 真實 peak**：保守 21,875，獨立測量 23,746，**範圍 21,875–23,746**。
+4. **三家對比修正**（vm-3node HAProxy peak）：
+   - TiDB：**21,875–23,746**
+   - CRDB：14,014
+   - YBDB：1,036
+   - TiDB / CRDB：**1.56–1.69×**
+
+### 方法學啟示
+
+- 連跑模式（16→32→64→128t）方便、節省時間，但**末段數字偏保守**。
+- 獨立跑（單一 thread tier + 自帶 warmup）更貼近穩態。
+- 若需精確 peak 數字，建議獨立驗證關鍵 thread level；若只需相對比較，連跑模式公平且足夠。

@@ -10,7 +10,7 @@
 - **YugabyteDB peak 414.7 tpmC**（16t），延遲 2,225-15,655ms（~ TiDB 3%）
 
 **三節點 vm-3node 完整結果**（HAProxy roundrobin）：
-- **TiDB peak 21,875 tpmC**（128t）— 三家最高；vm-3node-direct → HAProxy 提升 **+48%**（SQL 節點 .32/.33 分散處理）
+- **TiDB peak 21,875 tpmC**（連跑 128t）／**23,746 tpmC**（獨立 128t verify，+8.6%）— 三家最高；vm-3node-direct → HAProxy 提升 **+48%**（SQL 節點 .32/.33 分散處理）
 - **CockroachDB peak 14,014 tpmC**（128t）— symmetric architecture，HAProxy 比直連 +26%
 - **YugabyteDB peak 1,036.7 tpmC**（16t）— tserver 一體設計，HAProxy 與 direct 差異僅 +1%（受 MVCC 競爭天花板限制）
 
