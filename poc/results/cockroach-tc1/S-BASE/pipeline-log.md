@@ -1,6 +1,6 @@
 # CockroachDB TPC-C Pipeline Log — cockroach-tc1 / S-BASE
 
-> **本測試結論**：CockroachDB 單節點吞吐量介於 TiDB 與 YugabyteDB 之間 — 約為 TiDB 的 65%、YBDB 的 22 倍；READ COMMITTED 隔離後無 abort 重試風暴。
+> **本測試結論**：CockroachDB 單節點吞吐量介於 TiDB 與 YugabyteDB 之間 — 約為 TiDB 的 65%、YBDB 的 22 倍；READ COMMITTED 隔離下無 abort 重試行為（前一輪 SERIALIZABLE 模式曾觀察到約 0.1% NEW_ORDER 因衝突被中止重做，切到 RC 後消失）。
 
 ---
 

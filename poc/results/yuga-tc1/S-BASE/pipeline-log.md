@@ -1,6 +1,7 @@
 # YBDB TPC-C Pipeline Log — yuga-tc1 / S-BASE
 
-> **本測試結論**：YugabyteDB 單節點在 16 個同時連線時勉強可用，超過後效能急劇下降，不適合高併發場景。三節點橫向擴展可帶來約 2.5 倍吞吐，但延遲仍會隨併發線性惡化，是 MVCC 架構設計的根本限制。
+> **本測試結論**：YugabyteDB 單節點在「無 think time 持續高壓」場景下，16 個同時連線勉強可用、超過後效能急劇下降。三節點橫向擴展可帶來約 2.5 倍吞吐，但延遲仍會隨併發線性惡化，是 MVCC 架構設計的根本限制。
+> **註**：實際生產通常有自然請求間隔（think time），效能會優於本測試的極端壓力結果，但競爭問題仍存在。
 
 ---
 
@@ -105,7 +106,7 @@ go-tpc 無 think time → goroutine（程式內的並行執行單元，每個對
 - 節點：.32/.33/.34 三節點 RF=3，**zone=asia-east1-{a,b,c}**（三台伺服器分配在三個不同的「可用區」，類似不同機架或不同廠房，避免單點故障）
 - 啟動：`yugabyted start --fault_tolerance=zone`（**容錯等級設為「區域」**，代表任何一個可用區掛掉，服務仍可繼續運作），.32 為 **bootstrap**（第一台啟動的節點，負責初始化整個叢集，其他節點加入後才形成叢集），.33/.34 透過 **`--join=172.24.40.32`**（加入叢集的指令，類似「加入群組」）加入
 - tserver flags：與 vm-1node 相同
-- 連線入口：直連 172.24.40.32:5433（**不過 HAProxy**）
+- 連線入口：execute 階段直連 172.24.40.32:5433（**不過 HAProxy**）；prepare 階段為 HAProxy（:15433），詳見下方 Prepare 警告說明
 - Warehouses：128 | Warmup：5m | Duration：10m | Threads：16/32/64/128
 - 結果目錄：`vm-3node-direct/20260507-0229/`
 
@@ -113,7 +114,7 @@ go-tpc 無 think time → goroutine（程式內的並行執行單元，每個對
 
 **結論：資料載入成功，下方是逾時原因說明，不影響測試。**
 
-- 時間：28m00s（128W），比 vm-1node 的 47m51s 快近一倍 — 三節點分擔寫入
+- 時間：28m00s（128W），比 vm-1node 的 46m51s 快近一倍 — 三節點分擔寫入
 - 警告：`driver: bad connection` — 一致性檢查 SQL 是跨表聚合（`condition 3.3.2.x` 是「TPC-C 官方定義的資料一致性驗證規則」），單條查詢時間長，prepare 階段透過 HAProxy 連線（:15433），HAProxy 的「timeout server 30s」（代理層的連線超時設定，超過 30 秒沒回應就斷線）切斷未完成的 check 查詢；data load 本體已完成無誤
 
 ### Execute 結果
