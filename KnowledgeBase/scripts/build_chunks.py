@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import hashlib
 import json
 import re
@@ -10,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "output_with_md5.txt"
 COLLECTOR_DIR = ROOT / "collector"
 IMPORTED_DIR = COLLECTOR_DIR / "imported"
-DATA_DIR = ROOT / "data"
+DATA_DIR = ROOT / "generated" / "kb"
 CHUNKS_PATH = DATA_DIR / "chunks.jsonl"
 DOCUMENTS_PATH = DATA_DIR / "documents.jsonl"
 MISSING_PATH = DATA_DIR / "missing_documents.jsonl"
@@ -300,8 +301,15 @@ def build_records_for_document(doc: dict, source_md: Path, source_pdf: Path | No
     return document_record, chunk_records
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Build knowledge-base chunks from collector/imported full.md files.")
+    parser.add_argument("--doc-id", help="Only rebuild one 32-character document id.")
+    return parser.parse_args()
+
+
 def main() -> int:
-    DATA_DIR.mkdir(exist_ok=True)
+    args = parse_args()
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     manifest_docs = parse_manifest()
     imported_index = imported_dirs_by_md5()
@@ -313,6 +321,8 @@ def main() -> int:
 
     for doc in manifest_docs:
         doc_id = doc["doc_id"]
+        if args.doc_id and doc_id != args.doc_id:
+            continue
         source_md = choose_source_md(imported_index.get(doc_id, []))
         source_pdf = COLLECTOR_DIR / f"{doc_id}.pdf"
 
@@ -333,6 +343,8 @@ def main() -> int:
         seen_imported_doc_ids.add(doc_id)
 
     for doc_id, directories in sorted(imported_index.items()):
+        if args.doc_id and doc_id != args.doc_id:
+            continue
         if doc_id in seen_imported_doc_ids:
             continue
         source_md = choose_source_md(directories)

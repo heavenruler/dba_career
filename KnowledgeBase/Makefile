@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: commit md5_fix build_chunks clean_generated
+.PHONY: commit md5_fix audit_sources build_chunks clean_generated
 
 commit:
 	mv ~/Downloads/FireShot/* collector ; git add . ; git commit -m "update" ; git push
@@ -12,10 +12,15 @@ md5_fix:
 
 # 從 collector/imported/*/full.md 建立知識庫拆塊資料
 build_chunks:
-	@python3 scripts/build_chunks.py
-	@echo "已建立 data/chunks.jsonl"
+	@python3 scripts/build_chunks.py $(if $(DOC_ID),--doc-id $(DOC_ID),)
+	@echo "已建立 generated/kb/chunks.jsonl"
+
+# 檢查 output_with_md5、collector PDF、imported 正文的主鍵對齊狀態
+audit_sources:
+	@python3 scripts/audit_sources.py
+	@echo "已建立 generated/kb/source_audit.jsonl"
 
 # 清除可重建的知識庫產物
 clean_generated:
-	@rm -f data/chunks.jsonl data/documents.jsonl data/missing_documents.jsonl
+	@rm -rf generated
 	@echo "已清除可重建產物"
