@@ -4,7 +4,7 @@
 
 我們用業界標準的 OLTP 壓力測試（TPC-C，模擬電商訂單處理）比較三款分散式資料庫（TiDB、CockroachDB、YugabyteDB）在不同部署架構下的吞吐量。
 
-**單節點 vm-1node 對比**（相同硬體、READ COMMITTED 隔離）：
+**單節點 vm-1node 對比**（相同硬體、READ COMMITTED 隔離；READ COMMITTED 是「交易隔離等級」的一種設定，決定多筆交易同時跑時彼此能看到對方未完成資料的程度；本次三款資料庫統一切到此等級，確保對比基準一致。詳見下方「特殊 flags」區塊）：
 - **TiDB peak 13,355 tpmC**（64t），延遲 39-268ms
 - **CockroachDB peak 8,732 tpmC**（32t），延遲 62-565ms（~ TiDB 65%）
 - **YugabyteDB peak 414.7 tpmC**（16t），延遲 2,225-15,655ms（~ TiDB 3%）
@@ -12,7 +12,7 @@
 **三節點 vm-3node 完整結果**（HAProxy roundrobin）：
 - **TiDB peak 22,841 tpmC**（128t，clean 重跑為基準；三次 128t 測量範圍 21,875–23,746，±4.3%）— 三家最高；vm-3node-direct → HAProxy 提升 **+55%**（SQL 節點 .32/.33 分散處理）
 - **CockroachDB peak 14,014 tpmC**（128t）— symmetric architecture，HAProxy 比直連 +26%
-- **YugabyteDB peak 1,036.7 tpmC**（16t）— tserver 一體設計，HAProxy 與 direct 差異僅 +1%（受 MVCC 競爭天花板限制）
+- **YugabyteDB peak 1,036.7 tpmC**（16t）— tserver 一體設計，HAProxy 與 direct 差異僅 +1%（受 **MVCC**（Multi-Version Concurrency Control 多版本並行控制——每筆資料保留多份版本，衝突時偵測重做）的競爭設計天花板限制；無論加多少節點，相同熱點資料 row 仍然只能單線結帳，這就是上限的來源）
 
 下一步將完成 K8s 容器化環境測試。
 
@@ -28,7 +28,7 @@
 
 - **資料量**：128 個倉庫
 
-- **併發連線數**：16 / 32 / 64 / 128
+- **併發連線數**：16 / 32 / 64 / 128（壓測工具 go-tpc 啟動的同時工作執行緒數，每個執行緒佔用一條資料庫連線，持續送訂單／付款交易；分四檔由低到高，用來觀察吞吐量隨併發成長的飽和曲線——管理層可理解為「同一瞬間有多少使用者同時下單」）
 
 - **測試方法**：取消使用者操作間隔（持續高壓滿載）、暖機 5 分鐘、正式測試 10 分鐘
 
@@ -59,6 +59,7 @@
   - `:5433` — YBDB SQL 服務端口
   - `:15433` — YBDB HAProxy 監聽端口（與 YBDB 共用同一台主機，避用 5433），流量由此轉發至後端 YBDB:5433
   - `:26257` — CockroachDB SQL 服務端口（PostgreSQL 協定相容）
+  - **NodePort**：K8s 對外暴露服務的固定埠口模式（埠號通常在 30000-32767 區間）；本測試 `:30004` 即指向 K8s 叢集內的 TiDB SQL 服務。
 
 - **資源限制標記**：
   - `TiKV Nc` — 限制 TiKV 儲存元件可用的 CPU 核心數
@@ -133,6 +134,11 @@
 - **多節點 VM**：採用 **Raft 共識協議**（分散式一致性機制），所有寫入需要多數節點確認，提供高可用性但有寫入延遲代價。
 
 - **HAProxy overhead**：模擬正式環境前面有 load balancer 時對連線延遲與吞吐的影響。
+
+- **三家架構特徵速查**（影響加節點時誰能擴充什麼）：
+  - **TiDB（SQL／儲存分離）**：TiDB SQL 接收層與 TiKV 儲存層各自獨立，加 SQL 節點即可橫向擴充處理量（HAProxy 增益最大）。
+  - **CockroachDB（symmetric architecture 對稱式）**：每個節點同時具備 SQL 接收與儲存能力，HAProxy 把連線分散到多節點，每台都能完整處理請求。
+  - **YugabyteDB（tserver 一體）**：SQL 與儲存綁在同一進程，加節點時 SQL 與儲存一起增加，但實際吞吐受 MVCC 競爭限制。
 
 ---
 
