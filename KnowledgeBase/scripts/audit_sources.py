@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "output_with_md5.txt"
 COLLECTOR_DIR = ROOT / "collector"
-IMPORTED_DIR = COLLECTOR_DIR / "imported"
+EXTRACTED_DIR = ROOT / "generated" / "extracted"
 DATA_DIR = ROOT / "generated" / "kb"
 AUDIT_PATH = DATA_DIR / "source_audit.jsonl"
 SUMMARY_PATH = DATA_DIR / "source_audit_summary.json"
@@ -58,59 +58,39 @@ def collect_pdfs() -> set[str]:
     }
 
 
-def collect_imported() -> dict[str, list[Path]]:
-    imported = {}
-    if not IMPORTED_DIR.exists():
-        return imported
-    for path in IMPORTED_DIR.iterdir():
-        if not path.is_dir():
-            continue
-        match = re.match(r"([0-9a-f]{32})\.pdf-", path.name)
-        if match:
-            imported.setdefault(match.group(1), []).append(path)
-    return imported
-
-
-def imported_has_full_md(paths: list[Path]) -> bool:
-    return any((path / "full.md").exists() for path in paths)
-
-
-def imported_full_md_paths(paths: list[Path]) -> list[str]:
-    result = []
-    for path in paths:
-        full_md = path / "full.md"
-        if full_md.exists():
-            result.append(str(full_md.relative_to(ROOT)))
-    return result
-
-
-def imported_dirs(paths: list[Path]) -> list[str]:
-    return [str(path.relative_to(ROOT)) for path in paths]
+def collect_extracted() -> set[str]:
+    if not EXTRACTED_DIR.exists():
+        return set()
+    return {
+        path.name
+        for path in EXTRACTED_DIR.iterdir()
+        if path.is_dir()
+        and re.fullmatch(r"[0-9a-f]{32}", path.name)
+        and (path / "full.md").exists()
+    }
 
 
 def build_audit_rows() -> tuple[list[dict], Counter]:
     manifest, manifest_doc_id_counts = parse_manifest()
     pdfs = collect_pdfs()
-    imported = collect_imported()
-    all_doc_ids = sorted(set(manifest) | pdfs | set(imported))
+    extracted = collect_extracted()
+    all_doc_ids = sorted(set(manifest) | pdfs | extracted)
     rows = []
 
     for doc_id in all_doc_ids:
         manifest_record = manifest.get(doc_id)
-        imported_paths = imported.get(doc_id, [])
         has_manifest = manifest_record is not None
         has_pdf = doc_id in pdfs
-        has_imported = bool(imported_paths)
-        has_full_md = imported_has_full_md(imported_paths)
+        has_extracted = doc_id in extracted
 
-        if has_manifest and has_full_md:
+        if has_manifest and has_extracted:
             status = "manifest_ok"
-        elif has_manifest and not has_imported:
-            status = "missing_imported"
-        elif has_manifest and has_imported and not has_full_md:
-            status = "missing_full_md"
-        elif has_full_md:
-            status = "orphan_imported"
+        elif has_manifest and has_pdf:
+            status = "needs_extraction"
+        elif has_manifest:
+            status = "missing_pdf"
+        elif has_extracted:
+            status = "orphan_extracted"
         elif has_pdf:
             status = "orphan_pdf"
         else:
@@ -131,14 +111,12 @@ def build_audit_rows() -> tuple[list[dict], Counter]:
             "pdf_status": pdf_status,
             "has_manifest": has_manifest,
             "has_pdf": has_pdf,
-            "has_imported": has_imported,
-            "has_full_md": has_full_md,
+            "has_extracted": has_extracted,
             "title": manifest_record["title"] if manifest_record else None,
             "url": manifest_record["url"] if manifest_record else None,
             "source_domain": manifest_record["source_domain"] if manifest_record else None,
             "source_pdf": f"collector/{doc_id}.pdf" if has_pdf else None,
-            "imported_dirs": imported_dirs(imported_paths),
-            "full_md_paths": imported_full_md_paths(imported_paths),
+            "source_md": f"generated/extracted/{doc_id}/full.md" if has_extracted else None,
         })
 
     return rows, manifest_doc_id_counts

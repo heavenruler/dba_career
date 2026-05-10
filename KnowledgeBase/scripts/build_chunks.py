@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "output_with_md5.txt"
 COLLECTOR_DIR = ROOT / "collector"
-IMPORTED_DIR = COLLECTOR_DIR / "imported"
+EXTRACTED_DIR = ROOT / "generated" / "extracted"
 DATA_DIR = ROOT / "generated" / "kb"
 CHUNKS_PATH = DATA_DIR / "chunks.jsonl"
 DOCUMENTS_PATH = DATA_DIR / "documents.jsonl"
@@ -107,28 +107,11 @@ def add_manifest_block(block: list[str], docs: list[dict]) -> None:
         docs.append({"doc_id": md5, "title": title, "url": url})
 
 
-def imported_dirs_by_md5() -> dict[str, list[Path]]:
-    result: dict[str, list[Path]] = {}
-    if not IMPORTED_DIR.exists():
-        return result
-    for path in IMPORTED_DIR.iterdir():
-        if not path.is_dir():
-            continue
-        match = re.match(r"([0-9a-f]{32})\.pdf-", path.name)
-        if match:
-            result.setdefault(match.group(1), []).append(path)
-    return result
-
-
-def choose_source_md(imported_dirs: list[Path]) -> Path | None:
-    candidates = []
-    for directory in imported_dirs:
-        full_md = directory / "full.md"
-        if full_md.exists():
-            candidates.append(full_md)
-    if not candidates:
-        return None
-    return max(candidates, key=lambda path: path.stat().st_size)
+def extracted_source_md(doc_id: str) -> Path | None:
+    full_md = EXTRACTED_DIR / doc_id / "full.md"
+    if full_md.exists():
+        return full_md
+    return None
 
 
 def clean_text(text: str) -> str:
@@ -312,18 +295,15 @@ def main() -> int:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     manifest_docs = parse_manifest()
-    imported_index = imported_dirs_by_md5()
     documents = []
     chunks = []
     missing = []
-
-    seen_imported_doc_ids = set()
 
     for doc in manifest_docs:
         doc_id = doc["doc_id"]
         if args.doc_id and doc_id != args.doc_id:
             continue
-        source_md = choose_source_md(imported_index.get(doc_id, []))
+        source_md = extracted_source_md(doc_id)
         source_pdf = COLLECTOR_DIR / f"{doc_id}.pdf"
 
         base_record = {
@@ -338,21 +318,6 @@ def main() -> int:
             continue
 
         document_record, chunk_records = build_records_for_document(doc, source_md, source_pdf)
-        documents.append(document_record)
-        chunks.extend(chunk_records)
-        seen_imported_doc_ids.add(doc_id)
-
-    for doc_id, directories in sorted(imported_index.items()):
-        if args.doc_id and doc_id != args.doc_id:
-            continue
-        if doc_id in seen_imported_doc_ids:
-            continue
-        source_md = choose_source_md(directories)
-        if source_md is None:
-            continue
-        source_pdf = COLLECTOR_DIR / f"{doc_id}.pdf"
-        doc = {"doc_id": doc_id, "title": None, "url": None}
-        document_record, chunk_records = build_records_for_document(doc, source_md, source_pdf, status="orphan_imported")
         documents.append(document_record)
         chunks.extend(chunk_records)
 
