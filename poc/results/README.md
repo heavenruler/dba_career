@@ -10,7 +10,7 @@
 - **YugabyteDB peak 414.7 tpmC**（16t），延遲 2,225-15,655ms（~ TiDB 3%）
 
 **三節點 vm-3node 完整結果**（HAProxy roundrobin）：
-- **TiDB peak 21,875 tpmC**（連跑 128t）／**23,746 tpmC**（獨立 128t verify，+8.6%）— 三家最高；vm-3node-direct → HAProxy 提升 **+48%**（SQL 節點 .32/.33 分散處理）
+- **TiDB peak 22,841 tpmC**（128t，clean 重跑為基準；三次 128t 測量範圍 21,875–23,746，±4.3%）— 三家最高；vm-3node-direct → HAProxy 提升 **+55%**（SQL 節點 .32/.33 分散處理）
 - **CockroachDB peak 14,014 tpmC**（128t）— symmetric architecture，HAProxy 比直連 +26%
 - **YugabyteDB peak 1,036.7 tpmC**（16t）— tserver 一體設計，HAProxy 與 direct 差異僅 +1%（受 MVCC 競爭天花板限制）
 
@@ -72,7 +72,7 @@
 |---------|------|----|------|----------------|------|-----|-----|-----|------|------|
 | vm-1node | VM×1 | 1 | 直連 :4000 | — | ✅ | 11,895.0 | 12,766.7 | 13,355.4 | 13,078.8 | **13,355.4** |
 | vm-1node (no-analyze) | VM×1 | 1 | 直連 :4000 | — | ✅ | 11,380.6 | 12,596.2 | 13,345.3 | 13,191.7 | **13,345.3** |
-| vm-3node | VM×3 | 3 | HAProxy :4000 | — | ✅ | 13,957.6 | 18,393.2 | 21,523.0 | 21,875.0 | **21,875.0** |
+| vm-3node | VM×3 | 3 | HAProxy :4000 | — | ✅ | 13,573.7 | 19,205.1 | 21,992.7 | 22,841.0 | **22,841.0** |
 | vm-3node-direct | VM×3 | 3 | 直連 :4000 | — | ✅ | 12,882.2 | 14,385.6 | 13,204.3 | 14,779.6 | **14,779.6** |
 | k8s-3node-unlimit | K8s×3 | 3 | HAProxy :4000 | 無 | ⏳ | — | — | — | — | — |
 | k8s-3node-limit | K8s×3 | 3 | HAProxy :4000 | TiKV Nc | ⏳ | — | — | — | — | — |
@@ -81,7 +81,7 @@
 
 > **目前進度**：TiDB / YBDB VM 三組（vm-1node / vm-3node / vm-3node-direct）全部完成；K8s variant 進行中。
 
-> **TiDB vs CRDB vs YBDB 對比（vm-3node HAProxy）**：TiDB peak **21,875 tpmC**、CRDB peak **14,014 tpmC**、YBDB peak **1,036 tpmC**。TiDB SQL/儲存分離設計讓「加台機器跑 SQL」效益最大化（HAProxy 比直連 +48%），CRDB symmetric architecture 也有 +26% 增益，YBDB 因 tserver 一體設計增益僅 +1%。
+> **TiDB vs CRDB vs YBDB 對比（vm-3node HAProxy）**：TiDB peak **22,841 tpmC**（重 prepare clean run；三次 128t 測量 21,875–23,746 範圍內）、CRDB peak **14,014 tpmC**、YBDB peak **1,036 tpmC**。TiDB SQL/儲存分離設計讓「加台機器跑 SQL」效益最大化（HAProxy 比直連 +55%），CRDB symmetric architecture 也有 +26% 增益，YBDB 因 tserver 一體設計增益僅 +1%。
 
 ### YugabyteDB (yuga-tc1) 🔄 進行中
 
