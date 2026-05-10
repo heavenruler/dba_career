@@ -6,9 +6,13 @@
     mode: '0755'
 
 ## AlmaLinux 10 uses nftables; ensure iptables kernel modules are loaded
-- name: Install iptables for k3s/kube-proxy
+## Note: AlmaLinux 10 ships ip_tables / iptable_nat in kernel-modules-extra
+## (not the default kernel-modules), so install both packages explicitly.
+- name: Install iptables and matching kernel modules for k3s/kube-proxy
   ansible.builtin.dnf:
-    name: iptables
+    name:
+      - iptables
+      - "kernel-modules-extra-{{ ansible_kernel }}"
     state: present
 
 - name: Load required iptables kernel modules
