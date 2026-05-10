@@ -75,11 +75,18 @@
 | vm-3node | VM×3 | 3 | HAProxy :4000 | — | ✅ | 13,573.7 | 19,205.1 | 21,992.7 | 22,841.0 | **22,841.0** |
 | vm-3node-direct | VM×3 | 3 | 直連 :4000 | — | ✅ | 12,882.2 | 14,385.6 | 13,204.3 | 14,779.6 | **14,779.6** |
 | k8s-3node-unlimit | K8s×3 | 3 | NodePort :30004 | 無 | ✅ | 13,160.9 | 16,304.1 | 18,918.8 | 18,871.3 | **18,918.8** |
-| k8s-3node-limit | K8s×3 | 3 | HAProxy :4000 | TiKV Nc | ⏳ | — | — | — | — | — |
+| k8s-3node-limit | K8s×3 | 3 | NodePort :30004 | TiKV 2c/8GiB | ✅ | 10,470.5 | 11,080.7 | 10,895.5 | 10,519.7 | **11,080.7** |
 
 > `vm-1node (no-analyze)`：停用資料庫自動統計分析（背景工作），讓測試結果排除排程干擾，呈現最純粹的效能數字。
 
-> **目前進度**：TiDB / YBDB VM 三組（vm-1node / vm-3node / vm-3node-direct）全部完成；K8s variant 進行中。
+> **目前進度**：TiDB 全 6 組完成（VM 4 + K8s 2）；YBDB VM 三組完成、K8s 待測；CRDB VM 三組完成。
+
+> **TiDB 全部署模式對比**：
+> - **vm-3node (HAProxy)** peak **22,841**（最佳）— SQL 節點分散最有效
+> - vm-3node-direct peak 14,779 — 單一 gateway，無分散優勢
+> - vm-1node peak 13,355
+> - k8s-3node-unlimit peak 18,919 — 容器化 ~17% overhead
+> - **k8s-3node-limit** peak **11,081**（最差）— TiKV 2 CPU cap 限縮天花板 41%
 
 > **TiDB vs CRDB vs YBDB 對比（vm-3node HAProxy）**：TiDB peak **22,841 tpmC**（重 prepare clean run；三次 128t 測量 21,875–23,746 範圍內）、CRDB peak **14,014 tpmC**、YBDB peak **1,036 tpmC**。TiDB SQL/儲存分離設計讓「加台機器跑 SQL」效益最大化（HAProxy 比直連 +55%），CRDB symmetric architecture 也有 +26% 增益，YBDB 因 tserver 一體設計增益僅 +1%。
 
