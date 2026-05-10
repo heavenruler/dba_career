@@ -12,7 +12,7 @@
 **三節點 vm-3node 完整結果**（HAProxy roundrobin）：
 - **TiDB peak 22,841 tpmC**（128t，clean 重跑為基準；三次 128t 測量範圍 21,875–23,746，±4.3%）— 三家最高；vm-3node-direct → HAProxy 提升 **+55%**（SQL 節點 .32/.33 分散處理）
 - **CockroachDB peak 14,014 tpmC**（128t）— symmetric architecture，HAProxy 比直連 +26%
-- **YugabyteDB peak 1,036.7 tpmC**（16t）— tserver 一體設計，HAProxy 與 direct 差異僅 +1%（受 **MVCC**（Multi-Version Concurrency Control 多版本並行控制——每筆資料保留多份版本，衝突時偵測重做）的競爭設計天花板限制；無論加多少節點，相同熱點資料 row 仍然只能單線結帳，這就是上限的來源）
+- **YugabyteDB peak 1,036.7 tpmC**（16t）— tserver 一體設計，HAProxy 與 direct 差異僅 +1%（受 **MVCC**（Multi-Version Concurrency Control 多版本併發控制——每筆資料保留多份版本，衝突時偵測重做）的競爭設計天花板限制；無論加多少節點，相同熱點資料 row 仍然只能單線結帳，這就是上限的來源）
 
 下一步將完成 K8s 容器化環境測試。
 

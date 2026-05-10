@@ -139,7 +139,7 @@ TPC-C `district.D_NEXT_O_ID` 熱點 row 在 RC 下排隊處理，每筆順序執
 
 ### 觀察
 
-- **隨並發 scale up**：與 vm-1node 不同（單節點 16~128t 浮動 < 7%），三節點直連在高並發下持續成長 — 高並發釋放更多 RPC 並行度。
+- **隨併發 scale up**：與 vm-1node 不同（單節點 16~128t 浮動 < 7%），三節點直連在高併發下持續成長 — 高併發釋放更多 RPC 併發度。
 - **峰值在 128t**（11,142），與 vm-1node 峰值 32t 不同 — 多節點吃掉更多 thread 才開始飽和。
 - **延遲較單節點高**：原因是 SQL 全部走 .32 的 gateway，但 leaseholder 分散在三節點，每筆查詢需 cross-node RPC。
 
