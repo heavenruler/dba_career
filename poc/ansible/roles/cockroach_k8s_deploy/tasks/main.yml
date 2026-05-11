@@ -77,8 +77,8 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: crdb_running
   until: crdb_running.stdout | int >= 3
-  retries: 60
-  delay: 5
+  retries: 150
+  delay: 2
   changed_when: false
 
 ## 手動 init cluster (chart 15.0.5 不渲染 init Job)
@@ -103,8 +103,8 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: crdb_ready
   until: crdb_ready.stdout | int >= 3
-  retries: 60
-  delay: 5
+  retries: 150
+  delay: 2
   changed_when: false
 
 ## Patch service 設定固定 NodePort (chart values 無 nodePort 欄位支援)
