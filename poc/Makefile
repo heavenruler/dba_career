@@ -40,6 +40,18 @@ YUGA_PORT_K8S        := 30005
 YUGA_USER            ?= yugabyte
 YUGA_PASS            ?=
 
+## CockroachDB connection endpoints
+##   VM 3-node:        .32:15257 HAProxy (poc-1:15257 → poc-1/2/3:26257)
+##   VM 3-node direct: .32:26257 direct SQL on one node
+##   VM 1-node:        .32:26257 single-node deploy
+##   CRDB 部署目前為手動，無 ansible playbook；本檔僅提供 TPC-C wrapper
+CRDB_HOST_VM         := 172.24.40.32
+CRDB_PORT_VM         := 15257
+CRDB_HOST_VM_DIRECT  := 172.24.40.32
+CRDB_PORT_VM_DIRECT  := 26257
+CRDB_USER            ?= root
+CRDB_PASS            ?=
+
 ## TPC-C remote client node — 172.24.40.31 (l-dbm-labroom-1, dedicated, not a DB node)
 ## Must NOT use 172.24.40.32/33/34 (DB nodes) to avoid resource contention
 REMOTE_HOST ?= root@172.24.40.31
@@ -54,6 +66,12 @@ YUGA_TPCC_ENV = YUGA_USER="$(YUGA_USER)" YUGA_PASS="$(YUGA_PASS)" \
                 WAREHOUSES="$(WAREHOUSES)" DURATION="$(DURATION)" \
                 THREADS_LIST="$(THREADS)" WARMUP="$(WARMUP)" \
                 TOPO="$(TOPO)" SCENARIO="$(SCENARIO)" RESULT_BASE="$(RESULT_BASE)" \
+                REMOTE_HOST="$(REMOTE_HOST)"
+
+CRDB_TPCC_ENV = CRDB_USER="$(CRDB_USER)" CRDB_PASS="$(CRDB_PASS)" \
+                WAREHOUSES="$(WAREHOUSES)" DURATION="$(DURATION)" \
+                THREADS_LIST="$(THREADS)" WARMUP="$(WARMUP)" \
+                TOPO="cockroach-tc1" SCENARIO="$(SCENARIO)" RESULT_BASE="$(RESULT_BASE)" \
                 REMOTE_HOST="$(REMOTE_HOST)"
 
 .PHONY: help \
@@ -77,6 +95,8 @@ YUGA_TPCC_ENV = YUGA_USER="$(YUGA_USER)" YUGA_PASS="$(YUGA_PASS)" \
         tpcc-prepare-yuga-vm tpcc-prepare-yuga-k8s \
         test-tpcc-yuga-vm-1node test-tpcc-yuga-vm-3node-direct test-tpcc-yuga-vm-3node \
         test-tpcc-yuga-k8s test-tpcc-yuga-k8s-limit \
+        tpcc-cleanup-cock-vm tpcc-prepare-cock-vm \
+        test-tpcc-cock-vm-1node test-tpcc-cock-vm-3node-direct test-tpcc-cock-vm-3node \
         tpcc-report tpcc-compare
 
 help:
@@ -221,6 +241,19 @@ help:
 	@echo "  make test-tpcc-yuga-k8s             - VARIANT=k8s-3node-unlimit"
 	@echo "  make test-tpcc-yuga-k8s-limit       - VARIANT=k8s-3node-limit"
 	@echo "  Override: WAREHOUSES=50 DURATION=5m THREADS='32 64' YUGA_USER=yugabyte"
+	@echo ""
+	@echo "=== CockroachDB TPC-C (go-tpc; tests/common/cockroach-tpcc.sh；TOPO=cockroach-tc1) ==="
+	@echo "  注意：CRDB 部署目前為手動（無 ansible playbook），此處僅提供 TPC-C wrapper"
+	@echo "  VM 3-node HAProxy : tpcc-prepare-cock-vm → test-tpcc-cock-vm-3node       → tpcc-report VARIANT=vm-3node TOPO=cockroach-tc1"
+	@echo "  VM 3-node direct  : tpcc-prepare-cock-vm → test-tpcc-cock-vm-3node-direct → tpcc-report VARIANT=vm-3node-direct TOPO=cockroach-tc1"
+	@echo "  VM 1-node         : (用單節點部署) tpcc-prepare-cock-vm CRDB_HOST_VM=\$$(CRDB_HOST_VM_DIRECT) CRDB_PORT_VM=\$$(CRDB_PORT_VM_DIRECT) → test-tpcc-cock-vm-1node"
+	@echo ""
+	@echo "  make tpcc-cleanup-cock-vm           - 清除 tpcc DB (VM via HAProxy)"
+	@echo "  make tpcc-prepare-cock-vm           - 建表+載料 (VM via HAProxy)"
+	@echo "  make test-tpcc-cock-vm-1node        - VARIANT=vm-1node       host=\$$(CRDB_HOST_VM_DIRECT):\$$(CRDB_PORT_VM_DIRECT)"
+	@echo "  make test-tpcc-cock-vm-3node-direct - VARIANT=vm-3node-direct host=\$$(CRDB_HOST_VM_DIRECT):\$$(CRDB_PORT_VM_DIRECT)"
+	@echo "  make test-tpcc-cock-vm-3node        - VARIANT=vm-3node       host=\$$(CRDB_HOST_VM):\$$(CRDB_PORT_VM) (HAProxy)"
+	@echo "  Override: WAREHOUSES=50 DURATION=5m THREADS='32 64' CRDB_USER=root"
 
 ## Pipeline
 tidb:
@@ -609,6 +642,27 @@ test-tpcc-yuga-k8s:
 test-tpcc-yuga-k8s-limit:
 	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=k8s-3node-limit \
 	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh run
+
+## CockroachDB TPC-C (go-tpc; cockroach-tpcc.sh)
+tpcc-cleanup-cock-vm:
+	CRDB_HOST=$(CRDB_HOST_VM) CRDB_PORT=$(CRDB_PORT_VM) VARIANT=vm-3node \
+	  $(CRDB_TPCC_ENV) bash tests/common/cockroach-tpcc.sh cleanup
+
+tpcc-prepare-cock-vm:
+	CRDB_HOST=$(CRDB_HOST_VM) CRDB_PORT=$(CRDB_PORT_VM) VARIANT=vm-3node \
+	  $(CRDB_TPCC_ENV) bash tests/common/cockroach-tpcc.sh prepare
+
+test-tpcc-cock-vm-1node:
+	CRDB_HOST=$(CRDB_HOST_VM_DIRECT) CRDB_PORT=$(CRDB_PORT_VM_DIRECT) VARIANT=vm-1node \
+	  $(CRDB_TPCC_ENV) bash tests/common/cockroach-tpcc.sh run
+
+test-tpcc-cock-vm-3node-direct:
+	CRDB_HOST=$(CRDB_HOST_VM_DIRECT) CRDB_PORT=$(CRDB_PORT_VM_DIRECT) VARIANT=vm-3node-direct \
+	  $(CRDB_TPCC_ENV) bash tests/common/cockroach-tpcc.sh run
+
+test-tpcc-cock-vm-3node:
+	CRDB_HOST=$(CRDB_HOST_VM) CRDB_PORT=$(CRDB_PORT_VM) VARIANT=vm-3node \
+	  $(CRDB_TPCC_ENV) bash tests/common/cockroach-tpcc.sh run
 
 tpcc-report:
 	@latest=$$(ls -td $(RESULT_BASE)/$(TOPO)/$(SCENARIO)/$(VARIANT)/*/ 2>/dev/null | head -1); \
