@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "output_with_md5.txt"
 COLLECTOR_DIR = ROOT / "collector"
 EXTRACTED_DIR = ROOT / "generated" / "extracted"
+FILTERED_DIR = ROOT / "generated" / "filtered"
 DATA_DIR = ROOT / "generated" / "kb"
 CHUNKS_PATH = DATA_DIR / "chunks.jsonl"
 DOCUMENTS_PATH = DATA_DIR / "documents.jsonl"
@@ -112,6 +113,26 @@ def extracted_source_md(doc_id: str) -> Path | None:
     if full_md.exists():
         return full_md
     return None
+
+
+def filtered_source_json(doc_id: str) -> Path | None:
+    knowledge_json = FILTERED_DIR / doc_id / "knowledge.json"
+    if knowledge_json.exists():
+        return knowledge_json
+    return None
+
+
+def text_from_filtered_knowledge(path: Path) -> tuple[str, dict]:
+    knowledge = json.loads(path.read_text(encoding="utf-8"))
+    parts = []
+    if knowledge.get("summary"):
+        parts.append(f"# 摘要\n\n{knowledge['summary']}")
+    for section in knowledge.get("sections", []):
+        heading = section.get("heading") or section.get("section_type") or "有效知識"
+        content = section.get("content") or ""
+        if content.strip():
+            parts.append(f"# {heading}\n\n{content.strip()}")
+    return "\n\n".join(parts).strip(), knowledge
 
 
 def clean_text(text: str) -> str:
@@ -236,11 +257,20 @@ def title_from_text(text: str, fallback: str) -> str:
     return fallback
 
 
-def build_records_for_document(doc: dict, source_md: Path, source_pdf: Path | None, status: str = "ok") -> tuple[dict, list[dict]]:
-    raw_text = source_md.read_text(encoding="utf-8", errors="replace")
-    text = clean_text(raw_text)
-    title = doc.get("title") or title_from_text(text, doc["doc_id"])
+def build_records_for_document(doc: dict, source_path: Path, source_pdf: Path | None, status: str = "ok") -> tuple[dict, list[dict]]:
+    filtered_metadata = None
+    if source_path.suffix == ".json":
+        raw_text, filtered_metadata = text_from_filtered_knowledge(source_path)
+        text = clean_text(raw_text)
+    else:
+        raw_text = source_path.read_text(encoding="utf-8", errors="replace")
+        text = clean_text(raw_text)
+
+    title = (filtered_metadata or {}).get("title") or doc.get("title") or title_from_text(text, doc["doc_id"])
     category, tags, confidence = classify(text[:5000], title)
+    if filtered_metadata:
+        tags = sorted(set(tags + filtered_metadata.get("tags", [])))
+        confidence = max(confidence, 0.9)
     quality = quality_for(text)
     url = doc.get("url")
 
@@ -250,7 +280,8 @@ def build_records_for_document(doc: dict, source_md: Path, source_pdf: Path | No
         "url": url,
         "source_domain": source_domain(url) if url else None,
         "source_pdf": str(source_pdf.relative_to(ROOT)) if source_pdf and source_pdf.exists() else None,
-        "source_md": str(source_md.relative_to(ROOT)),
+        "source_content": str(source_path.relative_to(ROOT)),
+        "source_kind": "llm_filtered" if filtered_metadata else "extracted_text",
         "status": status,
     }
 
@@ -303,21 +334,21 @@ def main() -> int:
         doc_id = doc["doc_id"]
         if args.doc_id and doc_id != args.doc_id:
             continue
-        source_md = extracted_source_md(doc_id)
+        source_content = filtered_source_json(doc_id) or extracted_source_md(doc_id)
         source_pdf = COLLECTOR_DIR / f"{doc_id}.pdf"
 
         base_record = {
             **doc,
             "source_domain": source_domain(doc["url"]),
             "source_pdf": str(source_pdf.relative_to(ROOT)) if source_pdf.exists() else None,
-            "source_md": str(source_md.relative_to(ROOT)) if source_md else None,
+            "source_content": str(source_content.relative_to(ROOT)) if source_content else None,
         }
 
-        if source_md is None:
+        if source_content is None:
             missing.append({**base_record, "status": "missing_full_md"})
             continue
 
-        document_record, chunk_records = build_records_for_document(doc, source_md, source_pdf)
+        document_record, chunk_records = build_records_for_document(doc, source_content, source_pdf)
         documents.append(document_record)
         chunks.extend(chunk_records)
 

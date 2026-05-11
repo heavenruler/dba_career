@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: commit md5_fix extract_pdf audit_sources build_chunks clean_generated
+.PHONY: commit md5_fix extract_pdf filter_doc audit_sources build_chunks clean_generated
 
 commit:
 	mv ~/Downloads/FireShot/* collector ; git add . ; git commit -m "update" ; git push
@@ -19,7 +19,16 @@ extract_pdf:
 	fi
 	@echo "已建立 generated/extracted"
 
-# 從 generated/extracted/*/full.md 建立知識庫拆塊資料
+# 用 LLM 將 generated/extracted 的全文過濾成有效知識
+filter_doc:
+	@if [ -z "$(DOC_ID)" ]; then \
+		echo "使用方法: make filter_doc DOC_ID=<md5>"; \
+		exit 1; \
+	fi
+	@python3 scripts/filter_doc.py --doc-id $(DOC_ID) $(if $(PROVIDER),--provider $(PROVIDER),) $(if $(MODEL),--model $(MODEL),)
+	@echo "已建立 generated/filtered/$(DOC_ID)/knowledge.json"
+
+# 從 generated/filtered 或 generated/extracted 建立知識庫拆塊資料
 build_chunks:
 	@python3 scripts/build_chunks.py $(if $(DOC_ID),--doc-id $(DOC_ID),)
 	@echo "已建立 generated/kb/chunks.jsonl"
