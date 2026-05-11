@@ -191,7 +191,7 @@ help:
 	@echo ""
 	@echo "=== Ansible ==="
 	@echo "  make ansible-ping           - 重建全部清單 + 確認 tunnel + ping 所有 VM"
-	@echo "  make ansible-setup          - 執行 site.yml (base 設定)"
+	@echo "  make ansible-setup          - 執行 site.yml (base 設定) + tpcc-client-ssh.yml (.31→.32/.33/.34 SSH 打通)"
 	@echo ""
 	@echo "=== TiDB ==="
 	@echo "  make tidb-deploy            - 部署 TiDB cluster (tidb.yml)"
@@ -338,6 +338,9 @@ ansible-ping: inventory-refresh-all gcp-tunnel-ensure
 
 ansible-setup:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/site.yml
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tpcc-client-ssh.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tpcc-client.ini
 
 ## vSphere-only (no GCP) — for TC1 / K8s targets
 vm-ping: inventory-refresh
@@ -346,6 +349,9 @@ vm-ping: inventory-refresh
 vm-setup:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/site.yml \
 	  -i inventory/hosts.ini
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tpcc-client-ssh.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/tpcc-client.ini
 
 ## GCP Terraform
 gcp-create:

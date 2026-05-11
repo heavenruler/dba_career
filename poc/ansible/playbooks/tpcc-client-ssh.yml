@@ -1,0 +1,53 @@
+---
+## 確保 tpcc client (.31) 能以 root SSH 連線至 DB hosts (.32/.33/.34)
+## 流程：.31 產生 root SSH key (idempotent) → 將 pub key 授權至 DB hosts → 刷新 .31 known_hosts
+
+- name: Generate root SSH key on tpcc client
+  hosts: tpcc_client
+  become: true
+  tasks:
+    - name: Ensure /root/.ssh exists
+      ansible.builtin.file:
+        path: /root/.ssh
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+
+    - name: Generate root SSH key if absent
+      ansible.builtin.command:
+        cmd: ssh-keygen -t rsa -b 2048 -N "" -f /root/.ssh/id_rsa
+        creates: /root/.ssh/id_rsa
+
+    - name: Slurp tpcc client public key
+      ansible.builtin.slurp:
+        src: /root/.ssh/id_rsa.pub
+      register: tpcc_client_pubkey
+
+- name: Authorize tpcc client pubkey on DB hosts
+  hosts: poc_db
+  become: true
+  vars:
+    tpcc_client_pub: "{{ hostvars[groups['tpcc_client'][0]].tpcc_client_pubkey.content | b64decode | trim }}"
+  tasks:
+    - name: Append tpcc client pubkey to root authorized_keys
+      ansible.posix.authorized_key:
+        user: root
+        key: "{{ tpcc_client_pub }}"
+        state: present
+
+- name: Refresh tpcc client known_hosts for DB hosts
+  hosts: tpcc_client
+  become: true
+  tasks:
+    - name: Scan and trust DB host keys
+      ansible.builtin.shell: |
+        set -e
+        mkdir -p /root/.ssh
+        touch /root/.ssh/known_hosts
+        chmod 600 /root/.ssh/known_hosts
+        for h in {{ groups['poc_db'] | join(' ') }}; do
+          ssh-keygen -R "$h" -f /root/.ssh/known_hosts >/dev/null 2>&1 || true
+          ssh-keyscan -H "$h" >> /root/.ssh/known_hosts 2>/dev/null
+        done
+      changed_when: true
