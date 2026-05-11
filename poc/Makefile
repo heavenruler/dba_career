@@ -26,13 +26,19 @@ TIDB_PORT_VM_DIRECT  := 4000
 TIDB_HOST_K8S        := 172.24.40.32
 TIDB_PORT_K8S        := 30004
 
-## YugabyteDB connection endpoints (VM=HAProxy, K8s=NodePort)
-YUGA_HOST_VM  := 172.24.40.32
-YUGA_PORT_VM  := 15433
-YUGA_HOST_K8S := 172.24.40.32
-YUGA_PORT_K8S := 30005
-YUGA_USER     ?= yugabyte
-YUGA_PASS     ?=
+## YugabyteDB connection endpoints
+##   VM 3-node:        .32:15433 HAProxy (poc-1:15433 → poc-1/2/3:5433)
+##   VM 3-node direct: .32:5433  direct YSQL on one tserver
+##   VM 1-node:        .32:5433  single-node deploy
+##   K8s 3-node:       .32:30005 NodePort
+YUGA_HOST_VM         := 172.24.40.32
+YUGA_PORT_VM         := 15433
+YUGA_HOST_VM_DIRECT  := 172.24.40.32
+YUGA_PORT_VM_DIRECT  := 5433
+YUGA_HOST_K8S        := 172.24.40.32
+YUGA_PORT_K8S        := 30005
+YUGA_USER            ?= yugabyte
+YUGA_PASS            ?=
 
 ## TPC-C remote client node — 172.24.40.31 (l-dbm-labroom-1, dedicated, not a DB node)
 ## Must NOT use 172.24.40.32/33/34 (DB nodes) to avoid resource contention
@@ -69,7 +75,8 @@ YUGA_TPCC_ENV = YUGA_USER="$(YUGA_USER)" YUGA_PASS="$(YUGA_PASS)" \
         test-tpcc-k8s test-tpcc-k8s-limit \
         tpcc-cleanup-yuga-vm tpcc-cleanup-yuga-k8s \
         tpcc-prepare-yuga-vm tpcc-prepare-yuga-k8s \
-        test-tpcc-yuga-vm test-tpcc-yuga-k8s test-tpcc-yuga-k8s-limit \
+        test-tpcc-yuga-vm-1node test-tpcc-yuga-vm-3node-direct test-tpcc-yuga-vm-3node \
+        test-tpcc-yuga-k8s test-tpcc-yuga-k8s-limit \
         tpcc-report tpcc-compare
 
 help:
@@ -197,18 +204,22 @@ help:
 	@echo "  make yuga-tc1-k8s-limit     - k8s-setup→YugabyteDB Helm 部署 with resource limits→status"
 	@echo "  make yuga-k8s-status        - 顯示 nodes / pods / services / YSQL endpoint"
 	@echo ""
-	@echo "=== YugabyteDB TPC-C (BenchmarkSQL; VM:HAProxy:15433 / K8s:NodePort:30005) ==="
-	@echo "  VM  round  : tpcc-prepare-yuga-vm  → test-tpcc-yuga-vm       → tpcc-report VARIANT=yuga-vm"
-	@echo "  K8s round  : tpcc-prepare-yuga-k8s → test-tpcc-yuga-k8s     → tpcc-report VARIANT=yuga-k8s"
-	@echo "  K8s-limit  : tpcc-prepare-yuga-k8s → test-tpcc-yuga-k8s-limit → tpcc-report VARIANT=yuga-k8s-limit"
+	@echo "=== YugabyteDB TPC-C (go-tpc; 共用 tests/common/yuga-tpcc.sh) ==="
+	@echo "  VM 3-node HAProxy : tpcc-prepare-yuga-vm → test-tpcc-yuga-vm-3node       → tpcc-report VARIANT=vm-3node"
+	@echo "  VM 3-node direct  : tpcc-prepare-yuga-vm → test-tpcc-yuga-vm-3node-direct → tpcc-report VARIANT=vm-3node-direct"
+	@echo "  VM 1-node         : (用單節點部署) tpcc-prepare-yuga-vm YUGA_HOST_VM=\$$(YUGA_HOST_VM_DIRECT) YUGA_PORT_VM=\$$(YUGA_PORT_VM_DIRECT) → test-tpcc-yuga-vm-1node"
+	@echo "  K8s 3-node        : tpcc-cleanup-yuga-k8s → tpcc-prepare-yuga-k8s → test-tpcc-yuga-k8s       → tpcc-report VARIANT=k8s-3node-unlimit"
+	@echo "  K8s 3-node limit  : tpcc-cleanup-yuga-k8s → tpcc-prepare-yuga-k8s → test-tpcc-yuga-k8s-limit → tpcc-report VARIANT=k8s-3node-limit"
 	@echo ""
-	@echo "  make tpcc-cleanup-yuga-vm   - 清除 benchmarksql DB (VM)"
-	@echo "  make tpcc-cleanup-yuga-k8s  - 清除 benchmarksql DB (K8s)"
-	@echo "  make tpcc-prepare-yuga-vm   - 建表+載料 (VM)"
-	@echo "  make tpcc-prepare-yuga-k8s  - 建表+載料 (K8s)"
-	@echo "  make test-tpcc-yuga-vm          - warmup+run (VARIANT=yuga-vm)"
-	@echo "  make test-tpcc-yuga-k8s         - warmup+run (VARIANT=yuga-k8s)"
-	@echo "  make test-tpcc-yuga-k8s-limit   - warmup+run (VARIANT=yuga-k8s-limit)"
+	@echo "  make tpcc-cleanup-yuga-vm           - 清除 tpcc DB (VM via HAProxy)"
+	@echo "  make tpcc-cleanup-yuga-k8s          - 清除 tpcc DB (K8s)"
+	@echo "  make tpcc-prepare-yuga-vm           - 建表+載料 (VM via HAProxy)"
+	@echo "  make tpcc-prepare-yuga-k8s          - 建表+載料 (K8s)"
+	@echo "  make test-tpcc-yuga-vm-1node        - VARIANT=vm-1node       host=\$$(YUGA_HOST_VM_DIRECT):\$$(YUGA_PORT_VM_DIRECT)"
+	@echo "  make test-tpcc-yuga-vm-3node-direct - VARIANT=vm-3node-direct host=\$$(YUGA_HOST_VM_DIRECT):\$$(YUGA_PORT_VM_DIRECT)"
+	@echo "  make test-tpcc-yuga-vm-3node        - VARIANT=vm-3node       host=\$$(YUGA_HOST_VM):\$$(YUGA_PORT_VM) (HAProxy)"
+	@echo "  make test-tpcc-yuga-k8s             - VARIANT=k8s-3node-unlimit"
+	@echo "  make test-tpcc-yuga-k8s-limit       - VARIANT=k8s-3node-limit"
 	@echo "  Override: WAREHOUSES=50 DURATION=5m THREADS='32 64' YUGA_USER=yugabyte"
 
 ## Pipeline
@@ -564,31 +575,39 @@ test-tpcc-k8s-limit:
 
 ## YugabyteDB TPC-C (BenchmarkSQL)
 tpcc-cleanup-yuga-vm:
-	YUGA_HOST=$(YUGA_HOST_VM) YUGA_PORT=$(YUGA_PORT_VM) VARIANT=yuga-vm \
+	YUGA_HOST=$(YUGA_HOST_VM) YUGA_PORT=$(YUGA_PORT_VM) VARIANT=vm-3node \
 	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh cleanup
 
 tpcc-cleanup-yuga-k8s:
-	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=yuga-k8s \
+	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=k8s-3node-unlimit \
 	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh cleanup
 
 tpcc-prepare-yuga-vm:
-	YUGA_HOST=$(YUGA_HOST_VM) YUGA_PORT=$(YUGA_PORT_VM) VARIANT=yuga-vm \
+	YUGA_HOST=$(YUGA_HOST_VM) YUGA_PORT=$(YUGA_PORT_VM) VARIANT=vm-3node \
 	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh prepare
 
 tpcc-prepare-yuga-k8s:
-	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=yuga-k8s \
+	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=k8s-3node-unlimit \
 	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh prepare
 
-test-tpcc-yuga-vm:
-	YUGA_HOST=$(YUGA_HOST_VM) YUGA_PORT=$(YUGA_PORT_VM) VARIANT=yuga-vm \
+test-tpcc-yuga-vm-1node:
+	YUGA_HOST=$(YUGA_HOST_VM_DIRECT) YUGA_PORT=$(YUGA_PORT_VM_DIRECT) VARIANT=vm-1node \
+	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh run
+
+test-tpcc-yuga-vm-3node-direct:
+	YUGA_HOST=$(YUGA_HOST_VM_DIRECT) YUGA_PORT=$(YUGA_PORT_VM_DIRECT) VARIANT=vm-3node-direct \
+	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh run
+
+test-tpcc-yuga-vm-3node:
+	YUGA_HOST=$(YUGA_HOST_VM) YUGA_PORT=$(YUGA_PORT_VM) VARIANT=vm-3node \
 	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh run
 
 test-tpcc-yuga-k8s:
-	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=yuga-k8s \
+	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=k8s-3node-unlimit \
 	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh run
 
 test-tpcc-yuga-k8s-limit:
-	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=yuga-k8s-limit \
+	YUGA_HOST=$(YUGA_HOST_K8S) YUGA_PORT=$(YUGA_PORT_K8S) VARIANT=k8s-3node-limit \
 	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh run
 
 tpcc-report:
