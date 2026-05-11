@@ -142,6 +142,31 @@
 
 ---
 
+## 三家架構示意圖
+
+各家原廠官方架構圖（點圖連至原始文件）：
+
+### TiDB
+
+[![TiDB Architecture](https://docs-download.pingcap.com/media/images/docs/tidb-architecture-v6.png)](https://docs.pingcap.com/tidb/stable/tidb-architecture/)
+
+來源：[TiDB Architecture — PingCAP Docs](https://docs.pingcap.com/tidb/stable/tidb-architecture/)
+
+### CockroachDB
+
+[![CockroachDB Architecture](https://github.com/cockroachdb/cockroach/raw/master/docs/media/architecture.png)](https://github.com/cockroachdb/cockroach/blob/master/docs/design.md)
+
+來源：[cockroachdb/cockroach — docs/design.md](https://github.com/cockroachdb/cockroach/blob/master/docs/design.md)
+（CRDB 官方 docs 站 Architecture Overview 頁為純文字、無單一整體架構圖；此圖取自 CRDB github 原始碼倉庫 `docs/media/architecture.png`，雖為早期設計文件版本，但仍是原廠維護中的官方資料，能完整呈現節點內 SQL/Transactional KV/Distribution/Replication/Storage 各層堆疊與對稱架構。）
+
+### YugabyteDB
+
+[![YugabyteDB Architecture](https://docs.yugabyte.com/images/architecture/layered-architecture.png)](https://docs.yugabyte.com/stable/architecture/)
+
+來源：[Architecture — YugabyteDB Docs](https://docs.yugabyte.com/stable/architecture/)
+
+---
+
 ## 環境規格
 
 | 項目 | TiDB | CockroachDB | YBDB |
