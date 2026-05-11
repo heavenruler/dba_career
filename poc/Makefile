@@ -15,10 +15,16 @@ SCENARIO     ?= S-BASE
 RESULT_BASE  ?= results
 
 ## tc1 connection endpoints
-TIDB_HOST_VM  := 172.24.40.34
-TIDB_PORT_VM  := 4000
-TIDB_HOST_K8S := 172.24.40.32
-TIDB_PORT_K8S := 30004
+##   VM 3-node:        .34:4000  HAProxy (poc-3 → poc-1/2:4000)
+##   VM 3-node direct: .32:4000  direct to one SQL node (no LB)
+##   VM 1-node:        .32:4000  single-node deploy (tidb-vm1.ini)
+##   K8s 3-node:       .32:30004 NodePort
+TIDB_HOST_VM         := 172.24.40.34
+TIDB_PORT_VM         := 4000
+TIDB_HOST_VM_DIRECT  := 172.24.40.32
+TIDB_PORT_VM_DIRECT  := 4000
+TIDB_HOST_K8S        := 172.24.40.32
+TIDB_PORT_K8S        := 30004
 
 ## YugabyteDB connection endpoints (VM=HAProxy, K8s=NodePort)
 YUGA_HOST_VM  := 172.24.40.32
@@ -59,7 +65,8 @@ YUGA_TPCC_ENV = YUGA_USER="$(YUGA_USER)" YUGA_PASS="$(YUGA_PASS)" \
         yuga-tc1-k8s yuga-tc1-k8s-limit yuga-k8s-status \
         tpcc-cleanup-vm tpcc-cleanup-k8s \
         tpcc-prepare-vm tpcc-prepare-k8s \
-        test-tpcc-vm test-tpcc-k8s test-tpcc-k8s-limit \
+        test-tpcc-vm-1node test-tpcc-vm-3node-direct test-tpcc-vm-3node \
+        test-tpcc-k8s test-tpcc-k8s-limit \
         tpcc-cleanup-yuga-vm tpcc-cleanup-yuga-k8s \
         tpcc-prepare-yuga-vm tpcc-prepare-yuga-k8s \
         test-tpcc-yuga-vm test-tpcc-yuga-k8s test-tpcc-yuga-k8s-limit \
@@ -161,21 +168,25 @@ help:
 	@echo "  make yuga-haproxy-tc3       - 部署 HAProxy on poc-1:15433(IDC) + gcp-1:15433(GCP) (tc3)"
 	@echo "  make yuga-haproxy-tc4       - 部署 HAProxy on poc-1:15433(IDC) + gcp-1:15433(GCP) (tc4)"
 	@echo ""
-	@echo "=== TPC-C (VM vs K8s 比較；共用 tests/common/tpcc.sh) ==="
-	@echo "  VM round  : tpcc-prepare-vm → test-tpcc-vm → tpcc-report VARIANT=vm"
-	@echo "  K8s round : tpcc-cleanup-k8s → tpcc-prepare-k8s → test-tpcc-k8s → tpcc-report VARIANT=k8s-unlimit"
-	@echo "  K8s-limit : tpcc-cleanup-k8s → tpcc-prepare-k8s → test-tpcc-k8s-limit → tpcc-report VARIANT=k8s-limit"
+	@echo "=== TPC-C (TiDB；共用 tests/common/tpcc.sh) ==="
+	@echo "  VM 3-node HAProxy : tpcc-prepare-vm → test-tpcc-vm-3node       → tpcc-report VARIANT=vm-3node"
+	@echo "  VM 3-node direct  : tpcc-prepare-vm → test-tpcc-vm-3node-direct → tpcc-report VARIANT=vm-3node-direct"
+	@echo "  VM 1-node         : (用 tidb-vm1.ini 部署) tpcc-prepare-vm TIDB_HOST_VM=\$$(TIDB_HOST_VM_DIRECT) → test-tpcc-vm-1node"
+	@echo "  K8s 3-node        : tpcc-cleanup-k8s → tpcc-prepare-k8s → test-tpcc-k8s       → tpcc-report VARIANT=k8s-3node-unlimit"
+	@echo "  K8s 3-node limit  : tpcc-cleanup-k8s → tpcc-prepare-k8s → test-tpcc-k8s-limit → tpcc-report VARIANT=k8s-3node-limit"
 	@echo ""
-	@echo "  make tpcc-cleanup-vm        - 清除 tpcc schema (VM TiDB)"
-	@echo "  make tpcc-cleanup-k8s       - 清除 tpcc schema (K8s TiDB)"
-	@echo "  make tpcc-prepare-vm        - 建立 tpcc schema + 載入資料 (VM)"
-	@echo "  make tpcc-prepare-k8s       - 建立 tpcc schema + 載入資料 (K8s)"
-	@echo "  make test-tpcc-vm           - 執行 TPC-C warmup+run (VARIANT=vm)"
-	@echo "  make test-tpcc-k8s          - 執行 TPC-C warmup+run (VARIANT=k8s-unlimit)"
-	@echo "  make test-tpcc-k8s-limit    - 執行 TPC-C warmup+run (VARIANT=k8s-limit)"
-	@echo "  make tpcc-report            - 產生最新一次結果的 summary.md"
-	@echo "  make tpcc-compare           - 從 vm/k8s-unlimit/k8s-limit summary 產對照表 (TOPO/SCENARIO)"
-	@echo "  Override: WAREHOUSES=50 DURATION=5m THREADS='32 64' VARIANT=vm"
+	@echo "  make tpcc-cleanup-vm           - 清除 tpcc schema (VM TiDB via HAProxy)"
+	@echo "  make tpcc-cleanup-k8s          - 清除 tpcc schema (K8s TiDB)"
+	@echo "  make tpcc-prepare-vm           - 建立 tpcc schema + 載入資料 (VM via HAProxy)"
+	@echo "  make tpcc-prepare-k8s          - 建立 tpcc schema + 載入資料 (K8s)"
+	@echo "  make test-tpcc-vm-1node        - VARIANT=vm-1node       host=\$$(TIDB_HOST_VM_DIRECT):\$$(TIDB_PORT_VM_DIRECT)"
+	@echo "  make test-tpcc-vm-3node-direct - VARIANT=vm-3node-direct host=\$$(TIDB_HOST_VM_DIRECT):\$$(TIDB_PORT_VM_DIRECT)"
+	@echo "  make test-tpcc-vm-3node        - VARIANT=vm-3node       host=\$$(TIDB_HOST_VM):\$$(TIDB_PORT_VM) (HAProxy)"
+	@echo "  make test-tpcc-k8s             - VARIANT=k8s-3node-unlimit"
+	@echo "  make test-tpcc-k8s-limit       - VARIANT=k8s-3node-limit"
+	@echo "  make tpcc-report               - 產生最新一次結果的 summary.md (VARIANT 必填)"
+	@echo "  make tpcc-compare              - 跨 variant summary 對照表 (TOPO/SCENARIO)"
+	@echo "  Override: WAREHOUSES=50 DURATION=5m THREADS='32 64'"
 	@echo ""
 	@echo "=== K8s (VM vs K8s TPC-C 比較) ==="
 	@echo "  make k8s-setup              - destroy→VM→k3s v1.29 cluster (poc-1 server / poc-2/3 agents)"
@@ -531,16 +542,24 @@ tpcc-prepare-k8s:
 	TIDB_HOST=$(TIDB_HOST_K8S) TIDB_PORT=$(TIDB_PORT_K8S) \
 	  $(TPCC_ENV) bash tests/common/tpcc.sh prepare
 
-test-tpcc-vm:
-	TIDB_HOST=$(TIDB_HOST_VM) TIDB_PORT=$(TIDB_PORT_VM) VARIANT=vm \
+test-tpcc-vm-1node:
+	TIDB_HOST=$(TIDB_HOST_VM_DIRECT) TIDB_PORT=$(TIDB_PORT_VM_DIRECT) VARIANT=vm-1node \
+	  $(TPCC_ENV) bash tests/common/tpcc.sh run
+
+test-tpcc-vm-3node-direct:
+	TIDB_HOST=$(TIDB_HOST_VM_DIRECT) TIDB_PORT=$(TIDB_PORT_VM_DIRECT) VARIANT=vm-3node-direct \
+	  $(TPCC_ENV) bash tests/common/tpcc.sh run
+
+test-tpcc-vm-3node:
+	TIDB_HOST=$(TIDB_HOST_VM) TIDB_PORT=$(TIDB_PORT_VM) VARIANT=vm-3node \
 	  $(TPCC_ENV) bash tests/common/tpcc.sh run
 
 test-tpcc-k8s:
-	TIDB_HOST=$(TIDB_HOST_K8S) TIDB_PORT=$(TIDB_PORT_K8S) VARIANT=k8s-unlimit \
+	TIDB_HOST=$(TIDB_HOST_K8S) TIDB_PORT=$(TIDB_PORT_K8S) VARIANT=k8s-3node-unlimit \
 	  $(TPCC_ENV) bash tests/common/tpcc.sh run
 
 test-tpcc-k8s-limit:
-	TIDB_HOST=$(TIDB_HOST_K8S) TIDB_PORT=$(TIDB_PORT_K8S) VARIANT=k8s-limit \
+	TIDB_HOST=$(TIDB_HOST_K8S) TIDB_PORT=$(TIDB_PORT_K8S) VARIANT=k8s-3node-limit \
 	  $(TPCC_ENV) bash tests/common/tpcc.sh run
 
 ## YugabyteDB TPC-C (BenchmarkSQL)
