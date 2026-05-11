@@ -50,7 +50,8 @@ CRDB_PORT_VM         := 15257
 CRDB_HOST_VM_DIRECT  := 172.24.40.32
 CRDB_PORT_VM_DIRECT  := 26257
 CRDB_HOST_K8S        := 172.24.40.32
-CRDB_PORT_K8S        := 30006
+CRDB_PORT_K8S        := 30007
+##   (NodePort :30006 已被 YBDB YCQL 佔用，改用 :30007；admin UI 用 :30008)
 CRDB_USER            ?= root
 CRDB_PASS            ?=
 
@@ -234,25 +235,21 @@ help:
 	@echo "  make tidb-tc1-k8s-limit              - k8s-setup→TiDB Operator→重部署 TiDB with resource limits"
 	@echo "  make yuga-tc1-k8s                    - k8s-setup→YugabyteDB Helm 部署 (no limits)→status"
 	@echo "  make yuga-tc1-k8s-limit              - k8s-setup→YugabyteDB Helm 部署 with resource limits→status"
-	@echo "  make cockroach-tc1-k8s               - k8s-setup→CockroachDB 部署 (no limits)→status  [PLAYBOOK TODO]"
-	@echo "  make cockroach-tc1-k8s-limit         - k8s-setup→CockroachDB 部署 with resource limits→status  [PLAYBOOK TODO]"
-	@echo "  -- VM 已存在時使用 (前提：已執行 vm-create + ansible-setup) --"
+	@echo "  make cockroach-tc1-k8s               - k8s-setup→CockroachDB Helm 部署 (no limits)→status"
+	@echo "  make cockroach-tc1-k8s-limit         - k8s-setup→CockroachDB Helm 部署 with resource limits→status"
+	@echo "  -- k3s 重建 (destructive：uninstall→reinstall；不動 VM) --"
 	@echo "  make k3s-deploy                      - 只跑 k3s playbook (跳過 vm-destroy/create/setup)"
-	@echo "  make tidb-tc1-k8s-resume             - k3s-deploy→TiDB Operator→TidbCluster (K8s-unlimit)"
-	@echo "  make tidb-tc1-k8s-resume-limit       - k3s-deploy→TiDB Operator→重部署 TiDB with resource limits"
-	@echo "  make yuga-tc1-k8s-resume             - k3s-deploy→YugabyteDB Helm 部署 (no limits)→status"
-	@echo "  make yuga-tc1-k8s-resume-limit       - k3s-deploy→YugabyteDB Helm 部署 with resource limits→status"
-	@echo "  make cockroach-tc1-k8s-resume        - k3s-deploy→CockroachDB 部署 (no limits)→status  [PLAYBOOK TODO]"
-	@echo "  make cockroach-tc1-k8s-resume-limit  - k3s-deploy→CockroachDB 部署 with resource limits→status  [PLAYBOOK TODO]"
+	@echo "  -- 假設 K8s 已就緒，只部署 DB (前提：先跑 k3s-deploy 或既有 cluster) --"
+	@echo "  make tidb-tc1-k8s-resume             - TiDB Operator→TidbCluster (K8s-unlimit)"
+	@echo "  make tidb-tc1-k8s-resume-limit       - TiDB Operator→重部署 TiDB with resource limits"
+	@echo "  make yuga-tc1-k8s-resume             - YugabyteDB Helm 部署 (no limits)→status"
+	@echo "  make yuga-tc1-k8s-resume-limit       - YugabyteDB Helm 部署 with resource limits→status"
+	@echo "  make cockroach-tc1-k8s-resume        - CockroachDB Helm 部署 (no limits)→status"
+	@echo "  make cockroach-tc1-k8s-resume-limit  - CockroachDB Helm 部署 with resource limits→status"
 	@echo "  -- 狀態檢查 --"
 	@echo "  make tidb-k8s-status                 - 顯示 nodes / TidbCluster / pods / resource limits / endpoint"
 	@echo "  make yuga-k8s-status                 - 顯示 nodes / pods / services / YSQL endpoint"
-	@echo "  make cockroach-k8s-status            - 顯示 nodes / pods / services / SQL endpoint  [PLAYBOOK TODO]"
-	@echo ""
-	@echo "  [PLAYBOOK TODO]：CRDB K8s 部署 playbook 尚未實作。執行前需先新增："
-	@echo "    - ansible/playbooks/cockroach-k8s.yml"
-	@echo "    - ansible/playbooks/cockroach-k8s-status.yml"
-	@echo "    - ansible/roles/cockroach_k8s_deploy/ (Operator 或 Helm 策略待選)"
+	@echo "  make cockroach-k8s-status            - 顯示 nodes / pods / services / SQL endpoint"
 	@echo ""
 	@echo "=== YugabyteDB TPC-C (go-tpc; 共用 tests/common/yuga-tpcc.sh) ==="
 	@echo "  VM 3-node HAProxy : tpcc-prepare-yuga-vm → test-tpcc-yuga-vm-3node       → tpcc-report VARIANT=vm-3node"
@@ -617,28 +614,26 @@ yuga-k8s-status:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-k8s-status.yml \
 	  -i inventory/yuga-tc1-k8s.ini
 
-## VM 已存在時的 K8s 變體 (跳過 vm-destroy/create/setup)
+## -resume 變體：假設 K8s 叢集已就緒，只跑 DB 部署
+## (注意：k3s-deploy 是 destructive，會 uninstall→reinstall，不要自動串接)
+## 若 K8s 叢集尚未建立，先手動 make k3s-deploy
 tidb-tc1-k8s-resume:
-	$(MAKE) k3s-deploy
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
 	  -i inventory/tidb-tc1-k8s.ini
 	$(MAKE) tidb-k8s-status
 
 tidb-tc1-k8s-resume-limit:
-	$(MAKE) k3s-deploy
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
 	  -i inventory/tidb-tc1-k8s.ini \
 	  -e k8s_resource_limits=true
 	$(MAKE) tidb-k8s-status
 
 yuga-tc1-k8s-resume:
-	$(MAKE) k3s-deploy
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-k8s.yml \
 	  -i inventory/yuga-tc1-k8s.ini
 	$(MAKE) yuga-k8s-status
 
 yuga-tc1-k8s-resume-limit:
-	$(MAKE) k3s-deploy
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-k8s.yml \
 	  -i inventory/yuga-tc1-k8s.ini \
 	  -e yb_resource_limits=true
@@ -659,13 +654,11 @@ cockroach-tc1-k8s-limit:
 	$(MAKE) cockroach-k8s-status
 
 cockroach-tc1-k8s-resume:
-	$(MAKE) k3s-deploy
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/cockroach-k8s.yml \
 	  -i inventory/cockroach-tc1-k8s.ini
 	$(MAKE) cockroach-k8s-status
 
 cockroach-tc1-k8s-resume-limit:
-	$(MAKE) k3s-deploy
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/cockroach-k8s.yml \
 	  -i inventory/cockroach-tc1-k8s.ini \
 	  -e crdb_resource_limits=true

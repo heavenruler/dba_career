@@ -1,0 +1,167 @@
+---
+## Helm binary (k3s_server)
+- name: Check if helm exists
+  ansible.builtin.stat:
+    path: /usr/local/bin/helm
+  register: helm_bin
+
+- name: Download helm tarball
+  ansible.builtin.get_url:
+    url: "https://get.helm.sh/helm-{{ helm_version }}-linux-amd64.tar.gz"
+    dest: /tmp/helm.tar.gz
+    mode: '0644'
+  environment:
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+  when: not helm_bin.stat.exists
+
+- name: Extract helm
+  ansible.builtin.unarchive:
+    src: /tmp/helm.tar.gz
+    dest: /tmp
+    remote_src: true
+  when: not helm_bin.stat.exists
+
+- name: Install helm binary
+  ansible.builtin.copy:
+    src: /tmp/linux-amd64/helm
+    dest: /usr/local/bin/helm
+    mode: '0755'
+    remote_src: true
+  when: not helm_bin.stat.exists
+
+## Helm repo
+- name: Add cockroachdb Helm repo
+  ansible.builtin.shell: |
+    helm repo add cockroachdb https://charts.cockroachdb.com/ && helm repo update
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+  changed_when: true
+
+## Namespace
+- name: Create cockroach-tc1 namespace
+  ansible.builtin.shell: |
+    k3s kubectl create namespace cockroach-tc1 --dry-run=client -o yaml | \
+      k3s kubectl apply -f -
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: true
+
+## Helm values
+- name: Render CockroachDB Helm values
+  ansible.builtin.template:
+    src: crdb-values.yaml.j2
+    dest: /root/crdb-values.yaml
+    mode: '0644'
+
+## Install / upgrade (不加 --wait，因 chart 不自動 init，pods 永遠不會 Ready)
+- name: Install / upgrade CockroachDB via Helm
+  ansible.builtin.shell: |
+    helm upgrade --install cockroachdb cockroachdb/cockroachdb \
+      --namespace cockroach-tc1 \
+      --version {{ crdb_chart_version }} \
+      -f /root/crdb-values.yaml \
+      --timeout 5m
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    HTTPS_PROXY: "{{ k3s_proxy }}"
+    NO_PROXY: "{{ k3s_no_proxy }}"
+  changed_when: true
+
+## Wait for pods Running (尚未 Ready，等 init 後才會 Ready)
+- name: Wait for cockroachdb pods Running (3/3)
+  ansible.builtin.shell: |
+    k3s kubectl get pods -n cockroach-tc1 -l app.kubernetes.io/name=cockroachdb \
+      --no-headers | grep -c Running
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: crdb_running
+  until: crdb_running.stdout | int >= 3
+  retries: 60
+  delay: 5
+  changed_when: false
+
+## 手動 init cluster (chart 15.0.5 不渲染 init Job)
+- name: Initialize CockroachDB cluster via cockroachdb-0
+  ansible.builtin.shell: |
+    k3s kubectl exec -n cockroach-tc1 cockroachdb-0 -- \
+      ./cockroach init --insecure --host=cockroachdb-0.cockroachdb.cockroach-tc1
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: crdb_init
+  failed_when:
+    - crdb_init.rc != 0
+    - "'cluster has already been initialized' not in crdb_init.stderr"
+  changed_when: "'Cluster successfully initialized' in crdb_init.stdout"
+
+## Wait for pods Ready (init 後 readiness probe 才會通過)
+- name: Wait for cockroachdb pods Ready (3/3)
+  ansible.builtin.shell: |
+    k3s kubectl get pods -n cockroach-tc1 -l app.kubernetes.io/name=cockroachdb \
+      --no-headers | grep -c '1/1'
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: crdb_ready
+  until: crdb_ready.stdout | int >= 3
+  retries: 60
+  delay: 5
+  changed_when: false
+
+## Patch service 設定固定 NodePort (chart values 無 nodePort 欄位支援)
+- name: Patch cockroachdb-public Service to set fixed NodePort
+  ansible.builtin.shell: |
+    k3s kubectl patch svc cockroachdb-public -n cockroach-tc1 --type='json' \
+      -p='[
+        {"op": "replace", "path": "/spec/ports/0/nodePort", "value": 30007},
+        {"op": "replace", "path": "/spec/ports/1/nodePort", "value": 30008}
+      ]'
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: true
+
+## Apply READ COMMITTED isolation (對齊 VM CRDB / YBDB)
+## CRDB 不允許 SET CLUSTER SETTING 與其它 statement 同一個 transaction，拆兩次 exec
+- name: Enable READ COMMITTED cluster setting
+  ansible.builtin.shell: |
+    k3s kubectl exec -n cockroach-tc1 cockroachdb-0 -- \
+      ./cockroach sql --insecure -e \
+      "SET CLUSTER SETTING sql.txn.read_committed_isolation.enabled = true"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: true
+
+- name: Set default_transaction_isolation = read committed for all roles
+  ansible.builtin.shell: |
+    k3s kubectl exec -n cockroach-tc1 cockroachdb-0 -- \
+      ./cockroach sql --insecure -e \
+      "ALTER ROLE all SET default_transaction_isolation = 'read committed'"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: true
+
+## Show pod / svc status
+- name: Show pod status
+  ansible.builtin.shell: k3s kubectl get pods -n cockroach-tc1 -o wide
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: r_pods
+  changed_when: false
+
+- name: "[K8s] CockroachDB pods"
+  ansible.builtin.debug:
+    msg: "{{ r_pods.stdout_lines }}"
+
+- name: Show services
+  ansible.builtin.shell: k3s kubectl get svc -n cockroach-tc1
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: r_svc
+  changed_when: false
+
+- name: "[K8s] Services / NodePorts"
+  ansible.builtin.debug:
+    msg: "{{ r_svc.stdout_lines }}"
+
+- name: Show SQL endpoint
+  ansible.builtin.debug:
+    msg: "SQL endpoint: psql -h {{ ansible_default_ipv4.address }} -p 30007 -U root postgres"
