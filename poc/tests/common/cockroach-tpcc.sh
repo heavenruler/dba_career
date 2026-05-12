@@ -18,9 +18,48 @@ TOPO=${TOPO:-cockroach-tc1}
 SCENARIO=${SCENARIO:-S-BASE}
 RESULT_BASE=${RESULT_BASE:-results}
 DB_NAME=${DB_NAME:-tpcc}
+REMOTE_HOST=${REMOTE_HOST:-}
 
 TIMESTAMP=$(date +%Y%m%d-%H%M)
 OUTPUT_DIR="${RESULT_BASE}/${TOPO}/${SCENARIO}/${VARIANT}/${TIMESTAMP}"
+
+# --- remote execution ---
+if [[ -n "${REMOTE_HOST}" ]]; then
+  REMOTE_DIR="/tmp/cock-tpcc-runner"
+  SSH="ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10"
+  SCP="scp -o StrictHostKeyChecking=accept-new"
+
+  echo "==> [cockroach-tpcc] remote mode: ${REMOTE_HOST} (${REMOTE_DIR})"
+  $SSH "${REMOTE_HOST}" "mkdir -p ${REMOTE_DIR}"
+  $SCP -q "$0" "${REMOTE_HOST}:${REMOTE_DIR}/cockroach-tpcc.sh"
+
+  $SSH "${REMOTE_HOST}" "
+    export CRDB_HOST='${CRDB_HOST}'
+    export CRDB_PORT='${CRDB_PORT}'
+    export CRDB_USER='${CRDB_USER}'
+    export CRDB_PASS='${CRDB_PASS}'
+    export WAREHOUSES='${WAREHOUSES}'
+    export DURATION='${DURATION}'
+    export THREADS_LIST='${THREADS_LIST}'
+    export WARMUP='${WARMUP}'
+    export VARIANT='${VARIANT}'
+    export TOPO='${TOPO}'
+    export SCENARIO='${SCENARIO}'
+    export RESULT_BASE='${REMOTE_DIR}/results'
+    export DB_NAME='${DB_NAME}'
+    bash ${REMOTE_DIR}/cockroach-tpcc.sh ${CMD}
+  "
+
+  if [[ "${CMD}" == "run" ]]; then
+    echo "==> [cockroach-tpcc] rsync results back"
+    mkdir -p "${RESULT_BASE}/${TOPO}/${SCENARIO}/${VARIANT}"
+    rsync -a -e "$SSH" \
+      "${REMOTE_HOST}:${REMOTE_DIR}/results/${TOPO}/${SCENARIO}/${VARIANT}/" \
+      "${RESULT_BASE}/${TOPO}/${SCENARIO}/${VARIANT}/"
+    echo "==> [cockroach-tpcc] results synced: ${RESULT_BASE}/${TOPO}/${SCENARIO}/${VARIANT}/"
+  fi
+  exit 0
+fi
 
 # go-tpc with PostgreSQL driver (-d postgres) for CockroachDB
 _go_tpc_base() {
