@@ -14,7 +14,12 @@
 - **CockroachDB peak 14,014 tpmC**（128t）— symmetric architecture，HAProxy 比直連 +26%
 - **YugabyteDB peak 1,036.7 tpmC**（16t）— tserver 一體設計，HAProxy 與 direct 差異僅 +1%（受 **MVCC**（Multi-Version Concurrency Control 多版本併發控制——每筆資料保留多份版本，衝突時偵測重做）的競爭設計天花板限制；無論加多少節點，相同熱點資料 row 仍然只能單線結帳，這就是上限的來源）
 
-下一步將完成 K8s 容器化環境測試。
+**K8s 容器化（k8s-3node-unlimit）overhead**：
+- **TiDB** vm-3node 22,841 → K8s 18,919 — overhead **~17%**
+- **CockroachDB** vm-3node 14,014 → K8s 13,982 — overhead **~0.2%**（幾乎無損；symmetric architecture 對容器化最友善）
+- **YugabyteDB** — K8s 部署待測
+
+下一步完成 K8s-limit（資源上限）對照與 YBDB K8s 變體。
 
 ---
 
@@ -114,8 +119,10 @@
 | vm-1node | VM×1 | 1 | 直連 :26257 | — | ✅ | 8,559.5 | 8,732.5 | 8,555.3 | 8,133.4 | **8,732.5** |
 | vm-3node | VM×3 | 3 | HAProxy :15257 | — | ✅ | 9,958.3 | 11,933.4 | 12,661.7 | 14,014.7 | **14,014.7** |
 | vm-3node-direct | VM×3 | 3 | 直連 :26257 | — | ✅ | 9,142.5 | 10,144.4 | 10,892.4 | 11,142.6 | **11,142.6** |
+| k8s-3node-unlimit | K8s×3 | 3 | NodePort :30007 | 無 | ✅ | 8,998.0 | 10,599.9 | 12,416.6 | 13,982.2 | **13,982.2** |
+| k8s-3node-limit | K8s×3 | 3 | NodePort :30007 | crdb 2c/8GiB | ⏳ | — | — | — | — | — |
 
-> **CockroachDB 摘要**：單節點 peak **8,732 tpmC**；三節點 + HAProxy peak **14,014 tpmC**（**超越 TiDB vm-1node 峰值 13,355**）。CRDB symmetric architecture 讓 HAProxy roundrobin 將 SQL 處理層分散到三節點，**HAProxy 比直連快 9-26%**（與 YBDB 反向：YBDB direct 略快於 HAProxy）。
+> **CockroachDB 摘要**：單節點 peak **8,732 tpmC**；三節點 + HAProxy peak **14,014 tpmC**（**超越 TiDB vm-1node 峰值 13,355**）；K8s-unlimit peak **13,982 tpmC**（與 vm-3node HAProxy 幾乎相同，**容器化 overhead −0.2%**，遠優於 TiDB K8s ~17% overhead）。CRDB symmetric architecture 讓 HAProxy roundrobin 將 SQL 處理層分散到三節點，**HAProxy 比直連快 9-26%**（與 YBDB 反向：YBDB direct 略快於 HAProxy）。
 
 ---
 
@@ -126,7 +133,7 @@
 | 單機 VM 基線 | vm-1node (no-analyze) | vm-1node | vm-1node | 最純粹的單節點效能（無資料複製、無負載均衡） |
 | 多節點 VM | vm-3node | vm-3node | vm-3node | 三節點 RF=3 部署，含資料複製到三個節點的成本 |
 | HAProxy overhead | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | 量測連線代理（負載均衡器）的中介成本（CRDB 反而 HAProxy 較快——symmetric architecture 把 SQL 處理層也分散） |
-| K8s 無限制 | k8s-3node-unlimit | (規劃中) | k8s-3node-unlimit | 容器化平台的額外效能損耗（容器網路 + 排程開銷） |
+| K8s 無限制 | k8s-3node-unlimit | k8s-3node-unlimit | k8s-3node-unlimit | 容器化平台的額外效能損耗（容器網路 + 排程開銷） |
 | K8s 資源限制 | k8s-3node-limit | (規劃中) | k8s-3node-limit | 啟用容器資源管制（CPU/記憶體上限）後的影響 |
 
 ### 補充說明

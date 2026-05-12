@@ -269,3 +269,57 @@ TPC-C `district.D_NEXT_O_ID` 熱點 row 在 RC 下排隊處理，每筆順序執
 
 CRDB 三節點橫向擴展不只「有效」，而是 **CRDB 自身的最優部署模式**（peak 14,014 為 CRDB 全部署中最高；但仍低於 TiDB 同模式 22,841）。CRDB symmetric architecture 讓 HAProxy roundrobin 不只是負載均衡，更是 **SQL 處理層的橫向分散**。生產環境使用 HAProxy 是首選。
 - **insecure 模式**：本測試走無 TLS，TLS 對 OLTP 影響通常 < 5%；正式部署時應用 secure 模式。
+
+---
+
+## k8s-3node-unlimit — 2026-05-12
+
+### 環境
+- 拓撲：**k3s** v1.29.14 三節點（.32 master，.33/.34 worker）+ **cockroachdb Helm chart 15.0.5**（image v26.1.4）部署 StatefulSet `cockroachdb` replicas=3
+- 連線入口：NodePort `.32:30007`（chart values 無 `service.public.ports.*.nodePort` 欄位，role 內 kubectl patch 從隨機改固定 :30007 = SQL / :30008 = admin UI）
+- TLS：`tls.enabled=false`（`--insecure`，與 VM 部署一致，方便對比）
+- READ COMMITTED：role 在部署收尾 exec `cockroach sql --insecure -e "SET CLUSTER SETTING sql.txn.read_committed_isolation.enabled = true"` + `ALTER ROLE all SET default_transaction_isolation = 'read committed'`
+- 容器資源限制：**無**（unlimit variant；values.yaml.j2 不渲染 `{% if crdb_resource_limits %}` 區塊）
+- 儲存：每 pod 30 GiB PVC（local-path StorageClass）
+- 測試工具：go-tpc on .31（`-d postgres --conn-params sslmode=disable --isolation 2`）
+- Warehouses：128 | Warmup：5m | Duration：10m | Threads：16/32/64/128
+- 結果目錄：`k8s-3node-unlimit/20260512-1411/`
+
+### 部署紀錄（與 VM CRDB 的差異）
+- Helm chart 15.0.5 **不自動渲染 init Job**（manifest grep 無 `kind: Job`），所有 pods 卡 0/1 Running 永不 Ready；ansible role 需手動 `kubectl exec cockroachdb-0 -- ./cockroach init --insecure --host=cockroachdb-0.cockroachdb.cockroach-tc1`
+- chart `service.public` 只接受 `type/labels/annotations`，**不支援 nodePort 欄位**；要固定 NodePort 必須 helm install 後 kubectl patch
+- `SET CLUSTER SETTING` 不能與其它 statement 同 transaction（CRDB 拒絕 `multi-statement transaction`），role 拆兩次 exec
+
+### Execute 結果
+
+> ⚠️ efficiency > 100% 為無 think time 的壓測常態，非錯誤
+>
+> （tpmC：越高越好；NO avg / NO P99：越低越好）
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | 8,998.0 | 20,005.9 | 546.6% | 64.6 | 130.0 |
+| 32 | 10,599.9 | 23,582.1 | 643.9% | 108.3 | 251.7 |
+| 64 | 12,416.6 | 27,495.0 | 754.3% | 187.3 | 453.0 |
+| 128 | **13,982.2** | 31,138.9 | **849.4%** | 325.6 | 805.3 |
+
+### vs vm-3node (HAProxy) 對比 — **容器化幾乎零 overhead**
+
+| threads | vm-3node (HAProxy) | k8s-3node-unlimit | 差距 |
+|---------|--------------------|-------------------|------|
+| 16 | 9,958 | 8,998 | −9.6% |
+| 32 | 11,933 | 10,600 | −11.2% |
+| 64 | 12,661 | 12,417 | −1.9% |
+| 128 | **14,014** | **13,982** | **−0.2%** |
+
+### 觀察
+
+- **128t peak 13,982 ≈ vm-3node HAProxy 14,014**：K8s overhead **−0.2%**，幾乎完全沒有容器化代價。對照同款測試：
+  - **TiDB**：vm-3node 22,841 → K8s 18,919，overhead **~17%**
+  - **CRDB**：vm-3node 14,014 → K8s 13,982，overhead **~0.2%**
+- **原因（symmetric architecture）**：CRDB 每節點同時 SQL + KV + Storage，K8s NodePort 把 SQL 連線分散到 3 個 pod，等同 HAProxy roundrobin 的「SQL 處理層橫向分散」效果。TiDB 必須區分 PD/TiDB/TiKV pod、TiKV 為集中元件，K8s overhead 較顯著。
+- **低 thread overhead 較高**（16t −9.6%，128t −0.2%）：低 thread 對 K8s 額外網路 hop 較敏感；128t 飽和時 DB 本身才是瓶頸，K8s 開銷被吸收。
+
+### 結論
+
+**CRDB 是本批 PoC 對 K8s 最友善的資料庫**（−0.2% vs TiDB ~17%）。若要走 K8s 路線且看重最小化容器化損耗，CRDB symmetric 設計是顯著優勢；但若看絕對峰值，TiDB K8s 18,919 仍高於 CRDB K8s 13,982（差距 35%）。
