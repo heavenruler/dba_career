@@ -4,6 +4,79 @@
 
 ---
 
+## 各 variant 拓撲總覽
+
+> CRDB 為對稱架構（symmetric architecture）— 每個節點同時負責 SQL 接收、儲存、元資料管理，無獨立元件（不像 TiDB 有 PD/TiDB/TiKV 分離）。下圖每個節點上的「cockroach」即包含 SQL + KV + Raft + Storage 完整堆疊。
+
+```
+vm-1node                                  client (go-tpc on .31)
+                                                  │
+                                                  ▼ :26257 (direct)
+                              ┌───────────────────────────────────┐
+                              │ .32:  cockroach (single-node)     │
+                              └───────────────────────────────────┘
+  deploy: cockroach start-single-node --insecure --advertise-addr=172.24.40.32
+          (手動部署，無 ansible playbook)
+
+
+vm-3node-direct                           client (go-tpc on .31)
+                                                  │
+                                                  ▼ :26257 (direct, no HAProxy)
+                              ┌───────────────────────────────────┐
+                              │ .32:  cockroach ◄─────────────────┤
+                              │ .33:  cockroach                   │
+                              │ .34:  cockroach                   │
+                              │   每節點 --join=.32,.33,.34 RF=3  │
+                              └───────────────────────────────────┘
+  deploy: 每節點手動 cockroach start --insecure --join=...
+          READ COMMITTED cluster setting 套於 .32
+
+
+vm-3node                                  client (go-tpc on .31)
+                                                  │
+                                                  ▼ :15257
+                              ┌───────────────────────────────────┐
+                              │ .32:  HAProxy ──► roundrobin      │
+                              │       cockroach          ▼  ▼     │
+                              │ .33:  cockroach ◄─────────────────┤
+                              │ .34:  cockroach ◄─────────────────┤
+                              │   HAProxy 與 .32 cockroach 共機    │
+                              │   (與 YBDB 設計一致)               │
+                              └───────────────────────────────────┘
+  deploy: 同 vm-3node-direct 叢集（沿用同份資料）+ HAProxy on .32:15257
+          backend 三節點 :26257（timeout 600s + clitcpka/srvtcpka）
+
+
+k8s-3node-unlimit                         client (go-tpc on .31)
+                                                  │
+                                                  ▼ NodePort :30007
+                              ┌───────────────────────────────────┐
+                              │ k3s cluster (3 nodes)             │
+                              │ ┌─ .32 master ─┐ ┌─ .33 worker ─┐ │
+                              │ │ cockroachdb-x│ │ cockroachdb-y│ │  ← pod 由 scheduler 排程
+                              │ └──────────────┘ └──────────────┘ │
+                              │ ┌─ .34 worker ─┐                  │
+                              │ │ cockroachdb-z│                  │
+                              │ └──────────────┘                  │
+                              │   StatefulSet replicas=3 / RF=3   │
+                              │   30Gi PVC each / tls.enabled=    │
+                              │   false (--insecure)              │
+                              └───────────────────────────────────┘
+  deploy: cockroach-k8s.yml + cockroach-tc1-k8s.ini + crdb-values.yaml.j2
+          (helm chart cockroachdb/cockroachdb 15.0.5, image v26.1.4)
+          init Job 不自動渲染 → role 手動 exec cockroach init
+          NodePort 手動 kubectl patch 從隨機改 :30007 (SQL) / :30008 (admin UI)
+          READ COMMITTED cluster setting 套於 cockroachdb-0
+
+
+k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
+                                          差別：crdb_resource_limits=true
+                                          每 pod limits: 2 CPU / 8GiB memory
+                                          (對齊 TiDB TiKV K8s-limit 設定)
+```
+
+---
+
 ## vm-1node — 2026-05-08
 
 ### 環境
