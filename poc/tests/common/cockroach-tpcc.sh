@@ -91,6 +91,12 @@ _elapsed() {
 cmd_prepare() {
   local t0=$SECONDS
   echo "==> [cockroach-tpcc] prepare: ${CRDB_HOST}:${CRDB_PORT} warehouses=${WAREHOUSES}"
+  # go-tpc 的 PostgreSQL driver 不會自動建 DB，先用 psql 建好 tpcc DB
+  echo "==> [cockroach-tpcc] CREATE DATABASE IF NOT EXISTS ${DB_NAME}"
+  PGPASSWORD="${CRDB_PASS}" psql \
+    -h "${CRDB_HOST}" -p "${CRDB_PORT}" -U "${CRDB_USER}" \
+    -d defaultdb -v ON_ERROR_STOP=1 \
+    -c "CREATE DATABASE IF NOT EXISTS ${DB_NAME}"
   _go_tpc_base 8 "" prepare
   echo "==> [cockroach-tpcc] prepare done ($(_elapsed $t0 $SECONDS))"
 }
