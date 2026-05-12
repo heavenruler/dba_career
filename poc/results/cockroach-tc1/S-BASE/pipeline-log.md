@@ -251,20 +251,21 @@ TPC-C `district.D_NEXT_O_ID` 熱點 row 在 RC 下排隊處理，每筆順序執
 - **HAProxy 反而更快**（與 YBDB 相反）：YBDB direct 比 HAProxy 快 3-5%，CRDB HAProxy 比 direct 快 9-26%。
 - **原因（CRDB symmetric architecture）**：CRDB 每個節點都能完整處理 SQL（parse/plan/route），HAProxy roundrobin 將 SQL 處理分散到三節點，各自就近處理 1/3 的 leaseholder，反而比集中於 .32 處理高效。
 - **128t peak 14,014**：超越 TiDB vm-1node 峰值 13,355，**CRDB 三節點 + HAProxy 是其 sweet spot**。
+（但 TiDB 在 vm-3node + HAProxy 達 22,841，CRDB 同模式 14,014 仍低於 TiDB 對應部署；CRDB 的優勢在「單一節點即整合 SQL+儲存+元資料」的部署簡易度，而非絕對 peak。）
 
 ### CRDB vs TiDB / YBDB 多節點 scaling 對比
 
 | | vm-1node peak | vm-3node-direct peak | vm-3node (HAProxy) peak | 3-node scaling |
 |--|---|---|---|---|
-| TiDB | 13,355 | TBD | TBD | TBD |
+| TiDB | 13,355 | 14,779 | 22,841 | **1.71× peak** |
 | **CRDB** | **8,732** | **11,142** | **14,014** | **1.6× peak** |
 | YBDB | 414.7 | 1,024.2 | 1,036.7 | **2.5× peak** |
 
 - YBDB scaling 倍數最高（單節點低基數 → 多節點放大效果明顯）
-- CRDB 絕對數字最高（單節點已強，多節點再 scale）
-- TiDB 待測
+- **TiDB 絕對數字最高**（22,841，SQL/儲存分離設計讓加 SQL 節點橫向擴充最大化）
+- CRDB 次高，且 vm-3node-direct → HAProxy 增益最高（+25.8%）
 
 ### 結論
 
-CRDB 三節點橫向擴展不只「有效」，而是「最優部署模式」。CRDB symmetric architecture 讓 HAProxy roundrobin 不只是負載均衡，更是 **SQL 處理層的橫向分散**。生產環境使用 HAProxy 是首選。
+CRDB 三節點橫向擴展不只「有效」，而是 **CRDB 自身的最優部署模式**（peak 14,014 為 CRDB 全部署中最高；但仍低於 TiDB 同模式 22,841）。CRDB symmetric architecture 讓 HAProxy roundrobin 不只是負載均衡，更是 **SQL 處理層的橫向分散**。生產環境使用 HAProxy 是首選。
 - **insecure 模式**：本測試走無 TLS，TLS 對 OLTP 影響通常 < 5%；正式部署時應用 secure 模式。
