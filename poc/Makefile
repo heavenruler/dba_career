@@ -3,6 +3,13 @@ GCP_IAC_DIR := gcp-iac/envs/dev
 ANSIBLE_DIR := ansible
 INVENTORY   := $(ANSIBLE_DIR)/inventory/hosts.ini
 
+TIDB_K8S_UNLIMIT_VARS      := vars/tidb-k8s-3node-unlimit.yml
+TIDB_K8S_LIMIT_VARS        := vars/tidb-k8s-3node-limit.yml
+YUGA_K8S_UNLIMIT_VARS      := vars/yugabyte-k8s-3node-unlimit.yml
+YUGA_K8S_LIMIT_VARS        := vars/yugabyte-k8s-3node-limit.yml
+COCKROACH_K8S_UNLIMIT_VARS := vars/cockroach-k8s-3node-unlimit.yml
+COCKROACH_K8S_LIMIT_VARS   := vars/cockroach-k8s-3node-limit.yml
+
 ## TPC-C defaults (override: make test-tpcc-vm WAREHOUSES=200 THREADS='32 64 128')
 TIDB_USER    ?= root
 TIDB_PASS    ?=
@@ -44,7 +51,7 @@ YUGA_PASS            ?=
 ##   VM 3-node:        .32:15257 HAProxy (poc-1:15257 → poc-1/2/3:26257)
 ##   VM 3-node direct: .32:26257 direct SQL on one node
 ##   VM 1-node:        .32:26257 single-node deploy
-##   CRDB 部署目前為手動，無 ansible playbook；本檔僅提供 TPC-C wrapper
+##   CRDB VM 部署目前為手動；K8s 部署使用 ansible/playbooks/cockroach-k8s.yml
 CRDB_HOST_VM         := 172.24.40.32
 CRDB_PORT_VM         := 15257
 CRDB_HOST_VM_DIRECT  := 172.24.40.32
@@ -231,21 +238,21 @@ help:
 	@echo "=== K8s (VM vs K8s TPC-C 比較) ==="
 	@echo "  -- 全流程 (含 vm-destroy → vm-create → vm-setup) --"
 	@echo "  make k8s-setup                       - destroy→VM→k3s v1.29 cluster (poc-1 server / poc-2/3 agents)"
-	@echo "  make tidb-tc1-k8s                    - k8s-setup→TiDB Operator v1.6.5→TidbCluster (K8s-unlimit)"
-	@echo "  make tidb-tc1-k8s-limit              - k8s-setup→TiDB Operator→重部署 TiDB with resource limits"
-	@echo "  make yuga-tc1-k8s                    - k8s-setup→YugabyteDB Helm 部署 (no limits)→status"
-	@echo "  make yuga-tc1-k8s-limit              - k8s-setup→YugabyteDB Helm 部署 with resource limits→status"
-	@echo "  make cockroach-tc1-k8s               - k8s-setup→CockroachDB Helm 部署 (no limits)→status"
-	@echo "  make cockroach-tc1-k8s-limit         - k8s-setup→CockroachDB Helm 部署 with resource limits→status"
+	@echo "  make tidb-tc1-k8s                    - k8s-setup→TiDB Operator→TidbCluster ($(TIDB_K8S_UNLIMIT_VARS))"
+	@echo "  make tidb-tc1-k8s-limit              - k8s-setup→TiDB Operator→TidbCluster ($(TIDB_K8S_LIMIT_VARS))"
+	@echo "  make yuga-tc1-k8s                    - k8s-setup→YugabyteDB Helm 2025.2.2 ($(YUGA_K8S_UNLIMIT_VARS))"
+	@echo "  make yuga-tc1-k8s-limit              - k8s-setup→YugabyteDB Helm 2025.2.2 ($(YUGA_K8S_LIMIT_VARS))"
+	@echo "  make cockroach-tc1-k8s               - k8s-setup→CockroachDB Helm ($(COCKROACH_K8S_UNLIMIT_VARS))"
+	@echo "  make cockroach-tc1-k8s-limit         - k8s-setup→CockroachDB Helm ($(COCKROACH_K8S_LIMIT_VARS))"
 	@echo "  -- k3s 重建 (destructive：uninstall→reinstall；不動 VM) --"
 	@echo "  make k3s-deploy                      - 只跑 k3s playbook (跳過 vm-destroy/create/setup)"
 	@echo "  -- 假設 K8s 已就緒，只部署 DB (前提：先跑 k3s-deploy 或既有 cluster) --"
-	@echo "  make tidb-tc1-k8s-resume             - TiDB Operator→TidbCluster (K8s-unlimit)"
-	@echo "  make tidb-tc1-k8s-resume-limit       - TiDB Operator→重部署 TiDB with resource limits"
-	@echo "  make yuga-tc1-k8s-resume             - YugabyteDB Helm 部署 (no limits)→status"
-	@echo "  make yuga-tc1-k8s-resume-limit       - YugabyteDB Helm 部署 with resource limits→status"
-	@echo "  make cockroach-tc1-k8s-resume        - CockroachDB Helm 部署 (no limits)→status"
-	@echo "  make cockroach-tc1-k8s-resume-limit  - CockroachDB Helm 部署 with resource limits→status"
+	@echo "  make tidb-tc1-k8s-resume             - TiDB Operator→TidbCluster ($(TIDB_K8S_UNLIMIT_VARS))"
+	@echo "  make tidb-tc1-k8s-resume-limit       - TiDB Operator→TidbCluster ($(TIDB_K8S_LIMIT_VARS))"
+	@echo "  make yuga-tc1-k8s-resume             - YugabyteDB Helm ($(YUGA_K8S_UNLIMIT_VARS))"
+	@echo "  make yuga-tc1-k8s-resume-limit       - YugabyteDB Helm ($(YUGA_K8S_LIMIT_VARS))"
+	@echo "  make cockroach-tc1-k8s-resume        - CockroachDB Helm ($(COCKROACH_K8S_UNLIMIT_VARS))"
+	@echo "  make cockroach-tc1-k8s-resume-limit  - CockroachDB Helm ($(COCKROACH_K8S_LIMIT_VARS))"
 	@echo "  -- 狀態檢查 --"
 	@echo "  make tidb-k8s-status                 - 顯示 nodes / TidbCluster / pods / resource limits / endpoint"
 	@echo "  make yuga-k8s-status                 - 顯示 nodes / pods / services / YSQL endpoint"
@@ -270,7 +277,7 @@ help:
 	@echo "  Override: WAREHOUSES=50 DURATION=5m THREADS='32 64' YUGA_USER=yugabyte"
 	@echo ""
 	@echo "=== CockroachDB TPC-C (go-tpc; tests/common/cockroach-tpcc.sh；TOPO=cockroach-tc1) ==="
-	@echo "  注意：CRDB VM 部署目前為手動（無 ansible playbook）；K8s 部署 playbook 亦尚未實作"
+	@echo "  注意：CRDB VM 部署目前為手動；K8s 部署使用 ansible/playbooks/cockroach-k8s.yml"
 	@echo "  VM 3-node HAProxy : tpcc-prepare-cock-vm → test-tpcc-cock-vm-3node       → tpcc-report VARIANT=vm-3node TOPO=cockroach-tc1"
 	@echo "  VM 3-node direct  : tpcc-prepare-cock-vm → test-tpcc-cock-vm-3node-direct → tpcc-report VARIANT=vm-3node-direct TOPO=cockroach-tc1"
 	@echo "  VM 1-node         : (用單節點部署) tpcc-prepare-cock-vm CRDB_HOST_VM=\$$(CRDB_HOST_VM_DIRECT) CRDB_PORT_VM=\$$(CRDB_PORT_VM_DIRECT) → test-tpcc-cock-vm-1node"
@@ -583,14 +590,15 @@ k3s-deploy:
 tidb-tc1-k8s:
 	$(MAKE) k8s-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
-	  -i inventory/tidb-tc1-k8s.ini
+	  -i inventory/tidb-tc1-k8s.ini \
+	  -e @$(TIDB_K8S_UNLIMIT_VARS)
 	$(MAKE) tidb-k8s-status
 
 tidb-tc1-k8s-limit:
 	$(MAKE) k8s-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
 	  -i inventory/tidb-tc1-k8s.ini \
-	  -e k8s_resource_limits=true
+	  -e @$(TIDB_K8S_LIMIT_VARS)
 	$(MAKE) tidb-k8s-status
 
 tidb-k8s-status:
@@ -600,14 +608,15 @@ tidb-k8s-status:
 yuga-tc1-k8s:
 	$(MAKE) k8s-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-k8s.yml \
-	  -i inventory/yuga-tc1-k8s.ini
+	  -i inventory/yuga-tc1-k8s.ini \
+	  -e @$(YUGA_K8S_UNLIMIT_VARS)
 	$(MAKE) yuga-k8s-status
 
 yuga-tc1-k8s-limit:
 	$(MAKE) k8s-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-k8s.yml \
 	  -i inventory/yuga-tc1-k8s.ini \
-	  -e yb_resource_limits=true
+	  -e @$(YUGA_K8S_LIMIT_VARS)
 	$(MAKE) yuga-k8s-status
 
 yuga-k8s-status:
@@ -619,49 +628,53 @@ yuga-k8s-status:
 ## 若 K8s 叢集尚未建立，先手動 make k3s-deploy
 tidb-tc1-k8s-resume:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
-	  -i inventory/tidb-tc1-k8s.ini
+	  -i inventory/tidb-tc1-k8s.ini \
+	  -e @$(TIDB_K8S_UNLIMIT_VARS)
 	$(MAKE) tidb-k8s-status
 
 tidb-tc1-k8s-resume-limit:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/tidb-k8s.yml \
 	  -i inventory/tidb-tc1-k8s.ini \
-	  -e k8s_resource_limits=true
+	  -e @$(TIDB_K8S_LIMIT_VARS)
 	$(MAKE) tidb-k8s-status
 
 yuga-tc1-k8s-resume:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-k8s.yml \
-	  -i inventory/yuga-tc1-k8s.ini
+	  -i inventory/yuga-tc1-k8s.ini \
+	  -e @$(YUGA_K8S_UNLIMIT_VARS)
 	$(MAKE) yuga-k8s-status
 
 yuga-tc1-k8s-resume-limit:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-k8s.yml \
 	  -i inventory/yuga-tc1-k8s.ini \
-	  -e yb_resource_limits=true
+	  -e @$(YUGA_K8S_LIMIT_VARS)
 	$(MAKE) yuga-k8s-status
 
-## CockroachDB K8s (playbook 尚未實作；執行會失敗直到 cockroach-k8s.yml 建立)
+## CockroachDB K8s
 cockroach-tc1-k8s:
 	$(MAKE) k8s-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/cockroach-k8s.yml \
-	  -i inventory/cockroach-tc1-k8s.ini
+	  -i inventory/cockroach-tc1-k8s.ini \
+	  -e @$(COCKROACH_K8S_UNLIMIT_VARS)
 	$(MAKE) cockroach-k8s-status
 
 cockroach-tc1-k8s-limit:
 	$(MAKE) k8s-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/cockroach-k8s.yml \
 	  -i inventory/cockroach-tc1-k8s.ini \
-	  -e crdb_resource_limits=true
+	  -e @$(COCKROACH_K8S_LIMIT_VARS)
 	$(MAKE) cockroach-k8s-status
 
 cockroach-tc1-k8s-resume:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/cockroach-k8s.yml \
-	  -i inventory/cockroach-tc1-k8s.ini
+	  -i inventory/cockroach-tc1-k8s.ini \
+	  -e @$(COCKROACH_K8S_UNLIMIT_VARS)
 	$(MAKE) cockroach-k8s-status
 
 cockroach-tc1-k8s-resume-limit:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/cockroach-k8s.yml \
 	  -i inventory/cockroach-tc1-k8s.ini \
-	  -e crdb_resource_limits=true
+	  -e @$(COCKROACH_K8S_LIMIT_VARS)
 	$(MAKE) cockroach-k8s-status
 
 cockroach-k8s-status:
@@ -705,7 +718,7 @@ test-tpcc-k8s-limit:
 	TIDB_HOST=$(TIDB_HOST_K8S) TIDB_PORT=$(TIDB_PORT_K8S) VARIANT=k8s-3node-limit \
 	  $(TPCC_ENV) bash tests/common/tpcc.sh run
 
-## YugabyteDB TPC-C (BenchmarkSQL)
+## YugabyteDB TPC-C (go-tpc; yuga-tpcc.sh)
 tpcc-cleanup-yuga-vm:
 	YUGA_HOST=$(YUGA_HOST_VM) YUGA_PORT=$(YUGA_PORT_VM) VARIANT=vm-3node \
 	  $(YUGA_TPCC_ENV) bash tests/common/yuga-tpcc.sh cleanup
