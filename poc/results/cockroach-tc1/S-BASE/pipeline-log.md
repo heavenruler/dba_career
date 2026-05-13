@@ -62,7 +62,7 @@ k8s-3node-unlimit                         client (go-tpc on .31)
                               │   30Gi PVC each / tls.enabled=    │
                               │   false (--insecure)              │
                               └───────────────────────────────────┘
-  deploy: cockroach-k8s.yml + cockroach-tc1-k8s.ini + crdb-values.yaml.j2
+  deploy: cockroach-k8s.yml + cockroach-tc1-k8s.ini + vars/cockroach-k8s-3node-unlimit.yml
           (helm chart cockroachdb/cockroachdb 15.0.5, image v26.1.4)
           init Job 不自動渲染 → role 手動 exec cockroach init
           NodePort 手動 kubectl patch 從隨機改 :30007 (SQL) / :30008 (admin UI)
@@ -73,6 +73,8 @@ k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
                                           差別：crdb_resource_limits=true
                                           每 pod limits: 2 CPU / 8GiB memory
                                           (對齊 TiDB TiKV K8s-limit 設定)
+                                          deploy vars: cockroach-k8s-3node-limit.yml
+                                          result: 20260512-2128
 ```
 
 ---

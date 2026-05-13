@@ -31,7 +31,7 @@ vm-3node-direct                           client (go-tpc on .31)
                               └────────────────────────────────────┘
   RF=3, fault_tolerance=zone
   deploy: yugabyted start/join; yuga-tc1.ini
-  ⚠️ prepare 走 HAProxy :15433（避免直連 check SQL 被 HAProxy 30s timeout 切斷）
+  ⚠️ 歷史 prepare 曾走 HAProxy :15433；舊 HAProxy 30s timeout 會切斷長時間 check SQL
 
 
 vm-3node                                  client (go-tpc on .31)
@@ -63,7 +63,7 @@ k8s-3node-unlimit                         client (go-tpc on .31)
                               └───────────────────────────────────┘
   chart: yugabytedb/yugabyte 2025.2.2; RF=3; DB 主容器無 resource limits
   yb_enable_read_committed_isolation=true; go-tpc --isolation 2; prepare --no-check
-  deploy: yugabyte-k8s.yml + yuga-tc1-k8s.ini + yugabyte-k8s-3node-unlimit.yml
+  deploy: yugabyte-k8s.yml + yuga-tc1-k8s.ini + vars/yugabyte-k8s-3node-unlimit.yml
 
 
 k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
