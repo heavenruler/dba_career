@@ -2,27 +2,13 @@
 
 ## 本報告摘要
 
-我們用業界標準的 OLTP 壓力測試（TPC-C，模擬電商訂單處理）比較三款分散式資料庫（TiDB、CockroachDB、YugabyteDB）在不同部署架構下的吞吐量。
+我們用業界標準的 OLTP 壓力測試（TPC-C，模擬電商訂單處理）比較三款分散式資料庫（TiDB、CockroachDB、YugabyteDB）在不同部署架構下的吞吐量。下表是管理層摘要，完整原始紀錄可直接點到各自的 `pipeline-log.md`。
 
-**單節點 vm-1node 對比**（相同硬體、READ COMMITTED 隔離；READ COMMITTED 是「交易隔離等級」的一種設定，決定多筆交易同時跑時彼此能看到對方未完成資料的程度；本次三款資料庫統一切到此等級，確保對比基準一致。詳見下方「特殊 flags」區塊）：
-- **TiDB peak 13,355 tpmC**（64t），延遲 39-268ms
-- **CockroachDB peak 8,732 tpmC**（32t），延遲 62-565ms（~ TiDB 65%）
-- **YugabyteDB peak 414.7 tpmC**（16t），延遲 2,225-15,655ms（~ TiDB 3%）
-
-**三節點 vm-3node 完整結果**（HAProxy roundrobin）：
-- **TiDB peak 22,841 tpmC**（128t，clean 重跑為基準；三次 128t 測量範圍 21,875–23,746，±4.3%）— 三家最高；vm-3node-direct → HAProxy 提升 **+55%**（SQL 節點 .32/.33 分散處理）
-- **CockroachDB peak 14,014 tpmC**（128t）— symmetric architecture，HAProxy 比直連 +26%
-- **YugabyteDB peak 1,036.7 tpmC**（16t）— tserver 一體設計，HAProxy 與 direct 差異僅 +1%（受 **MVCC**（Multi-Version Concurrency Control 多版本併發控制——每筆資料保留多份版本，衝突時偵測重做）的競爭設計天花板限制；無論加多少節點，相同熱點資料 row 仍然只能單線結帳，這就是上限的來源）
-
-**K8s 容器化（k8s-3node-unlimit）overhead**：
-- **TiDB** vm-3node 22,841 → K8s 18,919 — overhead **~17%**
-- **CockroachDB** vm-3node 14,014 → K8s 13,982 — overhead **~0.2%**（幾乎無損；symmetric architecture 對容器化最友善）
-- **YugabyteDB** vm-3node 1,037 → K8s 3,164 — **+205%**（主要變因為 YugabyteDB 2025.2.2 LTS + 有效 Read Committed，非單純 K8s 帶來效能提升）
-
-**K8s 資源限制（k8s-3node-limit）影響**：
-- **TiDB** K8s-unlimit 18,919 → K8s-limit 11,081 — 下降 **41%**
-- **CockroachDB** K8s-unlimit 13,982 → K8s-limit 6,750 — 下降 **52%**
-- **YugabyteDB** K8s-unlimit 3,164 → K8s-limit 1,766 — 下降 **44%**
+| DB | vm-1node peak | vm-3node peak | k8s-unlimit peak | k8s-limit peak | 主要觀察 | pipeline log |
+|---|---:|---:|---:|---:|---|---|
+| TiDB | 13,355 tpmC | 22,841 tpmC | 18,919 tpmC | 11,081 tpmC | 三節點 + HAProxy 最強，K8s 約有 17% overhead，limit 後下降 41% | [tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md) |
+| CockroachDB | 8,732 tpmC | 14,014 tpmC | 13,982 tpmC | 6,750 tpmC | K8s 幾乎無損，limit 後下降 52%，HAProxy 比直連更快 | [cockroach-tc1/S-BASE/pipeline-log.md](./cockroach-tc1/S-BASE/pipeline-log.md) |
+| YugabyteDB | 414.7 tpmC | 1,036.7 tpmC | 3,163.6 tpmC | 1,766.1 tpmC | K8s-unlimit 大幅高於 VM，limit 後下降 44%，關鍵是 2025.2.2 LTS + READ COMMITTED | [yuga-tc1/S-BASE/pipeline-log.md](./yuga-tc1/S-BASE/pipeline-log.md) |
 
 本輪 TiDB / CockroachDB / YugabyteDB 的 VM、K8s-unlimit、K8s-limit 對標測試已完成。
 
