@@ -6,7 +6,7 @@
 
 | DB | vm-1node peak | vm-3node peak | k8s-unlimit peak | k8s-limit peak | 主要觀察 | pipeline log |
 |---|---:|---:|---:|---:|---|---|
-| TiDB | 13,355 tpmC | 22,841 tpmC | 18,919 tpmC | 11,081 tpmC | 三節點 + HAProxy 最強，K8s 約有 17% overhead，limit 後下降 41% | [tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md) |
+| TiDB | 13,355 tpmC | 22,841 tpmC | 18,919 tpmC | 11,081 tpmC | 三節點 + HAProxy 表現最佳，K8s 約有 17% overhead，limit 後下降 41% | [tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md) |
 | CockroachDB | 8,732 tpmC | 14,014 tpmC | 13,982 tpmC | 6,750 tpmC | K8s 幾乎無損，limit 後下降 52%，HAProxy 比直連更快 | [cockroach-tc1/S-BASE/pipeline-log.md](./cockroach-tc1/S-BASE/pipeline-log.md) |
 | YugabyteDB | 414.7 tpmC | 1,036.7 tpmC | 3,163.6 tpmC | 1,766.1 tpmC | K8s-unlimit 大幅高於 VM，limit 後下降 44%，關鍵是 2025.2.2 LTS + READ COMMITTED | [yuga-tc1/S-BASE/pipeline-log.md](./yuga-tc1/S-BASE/pipeline-log.md) |
 
@@ -84,7 +84,7 @@
 > **目前進度**：TiDB 全 6 組完成（VM 4 + K8s 2）；YugabyteDB 全 5 組完成（VM 3 + K8s 2）；CockroachDB 全 5 組完成（VM 3 + K8s 2）。
 
 > **TiDB 全部署模式對比**：
-> - **vm-3node (HAProxy)** peak **22,841**（最佳）— SQL 節點分散最有效
+> - **vm-3node (HAProxy)** peak **22,841**（表現最佳）— SQL 節點分散最有效
 > - vm-3node-direct peak 14,779 — 單一 gateway，無分散優勢
 > - vm-1node peak 13,355
 > - k8s-3node-unlimit peak 18,919 — 容器化 ~17% overhead
