@@ -16,7 +16,7 @@
 
 ## 測試環境總覽
 
-- **測試工具**：go-tpc（業界標準 TPC-C 模擬器）
+- **測試工具**：[go-tpc](https://github.com/pingcap/go-tpc)（業界標準 TPC-C 模擬器）
 
 - **TPC-C**（Transaction Processing Performance Council Benchmark C）：模擬倉儲訂單處理的 OLTP（線上交易處理）壓力測試，業界用來衡量資料庫每分鐘能完成多少筆「新訂單」交易，數字越高代表系統越能承載業務尖峰。
 
@@ -30,8 +30,9 @@
 
 ### 項目說明
 
-- **為什麼不考慮 ACID**：ACID 是資料庫的基本設計目標，不是這份對標裡可以切換的比較維度；對分散式資料庫架構來說，應優先看的是 CAP 在一致性與可用性之間的取捨。本報告比較的是在相同 OLTP 壓力下，各系統的吞吐、延遲與部署成本。
-- **為什麼不考慮 Repeatable Read / SERIALIZABLE**：這兩個隔離等級會把比較重心拉到更嚴格的交易一致性與更高的協調成本，容易引入不同的 abort / retry 行為，讓三家的吞吐比較失去同一基準。這份報告要的是可重現、可對照的高壓結果，因此統一以 `READ COMMITTED` 作為比較基準。
+- **ACID**：屬於資料庫基本設計目標，不是本報告的比較維度。
+- **CAP**：分散式資料庫架構主要看 CAP 在一致性與可用性之間的取捨。
+- **Repeatable Read / SERIALIZABLE**：會提高協調成本並引入不同的 abort / retry 行為；本報告統一以 `READ COMMITTED` 作為比較基準。
 
 ---
 
