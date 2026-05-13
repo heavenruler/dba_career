@@ -69,7 +69,7 @@
   - `:5433` — YBDB SQL 服務端口
   - `:15433` — YBDB HAProxy 監聽端口（與 YBDB 共用同一台主機，避用 5433），流量由此轉發至後端 YBDB:5433
   - `:26257` — CockroachDB SQL 服務端口（PostgreSQL 協定相容）
-  - **NodePort**：K8s 對外暴露服務的固定埠口模式（埠號通常在 30000-32767 區間）；本測試 `:30004` 即指向 K8s 叢集內的 TiDB SQL 服務。
+  - **NodePort**：K8s 對外暴露服務的固定埠口模式（埠號通常在 30000-32767 區間）；本測試使用 TiDB `:30004`、YBDB `:30005`、CockroachDB `:30007` 作為各 DB 的 K8s SQL 入口。
 
 - **資源限制標記**：
   - `TiKV Nc` — 限制 TiKV 儲存元件可用的 CPU 核心數

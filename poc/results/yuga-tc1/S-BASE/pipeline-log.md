@@ -311,7 +311,7 @@ HAProxy 在 OLTP 高壓場景下要把 timeout 拉到比最壞交易時間還長
 
 ### 結論
 
-YBDB 2025.2.2 LTS + K8s-unlimit + 有效 Read Committed 後，TPC-C 吞吐明顯高於既有 VM 三節點結果，且正式結果無 serialization/restart 錯誤。後續做 k8s-3node-limit 時，必須保留同樣的 `yb_enable_read_committed_isolation=true`、`--isolation 2`、`prepare --no-check` 條件，否則結果不可比。
+YBDB 2025.2.2 LTS + K8s-unlimit + 有效 Read Committed 後，TPC-C 吞吐明顯高於既有 VM 三節點結果，且正式結果無 serialization/restart 錯誤。後續所有 YBDB K8s 對標都必須保留同樣的 `yb_enable_read_committed_isolation=true`、`--isolation 2`、`prepare --no-check` 條件，否則結果不可比；本輪 k8s-3node-limit 已依此條件完成。
 
 ---
 
