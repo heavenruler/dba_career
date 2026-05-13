@@ -209,7 +209,9 @@
 
 - `tidb_enable_auto_analyze = OFF` — 由 `tests/common/tpcc.sh` 在測試期間設定，停用自動統計分析以避免背景工作干擾；測試結束後恢復 `ON`。
 - `tidb_auto_analyze_ratio` — v8.5+ 不再使用此舊設定關閉 auto analyze，改用 `tidb_enable_auto_analyze`。
-- Reference: [tests/common/tpcc.sh](../tests/common/tpcc.sh), [ansible/vars/tidb-k8s-3node-limit.yml](../ansible/vars/tidb-k8s-3node-limit.yml), [ansible/roles/tidb_cluster/templates/tidbcluster.yaml.j2](../ansible/roles/tidb_cluster/templates/tidbcluster.yaml.j2)
+- wrapper @ [tests/common/tpcc.sh](../tests/common/tpcc.sh)
+- K8s limit vars @ [ansible/vars/tidb-k8s-3node-limit.yml](../ansible/vars/tidb-k8s-3node-limit.yml)
+- K8s template @ [ansible/roles/tidb_cluster/templates/tidbcluster.yaml.j2](../ansible/roles/tidb_cluster/templates/tidbcluster.yaml.j2)
 
 **CockroachDB**
 
@@ -217,14 +219,19 @@
 - `sql.txn.read_committed_isolation.enabled = true` — role 於部署後套用 cluster setting。
 - `default_transaction_isolation = 'read committed'` — role 將所有 role 的預設交易隔離設為 READ COMMITTED。
 - `crdb_tls_enabled: false` / `--insecure` — K8s chart 與初始化指令使用無 TLS 模式，對齊 PoC 測試環境。
-- Reference: [ansible/vars/cockroach-k8s-3node-unlimit.yml](../ansible/vars/cockroach-k8s-3node-unlimit.yml), [ansible/vars/cockroach-k8s-3node-limit.yml](../ansible/vars/cockroach-k8s-3node-limit.yml), [ansible/roles/cockroach_k8s_deploy/tasks/main.yml](../ansible/roles/cockroach_k8s_deploy/tasks/main.yml), [ansible/roles/cockroach_k8s_deploy/templates/crdb-values.yaml.j2](../ansible/roles/cockroach_k8s_deploy/templates/crdb-values.yaml.j2)
+- K8s unlimit vars @ [ansible/vars/cockroach-k8s-3node-unlimit.yml](../ansible/vars/cockroach-k8s-3node-unlimit.yml)
+- K8s limit vars @ [ansible/vars/cockroach-k8s-3node-limit.yml](../ansible/vars/cockroach-k8s-3node-limit.yml)
+- K8s role tasks @ [ansible/roles/cockroach_k8s_deploy/tasks/main.yml](../ansible/roles/cockroach_k8s_deploy/tasks/main.yml)
+- K8s values template @ [ansible/roles/cockroach_k8s_deploy/templates/crdb-values.yaml.j2](../ansible/roles/cockroach_k8s_deploy/templates/crdb-values.yaml.j2)
 
 **YugabyteDB**
 
 - `yb_gflags.master.replication_factor: "3"` — K8s IaC vars 設定 RF=3。
 - `yb_gflags.tserver.ysql_enable_auth: "false"` — K8s IaC vars 關閉 YSQL auth，對齊 PoC 測試環境。
 - `yb_gflags.tserver.yb_enable_read_committed_isolation: "true"` — K8s IaC vars 啟用有效 READ COMMITTED；go-tpc 同步使用 `--isolation 2`。
-- Reference: [ansible/vars/yuga-k8s-3node-unlimit.yml](../ansible/vars/yuga-k8s-3node-unlimit.yml), [ansible/vars/yuga-k8s-3node-limit.yml](../ansible/vars/yuga-k8s-3node-limit.yml), [ansible/roles/yugabyte_k8s_deploy/templates/yb-values.yaml.j2](../ansible/roles/yugabyte_k8s_deploy/templates/yb-values.yaml.j2)
+- K8s unlimit vars @ [ansible/vars/yuga-k8s-3node-unlimit.yml](../ansible/vars/yuga-k8s-3node-unlimit.yml)
+- K8s limit vars @ [ansible/vars/yuga-k8s-3node-limit.yml](../ansible/vars/yuga-k8s-3node-limit.yml)
+- K8s values template @ [ansible/roles/yugabyte_k8s_deploy/templates/yb-values.yaml.j2](../ansible/roles/yugabyte_k8s_deploy/templates/yb-values.yaml.j2)
 
 ---
 
