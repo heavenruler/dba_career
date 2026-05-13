@@ -91,6 +91,7 @@ _go_tpc_base() {
     -U "${YUGA_USER}" \
     -T "${threads}" \
     --conn-params sslmode=disable \
+    --isolation 2 \
     ${pass_flag} \
     ${extra_global} \
     tpcc \
@@ -108,7 +109,7 @@ _elapsed() {
 cmd_prepare() {
   local t0=$SECONDS
   echo "==> [yuga-tpcc] prepare: ${YUGA_HOST}:${YUGA_PORT} warehouses=${WAREHOUSES}"
-  _go_tpc_base 8 "" prepare
+  _go_tpc_base 8 "" prepare --no-check
   echo "==> [yuga-tpcc] prepare done ($(_elapsed $t0 $SECONDS))"
 }
 

@@ -246,3 +246,69 @@ vm-3node-direct 證實 **YBDB 橫向擴展對 OLTP 寫入是有效的**，在無
 > **白話版：HAProxy 代理層的設定正確後，對效能的影響不到 5%，可以接受。這次還順帶發現並修了一個設定問題——如果不修，高壓測試會永遠卡住。**
 
 HAProxy 在 OLTP 高壓場景下要把 timeout 拉到比最壞交易時間還長（這裡 600s）才能避免半開連線 hang。實測 HAProxy roundrobin 對 YBDB 三節點的 overhead 在 5% 內，可接受。
+
+---
+
+## k8s-3node-unlimit — 2026-05-13
+
+### 環境
+- 拓撲：**k3s** v1.29.14 三節點（.32 master，.33/.34 worker）+ YugabyteDB Helm chart **2025.2.2**（image/binary `2025.2.2.2 build 11`）
+- 版本驗證：pod 內 `yb-master/yb-tserver --version` 均為 `version 2025.2.2.2 build 11`
+- 連線入口：NodePort `.32:30005`（YSQL），`.32:30006`（YCQL）
+- RF：3（3 master + 3 tserver）
+- 容器資源限制：DB 主容器無 limits（`yb-master` requests 500m/1Gi，`yb-tserver` requests 1 CPU/2Gi，`limits=` 空值）；`yb-cleanup` sidecar 保留 chart 預設 250m/250Mi
+- 儲存：master 10 GiB PVC ×3，tserver 50 GiB PVC ×3（local-path StorageClass）
+- 測試工具：go-tpc on .31（`-d postgres --conn-params sslmode=disable --isolation 2`）
+- Warehouses：128 | Warmup：5m | Duration：10m | Threads：16/32/64/128
+- 結果目錄：`k8s-3node-unlimit/20260513-0114/`
+
+### 部署 / 接手紀錄
+- 先移除 CRDB K8s 測試環境：刪除 `cockroach-tc1` namespace，釋放 NodePort `30007/30008` 與 PVC。
+- 初次 YBDB K8s 安裝誤用 chart 2024.2.3，SQL version 顯示 `2024.2.3.3-b0`，不符合 2025.2 LTS 要求，已刪除重建。
+- 改用 chart **2025.2.2**，Helm app version `2025.2.2.2-b11`；SQL `version()` 顯示 `PostgreSQL 15.12-YB-2025.2.2.2-b0`，pod binary `--version` 驗證為 build 11。
+- Helm chart 2025.2.2 的 `serviceEndpoints` 不支援直接指定 fixed `nodePort`；實作方式改為手動建立 `yb-tserver-service` NodePort service，固定 YSQL `30005`、YCQL `30006`。
+- Helm chart 預設會渲染 DB container limits（master 2c/2Gi，tserver 2c/4Gi），本次以 `kubectl patch sts ... remove /resources/limits` 移除 DB 主容器 limits，保留 requests。
+- go-tpc `prepare` 預設會執行 `begin to check warehouse ...` consistency check，YBDB 2025.2 上跨表聚合查詢可卡 30+ 分鐘；wrapper 已改為 `prepare --no-check`，另以表筆數做資料完整性檢查。
+- 表筆數驗證：warehouse 128、district 1,280、customer/history/orders 3,840,000、item 100,000、stock 12,800,000、new_order 1,152,000；`order_line` 約 38.4M（實測 38,396,798，符合每 order 5-15 lines 隨機分布，不應硬性等於 38,400,000）。
+- 2025.2 若只設定 SQL isolation/read committed，`SHOW transaction_isolation` 可顯示 RC，但 `SHOW yb_effective_transaction_isolation_level` 仍可能是 `repeatable read`，會導致 `could not serialize access` / `Restart read required`。已啟用 tserver flag `yb_enable_read_committed_isolation=true` 並滾動重啟，驗證：
+  - `transaction_isolation = read committed`
+  - `yb_effective_transaction_isolation_level = read committed`
+- 啟用有效 RC 前的失敗 run 已保留於 `k8s-3node-unlimit/20260513-0028/`、`k8s-3node-unlimit/20260513-0037/` 作 troubleshooting，不列入正式結果。
+
+### Prepare
+- 流程：cleanup → `prepare --no-check --isolation 2`
+- 時間：10m42s（128W）
+- 無 `begin to check warehouse` consistency check
+
+### Execute 結果
+
+> ⚠️ efficiency > 100% 為無 think time 的壓測常態，非錯誤
+>
+> （tpmC：越高越好；NO avg / NO P99：越低越好）
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | 2,932.9 | 6,479.9 | 178.2% | 289.5 | 637.5 |
+| 32 | **3,163.6** | 7,008.2 | **192.2%** | 547.5 | 1,476.4 |
+| 64 | 3,144.3 | 6,974.7 | 191.0% | 1,065.6 | 3,892.3 |
+| 128 | 2,984.0 | 6,653.0 | 181.3% | 2,194.6 | 10,737.4 |
+
+### vs VM 3-node 對比
+
+| threads | vm-3node | k8s-3node-unlimit | 倍數 |
+|---------|----------|-------------------|------|
+| 16 | 1,036.7 | 2,932.9 | 2.83× |
+| 32 | 971.4 | 3,163.6 | 3.26× |
+| 64 | 965.7 | 3,144.3 | 3.26× |
+| 128 | 915.8 | 2,984.0 | 3.26× |
+
+### 觀察
+
+- **K8s-unlimit peak 3,164 tpmC**，約為 VM 3-node peak 1,037 的 **3.1×**。這不是單純「K8s 比 VM 快」，主要變因包含版本從舊 VM 測試的 YBDB 版本升到 **2025.2.2 LTS**，以及真正啟用 DocDB Read Committed。
+- **吞吐曲線穩定在 3k tpmC 左右**：16t 到 128t 介於 2,933~3,164，峰值在 32t；高併發沒有再發生 transaction restart error。
+- **延遲仍隨併發上升**：NO avg 289ms → 2,195ms，NO P99 638ms → 10,737ms；128t 高壓下仍接近 go-tpc 16s 上限，但比舊 VM 結果的 16,106ms P99 改善。
+- **有效 RC 是必要條件**：只加 go-tpc `--isolation 2` 不夠，必須確認 `yb_effective_transaction_isolation_level = read committed`，否則仍會有 `Restart read required` / `could not serialize access`。
+
+### 結論
+
+YBDB 2025.2.2 LTS + K8s-unlimit + 有效 Read Committed 後，TPC-C 吞吐明顯高於既有 VM 三節點結果，且正式結果無 serialization/restart 錯誤。後續做 k8s-3node-limit 時，必須保留同樣的 `yb_enable_read_committed_isolation=true`、`--isolation 2`、`prepare --no-check` 條件，否則結果不可比。

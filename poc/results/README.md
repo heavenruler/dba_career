@@ -90,7 +90,7 @@
 
 > `vm-1node (no-analyze)`：停用資料庫自動統計分析（背景工作），讓測試結果排除排程干擾，呈現最純粹的效能數字。
 
-> **目前進度**：TiDB 全 6 組完成（VM 4 + K8s 2）；YBDB VM 三組完成、K8s 待測；CRDB 全 5 組完成（VM 3 + K8s 2）。
+> **目前進度**：TiDB 全 6 組完成（VM 4 + K8s 2）；YBDB VM 三組完成、K8s-unlimit 完成、K8s-limit 待測；CRDB 全 5 組完成（VM 3 + K8s 2）。
 
 > **TiDB 全部署模式對比**：
 > - **vm-3node (HAProxy)** peak **22,841**（最佳）— SQL 節點分散最有效
@@ -110,10 +110,10 @@
 | vm-1node | VM×1 | RF=1 | 直連 :5433 | — | ✅ | 414.7 | 394.8 | 378.6 | 370.4 | **414.7** |
 | vm-3node | VM×3 | RF=3 | HAProxy :15433 | — | ✅ | 1036.7 | 971.4 | 965.7 | 915.8 | **1036.7** |
 | vm-3node-direct | VM×3 | RF=3 | 直連 :5433 | — | ✅ | 1024.2 | 1016.4 | 1003.2 | 964.7 | **1024.2** |
-| k8s-3node-unlimit | K8s×3 | RF=3 | HAProxy :15433 | 無 | ⏳ | — | — | — | — | — |
+| k8s-3node-unlimit | K8s×3 | RF=3 | NodePort :30005 | 無 | ✅ | 2,932.9 | 3,163.6 | 3,144.3 | 2,984.0 | **3,163.6** |
 | k8s-3node-limit | K8s×3 | RF=3 | HAProxy :15433 | tserver Nc | ⏳ | — | — | — | — | — |
 
-> **YBDB 摘要**：三節點架構（vm-3node / vm-3node-direct）比單節點（vm-1node）吞吐量高約 **2.5 倍**，證實水平擴展對 OLTP 寫入有效；HAProxy 入口層額外成本約 3-5%（vm-3node vs vm-3node-direct），在可接受範圍。
+> **YBDB 摘要**：三節點架構（vm-3node / vm-3node-direct）比單節點（vm-1node）吞吐量高約 **2.5 倍**；K8s-unlimit peak **3,164 tpmC**，比 VM 3-node peak **1,037 tpmC** 高約 **3.1 倍**。本次 K8s 採 YugabyteDB **2025.2.2 LTS**，並明確啟用 `yb_enable_read_committed_isolation=true`，讓 `yb_effective_transaction_isolation_level = read committed`，避免 2025.2 預設映射成 repeatable read 造成 transaction restart。
 
 ### CockroachDB (cockroach-tc1) 🔄 進行中
 
