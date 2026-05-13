@@ -35,7 +35,7 @@ data "vsphere_custom_attribute" "attrs" {
 }
 
 data "vsphere_virtual_machine" "template" {
-  name          = "temp-almalinux-8.10"
+  name          = var.vm_template
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 

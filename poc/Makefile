@@ -520,6 +520,25 @@ yuga-tc1:
 	  -i inventory/hosts.ini \
 	  -i inventory/yugabyte-tc1.ini
 
+# AlmaLinux 8.10 variant — YBDB 2025.2.2 binary compatible OS
+# ⚠ template temp-almalinux-8.10 VMware customization issue pending fix
+yuga-tc1-alma8.10:
+	cd $(IAC_DIR) && terraform destroy -auto-approve
+	cd $(IAC_DIR) && terraform init -upgrade && \
+	  terraform apply -auto-approve -var 'vm_template=temp-almalinux-8.10'
+	$(MAKE) vm-ping
+	$(MAKE) vm-setup
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yuga-tc1.ini \
+	  -e yb_rf=3 \
+	  -e yb_placement="poc.poc-region.idc:3" \
+	  -e yb_master_addresses="172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100"
+	$(MAKE) yuga-haproxy-tc1
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
+	  -i inventory/hosts.ini \
+	  -i inventory/yuga-tc1.ini
+
 yuga-tc2: gcp-tunnel-ensure
 	$(MAKE) destroy-all
 	$(MAKE) apply-all

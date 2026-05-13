@@ -57,6 +57,11 @@ variable "vm_domain" {
   default = "db.104dc-dev.com"
 }
 
+variable "vm_template" {
+  type    = string
+  default = "temp-almalinux-10.1"
+}
+
 variable "vm_custom_attrs" {
   description = "Custom Attributes"
   default = {
