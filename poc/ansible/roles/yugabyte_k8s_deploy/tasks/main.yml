@@ -9,9 +9,9 @@
   changed_when: true
 
 ## Namespace
-- name: Create yb-demo namespace
+- name: Create YugabyteDB namespace
   ansible.builtin.shell: |
-    k3s kubectl create namespace yb-demo --dry-run=client -o yaml | \
+    k3s kubectl create namespace {{ yb_namespace | default('yb-demo') }} --dry-run=client -o yaml | \
       k3s kubectl apply -f -
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -28,7 +28,7 @@
 - name: Install / upgrade YugabyteDB via Helm
   ansible.builtin.shell: |
     helm upgrade --install yugabyte yugabytedb/yugabyte \
-      --namespace yb-demo \
+      --namespace {{ yb_namespace | default('yb-demo') }} \
       --version {{ yb_operator_version }} \
       -f /root/yb-values.yaml \
       --wait --timeout 10m
@@ -38,10 +38,40 @@
     NO_PROXY: "{{ k3s_no_proxy }}"
   changed_when: true
 
+## Fixed NodePort service for external TPC-C access.
+## Helm chart 2025.2.2 does not reliably support fixed nodePort in values.
+- name: Create fixed NodePort service for YSQL / YCQL
+  ansible.builtin.shell: |
+    cat <<'YAML' | k3s kubectl apply -f -
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: yb-tserver-service
+      namespace: {{ yb_namespace | default('yb-demo') }}
+      labels:
+        app: yb-tserver
+    spec:
+      type: NodePort
+      selector:
+        app: yb-tserver
+      ports:
+        - name: ysql-port
+          port: 5433
+          targetPort: 5433
+          nodePort: {{ yb_ysql_nodeport | default(30005) }}
+        - name: ycql-port
+          port: 9042
+          targetPort: 9042
+          nodePort: {{ yb_ycql_nodeport | default(30006) }}
+    YAML
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: true
+
 ## Wait for masters
 - name: Wait for yb-master pods to be Ready (3/3)
   ansible.builtin.shell: |
-    k3s kubectl get pods -n yb-demo -l app=yb-master \
+    k3s kubectl get pods -n {{ yb_namespace | default('yb-demo') }} -l app=yb-master \
       --no-headers | grep -c '1/1'
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -54,7 +84,7 @@
 ## Wait for tservers
 - name: Wait for yb-tserver pods to be Ready (3/3)
   ansible.builtin.shell: |
-    k3s kubectl get pods -n yb-demo -l app=yb-tserver \
+    k3s kubectl get pods -n {{ yb_namespace | default('yb-demo') }} -l app=yb-tserver \
       --no-headers | grep -c '1/1'
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -67,7 +97,7 @@
 ## Show status
 - name: Show pod status
   ansible.builtin.shell: |
-    k3s kubectl get pods -n yb-demo -o wide
+    k3s kubectl get pods -n {{ yb_namespace | default('yb-demo') }} -o wide
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: r_pods
@@ -77,6 +107,18 @@
   ansible.builtin.debug:
     msg: "{{ r_pods.stdout_lines }}"
 
+- name: Show services
+  ansible.builtin.shell: |
+    k3s kubectl get svc -n {{ yb_namespace | default('yb-demo') }}
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: r_svc
+  changed_when: false
+
+- name: "[K8s] Services / NodePorts"
+  ansible.builtin.debug:
+    msg: "{{ r_svc.stdout_lines }}"
+
 - name: Show YSQL endpoint
   ansible.builtin.debug:
-    msg: "YSQL endpoint: psql -h {{ ansible_default_ipv4.address }} -p 30005 -U yugabyte yugabyte"
+    msg: "YSQL endpoint: psql -h {{ ansible_default_ipv4.address }} -p {{ yb_ysql_nodeport | default(30005) }} -U yugabyte yugabyte"

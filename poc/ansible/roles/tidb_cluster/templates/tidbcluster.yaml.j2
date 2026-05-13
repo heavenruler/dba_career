@@ -1,8 +1,8 @@
 apiVersion: pingcap.com/v1alpha1
 kind: TidbCluster
 metadata:
-  name: tidb-poc
-  namespace: tidb-cluster
+  name: {{ tidb_k8s_cluster_name | default('tidb-poc') }}
+  namespace: {{ tidb_k8s_namespace | default('tidb-cluster') }}
 spec:
   version: "{{ tidb_version }}"
   timezone: Asia/Taipei
@@ -16,57 +16,57 @@ spec:
   pd:
     baseImage: pingcap/pd
     maxFailoverCount: 0
-    replicas: 3
-    storageClassName: local-path
+    replicas: {{ tidb_replicas.pd | default(3) }}
+    storageClassName: {{ tidb_storage.storageClassName | default('local-path') }}
     requests:
-      storage: 10Gi
+{% if k8s_resource_limits | default(false) | bool %}
+      cpu: "{{ tidb_resources.pd.requests.cpu | default('500m') }}"
+      memory: {{ tidb_resources.pd.requests.memory | default('1Gi') }}
+{% endif %}
+      storage: {{ tidb_storage.pd | default('10Gi') }}
     config:
       replication.max-replicas: 3
 {% if k8s_resource_limits | default(false) | bool %}
     limits:
-      cpu: "1"
-      memory: 2Gi
-    requests:
-      cpu: "500m"
-      memory: 1Gi
-      storage: 10Gi
+      cpu: "{{ tidb_resources.pd.limits.cpu | default('1') }}"
+      memory: {{ tidb_resources.pd.limits.memory | default('2Gi') }}
 {% endif %}
 
   tidb:
     baseImage: pingcap/tidb
     maxFailoverCount: 0
-    replicas: 2
+    replicas: {{ tidb_replicas.tidb | default(2) }}
     service:
       type: NodePort
-      mysqlNodePort: 30004
+      mysqlNodePort: {{ tidb_sql_nodeport | default(30004) }}
     config: {}
 {% if k8s_resource_limits | default(false) | bool %}
     limits:
-      cpu: "1"
-      memory: 3Gi
+      cpu: "{{ tidb_resources.tidb.limits.cpu | default('1') }}"
+      memory: {{ tidb_resources.tidb.limits.memory | default('3Gi') }}
     requests:
-      cpu: "500m"
-      memory: 1Gi
+      cpu: "{{ tidb_resources.tidb.requests.cpu | default('500m') }}"
+      memory: {{ tidb_resources.tidb.requests.memory | default('1Gi') }}
 {% endif %}
 
   tikv:
     baseImage: pingcap/tikv
     maxFailoverCount: 0
     evictLeaderTimeout: 1m
-    replicas: 3
-    storageClassName: local-path
+    replicas: {{ tidb_replicas.tikv | default(3) }}
+    storageClassName: {{ tidb_storage.storageClassName | default('local-path') }}
     requests:
-      storage: 100Gi
+{% if k8s_resource_limits | default(false) | bool %}
+      cpu: "{{ tidb_resources.tikv.requests.cpu | default('1') }}"
+      memory: {{ tidb_resources.tikv.requests.memory | default('4Gi') }}
+{% endif %}
+      storage: {{ tidb_storage.tikv | default('100Gi') }}
     config:
       storage.reserve-space: "0MB"
       rocksdb.max-open-files: 256
       raftdb.max-open-files: 256
 {% if k8s_resource_limits | default(false) | bool %}
     limits:
-      cpu: "2"
-      memory: 8Gi
-    requests:
-      cpu: "1"
-      memory: 4Gi
-      storage: 100Gi
+      cpu: "{{ tidb_resources.tikv.limits.cpu | default('2') }}"
+      memory: {{ tidb_resources.tikv.limits.memory | default('8Gi') }}
 {% endif %}

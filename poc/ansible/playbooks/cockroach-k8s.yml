@@ -5,6 +5,23 @@
   vars:
     helm_version: "v3.16.4"
     crdb_chart_version: "15.0.5"      # cockroachdb/cockroachdb chart 版本
+    crdb_resource_limits: false        # override with -e crdb_resource_limits=true for K8s-limit round
+    crdb_image_tag: "v26.1.4"
+    crdb_namespace: cockroach-tc1
+    crdb_replicas: 3
+    crdb_sql_nodeport: 30007
+    crdb_admin_nodeport: 30008
+    crdb_storage:
+      size: 30Gi
+      storageClass: local-path
+    crdb_resources:
+      requests:
+        cpu: "1"
+        memory: 2Gi
+      limits:
+        cpu: "2"
+        memory: 8Gi
+    crdb_tls_enabled: false
     k3s_proxy: "http://sproxy.104-dev.com.tw:3128"
     k3s_no_proxy: "172.24.40.32,172.24.40.33,172.24.40.34,10.42.0.0/16,10.43.0.0/16,127.0.0.1,localhost,.svc,.cluster.local,kubernetes"
   roles:

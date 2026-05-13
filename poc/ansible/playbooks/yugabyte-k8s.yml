@@ -3,7 +3,42 @@
   hosts: k3s_server
   become: true
   vars:
-    yb_operator_version: "2024.2.3"   # yugabytedb/yugabyte chart version
+    yb_operator_version: "2025.2.2"   # yugabytedb/yugabyte chart version
+    yb_resource_limits: false         # override with -e yb_resource_limits=true for K8s-limit round
+    yb_namespace: yb-demo
+    yb_ysql_nodeport: 30005
+    yb_ycql_nodeport: 30006
+    yb_replicas:
+      master: 3
+      tserver: 3
+    yb_storage:
+      master:
+        size: 10Gi
+        storageClass: local-path
+      tserver:
+        size: 50Gi
+        storageClass: local-path
+    yb_resources:
+      master:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: "1"
+          memory: 2Gi
+      tserver:
+        requests:
+          cpu: "1"
+          memory: 2Gi
+        limits:
+          cpu: "2"
+          memory: 8Gi
+    yb_gflags:
+      master:
+        replication_factor: "3"
+      tserver:
+        ysql_enable_auth: "false"
+        yb_enable_read_committed_isolation: "true"
     k3s_proxy: "http://sproxy.104-dev.com.tw:3128"
     k3s_no_proxy: "172.24.40.32,172.24.40.33,172.24.40.34,10.42.0.0/16,10.43.0.0/16,127.0.0.1,localhost,.svc,.cluster.local,kubernetes"
   roles:

@@ -3,29 +3,29 @@
 ## docs: https://github.com/cockroachdb/helm-charts
 
 image:
-  tag: "v26.1.4"
+  tag: "{{ crdb_image_tag | default('v26.1.4') }}"
 
 statefulset:
-  replicas: 3
+  replicas: {{ crdb_replicas | default(3) }}
   resources:
     requests:
-      cpu: "1"
-      memory: 2Gi
+      cpu: "{{ crdb_resources.requests.cpu | default('1') }}"
+      memory: {{ crdb_resources.requests.memory | default('2Gi') }}
 {% if crdb_resource_limits | default(false) %}
     limits:
-      cpu: "2"
-      memory: 8Gi
+      cpu: "{{ crdb_resources.limits.cpu | default('2') }}"
+      memory: {{ crdb_resources.limits.memory | default('8Gi') }}
 {% endif %}
 
 storage:
   persistentVolume:
     enabled: true
-    size: 30Gi
-    storageClass: local-path
+    size: {{ crdb_storage.size | default('30Gi') }}
+    storageClass: {{ crdb_storage.storageClass | default('local-path') }}
 
 ## --insecure mode (對齊 VM CRDB 設定，PoC 簡化)
 tls:
-  enabled: false
+  enabled: {{ crdb_tls_enabled | default(false) | lower }}
 
 ## NodePort 對外暴露 (chart 不支援 service.public.ports.*.nodePort，
 ## 由 role 內 kubectl patch 設定 :30007 = SQL, :30008 = admin UI)

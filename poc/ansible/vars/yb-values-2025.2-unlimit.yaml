@@ -1,0 +1,32 @@
+replicas:
+  master: 3
+  tserver: 3
+
+storage:
+  master:
+    count: 1
+    size: 10Gi
+    storageClass: local-path
+  tserver:
+    count: 1
+    size: 50Gi
+    storageClass: local-path
+
+resource:
+  master:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  tserver:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+
+gflags:
+  master:
+    replication_factor: "3"
+  tserver:
+    ysql_enable_auth: "false"
+    yb_enable_read_committed_isolation: "true"
+
+serviceEndpoints: []

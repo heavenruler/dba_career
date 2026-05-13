@@ -41,7 +41,7 @@
 ## Namespace
 - name: Create cockroach-tc1 namespace
   ansible.builtin.shell: |
-    k3s kubectl create namespace cockroach-tc1 --dry-run=client -o yaml | \
+    k3s kubectl create namespace {{ crdb_namespace | default('cockroach-tc1') }} --dry-run=client -o yaml | \
       k3s kubectl apply -f -
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -58,7 +58,7 @@
 - name: Install / upgrade CockroachDB via Helm
   ansible.builtin.shell: |
     helm upgrade --install cockroachdb cockroachdb/cockroachdb \
-      --namespace cockroach-tc1 \
+      --namespace {{ crdb_namespace | default('cockroach-tc1') }} \
       --version {{ crdb_chart_version }} \
       -f /root/crdb-values.yaml \
       --timeout 5m
@@ -71,7 +71,7 @@
 ## Wait for pods Running (尚未 Ready，等 init 後才會 Ready)
 - name: Wait for cockroachdb pods Running (3/3)
   ansible.builtin.shell: |
-    k3s kubectl get pods -n cockroach-tc1 -l app.kubernetes.io/name=cockroachdb \
+    k3s kubectl get pods -n {{ crdb_namespace | default('cockroach-tc1') }} -l app.kubernetes.io/name=cockroachdb \
       --no-headers | grep -c Running
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -84,8 +84,8 @@
 ## 手動 init cluster (chart 15.0.5 不渲染 init Job)
 - name: Initialize CockroachDB cluster via cockroachdb-0
   ansible.builtin.shell: |
-    k3s kubectl exec -n cockroach-tc1 cockroachdb-0 -- \
-      ./cockroach init --insecure --host=cockroachdb-0.cockroachdb.cockroach-tc1
+    k3s kubectl exec -n {{ crdb_namespace | default('cockroach-tc1') }} cockroachdb-0 -- \
+      ./cockroach init --insecure --host=cockroachdb-0.cockroachdb.{{ crdb_namespace | default('cockroach-tc1') }}
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: crdb_init
@@ -97,7 +97,7 @@
 ## Wait for pods Ready (init 後 readiness probe 才會通過)
 - name: Wait for cockroachdb pods Ready (3/3)
   ansible.builtin.shell: |
-    k3s kubectl get pods -n cockroach-tc1 -l app.kubernetes.io/name=cockroachdb \
+    k3s kubectl get pods -n {{ crdb_namespace | default('cockroach-tc1') }} -l app.kubernetes.io/name=cockroachdb \
       --no-headers | grep -c '1/1'
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -110,10 +110,10 @@
 ## Patch service 設定固定 NodePort (chart values 無 nodePort 欄位支援)
 - name: Patch cockroachdb-public Service to set fixed NodePort
   ansible.builtin.shell: |
-    k3s kubectl patch svc cockroachdb-public -n cockroach-tc1 --type='json' \
+    k3s kubectl patch svc cockroachdb-public -n {{ crdb_namespace | default('cockroach-tc1') }} --type='json' \
       -p='[
-        {"op": "replace", "path": "/spec/ports/0/nodePort", "value": 30007},
-        {"op": "replace", "path": "/spec/ports/1/nodePort", "value": 30008}
+        {"op": "replace", "path": "/spec/ports/0/nodePort", "value": {{ crdb_sql_nodeport | default(30007) }}},
+        {"op": "replace", "path": "/spec/ports/1/nodePort", "value": {{ crdb_admin_nodeport | default(30008) }}}
       ]'
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -123,7 +123,7 @@
 ## CRDB 不允許 SET CLUSTER SETTING 與其它 statement 同一個 transaction，拆兩次 exec
 - name: Enable READ COMMITTED cluster setting
   ansible.builtin.shell: |
-    k3s kubectl exec -n cockroach-tc1 cockroachdb-0 -- \
+    k3s kubectl exec -n {{ crdb_namespace | default('cockroach-tc1') }} cockroachdb-0 -- \
       ./cockroach sql --insecure -e \
       "SET CLUSTER SETTING sql.txn.read_committed_isolation.enabled = true"
   environment:
@@ -132,7 +132,7 @@
 
 - name: Set default_transaction_isolation = read committed for all roles
   ansible.builtin.shell: |
-    k3s kubectl exec -n cockroach-tc1 cockroachdb-0 -- \
+    k3s kubectl exec -n {{ crdb_namespace | default('cockroach-tc1') }} cockroachdb-0 -- \
       ./cockroach sql --insecure -e \
       "ALTER ROLE all SET default_transaction_isolation = 'read committed'"
   environment:
@@ -141,7 +141,7 @@
 
 ## Show pod / svc status
 - name: Show pod status
-  ansible.builtin.shell: k3s kubectl get pods -n cockroach-tc1 -o wide
+  ansible.builtin.shell: k3s kubectl get pods -n {{ crdb_namespace | default('cockroach-tc1') }} -o wide
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: r_pods
@@ -152,7 +152,7 @@
     msg: "{{ r_pods.stdout_lines }}"
 
 - name: Show services
-  ansible.builtin.shell: k3s kubectl get svc -n cockroach-tc1
+  ansible.builtin.shell: k3s kubectl get svc -n {{ crdb_namespace | default('cockroach-tc1') }}
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: r_svc
@@ -164,4 +164,4 @@
 
 - name: Show SQL endpoint
   ansible.builtin.debug:
-    msg: "SQL endpoint: psql -h {{ ansible_default_ipv4.address }} -p 30007 -U root postgres"
+    msg: "SQL endpoint: psql -h {{ ansible_default_ipv4.address }} -p {{ crdb_sql_nodeport | default(30007) }} -U root postgres"

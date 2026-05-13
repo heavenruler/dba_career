@@ -1,7 +1,7 @@
 ---
 - name: Create tidb-cluster namespace
   ansible.builtin.shell: |
-    k3s kubectl create namespace tidb-cluster --dry-run=client -o yaml | \
+    k3s kubectl create namespace {{ tidb_k8s_namespace | default('tidb-cluster') }} --dry-run=client -o yaml | \
       k3s kubectl apply -f -
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -22,7 +22,7 @@
 
 - name: Wait for PD to be Normal
   ansible.builtin.shell: |
-    k3s kubectl get tidbcluster tidb-poc -n tidb-cluster \
+    k3s kubectl get tidbcluster {{ tidb_k8s_cluster_name | default('tidb-poc') }} -n {{ tidb_k8s_namespace | default('tidb-cluster') }} \
       -o jsonpath='{.status.pd.phase}'
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -34,7 +34,7 @@
 
 - name: Wait for TiKV to be Normal
   ansible.builtin.shell: |
-    k3s kubectl get tidbcluster tidb-poc -n tidb-cluster \
+    k3s kubectl get tidbcluster {{ tidb_k8s_cluster_name | default('tidb-poc') }} -n {{ tidb_k8s_namespace | default('tidb-cluster') }} \
       -o jsonpath='{.status.tikv.phase}'
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -46,7 +46,7 @@
 
 - name: Wait for TiDB to be healthy (2/2 pods Ready)
   ansible.builtin.shell: |
-    k3s kubectl get pods -n tidb-cluster \
+    k3s kubectl get pods -n {{ tidb_k8s_namespace | default('tidb-cluster') }} \
       -l app.kubernetes.io/component=tidb \
       --no-headers | grep -c '2/2'
   environment:
@@ -59,7 +59,7 @@
 
 - name: Show cluster pod status
   ansible.builtin.shell: |
-    k3s kubectl get pods -n tidb-cluster -o wide
+    k3s kubectl get pods -n {{ tidb_k8s_namespace | default('tidb-cluster') }} -o wide
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: r_pods
@@ -71,4 +71,4 @@
 
 - name: Show TiDB endpoint
   ansible.builtin.debug:
-    msg: "TiDB endpoint: mysql -h {{ ansible_default_ipv4.address }} -P 30004 -u root"
+    msg: "TiDB endpoint: mysql -h {{ ansible_default_ipv4.address }} -P {{ tidb_sql_nodeport | default(30004) }} -u root"

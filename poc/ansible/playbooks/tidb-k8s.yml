@@ -15,5 +15,38 @@
   vars:
     tidb_version: "v8.5.2"
     k8s_resource_limits: false   # override with -e k8s_resource_limits=true for K8s-limit round
+    tidb_k8s_namespace: tidb-cluster
+    tidb_k8s_cluster_name: tidb-poc
+    tidb_sql_nodeport: 30004
+    tidb_replicas:
+      pd: 3
+      tidb: 2
+      tikv: 3
+    tidb_storage:
+      pd: 10Gi
+      tikv: 100Gi
+      storageClassName: local-path
+    tidb_resources:
+      pd:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: "1"
+          memory: 2Gi
+      tidb:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: "1"
+          memory: 3Gi
+      tikv:
+        requests:
+          cpu: "1"
+          memory: 4Gi
+        limits:
+          cpu: "2"
+          memory: 8Gi
   roles:
     - tidb_cluster

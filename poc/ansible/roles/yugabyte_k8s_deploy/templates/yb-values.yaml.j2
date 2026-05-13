@@ -1,6 +1,6 @@
 replicas:
-  master: 3
-  tserver: 3
+  master: {{ yb_replicas.master | default(3) }}
+  tserver: {{ yb_replicas.tserver | default(3) }}
 
 storage:
   master:
@@ -15,39 +15,30 @@ storage:
 resource:
   master:
     requests:
-      cpu: 500m
-      memory: 1Gi
+      cpu: {{ yb_resources.master.requests.cpu | default('500m') }}
+      memory: {{ yb_resources.master.requests.memory | default('1Gi') }}
 {% if yb_resource_limits | default(false) %}
     limits:
-      cpu: "1"
-      memory: 2Gi
+      cpu: "{{ yb_resources.master.limits.cpu | default('1') }}"
+      memory: {{ yb_resources.master.limits.memory | default('2Gi') }}
 {% endif %}
   tserver:
     requests:
-      cpu: "1"
-      memory: 2Gi
+      cpu: "{{ yb_resources.tserver.requests.cpu | default('1') }}"
+      memory: {{ yb_resources.tserver.requests.memory | default('2Gi') }}
 {% if yb_resource_limits | default(false) %}
     limits:
-      cpu: "2"
-      memory: 8Gi
+      cpu: "{{ yb_resources.tserver.limits.cpu | default('2') }}"
+      memory: {{ yb_resources.tserver.limits.memory | default('8Gi') }}
 {% endif %}
 
 gflags:
   master:
-    replication_factor: "3"
+    replication_factor: "{{ yb_gflags.master.replication_factor | default('3') }}"
   tserver:
-    ysql_enable_auth: "false"
-    yb_enable_read_committed_isolation: "true"
+    ysql_enable_auth: "{{ yb_gflags.tserver.ysql_enable_auth | default('false') }}"
+    yb_enable_read_committed_isolation: "{{ yb_gflags.tserver.yb_enable_read_committed_isolation | default('true') }}"
 
-## Expose YSQL via NodePort 30005 for external TPC-C access
-serviceEndpoints:
-  - name: yb-tserver-service
-    type: NodePort
-    app: yb-tserver
-    ports:
-      ysql-port:
-        port: 5433
-        nodePort: 30005
-      ycql-port:
-        port: 9042
-        nodePort: 30006
+## Chart 2025.2.2 does not honor fixed nodePort in serviceEndpoints.
+## The role creates yb-tserver-service explicitly after helm upgrade.
+serviceEndpoints: []

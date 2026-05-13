@@ -1,0 +1,43 @@
+# YugabyteDB S-BASE k8s-3node-limit reproduction vars.
+# Usage: ansible-playbook -i ansible/inventory/yuga-tc1-k8s.ini ansible/playbooks/yugabyte-k8s.yml -e @ansible/vars/yugabyte-k8s-3node-limit.yml
+yb_operator_version: "2025.2.2"
+yb_resource_limits: true
+
+yb_namespace: yb-demo
+yb_ysql_nodeport: 30005
+yb_ycql_nodeport: 30006
+
+yb_replicas:
+  master: 3
+  tserver: 3
+
+yb_storage:
+  master:
+    size: 10Gi
+    storageClass: local-path
+  tserver:
+    size: 50Gi
+    storageClass: local-path
+
+yb_resources:
+  master:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+  tserver:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+    limits:
+      cpu: "2"
+      memory: 8Gi
+
+yb_gflags:
+  master:
+    replication_factor: "3"
+  tserver:
+    ysql_enable_auth: "false"
+    yb_enable_read_committed_isolation: "true"
