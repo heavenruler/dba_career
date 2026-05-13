@@ -17,20 +17,16 @@ resource:
     requests:
       cpu: 500m
       memory: 1Gi
-{% if yb_resource_limits | default(false) %}
     limits:
       cpu: "1"
       memory: 2Gi
-{% endif %}
   tserver:
     requests:
       cpu: "1"
       memory: 2Gi
-{% if yb_resource_limits | default(false) %}
     limits:
       cpu: "2"
       memory: 8Gi
-{% endif %}
 
 gflags:
   master:
@@ -39,15 +35,4 @@ gflags:
     ysql_enable_auth: "false"
     yb_enable_read_committed_isolation: "true"
 
-## Expose YSQL via NodePort 30005 for external TPC-C access
-serviceEndpoints:
-  - name: yb-tserver-service
-    type: NodePort
-    app: yb-tserver
-    ports:
-      ysql-port:
-        port: 5433
-        nodePort: 30005
-      ycql-port:
-        port: 9042
-        nodePort: 30006
+serviceEndpoints: []

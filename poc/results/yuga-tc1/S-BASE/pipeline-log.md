@@ -312,3 +312,55 @@ HAProxy 在 OLTP 高壓場景下要把 timeout 拉到比最壞交易時間還長
 ### 結論
 
 YBDB 2025.2.2 LTS + K8s-unlimit + 有效 Read Committed 後，TPC-C 吞吐明顯高於既有 VM 三節點結果，且正式結果無 serialization/restart 錯誤。後續做 k8s-3node-limit 時，必須保留同樣的 `yb_enable_read_committed_isolation=true`、`--isolation 2`、`prepare --no-check` 條件，否則結果不可比。
+
+---
+
+## k8s-3node-limit — 2026-05-13
+
+### 環境
+- 拓撲：沿用 k3s v1.29.14 三節點（.32 master，.33/.34 worker）+ YugabyteDB Helm chart **2025.2.2**（image/binary `2025.2.2.2 build 11`）
+- 連線入口：NodePort `.32:30005`（YSQL），`.32:30006`（YCQL）
+- RF：3（3 master + 3 tserver）
+- 容器資源限制：`yb-master` requests 500m/1Gi、limits 1c/2Gi；`yb-tserver` requests 1c/2Gi、limits **2c/8Gi**
+- 儲存：master 10 GiB PVC ×3，tserver 50 GiB PVC ×3（local-path StorageClass）
+- tserver gflag：`yb_enable_read_committed_isolation=true`
+- 隔離層驗證：
+  - `transaction_isolation = read committed`
+  - `yb_effective_transaction_isolation_level = read committed`
+- 測試工具：go-tpc on .31（`-d postgres --conn-params sslmode=disable --isolation 2`）
+- Warehouses：128 | Warmup：5m | Duration：10m | Threads：16/32/64/128
+- 結果目錄：`k8s-3node-limit/20260513-0954/`
+
+### Prepare
+- 流程：cleanup → `prepare --no-check --isolation 2`
+- 時間：15m59s（128W）
+- 無 `begin to check warehouse` consistency check
+
+### Execute 結果
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | 1,716.4 | 3,809.5 | 104.3% | 464.4 | 1,275.1 |
+| 32 | **1,766.1** | 3,899.9 | **107.3%** | 890.6 | 2,952.8 |
+| 64 | 1,627.3 | 3,641.0 | 98.9% | 1,947.1 | 7,516.2 |
+| 128 | 1,568.3 | 3,518.7 | 95.3% | 3,811.4 | 15,569.3 |
+
+### vs k8s-3node-unlimit 對比
+
+| threads | k8s-3node-unlimit | k8s-3node-limit | 差距 |
+|---------|-------------------|-----------------|------|
+| 16 | 2,932.9 | 1,716.4 | -41.5% |
+| 32 | 3,163.6 | 1,766.1 | -44.2% |
+| 64 | 3,144.3 | 1,627.3 | -48.2% |
+| 128 | 2,984.0 | 1,568.3 | -47.4% |
+
+### 觀察
+
+- **K8s-limit peak 1,766 tpmC**，相對 k8s-unlimit peak 3,164 下降 **44.2%**。tserver 2c/8Gi cap 明確壓低吞吐天花板。
+- **最佳併發仍在 32t**：limit 與 unlimit 都是 32 threads peak，代表資源限制主要降低總量，不改變飽和點形狀。
+- **延遲放大明顯**：32t NO avg 從 unlimit 525ms 升到 limit 891ms；128t NO P99 從 10,737ms 升到 15,569ms，接近 go-tpc 16s 上限。
+- **無 serialization/restart 錯誤**：本次 limit run 全程保留有效 Read Committed，log 掃描未見 `could not serialize`、`Restart read required`、`current transaction is aborted`。
+
+### 結論
+
+YBDB K8s 在 tserver **2c/8Gi** 限制下，吞吐較 unlimit 下降約 **44%**，但測試可穩定完成且無 transaction restart 錯誤。這組結果可作為與 TiDB / CockroachDB `k8s-3node-limit` 對標的正式紀錄。

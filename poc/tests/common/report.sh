@@ -22,7 +22,8 @@ _extract_p99() {
   grep "^\[Summary\] ${txn}" "${file}" \
     | awk -F'99th\\(ms\\): ' '{print $2}' \
     | awk -F',' '{print $1}' \
-    | head -1
+    | head -1 \
+    || true
 }
 
 _extract_tpmc() {
@@ -30,12 +31,13 @@ _extract_tpmc() {
   grep "^tpmC:" "${file}" \
     | awk '{print $2}' \
     | tr -d ',' \
-    | head -1
+    | head -1 \
+    || true
 }
 
 # collect per-concurrency stats
 declare -a THREADS_FOUND=()
-declare -A TPMC P99_NO P99_PAY CPU_ROWS
+declare -A TPMC P99_NO P99_PAY CPU_ROWS ERR_COUNT
 
 for log in "${OUTPUT_DIR}"/tpcc-c*.log; do
   [[ -f "${log}" ]] || continue
@@ -44,6 +46,7 @@ for log in "${OUTPUT_DIR}"/tpcc-c*.log; do
   TPMC["${c}"]=$(_extract_tpmc "${log}")
   P99_NO["${c}"]=$(_extract_p99 "${log}" "NEW_ORDER")
   P99_PAY["${c}"]=$(_extract_p99 "${log}" "PAYMENT")
+  ERR_COUNT["${c}"]=$(grep -Eci 'execute run failed|could not serialize|Restart read required|current transaction is aborted|panic|fatal|bad connection|timeout|Killed|OOM' "${log}" || true)
 done
 
 # write summary.md
@@ -76,8 +79,21 @@ $(cat "${OUTPUT_DIR}/env.txt" 2>/dev/null || echo "env.txt not found")
 ## Notes
 
 - variant: ${VARIANT}
-- control plane overhead: $([ "${VARIANT}" = "vm" ] && echo "N/A (VM)" || echo "included (K8s control plane on poc-1)")
+- control plane overhead: $([[ "${VARIANT}" == vm-* ]] && echo "N/A (VM)" || echo "included (K8s control plane on poc-1)")
 EOF
+
+if ((${#THREADS_FOUND[@]})); then
+  echo "- log status:"
+  for c in $(printf '%s\n' "${THREADS_FOUND[@]}" | sort -n); do
+    if [[ -z "${TPMC[${c}]:-}" ]]; then
+      echo "  - threads=${c}: incomplete/no tpmC"
+    elif [[ "${ERR_COUNT[${c}]:-0}" -gt 0 ]]; then
+      echo "  - threads=${c}: completed with ${ERR_COUNT[${c}]} matched error lines"
+    else
+      echo "  - threads=${c}: completed"
+    fi
+  done
+fi
 } > "${SUMMARY}"
 
 echo "==> report written: ${SUMMARY}"
