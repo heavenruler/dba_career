@@ -41,7 +41,7 @@ vm-3node                                  client (go-tpc on .31)
                               │ .33:  cockroach ◄─────────────────┤
                               │ .34:  cockroach ◄─────────────────┤
                               │   HAProxy 與 .32 cockroach 共機    │
-                              │   (與 YugabyteDB 設計一致)         │
+                              │   (與 YugabyteDB 設計一致)          │
                               └───────────────────────────────────┘
   deploy: 同 vm-3node-direct 叢集（沿用同份資料）+ HAProxy on .32:15257
           backend 三節點 :26257（timeout 600s + clitcpka/srvtcpka）
