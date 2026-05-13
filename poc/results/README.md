@@ -17,7 +17,7 @@
 **K8s 容器化（k8s-3node-unlimit）overhead**：
 - **TiDB** vm-3node 22,841 → K8s 18,919 — overhead **~17%**
 - **CockroachDB** vm-3node 14,014 → K8s 13,982 — overhead **~0.2%**（幾乎無損；symmetric architecture 對容器化最友善）
-- **YugabyteDB** vm-3node 1,037 → K8s 3,164 — **+205%**（主要變因為 YBDB 2025.2.2 LTS + 有效 Read Committed，非單純 K8s 帶來效能提升）
+- **YugabyteDB** vm-3node 1,037 → K8s 3,164 — **+205%**（主要變因為 YugabyteDB 2025.2.2 LTS + 有效 Read Committed，非單純 K8s 帶來效能提升）
 
 **K8s 資源限制（k8s-3node-limit）影響**：
 - **TiDB** K8s-unlimit 18,919 → K8s-limit 11,081 — 下降 **41%**
@@ -66,10 +66,10 @@
 
 - **連線端口**：
   - `:4000` — TiDB SQL 服務端口；同時也是 TiDB HAProxy 監聽端口（**proxy 部署在獨立主機**，與 TiDB 節點不衝突，流量由此轉發至後端 TiDB:4000）
-  - `:5433` — YBDB SQL 服務端口
-  - `:15433` — YBDB HAProxy 監聽端口（與 YBDB 共用同一台主機，避用 5433），流量由此轉發至後端 YBDB:5433
+  - `:5433` — YugabyteDB SQL 服務端口
+  - `:15433` — YugabyteDB HAProxy 監聽端口（與 YugabyteDB 共用同一台主機，避用 5433），流量由此轉發至後端 YugabyteDB:5433
   - `:26257` — CockroachDB SQL 服務端口（PostgreSQL 協定相容）
-  - **NodePort**：K8s 對外暴露服務的固定埠口模式（埠號通常在 30000-32767 區間）；本測試使用 TiDB `:30004`、YBDB `:30005`、CockroachDB `:30007` 作為各 DB 的 K8s SQL 入口。
+  - **NodePort**：K8s 對外暴露服務的固定埠口模式（埠號通常在 30000-32767 區間）；本測試使用 TiDB `:30004`、YugabyteDB `:30005`、CockroachDB `:30007` 作為各 DB 的 K8s SQL 入口。
 
 - **資源限制標記**：
   - `TiKV Nc` — 限制 TiKV 儲存元件可用的 CPU 核心數
@@ -90,7 +90,7 @@
 
 > `vm-1node (no-analyze)`：停用資料庫自動統計分析（背景工作），讓測試結果排除排程干擾，呈現最純粹的效能數字。
 
-> **目前進度**：TiDB 全 6 組完成（VM 4 + K8s 2）；YBDB 全 5 組完成（VM 3 + K8s 2）；CRDB 全 5 組完成（VM 3 + K8s 2）。
+> **目前進度**：TiDB 全 6 組完成（VM 4 + K8s 2）；YugabyteDB 全 5 組完成（VM 3 + K8s 2）；CockroachDB 全 5 組完成（VM 3 + K8s 2）。
 
 > **TiDB 全部署模式對比**：
 > - **vm-3node (HAProxy)** peak **22,841**（最佳）— SQL 節點分散最有效
@@ -99,7 +99,7 @@
 > - k8s-3node-unlimit peak 18,919 — 容器化 ~17% overhead
 > - **k8s-3node-limit** peak **11,081**（最差）— TiKV 2 CPU cap 限縮天花板 41%
 
-> **TiDB vs CRDB vs YBDB 對比（vm-3node HAProxy）**：TiDB peak **22,841 tpmC**（重 prepare clean run；三次 128t 測量 21,875–23,746 範圍內）、CRDB peak **14,014 tpmC**、YBDB peak **1,036 tpmC**。TiDB SQL/儲存分離設計讓「加台機器跑 SQL」效益最大化（HAProxy 比直連 +55%），CRDB symmetric architecture 也有 +26% 增益，YBDB 因 tserver 一體設計增益僅 +1%。
+> **TiDB vs CockroachDB vs YugabyteDB 對比（vm-3node HAProxy）**：TiDB peak **22,841 tpmC**（重 prepare clean run；三次 128t 測量 21,875–23,746 範圍內）、CockroachDB peak **14,014 tpmC**、YugabyteDB peak **1,036 tpmC**。TiDB SQL/儲存分離設計讓「加台機器跑 SQL」效益最大化（HAProxy 比直連 +55%），CockroachDB symmetric architecture 也有 +26% 增益，YugabyteDB 因 tserver 一體設計增益僅 +1%。
 
 ### YugabyteDB (yuga-tc1) ✅ 完成
 
@@ -113,11 +113,11 @@
 | k8s-3node-unlimit | K8s×3 | RF=3 | NodePort :30005 | 無 | ✅ | 2,932.9 | 3,163.6 | 3,144.3 | 2,984.0 | **3,163.6** |
 | k8s-3node-limit | K8s×3 | RF=3 | NodePort :30005 | tserver 2c/8GiB | ✅ | 1,716.4 | 1,766.1 | 1,627.3 | 1,568.3 | **1,766.1** |
 
-> **YBDB 摘要**：三節點架構（vm-3node / vm-3node-direct）比單節點（vm-1node）吞吐量高約 **2.5 倍**；K8s-unlimit peak **3,164 tpmC**，比 VM 3-node peak **1,037 tpmC** 高約 **3.1 倍**。K8s-limit 使用 tserver **2c/8GiB** 後 peak **1,766 tpmC**，較 unlimit 下降 **44%**。本次 K8s 採 YugabyteDB **2025.2.2 LTS**，並明確啟用 `yb_enable_read_committed_isolation=true`，讓 `yb_effective_transaction_isolation_level = read committed`，避免 2025.2 預設映射成 repeatable read 造成 transaction restart。
+> **YugabyteDB 摘要**：三節點架構（vm-3node / vm-3node-direct）比單節點（vm-1node）吞吐量高約 **2.5 倍**；K8s-unlimit peak **3,164 tpmC**，比 VM 3-node peak **1,037 tpmC** 高約 **3.1 倍**。K8s-limit 使用 tserver **2c/8GiB** 後 peak **1,766 tpmC**，較 unlimit 下降 **44%**。本次 K8s 採 YugabyteDB **2025.2.2 LTS**，並明確啟用 `yb_enable_read_committed_isolation=true`，讓 `yb_effective_transaction_isolation_level = read committed`，避免 2025.2 預設映射成 repeatable read 造成 transaction restart。
 
 ### CockroachDB (cockroach-tc1) ✅ 完成
 
-> 各併發水位（16/32/64/128 同時連線）的 tpmC 數值，**越高越好**；peak = 各併發中的最高吞吐量。READ COMMITTED 隔離（與 YBDB 對齊）。
+> 各併發水位（16/32/64/128 同時連線）的 tpmC 數值，**越高越好**；peak = 各併發中的最高吞吐量。READ COMMITTED 隔離（與 YugabyteDB 對齊）。
 
 | variant | 拓撲 | RF | 入口 | resource limit | 狀態 | 16t | 32t | 64t | 128t | peak |
 |---------|------|----|------|----------------|------|-----|-----|-----|------|------|
@@ -127,17 +127,17 @@
 | k8s-3node-unlimit | K8s×3 | 3 | NodePort :30007 | 無 | ✅ | 8,998.0 | 10,599.9 | 12,416.6 | 13,982.2 | **13,982.2** |
 | k8s-3node-limit | K8s×3 | 3 | NodePort :30007 | crdb 2c/8GiB | ✅ | 4,931.8 | 5,576.9 | 6,181.7 | 6,749.9 | **6,749.9** |
 
-> **CockroachDB 摘要**：單節點 peak **8,732 tpmC**；三節點 + HAProxy peak **14,014 tpmC**（**超越 TiDB vm-1node 峰值 13,355**）；K8s-unlimit peak **13,982 tpmC**（與 vm-3node HAProxy 幾乎相同，**容器化 overhead −0.2%**，遠優於 TiDB K8s ~17% overhead）；K8s-limit peak **6,750 tpmC**（2 CPU cap 使 peak 較 unlimit 下降 **52%**）。CRDB symmetric architecture 讓 HAProxy roundrobin 將 SQL 處理層分散到三節點，**HAProxy 比直連快 9-26%**（與 YBDB 反向：YBDB direct 略快於 HAProxy）。
+> **CockroachDB 摘要**：單節點 peak **8,732 tpmC**；三節點 + HAProxy peak **14,014 tpmC**（**超越 TiDB vm-1node 峰值 13,355**）；K8s-unlimit peak **13,982 tpmC**（與 vm-3node HAProxy 幾乎相同，**容器化 overhead −0.2%**，遠優於 TiDB K8s ~17% overhead）；K8s-limit peak **6,750 tpmC**（2 CPU cap 使 peak 較 unlimit 下降 **52%**）。CockroachDB symmetric architecture 讓 HAProxy roundrobin 將 SQL 處理層分散到三節點，**HAProxy 比直連快 9-26%**（與 YugabyteDB 反向：YugabyteDB direct 略快於 HAProxy）。
 
 ---
 
 ## 對標維度
 
-| 維度 | TiDB variant | CockroachDB variant | YBDB variant | 說明 |
+| 維度 | TiDB variant | CockroachDB variant | YugabyteDB variant | 說明 |
 |------|-------------|---------------------|-------------|------|
 | 單機 VM 基線 | vm-1node (no-analyze) | vm-1node | vm-1node | 最純粹的單節點效能（無資料複製、無負載均衡） |
 | 多節點 VM | vm-3node | vm-3node | vm-3node | 三節點 RF=3 部署，含資料複製到三個節點的成本 |
-| HAProxy overhead | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | 量測連線代理（負載均衡器）的中介成本（CRDB 反而 HAProxy 較快——symmetric architecture 把 SQL 處理層也分散） |
+| HAProxy overhead | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | 量測連線代理（負載均衡器）的中介成本（CockroachDB 反而 HAProxy 較快——symmetric architecture 把 SQL 處理層也分散） |
 | K8s 無限制 | k8s-3node-unlimit | k8s-3node-unlimit | k8s-3node-unlimit | 容器化平台的額外效能損耗（容器網路 + 排程開銷） |
 | K8s 資源限制 | k8s-3node-limit | k8s-3node-limit | k8s-3node-limit | 啟用容器資源管制（CPU/記憶體上限）後的影響 |
 
@@ -169,7 +169,7 @@
 [![CockroachDB Architecture](https://github.com/cockroachdb/cockroach/raw/master/docs/media/architecture.png)](https://github.com/cockroachdb/cockroach/blob/master/docs/design.md)
 
 來源：[cockroachdb/cockroach — docs/design.md](https://github.com/cockroachdb/cockroach/blob/master/docs/design.md)
-（CRDB 官方 docs 站 Architecture Overview 頁為純文字、無單一整體架構圖；此圖取自 CRDB github 原始碼倉庫 `docs/media/architecture.png`，雖為早期設計文件版本，但仍是原廠維護中的官方資料，能完整呈現節點內 SQL/Transactional KV/Distribution/Replication/Storage 各層堆疊與對稱架構。）
+（CockroachDB 官方 docs 站 Architecture Overview 頁為純文字、無單一整體架構圖；此圖取自 CockroachDB github 原始碼倉庫 `docs/media/architecture.png`，雖為早期設計文件版本，但仍是原廠維護中的官方資料，能完整呈現節點內 SQL/Transactional KV/Distribution/Replication/Storage 各層堆疊與對稱架構。）
 
 ### YugabyteDB
 
@@ -181,12 +181,12 @@
 
 ## 環境規格
 
-| 項目 | TiDB | CockroachDB | YBDB |
+| 項目 | TiDB | CockroachDB | YugabyteDB |
 |------|------|-------------|------|
 | 節點組成 | TiDB + TiKV×3 + PD | cockroach single-node（v26.1.4，單一 binary 整合 SQL + 儲存 + 元資料） | 3-node (tserver + master) / 1-node |
 | CPU | 4 vCPU (Xeon Gold 6346) | 4 vCPU (Xeon Gold 6346) | 4 vCPU (Xeon Gold 6346) |
 | RAM | 16GB | 16GB | 16GB |
-| max_connections | 無限 | 預設（CRDB 動態管理，未調整） | 300 / tserver |
+| max_connections | 無限 | 預設（CockroachDB 動態管理，未調整） | 300 / tserver |
 
 ### 節點元件說明
 
@@ -198,9 +198,9 @@
 
 **CockroachDB**
 
-- **cockroach**：單一 binary 同時負責 SQL 接收、資料儲存、叢集元資料管理（架構比 TiDB / YBDB 簡單，無獨立元件）
+- **cockroach**：單一 binary 同時負責 SQL 接收、資料儲存、叢集元資料管理（架構比 TiDB / YugabyteDB 簡單，無獨立元件）
 
-**YBDB**
+**YugabyteDB**
 
 - **tserver**：資料儲存與 SQL 執行
 - **master**：叢集元資料與排程
@@ -208,8 +208,8 @@
 ### 連線數補充
 
 - **TiDB max_connections=無限**：測試環境設定，生產部署通常會依資源配置設定上限。
-- **CockroachDB max_connections=預設**：CRDB 動態管理連線資源，未明確設定上限。
-- **YBDB max_connections=300/tserver**：每個資料節點上限 300 條連線。
+- **CockroachDB max_connections=預設**：CockroachDB 動態管理連線資源，未明確設定上限。
+- **YugabyteDB max_connections=300/tserver**：每個資料節點上限 300 條連線。
 
 ### 特殊 flags
 
@@ -219,11 +219,11 @@
 
 **CockroachDB**
 
-- `sql.txn.read_committed_isolation.enabled = true` — 啟用 READ COMMITTED 隔離（CRDB 預設為 SERIALIZABLE，本次切 RC 是為了與 YBDB 對齊比較基準）
+- `sql.txn.read_committed_isolation.enabled = true` — 啟用 READ COMMITTED 隔離（CockroachDB 預設為 SERIALIZABLE，本次切 RC 是為了與 YugabyteDB 對齊比較基準）
 - `default_transaction_isolation = 'read committed'` — 將 RC 設為預設交易隔離等級
 - `--insecure` — 啟用無 TLS 模式（測試環境簡化，正式部署應啟用加密）
 
-**YBDB**
+**YugabyteDB**
 
 - `packed_row=false` — 關閉壓縮儲存，用標準格式確保相容性
 - `wait_queues=true` — 啟用鎖等待排隊，避免高併發下衝突無限重試
@@ -235,6 +235,6 @@
 
 - TiDB 本輪測試紀錄: `tidb-tc1/S-BASE/pipeline-log.md`
 - CockroachDB 本輪測試紀錄: `cockroach-tc1/S-BASE/pipeline-log.md`
-- YBDB 本輪測試紀錄: `yuga-tc1/S-BASE/pipeline-log.md`
+- YugabyteDB 本輪測試紀錄: `yuga-tc1/S-BASE/pipeline-log.md`
 - TiDB 歷史分析: `results_old/tidb-tc1/S-BASE/compare.md`
-- YBDB 歷史 pipeline log: `results_old/yuga-tc1/S-BASE/pipeline-log.md`
+- YugabyteDB 歷史 pipeline log: `results_old/yuga-tc1/S-BASE/pipeline-log.md`

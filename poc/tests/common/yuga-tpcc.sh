@@ -79,7 +79,7 @@ if [[ -n "${REMOTE_HOST}" ]]; then
   exit 0
 fi
 
-# go-tpc with PostgreSQL driver (-d postgres) for YBDB YSQL
+# go-tpc with PostgreSQL driver (-d postgres) for YugabyteDB YSQL
 _go_tpc_base() {
   local threads=$1 extra_global=$2; shift 2
   local pass_flag=""

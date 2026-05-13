@@ -119,8 +119,8 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   changed_when: true
 
-## Apply READ COMMITTED isolation (對齊 VM CRDB / YBDB)
-## CRDB 不允許 SET CLUSTER SETTING 與其它 statement 同一個 transaction，拆兩次 exec
+## Apply READ COMMITTED isolation (對齊 VM CockroachDB / YugabyteDB)
+## CockroachDB 不允許 SET CLUSTER SETTING 與其它 statement 同一個 transaction，拆兩次 exec
 - name: Enable READ COMMITTED cluster setting
   ansible.builtin.shell: |
     k3s kubectl exec -n {{ crdb_namespace | default('cockroach-tc1') }} cockroachdb-0 -- \

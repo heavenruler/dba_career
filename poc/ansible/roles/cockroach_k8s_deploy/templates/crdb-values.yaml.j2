@@ -23,7 +23,7 @@ storage:
     size: {{ crdb_storage.size | default('30Gi') }}
     storageClass: {{ crdb_storage.storageClass | default('local-path') }}
 
-## --insecure mode (對齊 VM CRDB 設定，PoC 簡化)
+## --insecure mode (對齊 VM CockroachDB 設定，PoC 簡化)
 tls:
   enabled: {{ crdb_tls_enabled | default(false) | lower }}
 

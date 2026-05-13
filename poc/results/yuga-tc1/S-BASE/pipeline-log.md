@@ -1,4 +1,4 @@
-# YBDB TPC-C Pipeline Log — yuga-tc1 / S-BASE
+# YugabyteDB TPC-C Pipeline Log — yuga-tc1 / S-BASE
 
 > **本測試結論**：YugabyteDB 單節點在「無 think time 持續高壓」場景下，16 個同時連線勉強可用、超過後效能急劇下降。三節點橫向擴展可帶來約 2.5 倍吞吐，但延遲仍會隨併發線性惡化，是 MVCC 架構設計的根本限制。
 > **註**：實際生產通常有自然請求間隔（think time），效能會優於本測試的極端壓力結果，但競爭問題仍存在。
@@ -79,11 +79,11 @@ k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
 
 正式測試開始前，先讓資料庫在真實負載下跑 5 分鐘。這段時間資料庫會把常用的資料從硬碟載入記憶體、建立內部索引快取、穩定連線池。如果跳過暖機，正式測試前幾分鐘的數字會因為「冷啟動」而異常偏低，無法反映系統的真實效能。
 
-**TiDB 與 YBDB 在 warmup 階段影響最大的元件不同**：
+**TiDB 與 YugabyteDB 在 warmup 階段影響最大的元件不同**：
 - **TiDB 影響較大的元件是 TiKV**：底層儲存 RocksDB 有 block cache（記憶體資料塊快取），冷啟動時所有讀取都要去硬碟撈，warmup 期間 cache 才被熱資料填滿。**另一關鍵**：TPC-C 高壓寫入會讓 TiKV 自動進行 Region 分裂（把熱點資料拆散到不同節點），主要發生在 warmup 期間；跳過會導致正式測試前段大量分裂風暴，數字嚴重失真。
-- **YBDB 影響較大的元件是 DocDB tablet cache**：底層儲存 DocDB 同樣基於 RocksDB，tablet（資料分片）的 cache 需要 warmup 填充。本測試已預先設定 `ysql_num_shards_per_tserver=3`（固定分片數），動態分裂比 TiDB 少，warmup 主要作用是 cache 預熱。相對 TiDB，YBDB 受 warmup 影響的幅度略小，但 MVCC（樂觀多版本併發控制）版本鏈（交易衝突偵測的內部記錄結構）的初始建立也集中在這個階段。
+- **YugabyteDB 影響較大的元件是 DocDB tablet cache**：底層儲存 DocDB 同樣基於 RocksDB，tablet（資料分片）的 cache 需要 warmup 填充。本測試已預先設定 `ysql_num_shards_per_tserver=3`（固定分片數），動態分裂比 TiDB 少，warmup 主要作用是 cache 預熱。相對 TiDB，YugabyteDB 受 warmup 影響的幅度略小，但 MVCC（樂觀多版本併發控制）版本鏈（交易衝突偵測的內部記錄結構）的初始建立也集中在這個階段。
 
-> **白話**：TiDB 的暖機主要讓「資料分裂」在正式測試前完成，YBDB 的暖機主要讓「記憶體快取」填滿。兩者都需要，但 TiDB 跳過暖機的代價更大。
+> **白話**：TiDB 的暖機主要讓「資料分裂」在正式測試前完成，YugabyteDB 的暖機主要讓「記憶體快取」填滿。兩者都需要，但 TiDB 跳過暖機的代價更大。
 
 ---
 
@@ -107,7 +107,7 @@ k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
 **結論：資料載入成功，下方警告是工具相容性問題，不影響測試結果。**
 
 - 時間：46m51s（128W）
-- 警告：`check prepare failed / pq: Unknown session` — go-tpc 在 load 完成後會執行資料一致性驗證，驗證 SQL 使用 prepared statement；YBDB 的 session-level statement cache 與 PostgreSQL 行為不同，導致 statement handle 失效。**load 本體（資料寫入）已完成無誤**，此警告不影響後續測試。
+- 警告：`check prepare failed / pq: Unknown session` — go-tpc 在 load 完成後會執行資料一致性驗證，驗證 SQL 使用 prepared statement；YugabyteDB 的 session-level statement cache 與 PostgreSQL 行為不同，導致 statement handle 失效。**load 本體（資料寫入）已完成無誤**，此警告不影響後續測試。
 
 ### 指標說明
 
@@ -149,7 +149,7 @@ k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
 
 > **管理層摘要（非技術版）**：YugabyteDB 的設計是：交易完成後才確認有沒有衝突（類似「先下單，結帳時再確認庫存」）。當同時有很多人在搶同一筆資料時，衝突就會不斷發生，每次衝突都要重來，越塞越慢。這次測試就是在驗證這個限制。
 
-YBDB 使用 **optimistic MVCC（樂觀多版本併發控制）**：事務在 commit 時才偵測衝突，衝突則整筆**取消並重做**（rollback，即資料庫回滾：撤銷整筆交易的所有變更，重新開始）。  
+YugabyteDB 使用 **optimistic MVCC（樂觀多版本併發控制）**：事務在 commit 時才偵測衝突，衝突則整筆**取消並重做**（rollback，即資料庫回滾：撤銷整筆交易的所有變更，重新開始）。
 go-tpc 無 think time → goroutine（程式內的並行執行單元，每個對應一個同時進行的資料庫請求）連續送出交易，沒有自然間隔 → 多個 goroutine 同時競爭同一 warehouse 的列鎖。
 
 衝突越多 → 重試越多 → 持鎖時間越長 → 更多衝突（正回饋惡化）。
@@ -160,7 +160,7 @@ go-tpc 無 think time → goroutine（程式內的並行執行單元，每個對
 
 **Think time 的作用**：TPC-C 標準定義每筆交易前後有 keying time（均值 18s）與 think time（均值 12s），模擬真實用戶操作節奏。開啟後每個 goroutine 大部分時間處於 sleep，128 個 goroutine 任意瞬間真正在 DB 執行的只有約 8 個，有效併發大幅降低，MVCC 碰撞機率趨近於零，tpmC 會顯著回升。
 
-**但這不是我們要的**：本測試目的是找 DB 在持續滿載下的吞吐上限，而非模擬用戶節奏。Think time 會把問題藏起來 — YBDB 在低有效併發下表現良好，但生產環境的連線池通常是持續發送請求的，沒有自然間隔。無 think time 才能暴露 optimistic MVCC 在高競爭下的架構限制，這正是 YBDB vs TiDB（悲觀鎖）對比的關鍵觀測點。
+**但這不是我們要的**：本測試目的是找 DB 在持續滿載下的吞吐上限，而非模擬用戶節奏。Think time 會把問題藏起來 — YugabyteDB 在低有效併發下表現良好，但生產環境的連線池通常是持續發送請求的，沒有自然間隔。無 think time 才能暴露 optimistic MVCC 在高競爭下的架構限制，這正是 YugabyteDB vs TiDB（悲觀鎖）對比的關鍵觀測點。
 
 **工具限制**：go-tpc 不支援 think time flag，無法在同一工具內做對照實驗，此項對照測試略過。
 
@@ -230,7 +230,7 @@ go-tpc 無 think time → goroutine（程式內的並行執行單元，每個對
 
 > **白話版：加三台伺服器比單台效能提升約 2.5 倍，驗證了「加機器有效」。但高併發下延遲仍線性惡化，這是 YugabyteDB 架構設計的限制，加機器無法完全解決。**
 
-vm-3node-direct 證實 **YBDB 橫向擴展對 OLTP 寫入是有效的**，在無 think time 高壓場景下相比單節點吞吐約 2.5×。但 MVCC 競爭曲線形狀不變 — 併發增加會拉高 latency，只是天花板被推高。
+vm-3node-direct 證實 **YugabyteDB 橫向擴展對 OLTP 寫入是有效的**，在無 think time 高壓場景下相比單節點吞吐約 2.5×。但 MVCC 競爭曲線形狀不變 — 併發增加會拉高 latency，只是天花板被推高。
 
 ---
 
@@ -315,7 +315,7 @@ vm-3node-direct 證實 **YBDB 橫向擴展對 OLTP 寫入是有效的**，在無
 
 > **白話版：HAProxy 代理層的設定正確後，對效能的影響不到 5%，可以接受。這次還順帶發現並修了一個設定問題——如果不修，高壓測試會永遠卡住。**
 
-HAProxy 在 OLTP 高壓場景下要把 timeout 拉到比最壞交易時間還長（這裡 600s）才能避免半開連線 hang。實測 HAProxy roundrobin 對 YBDB 三節點的 overhead 在 5% 內，可接受。
+HAProxy 在 OLTP 高壓場景下要把 timeout 拉到比最壞交易時間還長（這裡 600s）才能避免半開連線 hang。實測 HAProxy roundrobin 對 YugabyteDB 三節點的 overhead 在 5% 內，可接受。
 
 ---
 
@@ -333,12 +333,12 @@ HAProxy 在 OLTP 高壓場景下要把 timeout 拉到比最壞交易時間還長
 - 結果目錄：`k8s-3node-unlimit/20260513-0114/`
 
 ### 部署 / 接手紀錄
-- 先移除 CRDB K8s 測試環境：刪除 `cockroach-tc1` namespace，釋放 NodePort `30007/30008` 與 PVC。
-- 初次 YBDB K8s 安裝誤用 chart 2024.2.3，SQL version 顯示 `2024.2.3.3-b0`，不符合 2025.2 LTS 要求，已刪除重建。
+- 先移除 CockroachDB K8s 測試環境：刪除 `cockroach-tc1` namespace，釋放 NodePort `30007/30008` 與 PVC。
+- 初次 YugabyteDB K8s 安裝誤用 chart 2024.2.3，SQL version 顯示 `2024.2.3.3-b0`，不符合 2025.2 LTS 要求，已刪除重建。
 - 改用 chart **2025.2.2**，Helm app version `2025.2.2.2-b11`；SQL `version()` 顯示 `PostgreSQL 15.12-YB-2025.2.2.2-b0`，pod binary `--version` 驗證為 build 11。
 - Helm chart 2025.2.2 的 `serviceEndpoints` 不支援直接指定 fixed `nodePort`；實作方式改為手動建立 `yb-tserver-service` NodePort service，固定 YSQL `30005`、YCQL `30006`。
 - Helm chart 預設會渲染 DB container limits（master 2c/2Gi，tserver 2c/4Gi），本次以 `kubectl patch sts ... remove /resources/limits` 移除 DB 主容器 limits，保留 requests。
-- go-tpc `prepare` 預設會執行 `begin to check warehouse ...` consistency check，YBDB 2025.2 上跨表聚合查詢可卡 30+ 分鐘；wrapper 已改為 `prepare --no-check`，另以表筆數做資料完整性檢查。
+- go-tpc `prepare` 預設會執行 `begin to check warehouse ...` consistency check，YugabyteDB 2025.2 上跨表聚合查詢可卡 30+ 分鐘；wrapper 已改為 `prepare --no-check`，另以表筆數做資料完整性檢查。
 - 表筆數驗證：warehouse 128、district 1,280、customer/history/orders 3,840,000、item 100,000、stock 12,800,000、new_order 1,152,000；`order_line` 約 38.4M（實測 38,396,798，符合每 order 5-15 lines 隨機分布，不應硬性等於 38,400,000）。
 - 2025.2 若只設定 SQL isolation/read committed，`SHOW transaction_isolation` 可顯示 RC，但 `SHOW yb_effective_transaction_isolation_level` 仍可能是 `repeatable read`，會導致 `could not serialize access` / `Restart read required`。已啟用 tserver flag `yb_enable_read_committed_isolation=true` 並滾動重啟，驗證：
   - `transaction_isolation = read committed`
@@ -374,14 +374,14 @@ HAProxy 在 OLTP 高壓場景下要把 timeout 拉到比最壞交易時間還長
 
 ### 觀察
 
-- **K8s-unlimit peak 3,164 tpmC**，約為 VM 3-node peak 1,037 的 **3.1×**。這不是單純「K8s 比 VM 快」，主要變因包含版本從舊 VM 測試的 YBDB 版本升到 **2025.2.2 LTS**，以及真正啟用 DocDB Read Committed。
+- **K8s-unlimit peak 3,164 tpmC**，約為 VM 3-node peak 1,037 的 **3.1×**。這不是單純「K8s 比 VM 快」，主要變因包含版本從舊 VM 測試的 YugabyteDB 版本升到 **2025.2.2 LTS**，以及真正啟用 DocDB Read Committed。
 - **吞吐曲線穩定在 3k tpmC 左右**：16t 到 128t 介於 2,933~3,164，峰值在 32t；高併發沒有再發生 transaction restart error。
 - **延遲仍隨併發上升**：NO avg 289ms → 2,195ms，NO P99 638ms → 10,737ms；128t 高壓下仍接近 go-tpc 16s 上限，但比舊 VM 結果的 16,106ms P99 改善。
 - **有效 RC 是必要條件**：只加 go-tpc `--isolation 2` 不夠，必須確認 `yb_effective_transaction_isolation_level = read committed`，否則仍會有 `Restart read required` / `could not serialize access`。
 
 ### 結論
 
-YBDB 2025.2.2 LTS + K8s-unlimit + 有效 Read Committed 後，TPC-C 吞吐明顯高於既有 VM 三節點結果，且正式結果無 serialization/restart 錯誤。後續所有 YBDB K8s 對標都必須保留同樣的 `yb_enable_read_committed_isolation=true`、`--isolation 2`、`prepare --no-check` 條件，否則結果不可比；本輪 k8s-3node-limit 已依此條件完成。
+YugabyteDB 2025.2.2 LTS + K8s-unlimit + 有效 Read Committed 後，TPC-C 吞吐明顯高於既有 VM 三節點結果，且正式結果無 serialization/restart 錯誤。後續所有 YugabyteDB K8s 對標都必須保留同樣的 `yb_enable_read_committed_isolation=true`、`--isolation 2`、`prepare --no-check` 條件，否則結果不可比；本輪 k8s-3node-limit 已依此條件完成。
 
 ---
 
@@ -433,4 +433,4 @@ YBDB 2025.2.2 LTS + K8s-unlimit + 有效 Read Committed 後，TPC-C 吞吐明顯
 
 ### 結論
 
-YBDB K8s 在 tserver **2c/8Gi** 限制下，吞吐較 unlimit 下降約 **44%**，但測試可穩定完成且無 transaction restart 錯誤。這組結果可作為與 TiDB / CockroachDB `k8s-3node-limit` 對標的正式紀錄。
+YugabyteDB K8s 在 tserver **2c/8Gi** 限制下，吞吐較 unlimit 下降約 **44%**，但測試可穩定完成且無 transaction restart 錯誤。這組結果可作為與 TiDB / CockroachDB `k8s-3node-limit` 對標的正式紀錄。

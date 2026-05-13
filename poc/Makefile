@@ -51,14 +51,14 @@ YUGA_PASS            ?=
 ##   VM 3-node:        .32:15257 HAProxy (poc-1:15257 → poc-1/2/3:26257)
 ##   VM 3-node direct: .32:26257 direct SQL on one node
 ##   VM 1-node:        .32:26257 single-node deploy
-##   CRDB VM 部署目前為手動；K8s 部署使用 ansible/playbooks/cockroach-k8s.yml
+##   CockroachDB VM 部署目前為手動；K8s 部署使用 ansible/playbooks/cockroach-k8s.yml
 CRDB_HOST_VM         := 172.24.40.32
 CRDB_PORT_VM         := 15257
 CRDB_HOST_VM_DIRECT  := 172.24.40.32
 CRDB_PORT_VM_DIRECT  := 26257
 CRDB_HOST_K8S        := 172.24.40.32
 CRDB_PORT_K8S        := 30007
-##   (NodePort :30006 已被 YBDB YCQL 佔用，改用 :30007；admin UI 用 :30008)
+##   (NodePort :30006 已被 YugabyteDB YCQL 佔用，改用 :30007；admin UI 用 :30008)
 CRDB_USER            ?= root
 CRDB_PASS            ?=
 
@@ -277,7 +277,7 @@ help:
 	@echo "  Override: WAREHOUSES=50 DURATION=5m THREADS='32 64' YUGA_USER=yugabyte"
 	@echo ""
 	@echo "=== CockroachDB TPC-C (go-tpc; tests/common/cockroach-tpcc.sh；TOPO=cockroach-tc1) ==="
-	@echo "  注意：CRDB VM 部署目前為手動；K8s 部署使用 ansible/playbooks/cockroach-k8s.yml"
+	@echo "  注意：CockroachDB VM 部署目前為手動；K8s 部署使用 ansible/playbooks/cockroach-k8s.yml"
 	@echo "  VM 3-node HAProxy : tpcc-prepare-cock-vm → test-tpcc-cock-vm-3node       → tpcc-report VARIANT=vm-3node TOPO=cockroach-tc1"
 	@echo "  VM 3-node direct  : tpcc-prepare-cock-vm → test-tpcc-cock-vm-3node-direct → tpcc-report VARIANT=vm-3node-direct TOPO=cockroach-tc1"
 	@echo "  VM 1-node         : (用單節點部署) tpcc-prepare-cock-vm CRDB_HOST_VM=\$$(CRDB_HOST_VM_DIRECT) CRDB_PORT_VM=\$$(CRDB_PORT_VM_DIRECT) → test-tpcc-cock-vm-1node"
