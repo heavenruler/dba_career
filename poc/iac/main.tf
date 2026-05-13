@@ -63,6 +63,16 @@ resource "vsphere_virtual_machine" "poc" {
     thin_provisioned = true
   }
 
+  dynamic "disk" {
+    for_each = data.vsphere_virtual_machine.template.disks.* != null ? range(length(data.vsphere_virtual_machine.template.disks) - 1) : []
+    content {
+      label            = "disk${disk.key + 1}"
+      size             = data.vsphere_virtual_machine.template.disks[disk.key + 1].size
+      thin_provisioned = true
+      unit_number      = disk.key + 1
+    }
+  }
+
   clone {
     template_uuid = data.vsphere_virtual_machine.template.id
 
