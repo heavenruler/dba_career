@@ -5,6 +5,76 @@
 
 ---
 
+## 各 variant 拓撲總覽
+
+```
+vm-1node                                  client (go-tpc on .31)
+                                                  │
+                                                  ▼ :5433 (direct)
+                              ┌───────────────────────────────────┐
+                              │ .32:  master + tserver  (RF=1)    │
+                              └───────────────────────────────────┘
+  deploy: yugabyted start --advertise_address=172.24.40.32
+          tserver flags: ysql_enable_packed_row=false
+                         yb_enable_read_committed_isolation=true
+                         enable_wait_queues=true
+                         ysql_num_shards_per_tserver=3
+
+
+vm-3node-direct                           client (go-tpc on .31)
+                                                  │
+                                                  ▼ :5433 (direct, no HAProxy)
+                              ┌────────────────────────────────────┐
+                              │ .32:  master + tserver ◄───────────┤ (bootstrap, zone=asia-east1-a)
+                              │ .33:  master + tserver             │ (join,      zone=asia-east1-b)
+                              │ .34:  master + tserver             │ (join,      zone=asia-east1-c)
+                              └────────────────────────────────────┘
+  RF=3, fault_tolerance=zone
+  deploy: yugabyted start/join; yuga-tc1.ini
+  ⚠️ prepare 走 HAProxy :15433（避免直連 check SQL 被 HAProxy 30s timeout 切斷）
+
+
+vm-3node                                  client (go-tpc on .31)
+                                                  │
+                                                  ▼ :15433
+                              ┌───────────────────────────────────┐
+                              │ .32:  HAProxy → roundrobin        │
+                              │       master + tserver  ▼  ▼  ▼   │
+                              │ .32/.33/.34: tserver ◄────────────┤
+                              └───────────────────────────────────┘
+  同 vm-3node-direct 叢集（不重 prepare）
+  HAProxy timeout client/server 600s（避免高壓交易期間半開連線 hang）
+  deploy: yuga-tc1.ini [haproxy] on .32
+
+
+k8s-3node-unlimit                         client (go-tpc on .31)
+                                                  │
+                                                  ▼ NodePort :30005
+                              ┌───────────────────────────────────┐
+                              │ k3s cluster (3 nodes)             │
+                              │ ┌─ .32 master ──┐ ┌─ .33 worker ─┐ │
+                              │ │ yb-master-0   │ │ yb-master-1  │ │
+                              │ │ yb-tserver-0  │ │ yb-tserver-1 │ │
+                              │ └───────────────┘ └──────────────┘ │
+                              │ ┌─ .34 worker ──┐                  │
+                              │ │ yb-master-2   │                  │
+                              │ │ yb-tserver-2  │                  │
+                              │ └───────────────┘                  │
+                              └───────────────────────────────────┘
+  chart: yugabytedb/yugabyte 2025.2.2; RF=3; DB 主容器無 resource limits
+  yb_enable_read_committed_isolation=true; go-tpc --isolation 2; prepare --no-check
+  deploy: yugabyte-k8s.yml + yuga-tc1-k8s.ini + yugabyte-k8s-3node-unlimit.yml
+
+
+k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
+                                          差別：yb_resource_limits=true
+                                          tserver 2c/8GiB、master 1c/2GiB
+                                          deploy vars: yugabyte-k8s-3node-limit.yml
+                                          result: 20260513-0954
+```
+
+---
+
 ## 共通說明：Warmup（暖機）的作用
 
 正式測試開始前，先讓資料庫在真實負載下跑 5 分鐘。這段時間資料庫會把常用的資料從硬碟載入記憶體、建立內部索引快取、穩定連線池。如果跳過暖機，正式測試前幾分鐘的數字會因為「冷啟動」而異常偏低，無法反映系統的真實效能。
