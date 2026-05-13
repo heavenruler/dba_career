@@ -207,19 +207,24 @@
 
 **TiDB**
 
-- `tidb_enable_auto_analyze = OFF` — 停用自動統計分析，避免測試期間背景工作干擾結果（僅 no-analyze variant 啟用；v8.5+ 以此 flag 取代舊的 `tidb_auto_analyze_ratio=0`，後者已不接受 0 值）
+- `tidb_enable_auto_analyze = OFF` — 由 `tests/common/tpcc.sh` 在測試期間設定，停用自動統計分析以避免背景工作干擾；測試結束後恢復 `ON`。
+- `tidb_auto_analyze_ratio` — v8.5+ 不再使用此舊設定關閉 auto analyze，改用 `tidb_enable_auto_analyze`。
+- Reference: [tests/common/tpcc.sh](../tests/common/tpcc.sh), [ansible/vars/tidb-k8s-3node-limit.yml](../ansible/vars/tidb-k8s-3node-limit.yml), [ansible/roles/tidb_cluster/templates/tidbcluster.yaml.j2](../ansible/roles/tidb_cluster/templates/tidbcluster.yaml.j2)
 
 **CockroachDB**
 
-- `sql.txn.read_committed_isolation.enabled = true` — 啟用 READ COMMITTED 隔離（CockroachDB 預設為 SERIALIZABLE，本次切 RC 是為了與 YugabyteDB 對齊比較基準）
-- `default_transaction_isolation = 'read committed'` — 將 RC 設為預設交易隔離等級
-- `--insecure` — 啟用無 TLS 模式（測試環境簡化，正式部署應啟用加密）
+- `crdb_read_committed: true` — K8s IaC vars 紀錄 READ COMMITTED 條件。
+- `sql.txn.read_committed_isolation.enabled = true` — role 於部署後套用 cluster setting。
+- `default_transaction_isolation = 'read committed'` — role 將所有 role 的預設交易隔離設為 READ COMMITTED。
+- `crdb_tls_enabled: false` / `--insecure` — K8s chart 與初始化指令使用無 TLS 模式，對齊 PoC 測試環境。
+- Reference: [ansible/vars/cockroach-k8s-3node-unlimit.yml](../ansible/vars/cockroach-k8s-3node-unlimit.yml), [ansible/vars/cockroach-k8s-3node-limit.yml](../ansible/vars/cockroach-k8s-3node-limit.yml), [ansible/roles/cockroach_k8s_deploy/tasks/main.yml](../ansible/roles/cockroach_k8s_deploy/tasks/main.yml), [ansible/roles/cockroach_k8s_deploy/templates/crdb-values.yaml.j2](../ansible/roles/cockroach_k8s_deploy/templates/crdb-values.yaml.j2)
 
 **YugabyteDB**
 
-- `packed_row=false` — 關閉壓縮儲存，用標準格式確保相容性
-- `wait_queues=true` — 啟用鎖等待排隊，避免高併發下衝突無限重試
-- `read_committed=true` — 套用標準的 read committed 隔離等級，與 PostgreSQL 預設一致
+- `yb_gflags.master.replication_factor: "3"` — K8s IaC vars 設定 RF=3。
+- `yb_gflags.tserver.ysql_enable_auth: "false"` — K8s IaC vars 關閉 YSQL auth，對齊 PoC 測試環境。
+- `yb_gflags.tserver.yb_enable_read_committed_isolation: "true"` — K8s IaC vars 啟用有效 READ COMMITTED；go-tpc 同步使用 `--isolation 2`。
+- Reference: [ansible/vars/yuga-k8s-3node-unlimit.yml](../ansible/vars/yuga-k8s-3node-unlimit.yml), [ansible/vars/yuga-k8s-3node-limit.yml](../ansible/vars/yuga-k8s-3node-limit.yml), [ansible/roles/yugabyte_k8s_deploy/templates/yb-values.yaml.j2](../ansible/roles/yugabyte_k8s_deploy/templates/yb-values.yaml.j2)
 
 ---
 
