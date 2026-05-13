@@ -227,8 +227,8 @@
 
 ## 參考
 
-- TiDB 本輪測試紀錄: `tidb-tc1/S-BASE/pipeline-log.md`
-- CockroachDB 本輪測試紀錄: `cockroach-tc1/S-BASE/pipeline-log.md`
-- YugabyteDB 本輪測試紀錄: `yuga-tc1/S-BASE/pipeline-log.md`
-- TiDB 歷史分析: `results_old/tidb-tc1/S-BASE/compare.md`
-- YugabyteDB 歷史 pipeline log: `results_old/yuga-tc1/S-BASE/pipeline-log.md`
+- TiDB 本輪測試紀錄: [tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md)
+- CockroachDB 本輪測試紀錄: [cockroach-tc1/S-BASE/pipeline-log.md](./cockroach-tc1/S-BASE/pipeline-log.md)
+- YugabyteDB 本輪測試紀錄: [yuga-tc1/S-BASE/pipeline-log.md](./yuga-tc1/S-BASE/pipeline-log.md)
+- TiDB 歷史分析: [results_old/tidb-tc1/S-BASE/compare.md](../results_old/tidb-tc1/S-BASE/compare.md)
+- YugabyteDB 歷史 pipeline log: [results_old/yuga-tc1/S-BASE/pipeline-log.md](../results_old/yuga-tc1/S-BASE/pipeline-log.md)
