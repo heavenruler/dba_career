@@ -36,8 +36,8 @@
 
 YugabyteDB 支援三種交易隔離層級，設定分兩層：
 
-[ysql_default_transaction_isolation](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#ysql-default-transaction-isolation)
-[yb_enable_read_committed_isolation](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#yb-enable-read-committed-isolation)
+- [ysql_default_transaction_isolation](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#ysql-default-transaction-isolation)
+- [yb_enable_read_committed_isolation](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#yb-enable-read-committed-isolation)
 
 #### 啟用層（tserver gflag，必須同時設定，否則 SQL 層設定無效）
 ```
