@@ -8,7 +8,7 @@
 
 ### 1. YugabyteDB 2025.2 LTS 無法在 AlmaLinux 10.1 上運作
 
-**原始 vm-* 測試資料均在 YugabyteDB 2.20 版本下測得，非 2025.2 LTS。**
+**原始 vm-\* 測試資料均在 YugabyteDB 2.20 版本下測得，非 2025.2 LTS。**
 
 原因：YugabyteDB 2025.2 LTS 的 binary 依賴 glibc 2.34+（el9 / Ubuntu 22.04 以上），而 AlmaLinux 10.1 雖版本號更新，但 template 安裝的系統套件版本不相容（python 環境殘缺、`dataclasses` module 缺失於預設 python3.6），導致 `yugabyted` 無法正常啟動。實際錯誤：
 
