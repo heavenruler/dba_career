@@ -225,6 +225,44 @@
 
 ---
 
+## Sharding 分片對標說明
+
+三家 DB 的分片機制設計不同，直接比較分片數無意義；應理解各自的分片策略後，以「各 DB 生產建議預設值」進行對標。
+
+### 分片策略比較
+
+| DB | 分片策略 | 初始分片數（建表時） | 分裂觸發條件 |
+|----|---------|------------------|------------|
+| **TiDB** | 動態分裂（PD 管理） | 1 Region/table | Region > 96MB 自動分裂，TPC-C load 期間大量分裂 |
+| **CockroachDB** | 動態分裂（load-based） | 1 Range/table | Range > 512MB，或流量觸發（`kv.range_split.by_load_enabled=true`） |
+| **YugabyteDB** | 靜態預切（yugabyted start 時決定） | `yb_num_shards_per_tserver` × tserver 數 | 預設不自動分裂（2025.x 預設值 =1） |
+
+### VM 3-node 128W 實際分片情境
+
+**TiDB（3 TiKV nodes）**
+- prepare 開始：每表 1 Region
+- prepare 結束後：`order_line`（~38.4M rows）約 5-8 Regions，`stock`（~12.8M rows）約 3-5 Regions，小表仍 1 Region
+- warmup 作用：Region 分裂風暴集中在此期間完成，正式 run 時才穩定
+
+**CockroachDB（3 nodes）**
+- prepare 結束後：多數表未超過 512MB 閾值，幾乎不分裂（1-2 Ranges/table）
+- warmup 作用：主要為 cache 預熱，分裂發生量極少
+
+**YugabyteDB（3 tservers）**
+
+| 設定 | tablets/table | 128W 分佈 | 適用測試 |
+|------|--------------|-----------|---------|
+| `yb_num_shards_per_tserver=1`（2025.x 新預設） | 3 | ~43 warehouse/tablet，競爭集中 | 現行 VM 測試 |
+| `yb_num_shards_per_tserver=3`（舊版預設） | 9 | ~14 warehouse/tablet，競爭分散 | 待補對比組 |
+
+### 對標原則
+
+- **TiDB / CRDB**：使用預設動態分裂 + warmup 5m，讓分片在正式測試前穩定，不額外預切
+- **YugabyteDB**：記錄 `yb_num_shards_per_tserver` 值，以區分「預設設定」與「調參後」兩組結果
+- 強制三家對齊相同 shard 數會違背各自架構設計，失去對照意義
+
+---
+
 ## 參考
 
 - TiDB 本輪測試紀錄: [tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md)
