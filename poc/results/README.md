@@ -227,39 +227,102 @@
 
 ## Sharding 分片對標說明
 
-三家 DB 的分片機制設計不同，直接比較分片數無意義；應理解各自的分片策略後，以「各 DB 生產建議預設值」進行對標。
+三家 DB 的分片機制設計根本不同，不應強制對齊分片數。正確做法是理解各自策略後，以「各 DB 生產建議預設值」對標，並在測試報告中明確記錄分片狀態。
 
-### 分片策略比較
+---
 
-| DB | 分片策略 | 初始分片數（建表時） | 分裂觸發條件 |
-|----|---------|------------------|------------|
-| **TiDB** | 動態分裂（PD 管理） | 1 Region/table | Region > 96MB 自動分裂，TPC-C load 期間大量分裂 |
-| **CockroachDB** | 動態分裂（load-based） | 1 Range/table | Range > 512MB，或流量觸發（`kv.range_split.by_load_enabled=true`） |
-| **YugabyteDB** | 靜態預切（yugabyted start 時決定） | `yb_num_shards_per_tserver` × tserver 數 | 預設不自動分裂（2025.x 預設值 =1） |
+### 概念說明
 
-### VM 3-node 128W 實際分片情境
+**分片（shard / tablet / Region / Range）**：資料庫將一張表切成多個水平分片，分散到不同節點上儲存與處理。分片數影響並發競爭程度：分片越多，同一時刻不同 thread 搶同一分片的機率越低，熱點爭搶越少。
 
-**TiDB（3 TiKV nodes）**
-- prepare 開始：每表 1 Region
-- prepare 結束後：`order_line`（~38.4M rows）約 5-8 Regions，`stock`（~12.8M rows）約 3-5 Regions，小表仍 1 Region
-- warmup 作用：Region 分裂風暴集中在此期間完成，正式 run 時才穩定
+**RF（Replication Factor）與分片的關係**：RF=3 表示每個分片有 3 份副本分散在 3 個節點，**分片數決定競爭分散程度，RF 決定資料耐久性**，兩者獨立。
 
-**CockroachDB（3 nodes）**
-- prepare 結束後：多數表未超過 512MB 閾值，幾乎不分裂（1-2 Ranges/table）
-- warmup 作用：主要為 cache 預熱，分裂發生量極少
+**分片多 ≠ 寫入負載線性增加**：寫入一筆資料只打到「負責該資料的那個分片」，對其他分片無影響。分片多的主要額外開銷是 Raft group 心跳與 master metadata 管理，對 TPC-C TPS 影響可忽略。分片多的主要收益是降低熱點競爭。
 
-**YugabyteDB（3 tservers）**
+---
 
-| 設定 | tablets/table | 128W 分佈 | 適用測試 |
-|------|--------------|-----------|---------|
-| `yb_num_shards_per_tserver=1`（2025.x 新預設） | 3 | ~43 warehouse/tablet，競爭集中 | 現行 VM 測試 |
-| `yb_num_shards_per_tserver=3`（舊版預設） | 9 | ~14 warehouse/tablet，競爭分散 | 待補對比組 |
+### 三家 DB 分片策略比較
 
-### 對標原則
+| DB | 術語 | 分片策略 | 初始分片（建表時） | 分裂觸發條件 | 可否預切 |
+|----|------|---------|-----------------|------------|---------|
+| **TiDB** | Region | 動態分裂（PD 排程） | 1 Region/table | Region > 96MB 自動分裂 | ✅ `PRE_SPLIT_REGIONS=N` |
+| **CockroachDB** | Range | 動態分裂（load-based） | 1 Range/table | Range > 512MB，或流量觸發 | ✅ 手動 `ALTER TABLE SPLIT AT` |
+| **YugabyteDB** | Tablet | 靜態預切（start 時決定） | `yb_num_shards_per_tserver × tserver 數` | 預設不自動分裂（2025.x） | ✅ 唯一方式，需重建叢集 |
 
-- **TiDB / CRDB**：使用預設動態分裂 + warmup 5m，讓分片在正式測試前穩定，不額外預切
-- **YugabyteDB**：記錄 `yb_num_shards_per_tserver` 值，以區分「預設設定」與「調參後」兩組結果
-- 強制三家對齊相同 shard 數會違背各自架構設計，失去對照意義
+---
+
+### VM 3-node + 128W 實際分片情境模擬
+
+#### TiDB（3 TiKV nodes，RF=3）
+
+```
+建表時：每張 table → 1 Region（~幾 KB）
+                         ↓ prepare loading（資料持續寫入）
+order_line（~38.4M rows）→ 分裂成 5-8 Regions（每 Region ~96MB 觸發）
+stock     （~12.8M rows）→ 分裂成 3-5 Regions
+warehouse / district     → 資料量小，維持 1 Region
+                         ↓ warmup（分裂風暴在此完成）
+正式 run 時              → Region 已穩定，PD 完成跨 TiKV 負載均衡
+```
+
+- **warmup 重要性高**：TPC-C load 期間大量 Region 分裂，正式測試前必須讓分裂穩定，否則前段數字嚴重失真
+- 測試設定：不額外預切，使用預設 1 Region/table + warmup 5m
+
+#### CockroachDB（3 nodes，RF=3）
+
+```
+建表時：每張 table → 1 Range（~幾 KB）
+prepare 後：多數表未超過 512MB，幾乎不分裂（維持 1-2 Ranges/table）
+order_line 可能達 2-3 Ranges（~38.4M rows × ~100 bytes ≈ 3.8GB，可能觸發）
+```
+
+- **warmup 重要性低**：分裂觸發條件（512MB）難在 128W prepare 中達到，warmup 主要為 cache 預熱
+- `kv.range_split.by_load_enabled=true`（預設開啟）：高壓測試中可能依流量觸發額外分裂
+- 測試設定：不額外預切，使用預設 1 Range/table + warmup 5m
+
+#### YugabyteDB（3 tservers，RF=3）
+
+分片公式：`tablets/table = yb_num_shards_per_tserver × tserver 數`
+
+```
+yb_num_shards_per_tserver=1（2025.x 新預設）：
+  tablets = 1 × 3 = 3 → 128 warehouses / 3 tablets ≈ 43 warehouse/tablet（競爭集中）
+
+yb_num_shards_per_tserver=3（2.x 舊版預設）：
+  tablets = 3 × 3 = 9 → 128 warehouses / 9 tablets ≈ 14 warehouse/tablet（競爭分散）
+
+yb_num_shards_per_tserver=8：
+  tablets = 8 × 3 = 24 → 128 warehouses / 24 tablets ≈ 5 warehouse/tablet（接近 TiDB 穩定態）
+```
+
+每個 tablet 的 3 份 replica 分散在 .32/.33/.34 三台，**三台均持有全部資料**。
+
+| 設定 | tablets/table | warehouse 分佈 | 測試狀態 |
+|------|:------------:|--------------|--------|
+| `=1`（2025.x 預設） | 3 | ~43/tablet | 現行 vm-* 測試 |
+| `=3`（舊版預設） | 9 | ~14/tablet | 待補對比組 |
+
+**設定方式**（需在 yugabyted start 時帶入，不可熱更新）：
+```bash
+yugabyted start --tserver_flags="yb_num_shards_per_tserver=3,yb_enable_read_committed_isolation=true"
+```
+
+**驗證指令**：
+```bash
+curl -s http://172.24.40.32:9000/varz | grep yb_num_shards
+```
+
+---
+
+### 對標規格設定總結
+
+| DB | 測試設定 | 分片狀態記錄點 |
+|----|---------|-------------|
+| **TiDB** | 預設動態分裂，warmup 5m | prepare 後 + warmup 後各記錄一次 Region 數 |
+| **CockroachDB** | 預設動態分裂，warmup 5m | prepare 後記錄 Range 數，通常 1-2/table |
+| **YugabyteDB** | 記錄 `yb_num_shards_per_tserver` 值 | `curl http://<tserver>:9000/varz \| grep yb_num_shards` |
+
+> **對標原則**：各 DB 使用生產建議預設值，不強制對齊分片數（架構設計不同，強制對齊反而失真）。YugabyteDB 可補跑 `=1` vs `=3` 對比組，量化分片數對 TPC-C 的獨立影響。
 
 ---
 
