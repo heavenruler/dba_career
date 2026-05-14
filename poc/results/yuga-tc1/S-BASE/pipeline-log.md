@@ -14,7 +14,7 @@
 
 - `yugabyted start` shebang `#!/usr/bin/env python3` 解析到 python 3.6，缺少 `dataclasses` module（Python 3.7+ 才有）
 
-因此 vm-* 的舊測試結果基於 YBDB 2.20 + snapshot isolation（預設），**不具備 2025.2 LTS + Read Committed 的可比性**，已移至 `pipeline-log_old.md` 存檔。
+因此 vm-* 的舊測試結果基於 [YugabyteDB 2.20](https://docs.yugabyte.com/stable/releases/ybdb-releases/v2.20/) + snapshot isolation（預設），**不具備 2025.2 LTS + Read Committed 的可比性**，已移至 `pipeline-log_old.md` 存檔。
 
 ---
 
