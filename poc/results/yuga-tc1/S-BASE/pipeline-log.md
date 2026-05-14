@@ -1,6 +1,7 @@
 # YugabyteDB TPC-C Pipeline Log — yuga-tc1 / S-BASE
 
 > **本測試結論**：
+
 > **註**：
 
 ---
