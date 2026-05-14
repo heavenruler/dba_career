@@ -14,7 +14,6 @@
 原因：YugabyteDB 2025.2 LTS 的 binary 依賴 glibc 2.34+（el9 / Ubuntu 22.04 以上），而 AlmaLinux 10.1 雖版本號更新，但 template 安裝的系統套件版本不相容（python 環境殘缺、`dataclasses` module 缺失於預設 python3.6），導致 `yugabyted` 無法正常啟動。實際錯誤：
 
 - `yugabyted start` shebang `#!/usr/bin/env python3` 解析到 python 3.6，缺少 `dataclasses` module（Python 3.7+ 才有）
-- AlmaLinux 10.1 VM template 磁碟分區空間不足（sda3 21 GB，90% full），無法容納 128W TPC-C 資料
 
 因此 vm-* 的舊測試結果基於 YBDB 2.20 + snapshot isolation（預設），**不具備 2025.2 LTS + Read Committed 的可比性**，已移至 `pipeline-log_old.md` 存檔。
 
@@ -30,7 +29,6 @@
 | `ansible.builtin.dnf` 模組在 python3.9 下無法找到 dnf Python bindings（僅 platform-python 3.6 有） | 所有 dnf 安裝改為 `ansible.builtin.command: dnf install -y ...` |
 | `ansible.posix.selinux` 模組需要 libselinux-python for python3.9（未預裝） | 改用 `ansible.builtin.replace` 修改 `/etc/selinux/config` + `command: setenforce 0` |
 | `yugabyted` shebang 解析到 python3.6（缺 `dataclasses`） | 在受控節點執行 `alternatives --set python3 /usr/bin/python3.8`；role 建立 `/usr/bin/python` → `python3.8` symlink |
-| 磁碟空間不足（sda3 21 GB） | TPC-C 128W 資料與 logs 移至 sdb（100 GB，掛載為 `/data`），並以 symlink 指向 `/opt/yugabyte/data` / `/opt/yugabyte/logs` |
 | `yugabyted.conf` 殘留導致新叢集沿用舊 cluster UUID，YCQL system tables 初始化不完整（`Table system.transactions not found`） | 完整清除 `/home/yugabyte/var/`、`/opt/yugabyte/data/`、`/opt/yugabyte/logs/` 後重新 bootstrap |
 
 ---
