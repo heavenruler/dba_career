@@ -44,10 +44,14 @@ YugabyteDB 支援三種交易隔離層級，設定分兩層：
 yb_enable_read_committed_isolation=true ; Default: false
 ```
 
+> When set to false, Read Committed (and Read Uncommitted) isolation level of YSQL fall back to the stricter Snapshot isolation. See also the --ysql_default_transaction_isolation flag.
+
 #### 設定層（session / transaction level）
 ```sql
-SET transaction_isolation = 'read committed';  -- 或 'repeatable read' / 'serializable'
+SET transaction_isolation = 'read committed';  -- 或 'repeatable read' / 'serializable / read uncommitted' # Default: 'read committed'
 ```
+
+> If yb_enable_read_committed_isolation is false, the Read Committed isolation level of the YugabyteDB transactional layer falls back to the stricter Snapshot isolation (in which case Read Committed and Read Uncommitted of YSQL also in turn use Snapshot isolation).
 
 > ⚠️ **重要**：若只在 SQL 層設定 `read committed`，`SHOW transaction_isolation` 顯示正確，但 `SHOW yb_effective_transaction_isolation_level` 仍可能回傳 `repeatable read`（底層實際執行的隔離層級），導致仍出現 `could not serialize access` / `Restart read required` 錯誤。**必須同時啟用 tserver gflag 才有效。**
 
@@ -56,6 +60,8 @@ SET transaction_isolation = 'read committed';  -- 或 'repeatable read' / 'seria
 | `serializable` | 最嚴格，完全防止所有並發異象；高競爭下重試最多 | `--isolation 4` |
 | `repeatable read`（YugabyteDB 預設） | YugabyteDB 預設值；底層使用 snapshot isolation，不符合 PostgreSQL `repeatable read` 語意 | `--isolation 3` |
 | `read committed` | 與 PostgreSQL 相容的標準 RC；每個 statement 取新 snapshot，大幅減少 write-write conflict 重試 | `--isolation 2` |
+| `read uncommitted` | 官方支援的有效值（[ysql_default_transaction_isolation](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#ysql-default-transaction-isolation)），但 YugabyteDB 實作上等同 `read committed`，不會真正讀取未提交資料 | `--isolation 1` |
+| `` | | |
 
 本測試使用 **Read Committed**（`--isolation 2`）+ tserver flag `yb_enable_read_committed_isolation=true`。
 
@@ -148,9 +154,50 @@ k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
 
 ---
 
-## vm-1node — 2026-05-06
+## vm-1node — 2026-05-14
 
-> 重測中，數據待補
+### 環境
+- 版本：**YugabyteDB 2025.2.2.2-b0**（PostgreSQL 15.12-YB-2025.2.2.2-b0）
+- OS：AlmaLinux 8.10
+- 節點：.32 (172.24.40.32) 單節點 RF=1
+- tserver flags：`yb_enable_read_committed_isolation=true`
+- Isolation 驗證：`yb_effective_transaction_isolation_level = read committed`
+- 連線入口：直連 172.24.40.32:5433
+- 測試工具：go-tpc on .31（`-d postgres --conn-params sslmode=disable --isolation 2`）
+- Warehouses：128 | Warmup：5m | Duration：10m | Threads：16/32/64/128
+- 結果目錄：`vm-1node/20260514-1337/`
+
+### Prepare
+- 時間：16m05s（128W）
+- 無 consistency check（`prepare --no-check`）
+
+### Execute 結果
+
+> ⚠️ efficiency > 100% 為無 think time 的壓測常態，非錯誤
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | **10,844.2** | 24,014.7 | 658.8% | 55.6 | 113.2 |
+| 32 | 10,341.4 | 22,951.8 | 628.2% | 117.2 | 234.9 |
+| 64 | 9,982.5 | 22,178.8 | 606.4% | 243.4 | 520.1 |
+| 128 | 8,905.7 | 19,711.1 | 541.0% | 551.6 | 1,342.2 |
+
+### vs 舊版 vm-1node（2.20 + snapshot）對比
+
+| threads | 舊 tpmC (2.20) | 新 tpmC (2025.2) | 倍數 | 舊 NO avg | 新 NO avg |
+|---------|---------------|-----------------|------|-----------|-----------|
+| 16 | 414.7 | 10,844.2 | **26.1×** | 2,225ms | 55.6ms |
+| 32 | 394.8 | 10,341.4 | **26.2×** | 4,686ms | 117.2ms |
+| 64 | 378.6 | 9,982.5 | **26.4×** | 9,548ms | 243.4ms |
+| 128 | 370.4 | 8,905.7 | **24.0×** | 15,655ms | 551.6ms |
+
+### 觀察
+
+- **吞吐提升約 25× 以上**：主要來自版本升級（2.20 → 2025.2）+ Read Committed 生效，RC 讓 write-write conflict 大幅減少，不再需要大量 MVCC rollback/retry。
+- **P99 從 16,106ms 降至 1,342ms（128t）**：舊版 128t 幾乎全部逾時（go-tpc 上限 16s），新版最差 1% 用戶等待約 1.3 秒，完全不同量級。
+- **NO avg 線性惡化仍存在**：55.6 → 117.2 → 243.4 → 551.6ms，每次 thread 翻倍延遲約翻倍，MVCC 架構特性不變，但在可接受範圍內。
+- **峰值在 16t**：tpmC 10,844 → 8,906 隨併發略降，單節點 tablet 競爭在 128t 時開始顯現，但遠未到 2.20 版的崩潰水位。
+- **無 serialization/restart 錯誤**：log 掃描無 `could not serialize`、`Restart read required`，RC 隔離層有效運作。
 
 ---
 
