@@ -20,7 +20,7 @@
 
 ### 2. 改用 AlmaLinux 8.10 後的調整項目
 
-重建 VM template 改為 **AlmaLinux 8.10**（`temp-almalinux-8.10-v2`），並針對以下問題逐一修正：
+重建 VM template 改為 **AlmaLinux 8.10**，並針對以下問題逐一修正：
 
 | 問題 | 調整方式 |
 |------|---------|
