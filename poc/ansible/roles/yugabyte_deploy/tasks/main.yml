@@ -65,6 +65,11 @@
     state: link
     force: true
 
+- name: Set python3 alternatives to python3.8 for yugabyted
+  ansible.builtin.command: alternatives --set python3 /usr/bin/python3.8
+  failed_when: false
+  changed_when: false
+
 - name: Replace bundled six with Python 3.12 compatible version
   ansible.builtin.shell: |
     python3 -c "
@@ -110,6 +115,7 @@
       --join={{ yb_bootstrap_ip }} \
       --data_dir=/opt/yugabyte/data \
       --log_dir=/opt/yugabyte/logs \
+      --tserver_flags="yb_enable_read_committed_isolation=true" \
       --ui=false \
       --daemon=true
   become_user: yugabyte

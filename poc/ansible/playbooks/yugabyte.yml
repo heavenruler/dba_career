@@ -13,8 +13,8 @@
     yb_cloud: "poc"
     yb_region: "poc-region"
     yb_bootstrap_ip: "172.24.40.32"
-    yb_master_addresses: "172.24.40.32:7100,172.24.40.33:7100,10.160.152.11:7100"
+    yb_master_addresses: "172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100"
     yb_rf: 3
-    yb_placement: "poc.poc-region.idc:2,poc.poc-region.gcp:1"
+    yb_placement: "poc.poc-region.idc-a:1,poc.poc-region.idc-b:1,poc.poc-region.idc-c:1"
   roles:
     - yugabyte_deploy
