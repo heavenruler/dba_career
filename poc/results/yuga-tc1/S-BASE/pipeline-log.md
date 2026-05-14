@@ -36,14 +36,17 @@
 
 YugabyteDB 支援三種交易隔離層級，設定分兩層：
 
-#### 設定層（session / transaction level）
-```sql
-SET transaction_isolation = 'read committed';  -- 或 'repeatable read' / 'serializable'
-```
+[ysql_default_transaction_isolation](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#ysql-default-transaction-isolation)
+[yb_enable_read_committed_isolation](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#yb-enable-read-committed-isolation)
 
 #### 啟用層（tserver gflag，必須同時設定，否則 SQL 層設定無效）
 ```
-yb_enable_read_committed_isolation=true
+yb_enable_read_committed_isolation=true ; Default: false
+```
+
+#### 設定層（session / transaction level）
+```sql
+SET transaction_isolation = 'read committed';  -- 或 'repeatable read' / 'serializable'
 ```
 
 > ⚠️ **重要**：若只在 SQL 層設定 `read committed`，`SHOW transaction_isolation` 顯示正確，但 `SHOW yb_effective_transaction_isolation_level` 仍可能回傳 `repeatable read`（底層實際執行的隔離層級），導致仍出現 `could not serialize access` / `Restart read required` 錯誤。**必須同時啟用 tserver gflag 才有效。**
