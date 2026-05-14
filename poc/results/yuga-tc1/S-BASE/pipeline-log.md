@@ -5,6 +5,67 @@
 
 ---
 
+## 環境版本與 Isolation 問題紀錄
+
+### 1. YugabyteDB 2025.2 LTS 無法在 AlmaLinux 10.1 上運作
+
+**原始 vm-* 測試資料均在 YugabyteDB 2.20 版本下測得，非 2025.2 LTS。**
+
+原因：YugabyteDB 2025.2 LTS 的 binary 依賴 glibc 2.34+（el9 / Ubuntu 22.04 以上），而 AlmaLinux 10.1 雖版本號更新，但 template 安裝的系統套件版本不相容（python 環境殘缺、`dataclasses` module 缺失於預設 python3.6），導致 `yugabyted` 無法正常啟動。實際錯誤：
+
+- `yugabyted start` shebang `#!/usr/bin/env python3` 解析到 python 3.6，缺少 `dataclasses` module（Python 3.7+ 才有）
+- AlmaLinux 10.1 VM template 磁碟分區空間不足（sda3 21 GB，90% full），無法容納 128W TPC-C 資料
+
+因此 vm-* 的舊測試結果基於 YBDB 2.20 + snapshot isolation（預設），**不具備 2025.2 LTS + Read Committed 的可比性**，已移至 `pipeline-log_old.md` 存檔。
+
+---
+
+### 2. 改用 AlmaLinux 8.10 後的調整項目
+
+重建 VM template 改為 **AlmaLinux 8.10**（`temp-almalinux-8.10-v2`），並針對以下問題逐一修正：
+
+| 問題 | 調整方式 |
+|------|---------|
+| ansible-core 2.18 控制節點對 AlmaLinux 8 受控節點使用 Python 3.6，模組內 `from __future__ import annotations` 語法需 3.7+ | inventory 每台主機加 `ansible_python_interpreter=/usr/bin/python3.9` |
+| `ansible.builtin.dnf` 模組在 python3.9 下無法找到 dnf Python bindings（僅 platform-python 3.6 有） | 所有 dnf 安裝改為 `ansible.builtin.command: dnf install -y ...` |
+| `ansible.posix.selinux` 模組需要 libselinux-python for python3.9（未預裝） | 改用 `ansible.builtin.replace` 修改 `/etc/selinux/config` + `command: setenforce 0` |
+| `yugabyted` shebang 解析到 python3.6（缺 `dataclasses`） | 在受控節點執行 `alternatives --set python3 /usr/bin/python3.8`；role 建立 `/usr/bin/python` → `python3.8` symlink |
+| 磁碟空間不足（sda3 21 GB） | TPC-C 128W 資料與 logs 移至 sdb（100 GB，掛載為 `/data`），並以 symlink 指向 `/opt/yugabyte/data` / `/opt/yugabyte/logs` |
+| `yugabyted.conf` 殘留導致新叢集沿用舊 cluster UUID，YCQL system tables 初始化不完整（`Table system.transactions not found`） | 完整清除 `/home/yugabyte/var/`、`/opt/yugabyte/data/`、`/opt/yugabyte/logs/` 後重新 bootstrap |
+
+---
+
+### 3. Isolation 模式說明
+
+YugabyteDB 支援三種交易隔離層級，設定分兩層：
+
+#### 設定層（session / transaction level）
+```sql
+SET transaction_isolation = 'read committed';  -- 或 'repeatable read' / 'serializable'
+```
+
+#### 啟用層（tserver gflag，必須同時設定，否則 SQL 層設定無效）
+```
+yb_enable_read_committed_isolation=true
+```
+
+> ⚠️ **重要**：若只在 SQL 層設定 `read committed`，`SHOW transaction_isolation` 顯示正確，但 `SHOW yb_effective_transaction_isolation_level` 仍可能回傳 `repeatable read`（底層實際執行的隔離層級），導致仍出現 `could not serialize access` / `Restart read required` 錯誤。**必須同時啟用 tserver gflag 才有效。**
+
+| 模式 | 說明 | go-tpc flag |
+|------|------|-------------|
+| `serializable` | 最嚴格，完全防止所有並發異象；高競爭下重試最多 | `--isolation 4` |
+| `repeatable read`（YugabyteDB 預設） | YugabyteDB 預設值；底層使用 snapshot isolation，不符合 PostgreSQL `repeatable read` 語意 | `--isolation 3` |
+| `read committed` | 與 PostgreSQL 相容的標準 RC；每個 statement 取新 snapshot，大幅減少 write-write conflict 重試 | `--isolation 2` |
+
+本測試使用 **Read Committed**（`--isolation 2`）+ tserver flag `yb_enable_read_committed_isolation=true`。
+
+官方文件：
+- [Transaction Isolation Levels](https://docs.yugabyte.com/preview/architecture/transactions/isolation-levels/)
+- [Read Committed Isolation](https://docs.yugabyte.com/preview/architecture/transactions/read-committed/)
+- [yb_enable_read_committed_isolation flag](https://docs.yugabyte.com/preview/reference/configuration/yb-tserver/#yb-enable-read-committed-isolation)
+
+---
+
 ## 各 variant 拓撲總覽
 
 ```
