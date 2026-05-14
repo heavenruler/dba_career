@@ -8,8 +8,8 @@
   hosts: yb_cluster
   become: true
   vars:
-    yb_version: "2.20.1.3"
-    yb_download_url: "https://downloads.yugabyte.com/releases/2.20.1.3/yugabyte-2.20.1.3-b3-linux-x86_64.tar.gz"
+    yb_version: "2025.2.2.2"
+    yb_download_url: "https://software.yugabyte.com/releases/2025.2.2.2/yugabyte-2025.2.2.2-b11-linux-x86_64.tar.gz"
     yb_cloud: "poc"
     yb_region: "poc-region"
     yb_bootstrap_ip: "172.24.40.32"

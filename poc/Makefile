@@ -331,7 +331,7 @@ vm-destroy:
 ## vSphere Inventory
 inventory-refresh:
 	cd $(IAC_DIR) && terraform output -json vm_ips | \
-	  jq -r '"[poc_db]", (to_entries[] | .value + " ansible_hostname=" + .key)' \
+	  jq -r '"[poc_db]", (to_entries[] | .value + " ansible_hostname=" + .key + " ansible_python_interpreter=/usr/bin/python3.9")' \
 	  > ../$(INVENTORY)
 	@echo "==> $(INVENTORY) updated"
 	@cat $(INVENTORY)
@@ -410,7 +410,7 @@ tidb-haproxy-tc4:
 yuga-haproxy-tc1:
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/haproxy.yml \
 	  -i inventory/hosts.ini \
-	  -i inventory/yugabyte-tc1.ini
+	  -i inventory/yuga-tc1.ini
 
 yuga-haproxy-tc3: gcp-tunnel-ensure
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/haproxy.yml \
@@ -511,21 +511,20 @@ yuga-tc1:
 	$(MAKE) vm-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte.yml \
 	  -i inventory/hosts.ini \
-	  -i inventory/yugabyte-tc1.ini \
+	  -i inventory/yuga-tc1.ini \
 	  -e yb_rf=3 \
 	  -e yb_placement="poc.poc-region.idc:3" \
 	  -e yb_master_addresses="172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100"
 	$(MAKE) yuga-haproxy-tc1
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte-status.yml \
 	  -i inventory/hosts.ini \
-	  -i inventory/yugabyte-tc1.ini
+	  -i inventory/yuga-tc1.ini
 
 # AlmaLinux 8.10 variant — YBDB 2025.2.2 binary compatible OS
-# ⚠ template temp-almalinux-8.10 VMware customization issue pending fix
 yuga-tc1-alma8.10:
 	cd $(IAC_DIR) && terraform destroy -auto-approve
 	cd $(IAC_DIR) && terraform init -upgrade && \
-	  terraform apply -auto-approve -var 'vm_template=temp-almalinux-8.10'
+	  terraform apply -auto-approve -var 'vm_template=poc-template'
 	$(MAKE) vm-ping
 	$(MAKE) vm-setup
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/yugabyte.yml \

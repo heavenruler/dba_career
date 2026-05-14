@@ -20,8 +20,20 @@ export SCENARIO=S-BASE
 export RESULT_BASE=/tmp/yuga-tpcc-runner/results
 export DB_NAME=tpcc
 
+echo "--- wait for YBDB ready ---"
+for i in $(seq 1 60); do
+  if psql "host=${YUGA_HOST} port=${YUGA_PORT} user=${YUGA_USER} dbname=yugabyte sslmode=disable" \
+      -c "SELECT 1" -q >/dev/null 2>&1; then
+    echo "YBDB ready at ${i}s"
+    break
+  fi
+  echo "  waiting... ${i}/60"
+  sleep 5
+done
+
 echo "--- cleanup $(date '+%H:%M:%S') ---"
 bash /tmp/yuga-tpcc-runner/yuga-tpcc.sh cleanup || echo "cleanup non-fatal: $?"
+sleep 5
 
 echo "--- prepare $(date '+%H:%M:%S') ---"
 bash /tmp/yuga-tpcc-runner/yuga-tpcc.sh prepare

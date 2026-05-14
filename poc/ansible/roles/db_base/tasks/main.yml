@@ -1,9 +1,9 @@
 ---
 ## Disk expansion (template clone → 100GB disk but partition only 28.4G)
 - name: Install cloud-utils-growpart
-  ansible.builtin.dnf:
-    name: cloud-utils-growpart
-    state: present
+  ansible.builtin.command: dnf install -y cloud-utils-growpart
+  register: _dnf_out
+  changed_when: "'Nothing to do' not in _dnf_out.stdout"
 
 - name: Grow root partition if needed
   ansible.builtin.shell: |
@@ -26,17 +26,9 @@
 
 ## Packages
 - name: Ensure essential packages installed
-  ansible.builtin.dnf:
-    name:
-      - vim
-      - curl
-      - wget
-      - net-tools
-      - lsof
-      - sysstat
-      - dstat
-      - chrony
-    state: present
+  ansible.builtin.command: dnf install -y vim curl wget net-tools lsof sysstat dstat chrony
+  register: _dnf_out
+  changed_when: "'Nothing to do' not in _dnf_out.stdout"
 
 ## Time sync
 - name: Enable and start chronyd
@@ -46,10 +38,16 @@
     enabled: true
 
 ## SELinux
-- name: Set SELinux to permissive
-  ansible.posix.selinux:
-    policy: targeted
-    state: permissive
+- name: Set SELinux to permissive in config
+  ansible.builtin.replace:
+    path: /etc/selinux/config
+    regexp: '^SELINUX=.*'
+    replace: 'SELINUX=permissive'
+
+- name: Set SELinux to permissive at runtime
+  ansible.builtin.command: setenforce 0
+  failed_when: false
+  changed_when: false
 
 ## Firewalld
 - name: Disable firewalld
@@ -115,9 +113,9 @@
 
 ## CPU governor
 - name: Install cpupower
-  ansible.builtin.dnf:
-    name: kernel-tools
-    state: present
+  ansible.builtin.command: dnf install -y kernel-tools
+  register: _dnf_out
+  changed_when: "'Nothing to do' not in _dnf_out.stdout"
 
 - name: Set CPU governor to performance
   ansible.builtin.command: cpupower frequency-set -g performance

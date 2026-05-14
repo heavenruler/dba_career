@@ -47,24 +47,23 @@
 
 ## python requirements (yugabyted requires `python` + distutils)
 - name: Install python3 dependencies for yugabyted/ycqlsh
-  ansible.builtin.dnf:
-    name:
-      - python3-setuptools
-      - python3-six
-      - python3-pip
-    state: present
+  ansible.builtin.command: dnf install -y python3-setuptools python3-six python3-pip
+  register: _dnf_out
+  changed_when: "'Nothing to do' not in _dnf_out.stdout"
 
 - name: Install cassandra-driver for ycqlsh (Python 3.12 compatible)
   ansible.builtin.pip:
     name: "cassandra-driver>=3.28"
     executable: pip3
     extra_args: "--proxy {{ yb_proxy | default('') }}"
+  failed_when: false
 
 - name: Create python symlink for yugabyted
   ansible.builtin.file:
-    src: /usr/bin/python3
+    src: /usr/bin/python3.8
     dest: /usr/bin/python
     state: link
+    force: true
 
 - name: Replace bundled six with Python 3.12 compatible version
   ansible.builtin.shell: |
@@ -86,6 +85,7 @@
       --fault_tolerance=zone \
       --data_dir=/opt/yugabyte/data \
       --log_dir=/opt/yugabyte/logs \
+      --tserver_flags="yb_enable_read_committed_isolation=true" \
       --ui=false \
       --daemon=true
   become_user: yugabyte

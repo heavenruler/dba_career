@@ -1,8 +1,8 @@
 ---
 - name: Install haproxy
-  ansible.builtin.dnf:
-    name: haproxy
-    state: present
+  ansible.builtin.command: dnf install -y haproxy
+  register: _dnf_out
+  changed_when: "'Nothing to do' not in _dnf_out.stdout"
 
 - name: Configure haproxy
   ansible.builtin.template:

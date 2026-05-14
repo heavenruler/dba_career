@@ -153,7 +153,11 @@ EOF
 cmd_cleanup() {
   local t0=$SECONDS
   echo "==> [yuga-tpcc] cleanup db=${DB_NAME}"
-  _go_tpc_base 1 "" cleanup
+  _go_tpc_base 1 "" cleanup 2>/dev/null || true
+  local pass_flag=""
+  [[ -n "${YUGA_PASS}" ]] && pass_flag="PGPASSWORD=${YUGA_PASS}"
+  eval "${pass_flag} psql -h '${YUGA_HOST}' -p '${YUGA_PORT}' -U '${YUGA_USER}' -d yugabyte \
+    -c 'DROP DATABASE IF EXISTS ${DB_NAME};'" 2>/dev/null || true
   echo "==> [yuga-tpcc] cleanup done ($(_elapsed $t0 $SECONDS))"
 }
 
