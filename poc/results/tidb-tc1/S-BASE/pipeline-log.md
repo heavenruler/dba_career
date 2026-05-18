@@ -48,8 +48,10 @@
 - check-all 128 warehouse 全條件通過，無 error
 - TiDB schema：`CLUSTERED PK`，CHARSET=utf8mb4，COLLATE=utf8mb4_bin
 
-### Execute 結果（5 round 平均）
+### Execute 結果（5 round tpmC 平均；latency 為代表值）
 
+> tpmC / tpmTotal / efficiency 為 5 round mean；**NO p50 / p95 / p99 為 5 round latency 代表值**（觀察量級與趨勢用，非各 round 嚴格 mean）。
+>
 > （tpmC：越高越好；NO p99：越低越好；efficiency 遠超 100% 屬正常）
 >
 > `range/mean` = `(5 round 最大 tpmC - 最小 tpmC) / 5 round 平均 tpmC`，用來看同一併發水位的 round-to-round 波動；數值越低代表重現性越好。
@@ -151,7 +153,7 @@ DB disk%util: 50.8 48.7  48.8     46.1%     ← 磁碟未滿
 
 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t64 為甜點（12,744 tpmC），t128 已飽和，硬天花板是 .32 的 4 vCPU**（iowait < 5%，disk %util < 51%）。DB-host 端 OS 監控已正式生效，後續所有 baseline 都帶有 saturation 證據可供歸因分析。
 
-本輪資料作為後續 `vm-1node-rr`、`vm-1node-strict`、以及 CRDB/YBDB 對標的 baseline。預期 vm-3node 把 TiKV 分散到 3 台後可線性 scale tpmC（CPU 天花板從 4 vCPU 變成 12 vCPU），需用本輪同樣的 DB-host 監控驗證。
+本輪資料作為後續 `vm-1node-rr`、`vm-1node-strict`、以及 CRDB/YBDB 對標的 baseline。預期 vm-3node 將 TiKV 分散到 3 台後可提升 tpmC，但 **scale-out ratio 不應預設為線性**（既有 vm-3node peak ~22,841 對 vm-1node ~13,064，比值 ~1.75x 而非 3x）；需用同樣的 DB-host 監控驗證 CPU / IO / raft / network 是否成為新瓶頸。
 
 ---
 
