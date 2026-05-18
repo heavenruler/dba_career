@@ -57,7 +57,8 @@ TPCC_TS           := $(shell date '+%Y%m%dT%H%M%S%z')
             deploy-vm1-$(db) gate-vm1-$(db)-$(iso) \
             prepare-vm1-$(db)-$(iso) run-vm1-$(db)-$(iso) \
             collect-vm1-$(db)-$(iso) fetch-vm1-$(db)-$(iso) \
-            test-tpcc-vm1-$(db)-$(iso))) \
+            test-tpcc-vm1-$(db)-$(iso) \
+            vm1-$(db)-$(iso) status-vm1-$(db)-$(iso))) \
         $(foreach iso,rc rr strict,gate-vm1-all-$(iso) test-tpcc-vm1-all-$(iso))
 
 .DEFAULT_GOAL := help
@@ -87,7 +88,12 @@ help:
 	@echo "  make ansible-setup           - gcp-wait-startup + site.yml + tpcc-client-ssh.yml"
 	@echo ""
 	@echo "=== TPC-C vm-1node Phase chain (依 PoC-DESIGN.md §8 / §11) ==="
-	@echo "  一鍵 e2e:"
+	@echo "  MAC 下發 + .31 背景執行 (推薦; MAC session 中斷不影響 benchmark):"
+	@echo "    make vm1-<db>-<iso>            - new-idc-vms + bootstrap + deploy + 遠端 detached suite"
+	@echo "                                     gate/prepare/run/collect 全部 .31 跑,固定同一 TPCC_TS"
+	@echo "    make status-vm1-<db>-<iso>     - 查 lock / artifact markers / log tail (read-only)"
+	@echo "    範例: make vm1-tidb-rc -> 完成後 make fetch-vm1-tidb-rc TPCC_TS=<ts>"
+	@echo "  一鍵 e2e (MAC foreground 監看; 不建議長時間使用):"
 	@echo "    make test-tpcc-vm1-<db>-<iso>  - deploy → gate → prepare → run → collect → fetch"
 	@echo "    make test-tpcc-vm1-all-<iso>   - 三家 (tidb/crdb/ybdb) 依序跑同 iso"
 	@echo "  細分 phase (可單獨重跑;  TPCC_TS=<ts> 變數帶入同組 timestamp):"
@@ -232,6 +238,7 @@ deploy-vm1-ybdb:
 
 # ---- env injection for prepare/run/collect (pass to ssh) ----
 TPCC_ENV = \
+  TPCC_BASE=$(TPCC_BASE) \
   TPCC_ARTIFACTS=$(TPCC_ARTIFACTS) \
   WAREHOUSES=$(WAREHOUSES) \
   THREADS_LIST='$(THREADS_LIST)' \
@@ -271,12 +278,13 @@ $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,collect-vm1-$(db)-$(iso))
 $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,fetch-vm1-$(db)-$(iso))):
 	$(eval DB := $(word 3,$(subst -, ,$@)))
 	$(eval ISO := $(word 4,$(subst -, ,$@)))
-	@echo "==> fetch-vm1-$(DB)-$(ISO)"
+	$(eval FETCH_SRC := $(if $(filter command line,$(origin TPCC_TS)),$(TPCC_ARTIFACTS)/$(DB)-vm-1node-$(ISO)-$(TPCC_TS),$(TPCC_ARTIFACTS)/$(DB)-vm-1node-$(ISO)-*))
+	@echo "==> fetch-vm1-$(DB)-$(ISO) src=$(FETCH_SRC)"
 	mkdir -p $(LOCAL_RESULTS)/$(DB)-tc1/S-BASE/vm-1node-$(ISO)/
 	rsync -avz --remove-source-files \
-	  '$(TPCC_CLIENT):$(TPCC_ARTIFACTS)/$(DB)-vm-1node-$(ISO)-*' \
+	  '$(TPCC_CLIENT):$(FETCH_SRC)' \
 	  $(LOCAL_RESULTS)/$(DB)-tc1/S-BASE/vm-1node-$(ISO)/
-	ssh $(TPCC_CLIENT) 'find $(TPCC_ARTIFACTS) -maxdepth 1 -type d -empty -delete' || true
+	ssh $(TPCC_CLIENT) 'find $(TPCC_ARTIFACTS) -depth -type d -empty -delete' || true
 
 # ---- one-button e2e per <db>-<iso> ----
 $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,test-tpcc-vm1-$(db)-$(iso))):
@@ -294,3 +302,40 @@ $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,test-tpcc-vm1-$(db)-$(iso
 test-tpcc-vm1-all-rc:     test-tpcc-vm1-tidb-rc     test-tpcc-vm1-crdb-rc     test-tpcc-vm1-ybdb-rc
 test-tpcc-vm1-all-rr:     test-tpcc-vm1-tidb-rr     test-tpcc-vm1-crdb-rr     test-tpcc-vm1-ybdb-rr
 test-tpcc-vm1-all-strict: test-tpcc-vm1-tidb-strict test-tpcc-vm1-crdb-strict test-tpcc-vm1-ybdb-strict
+
+# ====================================================================
+# vm1-<db>-<iso> — MAC dispatches, .31 runs detached
+#   1. new-idc-vms  (MAC)
+#   2. bootstrap-tpcc-client (MAC → .31 rsync)
+#   3. deploy-vm1-<db> (Ansible)
+#   4. launch-vm1-suite.sh on .31 (nohup setsid; MAC ssh returns)
+# Fetch is intentionally NOT included (MAC may not be reachable from .31).
+# After collect completes (verify with status-vm1-<db>-<iso>), run:
+#   make fetch-vm1-<db>-<iso> TPCC_TS=<ts>
+# ====================================================================
+$(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,vm1-$(db)-$(iso))):
+	$(eval DB := $(word 2,$(subst -, ,$@)))
+	$(eval ISO := $(word 3,$(subst -, ,$@)))
+	$(eval HOST := $(strip $(call DB_HOST,$(DB))))
+	$(eval TS := $(TPCC_TS))
+	@echo "==> $@: TPCC_TS=$(TS) host=$(HOST)"
+	$(MAKE) new-idc-vms
+	$(MAKE) bootstrap-tpcc-client
+	$(MAKE) deploy-vm1-$(DB)
+	@echo "==> launching remote suite on $(TPCC_CLIENT) (detached)"
+	@ssh $(TPCC_CLIENT) "env $(TPCC_ENV) bash $(TPCC_SCRIPTS)/launch-vm1-suite.sh \
+	  --db $(DB) --iso $(ISO) --topology vm-1node \
+	  --db-host $(HOST) --ts $(TS)"
+	@echo "==================================================================="
+	@echo "  TPCC_TS:       $(TS)"
+	@echo "  Status check:  make status-vm1-$(DB)-$(ISO)"
+	@echo "  Tail log:      ssh $(TPCC_CLIENT) tail -f $(TPCC_BASE)/logs/$(DB)-vm-1node-$(ISO)-$(TS).log"
+	@echo "  Fetch later:   make fetch-vm1-$(DB)-$(ISO) TPCC_TS=$(TS)"
+	@echo "==================================================================="
+
+# Read-only status (no side effects)
+$(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,status-vm1-$(db)-$(iso))):
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	$(eval ISO := $(word 4,$(subst -, ,$@)))
+	@ssh $(TPCC_CLIENT) "bash $(TPCC_SCRIPTS)/status-vm1.sh \
+	  --db $(DB) --topology vm-1node --iso $(ISO)"

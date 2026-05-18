@@ -242,10 +242,10 @@
   vars:
     proxy_url: "http://sproxy.104-dev.com.tw:3128"
   tasks:
-    - name: Install mysql client prerequisites (shell dnf, idempotent)
+    - name: Install mysql + monitoring prerequisites (shell dnf, idempotent)
       ansible.builtin.shell: |
         set -e
-        for pkg in curl mysql; do
+        for pkg in curl mysql sysstat; do
           rpm -q "$pkg" >/dev/null 2>&1 && continue
           if dnf install -y --cacheonly "$pkg" >/dev/null 2>&1; then
             echo "$pkg installed from cache"
