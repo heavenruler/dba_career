@@ -777,6 +777,15 @@ Phase 8  report       render pipeline-log.md
 
 若為節省時間把 `WARMUP_SEC` 暫改為 `300`，該次結果必須在 `pipeline-log.md` 與 `summary.json` 標記為 `quick-run` 或 `smoke-test`，不得納入正式 median tpmC / scale-out ratio / HAProxy delta 結論。正式 PoC 數據仍以 `WARMUP_SEC=1200` 為準。
 
+**Warmup threads 調整影響（64 → 128）**：
+
+| 設定 | 適用性 | 影響 |
+|---|---|---|
+| `warmup_threads=64` | 正式 baseline | 壓力足以預熱 cache / plan / connection pool，但不把 warmup 本身變成最高壓測試 |
+| `warmup_threads=128` | 僅限 exploratory / quick-run | 可能更快觸發熱點、compaction、split、Raft/lease 調整，但也可能留下 write backlog / compaction debt |
+
+正式 PoC 固定 `warmup_threads=64`。若改用 `128`，該次結果必須在 `pipeline-log.md` 與 `summary.json` 標記 `warmup_threads=128` 與 `result_scope=exploratory`，不得與 `warmup_threads=64` 的正式結果混算 median tpmC、scale-out ratio 或 HAProxy delta。
+
 ### 8.3 Round 採樣策略
 
 每個 `<db, iso, threads>` 組合跑 5 round × 5 min，**丟 round 1，取 round 2-5 的 median** 為代表 tpmC。本輪 4 個 threads 水位（16/32/64/128）各跑 5 round，每組合共 5 round → 每個 `<db, iso>` 共 20 round。
@@ -1271,6 +1280,7 @@ MAC (orchestrator)
 | 隔離成本對照 | 追加 vm-1node-rr 與 vm-1node-strict 兩階 | 量化「升一級 / 升到最強」對 tpmC 影響；TiDB rr ≡ strict（native 最強就是 RR）；CRDB rr 為 preview opt-in |
 | Round 間 reset | 1 組 1 次 cold reset，5 round 不重啟 | 避免 round-restart 低估 3–25% |
 | Warmup 長度 | 正式數據 20m；5m 僅限 quick-run / smoke-test | 5m 會讓 cold cache、plan cache、compaction、leader/lease placement 影響混入正式數字；見 §8.2 |
+| Warmup 併發 | 正式數據固定 64 threads；128 threads 僅限 exploratory / quick-run | 128 threads 會讓 warmup 更接近最高壓，可能預熱更充分，也可能留下 backlog / compaction debt；見 §8.2 |
 | Retry policy | go-tpc run 無 retry flag；retry 由 driver/DB 內部處理，從 stdout + DB log 統計 | go-tpc v1.0.12 CLI 實證 |
 | TPC-C compliance | 明示為 stress benchmark，非 audited | 避免被質疑「假 TPC-C」 |
 | Sharding 對齊 | vm-1node 自然 1 shard；**所有 vm-3node 子拓撲皆 controlled，手動鎖 shard 並 hard gate**（§7.5） | 「production default vs controlled」混合分類已棄用 |
