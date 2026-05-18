@@ -767,6 +767,16 @@ Phase 8  report       render pipeline-log.md
 
 **設計依據**：原本選項是「每 round restart + drop_caches」，但會「低估」三家數字 3–25%（plan cache / metadata / lease 反覆重建），改採折衷拉長 warmup 並保留 round 1 → round 5 的穩態觀察。對應命名：`vm-1node-<iso> / RF=1 / steady-after-cold-reset`。
 
+**Warmup 縮短影響（20m → 5m）**：
+
+| 使用情境 | 允許性 | 影響 |
+|---|---|---|
+| Pipeline smoke test | 可接受 | 可快速驗證 deploy / gate / prepare / run / collect 是否串通 |
+| Phase A vm-1node 正式數據 | 不建議 | tpmC 可能偏低，P95/P99 易混入 cold cache / plan cache / compaction 成本 |
+| Phase B-F vm-3node 正式數據 | 禁止作正式比較 | 會放大 Region/Range/Tablet split、leader/lease placement、Raft cache 尚未穩定的差異 |
+
+若為節省時間把 `WARMUP_SEC` 暫改為 `300`，該次結果必須在 `pipeline-log.md` 與 `summary.json` 標記為 `quick-run` 或 `smoke-test`，不得納入正式 median tpmC / scale-out ratio / HAProxy delta 結論。正式 PoC 數據仍以 `WARMUP_SEC=1200` 為準。
+
 ### 8.3 Round 採樣策略
 
 每個 `<db, iso, threads>` 組合跑 5 round × 5 min，**丟 round 1，取 round 2-5 的 median** 為代表 tpmC。本輪 4 個 threads 水位（16/32/64/128）各跑 5 round，每組合共 5 round → 每個 `<db, iso>` 共 20 round。
@@ -1260,7 +1270,7 @@ MAC (orchestrator)
 | 主對標隔離級 | READ COMMITTED | 三家 production-ready；OLTP 主流；引擎能力非隔離開銷（§5） |
 | 隔離成本對照 | 追加 vm-1node-rr 與 vm-1node-strict 兩階 | 量化「升一級 / 升到最強」對 tpmC 影響；TiDB rr ≡ strict（native 最強就是 RR）；CRDB rr 為 preview opt-in |
 | Round 間 reset | 1 組 1 次 cold reset，5 round 不重啟 | 避免 round-restart 低估 3–25% |
-| Warmup 長度 | 20m | 視窗穩定度為準，10m 對 128W 不足 |
+| Warmup 長度 | 正式數據 20m；5m 僅限 quick-run / smoke-test | 5m 會讓 cold cache、plan cache、compaction、leader/lease placement 影響混入正式數字；見 §8.2 |
 | Retry policy | go-tpc run 無 retry flag；retry 由 driver/DB 內部處理，從 stdout + DB log 統計 | go-tpc v1.0.12 CLI 實證 |
 | TPC-C compliance | 明示為 stress benchmark，非 audited | 避免被質疑「假 TPC-C」 |
 | Sharding 對齊 | vm-1node 自然 1 shard；**所有 vm-3node 子拓撲皆 controlled，手動鎖 shard 並 hard gate**（§7.5） | 「production default vs controlled」混合分類已棄用 |
