@@ -37,7 +37,13 @@ done
 : "${ROUND_SLEEP_SEC:=60}"
 
 ROOT=$(artifact_dir "$DB" "$TOPO" "$ISO" "$TS")
-[[ -f "$ROOT/.prepare.done" ]] || die "prepare phase not complete: $ROOT/.prepare.done missing"
+if [[ ! -f "$ROOT/.prepare.done" ]]; then
+  latest=$(ls -d "${TPCC_ARTIFACTS}/${DB}-${TOPO}-${ISO}-"*/.prepare.done 2>/dev/null | sort | tail -1)
+  [[ -n "$latest" ]] || die "prepare phase not complete: no .prepare.done found for $DB/$TOPO/$ISO"
+  ROOT=$(dirname "$latest")
+  TS=$(basename "$ROOT" | sed "s|${DB}-${TOPO}-${ISO}-||")
+  warn "TS auto-detected from latest prepare: $TS"
+fi
 flock_phase "$ROOT" "run"
 
 RUNS_DIR="$ROOT/runs"
@@ -85,7 +91,7 @@ for threads in $THREADS_LIST; do
     ( iostat -xz 1 "$DUR" > "$RD/iostat-1s.txt" 2>&1 ) &
     ( vmstat 1 "$DUR"  > "$RD/vmstat-1s.txt"  2>&1 ) &
     ( sar -n DEV 1 "$DUR" > "$RD/sar-net.txt" 2>&1 ) &
-    ( for ((i=0; i<RUN_SEC/60+1; i++)); do free -h >> "$RD/free-1m.txt"; sleep 60; done ) &
+    ( for ((i=0; i<RUN_SEC/60+1; i++)); do ssh root@"$DB_HOST" free -h >> "$RD/free-1m.txt"; sleep 60; done ) &
     MON_PIDS=$(jobs -p)
 
     # go-tpc run

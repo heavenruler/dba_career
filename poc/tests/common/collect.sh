@@ -23,7 +23,13 @@ done
 
 : "${TPCC_ARTIFACTS:=/tmp/poc-tpcc/artifacts}"
 ROOT=$(artifact_dir "$DB" "$TOPO" "$ISO" "$TS")
-[[ -f "$ROOT/.run.done" ]] || die "run phase not complete: $ROOT/.run.done missing"
+if [[ ! -f "$ROOT/.run.done" ]]; then
+  latest=$(ls -d "${TPCC_ARTIFACTS}/${DB}-${TOPO}-${ISO}-"*/.run.done 2>/dev/null | sort | tail -1)
+  [[ -n "$latest" ]] || die "run phase not complete: no .run.done found for $DB/$TOPO/$ISO"
+  ROOT=$(dirname "$latest")
+  TS=$(basename "$ROOT" | sed "s|${DB}-${TOPO}-${ISO}-||")
+  warn "TS auto-detected from latest run: $TS"
+fi
 flock_phase "$ROOT" "collect"
 
 DBCFG="$ROOT/db-config"
