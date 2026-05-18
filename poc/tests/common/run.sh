@@ -86,11 +86,16 @@ for threads in $THREADS_LIST; do
     info "  run threads=$threads round=$r → $RD"
 
     # parallel OS monitors (sample every 1s for run duration)
+    # client-side (.31): characterise driver overhead; db-side (DB_HOST): characterise DB engine saturation
     DUR=$((RUN_SEC + 5))
     ( mpstat 1 "$DUR"  > "$RD/mpstat.txt"  2>&1 ) &
     ( iostat -xz 1 "$DUR" > "$RD/iostat-1s.txt" 2>&1 ) &
     ( vmstat 1 "$DUR"  > "$RD/vmstat-1s.txt"  2>&1 ) &
     ( sar -n DEV 1 "$DUR" > "$RD/sar-net.txt" 2>&1 ) &
+    ( ssh root@"$DB_HOST" "mpstat 1 $DUR"      > "$RD/mpstat-db.txt"    2>&1 ) &
+    ( ssh root@"$DB_HOST" "iostat -xz 1 $DUR"  > "$RD/iostat-1s-db.txt" 2>&1 ) &
+    ( ssh root@"$DB_HOST" "vmstat 1 $DUR"      > "$RD/vmstat-1s-db.txt" 2>&1 ) &
+    ( ssh root@"$DB_HOST" "sar -n DEV 1 $DUR"  > "$RD/sar-net-db.txt"   2>&1 ) &
     ( for ((i=0; i<RUN_SEC/60+1; i++)); do ssh root@"$DB_HOST" free -h >> "$RD/free-1m.txt"; sleep 60; done ) &
     MON_PIDS=$(jobs -p)
 

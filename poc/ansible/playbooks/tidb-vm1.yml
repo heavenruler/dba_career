@@ -13,7 +13,7 @@
     - name: Install TiDB prerequisites (shell dnf, idempotent)
       ansible.builtin.shell: |
         set -e
-        for pkg in curl tar openssh-clients mysql; do
+        for pkg in curl tar openssh-clients mysql sysstat; do
           rpm -q "$pkg" >/dev/null 2>&1 && continue
           if dnf install -y --cacheonly "$pkg" >/dev/null 2>&1; then
             echo "$pkg installed from cache"
