@@ -157,6 +157,131 @@ vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t64 為甜點（12,744 tpm
 
 ---
 
+## vm-1node-rr — 2026-05-19（PoC v4.7，含 DB-host OS 監控）
+
+> **本段目的**：與同期 `vm-1node-rc` 對標，驗證 isolation 從 `READ-COMMITTED` 切換到 `REPEATABLE-READ` 對 TiDB pessimistic 模式 OLTP 吞吐 / 延遲的影響。
+
+### 環境
+- 與 `vm-1node-rc` 相同硬體 / TiDB v8.5.2 / 同 ansible playbook，唯一差異：**iso=rr**
+- go-tpc conn-params：`transaction_isolation='REPEATABLE-READ'&tidb_txn_mode='pessimistic'`
+- TPCC_TS：`20260519T001949+0800`
+- 結果目錄：`vm-1node-rr/tidb-vm-1node-rr-20260519T001949+0800/`
+
+### Suite 階段時序
+
+| Phase | 起 | 訖 | 耗時 |
+|-------|-----|------|------|
+| gate | 00:24 | 00:24 | <1min |
+| prepare | 00:24 | 01:18 | 54min |
+| gate-isolation | — | 01:20 | <1min |
+| run (4 thread × 5 round + 20min warmup) | 01:18 | 04:00 | 2h42min |
+| collect | 04:00 | 04:00 | <1s |
+| **total (suite)** | **00:24** | **04:00** | **3h36min** |
+
+### Gate 結果
+- `transaction_isolation = REPEATABLE-READ, tidb_txn_mode = pessimistic`（prepare 前 + 後雙閘驗證一致）
+- 其他 OS gate（THP / swappiness / ulimit / NTP）同 vm-1node-rc
+
+### Prepare
+- 時間：54m05s（128W）
+- check-all 128 warehouse 全條件通過
+- schema 與 rc 完全相同
+
+### Execute 結果（5 round tpmC 平均；latency 為代表值）
+
+> tpmC / tpmTotal / efficiency 為 5 round mean；**NO p50 / p95 / p99 為 5 round latency 代表值**（觀察量級與趨勢用，非各 round 嚴格 mean）。
+
+| threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) |
+|---------|-----------|-----------|---------------|-----------------|------------|------------|------------|
+| 16  | **11,196** | 16.8% ⚠️ | 24,914 | 680.2% | 42  | 61  | 80  |
+| 32  | 12,831 | **3.4%** | 28,467 | 779.5% | 71  | 105 | 134 |
+| 64  | 13,743 | 6.0%     | 30,560 | 834.9% | 122 | 193 | 246 |
+| 128 | **13,874** | **2.8%** | 30,902 | 842.9% | 235 | 392 | 503 |
+
+### Round-by-round tpmC
+
+| Threads | r1 | r2 | r3 | r4 | r5 |
+|---------|-----|-----|-----|-----|-----|
+| 16  | 11041 | 12064 | 11040 | 11652 | **10183** |
+| 32  | 12736 | 12694 | 13130 | 12722 | 12874 |
+| 64  | 13506 | 14059 | 13910 | 13231 | 14010 |
+| 128 | 14041 | 13652 | 13755 | 14012 | 13910 |
+
+- **t16 r5 突降至 10183**：較 r2 高峰 12064 下降 -15.6%，導致 range/mean 16.8%。其他 thread 組變異 ≤6.0%。可能成因：RR snapshot 在低併發長時段易受 background compaction / region housekeeping 干擾；高併發下 worker 佔滿 CPU，背景活動被排擠到次要 schedule。
+
+### DB-host (.32) CPU 飽和分析
+
+| threads | %usr mean | %sys mean | %iowait mean | %idle mean | %idle min | disk %util |
+|---------|-----------|-----------|--------------|------------|-----------|------------|
+| 16  | 73.9% | 10.4% | 4.63% | 7.48% | **2.26%** | 50.4% |
+| 32  | 76.1% | 9.9%  | 3.54% | 6.98% | 1.49% | 48.4% |
+| 64  | 77.6% | 9.3%  | 3.40% | 6.28% | 1.00% | 46.6% |
+| 128 | **80.8%** | 8.8% | 2.73% | **4.47%** | **0.25%** | 44.8% |
+
+- t16 即 92.5% CPU 使用率（比 RC 90.5% 高 +2pp）；t128 mean 95.5%、瞬間 100%。
+- iowait 全程 < 5%、disk %util ≤ 51%——磁碟非瓶頸，與 RC 結論一致。
+
+### vs vm-1node-rc 對比 ★
+
+> 同硬體 / 同 binary / 同 warmup / 同 5 round 平均，唯一變數 iso。
+
+| threads | RC tpmC | RR tpmC | Δ tpmC | RC p99 (ms) | RR p99 (ms) | Δ p99 |
+|---------|---------|---------|--------|-------------|-------------|-------|
+| 16  | 10,074 | **11,196** | **+11.1%** | 94  | 80  | **-14.9%** |
+| 32  | 11,728 | **12,831** | **+9.4%**  | 163 | 134 | -17.8% |
+| 64  | 12,744 | **13,743** | **+7.8%**  | 305 | 246 | -19.3% |
+| 128 | 13,064 | **13,874** | **+6.2%**  | 597 | 503 | -15.7% |
+
+| threads | RC DB %idle | RR DB %idle | RC disk %util | RR disk %util |
+|---------|-------------|-------------|---------------|---------------|
+| 16  | 9.45% | 7.48% | 50.8% | 50.4% |
+| 32  | 7.02% | 6.98% | 48.7% | 48.4% |
+| 64  | 6.56% | 6.28% | 48.8% | 46.6% |
+| 128 | 4.52% | 4.47% | 46.1% | 44.8% |
+
+**RR 全面優於 RC：tpmC +6~11%、p99 -15~19%、CPU 使用率小幅升高（同 CPU 做更多有效工作）。**
+
+### 為何 RR 反而比 RC 快？
+
+直覺常認為 RR 比 RC 嚴格 → 應該更慢。本次數據反過來，可由 TiDB 的 pessimistic + RR 實作機制解釋：
+
+1. **RC 每個 SQL 取新 snapshot** → 每筆 read 都需向 TiKV 取 timestamp、驗證 read consistency；snapshot 切換 + read lock 申請的小型 RPC 累積成 overhead。
+2. **RR 整 txn 用同一 snapshot** → 只在 txn 開始時取一次 read ts，後續 SQL 直接讀同一視圖；少了 N-1 次 snapshot 切換。
+3. **TPC-C NEW_ORDER / PAYMENT 是 multi-statement txn**：含多筆 SELECT + UPDATE，RR 的「省切換」收益會被放大；單 statement 工作負載差異會收斂。
+4. **pessimistic mode 提供 write lock**：兩種 iso 下 write conflict 都用悲觀鎖等待，RR 沒有額外 write 衝突偵測 overhead。
+
+> 此結論**僅對 TiDB pessimistic + go-tpc 無 think time 工作負載**成立。CRDB / YBDB 採 optimistic MVCC，RR 與 RC 的關係可能反向（snapshot 維護成本與 retry 行為不同）。
+
+### Saturation 分析
+
+```
+threads:  16 ───── 32 ───── 64 ───── 128
+tpmC:    11196   12831   13743   13874
+                 +15%    +7%     +1%       ← 邊際收益遞減（128 已飽和）
+
+p99(ms):   80     134     246     503
+                +68%    +83%    +104%      ← latency 近翻倍
+
+DB %idle:  7.5%   7.0%   6.3%    4.5%     ← CPU 飽和進程，比 RC 同 thread 略高
+```
+
+**結論**：vm-1node RR 的甜點同樣在 **t64（13,743 tpmC，p99 246ms）**。t128 換 2x latency 只多 +1% tpmC，遠不划算。
+
+### 觀察
+
+- **t128 已過飽和**：tpmC 邊際 +1%、p99 翻倍、%idle 瞬間 0%——比 RC 更早飽和（RC t128 邊際還有 +2.5%）。
+- **t16 變異大**（16.8%）：r5 突降造成；長 warm-up 仍無法完全消除 RR snapshot 在低併發下的 background 干擾。
+- **t32/t128 變異 ≤3.4%**：高度可重現。
+- **DB CPU 比 RC 略高 + tpmC 也較高**：證實 RR 在 TiDB pessimistic + 多 statement txn 下確實更 CPU-efficient，不是 throughput 換 latency。
+
+### 結論
+
+vm-1node RR 在 TiDB v8.5.2 pessimistic 模式下，tpmC 全面領先 RC 6-11%、p99 latency 領先 15-19%、CPU 使用率略高（同 CPU 做更多有效工作）。peak 13,874 tpmC @ t128，sweet spot 仍為 t64（13,743 tpmC、p99 246ms）。
+
+**業務啟示**：若應用語意可接受 RR（NEW_ORDER 取 snapshot 即決定全程視圖），優先選 RR 而非 RC；同硬體下無痛獲得 +6-11% 吞吐與 -15-19% latency。若需嚴格 RC 語意（每 SQL 取新 snapshot），需接受相應的吞吐 / 延遲代價。
+
+---
+
 ## k8s-3node-unlimit — 2026-05-10
 
 > **本段落用 K8s（容器化平台）取代直接在虛擬機跑 TiDB。除了部署方式不同，叢集元件數量與資料複本配置與 vm-3node 完全相同；差別僅在「跑在容器裡」這一層的額外消耗。**

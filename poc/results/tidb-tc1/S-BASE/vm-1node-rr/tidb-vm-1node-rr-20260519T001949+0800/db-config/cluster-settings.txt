@@ -1,0 +1,8 @@
+tidb_enable_auto_analyze	tidb_txn_mode
+0	pessimistic
+Type	Instance	Name	Value
+pd	172.24.40.32:2379	replication.max-replicas	1
+pd	172.24.40.32:2379	schedule.leader-schedule-limit	0
+pd	172.24.40.32:2379	schedule.region-schedule-limit	0
+pd	172.24.40.32:2379	schedule.replica-schedule-limit	0
+tikv	172.24.40.32:20160	storage.block-cache.capacity	5GiB
