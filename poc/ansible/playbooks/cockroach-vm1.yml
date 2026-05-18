@@ -1,0 +1,163 @@
+---
+- name: Deploy CockroachDB vm-1node
+  hosts: vm1_db
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    crdb_version: v26.2.0
+    crdb_archive: "cockroach-{{ crdb_version }}.linux-amd64.tgz"
+    crdb_url: "https://binaries.cockroachdb.com/{{ crdb_archive }}"
+    crdb_install_dir: "/opt/cockroach-{{ crdb_version }}"
+    crdb_host: "172.24.40.32"
+  tasks:
+    - name: Install CockroachDB prerequisites
+      ansible.builtin.dnf:
+        name:
+          - curl
+          - tar
+          - gzip
+        state: present
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Create CockroachDB directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      loop:
+        - /data/crdb
+        - "{{ crdb_install_dir }}"
+
+    - name: Download CockroachDB archive
+      ansible.builtin.get_url:
+        url: "{{ crdb_url }}"
+        dest: "/tmp/{{ crdb_archive }}"
+        mode: "0644"
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Extract CockroachDB
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ crdb_archive }}"
+        dest: "{{ crdb_install_dir }}"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+        creates: "{{ crdb_install_dir }}/cockroach"
+
+    - name: Link cockroach binary
+      ansible.builtin.file:
+        src: "{{ crdb_install_dir }}/cockroach"
+        dest: /usr/local/bin/cockroach
+        state: link
+        force: true
+
+    - name: Install CockroachDB systemd unit
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/cockroach.service
+        mode: "0644"
+        content: |
+          [Unit]
+          Description=CockroachDB vm-1node
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          Type=forking
+          User=root
+          LimitNOFILE=1048576
+          ExecStart=/usr/local/bin/cockroach start-single-node --insecure --cache=5GiB --max-sql-memory=3GiB --store=/data/crdb --listen-addr=0.0.0.0:26257 --http-addr=0.0.0.0:8080 --background
+          ExecStop=/usr/local/bin/cockroach quit --insecure --host=127.0.0.1:26257
+          Restart=on-failure
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
+      register: crdb_unit
+
+    - name: Reload systemd for CockroachDB
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+      when: crdb_unit.changed
+
+    - name: Enable and start CockroachDB
+      ansible.builtin.systemd_service:
+        name: cockroach
+        enabled: true
+        state: started
+
+    - name: Wait for CockroachDB SQL port
+      ansible.builtin.wait_for:
+        host: "{{ crdb_host }}"
+        port: 26257
+        timeout: 180
+
+    - name: Apply CockroachDB benchmark settings
+      ansible.builtin.command:
+        cmd: /usr/local/bin/cockroach sql --insecure --host={{ crdb_host }}:26257 -e "SET CLUSTER SETTING sql.stats.automatic_collection.enabled = false; SET CLUSTER SETTING server.host_based_authentication.configuration = 'host all all all trust'; SET CLUSTER SETTING sql.txn.repeatable_read_isolation.enabled = true;"
+      changed_when: false
+
+    - name: Health check CockroachDB
+      ansible.builtin.command:
+        cmd: /usr/local/bin/cockroach sql --insecure --host={{ crdb_host }}:26257 -e "SELECT 1"
+      changed_when: false
+
+- name: Install CockroachDB CLI on TPC-C client
+  hosts: tpcc_client
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    crdb_version: v26.2.0
+    crdb_archive: "cockroach-{{ crdb_version }}.linux-amd64.tgz"
+    crdb_url: "https://binaries.cockroachdb.com/{{ crdb_archive }}"
+    crdb_install_dir: "/opt/cockroach-{{ crdb_version }}"
+  tasks:
+    - name: Install CockroachDB CLI prerequisites
+      ansible.builtin.dnf:
+        name:
+          - curl
+          - tar
+          - gzip
+          - postgresql
+        state: present
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Download CockroachDB archive on client
+      ansible.builtin.get_url:
+        url: "{{ crdb_url }}"
+        dest: "/tmp/{{ crdb_archive }}"
+        mode: "0644"
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Create CockroachDB CLI directory
+      ansible.builtin.file:
+        path: "{{ crdb_install_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Extract CockroachDB CLI
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ crdb_archive }}"
+        dest: "{{ crdb_install_dir }}"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+        creates: "{{ crdb_install_dir }}/cockroach"
+
+    - name: Link cockroach client binary
+      ansible.builtin.file:
+        src: "{{ crdb_install_dir }}/cockroach"
+        dest: /usr/local/bin/cockroach
+        state: link
+        force: true

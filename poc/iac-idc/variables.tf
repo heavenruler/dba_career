@@ -49,7 +49,7 @@ variable "vm_gateway" {
 
 variable "vm_dns" {
   type    = string
-  default = "10.0.1.5"
+  default = "172.19.254.5"
 }
 
 variable "vm_domain" {
@@ -59,17 +59,17 @@ variable "vm_domain" {
 
 variable "vm_template" {
   type    = string
-  default = "temp-almalinux-10.1"
+  default = "poc-template"
 }
 
 variable "vm_custom_attrs" {
   description = "Custom Attributes"
   default = {
-    "AZ"            = "AZ_INFRA_DB"
-    "BillDomain"    = "unknow1"
-    "BillUnit"      = "unknow2"
+    "AZ"             = "AZ_INFRA_DB"
+    "BillDomain"     = "unknow1"
+    "BillUnit"       = "unknow2"
     "DeveloperOwner" = "unknow3"
-    "Group"         = "unknow4"
-    "SystemOwner"   = "unknow5"
+    "Group"          = "unknow4"
+    "SystemOwner"    = "unknow5"
   }
 }

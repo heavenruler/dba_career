@@ -1,0 +1,173 @@
+---
+- name: Deploy YugabyteDB vm-1node
+  hosts: vm1_db
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    yb_version: "2025.2.2.2"
+    yb_build: "b11"
+    yb_archive: "yugabyte-{{ yb_version }}-{{ yb_build }}-linux-x86_64.tar.gz"
+    yb_url: "https://software.yugabyte.com/releases/{{ yb_version }}/{{ yb_archive }}"
+    yb_install_dir: /opt/yugabyte
+    yb_base_dir: /var/yugabyte
+    yb_host: "172.24.40.32"
+    yb_tserver_flags: "memory_limit_hard_bytes=11811160064,db_block_cache_size_percentage=50,durable_wal_write=true,require_durable_wal_write=true,yb_enable_read_committed_isolation=true,ysql_enable_auth=false,ysql_enable_auto_analyze=false"
+  tasks:
+    - name: Install YugabyteDB prerequisites
+      ansible.builtin.dnf:
+        name:
+          - curl
+          - tar
+          - gzip
+          - python3-setuptools
+          - python3-six
+          - postgresql
+        state: present
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Create yugabyte user
+      ansible.builtin.user:
+        name: yugabyte
+        shell: /bin/bash
+        create_home: true
+
+    - name: Create YugabyteDB directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: yugabyte
+        group: yugabyte
+        mode: "0755"
+      loop:
+        - "{{ yb_install_dir }}"
+        - "{{ yb_base_dir }}"
+
+    - name: Download YugabyteDB archive
+      ansible.builtin.get_url:
+        url: "{{ yb_url }}"
+        dest: "/tmp/{{ yb_archive }}"
+        mode: "0644"
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Extract YugabyteDB
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ yb_archive }}"
+        dest: "{{ yb_install_dir }}"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+        creates: "{{ yb_install_dir }}/bin/yugabyted"
+        owner: yugabyte
+        group: yugabyte
+
+    - name: Run YugabyteDB post install
+      ansible.builtin.shell: |
+        {{ yb_install_dir }}/bin/post_install.sh
+        touch {{ yb_install_dir }}/.post_install_done
+      become_user: yugabyte
+      args:
+        creates: "{{ yb_install_dir }}/.post_install_done"
+      failed_when: false
+
+    - name: Link YugabyteDB client binaries
+      ansible.builtin.file:
+        src: "{{ yb_install_dir }}/bin/{{ item }}"
+        dest: "/usr/local/bin/{{ item }}"
+        state: link
+        force: true
+      loop:
+        - yugabyted
+        - ysqlsh
+        - yb-admin
+
+    - name: Check yugabyted status
+      ansible.builtin.command: "{{ yb_install_dir }}/bin/yugabyted status --base_dir={{ yb_base_dir }}"
+      become_user: yugabyte
+      register: yb_status
+      failed_when: false
+      changed_when: false
+
+    - name: Start YugabyteDB RF=1
+      ansible.builtin.command:
+        cmd: "{{ yb_install_dir }}/bin/yugabyted start --base_dir={{ yb_base_dir }} --advertise_address={{ yb_host }} --tserver_flags={{ yb_tserver_flags }}"
+      become_user: yugabyte
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      when: yb_status.rc != 0
+
+    - name: Wait for YSQL port
+      ansible.builtin.wait_for:
+        host: "{{ yb_host }}"
+        port: 5433
+        timeout: 240
+
+    - name: Health check YugabyteDB
+      ansible.builtin.command:
+        cmd: "{{ yb_install_dir }}/bin/ysqlsh -h {{ yb_host }} -p 5433 -U yugabyte -d yugabyte -c \"SELECT 1\""
+      become_user: yugabyte
+      changed_when: false
+
+- name: Install ysqlsh on TPC-C client
+  hosts: tpcc_client
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    yb_version: "2025.2.2.2"
+    yb_build: "b11"
+    yb_archive: "yugabyte-{{ yb_version }}-{{ yb_build }}-linux-x86_64.tar.gz"
+    yb_url: "https://software.yugabyte.com/releases/{{ yb_version }}/{{ yb_archive }}"
+    yb_install_dir: /opt/yugabyte
+  tasks:
+    - name: Install ysqlsh prerequisites
+      ansible.builtin.dnf:
+        name:
+          - curl
+          - tar
+          - gzip
+          - python3-setuptools
+          - python3-six
+          - postgresql
+        state: present
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Create YugabyteDB client directory
+      ansible.builtin.file:
+        path: "{{ yb_install_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Download YugabyteDB archive on client
+      ansible.builtin.get_url:
+        url: "{{ yb_url }}"
+        dest: "/tmp/{{ yb_archive }}"
+        mode: "0644"
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Extract YugabyteDB client tools
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ yb_archive }}"
+        dest: "{{ yb_install_dir }}"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+        creates: "{{ yb_install_dir }}/bin/ysqlsh"
+
+    - name: Link ysqlsh client binary
+      ansible.builtin.file:
+        src: "{{ yb_install_dir }}/bin/ysqlsh"
+        dest: /usr/local/bin/ysqlsh
+        state: link
+        force: true

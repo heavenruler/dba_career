@@ -1,0 +1,200 @@
+---
+- name: Deploy TiDB vm-1node
+  hosts: vm1_db
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    tidb_cluster_name: tpcc-tidb
+    tidb_version: v8.5.2
+    tidb_host: "172.24.40.32"
+    tidb_topology_path: /root/tidb-vm1-topology.yaml
+  tasks:
+    - name: Install TiDB prerequisites
+      ansible.builtin.dnf:
+        name:
+          - curl
+          - tar
+          - openssh-clients
+          - mysql
+        state: present
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Ensure root SSH key exists for tiup cluster
+      ansible.builtin.user:
+        name: root
+        generate_ssh_key: true
+        ssh_key_bits: 4096
+        ssh_key_file: /root/.ssh/id_rsa
+
+    - name: Read root public key
+      ansible.builtin.slurp:
+        src: /root/.ssh/id_rsa.pub
+      register: tidb_root_pubkey
+
+    - name: Ensure root authorized_keys exists
+      ansible.builtin.file:
+        path: /root/.ssh/authorized_keys
+        state: touch
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Authorize root key locally for tiup cluster SSH
+      ansible.builtin.lineinfile:
+        path: /root/.ssh/authorized_keys
+        line: "{{ tidb_root_pubkey.content | b64decode | trim }}"
+        state: present
+
+    - name: Install TiUP
+      ansible.builtin.shell: |
+        curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
+      args:
+        creates: /root/.tiup/bin/tiup
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Add TiUP to root profile
+      ansible.builtin.lineinfile:
+        path: /root/.bash_profile
+        line: 'export PATH=$PATH:/root/.tiup/bin'
+        create: true
+        mode: "0644"
+
+    - name: Install tiup cluster component
+      ansible.builtin.command: /root/.tiup/bin/tiup install cluster
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: Render TiDB vm-1node topology
+      ansible.builtin.copy:
+        dest: "{{ tidb_topology_path }}"
+        mode: "0644"
+        content: |
+          global:
+            user: "tidb"
+            ssh_port: 22
+            deploy_dir: "/tidb-deploy"
+            data_dir: "/tidb-data"
+
+          server_configs:
+            tidb:
+              mem-quota-query: 3221225472
+              performance.feedback-probability: 0
+            tikv:
+              storage.block-cache.capacity: "5GB"
+              raftstore.sync-log: true
+            pd:
+              replication.max-replicas: 1
+              schedule.leader-schedule-limit: 0
+              schedule.region-schedule-limit: 0
+              schedule.replica-schedule-limit: 0
+
+          pd_servers:
+            - host: {{ tidb_host }}
+              client_port: 2379
+              peer_port: 2380
+              deploy_dir: "/tidb-deploy/pd-2379"
+              data_dir: "/tidb-data/pd-2379"
+              log_dir: "/tidb-deploy/pd-2379/log"
+
+          tidb_servers:
+            - host: {{ tidb_host }}
+              port: 4000
+              status_port: 10080
+              deploy_dir: "/tidb-deploy/tidb-4000"
+              log_dir: "/tidb-deploy/tidb-4000/log"
+
+          tikv_servers:
+            - host: {{ tidb_host }}
+              port: 20160
+              status_port: 20180
+              deploy_dir: "/tidb-deploy/tikv-20160"
+              data_dir: "/tidb-data/tikv-20160"
+              log_dir: "/tidb-deploy/tikv-20160/log"
+      register: tidb_topology
+
+    - name: Check existing TiDB cluster
+      ansible.builtin.command: /root/.tiup/bin/tiup cluster display {{ tidb_cluster_name }}
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      register: tidb_cluster_display
+      failed_when: false
+      changed_when: false
+
+    - name: Deploy TiDB cluster
+      ansible.builtin.command:
+        cmd: /root/.tiup/bin/tiup cluster deploy {{ tidb_cluster_name }} {{ tidb_version }} {{ tidb_topology_path }} --yes -i /root/.ssh/id_rsa
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      when: tidb_cluster_display.rc != 0
+
+    - name: Reload TiDB cluster config when topology changed
+      ansible.builtin.command:
+        cmd: /root/.tiup/bin/tiup cluster reload {{ tidb_cluster_name }} --yes
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      when:
+        - tidb_cluster_display.rc == 0
+        - tidb_topology.changed
+
+    - name: Start TiDB cluster
+      ansible.builtin.command:
+        cmd: /root/.tiup/bin/tiup cluster start {{ tidb_cluster_name }}
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      register: tidb_start
+      changed_when: "'Started cluster' in (tidb_start.stdout + tidb_start.stderr)"
+      failed_when:
+        - tidb_start.rc != 0
+        - "'already started' not in (tidb_start.stdout + tidb_start.stderr)"
+
+    - name: Wait for TiDB SQL port
+      ansible.builtin.wait_for:
+        host: "{{ tidb_host }}"
+        port: 4000
+        timeout: 180
+
+    - name: Apply TiDB benchmark settings
+      ansible.builtin.command:
+        cmd: mysql -h {{ tidb_host }} -P 4000 -uroot -e "SET GLOBAL tidb_enable_auto_analyze=OFF; SET GLOBAL tidb_txn_mode='pessimistic';"
+      changed_when: false
+
+    - name: Health check TiDB
+      ansible.builtin.command:
+        cmd: mysql -h {{ tidb_host }} -P 4000 -uroot -e "SELECT 1"
+      changed_when: false
+
+- name: Install TiDB client tooling on TPC-C client
+  hosts: tpcc_client
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+  tasks:
+    - name: Install mysql client prerequisites
+      ansible.builtin.dnf:
+        name:
+          - curl
+          - mysql
+        state: present
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Install TiUP on client
+      ansible.builtin.shell: |
+        curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
+      args:
+        creates: /root/.tiup/bin/tiup
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
