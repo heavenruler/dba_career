@@ -4,119 +4,154 @@
 
 ---
 
-## vm-1node-rc — 2026-05-18（PoC v4.7 baseline，5 round × 5 min × 4 threads）
+## vm-1node-rc — 2026-05-18（PoC v4.7 baseline，含 DB-host OS 監控）
 
-> **本段目的**：在 PoC v4.7 新框架（detached suite wrapper + 多輪平均 + isolation 雙閘）下重建 vm-1node RC 基準，取代 2026-05-07 單次 10 min 結果作為後續 rr/strict 與其他 DB 對標的可重現基線。
+> **本段目的**：PoC v4.7 框架下的 vm-1node RC 正式 baseline，配套：detached suite wrapper、多輪平均、isolation 雙閘、**client + DB-host 雙邊 OS 監控**。取代 2026-05-07 單次 10 min 結果，作為後續 rr/strict 與其他 DB 對標的可重現基線。
 
 ### 環境
 - 節點：.32 (172.24.40.32) 單節點，PD + TiDB + TiKV 同主機部署，RF=1
+- 硬體：4 vCPU、15 GiB RAM、單 sda 盤（XFS）
 - TiDB 版本：v8.5.2
 - 部署工具：TiUP via ansible playbook `tidb-vm1.yml`（含 systemd drop-in `no-proxy.conf` 避免 gRPC 經 HTTP proxy）
 - AUTO ANALYZE：**停用**（`SET GLOBAL tidb_enable_auto_analyze = OFF`）+ `tidb_txn_mode='pessimistic'`
 - 連線入口：直連 172.24.40.32:4000
 - 測試工具：go-tpc on .31（MySQL driver，`--conn-params transaction_isolation='READ-COMMITTED'&tidb_txn_mode='pessimistic'`）
 - Warehouses：128
-- Warmup：**20 min @ 64 threads**（取代舊版 5 min，理由：見 2026-05-17 warmup duration 觀察）
-- Run：**每組 5 round × 5 min**（取代舊版單次 10 min，可得 round-to-round variance）
-- Threads：16 / 32 / 64 / 128（共 4 組，每組 5 round，總 run 時長 2h41min）
-- TPCC_TS：`20260518T154918+0800`
-- 結果目錄：`vm-1node-rc/tidb-vm-1node-rc-20260518T154918+0800/`
+- Warmup：**20 min @ 64 threads**
+- Run：**每組 5 round × 5 min**（多輪平均，取 round-to-round variance）
+- Threads：16 / 32 / 64 / 128（共 4 組，每組 5 round，總 run 時長 2h42min）
+- OS 監控：mpstat / iostat / vmstat / sar 同時在 client (`.31`) 與 db-host (`.32`) 採樣 1s 粒度，per round 各自輸出 `*.txt` / `*-db.txt`
+- TPCC_TS：`20260518T202009+0800`
+- 結果目錄：`vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/`
 
 ### Suite 階段時序
 
 | Phase | 起 | 訖 | 耗時 |
 |-------|-----|------|------|
-| gate (OS / chrony / disk / iso pre) | 15:59 | 15:59 | <1min |
-| prepare (128W + check-all + analyze + explain) | 15:59 | 16:53 | 54min |
-| gate-isolation (post-prepare active gate) | — | 16:54 | <1min |
-| run (4 thread × 5 round + 20min warmup) | 16:54 | 19:35 | 2h41min |
-| collect (DB log tail + config dump + env snapshot) | 19:35 | 19:35 | <1s |
-| **total (suite)** | **15:49** | **19:35** | **3h46min** |
+| gate (OS / chrony / disk / iso pre) | 20:25 | 20:25 | <1min |
+| prepare (128W + check-all + analyze + explain) | 20:25 | 21:17 | 52min |
+| gate-isolation (post-prepare active gate) | — | 21:19 | <1min |
+| run (4 thread × 5 round + 20min warmup) | 21:17 | 23:59 | 2h42min |
+| collect (DB log tail + config dump + env snapshot) | 23:59 | 23:59 | <1s |
+| **total (suite)** | **20:25** | **23:59** | **3h35min** |
+
+> vs 2026-05-18 15:49 同流程的 3h46min 縮短 11min，主因 `new-idc-vms` 改為 `dnf makecache` 並行 + growpart 並行（Makefile）。
 
 ### Gate 結果
 - `transaction_isolation = READ-COMMITTED, tidb_txn_mode = pessimistic`（prepare 前 + 後雙閘驗證一致）
 - THP=`never`、`vm.swappiness=1`、`ulimit -n=65536`
-- NTP drift：System time `0.000084s slow of NTP time`（遠低於 1ms 閾值）
+- NTP drift：System time slow of NTP time `~0.0001s`（遠低於 1ms 閾值）
 - disk：sda3 已 growpart 至 100GB
 
 ### Prepare
-- 時間：54m05s（128W）
+- 時間：52m02s（128W）
 - check-all 128 warehouse 全條件通過，無 error
 - TiDB schema：`CLUSTERED PK`，CHARSET=utf8mb4，COLLATE=utf8mb4_bin
 
 ### Execute 結果（5 round 平均）
 
-> （tpmC：越高越好；NO p99：越低越好；efficiency 遠超 100% 屬正常，原因見 vm-1node Execute 結果說明）
+> （tpmC：越高越好；NO p99：越低越好；efficiency 遠超 100% 屬正常）
 >
 > `range/mean` = `(5 round 最大 tpmC - 最小 tpmC) / 5 round 平均 tpmC`，用來看同一併發水位的 round-to-round 波動；數值越低代表重現性越好。
 >
-> `efficiency mean` 為 5 round 的 go-tpc efficiency 平均值。TPC-C 標準模型中的 think time 是使用者看畫面、思考下一步的等待時間；keying time 是使用者輸入訂單、付款等資料的時間。本 PoC 取消這兩種人類操作停頓，worker 送完一筆交易後幾乎立刻送下一筆，讓資料庫持續滿載，因此 efficiency 遠超 100% 屬正常，不需另列異常原因。
+> `efficiency mean` 為 5 round 的 go-tpc efficiency 平均值。TPC-C 標準模型中的 think time 是使用者看畫面、思考下一步的等待時間；keying time 是使用者輸入訂單、付款等資料的時間。本 PoC 取消這兩種人類操作停頓，worker 送完一筆交易後幾乎立刻送下一筆，讓資料庫持續滿載，因此 efficiency 遠超 100% 屬正常。
 
 | threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) |
 |---------|-----------|-----------|---------------|-----------------|------------|------------|------------|
-| 16  | **9,677**  | 7.4%   | 21,546 | 587.9%   | 52    | 76    | 96   |
-| 32  | 10,987 | **18.8%** ⚠️ | 24,396 | 667.4%   | 94    | 138   | 176  |
-| 64  | 12,838 | 9.6%   | 28,481 | 779.9%   | 156   | 235   | 305  |
-| 128 | **13,209** | 5.9%   | 29,305 | 802.4%   | 289   | 473   | 612  |
+| 16  | **10,074** | 8.3% | 22,367 | 612.0% | 50    | 75    | 94   |
+| 32  | 11,728 | **5.0%** | 26,052 | 712.5% | 88    | 130   | 163  |
+| 64  | 12,744 | 7.9% | 28,317 | 774.2% | 159   | 235   | 305  |
+| 128 | **13,064** | 8.3% | 29,034 | 793.7% | 289   | 469   | 597  |
 
 ### Round-by-round tpmC（檢驗穩定性）
 
 | Threads | r1 | r2 | r3 | r4 | r5 |
 |---------|-----|-----|-----|-----|-----|
-| 16  | 9377  | 10036 | 9468  | 9411  | 10094 |
-| 32  | 10638 | 9702  | 11136 | 11769 | 11688 |
-| 64  | 12349 | 13576 | 12464 | 12800 | 13001 |
-| 128 | 13331 | 13240 | 13241 | 13508 | 12723 |
+| 16  | 9803  | 10574 | 9735  | 9907  | 10349 |
+| 32  | 11931 | 11945 | 11358 | 11706 | 11698 |
+| 64  | 12545 | 13195 | 13046 | 12189 | 12744 |
+| 128 | 13637 | 12555 | 12711 | 13433 | 12984 |
 
-- **32 threads 變異最大**（range/mean 18.8%）：round-2 (9702) vs round-4 (11769) 差 21%；其他組均 ≤10%。
-- 推測 32t 處於 cache hit / commit batching 的 transition zone，建議 rr/strict 重跑時將 WARMUP_SEC 從 1200 提至 1800 觀察是否收斂。
+- **t32 變異 5.0%**：相對 2026-05-18 15:49 同流程的 18.8% 改善顯著。本輪 t16 的 5 round 等同延長熱身，t32 進入較穩態的 TiKV cache / region 分布。建議所有後續對標保留「先跑低 thread 暖機」模式。
 
-### vs vm-1node (2026-05-07, 10 min 單次) 對比
+### DB-host (.32) CPU 飽和分析 ★（本輪新增監控結果）
 
-| threads | 2026-05-07 (10min×1) | 2026-05-18 (5min×5 avg) | 差異 | 解讀 |
-|---------|---------------------|------------------------|------|------|
-| 16  | 11,895 | 9,677  | **-18.6%** | 短 run 噪聲較大；舊版單次可能落在偏高側 |
-| 32  | 12,767 | 10,987 | -13.9% | 同上，但 32t 變異尤其大（見上表）|
-| 64  | 13,355 | 12,838 | -3.9%  | 接近，落在統計誤差內 |
-| 128 | 13,079 | 13,209 | +1.0%  | 一致 |
+> **核心問題**：vm-1node 在 4 vCPU 下，吞吐天花板的成因是什麼？  
+> **回答**：**.32 在 t16 即達 90% CPU**，t128 mean 95.5% / 瞬間 100%，**CPU 是唯一硬天花板，磁碟與 iowait 全程非瓶頸**。
 
-**啟示**：高併發（64t/128t）穩定可重現；低併發（16t/32t）短 run 噪聲顯著，**多輪平均比單次更準確**，建議所有後續對標採 5 round × 5 min 為標準。
+#### 1. mpstat-db.txt — 4 vCPU 平均使用率（round-3 mid-run，每組 305 個 1s 樣本）
 
-### Saturation 分析
+| threads | %usr mean | %sys mean | %iowait mean | %idle mean | %idle min |
+|---------|-----------|-----------|--------------|------------|-----------|
+| 16  | 71.3% | 11.0% | 4.56% | 9.45% | **4.00%** |
+| 32  | 75.0% | 10.4% | 3.96% | 7.02% | **1.24%** |
+| 64  | 76.9% | 9.7%  | 3.41% | 6.56% | **0.75%** |
+| 128 | **80.1%** | 9.0% | 3.08% | **4.52%** | **0.00%** |
+
+#### 2. iostat-1s-db.txt — sda 磁碟壓力（round-3 mid-run 平均）
+
+| threads | r/s | w/s | rkB/s+wkB/s | %util |
+|---------|-----|-----|-------------|-------|
+| 16  | 1162 | 769 | 40,310 | 50.8% |
+| 32  | 1418 | 658 | 40,484 | 48.7% |
+| 64  | 1285 | 584 | 33,462 | 48.8% |
+| 128 | 1509 | 501 | 44,508 | 46.1% |
+
+#### 3. 飽和歸因（從監控數據得出，非推測）
+
+| 假設 | 驗證 | 證據 |
+|------|------|------|
+| t64 是甜點、t128 飽和 | ✓ tpmC + CPU 雙重證據 | tpmC 64→128 僅 +2.5%；%idle 6.56%→4.52%，**瞬間跌到 0** |
+| 飽和成因是 CPU | ✓ | %user 71%→80% 持續上升；iowait 反而隨 thread 上升而下降（從 4.6%→3.1%） |
+| 磁碟非瓶頸 | ✓ | %util 全程 ≤51%；wkB/s 與 thread 數無正相關，反而 t128 read-heavy → write-light |
+| iowait 是次要訊號 | ✓ | iowait < 5% 全程，且 inverse-correlated with throughput（CPU 越滿，等 IO 比例越小） |
+
+#### 4. 為何 t16 已 90% CPU 仍可成長到 13k tpmC？
+
+t16 → t128 的 tpmC 成長 **+29.7%**（10074 → 13064），對應 %idle 下降 **9.45% → 4.52%**（即 real CPU 從 90.5% → 95.5%）。  
+換算：CPU 利用率剩餘空間 9.5% → 4.5% = **被擠出 5% CPU room**，但 tpmC 卻成長 30%——表示 thread context-switch、commit batching、Raft 寫批量化在 thread 上升時把每 CPU-cycle 的「有效工作量」放大了；當 %idle 接近 0（t128 r1 13637 vs r2 12555 差 8%），噪聲就主導。
+
+### vs 同流程歷史對比
+
+| threads | 2026-05-07 (10min×1) | 2026-05-18 15:49 (5min×5) | 2026-05-18 20:25 (本輪) | 本輪 vs 前次 |
+|---------|---------------------|--------------------------|------------------------|--------------|
+| 16  | 11,895 | 9,677  | **10,074** | +4.1% |
+| 32  | 12,767 | 10,987 | **11,728** | +6.7% |
+| 64  | 13,355 | 12,838 | **12,744** | -0.7% |
+| 128 | 13,079 | 13,209 | **13,064** | -1.1% |
+
+- t64 / t128 **完全可重現**（差 ±1%）；t16 / t32 有 4-7% 偏高，但本輪 t32 變異從 18.8% → 5.0% 改善 → 多輪平均的穩定性比上輪好。
+
+### Saturation 分析（更新版）
 
 ```
 threads:  16 ───── 32 ───── 64 ───── 128
-tpmC:    9677    10987   12838    13209
-                 +14%    +17%     +3%       ← 邊際收益崩潰
-p99(ms):   96      176     305     612
-                +84%    +73%    +101%       ← latency 翻倍
+tpmC:    10074   11728   12744    13064
+                 +16%    +9%      +2.5%      ← 邊際收益遞減
+
+p99(ms):   94     163     305      597
+                 +73%    +87%     +96%       ← latency 接近翻倍
+
+DB %idle:  9.4%   7.0%   6.6%     4.5%      ← CPU 飽和進程
+DB %iowait:4.6%   4.0%   3.4%     3.1%      ← IO 始終非瓶頸
+DB disk%util: 50.8 48.7  48.8     46.1%     ← 磁碟未滿
 ```
 
-**結論**：vm-1node RC 的甜點在 **64 threads**。128 threads 只多 +3% throughput 換來 2x latency，已過飽和點。
+**結論**：vm-1node RC 的甜點在 **t64（12,744 tpmC）**。t128 換 2x latency 只多 2.5% tpmC，不划算；**真正天花板是 4 vCPU**，磁碟有大量餘裕（%util ≤51%）。要突破 13k tpmC 只能加 CPU 核心或分散到多節點。
 
 ### 觀察
 
-- **tpmC 隨併發溫和成長至 64t**：9,677 → 10,987 → 12,838，scaling 還在線性區間。
-- **64 → 128 邊際收益僅 +3%**：明確的飽和訊號；單節點 16GB RAM + 4 vCPU 的天花板在這個工作負載大約是 13k tpmC。
-- **latency 在 64t 之後翻倍**：p99 305ms → 612ms，但都遠低於 1s，無 hang 風險。
-- **效率比舊版略低**：efficiency 顯示 588-802%（舊版 723-811%），與 tpmC 一致；新方法多輪平均較保守。
-- **memory 健康**：DB host 11Gi used / 15Gi total（73%），無 swap，block-cache 5GB + mem-quota 3GB 配置合適。
-
-### 缺陷與限制 ⚠️
-
-1. **無 DB-host 端 OS 監控**（嚴重）
-   `mpstat / iostat / vmstat / sar` 全部跑在 **TPCC client `.31`**，CPU 88-93% idle 只能證明客戶端不是瓶頸，**無法**回答以下關鍵問題：
-   - `.32` TiKV 是 CPU-bound 還是 IO-bound？
-   - 128t 飽和真實成因是 commit batching、Raft replication、還是磁碟 fsync？
-   - 32t round 間變異 18.8% 是否對應 `.32` 上 background compaction / GC 噪聲？
-
-   **修法**：`run.sh` 已修：所有監控指令同時 ssh 採樣到 `.32`，輸出 `*-db.txt` 對照檔（見 commit）。
-
-2. **`efficiency > 100%` 不可與 TPC-C 官網數字直接比**：go-tpc 不打 keying/think time，是本 PoC 內部對標的相對指標。
+- **t64 是甜點**：5 round mean 12,744 tpmC、p99 305ms，CPU %idle 仍 6.6%（不到 100% 死頂）。
+- **t128 已過飽和**：p99 突破 600ms、tpmC 邊際 +2.5%；瞬間 %idle 0% 表示已撞牆。
+- **rebuild + parallel growpart 省 11min**：總 suite 從 3h46 縮到 3h35（並行 stage 帶來的 11min 節省幾乎全來自 Makefile 改動）。
+- **memory 健康**：DB host 11Gi used / 15Gi total（73%），無 swap，block-cache 5GB + mem-quota 3GB 配置適中。
+- **`efficiency > 100%` 屬正常**：go-tpc 不打 keying/think time，是本 PoC 內部對標的相對指標，**不可與 TPC-C 官網數字直接比**。
 
 ### 結論
 
-vm-1node RC 在 PoC v4.7 框架下穩定可重現，**64 threads 為甜點，128 threads 已飽和**。本輪資料作為後續 `vm-1node-rr`、`vm-1node-strict`、以及 CRDB/YBDB 對標的 baseline。`run.sh` 已補上 DB-host 端監控；下輪測試可直接觀察 TiKV CPU / disk %util 並回答上述瓶頸歸因問題。
+vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t64 為甜點（12,744 tpmC），t128 已飽和，硬天花板是 .32 的 4 vCPU**（iowait < 5%，disk %util < 51%）。DB-host 端 OS 監控已正式生效，後續所有 baseline 都帶有 saturation 證據可供歸因分析。
+
+本輪資料作為後續 `vm-1node-rr`、`vm-1node-strict`、以及 CRDB/YBDB 對標的 baseline。預期 vm-3node 把 TiKV 分散到 3 台後可線性 scale tpmC（CPU 天花板從 4 vCPU 變成 12 vCPU），需用本輪同樣的 DB-host 監控驗證。
 
 ---
 
