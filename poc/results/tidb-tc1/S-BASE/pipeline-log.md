@@ -47,6 +47,8 @@
 ### Execute 結果（5 round 平均）
 
 > （tpmC：越高越好；NO p99：越低越好；efficiency 遠超 100% 屬正常，原因見 vm-1node Execute 結果說明）
+>
+> `range/mean` = `(5 round 最大 tpmC - 最小 tpmC) / 5 round 平均 tpmC`，用來看同一併發水位的 round-to-round 波動；數值越低代表重現性越好。`efficiency mean` 為 5 round 的 go-tpc efficiency 平均值；本 PoC 取消 think time / keying time，worker 持續滿載送交易，因此 efficiency 遠超 100% 屬正常，不需另列異常原因。
 
 | threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) |
 |---------|-----------|-----------|---------------|-----------------|------------|------------|------------|
