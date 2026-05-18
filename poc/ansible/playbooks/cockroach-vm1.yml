@@ -11,16 +11,23 @@
     crdb_install_dir: "/opt/cockroach-{{ crdb_version }}"
     crdb_host: "172.24.40.32"
   tasks:
-    - name: Install CockroachDB prerequisites
-      ansible.builtin.dnf:
-        name:
-          - curl
-          - tar
-          - gzip
-        state: present
+    - name: Install CockroachDB prerequisites (shell dnf, idempotent)
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar gzip sysstat; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          if dnf install -y --cacheonly "$pkg" >/dev/null 2>&1; then
+            echo "$pkg installed from cache"
+          else
+            dnf install -y --setopt=keepcache=1 "$pkg"
+          fi
+        done
+      args:
+        executable: /bin/bash
       environment:
         http_proxy: "{{ proxy_url }}"
         https_proxy: "{{ proxy_url }}"
+      changed_when: false
 
     - name: Create CockroachDB directories
       ansible.builtin.file:
@@ -119,17 +126,23 @@
     crdb_url: "https://binaries.cockroachdb.com/{{ crdb_archive }}"
     crdb_install_dir: "/opt/cockroach-{{ crdb_version }}"
   tasks:
-    - name: Install CockroachDB CLI prerequisites
-      ansible.builtin.dnf:
-        name:
-          - curl
-          - tar
-          - gzip
-          - postgresql
-        state: present
+    - name: Install CockroachDB CLI prerequisites (shell dnf, idempotent)
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar gzip postgresql sysstat; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          if dnf install -y --cacheonly "$pkg" >/dev/null 2>&1; then
+            echo "$pkg installed from cache"
+          else
+            dnf install -y --setopt=keepcache=1 "$pkg"
+          fi
+        done
+      args:
+        executable: /bin/bash
       environment:
         http_proxy: "{{ proxy_url }}"
         https_proxy: "{{ proxy_url }}"
+      changed_when: false
 
     - name: Download CockroachDB archive on client
       ansible.builtin.get_url:
