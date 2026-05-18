@@ -138,7 +138,7 @@ vm-1node 拓撲使用 **single-node + RF=1**，三家都**排除了多副本 quo
 | **vm-1node-strict**（各家最強） | REPEATABLE READ（與 rr 同，TiDB native 最強）| **SERIALIZABLE**（預設） | **SERIALIZABLE** |
 
 > 注意 1：vm-1node-strict 不是三家「對齊隔離級」的比較，而是「**各家在自家最強隔離下的 OLTP 表現**」。
-> 注意 2：**TiDB rr 與 strict 完全等價**（TiDB 不支援 SERIALIZABLE，REPEATABLE READ 已是 native 最強）。仍跑兩組 artifact 以維持矩陣對稱，預期數字接近。
+> 注意 2：**TiDB rr 與 strict 完全等價**（TiDB 不支援 SERIALIZABLE，REPEATABLE READ 已是 native 最強）。本實作將 `tidb:strict` 在 `tests/common/lib/common.sh` alias 到 `tidb:rr`；為避免重跑同設定 ~3.6h 但無資訊增量，**TiDB strict artifact 略過**，後續報表以 `vm-1node-rr` 作 TiDB native strictest 代表（CRDB / YBDB 仍跑 strict，因有原生 SSI / SI）。
 > 注意 3：**CRDB rr 為 preview feature**，需 cluster setting opt-in；行為與 SI/RR 標準語義可能有微差，報告須標 preview 警語。
 
 **預期觀察（探索性假設，僅為設計時參考，非官方 benchmark spec，以實測為準）**：
