@@ -111,6 +111,12 @@ new-idc-vms: drop-idc-vms
 	for ip in $(IDC_KNOWN); do ssh-keygen -R $$ip || true; done
 	ssh -o StrictHostKeyChecking=accept-new root@$(IDC_ADMIN) \
 	  'for ip in $(IDC_NODES); do ssh-keygen -R $$ip; done'
+	@echo "==> expanding root partition on IDC nodes (sda3 → 100G)"
+	@for ip in $(IDC_NODES); do \
+	  echo "  -> $$ip"; \
+	  ssh -o StrictHostKeyChecking=accept-new root@$$ip \
+	    'dnf install -y -q cloud-utils-growpart && growpart /dev/sda 3 && xfs_growfs / && df -h /'; \
+	done
 
 new-gcp-vms: drop-gcp-vms
 	cd $(GCP_IAC_DIR) && terraform apply -auto-approve

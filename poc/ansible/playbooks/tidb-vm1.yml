@@ -10,17 +10,49 @@
     tidb_host: "172.24.40.32"
     tidb_topology_path: /root/tidb-vm1-topology.yaml
   tasks:
-    - name: Install TiDB prerequisites
-      ansible.builtin.dnf:
-        name:
-          - curl
-          - tar
-          - openssh-clients
-          - mysql
-        state: present
+    - name: Install TiDB prerequisites (shell dnf, idempotent)
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar openssh-clients mysql; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          if dnf install -y --cacheonly "$pkg" >/dev/null 2>&1; then
+            echo "$pkg installed from cache"
+          else
+            dnf install -y --setopt=keepcache=1 "$pkg"
+          fi
+        done
+      args:
+        executable: /bin/bash
       environment:
         http_proxy: "{{ proxy_url }}"
         https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: OS tuning (swappiness / THP / ulimit)
+      ansible.builtin.shell: |
+        set -e
+        sysctl -w vm.swappiness=1
+        echo "vm.swappiness = 1" > /etc/sysctl.d/99-tidb.conf
+        echo never > /sys/kernel/mm/transparent_hugepage/enabled
+        echo never > /sys/kernel/mm/transparent_hugepage/defrag
+        grep -q "transparent_hugepage" /etc/rc.d/rc.local 2>/dev/null || {
+          echo 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' >> /etc/rc.d/rc.local
+          echo 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'  >> /etc/rc.d/rc.local
+          chmod +x /etc/rc.d/rc.local
+        }
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Set ulimit nofile for root and all users
+      ansible.builtin.copy:
+        dest: /etc/security/limits.d/99-tidb.conf
+        mode: "0644"
+        content: |
+          root soft nofile 65536
+          root hard nofile 65536
+          * soft nofile 65536
+          * hard nofile 65536
 
     - name: Ensure root SSH key exists for tiup cluster
       ansible.builtin.user:
@@ -87,6 +119,7 @@
             tidb:
               mem-quota-query: 3221225472
               performance.feedback-probability: 0
+              performance.run-auto-analyze: false
             tikv:
               storage.block-cache.capacity: "5GB"
               raftstore.sync-log: true
@@ -146,6 +179,35 @@
         - tidb_cluster_display.rc == 0
         - tidb_topology.changed
 
+    - name: Ensure systemd drop-in dirs exist for TiDB cluster services
+      ansible.builtin.file:
+        path: "/etc/systemd/system/{{ item }}.service.d"
+        state: directory
+        mode: "0755"
+      loop:
+        - tikv-20160
+        - pd-2379
+        - tidb-4000
+
+    - name: Unset proxy for TiDB cluster services (gRPC C core ignores CIDR in no_proxy)
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/{{ item }}.service.d/no-proxy.conf"
+        mode: "0644"
+        content: |
+          [Service]
+          Environment="http_proxy="
+          Environment="https_proxy="
+          Environment="HTTP_PROXY="
+          Environment="HTTPS_PROXY="
+      loop:
+        - tikv-20160
+        - pd-2379
+        - tidb-4000
+
+    - name: Reload systemd after drop-in
+      ansible.builtin.systemd:
+        daemon_reload: true
+
     - name: Start TiDB cluster
       ansible.builtin.command:
         cmd: /root/.tiup/bin/tiup cluster start {{ tidb_cluster_name }}
@@ -180,15 +242,23 @@
   vars:
     proxy_url: "http://sproxy.104-dev.com.tw:3128"
   tasks:
-    - name: Install mysql client prerequisites
-      ansible.builtin.dnf:
-        name:
-          - curl
-          - mysql
-        state: present
+    - name: Install mysql client prerequisites (shell dnf, idempotent)
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl mysql; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          if dnf install -y --cacheonly "$pkg" >/dev/null 2>&1; then
+            echo "$pkg installed from cache"
+          else
+            dnf install -y --setopt=keepcache=1 "$pkg"
+          fi
+        done
+      args:
+        executable: /bin/bash
       environment:
         http_proxy: "{{ proxy_url }}"
         https_proxy: "{{ proxy_url }}"
+      changed_when: false
 
     - name: Install TiUP on client
       ansible.builtin.shell: |
