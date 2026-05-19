@@ -63,11 +63,11 @@ get_conn_params() {
     tidb:rr|tidb:strict)
       echo "transaction_isolation=%27REPEATABLE-READ%27&tidb_txn_mode=%27pessimistic%27" ;;
     crdb:rc|ybdb:rc)
-      echo "options=-c%20default_transaction_isolation%3Dread%20committed" ;;
+      echo "sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed" ;;
     crdb:rr|ybdb:rr)
-      echo "options=-c%20default_transaction_isolation%3Drepeatable%20read" ;;
+      echo "sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read" ;;
     crdb:strict|ybdb:strict)
-      echo "options=-c%20default_transaction_isolation%3Dserializable" ;;
+      echo "sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable" ;;
     *)
       die "unknown <db>:<iso> = $db:$iso" ;;
   esac
