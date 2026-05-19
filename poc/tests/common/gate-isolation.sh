@@ -83,7 +83,7 @@ case "$DB" in
       --conn-params "$ISO_CONN_PARAMS" --warehouses=1 --time=2s --threads=1 --output=plain \
       2>&1 | tee "$GATE_DIR/isolation-driver.txt"
     psql "postgres://${CRDB_USER:-root}@${DB_HOST}:${CRDB_PORT:-26257}/${CRDB_DB:-tpcc}?${ISO_CONN_PARAMS}" \
-      -v ON_ERROR_STOP=1 -At -c "BEGIN; SHOW transaction_isolation; COMMIT;" \
+      -v ON_ERROR_STOP=1 -At -c "SHOW transaction_isolation" \
       > "$GATE_DIR/isolation-driver-verify.txt" 2>&1
     DRIVER_ACTUAL=$(grep -E '^(read committed|repeatable read|serializable)$' "$GATE_DIR/isolation-driver-verify.txt" | tail -1)
     ;;
@@ -92,7 +92,7 @@ case "$DB" in
       --conn-params "$ISO_CONN_PARAMS" --warehouses=1 --time=2s --threads=1 --output=plain \
       2>&1 | tee "$GATE_DIR/isolation-driver.txt"
     psql "postgres://${YBDB_USER:-yugabyte}@${DB_HOST}:${YBDB_PORT:-5433}/${YBDB_DB:-tpcc}?${ISO_CONN_PARAMS}" \
-      -v ON_ERROR_STOP=1 -At -c "BEGIN; SHOW transaction_isolation; COMMIT;" \
+      -v ON_ERROR_STOP=1 -At -c "SHOW transaction_isolation" \
       > "$GATE_DIR/isolation-driver-verify.txt" 2>&1
     DRIVER_ACTUAL=$(grep -E '^(read committed|repeatable read|serializable)$' "$GATE_DIR/isolation-driver-verify.txt" | tail -1)
     ;;
