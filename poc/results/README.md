@@ -14,9 +14,9 @@
 
 | 資料庫 | 案例 | 隔離級 | 來源目錄 | 併發數 | tpmC | 第 99 百分位延遲 | 判讀 |
 |---|---|---|---|---:|---:|---:|---|
-| TiDB | 單節點虛擬機 | READ COMMITTED | `tidb-vm-1node-rc-20260518T202009+0800` | 128 | **13,064** | 597ms | READ COMMITTED 採最新一份單節點執行紀錄 |
-| TiDB | 單節點虛擬機 | REPEATABLE READ | `tidb-vm-1node-rr-20260519T001949+0800` | 128 | **13,874** | 503ms | TiDB 目前最高 tpmC |
-| CockroachDB | 單節點虛擬機 | READ COMMITTED | `crdb-vm-1node-rc-20260519T085346+0800` | 64 | **9,134** | 待重算 | 執行紀錄已完成；延遲欄位待修正後定稿 |
+| TiDB | 單節點虛擬機 | READ COMMITTED | [tidb-vm-1node-rc-20260518T202009+0800](./tidb-tc1/S-BASE/vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/) | 128 | **13,064** | 597ms | READ COMMITTED 採最新一份單節點執行紀錄 |
+| TiDB | 單節點虛擬機 | REPEATABLE READ | [tidb-vm-1node-rr-20260519T001949+0800](./tidb-tc1/S-BASE/vm-1node-rr/tidb-vm-1node-rr-20260519T001949+0800/) | 128 | **13,874** | 503ms | TiDB 目前最高 tpmC |
+| CockroachDB | 單節點虛擬機 | READ COMMITTED | [crdb-vm-1node-rc-20260519T085346+0800](./crdb-tc1/S-BASE/vm-1node-rc/crdb-vm-1node-rc-20260519T085346+0800/) | 64 | **9,134** | 待重算 | 執行紀錄已完成；延遲欄位待修正後定稿 |
 
 ## 執行矩陣
 
