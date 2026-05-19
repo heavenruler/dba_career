@@ -157,3 +157,65 @@ CockroachDB v26.2 vm-1node RC 在 4 vCPU + single disk 硬體下，**tpmC 硬天
 - **下一步驗證**：vm-3node-direct CRDB tpmC 應有顯著上升（IO 並行化）；但 PoC-DESIGN §5.4 警示 scale-out 不應預設為線性
 
 本輪資料作為後續 `vm-1node-rr`（preview RR 已 enable）、`vm-1node-strict`（CRDB 預設 SSI）、以及 vm-3node 對標的 baseline。
+
+---
+
+## vm-1node-rr — 2026-05-19（PoC v4.7，CRDB preview RR）
+
+> **本段目的**：在同硬體 / 同流程下取得 CockroachDB v26.2 preview RR baseline，並與 TiDB RR (pessimistic) 對標 SI 機制差異。
+
+### 環境（同 rc）
+- 節點：.32 單節點，CRDB v26.2.0
+- Cluster setting：`sql.txn.repeatable_read_isolation.enabled = true`
+- go-tpc conn-params：`sslmode=disable&options=-c default_transaction_isolation=repeatable\ read`
+- TPCC_TS：`20260519T124506+0800`
+- Suite start：12:48:02；prepare done 13:31:08（43min，與 rc 一致）；gate-isolation 13:32:14 ✓ `repeatable read`
+
+### RR=SI 機制差異 ★（同名不同實作）
+
+> **核心發現**：CRDB 與 TiDB 雙方文件都明文 RR 內部 = Snapshot Isolation (SI)，但 conflict 處理機制不同 → TPC-C 觀測差異巨大。
+
+**CRDB（v26.2 preview RR）** — 來源：`pkg/kv/kvserver/concurrency/isolation` package godoc
+> "The system also exposes **REPEATABLE READ, which maps to SNAPSHOT**"
+> "A transaction ... is prevented from writing to data that has changed since the transaction began (**'first committer wins'**), preventing lost updates."
+> "When a read refresh fails validation, **the transaction must restart**."
+
+**TiDB** — 來源：[TiDB Transaction Isolation Levels](https://docs.pingcap.com/tidb/stable/transaction-isolation-levels/)
+> "TiDB implements **Snapshot Isolation (SI) consistency, which it advertises as `REPEATABLE-READ`** for compatibility with MySQL."
+> Pessimistic 模式："the updating transaction can be successful"；後到 update "**wait for the lock** until the transaction holding the lock commits or rolls back"。
+
+| 維度 | CRDB RR | TiDB RR (pessimistic) |
+|------|---------|---------------------|
+| 內部 iso | SNAPSHOT ✓ | SNAPSHOT (SI) ✓ |
+| 寫衝突 | first committer wins → `WriteTooOldError` → **client retry** | **row lock 排隊**（後者 wait） |
+| `SELECT FOR UPDATE` | 取 unreplicated lock，**不 advance read ts** | 取 pessimistic lock，**advance for-update-ts** |
+| TPC-C 觀感 | NEW_ORDER_ERR 升、retry storm | 無 retry，latency 增 |
+| 全域 pessimistic toggle | ❌ 無等效於 `tidb_txn_mode=pessimistic` | ✓ |
+| 規避 retry 手段 | 切 SERIALIZABLE（仍有 refresh restart） | 用 pessimistic mode |
+
+### 實測現象（run 進行中觀察）
+- go-tpc TPC-C 的 NEW_ORDER 路徑 `SELECT d_next_o_id, d_tax FROM district ... FOR UPDATE` 即使顯式 FOR UPDATE，仍在 CRDB RR 下持續觸發 `TransactionRetryWithProtoRefreshError: WriteTooOldError`
+- 錯誤訊息含 `iso=Snapshot pri=...` 直接證實內部 = SI
+- NEW_ORDER_ERR 樣本 18 TPM 級（~1% 錯誤率）
+- 推測 final tpmC 會比 rc 低（retry 吃 CPU + 部分 NEW_ORDER 無法計入有效 tpmC）
+
+### CRDB pessimistic 工具集（補充）
+
+CRDB 無 TiDB `tidb_txn_mode=pessimistic` 等效全域開關，只能在語句層用：
+
+| 工具 | 範圍 | 對 RR/SI 效果 |
+|------|------|--------------|
+| `SELECT ... FOR UPDATE` | 語句層 | 取 lock，**不改 txn read ts** |
+| `enable_implicit_select_for_update` / `sql.defaults.implicit_select_for_update.enabled` | UPDATE/UPSERT 內部讀 | 自動為 mutation 內部讀加 FOR UPDATE（go-tpc TPC-C 不依賴此） |
+
+**結論**：CRDB RR 在 SI 語意下，read snapshot 凍結於 BEGIN，**鎖也不能 advance**，本質就是 optimistic-with-FOR-UPDATE-hint，無法等價於 TiDB pessimistic 的 lock-wait 語意。
+
+### 結果（待 run 完成補）
+
+| threads | tpmC mean | range/mean | NO p50/p95/p99 | NEW_ORDER_ERR rate |
+|---------|-----------|------------|----------------|---------------------|
+| 16  | _pending_ | — | — | — |
+| 32  | _pending_ | — | — | — |
+| 64  | _pending_ | — | — | — |
+| 128 | _pending_ | — | — | — |
+
