@@ -1,107 +1,79 @@
-# TPC-C Benchmark Results — S-BASE
+# S-BASE 結果索引
 
-> 原始 README 已備份至 [`README_old.md`](./README_old.md)。本檔目前先聚焦 PoC v4.7 已完成的 TiDB 與 CockroachDB vm-1node RC 進度；YugabyteDB 區段已清空，待後續用同一套 v4.7 流程重建。
+> 原始 README 已備份至 [`README_old.md`](./README_old.md)。本頁作為結果索引，只放目前可用數據、執行狀態與追溯入口；細節分析請看各資料庫的流程紀錄。
 
-## 本報告摘要
+## 目前總覽
 
-本輪摘要依 TiDB / CockroachDB 各自的 PoC v4.7 pipeline log 更新。PoC v4.7 已將 vm-1node 測試改為 detached suite、多輪平均、isolation gate、client + DB-host OS 監控；舊流程結果僅作歷史參考，不直接混入新 baseline。
+| 資料庫 | 已完成且可用的結果 | 目前最高 tpmC | 狀態 | 追溯入口 |
+|---|---|---:|---|---|
+| TiDB | 單節點虛擬機，READ COMMITTED / REPEATABLE READ | **13,874** | 單節點完成；三節點與 Kubernetes 待重跑 | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md) |
+| CockroachDB | 單節點虛擬機，READ COMMITTED | **9,134** | 產物完整；分析口徑待修正 | [流程紀錄](./crdb-tc1/S-BASE/pipeline-log.md) |
+| YugabyteDB | — | — | 待用 PoC v4.7 流程重建 | — |
 
-| DB | vm-1node RC peak | vm-1node RR peak | vm-3node peak | k8s-unlimit peak | k8s-limit peak | 狀態 | pipeline log |
-|---|---:|---:|---:|---:|---:|---|---|
-| TiDB | 13,064 tpmC | **13,874 tpmC** | — | — | — | vm-1node RC/RR 已更新；vm-3node / k8s 待 v4.7 重跑後回填 | [tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md) |
-| CockroachDB | 9,134 tpmC | — | — | — | — | vm-1node RC artifacts 已完成；analytics 待修正後定稿 | [crdb-tc1/S-BASE/pipeline-log.md](./crdb-tc1/S-BASE/pipeline-log.md) |
-| YugabyteDB | — | — | — | — | — | 已清空，待重建 | — |
+## 已驗證結果
 
-## 測試環境總覽
+| 資料庫 | 案例 | 隔離級 | 拓撲 | 併發數 | tpmC | 第 99 百分位延遲 | 判讀 |
+|---|---|---|---|---:|---:|---:|---|
+| TiDB | 單節點虛擬機 | READ COMMITTED | 單節點 / 複本數 1 | 64 | 12,744 | 305ms | 建議觀察點；128 併發吞吐只小幅增加但延遲明顯放大 |
+| TiDB | 單節點虛擬機 | READ COMMITTED | 單節點 / 複本數 1 | 128 | 13,064 | 597ms | 最高 tpmC；已接近 4 顆虛擬 CPU 上限 |
+| TiDB | 單節點虛擬機 | REPEATABLE READ | 單節點 / 複本數 1 | 64 | 13,743 | 246ms | 建議觀察點；吞吐與第 99 百分位延遲都優於 READ COMMITTED |
+| TiDB | 單節點虛擬機 | REPEATABLE READ | 單節點 / 複本數 1 | 128 | **13,874** | 503ms | TiDB 目前最高 tpmC |
+| CockroachDB | 單節點虛擬機 | READ COMMITTED | 單節點 / 複本數 1 | 64 | **9,134** | 待重算 | 產物已完成；延遲欄位待修正後定稿 |
 
-- **測試工具**：[go-tpc](https://github.com/pingcap/go-tpc)
-- **工作負載**：TPC-C-derived OLTP stress benchmark，128 warehouses
-- **併發水位**：16 / 32 / 64 / 128 threads
-- **vm-1node v4.7 方法**：20 min warmup @ 64 threads；每個 thread 水位 5 round × 5 min；記錄 round-to-round variance
-- **監控**：client (`.31`) 與 DB-host (`.32`) 同時採集 `mpstat` / `iostat` / `vmstat` / `sar`
-- **注意**：本 PoC 無 think time / keying time，`efficiency > 100%` 屬正常；不可與 audited TPC-C 官方數字直接比較。
+## 執行矩陣
 
-## TiDB (tidb-tc1)
+| 資料庫 | 案例 | READ COMMITTED | REPEATABLE READ | 最嚴格隔離級 | 說明 |
+|---|---|---|---|---|---|
+| TiDB | 單節點虛擬機 | 完成 | 完成 | 以 REPEATABLE READ 代表 | 原生最嚴格隔離級等同 REPEATABLE READ |
+| TiDB | 三節點虛擬機，直連 | 待重跑 | 待重跑 | 待重跑 | 舊數據已清空，等待 PoC v4.7 重跑 |
+| TiDB | 三節點虛擬機，HAProxy | 待重跑 | 待重跑 | 待重跑 | 舊數據已清空，等待 PoC v4.7 重跑 |
+| TiDB | Kubernetes，無資源限制 | 待重跑 | 待重跑 | 待重跑 | 舊數據已清空，等待 PoC v4.7 重跑 |
+| TiDB | Kubernetes，有資源限制 | 待重跑 | 待重跑 | 待重跑 | 舊數據已清空，等待 PoC v4.7 重跑 |
+| CockroachDB | 單節點虛擬機 | 完成，分析待修 | 待執行 | 待執行 | READ COMMITTED 產物完整，延遲與瓶頸分析需修正 |
+| CockroachDB | 三節點虛擬機，直連 | 待執行 | 待執行 | 待執行 | 等待同一套 PoC v4.7 流程 |
+| CockroachDB | 三節點虛擬機，HAProxy | 待執行 | 待執行 | 待執行 | 等待同一套 PoC v4.7 流程 |
+| CockroachDB | Kubernetes，無資源限制 | 待執行 | 待執行 | 待執行 | 等待同一套 PoC v4.7 流程 |
+| CockroachDB | Kubernetes，有資源限制 | 待執行 | 待執行 | 待執行 | 等待同一套 PoC v4.7 流程 |
+| YugabyteDB | 單節點虛擬機 | 待執行 | 待執行 | 待執行 | 等待同一套 PoC v4.7 流程 |
+| YugabyteDB | 三節點虛擬機，直連 | 待執行 | 待執行 | 待執行 | 等待同一套 PoC v4.7 流程 |
+| YugabyteDB | 三節點虛擬機，HAProxy | 待執行 | 待執行 | 待執行 | 等待同一套 PoC v4.7 流程 |
+| YugabyteDB | Kubernetes，無資源限制 | 待執行 | 待執行 | 待執行 | 等待同一套 PoC v4.7 流程 |
+| YugabyteDB | Kubernetes，有資源限制 | 待執行 | 待執行 | 待執行 | 等待同一套 PoC v4.7 流程 |
 
-### vm-1node RC / RR 最新 baseline
+## 資料庫說明
 
-| variant | isolation | 拓撲 | RF | 入口 | 16t | 32t | 64t | 128t | peak | sweet spot |
-|---|---|---|---:|---|---:|---:|---:|---:|---:|---|
-| vm-1node-rc | READ COMMITTED | VM×1 | 1 | 直連 :4000 | 10,074 | 11,728 | 12,744 | **13,064** | **13,064** | 64t：12,744 tpmC / p99 305ms |
-| vm-1node-rr | REPEATABLE READ | VM×1 | 1 | 直連 :4000 | 11,196 | 12,831 | 13,743 | **13,874** | **13,874** | 64t：13,743 tpmC / p99 246ms |
-| vm-1node-strict | TiDB native strictest = RR | VM×1 | 1 | 直連 :4000 | — | — | — | — | — | 略過；以 RR 代表 |
+### TiDB
 
-### RC vs RR 觀察
+- 單節點結果已完成 READ COMMITTED 與 REPEATABLE READ。
+- 在 TiDB v8.5.2 pessimistic mode 與本工作負載下，REPEATABLE READ 的吞吐與第 99 百分位延遲都優於 READ COMMITTED。
+- 128 併發是最高 tpmC，但 64 併發是較合理的觀察點；128 併發的延遲放大明顯。
+- 三節點與 Kubernetes 舊數據已清空，避免與 PoC v4.7 方法混用。
 
-| threads | RC tpmC | RR tpmC | RR delta | RC p99 | RR p99 | p99 delta |
-|---:|---:|---:|---:|---:|---:|---:|
-| 16 | 10,074 | 11,196 | +11.1% | 94ms | 80ms | -14.9% |
-| 32 | 11,728 | 12,831 | +9.4% | 163ms | 134ms | -17.8% |
-| 64 | 12,744 | 13,743 | +7.8% | 305ms | 246ms | -19.3% |
-| 128 | 13,064 | 13,874 | +6.2% | 597ms | 503ms | -15.7% |
+### CockroachDB
 
-RR 在 TiDB v8.5.2 pessimistic + go-tpc multi-statement workload 下全面優於 RC：tpmC 提升 6-11%，p99 latency 降低 15-19%。此結論只適用於 TiDB pessimistic 與本 PoC workload；不可外推到 CRDB / YBDB。
+- 單節點 READ COMMITTED 產物已完成，包含 gate、prepare、run、collect 與 suite marker。
+- isolation gate 確認 session isolation 為 `read committed`。
+- 目前只採用已核對的 tpmC；延遲與瓶頸分析待流程紀錄修正後再作正式結論。
 
-### DB-host 飽和結論
+### YugabyteDB
 
-| variant | sweet spot | peak | CPU / IO 判讀 |
-|---|---|---:|---|
-| vm-1node-rc | 64t | 13,064 @ 128t | 128t 只比 64t 多 2.5% tpmC，但 p99 近 2 倍；4 vCPU 是硬天花板，iowait < 5%，disk util <= 51%。 |
-| vm-1node-rr | 64t | 13,874 @ 128t | 128t 只比 64t 多約 1% tpmC，但 p99 翻倍；%idle 最低 0.25%，已接近 CPU 撞牆。 |
+- 目前結果尚未用 PoC v4.7 流程重建。
+- 後續需先確認 READ COMMITTED 是否真正生效，再納入橫向比較。
 
-### K8s 對照（待 v4.7 重跑後回填）
+## 數據品質註解
 
-| variant | 拓撲 | RF | 入口 | resource limit | 16t | 32t | 64t | 128t | peak |
-|---|---|---:|---|---|---:|---:|---:|---:|---:|
-| k8s-3node-unlimit | K8s×3 | 3 | NodePort :30004 | 無 | — | — | — | — | — |
-| k8s-3node-limit | K8s×3 | 3 | NodePort :30004 | TiKV 2c/8GiB | — | — | — | — | — |
-
-K8s 數據先清空，待依 PoC v4.7 流程重跑完成後回填；舊版 2026-05-10 結果保留在 [`README_old.md`](./README_old.md) 與 TiDB pipeline 歷史段落中。
-
-### VM 3-node 對照（待 v4.7 重跑後回填）
-
-| variant | peak tpmC | 解讀 |
-|---|---:|---|
-| vm-3node-direct | — | 待重跑 |
-| vm-3node (HAProxy) | — | 待重跑 |
-
-scale-out ratio 不應預設為線性；後續 vm-3node v4.7 需用同樣 DB-host 監控驗證 CPU / IO / Raft / network 是否成為新瓶頸。
-
-## CockroachDB (cockroach-tc1)
-
-### vm-1node RC 目前進度
-
-CockroachDB 已完成 PoC v4.7 `vm-1node-rc` 執行，artifact 目錄為 `crdb-tc1/S-BASE/vm-1node-rc/crdb-vm-1node-rc-20260519T085346+0800/`。
-
-| variant | isolation | 拓撲 | RF | 入口 | 16t | 32t | 64t | 128t | peak | 狀態 |
-|---|---|---|---:|---|---:|---:|---:|---:|---:|---|
-| vm-1node-rc | READ COMMITTED | VM×1 | 1 | 直連 :26257 | 9,034 | 9,020 | **9,134** | 8,813 | **9,134** | artifacts 完整；analytics 待修 |
-
-執行鏈已完成：`.gate.done`、`.prepare.done`、`.gate-isolation.done`、`.run.done`、`.collect.done`、`.suite.done` 皆存在；20 個 round log 與 80 個 DB-host OS 監控檔齊全。isolation gate 驗證為 `read committed`。
-
-目前需修正後再定稿的 analytics 口徑：
-- `NO p50 / p95 / p99` 欄位與原始 go-tpc summary 不一致，需重算後更新。
-- `Raft log fsync` 歸因目前由 OS iowait 推論，應改成保守描述或補 CRDB metrics/log 證據。
-- 與 TiDB 的 `+33% / +55%` 表述需明確分母，避免把 CRDB 相對 TiDB與 TiDB 相對 CRDB混用。
-
-在 analytics 修正前，本 README 僅採用已核對的 tpmC / artifact 進度，不採用 latency 與瓶頸結論作正式對外摘要。
-
-## YugabyteDB (yuga-tc1)
-
-> 本區段已清空。待 YugabyteDB 用 PoC v4.7 流程重新產生 gate / prepare / run / collect artifacts 後再回填。
-
-## 對標維度
-
-| 維度 | TiDB 目前狀態 | CRDB / YBDB 狀態 |
-|---|---|---|
-| 單機 VM baseline | vm-1node-rc / vm-1node-rr 已更新到 v4.7 | CRDB vm-1node-rc artifacts 完成、analytics 待修；YBDB 待重建 |
-| 隔離級成本 | RC vs RR 已完成；TiDB strict 以 RR 代表 | CRDB rr/strict 待跑；YBDB 待重建 |
-| 多節點 VM | vm-3node 數據已清空，待 v4.7 重跑後回填 | 待重建 |
-| K8s 無限制 | k8s-unlimit 數據已清空，待 v4.7 重跑後回填 | 待重建 |
-| K8s 資源限制 | k8s-limit 數據已清空，待 v4.7 重跑後回填 | 待重建 |
+| 編號 | 說明 |
+|---|---|
+| N1 | 本測試是 TPC-C-derived stress benchmark using go-tpc，非 audited TPC-C，不能與官方 TPC-C 排名直接比較。 |
+| N2 | go-tpc 本輪沒有 think time / keying time，執行緒完成一筆交易後會立即送下一筆，因此 efficiency 超過 100% 屬正常。 |
+| N3 | isolation 必須由 connection string 與 gate 產物共同確認，避免 driver 或資料庫預設值造成測試口徑偏移。 |
+| N4 | 單節點 PoC v4.7 使用 20 分鐘 warmup、每個併發水位 5 round，每 round 5 分鐘；正式解讀需看多輪穩定性。 |
+| N5 | `.gate.done`、`.prepare.done`、`.gate-isolation.done`、`.run.done`、`.collect.done`、`.suite.done` 代表該案例流程鏈完整。 |
+| N6 | CockroachDB 目前的 tpmC 可用；流程紀錄內延遲欄位與部分瓶頸歸因仍需修正後才可對外定稿。 |
+| N7 | TiDB 三節點與 Kubernetes 數據已刻意清空，等待 PoC v4.7 重跑後再回填。 |
 
 ## 參考
 
-- TiDB 最新測試紀錄：[tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md)
-- CockroachDB v4.7 測試紀錄：[crdb-tc1/S-BASE/pipeline-log.md](./crdb-tc1/S-BASE/pipeline-log.md)
-- README 備份：[README_old.md](./README_old.md)
+- TiDB 流程紀錄：[tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md)
+- CockroachDB 流程紀錄：[crdb-tc1/S-BASE/pipeline-log.md](./crdb-tc1/S-BASE/pipeline-log.md)
+- 歷史 README 備份：[README_old.md](./README_old.md)
