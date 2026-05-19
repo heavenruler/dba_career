@@ -1,6 +1,9 @@
 # YugabyteDB TPC-C Pipeline Log — yuga-tc1 / S-BASE
 
 > **本測試結論**：
+> - YugabyteDB 2025.2.2 LTS + 有效 Read Committed (`yb_enable_read_committed_isolation=true` + tserver flag 雙閘) 後 TPC-C 才有可比結果；舊版 / preview RR 模式會持續觸發 `Restart read required` 而吞吐失真
+> - vm-1node peak ~10,844 tpmC @ t16；K8s-3node-unlimit peak ~3,164 tpmC @ t32（已啟用有效 RC）；K8s-3node-limit 已在同條件下完成
+> - **本檔多數結果為單次 10min wrapper run**（非 v4.7 標準的 detached suite × 5-round × 20min warmup），跨家對標時須留意；新版 v4.7 wrapper 重跑列為下一步待辦
 
 ---
 
@@ -61,7 +64,6 @@ SET transaction_isolation = 'read committed';  -- 或 'repeatable read' / 'seria
 | `repeatable read`（YugabyteDB 預設） | YugabyteDB 預設值；底層使用 snapshot isolation，不符合 PostgreSQL `repeatable read` 語意 | `--isolation 3` |
 | `read committed` | 與 PostgreSQL 相容的標準 RC；每個 statement 取新 snapshot，大幅減少 write-write conflict 重試 | `--isolation 2` |
 | `read uncommitted` | 官方支援的有效值（[ysql_default_transaction_isolation](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#ysql-default-transaction-isolation)），但 YugabyteDB 實作上等同 `read committed`，不會真正讀取未提交資料 | `--isolation 1` |
-| `` | | |
 
 本測試使用 **Read Committed**（`--isolation 2`）+ tserver flag `yb_enable_read_committed_isolation=true`。
 
@@ -252,10 +254,12 @@ k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
 
 | threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
 |---------|------|----------|------------|------------|------------|
-| 16 | 2,932.9 | 6,479.9 | 178.2% | 289.5 | 637.5 |
-| 32 | **3,163.6** | 7,008.2 | **192.2%** | 547.5 | 1,476.4 |
-| 64 | 3,144.3 | 6,974.7 | 191.0% | 1,065.6 | 3,892.3 |
+| 16 | 2,932.9 | 6,479.9 | 178.2% | 281.4 | 637.5 |
+| 32 | **3,163.6** | 7,008.2 | **192.2%** | 525.2 | 1,476.4 |
+| 64 | 3,144.3 | 6,974.7 | 191.0% | 1,059.7 | 3,892.3 |
 | 128 | 2,984.0 | 6,653.0 | 181.3% | 2,194.6 | 10,737.4 |
+
+> NO avg/p99 已重新對齊 `k8s-3node-unlimit/20260513-0114/tpcc-c{16,32,64,128}.log` artifact 的 `[Summary] NEW_ORDER` 行。注意本批為**單次 10min run** 的 wrapper log，非 v4.7 標準的 `runs/threads-X/round-Y/go-tpc-stdout.txt` 5-round 格式，故不與 TiDB/CRDB 5-round mean 直比。
 
 ### vs VM 3-node 對比
 
@@ -270,7 +274,7 @@ k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
 
 - **K8s-unlimit peak 3,164 tpmC**，約為 VM 3-node peak 1,037 的 **3.1×**。這不是單純「K8s 比 VM 快」，主要變因包含版本從舊 VM 測試的 YugabyteDB 版本升到 **2025.2.2 LTS**，以及真正啟用 DocDB Read Committed。
 - **吞吐曲線穩定在 3k tpmC 左右**：16t 到 128t 介於 2,933~3,164，峰值在 32t；高併發沒有再發生 transaction restart error。
-- **延遲仍隨併發上升**：NO avg 289ms → 2,195ms，NO P99 638ms → 10,737ms；128t 高壓下仍接近 go-tpc 16s 上限，但比舊 VM 結果的 16,106ms P99 改善。
+- **延遲仍隨併發上升**：NO avg 281ms → 2,195ms，NO P99 638ms → 10,737ms；128t 高壓下仍接近 go-tpc 16s 上限，但比舊 VM 結果的 16,106ms P99 改善。
 - **有效 RC 是必要條件**：只加 go-tpc `--isolation 2` 不夠，必須確認 `yb_effective_transaction_isolation_level = read committed`，否則仍會有 `Restart read required` / `could not serialize access`。
 
 ### 結論

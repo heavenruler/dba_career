@@ -1,6 +1,9 @@
 # CockroachDB TPC-C Pipeline Log — cockroach-tc1 / S-BASE
 
-> **本測試結論**：CockroachDB 單節點吞吐量介於 TiDB 與 YugabyteDB 之間 — 約為 TiDB 的 65%、YugabyteDB 的 22 倍；READ COMMITTED 隔離下無 abort 重試行為（前一輪 SERIALIZABLE 模式曾觀察到約 0.1% NEW_ORDER 因衝突被中止重做，切到 RC 後消失）。
+> ⚠️ **DEPRECATED / 已移轉**：本檔為 PoC v4.7 前的歷史資料（單次 10min run、手動部署、無 detached suite wrapper、無 DB-host 雙邊監控）。**新 baseline 已遷至 [`results/crdb-tc1/S-BASE/pipeline-log.md`](../../crdb-tc1/S-BASE/pipeline-log.md)**，採 5-round 平均 + DB-host OS 監控 + isolation 雙閘 + 5×5min run × 4 thread groups。
+> 本檔以下所有結論為**歷史資料**，**不納入 PoC v4.7 baseline 與跨家對比**，僅作流程演進記錄之用。
+
+> **【歷史結論，已過時】** CockroachDB 單節點吞吐量介於 TiDB 與 YugabyteDB 之間 — 約為 TiDB 的 65%、YugabyteDB 的 22 倍；READ COMMITTED 隔離下無 abort 重試行為（前一輪 SERIALIZABLE 模式曾觀察到約 0.1% NEW_ORDER 因衝突被中止重做，切到 RC 後消失）。
 
 ---
 

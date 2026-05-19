@@ -20,7 +20,7 @@
 
 1. **Strict > RC 反直覺**：t32+ strict 比 RC 快 +10~19% tpmC、p99 低一個量級（t128: 487 vs 926ms）。原因為 RC 從 t16 起即被 fsync IO 卡死（%user 68% / %iowait 18%），strict 走 SSI 的 batched read-refresh 路徑 IO 更省，仍有 CPU headroom 可榨。
 2. **RR=SI、但行為差 TiDB pessimistic 3.5x**：CRDB 文件明寫「REPEATABLE READ maps to SNAPSHOT」，採 first-committer-wins。同 TiDB RR（亦 SI）相比，TiDB pessimistic 拿鎖時 advance for-update-ts、不需 retry，跑出 13,874 vs CRDB 3,788 tpmC（**-72.7%**）。CRDB 無等效於 `tidb_txn_mode=pessimistic` 的全域開關。
-3. **Starting-gun storm**：RR/strict 兩者皆在每 round 起始 30s-4.5min 內爆 retry（per-txn snapshot ts 同步觸發 hot row 衝突）。RC 因 per-statement snapshot 完全免疫。strict 因 server-side transparent retry，err spread 比 RR 寬 3-5x（但總 err count 接近 — strict 14/30/61/125 vs RR 15/31/63/127）。
+3. **Starting-gun storm**：RR/strict 兩者皆在每 round 起始 30s-4.5min 內爆 retry（per-txn snapshot ts 同步觸發 hot row 衝突）。RC 因 per-statement snapshot 完全免疫。strict 的 err spread 比 RR 寬 3-5x，但**總 err count 接近**（strict 14/30/61/125 vs RR 15/31/63/127）— 推測與 SERIALIZABLE 的 read-refresh 重試路徑有關，需 CRDB trace / statement diagnostics 進一步佐證（[CRDB transaction-layer docs](https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer)、[Transactions docs](https://www.cockroachlabs.com/docs/stable/transactions)）。
 
 ### 業務啟示
 
@@ -87,9 +87,9 @@
 - check-all 128 warehouse 全條件通過
 - CRDB CREATE STATISTICS 取代 TiDB ANALYZE TABLE，9 個統計集建立
 
-### Execute 結果（5 round tpmC 平均；latency 為代表值）
+### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
 
-> tpmC / tpmTotal / efficiency 為 5 round mean；NO p50 / p95 / p99 為 5 round latency 代表值。
+> tpmC / tpmTotal / efficiency 為 5 round mean；NO p50 / p95 / p99 亦為 5 round latency mean（已驗算對齊）。
 
 | threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) |
 |---------|-----------|-----------|---------------|-----------------|------------|------------|------------|
@@ -448,7 +448,7 @@ CRDB v26.2 preview RR 在 vm-1node 4 vCPU 硬體下：
 |-----|----------|-----------|------------------|----------------------|
 | **RC** | per-statement | row lock 排隊 | 無 | fsync IO 立即天花板（%iowait 18%, %idle 5%） |
 | **RR/SI** | per-txn 凍結 | WriteTooOldError | **必須**（client 完整重送） | DB idle 50%、retry storm 浪費 throughput |
-| **Strict/SSI** | per-txn + read refresh | refresh 失敗 → **server 內部 retry**（cached plan + read set 復用） | 偶爾外漏為 errors | scale with threads（%idle 33→10%） |
+| **Strict/SSI** | per-txn + read refresh | 衝突可能走 read-refresh 路徑（細節以 [CRDB v26.2 transaction-layer docs](https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer) 為準） | 偶爾外漏為 errors | scale with threads（%idle 33→10%） |
 
 ### Error 時序分布 ★ — 與 RR 對比
 
@@ -490,11 +490,13 @@ CRDB v26.2 preview RR 在 vm-1node 4 vCPU 硬體下：
 
 | 維度 | RR (SI) | strict (SSI) |
 |------|---------|--------------|
-| client 看到 err 時機 | **第一次** WriteTooOldError 就立即外漏 | server **內部 retry 多次** 失敗才外漏 |
-| 內部 retry 機制 | 無 | read-refresh + cached plan 重執行 |
+| client 看到 err 時機 | **第一次** WriteTooOldError 就立即外漏 | err spread 較廣，疑似多次內部嘗試後才外漏 |
+| 內部 retry 機制（推測） | 無 | SERIALIZABLE read-refresh 路徑可能涉及重試（未直接量測，待 trace 佐證） |
 | err 速度 | 快速宣告失敗（concentration 高） | 持續嘗試（spread 廣） |
 | 用戶觀感 | "錯了重來"（明確） | "好像有時 retry 有時不"（混亂） |
-| 真實 retry 次數 | = NEW_ORDER_ERR count | NEW_ORDER_ERR + server-internal（看不到）|
+| 真實 retry 次數 | = NEW_ORDER_ERR count | ≥ NEW_ORDER_ERR count（server-internal 部分需 statement diagnostics 才能量化）|
+
+> **機制說明的限制**：本表 server-internal 細節為**推論**，artifact 僅能支持「strict t32+ throughput 高於 RC/RR、err count 接近 RR」這兩項結論。內部 retry 機制的細節差異建議以 [CRDB v26.2 transaction-layer docs](https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer) + [transactions docs](https://www.cockroachlabs.com/docs/stable/transactions) 為主，加 trace/statement diagnostics 直接驗證。
 
 #### error 類型統計（strict）
 
@@ -510,7 +512,7 @@ CRDB v26.2 preview RR 在 vm-1node 4 vCPU 硬體下：
 ### 關鍵發現
 
 1. **Strict 在 t32+ 反超 RC 10-19% tpmC**：違反「越強 isolation 越慢」直覺；原因為 RC fsync IO 立即觸頂（%idle 5%），strict 仍有資源頭可榨
-2. **Strict 比 RR 快 3x，但 err count 相同**（strict 14/30/61/125 vs RR 15/31/63/127）：兩者都被 SI snapshot 衝突影響，差異在 SSI 的 **server-side transparent retry** 把成本壓在 server cache 而非 client 全量重送
+2. **Strict 比 RR 快 3x，但 err count 接近**（strict 14/30/61/125 vs RR 15/31/63/127）：兩者都被 snapshot 寫衝突影響，推測差異與 SERIALIZABLE 的 read-refresh / retry 路徑有關（artifact 可證 throughput 與 err 數，內部機制細節需 CRDB trace 進一步驗證）
 3. **Strict p99 latency 比 RC 低一個量級**（t128: 487 vs 926ms）：RC throughput 被 fsync 卡死，worker queue 拉長 latency；strict 跑得快，queue 短
 4. **Starting-gun storm 仍存在但形態不同**：
    - RR: err 集中於前 33s（t16）/ 90s（t128），快速宣告失敗
@@ -521,7 +523,7 @@ CRDB v26.2 preview RR 在 vm-1node 4 vCPU 硬體下：
 
 - CRDB 預設 SERIALIZABLE 不只是「正確性最強」，**在 4 vCPU + single disk 硬體上同時也是最快**（中高並發）
 - **不要為了「降 isolation 提升性能」而切 RC**：strict 反而更快、p99 更低
-- 若 app 必須 RR/SI 語意，CRDB 的 RR 不是答案 — strict（SSI）即 RR 的超集，且性能高 3x
+- 若 app 必須 RR/SI 語意，CRDB 的 preview RR 在本 workload 上不是好選項 — 同硬體 strict（SSI）跑出 3x 吞吐且 SSI 強度涵蓋 SI 保證
 - 與 TiDB rr 比，CRDB strict 仍落後：strict t128 10,456 vs TiDB rr t128 13,874（-25%）；TiDB pessimistic lock 路徑對 hot row 的處理仍最有效率
 
 ### 結論

@@ -85,9 +85,9 @@
 - check-all 128 warehouse 全條件通過，無 error
 - TiDB schema：`CLUSTERED PK`，CHARSET=utf8mb4，COLLATE=utf8mb4_bin
 
-### Execute 結果（5 round tpmC 平均；latency 為代表值）
+### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
 
-> tpmC / tpmTotal / efficiency 為 5 round mean；**NO p50 / p95 / p99 為 5 round latency 代表值**（觀察量級與趨勢用，非各 round 嚴格 mean）。
+> tpmC / tpmTotal / efficiency 為 5 round mean；**NO p50 / p95 / p99 亦為 5 round latency mean**（已驗算對齊：每組 t16/32/64/128 的 p99 mean 與表格值差 ≤ 0.5ms，符合四捨五入誤差）。
 >
 > （tpmC：越高越好；NO p99：越低越好；efficiency 遠超 100% 屬正常）
 >
@@ -224,9 +224,9 @@ vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t64 為甜點（12,744 tpm
 - check-all 128 warehouse 全條件通過
 - schema 與 rc 完全相同
 
-### Execute 結果（5 round tpmC 平均；latency 為代表值）
+### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
 
-> tpmC / tpmTotal / efficiency 為 5 round mean；**NO p50 / p95 / p99 為 5 round latency 代表值**（觀察量級與趨勢用，非各 round 嚴格 mean）。
+> tpmC / tpmTotal / efficiency 為 5 round mean；**NO p50 / p95 / p99 亦為 5 round latency mean**。
 
 | threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) |
 |---------|-----------|-----------|---------------|-----------------|------------|------------|------------|
