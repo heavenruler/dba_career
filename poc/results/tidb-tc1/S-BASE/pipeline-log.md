@@ -4,6 +4,43 @@
 
 ---
 
+## TL;DR — vm-1node 兩 isolation 矩陣完成（2026-05-18/19）
+
+**核心結論**：TiDB v8.5.2 在 4 vCPU + single XFS disk 硬體下，**pessimistic mode 全跑零 error、RR 反而比 RC 快 6%**；strict 在 TiDB 等價於 RR（不支援原生 SERIALIZABLE），跳過不重跑。
+
+### tpmC 排行（t128, 5 round mean）
+
+| 排名 | iso | tpmC | DB-host 瓶頸 | err / 5min |
+|------|-----|------|--------------|------------|
+| 🥇 | **rr (pessimistic)** | **13,874** | CPU-bound（%user 80.8% / %idle 4.5% / 瞬間 %idle min 0.25%）| **0** |
+| 🥈 | rc (pessimistic) | 13,064 | CPU-bound（%user 79.6% / %idle 4.5%）| **0** |
+| — | strict | （等價於 rr，略過） | — | — |
+
+### 三大發現
+
+1. **RR > RC 反直覺**：TiDB pessimistic 下 RR 比 RC 快 +6.2% tpmC（t128: 13,874 vs 13,064）、p99 低（503 vs 597ms）。原因為 RC 採 per-statement snapshot ts、每句 SQL 多一次 PD 取 ts + region cache 重整；RR per-txn snapshot 一次定奪、後續 SQL 全部復用，**RPC 與 metadata 開銷淨減**。
+2. **零 error 全程**：兩 iso × 4 thread × 5 round = 40 個 run 中 `NEW_ORDER_ERR = 0`、`execute run failed = 0`。pessimistic 模式拿鎖時 advance for-update-ts，hot row（district）並發只是排隊等鎖，不會 retry。對比 CRDB RR 同硬體 412 errors / 20 rounds。
+3. **CPU-bound 而非 IO-bound**：%iowait 全程 < 5%、sda %util ≤ 51%——磁碟非瓶頸。t16 起 CPU 已達 92.5%，t128 mean 約 95.5%、瞬間接近 100%。**加 thread 只能擠光剩餘 CPU 餘裕，不能突破天花板**。對比 CRDB rc IO-bound（%iowait 18%）、CRDB rr retry-bound（DB %idle 46%）。
+
+### 業務啟示
+
+- TiDB 同硬體下 **RR 是當前最佳組合**（更高吞吐 + 更低 latency + 零 error + 強於 RC 的 isolation 保證）
+- TiDB 不支援原生 SERIALIZABLE，strict 在工具鏈裡只能等價於 RR；跨家 strict 對比時須注意這點不能直比 CRDB / YBDB 的 SSI
+- 同硬體下 **TiDB 全面領先 CRDB**：rc +48% vs CRDB rc、rr +266% vs CRDB rr、rr +33% vs CRDB strict（CRDB 最強配置）
+- 下一步 vm-3node 預期 TiKV 分散 → tpmC 上升，但**比值非線性**（既往觀察：vm-3node 22,841 vs vm-1node 13,064 = 1.75x，非 3x）
+
+### 完整資料目錄
+
+| iso | TPCC_TS | 5-round mean t128 | err / 20 rounds | 詳細段落 |
+|-----|---------|-------------------|-----------------|----------|
+| rc | 20260518T202009+0800 | 13,064 | 0 | [§ vm-1node-rc](#vm-1node-rc--2026-05-18poc-v47-baseline含-db-host-os-監控) |
+| rr | 20260519T001949+0800 | 13,874 | 0 | [§ vm-1node-rr](#vm-1node-rr--2026-05-19poc-v47含-db-host-os-監控) |
+| strict | — (alias to rr) | — | — | [§ vm-1node-strict 略過原因](#vm-1node-strict--略過tidb-不支援-serializable) |
+
+下一步：vm-3node-direct（TiKV 分散驗證；預期 scale-out ratio ~1.75x 非線性）+ K8s 對照組（資源 unlimit 場景）。
+
+---
+
 ## vm-1node-rc — 2026-05-18（PoC v4.7 baseline，含 DB-host OS 監控）
 
 > **本段目的**：PoC v4.7 框架下的 vm-1node RC 正式 baseline，配套：detached suite wrapper、多輪平均、isolation 雙閘、**client + DB-host 雙邊 OS 監控**。取代 2026-05-07 單次 10 min 結果，作為後續 rr/strict 與其他 DB 對標的可重現基線。
