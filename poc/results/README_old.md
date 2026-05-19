@@ -1,0 +1,335 @@
+# TPC-C Benchmark Results — S-BASE
+
+## 本報告摘要
+
+我們用業界標準的 OLTP 壓力測試（TPC-C，模擬電商訂單處理）比較三款分散式資料庫（TiDB、CockroachDB、YugabyteDB）在不同部署架構下的吞吐量。下表是管理層摘要，完整原始紀錄可直接點到各自的 `pipeline-log.md`。
+
+| DB | vm-1node peak | vm-3node peak | k8s-unlimit peak | k8s-limit peak | 主要觀察 | pipeline log |
+|---|---:|---:|---:|---:|---|---|
+| TiDB | 13,355.4 tpmC | <u>**22,841.0 tpmC**</u> | 18,918.8 tpmC | 11,080.7 tpmC | 三節點 + HAProxy 表現最佳，K8s 約有 17% overhead，limit 後下降 41% | [tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md) |
+| CockroachDB | 8,732.5 tpmC | <u>**14,014.7 tpmC**</u> | 13,982.2 tpmC | 6,749.9 tpmC | K8s 幾乎無損，limit 後下降 52%，HAProxy 比直連更快 | [cockroach-tc1/S-BASE/pipeline-log.md](./cockroach-tc1/S-BASE/pipeline-log.md) |
+| YugabyteDB | 414.7 tpmC | 1,036.7 tpmC | <u>**3,163.6 tpmC**</u> | 1,766.1 tpmC | K8s-unlimit 大幅高於 VM，limit 後下降 44%，關鍵是 2025.2.2 LTS + READ COMMITTED | [yuga-tc1/S-BASE/pipeline-log.md](./yuga-tc1/S-BASE/pipeline-log.md) |
+
+本輪 TiDB / CockroachDB / YugabyteDB 的 VM、K8s-unlimit、K8s-limit 對標測試已完成。
+
+---
+
+## 測試環境總覽
+
+- **測試工具**：[go-tpc](https://github.com/pingcap/go-tpc)（業界標準 TPC-C 模擬器）
+
+- **TPC-C**（Transaction Processing Performance Council Benchmark C）：模擬倉儲訂單處理的 OLTP（線上交易處理）壓力測試，業界用來衡量資料庫每分鐘能完成多少筆「新訂單」交易，數字越高代表系統越能承載業務尖峰。
+
+- **規格**：4 vCPU（虛擬處理器核心）/ 16GB 記憶體 × 節點數
+
+- **資料量**：128 個倉庫
+
+- **併發連線數**：16 / 32 / 64 / 128（壓測工具 go-tpc 啟動的同時工作執行緒數，每個執行緒佔用一條資料庫連線，持續送訂單／付款交易；分四檔由低到高，用來觀察吞吐量隨併發成長的飽和曲線——管理層可理解為「同一瞬間有多少使用者同時下單」）
+
+- **測試方法**：取消使用者操作間隔（持續高壓滿載）、暖機 5 分鐘、正式測試 10 分鐘
+
+### 項目說明
+
+- **ACID**：屬於資料庫基本設計目標，不是本報告的比較維度。
+- **CAP**：分散式資料庫架構主要看 CAP 在一致性與可用性之間的取捨。
+- **Repeatable Read / SERIALIZABLE**：會提高協調成本並引入不同的 abort / retry 行為；本報告統一以 `READ COMMITTED` 作為比較基準。
+
+---
+
+## 測試矩陣
+
+我們用 5~6 種部署組合來分別觀察不同架構成本：
+
+- **單節點**：測純效能上限
+- **三節點 VM**：加入資料複製成本（高可用代價）
+- **直連 vs 過 HAProxy**：量測負載均衡器的中介開銷
+- **K8s 容器化**：模擬未來生產環境部署
+- **有無資源限制**：評估資源管制的影響
+
+### 名詞說明
+
+- **RF（Replication Factor，資料複本數）**：RF=1 表示資料只存一份（不容錯）；RF=3 表示同一筆資料寫到三個節點（任一節點故障不影響服務，但寫入成本較高）。
+
+- **HAProxy**：開源連線代理，將單一入口的連線分散到後端多節點（負載均衡）；本測試用來模擬正式環境的入口閘道。
+
+- **VM（Virtual Machine）**：傳統虛擬機部署，節點之間網路較單純。
+
+- **K8s（Kubernetes）**：容器化編排平台，會多一層網路與資源排程，預期會有少量額外消耗。
+
+- **連線端口**：
+  - `:4000` — TiDB SQL 服務端口；同時也是 TiDB HAProxy 監聽端口（**proxy 部署在獨立主機**，與 TiDB 節點不衝突，流量由此轉發至後端 TiDB:4000）
+  - `:5433` — YugabyteDB SQL 服務端口
+  - `:15433` — YugabyteDB HAProxy 監聽端口（與 YugabyteDB 共用同一台主機，避用 5433），流量由此轉發至後端 YugabyteDB:5433
+  - `:26257` — CockroachDB SQL 服務端口（PostgreSQL 協定相容）
+  - **NodePort**：K8s 對外暴露服務的固定埠口模式（埠號通常在 30000-32767 區間）；本測試使用 TiDB `:30004`、YugabyteDB `:30005`、CockroachDB `:30007` 作為各 DB 的 K8s SQL 入口。
+
+- **資源限制標記**：
+  - `TiKV Nc` — 限制 TiKV 儲存元件可用的 CPU 核心數
+  - `tserver Nc` — 限制 YugabyteDB 資料節點可用的 CPU 核心數
+
+### TiDB (tidb-tc1) ✅ 完成
+
+> 各併發水位（16/32/64/128 同時連線）的 tpmC 數值，**越高越好**；peak = 各併發中的最高吞吐量。
+
+| variant | 拓撲 | RF | 入口 | resource limit | 狀態 | 16t | 32t | 64t | 128t | peak |
+|---------|------|----|------|----------------|------|-----|-----|-----|------|------|
+| vm-1node | VM×1 | 1 | 直連 :4000 | — | ✅ | 11,895.0 | 12,766.7 | 13,355.4 | 13,078.8 | **13,355.4** |
+| vm-1node (no-analyze) | VM×1 | 1 | 直連 :4000 | — | ✅ | 11,380.6 | 12,596.2 | 13,345.3 | 13,191.7 | **13,345.3** |
+| vm-3node | VM×3 | 3 | HAProxy :4000 | — | ✅ | 13,573.7 | 19,205.1 | 21,992.7 | 22,841.0 | **22,841.0** |
+| vm-3node-direct | VM×3 | 3 | 直連 :4000 | — | ✅ | 12,882.2 | 14,385.6 | 13,204.3 | 14,779.6 | **14,779.6** |
+| k8s-3node-unlimit | K8s×3 | 3 | NodePort :30004 | 無 | ✅ | 13,160.9 | 16,304.1 | 18,918.8 | 18,871.3 | **18,918.8** |
+| k8s-3node-limit | K8s×3 | 3 | NodePort :30004 | TiKV 2c/8GiB | ✅ | 10,470.5 | 11,080.7 | 10,895.5 | 10,519.7 | **11,080.7** |
+
+> `vm-1node (no-analyze)`：停用資料庫自動統計分析（背景工作），讓測試結果排除排程干擾，呈現最純粹的效能數字。
+
+> **目前進度**：TiDB 全 6 組完成（VM 4 + K8s 2）；YugabyteDB 全 5 組完成（VM 3 + K8s 2）；CockroachDB 全 5 組完成（VM 3 + K8s 2）。
+
+> **TiDB 全部署模式對比**：
+> - **vm-3node (HAProxy)** peak **22,841**（表現最佳）— SQL 節點分散最有效
+> - vm-3node-direct peak 14,779 — 單一 gateway，無分散優勢
+> - vm-1node peak 13,355
+> - k8s-3node-unlimit peak 18,919 — 容器化 ~17% overhead
+> - **k8s-3node-limit** peak **11,081**（最差）— TiKV 2 CPU cap 限縮天花板 41%
+
+> **TiDB vs CockroachDB vs YugabyteDB 對比（vm-3node HAProxy）**：TiDB peak **22,841 tpmC**（重 prepare clean run；三次 128t 測量 21,875–23,746 範圍內）、CockroachDB peak **14,014 tpmC**、YugabyteDB peak **1,036 tpmC**。TiDB SQL/儲存分離設計讓「加台機器跑 SQL」效益最大化（HAProxy 比直連 +55%），CockroachDB symmetric architecture 也有 +26% 增益，YugabyteDB 因 tserver 一體設計增益僅 +1%。
+
+### YugabyteDB (yuga-tc1) ✅ 完成
+
+> 各併發水位（16/32/64/128 同時連線）的 tpmC 數值，**越高越好**；peak = 各併發中的最高吞吐量。
+
+| variant | 拓撲 | RF | 入口 | resource limit | 狀態 | 16t | 32t | 64t | 128t | peak |
+|---------|------|----|------|----------------|------|-----|-----|-----|------|------|
+| vm-1node | VM×1 | RF=1 | 直連 :5433 | — | ✅ | 414.7 | 394.8 | 378.6 | 370.4 | **414.7** |
+| vm-3node | VM×3 | RF=3 | HAProxy :15433 | — | ✅ | 1036.7 | 971.4 | 965.7 | 915.8 | **1036.7** |
+| vm-3node-direct | VM×3 | RF=3 | 直連 :5433 | — | ✅ | 1024.2 | 1016.4 | 1003.2 | 964.7 | **1024.2** |
+| k8s-3node-unlimit | K8s×3 | RF=3 | NodePort :30005 | 無 | ✅ | 2,932.9 | 3,163.6 | 3,144.3 | 2,984.0 | **3,163.6** |
+| k8s-3node-limit | K8s×3 | RF=3 | NodePort :30005 | tserver 2c/8GiB | ✅ | 1,716.4 | 1,766.1 | 1,627.3 | 1,568.3 | **1,766.1** |
+
+> **YugabyteDB 摘要**：三節點架構（vm-3node / vm-3node-direct）比單節點（vm-1node）吞吐量高約 **2.5 倍**；K8s-unlimit peak **3,164 tpmC**，比 VM 3-node peak **1,037 tpmC** 高約 **3.1 倍**。K8s-limit 使用 tserver **2c/8GiB** 後 peak **1,766 tpmC**，較 unlimit 下降 **44%**。本次 K8s 採 YugabyteDB **2025.2.2 LTS**，並明確啟用 `yb_enable_read_committed_isolation=true`，讓 `yb_effective_transaction_isolation_level = read committed`，避免 2025.2 預設映射成 repeatable read 造成 transaction restart。
+
+### CockroachDB (cockroach-tc1) ✅ 完成
+
+> 各併發水位（16/32/64/128 同時連線）的 tpmC 數值，**越高越好**；peak = 各併發中的最高吞吐量。READ COMMITTED 隔離（與 YugabyteDB 對齊）。
+
+| variant | 拓撲 | RF | 入口 | resource limit | 狀態 | 16t | 32t | 64t | 128t | peak |
+|---------|------|----|------|----------------|------|-----|-----|-----|------|------|
+| vm-1node | VM×1 | 1 | 直連 :26257 | — | ✅ | 8,559.5 | 8,732.5 | 8,555.3 | 8,133.4 | **8,732.5** |
+| vm-3node | VM×3 | 3 | HAProxy :15257 | — | ✅ | 9,958.3 | 11,933.4 | 12,661.7 | 14,014.7 | **14,014.7** |
+| vm-3node-direct | VM×3 | 3 | 直連 :26257 | — | ✅ | 9,142.5 | 10,144.4 | 10,892.4 | 11,142.6 | **11,142.6** |
+| k8s-3node-unlimit | K8s×3 | 3 | NodePort :30007 | 無 | ✅ | 8,998.0 | 10,599.9 | 12,416.6 | 13,982.2 | **13,982.2** |
+| k8s-3node-limit | K8s×3 | 3 | NodePort :30007 | crdb 2c/8GiB | ✅ | 4,931.8 | 5,576.9 | 6,181.7 | 6,749.9 | **6,749.9** |
+
+> **CockroachDB 摘要**：單節點 peak **8,732 tpmC**；三節點 + HAProxy peak **14,014 tpmC**（**超越 TiDB vm-1node 峰值 13,355**）；K8s-unlimit peak **13,982 tpmC**（與 vm-3node HAProxy 幾乎相同，**容器化 overhead −0.2%**，遠優於 TiDB K8s ~17% overhead）；K8s-limit peak **6,750 tpmC**（2 CPU cap 使 peak 較 unlimit 下降 **52%**）。CockroachDB symmetric architecture 讓 HAProxy roundrobin 將 SQL 處理層分散到三節點，**HAProxy 比直連快 9-26%**（與 YugabyteDB 反向：YugabyteDB direct 略快於 HAProxy）。
+
+---
+
+## 對標維度
+
+| 維度 | TiDB variant | CockroachDB variant | YugabyteDB variant | 說明 |
+|------|-------------|---------------------|-------------|------|
+| 單機 VM 基線 | vm-1node (no-analyze) | vm-1node | vm-1node | 最純粹的單節點效能（無資料複製、無負載均衡） |
+| 多節點 VM | vm-3node | vm-3node | vm-3node | 三節點 RF=3 部署，含資料複製到三個節點的成本 |
+| HAProxy overhead | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | vm-3node vs vm-3node-direct | 量測連線代理（負載均衡器）的中介成本（CockroachDB 反而 HAProxy 較快——symmetric architecture 把 SQL 處理層也分散） |
+| K8s 無限制 | k8s-3node-unlimit | k8s-3node-unlimit | k8s-3node-unlimit | 容器化平台的額外效能損耗（容器網路 + 排程開銷） |
+| K8s 資源限制 | k8s-3node-limit | k8s-3node-limit | k8s-3node-limit | 啟用容器資源管制（CPU/記憶體上限）後的影響 |
+
+### 補充說明
+
+- **多節點 VM**：採用 **Raft 共識協議**（分散式一致性機制），所有寫入需要多數節點確認，提供高可用性但有寫入延遲代價。
+
+- **HAProxy overhead**：模擬正式環境前面有 load balancer 時對連線延遲與吞吐的影響。
+
+- **三家架構特徵速查**（影響加節點時誰能擴充什麼）：
+  - **TiDB（SQL／儲存分離）**：TiDB SQL 接收層與 TiKV 儲存層各自獨立，加 SQL 節點即可橫向擴充處理量（HAProxy 增益最大）。
+  - **CockroachDB（symmetric architecture 對稱式）**：每個節點同時具備 SQL 接收與儲存能力，HAProxy 把連線分散到多節點，每台都能完整處理請求。
+  - **YugabyteDB（tserver 一體）**：SQL 與儲存綁在同一進程，加節點時 SQL 與儲存一起增加，但實際吞吐受 MVCC 競爭限制。
+
+---
+
+## 三家架構示意圖
+
+各家原廠官方架構圖（點圖連至原始文件）：
+
+### TiDB
+
+[![TiDB Architecture](https://docs-download.pingcap.com/media/images/docs/tidb-architecture-v6.png)](https://docs.pingcap.com/tidb/stable/tidb-architecture/)
+
+來源：[TiDB Architecture — PingCAP Docs](https://docs.pingcap.com/tidb/stable/tidb-architecture/)
+
+### CockroachDB
+
+[![CockroachDB Architecture](https://github.com/cockroachdb/cockroach/raw/master/docs/media/architecture.png)](https://github.com/cockroachdb/cockroach/blob/master/docs/design.md)
+
+來源：[cockroachdb/cockroach — docs/design.md](https://github.com/cockroachdb/cockroach/blob/master/docs/design.md)
+（CockroachDB 官方 docs 站 Architecture Overview 頁為純文字、無單一整體架構圖；此圖取自 CockroachDB github 原始碼倉庫 `docs/media/architecture.png`，雖為早期設計文件版本，但仍是原廠維護中的官方資料，能完整呈現節點內 SQL/Transactional KV/Distribution/Replication/Storage 各層堆疊與對稱架構。）
+
+### YugabyteDB
+
+[![YugabyteDB Architecture](https://docs.yugabyte.com/images/architecture/layered-architecture.png)](https://docs.yugabyte.com/stable/architecture/)
+
+來源：[Architecture — YugabyteDB Docs](https://docs.yugabyte.com/stable/architecture/)
+
+---
+
+## 環境規格
+
+| 項目 | TiDB | CockroachDB | YugabyteDB |
+|------|------|-------------|------|
+| 節點組成 | TiDB + TiKV×3 + PD | cockroach single-node（v26.1.4，單一 binary 整合 SQL + 儲存 + 元資料） | 3-node (tserver + master) / 1-node |
+| CPU | 4 vCPU (Xeon Gold 6346) | 4 vCPU (Xeon Gold 6346) | 4 vCPU (Xeon Gold 6346) |
+| RAM | 16GB | 16GB | 16GB |
+| max_connections | 無限 | 預設（CockroachDB 動態管理，未調整） | 300 / tserver |
+
+### 節點元件說明
+
+**TiDB**
+
+- **TiDB**：SQL 接收層
+- **TiKV**：資料儲存層 ×3 副本
+- **PD（Placement Driver）**：叢集元資料管理與排程器
+
+**CockroachDB**
+
+- **cockroach**：單一 binary 同時負責 SQL 接收、資料儲存、叢集元資料管理（架構比 TiDB / YugabyteDB 簡單，無獨立元件）
+
+**YugabyteDB**
+
+- **tserver**：資料儲存與 SQL 執行
+- **master**：叢集元資料與排程
+
+### 連線數補充
+
+- **TiDB max_connections=無限**：測試環境設定，生產部署通常會依資源配置設定上限。
+- **CockroachDB max_connections=預設**：CockroachDB 動態管理連線資源，未明確設定上限。
+- **YugabyteDB max_connections=300/tserver**：每個資料節點上限 300 條連線。
+
+### 特殊 flags
+
+**TiDB**
+
+- `tidb_enable_auto_analyze = OFF` — 由 [tests/common/tpcc.sh](../tests/common/tpcc.sh) 在測試期間設定，停用自動統計分析以避免背景工作干擾；測試結束後恢復 `ON`。
+- `tidb_auto_analyze_ratio` — v8.5+ 不再使用此舊設定關閉 auto analyze，改用 `tidb_enable_auto_analyze`；K8s vars / template 參照 [ansible/vars/tidb-k8s-3node-limit.yml](../ansible/vars/tidb-k8s-3node-limit.yml)、[ansible/roles/tidb_cluster/templates/tidbcluster.yaml.j2](../ansible/roles/tidb_cluster/templates/tidbcluster.yaml.j2)。
+
+**CockroachDB**
+
+- `crdb_read_committed: true` — 由 [ansible/vars/cockroach-k8s-3node-unlimit.yml](../ansible/vars/cockroach-k8s-3node-unlimit.yml) / [ansible/vars/cockroach-k8s-3node-limit.yml](../ansible/vars/cockroach-k8s-3node-limit.yml) 紀錄 READ COMMITTED 條件。
+- `sql.txn.read_committed_isolation.enabled = true` — 由 [ansible/roles/cockroach_k8s_deploy/tasks/main.yml](../ansible/roles/cockroach_k8s_deploy/tasks/main.yml) 於部署後套用 cluster setting。
+- `default_transaction_isolation = 'read committed'` — 由 [ansible/roles/cockroach_k8s_deploy/tasks/main.yml](../ansible/roles/cockroach_k8s_deploy/tasks/main.yml) 將所有 role 的預設交易隔離設為 READ COMMITTED。
+- `crdb_tls_enabled: false` / `--insecure` — 由 [ansible/roles/cockroach_k8s_deploy/templates/crdb-values.yaml.j2](../ansible/roles/cockroach_k8s_deploy/templates/crdb-values.yaml.j2) 與 [ansible/roles/cockroach_k8s_deploy/tasks/main.yml](../ansible/roles/cockroach_k8s_deploy/tasks/main.yml) 使用無 TLS 模式，對齊 PoC 測試環境。
+
+**YugabyteDB**
+
+- `yb_gflags.master.replication_factor: "3"` — 由 [ansible/vars/yuga-k8s-3node-unlimit.yml](../ansible/vars/yuga-k8s-3node-unlimit.yml) / [ansible/vars/yuga-k8s-3node-limit.yml](../ansible/vars/yuga-k8s-3node-limit.yml) 設定 RF=3，並由 [ansible/roles/yugabyte_k8s_deploy/templates/yb-values.yaml.j2](../ansible/roles/yugabyte_k8s_deploy/templates/yb-values.yaml.j2) 渲染。
+- `yb_gflags.tserver.ysql_enable_auth: "false"` — 由 [ansible/vars/yuga-k8s-3node-unlimit.yml](../ansible/vars/yuga-k8s-3node-unlimit.yml) / [ansible/vars/yuga-k8s-3node-limit.yml](../ansible/vars/yuga-k8s-3node-limit.yml) 關閉 YSQL auth，對齊 PoC 測試環境。
+- `yb_gflags.tserver.yb_enable_read_committed_isolation: "true"` — 由 [ansible/vars/yuga-k8s-3node-unlimit.yml](../ansible/vars/yuga-k8s-3node-unlimit.yml) / [ansible/vars/yuga-k8s-3node-limit.yml](../ansible/vars/yuga-k8s-3node-limit.yml) 啟用有效 READ COMMITTED；go-tpc 同步使用 `--isolation 2`。
+
+---
+
+## Sharding 分片對標說明
+
+三家 DB 的分片機制設計根本不同，不應強制對齊分片數。正確做法是理解各自策略後，以「各 DB 生產建議預設值」對標，並在測試報告中明確記錄分片狀態。
+
+---
+
+### 概念說明
+
+**分片（shard / tablet / Region / Range）**：資料庫將一張表切成多個水平分片，分散到不同節點上儲存與處理。分片數影響並發競爭程度：分片越多，同一時刻不同 thread 搶同一分片的機率越低，熱點爭搶越少。
+
+**RF（Replication Factor）與分片的關係**：RF=3 表示每個分片有 3 份副本分散在 3 個節點，**分片數決定競爭分散程度，RF 決定資料耐久性**，兩者獨立。
+
+**分片多 ≠ 寫入負載線性增加**：寫入一筆資料只打到「負責該資料的那個分片」，對其他分片無影響。分片多的主要額外開銷是 Raft group 心跳與 master metadata 管理，對 TPC-C TPS 影響可忽略。分片多的主要收益是降低熱點競爭。
+
+---
+
+### 三家 DB 分片策略比較
+
+| DB | 術語 | 分片策略 | 初始分片（建表時） | 分裂觸發條件 | 可否預切 |
+|----|------|---------|-----------------|------------|---------|
+| **TiDB** | Region | 動態分裂（PD 排程） | 1 Region/table | Region > 96MB 自動分裂 | ✅ `PRE_SPLIT_REGIONS=N` |
+| **CockroachDB** | Range | 動態分裂（load-based） | 1 Range/table | Range > 512MB，或流量觸發 | ✅ 手動 `ALTER TABLE SPLIT AT` |
+| **YugabyteDB** | Tablet | 靜態預切（start 時決定） | `yb_num_shards_per_tserver × tserver 數` | 預設不自動分裂（2025.x） | ✅ 唯一方式，需重建叢集 |
+
+---
+
+### VM 3-node + 128W 實際分片情境模擬
+
+#### TiDB（3 TiKV nodes，RF=3）
+
+```
+建表時：每張 table → 1 Region（~幾 KB）
+                         ↓ prepare loading（資料持續寫入）
+order_line（~38.4M rows）→ 分裂成 5-8 Regions（每 Region ~96MB 觸發）
+stock     （~12.8M rows）→ 分裂成 3-5 Regions
+warehouse / district     → 資料量小，維持 1 Region
+                         ↓ warmup（分裂風暴在此完成）
+正式 run 時              → Region 已穩定，PD 完成跨 TiKV 負載均衡
+```
+
+- **warmup 重要性高**：TPC-C load 期間大量 Region 分裂，正式測試前必須讓分裂穩定，否則前段數字嚴重失真
+- 測試設定：不額外預切，使用預設 1 Region/table + warmup 5m
+
+#### CockroachDB（3 nodes，RF=3）
+
+```
+建表時：每張 table → 1 Range（~幾 KB）
+prepare 後：多數表未超過 512MB，幾乎不分裂（維持 1-2 Ranges/table）
+order_line 可能達 2-3 Ranges（~38.4M rows × ~100 bytes ≈ 3.8GB，可能觸發）
+```
+
+- **warmup 重要性低**：分裂觸發條件（512MB）難在 128W prepare 中達到，warmup 主要為 cache 預熱
+- `kv.range_split.by_load_enabled=true`（預設開啟）：高壓測試中可能依流量觸發額外分裂
+- 測試設定：不額外預切，使用預設 1 Range/table + warmup 5m
+
+#### YugabyteDB（3 tservers，RF=3）
+
+分片公式：`tablets/table = yb_num_shards_per_tserver × tserver 數`
+
+```
+yb_num_shards_per_tserver=1（2025.x 新預設）：
+  tablets = 1 × 3 = 3 → 128 warehouses / 3 tablets ≈ 43 warehouse/tablet（競爭集中）
+
+yb_num_shards_per_tserver=3（2.x 舊版預設）：
+  tablets = 3 × 3 = 9 → 128 warehouses / 9 tablets ≈ 14 warehouse/tablet（競爭分散）
+
+yb_num_shards_per_tserver=8：
+  tablets = 8 × 3 = 24 → 128 warehouses / 24 tablets ≈ 5 warehouse/tablet（接近 TiDB 穩定態）
+```
+
+每個 tablet 的 3 份 replica 分散在 .32/.33/.34 三台，**三台均持有全部資料**。
+
+| 設定 | tablets/table | warehouse 分佈 | 測試狀態 |
+|------|:------------:|--------------|--------|
+| `=1`（2025.x 預設） | 3 | ~43/tablet | 現行 vm-* 測試 |
+| `=3`（舊版預設） | 9 | ~14/tablet | 待補對比組 |
+
+**設定方式**（需在 yugabyted start 時帶入，不可熱更新）：
+```bash
+yugabyted start --tserver_flags="yb_num_shards_per_tserver=3,yb_enable_read_committed_isolation=true"
+```
+
+**驗證指令**：
+```bash
+curl -s http://172.24.40.32:9000/varz | grep yb_num_shards
+```
+
+---
+
+### 對標規格設定總結
+
+| DB | 測試設定 | 分片狀態記錄點 |
+|----|---------|-------------|
+| **TiDB** | 預設動態分裂，warmup 5m | prepare 後 + warmup 後各記錄一次 Region 數 |
+| **CockroachDB** | 預設動態分裂，warmup 5m | prepare 後記錄 Range 數，通常 1-2/table |
+| **YugabyteDB** | 記錄 `yb_num_shards_per_tserver` 值 | `curl http://<tserver>:9000/varz \| grep yb_num_shards` |
+
+> **對標原則**：各 DB 使用生產建議預設值，不強制對齊分片數（架構設計不同，強制對齊反而失真）。YugabyteDB 可補跑 `=1` vs `=3` 對比組，量化分片數對 TPC-C 的獨立影響。
+
+---
+
+## 參考
+
+- TiDB 本輪測試紀錄: [tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md)
+- CockroachDB 本輪測試紀錄: [cockroach-tc1/S-BASE/pipeline-log.md](./cockroach-tc1/S-BASE/pipeline-log.md)
+- YugabyteDB 本輪測試紀錄: [yuga-tc1/S-BASE/pipeline-log.md](./yuga-tc1/S-BASE/pipeline-log.md)
+- TiDB 歷史分析: [results_old/tidb-tc1/S-BASE/compare.md](../results_old/tidb-tc1/S-BASE/compare.md)
+- YugabyteDB 歷史 pipeline log: [results_old/yuga-tc1/S-BASE/pipeline-log.md](../results_old/yuga-tc1/S-BASE/pipeline-log.md)
