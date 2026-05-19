@@ -1,6 +1,20 @@
 # PoC v4.7 文件審計 — Codex Prompt
 
-> **用法**：開 codex，貼下方整段（從 `你是 ...` 起到本檔末），讓它對 5 個 markdown 產報告。報告**不直接修改檔案**。
+> **用法**（任選其一）：
+> ```bash
+> # 推薦：stdin pipe（非互動）
+> codex exec - < /Users/wn.lin/vscode-git/dba_career/poc/results/audit-prompt.md
+>
+> # 或 cat 進去
+> cat /Users/wn.lin/vscode-git/dba_career/poc/results/audit-prompt.md | codex exec -
+>
+> # 或互動模式手貼（開 codex 直接貼下方整段）
+> codex
+> ```
+>
+> ⚠️ `cat ... | codex`（不加 `exec -`）會吐 `Error: stdin is not a terminal`，因為預設 codex 走互動 TTY。`codex exec` subcommand 才是 non-interactive 模式，`-` 為 stdin marker（見 `codex exec --help`）。
+>
+> 報告**不直接修改檔案**，輸出落地至 `results/audit/audit-<yyyy-mm-dd>.md`。
 
 ---
 
