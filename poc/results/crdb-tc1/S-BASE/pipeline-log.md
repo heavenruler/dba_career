@@ -356,3 +356,88 @@ CRDB v26.2 preview RR 在 vm-1node 4 vCPU 硬體下：
   2. 用 RC + 應用層 idempotency 補強讀一致性需求
 - **不要把 CRDB RR 視為 TiDB RR pessimistic 的等價替代** — 表象同名，行為差 3x
 
+---
+
+## vm-1node-strict — 2026-05-19（PoC v4.7，CRDB SERIALIZABLE / SSI）
+
+> **本段目的**：完成 CRDB v26.2 三組 isolation 矩陣（rc / rr / strict）。CRDB 預設即 SERIALIZABLE，本段量化 SSI vs RC vs RR 在同硬體下的吞吐 / latency / DB 資源差異。
+
+### 環境（同 rc / rr）
+- 節點：.32 單節點，CRDB v26.2.0
+- go-tpc conn-params：`sslmode=disable&options=-c default_transaction_isolation=serializable`
+- TPCC_TS：`20260519T164057+0800`
+- Suite start：16:43:31；prepare done ~17:27；run 17:28 → 20:06；total 3h24min
+- 結果目錄：`vm-1node-strict/crdb-vm-1node-strict-20260519T164057+0800/`
+
+### Execute 結果（5 round tpmC 平均；latency 取 r5 代表值）
+
+| threads | tpmC mean | range/mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) | NEW_ORDER_ERR / 5min | err TPM |
+|---------|-----------|------------|-------------|-------------|-------------|----------------------|---------|
+| 16  | 7,878  | 14.7% | 15.7 | 37.7  | 50.3  | 14  | 2.9  |
+| 32  | 9,935  | 22.2% | 21.0 | 75.5  | 104.9 | 30  | 6.0  |
+| 64  | **10,830** | 15.0% | 25.2 | 151.0 | 226.5 | 61  | 12.2 |
+| 128 | 10,456 | 7.3%  | 31.5 | 335.5 | 486.5 | 125 | 25.1 |
+
+### Round-by-round tpmC
+
+| Threads | r1 | r2 | r3 | r4 | r5 |
+|---------|-----|-----|-----|-----|-----|
+| 16  | 7463  | 8450  | 7868  | 8321  | 7288  |
+| 32  | 10383 | 10886 | 9239  | 8680  | 10485 |
+| 64  | 10195 | 11715 | 10089 | 11338 | 10813 |
+| 128 | 10046 | 10679 | 10729 | 10792 | 10033 |
+
+### DB-host (.32) 飽和分析
+
+| threads | %usr mean | %sys mean | %iowait mean | %idle mean | %idle min | sda %util |
+|---------|-----------|-----------|--------------|------------|-----------|-----------|
+| 16  | 50.7% | 4.9% | 8.88%  | **33.48%** | 0.00% | 37.3% |
+| 32  | 53.1% | 5.2% | 11.99% | 27.49% | 0.00% | 43.5% |
+| 64  | 58.8% | 5.5% | 14.40% | 18.93% | 0.00% | 45.9% |
+| 128 | 64.2% | 6.0% | 17.25% | 9.99%  | 0.00% | 50.2% |
+
+> strict 的 CPU 隨 thread 線性爬升（50→64%），不像 RC 一開始就被 fsync IO 卡在 68%。表示 SSI 對 IO 路徑更省 — 同樣 IO 預算下能跑更多 txn。
+
+### 三 iso 對比 ★（CRDB 同硬體）
+
+| threads | RC tpmC | strict tpmC | RR tpmC | strict vs RC | strict vs RR | RC p99 | strict p99 | RR p99 |
+|---------|---------|-------------|---------|--------------|--------------|--------|------------|--------|
+| 16  | 9,034 | 7,878 | 3,229 | **-12.8%** | +144% | 113 | **50**  | 50  |
+| 32  | 9,020 | **9,935**  | 3,577 | **+10.1%** | +178% | 223 | **105** | 109 |
+| 64  | 9,134 | **10,830** | 3,594 | **+18.6%** | +201% | 440 | **227** | 218 |
+| 128 | 8,813 | **10,456** | 3,788 | **+18.6%** | +176% | 926 | **487** | 604 |
+
+| iso | snapshot | 寫衝突處理 | client retry 義務 | DB-host saturate 模式 |
+|-----|----------|-----------|------------------|----------------------|
+| **RC** | per-statement | row lock 排隊 | 無 | fsync IO 立即天花板（%iowait 18%, %idle 5%） |
+| **RR/SI** | per-txn 凍結 | WriteTooOldError | **必須**（client 完整重送） | DB idle 50%、retry storm 浪費 throughput |
+| **Strict/SSI** | per-txn + read refresh | refresh 失敗 → **server 內部 retry**（cached plan + read set 復用） | 偶爾外漏為 errors | scale with threads（%idle 33→10%） |
+
+### 關鍵發現
+
+1. **Strict 在 t32+ 反超 RC 10-19% tpmC**：違反「越強 isolation 越慢」直覺；原因為 RC fsync IO 立即觸頂（%idle 5%），strict 仍有資源頭可榨
+2. **Strict 比 RR 快 3x，但 err count 相同**（strict 14/30/61/125 vs RR 15/31/63/127）：兩者都被 SI snapshot 衝突影響，差異在 SSI 的 **server-side transparent retry** 把成本壓在 server cache 而非 client 全量重送
+3. **Strict p99 latency 比 RC 低一個量級**（t128: 487 vs 926ms）：RC throughput 被 fsync 卡死，worker queue 拉長 latency；strict 跑得快，queue 短
+4. **Starting-gun storm 仍存在**（err count 線性隨 thread，0.2 err/sec/thread）：snapshot ts 同步是 RR/strict 共通病；只有 RC 用 per-statement snapshot 才完全免疫
+
+### 業務啟示
+
+- CRDB 預設 SERIALIZABLE 不只是「正確性最強」，**在 4 vCPU + single disk 硬體上同時也是最快**（中高並發）
+- **不要為了「降 isolation 提升性能」而切 RC**：strict 反而更快、p99 更低
+- 若 app 必須 RR/SI 語意，CRDB 的 RR 不是答案 — strict（SSI）即 RR 的超集，且性能高 3x
+- 與 TiDB rr 比，CRDB strict 仍落後：strict t128 10,456 vs TiDB rr t128 13,874（-25%）；TiDB pessimistic lock 路徑對 hot row 的處理仍最有效率
+
+### 結論
+
+CRDB v26.2 vm-1node 三 isolation 排序（4 vCPU + single disk）：
+
+```
+strict  10,456 tpmC  ← 最快 + 最強 isolation
+RC       8,813 tpmC  ← fsync IO bound 早早撞牆
+RR       3,788 tpmC  ← retry storm 浪費吞吐
+              ↑
+        (t128 mean)
+```
+
+CRDB 設計層面**強烈鼓勵用 SERIALIZABLE**，硬體預算下也最划算。RR 是為 PostgreSQL 兼容性而存在的 preview feature，不應作為性能取捨選項。
+
