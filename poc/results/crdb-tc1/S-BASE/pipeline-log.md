@@ -413,12 +413,72 @@ CRDB v26.2 preview RR 在 vm-1node 4 vCPU 硬體下：
 | **RR/SI** | per-txn 凍結 | WriteTooOldError | **必須**（client 完整重送） | DB idle 50%、retry storm 浪費 throughput |
 | **Strict/SSI** | per-txn + read refresh | refresh 失敗 → **server 內部 retry**（cached plan + read set 復用） | 偶爾外漏為 errors | scale with threads（%idle 33→10%） |
 
+### Error 時序分布 ★ — 與 RR 對比
+
+實測 strict 也有 starting-gun storm，但 **error spread 比 RR 廣 3-5x**（strict t16 集中於 89s 內，RR t16 集中於 33s 內；strict t128 跨 4.5min，RR t128 跨 0.8min）。
+
+#### 實證數據
+
+| round | iso | 第一個 err | 最後一個 err | err 總時長 | 集中度（前 50s 占比）|
+|-------|-----|-----------|-------------|-----------|---------------------|
+| t16 r1 | RR | +2s | +35s | 33s | ~100% |
+| t16 r1 | **strict** | +5s | +94s | **89s** | ~70% |
+| t128 r5 | RR | +0s | +90s | 90s（主峰前 50s） | 90% |
+| t128 r5 | **strict** | +0s | +274s | **274s（4.5min）** | 75% |
+
+#### strict t128 r5 error 時序（10s buckets）
+
+```
+0-10s:  15 errs  ████████████████
+10-20s:  8       ████████
+20-30s: 16       ████████████████
+30-40s: 13       █████████████
+40-50s: 20       ████████████████████ ← 高峰
+50-60s: 11       ███████████
+60-70s:  8       ████████
+70-80s:  5       █████
+80-90s: 11       ███████████
+... 第二波遞減
+110s:    4
+130s:    1
+140s:    4
+150s:    3
+160s:    1
+170s:    2
+180s:    1
+... 至 274s 才完全停止
+```
+
+#### 機制差異（為何 strict err spread 比 RR 廣）
+
+| 維度 | RR (SI) | strict (SSI) |
+|------|---------|--------------|
+| client 看到 err 時機 | **第一次** WriteTooOldError 就立即外漏 | server **內部 retry 多次** 失敗才外漏 |
+| 內部 retry 機制 | 無 | read-refresh + cached plan 重執行 |
+| err 速度 | 快速宣告失敗（concentration 高） | 持續嘗試（spread 廣） |
+| 用戶觀感 | "錯了重來"（明確） | "好像有時 retry 有時不"（混亂） |
+| 真實 retry 次數 | = NEW_ORDER_ERR count | NEW_ORDER_ERR + server-internal（看不到）|
+
+#### error 類型統計（strict）
+
+| round | WriteTooOldError | TransactionRetryWithProtoRefreshError | SerializationFailure |
+|-------|------------------|-----------------------------------|----------------------|
+| t16 r1 | 28（=14 unique × 2 echo lines） | 28 | 0 |
+| t128 r1 | 254（=127 × 2） | 254 | 0 |
+| t128 r5 | 254（=127 × 2） | 254 | 0 |
+
+> strict 完全沒有 `SerializationFailure`（CRDB SSI 的另一種衝突類型）：所有衝突都被 WriteTooOldError 早期 catch；refresh 路徑沒走到 commit-time validation 失敗。
+> grep 出來的 raw count 是 NEW_ORDER_ERR 的 2x，因為 go-tpc 同 error 印兩行（一行有 timestamp prefix、一行裸印 err）。實際 unique error 件數以 [Summary] NEW_ORDER_ERR Count 為準。
+
 ### 關鍵發現
 
 1. **Strict 在 t32+ 反超 RC 10-19% tpmC**：違反「越強 isolation 越慢」直覺；原因為 RC fsync IO 立即觸頂（%idle 5%），strict 仍有資源頭可榨
 2. **Strict 比 RR 快 3x，但 err count 相同**（strict 14/30/61/125 vs RR 15/31/63/127）：兩者都被 SI snapshot 衝突影響，差異在 SSI 的 **server-side transparent retry** 把成本壓在 server cache 而非 client 全量重送
 3. **Strict p99 latency 比 RC 低一個量級**（t128: 487 vs 926ms）：RC throughput 被 fsync 卡死，worker queue 拉長 latency；strict 跑得快，queue 短
-4. **Starting-gun storm 仍存在**（err count 線性隨 thread，0.2 err/sec/thread）：snapshot ts 同步是 RR/strict 共通病；只有 RC 用 per-statement snapshot 才完全免疫
+4. **Starting-gun storm 仍存在但形態不同**：
+   - RR: err 集中於前 33s（t16）/ 90s（t128），快速宣告失敗
+   - strict: err spread 至 89s（t16）/ 274s（t128），server 持續內部 retry 後才外漏
+   - 只有 RC 用 per-statement snapshot 完全免疫
 
 ### 業務啟示
 
