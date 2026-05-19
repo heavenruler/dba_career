@@ -244,13 +244,13 @@ vm-3node-haproxy-3s3r          ✓     -     -
 #### 6.4.1 Phase 切分
 
 ```
-Phase A（本輪起手）：vm-1node-{rc, rr, strict}      = 9 組  (3 DB × 3 iso)
+Phase A（本輪起手）：vm-1node-{rc, rr, strict}      = 9 case；實跑 8 組（TiDB strict 等同 rr，僅紀錄不重跑）
 Phase B：           vm-3node-1s1r-rc               = 3 組
 Phase C：           vm-3node-1s3r-rc               = 3 組
 Phase D：           vm-3node-3s1r-rc               = 3 組
 Phase E：           vm-3node-3s3r-rc               = 3 組
 Phase F：           vm-3node-haproxy-3s3r-rc       = 3 組
-                                                     合計 24 組
+                                                     合計 24 case；實跑 23 組
 ```
 
 #### 6.4.2 每組 wall-clock 階段細項
@@ -266,42 +266,44 @@ Phase F：           vm-3node-haproxy-3s3r-rc       = 3 組
 
 > 116 min 計算：4 threads × (5 rounds × 5 min run + 4 × 60s round sleep) = 4 × 29 = 116 min。
 
-#### 6.4.3 24 組完整明細
+#### 6.4.3 24 case 完整明細（實跑 23 組）
 
 | # | Phase | 拓撲 | DB | iso | shard | repl | 工時 | 累計 |
 |---:|---|---|---|---|---:|---:|---:|---:|
 | 1 | A | vm-1node | TiDB | rc | 1 | 1 | 150 min | 2.5 h |
 | 2 | A | vm-1node | TiDB | rr | 1 | 1 | 150 min | 5.0 h |
-| 3 | A | vm-1node | TiDB | strict | 1 | 1 | 150 min | 7.5 h |
-| 4 | A | vm-1node | CRDB | rc | 1 | 1 | 150 min | 10.0 h |
-| 5 | A | vm-1node | CRDB | rr | 1 | 1 | 150 min | 12.5 h |
-| 6 | A | vm-1node | CRDB | strict | 1 | 1 | 150 min | 15.0 h |
-| 7 | A | vm-1node | YBDB | rc | 1 | 1 | 150 min | 17.5 h |
-| 8 | A | vm-1node | YBDB | rr | 1 | 1 | 150 min | 20.0 h |
-| 9 | A | vm-1node | YBDB | strict | 1 | 1 | 150 min | **22.5 h ← Phase A 結束** |
-| 10 | B | vm-3node-1s1r | TiDB | rc | 1 | 1 | 180 min | 25.5 h |
-| 11 | B | vm-3node-1s1r | CRDB | rc | 1 | 1 | 180 min | 28.5 h |
-| 12 | B | vm-3node-1s1r | YBDB | rc | 1 | 1 | 180 min | **31.5 h ← Phase B 結束** |
-| 13 | C | vm-3node-1s3r | TiDB | rc | 1 | 3 | 180 min | 34.5 h |
-| 14 | C | vm-3node-1s3r | CRDB | rc | 1 | 3 | 180 min | 37.5 h |
-| 15 | C | vm-3node-1s3r | YBDB | rc | 1 | 3 | 180 min | **40.5 h ← Phase C 結束** |
-| 16 | D | vm-3node-3s1r | TiDB | rc | 3 | 1 | 180 min | 43.5 h |
-| 17 | D | vm-3node-3s1r | CRDB | rc | 3 | 1 | 180 min | 46.5 h |
-| 18 | D | vm-3node-3s1r | YBDB | rc | 3 | 1 | 180 min | **49.5 h ← Phase D 結束** |
-| 19 | E | vm-3node-3s3r | TiDB | rc | 3 | 3 | 180 min | 52.5 h |
-| 20 | E | vm-3node-3s3r | CRDB | rc | 3 | 3 | 180 min | 55.5 h |
-| 21 | E | vm-3node-3s3r | YBDB | rc | 3 | 3 | 180 min | **58.5 h ← Phase E 結束** |
-| 22 | F | vm-3node-haproxy-3s3r | TiDB | rc | 3 | 3 | 180 min | 61.5 h |
-| 23 | F | vm-3node-haproxy-3s3r | CRDB | rc | 3 | 3 | 180 min | 64.5 h |
-| 24 | F | vm-3node-haproxy-3s3r | YBDB | rc | 3 | 3 | 180 min | **67.5 h ← Phase F 結束** |
+| 3 | A | vm-1node | TiDB | strict | 1 | 1 | 0 min | 5.0 h（等同 #2 RR，僅紀錄） |
+| 4 | A | vm-1node | CRDB | rc | 1 | 1 | 150 min | 7.5 h |
+| 5 | A | vm-1node | CRDB | rr | 1 | 1 | 150 min | 10.0 h |
+| 6 | A | vm-1node | CRDB | strict | 1 | 1 | 150 min | 12.5 h |
+| 7 | A | vm-1node | YBDB | rc | 1 | 1 | 150 min | 15.0 h |
+| 8 | A | vm-1node | YBDB | rr | 1 | 1 | 150 min | 17.5 h |
+| 9 | A | vm-1node | YBDB | strict | 1 | 1 | 150 min | **20.0 h ← Phase A 結束** |
+| 10 | B | vm-3node-1s1r | TiDB | rc | 1 | 1 | 180 min | 23.0 h |
+| 11 | B | vm-3node-1s1r | CRDB | rc | 1 | 1 | 180 min | 26.0 h |
+| 12 | B | vm-3node-1s1r | YBDB | rc | 1 | 1 | 180 min | **29.0 h ← Phase B 結束** |
+| 13 | C | vm-3node-1s3r | TiDB | rc | 1 | 3 | 180 min | 32.0 h |
+| 14 | C | vm-3node-1s3r | CRDB | rc | 1 | 3 | 180 min | 35.0 h |
+| 15 | C | vm-3node-1s3r | YBDB | rc | 1 | 3 | 180 min | **38.0 h ← Phase C 結束** |
+| 16 | D | vm-3node-3s1r | TiDB | rc | 3 | 1 | 180 min | 41.0 h |
+| 17 | D | vm-3node-3s1r | CRDB | rc | 3 | 1 | 180 min | 44.0 h |
+| 18 | D | vm-3node-3s1r | YBDB | rc | 3 | 1 | 180 min | **47.0 h ← Phase D 結束** |
+| 19 | E | vm-3node-3s3r | TiDB | rc | 3 | 3 | 180 min | 50.0 h |
+| 20 | E | vm-3node-3s3r | CRDB | rc | 3 | 3 | 180 min | 53.0 h |
+| 21 | E | vm-3node-3s3r | YBDB | rc | 3 | 3 | 180 min | **56.0 h ← Phase E 結束** |
+| 22 | F | vm-3node-haproxy-3s3r | TiDB | rc | 3 | 3 | 180 min | 59.0 h |
+| 23 | F | vm-3node-haproxy-3s3r | CRDB | rc | 3 | 3 | 180 min | 62.0 h |
+| 24 | F | vm-3node-haproxy-3s3r | YBDB | rc | 3 | 3 | 180 min | **65.0 h ← Phase F 結束** |
+
+> #3 TiDB strict 不另行作業：TiDB native 最強隔離級為 REPEATABLE READ，`strict` 在本 PoC 中 alias 到 `rr`，因此以 #2 `vm-1node / TiDB / rr` artifact 與報表紀錄代表，避免重跑同設定造成工時浪費與資料重複。
 
 #### 6.4.4 SSOT 樂觀估 vs Conservative buffer
 
-SSOT 樂觀估 67.5 h 為**單純階段累加**，實務上還有：
+SSOT 樂觀估 65.0 h 為**單純階段累加**（24 case 中 TiDB strict 不另跑，實跑 23 組），實務上還有：
 
 | 隱性成本 | 估時 | 累計影響 |
 |---|---:|---|
-| ssh / artifact rsync 來回開銷 | ~+3 min/組 | +1.2 h |
+| ssh / artifact rsync 來回開銷 | ~+3 min/實跑組 | +1.15 h |
 | DB 啟動穩定（YBDB tablet rebalance、CRDB compaction、TiDB Region heartbeat），尤其 RF=3 + 3 shards | ~+5 min/組（vm-3node 15 組） | +1.25 h |
 | §7.5 shard 鎖定 hard gate 通過前 retry 成本（若失敗 → 重 prepare + 重 cold-reset） | 1 次重跑 ≈ +30 min | 假設 4 次重跑：+2 h |
 | 人工介入（log 檢查、noisy result 重跑） | 5 % buffer | +3.4 h |
@@ -310,18 +312,18 @@ SSOT 樂觀估 67.5 h 為**單純階段累加**，實務上還有：
 **對外承諾用估算**：
 
 ```
-SSOT 樂觀估：       67.5 h
+SSOT 樂觀估：       65.0 h
 Conservative buffer：+7.8 h（+12%）
                     ─────────
-合計（保守）：       ~75 h benchmark wall-clock
+合計（保守）：       ~73 h benchmark wall-clock
 ```
 
 #### 6.4.5 排程方案
 
 | 方案 | 跑法 | 時長 |
 |---|---|---|
-| A — 連續跑（24×7 模式） | 不停機，含夜間 | ~3 工作日（72 h） |
-| B — 分 Phase 跑 | Phase A（22.5 h）→ Phase B–F（45 h）兩段 | ~3.5 工作日 |
+| A — 連續跑（24×7 模式） | 不停機，含夜間 | ~3 工作日（含 buffer 約 73 h） |
+| B — 分 Phase 跑 | Phase A（20.0 h）→ Phase B–F（45 h）兩段 | ~3.5 工作日 |
 | C — overnight only（每天 8–10 h） | 工作日結束才開跑，隔天停 | ~10 工作日 |
 
 > 建議方案 B：Phase A 跑完先做中間 review（隔離級成本 baseline 出爐），確認流程無誤再進 Phase B–F。失敗重跑也只影響該 Phase。
@@ -1089,7 +1091,7 @@ clean-tpcc-artifacts                                   # 清 .31:/tmp/poc-tpcc/a
 
 **問題**：MAC 是工作設備，會蓋上螢幕、切換網路、被 Codex / Claude Code session 中斷。
 若 prepare / run（合計 ~2.5h/組）停在 MAC ssh foreground，session 一斷，benchmark 中斷，artifact 不完整。
-24 組測試（vm1 9 + vm3 12 + vm3hap 3）若全用 foreground，工時碎片化機率極高。
+24 case 測試（vm1 9 case / 實跑 8 組 + vm3 12 組 + vm3hap 3 組）若全用 foreground，工時碎片化機率極高。
 
 **設計原則**：MAC 只負責「下發」，**.31 負責所有長時間作業**。
 
@@ -1348,7 +1350,7 @@ MAC (orchestrator)
 | Sharding 對齊 | vm-1node 自然 1 shard；**所有 vm-3node 子拓撲皆 controlled，手動鎖 shard 並 hard gate**（§7.5） | 「production default vs controlled」混合分類已棄用 |
 | vm-1node 1 shard × 3 replica | **排除** | 三家官方副本放置規則禁止同 store/node 多 replica（§4.4） |
 | 隔離級成本範圍 | 僅在 vm-1node 量化（rc/rr/strict 三 iso）；vm-3node 系列只跑 RC | 完整 quorum 下 isolation 行為非本輪範圍；§6.3 限制聲明 |
-| Wall-clock 估算 | 24 組 SSOT 樂觀估 **~67.5 h**；含 conservative buffer **~75 h**（已從原估 18h 大幅修正） | §6.4 |
+| Wall-clock 估算 | 24 case / 實跑 23 組，SSOT 樂觀估 **~65.0 h**；含 conservative buffer **~73 h**（TiDB strict 等同 RR，不另跑） | §6.4 |
 | 排程方案 | 建議方案 B：Phase A → review → Phase B–F；分段跑可降低失敗成本 | §6.4.5 |
 | CRDB load-based split | 不關 | 官方預設且生產建議；vm-1node 自然不觸發 |
 | CRDB 密碼設定 | 不在 `--insecure` 下 SET PASSWORD | 官方不支援；用 HBA trust |
