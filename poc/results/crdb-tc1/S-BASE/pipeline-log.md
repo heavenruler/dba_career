@@ -4,6 +4,43 @@
 
 ---
 
+## TL;DR — vm-1node 三 isolation 矩陣完成（2026-05-19）
+
+**核心結論**：CRDB v26.2 在 4 vCPU + single XFS disk 硬體下，**預設 SERIALIZABLE 最快**（違反「強 iso 較慢」直覺）；preview RR 是最慢的選項（retry storm 浪費 60% 吞吐）。
+
+### tpmC 排行（t128, 5 round mean）
+
+| 排名 | iso | tpmC | DB-host 瓶頸 | err / 5min |
+|------|-----|------|--------------|------------|
+| 🥇 | **strict (SSI, 預設)** | **10,456** | scale with threads（%idle 33→10%）| 125 |
+| 🥈 | rc | 8,813 | fsync IO 立即觸頂（%idle 5% / %iowait 18%） | 0 |
+| 🥉 | rr (preview) | 3,788 | retry storm（DB %idle 46%、CPU 浪費在 client 重送）| 127 |
+
+### 三大發現
+
+1. **Strict > RC 反直覺**：t32+ strict 比 RC 快 +10~19% tpmC、p99 低一個量級（t128: 487 vs 926ms）。原因為 RC 從 t16 起即被 fsync IO 卡死（%user 68% / %iowait 18%），strict 走 SSI 的 batched read-refresh 路徑 IO 更省，仍有 CPU headroom 可榨。
+2. **RR=SI、但行為差 TiDB pessimistic 3.5x**：CRDB 文件明寫「REPEATABLE READ maps to SNAPSHOT」，採 first-committer-wins。同 TiDB RR（亦 SI）相比，TiDB pessimistic 拿鎖時 advance for-update-ts、不需 retry，跑出 13,874 vs CRDB 3,788 tpmC（**-72.7%**）。CRDB 無等效於 `tidb_txn_mode=pessimistic` 的全域開關。
+3. **Starting-gun storm**：RR/strict 兩者皆在每 round 起始 30s-4.5min 內爆 retry（per-txn snapshot ts 同步觸發 hot row 衝突）。RC 因 per-statement snapshot 完全免疫。strict 因 server-side transparent retry，err spread 比 RR 寬 3-5x（但總 err count 接近 — strict 14/30/61/125 vs RR 15/31/63/127）。
+
+### 業務啟示
+
+- CRDB 切 isolation 不要為了「降強度求性能」— 預設 SERIALIZABLE 在這硬體下既最快又最安全
+- 若 app 必須 SI 語意，**不要選 preview RR**：強度同 SSI 但性能砍 60%；用 strict 才對
+- 部署 / failover / pool warmup 等同步啟動情境會放大 RR 的 starting-gun 問題，需 client jittered backoff + 連線 warmup
+- TiDB 在此硬體上 RR 仍勝 CRDB strict（13,874 vs 10,456，+33%），但設計成本上 CRDB 賺正確性 default-on 的工程穩定性
+
+### 完整資料目錄
+
+| iso | TPCC_TS | 5-round mean t128 | 詳細段落 |
+|-----|---------|-------------------|----------|
+| rc | 20260519T085346+0800 | 8,813 | [§ vm-1node-rc](#vm-1node-rc--2026-05-19poc-v47-baseline含-db-host-os-監控) |
+| rr | 20260519T124506+0800 | 3,788 | [§ vm-1node-rr](#vm-1node-rr--2026-05-19poc-v47crdb-preview-rr) |
+| strict | 20260519T164057+0800 | 10,456 | [§ vm-1node-strict](#vm-1node-strict--2026-05-19poc-v47crdb-serializable--ssi) |
+
+下一步：vm-3node-direct 對標（驗證 Raft fsync 並行化是否解 RC 的 IO 瓶頸）+ YBDB 系列對標 SI / SSI 實作差異。
+
+---
+
 ## vm-1node-rc — 2026-05-19（PoC v4.7 baseline，含 DB-host OS 監控）
 
 > **本段目的**：在與 TiDB `vm-1node-rc` 相同的硬體 / 流程 / 監控條件下取得 CockroachDB v26.2 單節點 RC baseline，作為 vm-1node-rr / vm-1node-strict 與 vm-3node 對標的起點。
