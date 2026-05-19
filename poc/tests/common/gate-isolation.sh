@@ -48,7 +48,7 @@ case "$DB" in
     USER="${CRDB_USER:-root}"
     DB_NAME="${CRDB_DB:-tpcc}"
     psql "postgres://${USER}@${DB_HOST}:${PORT}/${DB_NAME}?${ISO_CONN_PARAMS}" \
-      -v ON_ERROR_STOP=1 -At -c "BEGIN; SHOW transaction_isolation; COMMIT;" \
+      -v ON_ERROR_STOP=1 -At -c "SHOW transaction_isolation" \
       > "$GATE_DIR/isolation-db.txt" 2>&1
     ACTUAL=$(grep -E '^(read committed|repeatable read|serializable)$' "$GATE_DIR/isolation-db.txt" | tail -1)
     ;;
@@ -58,7 +58,7 @@ case "$DB" in
     USER="${YBDB_USER:-yugabyte}"
     DB_NAME="${YBDB_DB:-tpcc}"
     psql "postgres://${USER}@${DB_HOST}:${PORT}/${DB_NAME}?${ISO_CONN_PARAMS}" \
-      -v ON_ERROR_STOP=1 -At -c "BEGIN; SHOW transaction_isolation; COMMIT;" \
+      -v ON_ERROR_STOP=1 -At -c "SHOW transaction_isolation" \
       > "$GATE_DIR/isolation-db.txt" 2>&1
     ACTUAL=$(grep -E '^(read committed|repeatable read|serializable)$' "$GATE_DIR/isolation-db.txt" | tail -1)
     ;;
