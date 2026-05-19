@@ -1,0 +1,12 @@
+{
+  "phase": "gate-isolation",
+  "db": "crdb",
+  "topology": "vm-1node",
+  "iso": "rr",
+  "ts": "20260519T124506+0800",
+  "db_host": "172.24.40.32",
+  "conn_params": "sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read",
+  "isolation_expected": "repeatable read",
+  "isolation_actual": "repeatable read",
+  "driver_actual": "repeatable read"
+}

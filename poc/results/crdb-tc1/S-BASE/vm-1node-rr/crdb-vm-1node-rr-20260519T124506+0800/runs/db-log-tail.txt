@@ -1,0 +1,227 @@
+=== cockroach.log tail ===
+I260519 05:31:32.519431 1 util/log/file_sync_buffer.go:237 ⋮ [config]   file created at: 2026/05/19 05:31:32
+I260519 05:31:32.519440 1 util/log/file_sync_buffer.go:237 ⋮ [config]   running on machine: ‹l-test-poc-1›
+I260519 05:31:32.519449 1 util/log/file_sync_buffer.go:237 ⋮ [config]   binary: CockroachDB CCL v26.2.0 (x86_64-pc-linux-gnu, built 2026/04/21 18:36:57, go1.25.5)
+I260519 05:31:32.519453 1 util/log/file_sync_buffer.go:237 ⋮ [config]   arguments: [‹/usr/local/bin/cockroach› ‹start-single-node› ‹--insecure› ‹--cache=5GiB› ‹--max-sql-memory=3GiB› ‹--store=/data/crdb› ‹--listen-addr=0.0.0.0:26257› ‹--http-addr=0.0.0.0:8080›]
+I260519 05:31:32.519464 1 util/log/file_sync_buffer.go:237 ⋮ [config]   log format (utf8=✓): crdb-v2
+I260519 05:31:32.519468 1 util/log/file_sync_buffer.go:237 ⋮ [config]   line format: [IWEF]yymmdd hh:mm:ss.uuuuuu goid [chan@]file:line redactionmark \[tags\] [counter] msg
+W260519 05:31:32.519280 1 1@cli/start.go:1479 ⋮ [n?] 1  ALL SECURITY CONTROLS HAVE BEEN DISABLED!
+W260519 05:31:32.519280 1 1@cli/start.go:1479 ⋮ [n?] 1 +
+W260519 05:31:32.519280 1 1@cli/start.go:1479 ⋮ [n?] 1 +This mode is intended for non-production testing only.
+W260519 05:31:32.519280 1 1@cli/start.go:1479 ⋮ [n?] 1 +
+W260519 05:31:32.519280 1 1@cli/start.go:1479 ⋮ [n?] 1 +In this mode:
+W260519 05:31:32.519280 1 1@cli/start.go:1479 ⋮ [n?] 1 +- Your cluster is open to any client that can access ‹0.0.0.0›.
+W260519 05:31:32.519280 1 1@cli/start.go:1479 ⋮ [n?] 1 +- Intruders with access to your machine or network can observe client-server traffic.
+W260519 05:31:32.519280 1 1@cli/start.go:1479 ⋮ [n?] 1 +- Intruders can log in without password and read or write any data in the cluster.
+W260519 05:31:32.519280 1 1@cli/start.go:1479 ⋮ [n?] 1 +- Intruders can consume all your server's resources and cause unavailability.
+I260519 05:31:32.519527 1 1@cli/start.go:1489 ⋮ [n?] 2  To start a secure server without mandating TLS for clients,
+I260519 05:31:32.519527 1 1@cli/start.go:1489 ⋮ [n?] 2 +consider --accept-sql-without-tls instead. For other options, see:
+I260519 05:31:32.519527 1 1@cli/start.go:1489 ⋮ [n?] 2 +
+I260519 05:31:32.519527 1 1@cli/start.go:1489 ⋮ [n?] 2 +- https://go.crdb.dev/issue-v/53404/v26.2
+I260519 05:31:32.519527 1 1@cli/start.go:1489 ⋮ [n?] 2 +- https://www.cockroachlabs.com/docs/v26.2/secure-a-cluster.html
+I260519 05:31:32.519744 1 server/status/recorder.go:1346 ⋮ [n?] 3  ‹available memory from cgroups (8.0 EiB) is unlimited ('systemd' without MemoryMax?), using system memory 15 GiB instead: ›
+I260519 05:31:32.519766 1 1@cli/start.go:1518 ⋮ [n?] 4  CockroachDB CCL v26.2.0 (x86_64-pc-linux-gnu, built 2026/04/21 18:36:57, go1.25.5)
+I260519 05:31:32.520156 1 server/status/recorder.go:1346 ⋮ [n?] 5  ‹available memory from cgroups (8.0 EiB) is unlimited ('systemd' without MemoryMax?), using system memory 15 GiB instead: ›
+I260519 05:31:32.520169 1 1@cli/start.go:572 ⋮ [n?] 6  soft memory limit of Go runtime is set to 6.8 GiB
+I260519 05:31:32.520183 1 1@cli/start.go:609 ⋮ [n?] 7  GC target percentage of Go runtime is set to 300%
+I260519 05:31:32.522692 1 server/status/recorder.go:1346 ⋮ [T1,Vsystem,n?] 8  ‹available memory from cgroups (8.0 EiB) is unlimited ('systemd' without MemoryMax?), using system memory 15 GiB instead: ›
+I260519 05:31:32.522712 1 server/config.go:690 ⋮ [T1,Vsystem,n?] 9  system total memory: 15 GiB
+I260519 05:31:32.522720 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10  server configuration:
+I260519 05:31:32.522720 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +max offset             500000000
+I260519 05:31:32.522720 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +cache size             5.0 GiB
+I260519 05:31:32.522720 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +SQL memory pool size   3.0 GiB
+I260519 05:31:32.522720 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +scan interval          10m0s
+I260519 05:31:32.522720 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +scan min idle time     10ms
+I260519 05:31:32.522720 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +scan max idle time     1s
+I260519 05:31:32.522720 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +event log enabled      true
+I260519 05:31:32.522765 1 1@cli/start.go:1356 ⋮ [T1,Vsystem,n?] 11  using local environment variables:
+I260519 05:31:32.522765 1 1@cli/start.go:1356 ⋮ [T1,Vsystem,n?] 11 +COCKROACH_BACKGROUND_RESTART=1
+I260519 05:31:32.522765 1 1@cli/start.go:1356 ⋮ [T1,Vsystem,n?] 11 +LANG=en_GB.UTF-8
+I260519 05:31:32.522789 1 1@cli/start.go:1363 ⋮ [T1,Vsystem,n?] 12  process identity: uid 0 euid 0 gid 0 egid 0
+W260519 05:31:32.523460 1 1@cli/start.go:1543 ⋮ [T1,Vsystem,n?] 13  could not initialize GEOS - spatial functions may not be available: geos: error during GEOS init: geos: cannot load GEOS from dir ‹"/usr/local/lib/cockroach"›: ‹geos error: /usr/local/lib/cockroach/libgeos.so: cannot open shared object file: No such file or directory›
+W260519 05:31:32.523460 1 1@cli/start.go:1543 ⋮ [T1,Vsystem,n?] 13 +HINT: ‹Ensure you have the spatial libraries installed as per the instructions in https://www.cockroachlabs.com/docs/v26.2/install-cockroachdb-linux›
+I260519 05:31:32.523517 1 1@cli/start.go:795 ⋮ [T1,Vsystem,n?] 14  starting cockroach node
+I260519 05:31:32.523711 70 1@storage/disk/platform_linux.go:174 ⋮ [-] 15  mapping ‹"/data/crdb"› to diskstats SCSI device 8:3
+I260519 05:31:32.526018 70 1@storage/disk/platform_linux.go:174 ⋮ [-] 16  mapping ‹"/data/crdb"› to diskstats SCSI device 8:3
+I260519 05:31:32.526084 70 1@storage/disk/platform_linux.go:174 ⋮ [-] 17  mapping ‹"/data/crdb"› to diskstats SCSI device 8:3
+I260519 05:31:32.683236 70 server/config.go:924 ⋮ [T1,Vsystem,n?] 18  1 storage engine initialized
+I260519 05:31:32.683266 70 server/config.go:927 ⋮ [T1,Vsystem,n?] 19  Pebble cache size: 5.0 GiB
+I260519 05:31:32.683283 70 server/config.go:927 ⋮ [T1,Vsystem,n?] 20  store 0: disk deviceID: 8:3
+I260519 05:31:32.683290 70 server/config.go:927 ⋮ [T1,Vsystem,n?] 21  store 0: max size 0 B, max open file limit 1043576
+I260519 05:31:32.683297 70 server/config.go:927 ⋮ [T1,Vsystem,n?] 22  store 0: /data/crdb: rw encrypted=false fs:{bdev=/dev/sda3 fstype=xfs mountpoint=/ mountopts=rw,relatime,attr2,inode64,logbufs=8,logbsize=32k,noquota}
+I260519 05:31:32.685958 70 server/goroutinedumper/goroutinedumper.go:162 ⋮ [T1,Vsystem,n?] 23  writing goroutine dumps to ‹/data/crdb/logs/goroutine_dump›
+I260519 05:31:32.692585 127 util/cidr/cidr.go:299 ⋮ [T1,Vsystem,n?] 24  CIDR lookup updated with 0 destinations
+I260519 05:31:32.694509 70 1@storage/disk/platform_linux.go:174 ⋮ [-] 25  mapping ‹"/data/crdb/cockroach-temp2830783212"› to diskstats SCSI device 8:3
+I260519 05:31:32.694621 70 1@storage/disk/platform_linux.go:174 ⋮ [-] 26  mapping ‹"/data/crdb/cockroach-temp2830783212"› to diskstats SCSI device 8:3
+I260519 05:31:32.751313 70 1@server/clock_monotonicity.go:61 ⋮ [T1,Vsystem,n?] 27  monitoring forward clock jumps based on server.clock.forward_jump_check.enabled
+I260519 05:31:32.753220 70 1@obs/ash/sampler.go:212 ⋮ [T1,Vsystem,n1] 28  starting ASH sampler
+I260519 05:31:32.753302 70 1@server/clock_monotonicity.go:136 ⋮ [T1,Vsystem,n1] 29  Sleeping till wall time 1779168692753301847 to catches up to 1779168693251296043 to ensure monotonicity. Sub: 497.994196ms
+I260519 05:31:32.753534 546 1@server/server.go:1971 ⋮ [T1,Vsystem,n1] 30  connecting to gossip network to verify cluster ID "1fea693a-7e9e-41cd-afa6-533e3d05bf39"
+W260519 05:31:33.251366 70 1@cli/start.go:1317 ⋮ [T1,Vsystem,n1] 31  Running a server without --sql-addr, with a combined RPC/SQL listener, is deprecated.
+W260519 05:31:33.251366 70 1@cli/start.go:1317 ⋮ [T1,Vsystem,n1] 31 +This feature will be removed in a later version of CockroachDB.
+W260519 05:31:33.254817 70 1@gossip/gossip.go:1491 ⋮ [T1,Vsystem,n1] 32  no addresses found; use --join to specify a connected node
+I260519 05:31:34.153749 569 server/node.go:697 ⋮ [T1,Vsystem,n1] 33  initialized store s1 in 898ms (93 replicas)
+I260519 05:31:34.153995 546 1@server/server.go:1974 ⋮ [T1,Vsystem,n1] 34  node connected via gossip
+I260519 05:31:34.155572 70 server/node.go:808 ⋮ [T1,Vsystem,n1] 35  started with attributes []
+I260519 05:31:34.155671 70 server/profiler/heapprofiler.go:74 ⋮ [T1,Vsystem,n1] 36  writing go heap profiles to ‹/data/crdb/logs/heap_profiler› at least every 1h0m0s
+I260519 05:31:34.155699 70 server/profiler/memory_monitoring_profiler.go:66 ⋮ [T1,Vsystem,n1] 37  writing memory monitoring dumps to ‹/data/crdb/logs/heap_profiler› at least every 1h0m0s
+I260519 05:31:34.155712 70 server/profiler/cgoprofiler.go:66 ⋮ [T1,Vsystem,n1] 38  to enable jmalloc profiling: "export MALLOC_CONF=prof:true" or "ln -s prof:true /etc/malloc.conf"
+I260519 05:31:34.155727 70 server/profiler/statsprofiler.go:68 ⋮ [T1,Vsystem,n1] 39  writing memory stats to ‹/data/crdb/logs/heap_profiler› at last every 1h0m0s
+I260519 05:31:34.155980 70 server/profiler/activequeryprofiler.go:88 ⋮ [T1,Vsystem,n1] 40  writing go query profiles to ‹/data/crdb/logs/heap_profiler›
+I260519 05:31:34.156003 70 server/profiler/cpuprofiler.go:87 ⋮ [T1,Vsystem,n1] 41  writing cpu profile dumps to ‹/data/crdb/logs/pprof_dump›
+I260519 05:31:34.156016 70 server/profiler/ashreportprofiler.go:67 ⋮ [T1,Vsystem,n1] 42  writing ASH reports to ‹/data/crdb/logs/heap_profiler›
+I260519 05:31:34.156103 70 1@storage/disk/platform_linux.go:174 ⋮ [-] 43  mapping ‹"/data/crdb"› to diskstats SCSI device 8:3
+I260519 05:31:34.157604 70 1@server/server.go:2173 ⋮ [T1,Vsystem,n1] 44  starting http server at ‹[::]:8080› (use: ‹0.0.0.0:8080›)
+I260519 05:31:34.157642 70 1@server/server.go:2181 ⋮ [T1,Vsystem,n1] 45  starting grpc/postgres server at ‹[::]:26257›
+I260519 05:31:34.157669 70 1@server/server.go:2182 ⋮ [T1,Vsystem,n1] 46  advertising CockroachDB node at ‹0.0.0.0:26257›
+I260519 05:31:34.170694 70 1@util/log/event_log.go:90 ⋮ [T1,Vsystem,n1] 47 ={"Timestamp":1779168694170690508,"EventType":"node_restart","NodeID":1,"StartedAt":1779168693254874009,"LastUp":1779168689130748042}
+I260519 05:31:34.170904 776 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 48  settings-watcher: established range feed cache
+I260519 05:31:34.171293 774 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 49  spanconfig-subscriber: established range feed cache
+I260519 05:31:34.179515 70 sql/sqlliveness/slinstance/slinstance.go:446 ⋮ [T1,Vsystem,n1] 50  starting SQL liveness instance
+I260519 05:31:34.184414 795 sql/sqlliveness/slstorage/slstorage.go:540 ⋮ [T1,Vsystem,n1] 51  inserted sqlliveness session 010180f0f602bce7a5447d9dbfed41d6b2ee72 with expiry 1779168734.179552017,0
+I260519 05:31:34.184456 795 sql/sqlliveness/slinstance/slinstance.go:248 ⋮ [T1,Vsystem,n1] 52  created new SQL liveness session 010180f0f602bce7a5447d9dbfed41d6b2ee72
+I260519 05:31:34.184476 70 sql/sqlinstance/instancestorage/instancestorage.go:338 ⋮ [T1,Vsystem,n1] 53  assigning instance id to rpc addr ‹0.0.0.0:26257› and sql addr ‹0.0.0.0:26257›
+I260519 05:31:34.188615 70 server/server_sql.go:1658 ⋮ [T1,Vsystem,n1] 54  bound sqlinstance: Instance{RegionPrefix: gA==, InstanceID: 1, SQLAddr: ‹0.0.0.0:26257›, RPCAddr: ‹0.0.0.0:26257›, SessionID: 010180f0f602bce7a5447d9dbfed41d6b2ee72, Locality: , BinaryVersion: 26.2}
+I260519 05:31:34.188700 70 sql/catalog/lease/lease.go:3131 ⋮ [T1,Vsystem,n1] 55  starting lease manager rangefeed at timestamp 1779168694.188700081,0
+I260519 05:31:34.188752 1222 sql/sqlstats/persistedsqlstats/provider.go:157 ⋮ [T1,Vsystem,n1] 56  starting sql-stats-worker with initial delay: 9m19.675467967s
+I260519 05:31:34.188870 70 upgrade/upgrademanager/manager.go:178 ⋮ [T1,Vsystem,n1] 57  running permanent upgrades up to version: 26.2
+I260519 05:31:34.189164 1218 sql/temporary_schema.go:521 ⋮ [T1,Vsystem,n1] 58  running temporary object cleanup background job
+I260519 05:31:34.189908 1235 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 59  system-config-cache: established range feed cache
+I260519 05:31:34.194994 1218 sql/temporary_schema.go:580 ⋮ [T1,Vsystem,n1] 60  found 0 temporary schemas
+I260519 05:31:34.195022 1218 sql/temporary_schema.go:583 ⋮ [T1,Vsystem,n1] 61  early exiting temporary schema cleaner as no temporary schemas were found
+I260519 05:31:34.195031 1218 sql/temporary_schema.go:584 ⋮ [T1,Vsystem,n1] 62  completed temporary object cleanup job
+I260519 05:31:34.195038 1218 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 63  temporary object cleaner next scheduled to run at 2026-05-19 06:01:34.18870952 +0000 UTC m=+1801.896923991
+I260519 05:31:34.212212 70 upgrade/upgrademanager/manager.go:244 ⋮ [T1,Vsystem,n1] 64  the last permanent upgrade (v0.0-upgrading-step-004) does not appear to have completed; attempting to run all upgrades
+I260519 05:31:34.212254 70 upgrade/upgrademanager/manager.go:250 ⋮ [T1,Vsystem,n1] 65  running permanent upgrade for version 0.0-upgrading-step-002
+I260519 05:31:34.213376 70 upgrade/upgrademanager/manager.go:250 ⋮ [T1,Vsystem,n1] 66  running permanent upgrade for version 0.0-upgrading-step-004
+I260519 05:31:34.214389 70 server/server_sql.go:1761 ⋮ [T1,Vsystem,n1] 67  done ensuring all necessary startup migrations have run
+I260519 05:31:34.215007 70 server/license/enforcer.go:257 ⋮ [T1,Vsystem,n1] 68  trial license expiry initialized to 1970-01-01 00:00:00 +0000 UTC
+I260519 05:31:34.215073 70 server/license/enforcer.go:293 ⋮ [T1,Vsystem,n1] 69  fetched existing cluster init grace period end time: 2026-05-26 04:48:16 +0000 UTC
+I260519 05:31:34.215125 70 server/license/enforcer.go:493 ⋮ [T1,Vsystem,n1] 70  enforcer license updated: type is none, grace period ends at "2026-05-26 04:48:16 +0000 UTC", telemetry required: false
+I260519 05:31:34.215139 70 server/license/enforcer.go:493 ⋮ [T1,Vsystem,n1] 71  enforcer license updated: type is none, grace period ends at "2026-05-26 04:48:16 +0000 UTC", telemetry required: false
+I260519 05:31:34.216231 1467 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 72  statement-hints-watcher: established range feed cache
+I260519 05:31:34.222053 1467 sql/hints/hint_cache.go:224 ⋮ [T1,Vsystem,n1] 73  statement_hints rangefeed completed initial scan
+I260519 05:31:34.225098 1469 sql/syntheticprivilegecache/cache.go:204 ⋮ [T1,Vsystem,n1] 74  warmed privileges for virtual tables in 8.007002ms
+I260519 05:31:34.228374 1461 sql/catalog/lease/lease.go:3743 ⋮ [T1,Vsystem,n1] 75  starting orphaned lease cleanup from stale sessions in default region (0x80)
+I260519 05:31:34.238242 1461 sql/catalog/lease/lease.go:3803 ⋮ [T1,Vsystem,n1] 76  completed orphaned lease cleanup for default region (0x80): 0 sessions processed, 0 leases deleted
+I260519 05:31:34.239955 1461 sql/catalog/lease/lease.go:3900 ⋮ [T1,Vsystem,n1] 77  found 0 orphaned leases to clean up for instance ID 1
+I260519 05:31:34.248248 1688 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 78  tenant-settings-watcher: established range feed cache
+I260519 05:31:34.248435 1690 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 79  tenant-entry-watcher: established range feed cache
+I260519 05:31:34.248557 1690 multitenant/tenantcapabilities/tenantcapabilitieswatcher/watcher.go:285 ⋮ [T1,Vsystem,n1] 80  received results of a full table scan for tenant capabilities
+I260519 05:31:34.250050 1471 jobs/job_scheduler.go:407 ⋮ [T1,Vsystem,n1] 81  waiting 3m0s before scheduled jobs daemon start
+I260519 05:31:34.254349 70 server/license/enforcer.go:584 ⋮ [T1,Vsystem,n1] 82  disable all license enforcement
+I260519 05:31:34.254364 70 1@server/server_sql.go:2027 ⋮ [T1,Vsystem,n1] 83  serving sql connections
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84  node startup completed:
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +CockroachDB node starting at 2026-05-19 05:31:34.254377825 +0000 UTC m=+1.962592294 (took 1.7s)
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +build:               CCL v26.2.0 @ 2026/04/21 18:36:57 (go1.25.5)
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +malloc_conf:         prof:false,prof_active:true,background_thread:true,thp:never,metadata_thp:disabled,narenas:16,dirty_decay_ms:2000,muzzy_decay_ms:0
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +webui:               ‹http://0.0.0.0:8080›
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +sql:                 ‹postgresql://root@0.0.0.0:26257/defaultdb?sslmode=disable›
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +sql (JDBC):          ‹jdbc:postgresql://0.0.0.0:26257/defaultdb?sslmode=disable&user=root›
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +RPC client flags:    ‹/usr/local/bin/cockroach <client cmd> --host=0.0.0.0:26257 --insecure›
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +logs:                ‹/data/crdb/logs›
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +temp dir:            ‹/data/crdb/cockroach-temp2830783212›
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +external I/O path:   ‹/data/crdb/extern›
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +store[0]:            ‹path=/data/crdb›
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +clusterID:           1fea693a-7e9e-41cd-afa6-533e3d05bf39
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +status:              restarted pre-existing node
+I260519 05:31:34.254463 70 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 84 +nodeID:              1
+I260519 05:31:34.254825 1686 server/auto_upgrade.go:81 ⋮ [T1,Vsystem,n1] 85  no need to upgrade, cluster already at the newest version
+W260519 05:31:34.256065 1742 sql/pgwire/last_login_updater.go:139 ⋮ [T1,Vsystem,n1,client=172.24.40.32:52000,hostnossl,user=root] 86  could not update last login times: interrupted during singleflight ‹update last login time:UpdateLastLoginTime›: context canceled
+I260519 05:31:34.385463 568 1@gossip/gossip.go:1507 ⋮ [T1,Vsystem,n1] 87  node has connected to cluster via gossip
+I260519 05:32:06.674721 1233 jobs/adopt.go:169 ⋮ [T1,Vsystem,n1] 88  claimed 6 jobs
+I260519 05:32:06.677962 2460 jobs/adopt.go:311 ⋮ [T1,Vsystem,n1,job=105] 89  job 105: resuming execution
+I260519 05:32:06.677979 2455 jobs/adopt.go:311 ⋮ [T1,Vsystem,n1,job=1176684780491571201] 90  job 1176684780491571201: resuming execution
+I260519 05:32:06.677980 2457 jobs/adopt.go:311 ⋮ [T1,Vsystem,n1,job=101] 91  job 101: resuming execution
+I260519 05:32:06.679447 2459 jobs/adopt.go:311 ⋮ [T1,Vsystem,n1,job=104] 92  job 104: resuming execution
+I260519 05:32:06.677962 2456 jobs/adopt.go:311 ⋮ [T1,Vsystem,n1,job=100] 93  job 100: resuming execution
+I260519 05:32:06.677964 2458 jobs/adopt.go:311 ⋮ [T1,Vsystem,n1,job=103] 94  job 103: resuming execution
+I260519 05:32:06.683358 2533 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=105] 95  UPDATE TABLE METADATA CACHE job 105: stepping through state running
+I260519 05:32:06.683367 2501 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=100] 96  KEY VISUALIZER job 100: stepping through state running
+I260519 05:32:06.683876 2481 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=1176684780491571201] 97  AUTO SPAN CONFIG RECONCILIATION job 1176684780491571201: stepping through state running
+I260519 05:32:06.684543 2517 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=101] 98  POLL JOBS STATS job 101: stepping through state running
+I260519 05:32:06.684696 2548 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=104] 99  MVCC STATISTICS UPDATE job 104: stepping through state running
+I260519 05:32:06.686614 2548 sql/mvcc_statistics_update_job.go:63 ⋮ [T1,Vsystem,n1,job=MVCC STATISTICS UPDATE id=104] 100  starting mvcc statistics update job
+I260519 05:32:06.686796 2551 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1,job=POLL JOBS STATS id=101] 101  cluster-metrics-watcher: established range feed cache
+I260519 05:32:06.686908 2536 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=103] 102  AUTO UPDATE SQL ACTIVITY job 103: stepping through state running
+I260519 05:32:06.688736 2536 sql/sql_activity_update_job.go:88 ⋮ [T1,Vsystem,n1,job=AUTO UPDATE SQL ACTIVITY id=103] 103  starting sql stats activity flush job
+I260519 05:32:06.743126 2481 spanconfig/spanconfigsqlwatcher/sqlwatcher.go:250 ⋮ [T1,Vsystem,n1,job=AUTO SPAN CONFIG RECONCILIATION id=1176684780491571201] 104  established range feed over system.descriptors starting at time 1779168726.691236030,0
+I260519 05:32:06.743171 2481 spanconfig/spanconfigsqlwatcher/sqlwatcher.go:309 ⋮ [T1,Vsystem,n1,job=AUTO SPAN CONFIG RECONCILIATION id=1176684780491571201] 105  established range feed over system.zones starting at time 1779168726.691236030,0
+I260519 05:32:06.743199 2481 spanconfig/spanconfigsqlwatcher/sqlwatcher.go:410 ⋮ [T1,Vsystem,n1,job=AUTO SPAN CONFIG RECONCILIATION id=1176684780491571201] 106  established range feed over system.protected_ts_records starting at time 1779168726.691236030,0
+I260519 05:32:54.185701 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 107  taking CPU profile for 10.00s
+I260519 05:33:04.367103 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 108  taking CPU profile for 10.00s
+I260519 05:52:54.602437 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 109  taking CPU profile for 10.00s
+I260519 05:59:54.796048 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 110  taking CPU profile for 10.00s
+I260519 06:00:49.447961 1471 jobs/job_scheduler.go:171 ⋮ [T1,Vsystem,n1] 111  Starting job for schedule 1176684780554158081 (‹"sql-stats-compaction"›); scheduled to run at 2026-05-19 06:00:00 +0000 UTC; next run scheduled for 2026-05-19 07:00:00 +0000 UTC
+I260519 06:00:59.565050 1233 jobs/adopt.go:169 ⋮ [T1,Vsystem,n1] 112  claimed 1 jobs
+I260519 06:00:59.566953 2166244 jobs/adopt.go:311 ⋮ [T1,Vsystem,n1,job=1176699042031960065] 113  job 1176699042031960065: resuming execution
+I260519 06:00:59.570971 2166209 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=1176699042031960065] 114  AUTO SQL STATS COMPACTION job 1176699042031960065: stepping through state running
+I260519 06:00:59.576870 2166209 1@jobs/update.go:193 ⋮ [T1,Vsystem,n1,job=1176699042031960065] 115 ={"Timestamp":1779170459576866319,"EventType":"status_change","JobID":1176699042031960065,"JobType":"AUTO SQL STATS COMPACTION","Description":"state changed to: running","PreviousStatus":"running","NewStatus":"running","RunNum":0}
+I260519 06:00:59.576926 2166209 sql/compact_sql_stats.go:37 ⋮ [T1,Vsystem,n1,job=AUTO SQL STATS COMPACTION id=1176699042031960065] 116  starting sql stats compaction job
+I260519 06:00:59.615886 2166209 sql/compact_sql_stats.go:101 ⋮ [T1,Vsystem,n1,job=AUTO SQL STATS COMPACTION id=1176699042031960065] 117  sql stats compaction job terminated with status = succeeded
+I260519 06:00:59.618391 2166209 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=1176699042031960065] 118  AUTO SQL STATS COMPACTION job 1176699042031960065: stepping through state succeeded
+I260519 06:00:59.634374 2166209 1@jobs/update.go:193 ⋮ [T1,Vsystem,n1,job=1176699042031960065] 119 ={"Timestamp":1779170459634370498,"EventType":"status_change","JobID":1176699042031960065,"JobType":"AUTO SQL STATS COMPACTION","Description":"state changed to: succeeded","PreviousStatus":"running","NewStatus":"succeeded","RunNum":0}
+I260519 06:01:34.188973 1218 sql/temporary_schema.go:521 ⋮ [T1,Vsystem,n1] 120  running temporary object cleanup background job
+I260519 06:01:34.194842 1218 sql/temporary_schema.go:580 ⋮ [T1,Vsystem,n1] 121  found 0 temporary schemas
+I260519 06:01:34.194875 1218 sql/temporary_schema.go:583 ⋮ [T1,Vsystem,n1] 122  early exiting temporary schema cleaner as no temporary schemas were found
+I260519 06:01:34.194882 1218 sql/temporary_schema.go:584 ⋮ [T1,Vsystem,n1] 123  completed temporary object cleanup job
+I260519 06:01:34.194889 1218 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 124  temporary object cleaner next scheduled to run at 2026-05-19 06:31:34.18870952 +0000 UTC m=+3601.896923991
+I260519 06:01:57.047300 2536 sql/sql_activity_update_job.go:250 ⋮ [T1,Vsystem,n1,job=AUTO UPDATE SQL ACTIVITY id=103] 125  sql stats activity found no rows at 2026-05-19 06:00:00 +0000 UTC
+I260519 06:25:58.599435 1470 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 126  garbage collected 0 rows from ‹rangelog›.‹timestamp›
+I260519 06:25:58.600686 1470 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 127  garbage collected 0 rows from ‹eventlog›.‹timestamp›
+I260519 06:25:58.603860 1470 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 128  garbage collected 0 rows from ‹web_sessions›.‹expiresAt›
+I260519 06:25:58.605023 1470 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 129  garbage collected 0 rows from ‹web_sessions›.‹revokedAt›
+I260519 06:27:55.065925 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 130  taking CPU profile for 10.00s
+I260519 06:31:34.189265 1218 sql/temporary_schema.go:521 ⋮ [T1,Vsystem,n1] 131  running temporary object cleanup background job
+I260519 06:31:34.193450 1218 sql/temporary_schema.go:580 ⋮ [T1,Vsystem,n1] 132  found 0 temporary schemas
+I260519 06:31:34.193496 1218 sql/temporary_schema.go:583 ⋮ [T1,Vsystem,n1] 133  early exiting temporary schema cleaner as no temporary schemas were found
+I260519 06:31:34.193509 1218 sql/temporary_schema.go:584 ⋮ [T1,Vsystem,n1] 134  completed temporary object cleanup job
+I260519 06:31:34.193530 1218 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 135  temporary object cleaner next scheduled to run at 2026-05-19 07:01:34.18870952 +0000 UTC m=+5401.896923991
+I260519 06:34:55.303925 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 136  taking CPU profile for 10.00s
+I260519 06:56:05.570030 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 137  taking CPU profile for 10.00s
+I260519 07:00:21.153611 1471 jobs/job_scheduler.go:171 ⋮ [T1,Vsystem,n1] 138  Starting job for schedule 1176684780554158081 (‹"sql-stats-compaction"›); scheduled to run at 2026-05-19 07:00:00 +0000 UTC; next run scheduled for 2026-05-19 08:00:00 +0000 UTC
+I260519 07:00:24.552870 1233 jobs/adopt.go:169 ⋮ [T1,Vsystem,n1] 139  claimed 1 jobs
+I260519 07:00:24.554869 6100230 jobs/adopt.go:311 ⋮ [T1,Vsystem,n1,job=1176710745796608001] 140  job 1176710745796608001: resuming execution
+I260519 07:00:24.557957 6100244 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=1176710745796608001] 141  AUTO SQL STATS COMPACTION job 1176710745796608001: stepping through state running
+I260519 07:00:24.564709 6100244 1@jobs/update.go:193 ⋮ [T1,Vsystem,n1,job=1176710745796608001] 142 ={"Timestamp":1779174024564705437,"EventType":"status_change","JobID":1176710745796608001,"JobType":"AUTO SQL STATS COMPACTION","Description":"state changed to: running","PreviousStatus":"running","NewStatus":"running","RunNum":0}
+I260519 07:00:24.564764 6100244 sql/compact_sql_stats.go:37 ⋮ [T1,Vsystem,n1,job=AUTO SQL STATS COMPACTION id=1176710745796608001] 143  starting sql stats compaction job
+I260519 07:00:24.600120 6100244 sql/compact_sql_stats.go:101 ⋮ [T1,Vsystem,n1,job=AUTO SQL STATS COMPACTION id=1176710745796608001] 144  sql stats compaction job terminated with status = succeeded
+I260519 07:00:24.602244 6100244 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=1176710745796608001] 145  AUTO SQL STATS COMPACTION job 1176710745796608001: stepping through state succeeded
+I260519 07:00:24.615336 6100244 1@jobs/update.go:193 ⋮ [T1,Vsystem,n1,job=1176710745796608001] 146 ={"Timestamp":1779174024615332679,"EventType":"status_change","JobID":1176710745796608001,"JobType":"AUTO SQL STATS COMPACTION","Description":"state changed to: succeeded","PreviousStatus":"running","NewStatus":"succeeded","RunNum":0}
+I260519 07:01:34.189279 1218 sql/temporary_schema.go:521 ⋮ [T1,Vsystem,n1] 147  running temporary object cleanup background job
+I260519 07:01:34.193715 1218 sql/temporary_schema.go:580 ⋮ [T1,Vsystem,n1] 148  found 0 temporary schemas
+I260519 07:01:34.193742 1218 sql/temporary_schema.go:583 ⋮ [T1,Vsystem,n1] 149  early exiting temporary schema cleaner as no temporary schemas were found
+I260519 07:01:34.193749 1218 sql/temporary_schema.go:584 ⋮ [T1,Vsystem,n1] 150  completed temporary object cleanup job
+I260519 07:01:34.193760 1218 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 151  temporary object cleaner next scheduled to run at 2026-05-19 07:31:34.18870952 +0000 UTC m=+7201.896923991
+I260519 07:03:05.756888 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 152  taking CPU profile for 10.00s
+I260519 07:09:20.024549 2536 sql/sql_activity_update_job.go:250 ⋮ [T1,Vsystem,n1,job=AUTO UPDATE SQL ACTIVITY id=103] 153  sql stats activity found no rows at 2026-05-19 07:00:00 +0000 UTC
+I260519 07:24:06.016414 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 154  taking CPU profile for 10.00s
+I260519 07:25:58.606999 1470 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 155  garbage collected 0 rows from ‹rangelog›.‹timestamp›
+I260519 07:25:58.608585 1470 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 156  garbage collected 0 rows from ‹eventlog›.‹timestamp›
+I260519 07:25:58.609850 1470 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 157  garbage collected 0 rows from ‹web_sessions›.‹expiresAt›
+I260519 07:25:58.611220 1470 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 158  garbage collected 0 rows from ‹web_sessions›.‹revokedAt›
+I260519 07:31:34.188821 1218 sql/temporary_schema.go:521 ⋮ [T1,Vsystem,n1] 159  running temporary object cleanup background job
+I260519 07:31:34.193938 1218 sql/temporary_schema.go:580 ⋮ [T1,Vsystem,n1] 160  found 0 temporary schemas
+I260519 07:31:34.193977 1218 sql/temporary_schema.go:583 ⋮ [T1,Vsystem,n1] 161  early exiting temporary schema cleaner as no temporary schemas were found
+I260519 07:31:34.193986 1218 sql/temporary_schema.go:584 ⋮ [T1,Vsystem,n1] 162  completed temporary object cleanup job
+I260519 07:31:34.193998 1218 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 163  temporary object cleaner next scheduled to run at 2026-05-19 08:01:34.18870952 +0000 UTC m=+9001.896923991
+I260519 07:38:06.539013 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 164  taking CPU profile for 10.00s
+W260519 07:58:59.805983 1548 2@rpc/clock_offset.go:392 ⋮ [T1,Vsystem,n1,rnode=1,raddr=‹0.0.0.0:26257›,class=default,rpc] 165  latency jump (prev avg 3.38ms, current 57.06ms)
+I260519 07:59:06.901563 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 166  taking CPU profile for 10.00s
+I260519 07:59:17.091152 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 167  taking CPU profile for 10.00s
+I260519 08:00:43.535080 1471 jobs/job_scheduler.go:171 ⋮ [T1,Vsystem,n1] 168  Starting job for schedule 1176684780554158081 (‹"sql-stats-compaction"›); scheduled to run at 2026-05-19 08:00:00 +0000 UTC; next run scheduled for 2026-05-19 09:00:00 +0000 UTC
+I260519 08:01:10.449835 1233 jobs/adopt.go:169 ⋮ [T1,Vsystem,n1] 169  claimed 1 jobs
+I260519 08:01:10.451971 10336212 jobs/adopt.go:311 ⋮ [T1,Vsystem,n1,job=1176722615624368129] 170  job 1176722615624368129: resuming execution
+I260519 08:01:10.458352 10336216 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=1176722615624368129] 171  AUTO SQL STATS COMPACTION job 1176722615624368129: stepping through state running
+I260519 08:01:10.464340 10336216 1@jobs/update.go:193 ⋮ [T1,Vsystem,n1,job=1176722615624368129] 172 ={"Timestamp":1779177670464336518,"EventType":"status_change","JobID":1176722615624368129,"JobType":"AUTO SQL STATS COMPACTION","Description":"state changed to: running","PreviousStatus":"running","NewStatus":"running","RunNum":0}
+I260519 08:01:10.464385 10336216 sql/compact_sql_stats.go:37 ⋮ [T1,Vsystem,n1,job=AUTO SQL STATS COMPACTION id=1176722615624368129] 173  starting sql stats compaction job
+I260519 08:01:10.514468 10336216 sql/compact_sql_stats.go:101 ⋮ [T1,Vsystem,n1,job=AUTO SQL STATS COMPACTION id=1176722615624368129] 174  sql stats compaction job terminated with status = succeeded
+I260519 08:01:10.516589 10336216 jobs/registry.go:1622 ⋮ [T1,Vsystem,n1,job=1176722615624368129] 175  AUTO SQL STATS COMPACTION job 1176722615624368129: stepping through state succeeded
+I260519 08:01:10.528828 10336216 1@jobs/update.go:193 ⋮ [T1,Vsystem,n1,job=1176722615624368129] 176 ={"Timestamp":1779177670528824105,"EventType":"status_change","JobID":1176722615624368129,"JobType":"AUTO SQL STATS COMPACTION","Description":"state changed to: succeeded","PreviousStatus":"running","NewStatus":"succeeded","RunNum":0}
+I260519 08:01:34.190556 1218 sql/temporary_schema.go:521 ⋮ [T1,Vsystem,n1] 177  running temporary object cleanup background job
+I260519 08:01:34.195162 1218 sql/temporary_schema.go:580 ⋮ [T1,Vsystem,n1] 178  found 0 temporary schemas
+I260519 08:01:34.195204 1218 sql/temporary_schema.go:583 ⋮ [T1,Vsystem,n1] 179  early exiting temporary schema cleaner as no temporary schemas were found
+I260519 08:01:34.195211 1218 sql/temporary_schema.go:584 ⋮ [T1,Vsystem,n1] 180  completed temporary object cleanup job
+I260519 08:01:34.195232 1218 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 181  temporary object cleaner next scheduled to run at 2026-05-19 08:31:34.18870952 +0000 UTC m=+10801.896923991
+I260519 08:06:17.338049 694 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 182  taking CPU profile for 10.00s
+I260519 08:08:35.180821 2536 sql/sql_activity_update_job.go:250 ⋮ [T1,Vsystem,n1,job=AUTO UPDATE SQL ACTIVITY id=103] 183  sql stats activity found no rows at 2026-05-19 08:00:00 +0000 UTC
