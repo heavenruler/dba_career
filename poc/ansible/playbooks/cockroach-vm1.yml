@@ -105,9 +105,13 @@
         port: 26257
         timeout: 180
 
-    - name: Apply CockroachDB benchmark settings
+    - name: Apply CockroachDB benchmark settings (each SET CLUSTER SETTING needs its own txn)
       ansible.builtin.command:
-        cmd: /usr/local/bin/cockroach sql --insecure --host={{ crdb_host }}:26257 -e "SET CLUSTER SETTING sql.stats.automatic_collection.enabled = false; SET CLUSTER SETTING server.host_based_authentication.configuration = 'host all all all trust'; SET CLUSTER SETTING sql.txn.repeatable_read_isolation.enabled = true;"
+        cmd: /usr/local/bin/cockroach sql --insecure --host={{ crdb_host }}:26257 -e "{{ item }}"
+      loop:
+        - "SET CLUSTER SETTING sql.stats.automatic_collection.enabled = false"
+        - "SET CLUSTER SETTING server.host_based_authentication.configuration = 'host all all all trust'"
+        - "SET CLUSTER SETTING sql.txn.repeatable_read_isolation.enabled = true"
       changed_when: false
 
     - name: Health check CockroachDB
