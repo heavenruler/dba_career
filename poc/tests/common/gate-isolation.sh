@@ -57,10 +57,20 @@ case "$DB" in
     PORT="${YBDB_PORT:-5433}"
     USER="${YBDB_USER:-yugabyte}"
     DB_NAME="${YBDB_DB:-tpcc}"
+    # Dual gate: YugabyteDB only honors RC when the tserver gflag
+    # yb_enable_read_committed_isolation=true is set; otherwise
+    # SHOW transaction_isolation reports the requested value while
+    # yb_effective_transaction_isolation_level falls back to
+    # 'repeatable read' (snapshot). Verify both.
     psql "postgres://${USER}@${DB_HOST}:${PORT}/${DB_NAME}?${ISO_CONN_PARAMS}" \
-      -v ON_ERROR_STOP=1 -At -c "SHOW transaction_isolation" \
+      -v ON_ERROR_STOP=1 -At \
+      -c "SHOW transaction_isolation" \
+      -c "SHOW yb_effective_transaction_isolation_level" \
       > "$GATE_DIR/isolation-db.txt" 2>&1
-    ACTUAL=$(grep -E '^(read committed|repeatable read|serializable)$' "$GATE_DIR/isolation-db.txt" | tail -1)
+    ACTUAL=$(sed -n '1p' "$GATE_DIR/isolation-db.txt")
+    YB_EFFECTIVE_DB=$(sed -n '2p' "$GATE_DIR/isolation-db.txt")
+    [[ "$YB_EFFECTIVE_DB" == "$EXPECTED" ]] || \
+      die "YBDB effective isolation gate mismatch (DB): expected=$EXPECTED effective=${YB_EFFECTIVE_DB:-N/A} — check tserver gflag yb_enable_read_committed_isolation=true"
     ;;
   *) die "unknown db: $DB" ;;
 esac
@@ -91,10 +101,16 @@ case "$DB" in
     go-tpc tpcc run -d "$DRIVER" -H "$DB_HOST" -P "${YBDB_PORT:-5433}" -U "${YBDB_USER:-yugabyte}" -D "${YBDB_DB:-tpcc}" \
       --conn-params "$ISO_CONN_PARAMS" --warehouses=1 --time=2s --threads=1 --output=plain \
       2>&1 | tee "$GATE_DIR/isolation-driver.txt"
+    # Same dual gate via the driver-side connection (matches DB gate path).
     psql "postgres://${YBDB_USER:-yugabyte}@${DB_HOST}:${YBDB_PORT:-5433}/${YBDB_DB:-tpcc}?${ISO_CONN_PARAMS}" \
-      -v ON_ERROR_STOP=1 -At -c "SHOW transaction_isolation" \
+      -v ON_ERROR_STOP=1 -At \
+      -c "SHOW transaction_isolation" \
+      -c "SHOW yb_effective_transaction_isolation_level" \
       > "$GATE_DIR/isolation-driver-verify.txt" 2>&1
-    DRIVER_ACTUAL=$(grep -E '^(read committed|repeatable read|serializable)$' "$GATE_DIR/isolation-driver-verify.txt" | tail -1)
+    DRIVER_ACTUAL=$(sed -n '1p' "$GATE_DIR/isolation-driver-verify.txt")
+    YB_EFFECTIVE_DRIVER=$(sed -n '2p' "$GATE_DIR/isolation-driver-verify.txt")
+    [[ "$YB_EFFECTIVE_DRIVER" == "$EXPECTED" ]] || \
+      die "YBDB effective isolation gate mismatch (driver): expected=$EXPECTED effective=${YB_EFFECTIVE_DRIVER:-N/A} — check tserver gflag yb_enable_read_committed_isolation=true"
     ;;
 esac
 
@@ -111,9 +127,11 @@ write_phase_done "$ROOT" "gate-isolation" "$(cat <<JSON
   "conn_params": "$ISO_CONN_PARAMS",
   "isolation_expected": "$EXPECTED",
   "isolation_actual": "$ACTUAL",
-  "driver_actual": "$DRIVER_ACTUAL"
+  "driver_actual": "$DRIVER_ACTUAL",
+  "yb_effective_db": "${YB_EFFECTIVE_DB:-n/a}",
+  "yb_effective_driver": "${YB_EFFECTIVE_DRIVER:-n/a}"
 }
 JSON
 )"
-info "isolation gate passed db=$DB iso=$ISO expected=$EXPECTED actual=$ACTUAL"
+info "isolation gate passed db=$DB iso=$ISO expected=$EXPECTED actual=$ACTUAL${YB_EFFECTIVE_DB:+ yb_effective_db=$YB_EFFECTIVE_DB}${YB_EFFECTIVE_DRIVER:+ yb_effective_driver=$YB_EFFECTIVE_DRIVER}"
 
