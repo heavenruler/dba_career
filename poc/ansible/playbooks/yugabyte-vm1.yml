@@ -14,19 +14,23 @@
     yb_host: "172.24.40.32"
     yb_tserver_flags: "memory_limit_hard_bytes=11811160064,db_block_cache_size_percentage=50,durable_wal_write=true,require_durable_wal_write=true,yb_enable_read_committed_isolation=true,ysql_enable_auth=false,ysql_enable_auto_analyze=false"
   tasks:
-    - name: Install YugabyteDB prerequisites
-      ansible.builtin.dnf:
-        name:
-          - curl
-          - tar
-          - gzip
-          - python3-setuptools
-          - python3-six
-          - postgresql
-        state: present
+    - name: Install YugabyteDB prerequisites (shell dnf, idempotent)
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar gzip python3-setuptools python3-six postgresql; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          if dnf install -y --cacheonly "$pkg" >/dev/null 2>&1; then
+            echo "$pkg installed from cache"
+          else
+            dnf install -y --setopt=keepcache=1 "$pkg"
+          fi
+        done
+      args:
+        executable: /bin/bash
       environment:
         http_proxy: "{{ proxy_url }}"
         https_proxy: "{{ proxy_url }}"
+      changed_when: false
 
     - name: Create yugabyte user
       ansible.builtin.user:
@@ -125,19 +129,23 @@
     yb_url: "https://software.yugabyte.com/releases/{{ yb_version }}/{{ yb_archive }}"
     yb_install_dir: /opt/yugabyte
   tasks:
-    - name: Install ysqlsh prerequisites
-      ansible.builtin.dnf:
-        name:
-          - curl
-          - tar
-          - gzip
-          - python3-setuptools
-          - python3-six
-          - postgresql
-        state: present
+    - name: Install ysqlsh prerequisites (shell dnf, idempotent)
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar gzip python3-setuptools python3-six postgresql; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          if dnf install -y --cacheonly "$pkg" >/dev/null 2>&1; then
+            echo "$pkg installed from cache"
+          else
+            dnf install -y --setopt=keepcache=1 "$pkg"
+          fi
+        done
+      args:
+        executable: /bin/bash
       environment:
         http_proxy: "{{ proxy_url }}"
         https_proxy: "{{ proxy_url }}"
+      changed_when: false
 
     - name: Create YugabyteDB client directory
       ansible.builtin.file:
