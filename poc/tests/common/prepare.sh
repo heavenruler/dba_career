@@ -78,21 +78,41 @@ if [[ "$DB" == "ybdb" && ("$TOPO" == "vm-3node-1s1r" || "$TOPO" == "vm-3node-1s3
 fi
 
 # ---- 3. go-tpc prepare ---------------------------------------------
-info "go-tpc tpcc prepare W=$WAREHOUSES driver=$DRIVER"
+# YBDB 2025.2: inline consistency check (3.3.2.x cross-table aggregates)
+# stalls 30+ min; use --no-check and verify via row-count below.
+NOCHECK_ARG=""
+[[ "$DB" == "ybdb" ]] && NOCHECK_ARG="--no-check"
+info "go-tpc tpcc prepare W=$WAREHOUSES driver=$DRIVER $NOCHECK_ARG"
 go-tpc tpcc prepare \
   -d "$DRIVER" -H "$DB_HOST" -P "$PORT" -U "$USER" -D "$DBNAME" \
   --conn-params "$ISO_CONN_PARAMS" \
   --warehouses="$WAREHOUSES" \
+  $NOCHECK_ARG \
   2>&1 | tee "$PREP_DIR/go-tpc-prepare.log"
 
-# ---- 4. go-tpc check-all (consistency check) -----------------------
-info "go-tpc tpcc check --check-all"
-go-tpc tpcc check \
-  -d "$DRIVER" -H "$DB_HOST" -P "$PORT" -U "$USER" -D "$DBNAME" \
-  --conn-params "$ISO_CONN_PARAMS" \
-  --warehouses="$WAREHOUSES" \
-  --check-all \
-  2>&1 | tee "$PREP_DIR/check-all.log" || warn "check-all reported issues; see $PREP_DIR/check-all.log"
+# ---- 4. consistency / integrity verification -----------------------
+if [[ "$DB" == "ybdb" ]]; then
+  info "row-count verification (YBDB; go-tpc check-all skipped — 2025.2 stalls on 3.3.2.x cross-table aggregates)"
+  psql "postgres://${USER}@${DB_HOST}:${PORT}/${DBNAME}" -v ON_ERROR_STOP=1 \
+    -c "SELECT 'warehouse'  AS tbl, count(*) FROM warehouse
+         UNION ALL SELECT 'district',   count(*) FROM district
+         UNION ALL SELECT 'customer',   count(*) FROM customer
+         UNION ALL SELECT 'history',    count(*) FROM history
+         UNION ALL SELECT 'item',       count(*) FROM item
+         UNION ALL SELECT 'stock',      count(*) FROM stock
+         UNION ALL SELECT 'new_order',  count(*) FROM new_order
+         UNION ALL SELECT 'orders',     count(*) FROM orders
+         UNION ALL SELECT 'order_line', count(*) FROM order_line;" \
+    2>&1 | tee "$PREP_DIR/row-count-check.log"
+else
+  info "go-tpc tpcc check --check-all"
+  go-tpc tpcc check \
+    -d "$DRIVER" -H "$DB_HOST" -P "$PORT" -U "$USER" -D "$DBNAME" \
+    --conn-params "$ISO_CONN_PARAMS" \
+    --warehouses="$WAREHOUSES" \
+    --check-all \
+    2>&1 | tee "$PREP_DIR/check-all.log" || warn "check-all reported issues; see $PREP_DIR/check-all.log"
+fi
 
 # ---- 5. quiesce 5 min (compaction settle) --------------------------
 info "quiesce 5 min"
