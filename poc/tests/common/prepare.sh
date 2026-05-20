@@ -60,10 +60,14 @@ case "$DB" in
   ybdb)
     PORT="${YBDB_PORT:-5433}"; USER="${YBDB_USER:-yugabyte}"; DBNAME="${YBDB_DB:-tpcc}"
     # YSQL connects to "yugabyte" db to drop/create the target.
-    # NOTE: each -c runs in its own transaction; combining both stmts under a
-    # single -c wraps them in one implicit transaction, which YSQL rejects
-    # with "DROP DATABASE cannot run inside a transaction block".
+    # NOTE 1: each -c runs in its own transaction; combining DROP+CREATE under
+    # a single -c wraps them in one implicit txn, which YSQL rejects with
+    # "DROP DATABASE cannot run inside a transaction block".
+    # NOTE 2: if a previous suite was killed mid-prepare, lingering go-tpc
+    # sessions still pin the target DB and DROP fails with
+    # "database is being accessed by other users". Terminate them first.
     psql "postgres://${USER}@${DB_HOST}:${PORT}/yugabyte" -v ON_ERROR_STOP=1 \
+      -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$DBNAME' AND pid <> pg_backend_pid()" \
       -c "DROP DATABASE IF EXISTS $DBNAME" \
       -c "CREATE DATABASE $DBNAME" \
       2>&1 | tee "$PREP_DIR/drop-create.log"
