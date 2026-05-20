@@ -96,6 +96,18 @@
 
 ### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
 
+### 取數來源
+
+- 工作目錄：`<result-dir>`
+- 使用檔案：`runs/threads-*/round-*/go-tpc-stdout.txt`
+- 取得方式：`<手動 / parser / rg + awk / jq / 待補固定 parser>`
+- 指令：
+  ```bash
+  <command>
+  ```
+- 計算口徑：`<5-round mean / median / single run / round-N>`
+- 產出欄位：`tpmC mean / tpmTotal mean / efficiency mean / NO p50 / NO p95 / NO p99 / error count / error rate`
+
 > tpmC / tpmTotal / efficiency 為 5 round mean；NO p50 / p95 / p99 亦為 5 round latency mean。
 >
 > `range/mean` = `(5 round 最大 tpmC - 最小 tpmC) / 5 round 平均 tpmC`，用來看同一併發水位的 round-to-round 波動。
@@ -111,6 +123,18 @@
 
 ### Round-by-round tpmC
 
+### 取數來源
+
+- 工作目錄：`<result-dir>`
+- 使用檔案：`runs/threads-*/round-*/go-tpc-stdout.txt`
+- 取得方式：`<手動 / parser / rg + awk / jq / 待補固定 parser>`
+- 指令：
+  ```bash
+  <command>
+  ```
+- 計算口徑：`per-round tpmC`
+- 產出欄位：`r1 / r2 / r3 / r4 / r5`
+
 | Threads | r1 | r2 | r3 | r4 | r5 |
 |---:|---:|---:|---:|---:|---:|
 | 16 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` |
@@ -119,6 +143,18 @@
 | 128 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` |
 
 ### DB-host 飽和分析
+
+### 取數來源
+
+- 工作目錄：`<result-dir>`
+- 使用檔案：`runs/threads-*/round-*/mpstat-db.txt`、`runs/threads-*/round-*/iostat-1s-db.txt`
+- 取得方式：`<手動 / parser / awk / 待補固定 parser>`
+- 指令：
+  ```bash
+  <command>
+  ```
+- 計算口徑：`<round-N mean / 5-round mean / selected mid-run sample>`
+- 產出欄位：`%usr / %sys / %iowait / %idle / %idle min / r/s / w/s / %util`
 
 > **核心問題**：單節點在固定硬體下，吞吐天花板的成因是什麼？  
 > **回答**：`<CPU-bound / IO wait-bound / retry-bound / network-bound / 待確認>`。
@@ -151,6 +187,18 @@
 | 飽和是 network / proxy / shard routing | `<✓ / ❌ / 待確認>` | `<證據>` |
 
 ### 對標分析
+
+### 取數來源
+
+- 工作目錄：`<result-dir A>`、`<result-dir B>`
+- 使用檔案：`<pipeline-log.md / summary.json / go-tpc-stdout.txt>`
+- 取得方式：`<手動彙整 / parser / 待補固定 parser>`
+- 指令：
+  ```bash
+  <command>
+  ```
+- 計算口徑：`<同口徑 5-round mean / mixed caveat>`
+- 產出欄位：`Δ tpmC / Δ p99 / 註記`
 
 | threads | `<對照 A>` | `<本組>` | Δ tpmC | `<對照 A p99>` | `<本組 p99>` | Δ p99 | 註記 |
 |---:|---:|---:|---:|---:|---:|---:|---|
@@ -220,6 +268,18 @@
 | <a id="note-2"></a>註2 | `<比較限制，例如不同 isolation、不同 retry 行為、不同 run 方法時不可直接視為引擎優劣。>` |
 | <a id="note-3"></a>註3 | `<資料品質限制，例如單次 10min wrapper、5-round mean、manual resume、欄位待修。>` |
 | <a id="note-4"></a>註4 | `<機制歸因限制，例如 OS 指標支持瓶頸，但缺少 DB metrics / trace 直接佐證。>` |
+
+## 取數指令索引
+
+| 目的 | 工作目錄 | 使用檔案 | 指令 | 產出 |
+|---|---|---|---|---|
+| go-tpc summary | `<result-dir>` | `runs/threads-*/round-*/go-tpc-stdout.txt` | `<command>` | `tpmC / latency / error count / error rate` |
+| round-by-round tpmC | `<result-dir>` | `runs/threads-*/round-*/go-tpc-stdout.txt` | `<command>` | `r1-r5 tpmC` |
+| marker chain | `<result-dir>` | `.*.done` | `ls -al .*.done` | `phase complete` |
+| isolation gate | `<result-dir>` | `gate/isolation*.txt` | `cat gate/isolation-db.txt gate/isolation-driver-verify.txt` | `isolation actual` |
+| DB-host CPU | `<result-dir>` | `runs/threads-*/round-*/mpstat-db.txt` | `<command>` | `%usr / %iowait / %idle` |
+| DB-host IO | `<result-dir>` | `runs/threads-*/round-*/iostat-1s-db.txt` | `<command>` | `r/s / w/s / %util` |
+| DB config | `<result-dir>` | `db-config/*` | `<command>` | `cluster setting / effective config` |
 
 ## v4.7 檢核項
 
