@@ -223,6 +223,17 @@ $(if $(filter crdb,$(1)),$(CRDB_HOST),\
 $(if $(filter ybdb,$(1)),$(YBDB_HOST),)))
 endef
 
+# ---- per-db result directory mapping ----
+# Most DBs use <db>-tc1; YugabyteDB is shipped under yuga-tc1/ to keep the
+# project-wide "yuga-*" directory convention (also used by ansible/vars/,
+# tests/prepare/, tests/run-all/). Mapping isolates the dir name from the
+# DB-code argument used in target names.
+define DB_RESULT_DIR
+$(if $(filter tidb,$(1)),tidb-tc1,\
+$(if $(filter crdb,$(1)),crdb-tc1,\
+$(if $(filter ybdb,$(1)),yuga-tc1,)))
+endef
+
 # ---- gate phase (Step 1: OS / chrony / disk; isolation gate after prepare) ----
 # pattern target: gate-vm1-<db>-<iso>
 $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,gate-vm1-$(db)-$(iso))):
@@ -287,12 +298,13 @@ $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,collect-vm1-$(db)-$(iso))
 $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,fetch-vm1-$(db)-$(iso))):
 	$(eval DB := $(word 3,$(subst -, ,$@)))
 	$(eval ISO := $(word 4,$(subst -, ,$@)))
+	$(eval RESULT_DIR := $(strip $(call DB_RESULT_DIR,$(DB))))
 	$(eval FETCH_SRC := $(if $(filter command line,$(origin TPCC_TS)),$(TPCC_ARTIFACTS)/$(DB)-vm-1node-$(ISO)-$(TPCC_TS),$(TPCC_ARTIFACTS)/$(DB)-vm-1node-$(ISO)-*))
-	@echo "==> fetch-vm1-$(DB)-$(ISO) src=$(FETCH_SRC)"
-	mkdir -p $(LOCAL_RESULTS)/$(DB)-tc1/S-BASE/vm-1node-$(ISO)/
+	@echo "==> fetch-vm1-$(DB)-$(ISO) src=$(FETCH_SRC) dest=$(RESULT_DIR)"
+	mkdir -p $(LOCAL_RESULTS)/$(RESULT_DIR)/S-BASE/vm-1node-$(ISO)/
 	rsync -avz --remove-source-files \
 	  '$(TPCC_CLIENT):$(FETCH_SRC)' \
-	  $(LOCAL_RESULTS)/$(DB)-tc1/S-BASE/vm-1node-$(ISO)/
+	  $(LOCAL_RESULTS)/$(RESULT_DIR)/S-BASE/vm-1node-$(ISO)/
 	ssh $(TPCC_CLIENT) 'find $(TPCC_ARTIFACTS) -depth -type d -empty -delete' || true
 
 # ---- one-button e2e per <db>-<iso> ----

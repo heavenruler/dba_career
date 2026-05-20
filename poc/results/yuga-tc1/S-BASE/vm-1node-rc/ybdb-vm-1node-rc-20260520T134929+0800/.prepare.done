@@ -1,0 +1,10 @@
+{
+  "phase": "prepare",
+  "db": "ybdb",
+  "iso": "rc",
+  "topology": "vm-1node",
+  "ts": "20260520T134929+0800",
+  "db_host": "172.24.40.32",
+  "warehouses": 128,
+  "conn_params": "sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed"
+}

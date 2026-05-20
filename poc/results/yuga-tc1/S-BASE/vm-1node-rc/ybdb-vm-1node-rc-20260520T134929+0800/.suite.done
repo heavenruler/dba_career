@@ -1,0 +1,9 @@
+{
+  "phase": "suite",
+  "db": "ybdb",
+  "iso": "rc",
+  "topology": "vm-1node",
+  "ts": "20260520T134929+0800",
+  "completed_at": "2026-05-20T21:05:12+0800",
+  "note": "manually-finalized after collect-phase failure (rc=23 SIGPIPE in curl|head); collect.sh re-run with fix landed all expected markers"
+}
