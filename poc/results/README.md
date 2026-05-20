@@ -37,7 +37,7 @@
 | CockroachDB | 三節點虛擬機，HAProxy | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | CockroachDB | Kubernetes，無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | CockroachDB | Kubernetes，有資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
-| YugabyteDB | 單節點虛擬機 | ✅ 完成（v4.7） | ⏳ 待執行 | ⏳ 待執行 | vm-1node-rc 5-round mean peak 11,436 tpmC @ t32，零 error；rr / strict 待測 |
+| YugabyteDB | 單節點虛擬機 | ✅ 完成 | ⏳ 待執行 | ⏳ 待執行 | vm-1node-rc 5-round mean peak 11,436 tpmC @ t32，零 error；rr / strict 待測 |
 | YugabyteDB | 三節點虛擬機，直連 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | YugabyteDB | 三節點虛擬機，HAProxy | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | YugabyteDB | Kubernetes，無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程；pre-v4.7 單次 10min wrapper 僅作歷史參考 |
