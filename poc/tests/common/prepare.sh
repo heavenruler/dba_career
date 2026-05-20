@@ -173,13 +173,17 @@ case "$DB" in
       "EXPLAIN SELECT c_first FROM customer WHERE c_w_id=1 AND c_d_id=1 AND c_id=1" > "$PREP_DIR/explain-customer.txt" 2>&1
     ;;
   ybdb)
+    # Use ysqlsh (bundled with YB) for \d+ — stock psql from AlmaLinux 8.10
+    # (postgresql package) queries pg_class.relhasoids which YB 2025.2's
+    # catalog dropped (PG 12+ removed), so psql -c "\d+" exits rc=1 and
+    # trips set -e here.
     for tbl in warehouse district customer history new_order orders order_line item stock; do
-      psql "postgres://${USER}@${DB_HOST}:${PORT}/${DBNAME}" -c "\\d+ $tbl" \
+      ysqlsh -h "$DB_HOST" -p "$PORT" -U "$USER" -d "$DBNAME" -c "\\d+ $tbl" \
         >> "$PREP_DIR/schema.txt" 2>&1
     done
-    psql "postgres://${USER}@${DB_HOST}:${PORT}/${DBNAME}" -c \
+    ysqlsh -h "$DB_HOST" -p "$PORT" -U "$USER" -d "$DBNAME" -c \
       "EXPLAIN SELECT w_name FROM warehouse WHERE w_id=1" > "$PREP_DIR/explain-warehouse.txt" 2>&1
-    psql "postgres://${USER}@${DB_HOST}:${PORT}/${DBNAME}" -c \
+    ysqlsh -h "$DB_HOST" -p "$PORT" -U "$USER" -d "$DBNAME" -c \
       "EXPLAIN SELECT c_first FROM customer WHERE c_w_id=1 AND c_d_id=1 AND c_id=1" > "$PREP_DIR/explain-customer.txt" 2>&1
     ;;
 esac
