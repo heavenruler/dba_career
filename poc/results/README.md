@@ -20,8 +20,7 @@
 | TiDB | 單節點虛擬機 | REPEATABLE READ | [tidb-vm-1node-rr-20260519T001949+0800](./tidb-tc1/S-BASE/vm-1node-rr/tidb-vm-1node-rr-20260519T001949+0800/) | 128 | **13,874** | 503 | **TiDB 最高 tpmC**；pessimistic 模式零 error |
 | CockroachDB | 單節點虛擬機 | READ COMMITTED | [crdb-vm-1node-rc-20260519T085346+0800](./crdb-tc1/S-BASE/vm-1node-rc/crdb-vm-1node-rc-20260519T085346+0800/) | 64 | 9,134 | 440 | RC 在 t16 起即被 fsync IO 卡死（%iowait 18%）|
 | CockroachDB | 單節點虛擬機 | REPEATABLE READ | [crdb-vm-1node-rr-20260519T124506+0800](./crdb-tc1/S-BASE/vm-1node-rr/crdb-vm-1node-rr-20260519T124506+0800/) | 128 | 3,788 | 604 | preview RR；retry storm（DB %idle 46%、127 err/round）|
-| CockroachDB | 單節點虛擬機 | SERIALIZABLE | [crdb-vm-1node-strict-20260519T164057+0800](./crdb-tc1/S-BASE/vm-1node-strict/crdb-vm-1node-strict-20260519T164057+0800/) | 64 | **10,830** | 227 | **CRDB 最高 tpmC**；t32+ 超越 RC（反直覺，預設最快）|
-| CockroachDB | 單節點虛擬機 | SERIALIZABLE | 同上 | 128 | 10,456 | 487 | 高併發保持領先 |
+| CockroachDB | 單節點虛擬機 | SERIALIZABLE | [crdb-vm-1node-strict-20260519T164057+0800](./crdb-tc1/S-BASE/vm-1node-strict/crdb-vm-1node-strict-20260519T164057+0800/) | 64 | **10,830** | 227 | **CRDB 最高 tpmC**；t32+ 超越 RC（反直覺，預設最快）；t128 mean 仍 10,456 / p99 487ms，高併發保持領先 |
 | YugabyteDB | 單節點虛擬機 | READ COMMITTED | [vm-1node/20260514-1337](./yuga-tc1/S-BASE/vm-1node/20260514-1337/) | 16 | **10,844** | 113 | **YBDB 最高 tpmC**；單次 10min run（非 5-round）|
 | YugabyteDB | Kubernetes，無資源限制 | READ COMMITTED | [k8s-3node-unlimit/20260513-0114](./yuga-tc1/S-BASE/k8s-3node-unlimit/20260513-0114/) | 32 | 3,164 | 1,476 | 已啟用有效 RC；單次 10min run |
 | YugabyteDB | Kubernetes，有資源限制 | READ COMMITTED | [k8s-3node-limit/20260513-0954](./yuga-tc1/S-BASE/k8s-3node-limit/20260513-0954/) | 32 | 1,766 | — | tserver 2c/8Gi cap，相對 unlimit -44.2% |
