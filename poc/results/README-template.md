@@ -37,11 +37,11 @@
 
 ## 已驗證結果
 
-| 資料庫 | 案例 | 隔離級 | 來源目錄 | 併發 | tpmC | p99 (ms) | 註記 | 判讀 |
-|---|---|---|---|---:|---:|---:|---|---|
-| TiDB | `<案例>` | `<隔離級>` | [`<結果目錄>`](./tidb-tc1/S-BASE/<case>/<result-dir>/) | `<threads>` | `<tpmC>` | `<p99>` | `<[註1](#note-1) 或 —>` | `<一句判讀>` |
-| CockroachDB | `<案例>` | `<隔離級>` | [`<結果目錄>`](./crdb-tc1/S-BASE/<case>/<result-dir>/) | `<threads>` | `<tpmC>` | `<p99>` | `<[註2](#note-2) 或 —>` | `<一句判讀>` |
-| YugabyteDB | `<案例>` | `<隔離級>` | [`<結果目錄>`](./yuga-tc1/S-BASE/<case>/<result-dir>/) | `<threads>` | `<tpmC>` | `<p99>` | `<[註3](#note-3) 或 —>` | `<一句判讀>` |
+| 資料庫 | 案例 | 隔離級 | 來源目錄 | 併發 | tpmC | p99 (ms) | error rate | 註記 | 判讀 |
+|---|---|---|---|---:|---:|---:|---:|---|---|
+| TiDB | `<案例>` | `<隔離級>` | [`<結果目錄>`](./tidb-tc1/S-BASE/<case>/<result-dir>/) | `<threads>` | `<tpmC>` | `<p99>` | `<errors / total 或 %>` | `<[註1](#note-1) 或 —>` | `<一句判讀>` |
+| CockroachDB | `<案例>` | `<隔離級>` | [`<結果目錄>`](./crdb-tc1/S-BASE/<case>/<result-dir>/) | `<threads>` | `<tpmC>` | `<p99>` | `<errors / total 或 %>` | `<[註2](#note-2) 或 —>` | `<一句判讀>` |
+| YugabyteDB | `<案例>` | `<隔離級>` | [`<結果目錄>`](./yuga-tc1/S-BASE/<case>/<result-dir>/) | `<threads>` | `<tpmC>` | `<p99>` | `<errors / total 或 %>` | `<[註3](#note-3) 或 —>` | `<一句判讀>` |
 
 ## 執行矩陣
 

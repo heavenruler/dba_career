@@ -22,11 +22,11 @@
 
 ### tpmC 排行
 
-| 排名 | 隔離級 | tpmC | 併發 | DB-host 瓶頸 | error / round |
-|---|---|---:|---:|---|---:|
-| 🥇 | `<隔離級>` | `<tpmC>` | `<threads>` | `<CPU-bound / IO-bound / retry-bound / 待確認>` | `<count>` |
-| 🥈 | `<隔離級>` | `<tpmC>` | `<threads>` | `<瓶頸>` | `<count>` |
-| 🥉 | `<隔離級>` | `<tpmC>` | `<threads>` | `<瓶頸>` | `<count>` |
+| 排名 | 隔離級 | tpmC | 併發 | DB-host 瓶頸 | error count | error rate |
+|---|---|---:|---:|---|---:|---:|
+| 🥇 | `<隔離級>` | `<tpmC>` | `<threads>` | `<CPU-bound / IO-bound / retry-bound / 待確認>` | `<count>` | `<errors / total 或 %>` |
+| 🥈 | `<隔離級>` | `<tpmC>` | `<threads>` | `<瓶頸>` | `<count>` | `<errors / total 或 %>` |
+| 🥉 | `<隔離級>` | `<tpmC>` | `<threads>` | `<瓶頸>` | `<count>` | `<errors / total 或 %>` |
 
 ### 三大發現
 
@@ -102,12 +102,12 @@
 >
 > go-tpc 若沒有 think time / keying time，efficiency 遠超 100% 屬正常。
 
-| threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) | error / round |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 16 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` |
-| 32 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` |
-| 64 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` |
-| 128 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` |
+| threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) | error count | error rate |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<count>` | `<errors / total 或 %>` |
+| 32 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<count>` | `<errors / total 或 %>` |
+| 64 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<count>` | `<errors / total 或 %>` |
+| 128 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<count>` | `<errors / total 或 %>` |
 
 ### Round-by-round tpmC
 
