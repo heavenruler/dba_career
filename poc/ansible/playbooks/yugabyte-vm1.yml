@@ -103,7 +103,7 @@
       environment:
         http_proxy: "{{ proxy_url }}"
         https_proxy: "{{ proxy_url }}"
-      when: yb_status.rc != 0
+      when: "'is not running' in (yb_status.stdout | default('')) or yb_status.rc != 0"
 
     - name: Wait for YSQL port
       ansible.builtin.wait_for:
