@@ -27,7 +27,7 @@
 2. `tidb-tc1/S-BASE/pipeline-log.md`
 3. `crdb-tc1/S-BASE/pipeline-log.md`
 4. `cockroach-tc1/S-BASE/pipeline-log.md` ← 舊版資料，僅核對是否有「已移轉至 crdb-tc1」標註
-5. `yuga-tc1/S-BASE/pipeline-log.md`
+5. `yuga-tc1/S-BASE/pipeline-log.md` ← v4.7 active；pre-v4.7 archive 於 `yuga-tc1-old/S-BASE/pipeline-log.md` + `pipeline-log_old.md`，僅核對 active log 是否有 pointer 到 yuga-tc1-old
 
 ## 審計六大維度（每個 finding 必須標註類別）
 

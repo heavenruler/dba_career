@@ -20,20 +20,22 @@
 - `results/README-template.md`
 - `results/pipeline-log-template.md`
 - `results/audit-prompt.md`
+- `results/audit-watch-prompt.md`
 
 鎖定文件：
 
 - `results/README.md`
 - `results/PoC-DESIGN.md`
 - `results/tidb-tc1/S-BASE/pipeline-log.md`
-- `results/yuga-tc1/S-BASE/pipeline-log.md`
+- `results/yuga-tc1/S-BASE/pipeline-log.md`（v4.7 active）
+- `results/yuga-tc1-old/S-BASE/pipeline-log.md` + `pipeline-log_old.md`（pre-v4.7 archive，只確認 active log 是否有 pointer）
 - `results/crdb-tc1/S-BASE/pipeline-log.md`
 - `results/cockroach-tc1/S-BASE/pipeline-log.md`（舊版資料，只確認 deprecated / migrated 標示是否清楚）
 
 ## 核心任務
 
 1. 根據 `results/audit-prompt.md` 的審計精神，檢查 results 文件是否符合目前 PoC 文件規範。
-2. 同時承擔長期監督職責：監督、協作、複查、檢驗、校驗、建議、進度確認。
+2. 同時承擔長期監督職責：監督、協作、複查、檢驗、校驗、建議、進度確認及規格對齊。
 3. 直到 TiDB / CockroachDB / YugabyteDB 三個資料庫目前 `vm-1node` 進度完成前，每次執行都要確認目前狀態、缺口與是否需要更新文件。
 4. 自動確認相關更新是否已 commit；若有未 commit 變更，需明確列出。
 5. 本次以 audit / watch / report 為主，不要修改檔案。
