@@ -45,9 +45,10 @@ if [[ -x "$SELF/db-config-dump.sh" ]]; then
 fi
 
 # ---- 2. env snapshot of DB-host -----------------------------------
+# Optional metadata; failures here must not kill the suite (set -e bypass).
 {
   echo "=== DB-host: $DB_HOST ==="
-  ssh -o StrictHostKeyChecking=accept-new "root@$DB_HOST" '
+  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 "root@$DB_HOST" '
     uname -a
     cat /etc/os-release
     free -h
@@ -56,34 +57,35 @@ fi
     cat /sys/kernel/mm/transparent_hugepage/enabled
     ulimit -n
   '
-} > "$ENV_DIR/db-host-snapshot.txt" 2>&1
+} > "$ENV_DIR/db-host-snapshot.txt" 2>&1 || warn "db-host env snapshot failed (rc=$?)"
 
 # ---- 3. DB process log tail (last 1000 lines) ---------------------
+# Optional metadata; failures here must not kill the suite (set -e bypass).
 case "$DB" in
   tidb)
-    ssh "root@$DB_HOST" '
+    ssh -o ConnectTimeout=10 "root@$DB_HOST" '
       for log in /tidb-deploy/tidb-*/log/tidb.log \
                  /tidb-deploy/tikv-*/log/tikv.log \
                  /tidb-deploy/pd-*/log/pd.log; do
         echo "=== $log ==="
         tail -1000 "$log" 2>/dev/null || echo "(not found)"
       done
-    ' > "$ROOT/runs/db-log-tail.txt" 2>&1
+    ' > "$ROOT/runs/db-log-tail.txt" 2>&1 || warn "tidb log tail failed (rc=$?)"
     ;;
   crdb)
-    ssh "root@$DB_HOST" '
+    ssh -o ConnectTimeout=10 "root@$DB_HOST" '
       echo "=== cockroach.log tail ==="
       tail -1000 /data/crdb/logs/cockroach.log 2>/dev/null || \
       journalctl -u cockroach -n 1000 --no-pager
-    ' > "$ROOT/runs/db-log-tail.txt" 2>&1
+    ' > "$ROOT/runs/db-log-tail.txt" 2>&1 || warn "crdb log tail failed (rc=$?)"
     ;;
   ybdb)
-    ssh "root@$DB_HOST" '
+    ssh -o ConnectTimeout=10 "root@$DB_HOST" '
       echo "=== yb-tserver log tail ==="
       tail -1000 /var/yugabyte/yb-data/tserver/logs/yb-tserver.INFO 2>/dev/null || echo "(not found)"
       echo "=== postgres log tail ==="
       find /var/yugabyte/var -name "postgresql-*.log" -exec tail -200 {} + 2>/dev/null
-    ' > "$ROOT/runs/db-log-tail.txt" 2>&1
+    ' > "$ROOT/runs/db-log-tail.txt" 2>&1 || warn "ybdb log tail failed (rc=$?)"
     ;;
 esac
 

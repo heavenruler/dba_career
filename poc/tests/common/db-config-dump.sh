@@ -58,12 +58,20 @@ case "$DB" in
     ;;
   ybdb)
     require_cmd curl psql
-    curl -s "http://${DB_HOST}:9000/varz" | head -200 > "$CONFIG_DIR/effective-config.txt"
-    curl -s "http://${DB_HOST}:9000/varz" | grep -E 'memory_limit_hard_bytes|db_block_cache_size_percentage|durable_wal_write|require_durable_wal_write|yb_enable_read_committed_isolation|ysql_enable_auth|ysql_enable_auto_analyze' \
-      > "$CONFIG_DIR/cluster-settings.txt" || true
+    # NOTE: avoid `curl ... | head -N` — head closes the pipe early, curl
+    # sees SIGPIPE and exits 23 (Write error); under set -o pipefail this
+    # kills the script. Fetch full /varz to a tmp first, then slice.
+    VARZ_TMP=$(mktemp)
+    curl -s --max-time 30 "http://${DB_HOST}:9000/varz" > "$VARZ_TMP" || warn "curl /varz failed"
+    cp "$VARZ_TMP" "$CONFIG_DIR/effective-config.txt"
+    grep -E 'memory_limit_hard_bytes|db_block_cache_size_percentage|durable_wal_write|require_durable_wal_write|yb_enable_read_committed_isolation|ysql_enable_auth|ysql_enable_auto_analyze|ysql_default_transaction_isolation' \
+      "$VARZ_TMP" > "$CONFIG_DIR/cluster-settings.txt" || true
+    rm -f "$VARZ_TMP"
     psql "postgres://${YBDB_USER:-yugabyte}@${DB_HOST}:${YBDB_PORT:-5433}/${YBDB_DB:-tpcc}?${ISO_CONN_PARAMS}" \
-      -v ON_ERROR_STOP=1 -c "BEGIN; SHOW transaction_isolation; COMMIT;" \
-      > "$CONFIG_DIR/isolation.txt" 2>&1
+      -v ON_ERROR_STOP=1 \
+      -c "BEGIN; SHOW transaction_isolation; COMMIT;" \
+      -c "SHOW yb_effective_transaction_isolation_level" \
+      > "$CONFIG_DIR/isolation.txt" 2>&1 || warn "psql isolation dump failed"
     ;;
   *) die "unknown db: $DB" ;;
 esac
