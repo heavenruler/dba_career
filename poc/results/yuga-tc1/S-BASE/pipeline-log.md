@@ -55,6 +55,40 @@ SHOW yb_effective_transaction_isolation_level;        -- 底層實際 isolation
 
 ---
 
+## v4.7 重跑 setup 修法紀錄（2026-05-20）
+
+第一次 `make vm1-ybdb-rc` 啟動到 prepare 完成共撞 5 個 YBDB-specific 問題（tidb/crdb 路徑都不會觸發），全數修進 `poc/ansible/playbooks/yugabyte-vm1.yml` 與 `poc/tests/common/prepare.sh`。本段把 root cause / 修法 / commit SHA 留檔，避免下次 rr / strict / vm-3node 重跑時又踩同樣坑。
+
+### 修法總覽
+
+| # | 階段 | 錯誤訊息 | Root cause | 修法 | Commit |
+|---|------|----------|-----------|------|--------|
+| 1 | ansible deploy | `Could not import the dnf python module using /usr/bin/python3.12` | inventory 用 python3.12，但 AlmaLinux 8.10 的 dnf python bindings 只在 `/usr/libexec/platform-python` (3.6)；`ansible.builtin.dnf` 模組需要這個 binding | 兩段 `ansible.builtin.dnf` 改為 `ansible.builtin.shell` + `rpm -q` idempotent install（與 tidb-vm1.yml 同 pattern）| [`c88f7d4`](#) |
+| 2 | ansible deploy | `Wait for YSQL port` timeout 240s | fresh VM 上 `yugabyted status` 即使「is not running」也回 **rc=0**，所以 `when: yb_status.rc != 0` 條件被 skip → `Start YugabyteDB RF=1` 永遠不會跑 | 條件改為 `'is not running' in (yb_status.stdout \| default(''))` ，rc!=0 作 backstop | [`e5ccc11`](#) |
+| 3 | prepare DROP/CREATE | `ERROR: DROP DATABASE cannot run inside a transaction block` | `psql -c "DROP; CREATE"` 兩 stmt 在同一 implicit txn；YSQL/PG 禁 DROP DATABASE 在 txn 內 | 拆兩個 `-c` flag，各自獨立 txn | [`904c80c`](#) |
+| 4 | go-tpc prepare | suite 卡在 `begin to check warehouse 1 at condition 3.3.2.x` 1h+ 不結束 | go-tpc 預設 prepare 完跑 inline consistency check；3.3.2.x 系列為跨表 aggregate，YB 2025.2 上會卡 30+ min | YBDB 加 `--no-check`；後續 `check-all` 步驟 YBDB 也跳過，改用 row-count 驗整性 | [`99cb5a3`](#) |
+| 5 | prepare DROP DATABASE | `ERROR: database "tpcc" is being accessed by other users` | 前次 suite kill 後 go-tpc 連線在 YB 仍 lingering（YSQL session state 由 tserver 保留至 TCP 驅逐或顯式 terminate）| DROP 前 `pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='<db>' AND pid<>pg_backend_pid()`，多 `-c` 不在同 txn | [`fc76fe4`](#) |
+
+### 為什麼 tidb / crdb 沒踩這些坑
+
+| 修法 | tidb | crdb |
+|------|------|------|
+| #1 `ansible.builtin.dnf` | tidb-vm1.yml / cockroach-vm1.yml 早已用 `shell` + `rpm -q` pattern（先前 cockroach deploy bug 修過）| 同 tidb |
+| #2 status gate | TiDB 用 `tiup cluster display` 判斷集群狀態（有明確 exit code 語意）；CRDB 用 `start-single-node` 本身 idempotent | 同 tidb |
+| #3 DROP/CREATE in txn | MySQL 與 CockroachDB SQL 都允許 DDL 在 implicit txn；`mysql -e "DROP;CREATE"` 與 `cockroach sql -e "DROP;CREATE"` 正常 | 同 tidb |
+| #4 slow consistency check | TiDB / CRDB check-all 都在合理時間內（TiDB 52min prepare 內含、CRDB 43min 內含），可直接用 go-tpc 原生 check | 同 tidb |
+| #5 lingering session | TiDB / CRDB 的 `DROP DATABASE` 不被現存連線 pin（TiDB 自動失效、CRDB 預設允許 force drop）| 同 tidb |
+
+### YBDB-specific 影響項
+
+- **整性驗證口徑**：YBDB 路徑改用 row-count 取代 go-tpc check-all；資料完整性 vs TiDB / CRDB 的 14-condition 嚴格度有差，但對 tpmC / latency 結果不影響（檢核僅在 prepare 結尾、run 前；run 用相同 go-tpc workload）
+- **預期 row counts (W=128)**：warehouse 128 / district 1,280 / customer 3,840,000 / history 3,840,000 / item 100,000 / stock 12,800,000 / new_order 1,152,000 / orders 3,840,000 / order_line ~38.4M (5-15 lines per order, randomised)
+- **Gate WARN（本輪不致命）**：
+  - `DB-host THP != never` / `vm.swappiness > 5` / `ulimit -n < 65536` — yugabyte-vm1.yml 尚未含 OS tuning task（tidb-vm1.yml 有「OS tuning」段）；本輪先不卡 gate，下一輪 rr / strict 前要補
+  - `client (.31) artifacts FS available 14GB < 30GB` — 累積跨家 artifacts；rr / strict 前要清
+
+---
+
 ## vm-1node-rc — 待測（v4.7）
 
 > 重跑完成後此段對齊 `tidb-tc1` / `crdb-tc1` 的 vm-1node-rc 段結構填入：
