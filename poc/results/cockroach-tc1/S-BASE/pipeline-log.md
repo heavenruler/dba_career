@@ -1,4 +1,4 @@
-# CockroachDB TPC-C Pipeline Log — cockroach-tc1 / S-BASE
+# Deprecated — CockroachDB TPC-C Pipeline Log (migrated to crdb-tc1)
 
 > ⚠️ **DEPRECATED / 已移轉**：本檔為 PoC v4.7 前的歷史資料（單次 10min run、手動部署、無 detached suite wrapper、無 DB-host 雙邊監控）。**新 baseline 已遷至 [`results/crdb-tc1/S-BASE/pipeline-log.md`](../../crdb-tc1/S-BASE/pipeline-log.md)**，採 5-round 平均 + DB-host OS 監控 + isolation 雙閘 + 5×5min run × 4 thread groups。
 > 本檔以下所有結論為**歷史資料**，**不納入 PoC v4.7 baseline 與跨家對比**，僅作流程演進記錄之用。

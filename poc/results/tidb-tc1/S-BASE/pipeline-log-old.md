@@ -661,3 +661,172 @@ p99(ms):   96      176     305     612
 ### 結論
 
 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**64 threads 為甜點，128 threads 已飽和**。本輪資料作為後續 `vm-1node-rr`、`vm-1node-strict`、以及 CRDB/YBDB 對標的 baseline。`run.sh` 已補上 DB-host 端監控；下輪測試可直接觀察 TiKV CPU / disk %util 並回答上述瓶頸歸因問題。
+
+---
+
+# Archived from active pipeline-log on 2026-05-20 — TiDB K8s sections (2026-05-10, pre-v4.7 wrapper)
+
+> 以下兩段（`k8s-3node-unlimit` / `k8s-3node-limit`）來自 2026-05-10 流程，採單次 10min run，非 PoC v4.7 標準的 5-round × 20min warmup × DB-host 雙邊監控格式。
+> 為避免與 v4.7 baseline 混用，已從 active `pipeline-log.md` 移除至此存檔；待 K8s 環境用 v4.7 wrapper 重跑後再以正式段落形式重新納入。
+
+## k8s-3node-unlimit — 2026-05-10
+
+> **本段落用 K8s（容器化平台）取代直接在虛擬機跑 TiDB。除了部署方式不同，叢集元件數量與資料複本配置與 vm-3node 完全相同；差別僅在「跑在容器裡」這一層的額外消耗。**
+
+### 環境
+- 拓撲：**k3s**（輕量版 Kubernetes 容器編排平台）v1.29.14 三節點（.32 master，.33/.34 worker）+ **TiDB Operator**（TiDB 官方提供的 K8s 自動化部署工具，把 TiDB 包成 K8s 可管理的資源）+ **TidbCluster**（在 K8s 內定義 TiDB 叢集的設定物件）(PD×3 / TiKV×3 / TiDB SQL×2)
+- 部署清單：playbook `playbooks/tidb-k8s.yml` + inventory `inventory/tidb-tc1-k8s.ini` + vars `vars/tidb-k8s-3node-unlimit.yml`（TidbCluster CR template `roles/tidb_cluster/templates/tidbcluster.yaml.j2`，namespace `tidb-cluster`）
+- TidbCluster `tidb-poc`：PD 10Gi **PV**（Persistent Volume，持續性資料儲存空間，避免 pod 重啟資料消失）、TiKV 100Gi PV、TiDB 無 PV（無狀態）
+- 容器資源限制：**無**（unlimit variant；對應 TidbCluster CR 的 spec 區塊 — 詳見 Item #9 對照表）
+- 連線入口：**NodePort**（K8s 服務對外暴露的固定埠口）`.32:30004` → tidb-poc-tidb Service → TiDB SQL pods (.32/.33)
+- 結果目錄：`k8s-3node-unlimit/20260510-1409/`
+
+### Prepare
+- 時間：15m23s（128W）— 與 VM 相當
+
+### Execute 結果
+
+> （tpmC / tpmTotal：越高越好；NO avg / NO P99：越低越好）
+>
+> （efficiency 遠超 100% 屬正常，原因見上方 vm-1node Execute 結果說明；本表保持同樣的「無 think time 持續滿載」測試模式。）
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | 13,160.9 | 29,207.6 | 799.5% | 36.4 | 58.7 |
+| 32 | 16,304.1 | 36,228.4 | 990.5% | — | — |
+| 64 | **18,918.8** | 41,915.3 | 1149.3% | — | — |
+| 128 | 18,871.3 | 42,053.0 | 1146.4% | — | — |
+
+### vs vm-3node clean run 對比（K8s 容器化 overhead）
+
+> 兩組同樣三節點 RF=3，差異僅為 deployment runtime（VM bare process vs k3s containerd pod）。
+
+| threads | vm-3node | k8s-unlimit | overhead |
+|---------|----------|-------------|----------|
+| 16 | 13,573.7 | 13,160.9 | -3.0% |
+| 32 | 19,205.1 | 16,304.1 | -15.1% |
+| 64 | 21,992.7 | 18,918.8 | -14.0% |
+| 128 | 22,841.0 | 18,871.3 | -17.4% |
+| **peak** | 22,841 | **18,919** | **-17.2%** |
+
+### 觀察
+
+- **K8s overhead 平均 ~12%**：低併發（16t）僅 -3%，高併發（128t）達 -17%。
+- **原因**：高併發下 container network（CNI flannel）的 packet 處理、cgroup 計算、namespace 切換開銷等比放大。低併發時 CPU 都閒置，overhead 被吸收。
+  （白話：高併發下容器網路與資源隔離機制處理量放大，使容器部署比 VM 慢約 17%；低併發 CPU 還有閒置容量時這些 overhead 被吸收。）
+- **64t 為峰值**（18,919）：與 VM 同樣在 64t 達飽和，但天花板被 K8s overhead 拉低。
+- **128t 略降**（18,871）：與 64t 幾乎持平（-0.2%），仍處於穩態，無 hang。
+
+### 結論
+
+K8s 部署的 TiDB 比 VM bare-process 部署 **慢約 12-17%**（高併發更明顯），但仍遠優於 CockroachDB（14,014）和 YugabyteDB（1,036）的 VM 部署。
+若選 K8s 為部署模式，需留意：
+1. 高 CPU 利用率場景（OLTP 高峰）overhead 可達 17%
+2. 容器 networking（Flannel/Calico）對 TPC-C 這種高 RPS workload 影響顯著
+3. 若選擇 K8s + 資源限制，需依下方 k8s-3node-limit 結果預估約 41% peak 下降
+
+### k8s-3node 資源限制對照（unlimit vs limit 結構）
+
+```yaml
+# unlimit variant（本段）
+spec:
+  pd:
+    requests:    {}     # 無
+    limits:      {}     # 無
+  tikv:
+    requests:    {}     # 無
+    limits:      {}     # 無
+  tidb:
+    requests:    {}     # 無
+    limits:      {}     # 無
+
+# limit variant（詳見下方 k8s-3node-limit 段落）
+spec:
+  pd:
+    requests:    { cpu: 500m, memory: 1Gi }
+    limits:      { cpu: 1,    memory: 2Gi }
+  tikv:
+    requests:    { cpu: 1,    memory: 4Gi }
+    limits:      { cpu: 2,    memory: 8Gi }   # 即 README "TiKV Nc" = 2 cores
+  tidb:
+    requests:    { cpu: 500m, memory: 1Gi }
+    limits:      { cpu: 1,    memory: 3Gi }
+```
+
+---
+
+## k8s-3node-limit — 2026-05-10
+
+### 環境
+- 同 k8s-3node-unlimit 拓撲，**TidbCluster CR 重建**（刪除舊 CR + PVC，重新部署帶 limits）
+- 容器資源限制：
+  - PD：limit cpu=1, mem=2Gi（request 0.5/1Gi）
+  - TiDB SQL：limit cpu=1, mem=3Gi（request 0.5/1Gi）
+  - **TiKV：limit cpu=2, mem=8Gi**（request 1/4Gi）— 最關鍵限制（vs unlimit 可吃滿 4 vCPU）
+- 連線入口：NodePort `.32:30004`
+- 結果目錄：`k8s-3node-limit/20260510-2140/`
+
+### Prepare
+- 時間：21m57s（128W，比 unlimit 15m23s 慢 +43%）— TiKV 2 CPU 限制下寫入頻寬下降
+
+### Execute 結果
+
+| threads | tpmC | tpmTotal | efficiency | NO avg(ms) | NO P99(ms) |
+|---------|------|----------|------------|------------|------------|
+| 16 | 10,470.5 | 23,317.3 | 636.1% | 45.9 | 109.1 |
+| 32 | **11,080.7** | 24,589.3 | 673.2% | 85.9 | 201.3 |
+| 64 | 10,895.5 | 24,263.2 | 661.9% | 173.1 | 369.1 |
+| 128 | 10,519.7 | 23,395.6 | 639.1% | 352.0 | 805.3 |
+
+### vs k8s-3node-unlimit 對比（資源限制 overhead）
+
+> **差距 = limit 相對 unlimit 的 tpmC 變動，負數代表限制造成的吞吐減損。**
+
+| threads | k8s-unlimit | k8s-limit | limit overhead |
+|---------|-------------|-----------|----------------|
+| 16 | 13,160.9 | 10,470.5 | -20.4% |
+| 32 | 16,304.1 | 11,080.7 | -32.0% |
+| 64 | 18,918.8 | 10,895.5 | **-42.4%** |
+| 128 | 18,871.3 | 10,519.7 | **-44.3%** |
+| **peak** | 18,919 | **11,081** | **-41.4%** |
+
+### 觀察
+
+- **32t 即達飽和**：32t peak 11,080，64t/128t 反而略降。不像 unlimit 在 64t 達 18,919 才飽和。原因：TiKV 2 CPU 限制（vs unlimit 可吃 ~3-4 CPU），32t 已榨乾運算資源。
+- **限制 overhead 隨併發放大**：16t 僅 -20%，128t 達 -44%。低併發下 CPU 不滿，限制不顯影響；高併發下完全被 CPU cap 攔截。
+- **DELIVERY_ERR × 2（128t）**：少量交易因資源不足逾時失敗（unlimit 從未出現此錯誤）。
+- **吞吐天花板 ~11,000 tpmC**：CPU cap 直接決定上限。
+
+### 五組 TiDB 對比（vm-1node → k8s-3node-limit）
+
+| variant | peak tpmC | scale 區間 |
+|---------|-----------|-----------|
+| vm-1node | 13,355 (64t) | 平緩，飽和於 64t |
+| vm-3node-direct | 14,779 (128t) | +11% vs vm-1node |
+| vm-3node (HAProxy) | 22,841 (128t) | **+71%** vs vm-1node |
+| k8s-3node-unlimit | 18,919 (64t) | -17% vs vm（K8s 容器化開銷）|
+| **k8s-3node-limit** | **11,081 (32t)** | **-51% vs vm**（CPU cap 主導）|
+
+### Parameter delta（unlimit → limit 各參數對 overhead 的影響）
+
+| 元件 | unlimit | limit | 預期影響 |
+|---|---|---|---|
+| TiKV CPU | 無上限（4 cores） | 2 cores | 高併發 IO 處理被截斷（最主要影響來源）|
+| TiKV memory | 無上限 | 8 GiB | block cache 被壓縮，磁碟 read 增加 |
+| TiDB CPU | 無上限（4 cores） | 1 core | SQL parsing throughput 受限 |
+| TiDB memory | 無上限 | 3 GiB | 大查詢可能 OOM |
+| PD CPU | 無上限 | 1 core | scheduler 排程延遲 |
+
+### 結論
+
+**資源限制（CPU 2 cores per TiKV pod）對 OLTP 吞吐影響極大**：
+1. peak 從 unlimit 的 18,919 → limit 的 11,081，**減少 41%**
+2. scaling 曲線明顯改變：unlimit 在 64t 才飽和，limit 在 32t 就到頂
+3. 高併發下吞吐反而略降（128t 比 32t 低 5%），CPU cap 開始引發排隊延遲反噬
+
+**部署建議**：
+- 不建議在 OLTP 場景對 TiKV 設過嚴 CPU limit（≤2 cores 損失 40%+ 吞吐）
+- 若需 multi-tenancy 隔離，至少給 TiKV 3 cores 留 burst 空間
+- request/limit 比 request 應接近 limit（避免 throttling 抖動）
+
+---

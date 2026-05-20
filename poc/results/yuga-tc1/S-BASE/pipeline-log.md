@@ -68,9 +68,9 @@ SET transaction_isolation = 'read committed';  -- 或 'repeatable read' / 'seria
 本測試使用 **Read Committed**（`--isolation 2`）+ tserver flag `yb_enable_read_committed_isolation=true`。
 
 官方文件：
-- [Transaction Isolation Levels](https://docs.yugabyte.com/preview/architecture/transactions/isolation-levels/)
-- [Read Committed Isolation](https://docs.yugabyte.com/preview/architecture/transactions/read-committed/)
-- [yb_enable_read_committed_isolation flag](https://docs.yugabyte.com/preview/reference/configuration/yb-tserver/#yb-enable-read-committed-isolation)
+- [Transaction Isolation Levels (stable 2025.2)](https://docs.yugabyte.com/stable/architecture/transactions/isolation-levels/)
+- [Read Committed Isolation (stable 2025.2)](https://docs.yugabyte.com/stable/architecture/transactions/read-committed/)
+- [yb_enable_read_committed_isolation flag (stable 2025.2)](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#yb-enable-read-committed-isolation)
 
 ---
 
@@ -158,6 +158,8 @@ k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
 
 ## vm-1node — 2026-05-14
 
+> 🟡 **legacy single-run**：本段為 PoC v4.7 前的單次 10min wrapper 結果，**非** v4.7 標準的 5-round × 20min warmup × DB-host 雙邊監控。跨家對標時須使用此 caveat。
+
 ### 環境
 - 版本：**YugabyteDB 2025.2.2.2-b0**（PostgreSQL 15.12-YB-2025.2.2.2-b0）
 - OS：AlmaLinux 8.10
@@ -216,6 +218,8 @@ k8s-3node-limit                           同 k8s-3node-unlimit 拓撲
 ---
 
 ## k8s-3node-unlimit — 2026-05-13
+
+> 🟡 **legacy single-run**：本段為 PoC v4.7 前的單次 10min wrapper 結果，**非** v4.7 標準的 5-round × 20min warmup × DB-host 雙邊監控。
 
 ### 環境
 - 拓撲：**k3s** v1.29.14 三節點（.32 master，.33/.34 worker）+ YugabyteDB Helm chart **2025.2.2**（image/binary `2025.2.2.2 build 11`）
@@ -285,6 +289,8 @@ YugabyteDB 2025.2.2 LTS + K8s-unlimit + 有效 Read Committed 後，TPC-C 吞吐
 
 ## k8s-3node-limit — 2026-05-13
 
+> 🟡 **legacy single-run**：本段為 PoC v4.7 前的單次 10min wrapper 結果，**非** v4.7 標準的 5-round × 20min warmup × DB-host 雙邊監控。
+
 ### 環境
 - 拓撲：沿用 k3s v1.29.14 三節點（.32 master，.33/.34 worker）+ YugabyteDB Helm chart **2025.2.2**（image/binary `2025.2.2.2 build 11`）
 - 連線入口：NodePort `.32:30005`（YSQL），`.32:30006`（YCQL）
@@ -332,3 +338,23 @@ YugabyteDB 2025.2.2 LTS + K8s-unlimit + 有效 Read Committed 後，TPC-C 吞吐
 ### 結論
 
 YugabyteDB K8s 在 tserver **2c/8Gi** 限制下，吞吐較 unlimit 下降約 **44%**，但測試可穩定完成且無 transaction restart 錯誤。這組結果可作為與 TiDB / CockroachDB `k8s-3node-limit` 對標的正式紀錄。
+
+---
+
+## v4.7 標準化待補清單
+
+本檔現有結果為 PoC v4.7 前的 single-run wrapper 格式；以下項目須在 v4.7 detached suite 重跑時補齊，補齊後才能納入跨家正式對比矩陣：
+
+| 項目 | 目前狀態 | v4.7 目標 |
+|------|---------|-----------|
+| Run 結構 | 單次 10min run | **5 round × 5 min × 4 thread groups + 20min warmup @ 64 threads** |
+| Round artifact 格式 | `tpcc-c{16,32,64,128}.log`（wrapper 輸出） | `runs/threads-X/round-Y/go-tpc-stdout.txt`（per-round 結構化） |
+| DB-host 監控 | 無 | mpstat / iostat / vmstat / sar 1s 取樣，client + db-host 雙邊（`*.txt` + `*-db.txt`） |
+| Gate 雙閘 | 無 | `isolation-db.txt` + `isolation-driver-verify.txt`，gate 通過才進 prepare |
+| Suite marker | 無 | `.gate.done` / `.prepare.done` / `.gate-isolation.done` / `.run.done` / `.collect.done` / `.suite.done` |
+| TPCC_TS | 無 | `yyyyMMddTHHmmss+0800` 形式，整 suite 共用同一 ts |
+| 平均口徑 | 單次 run 即定值 | tpmC / p50 / p95 / p99 全為 5-round mean，range/mean 看穩定性 |
+| Latency aggregate | NO avg + NO P99 | NO p50 / p95 / p99（5-round mean）|
+| 三 isolation 矩陣 | 僅 RC | RC + RR + Strict（YBDB 原生支援 SERIALIZABLE，須驗證 `yb_enable_read_committed_isolation` 與 strict 設定相容） |
+
+> 重跑後此段刪除、所有 `🟡 legacy single-run` tag 移除、各段補齊 v4.7 結構，README 矩陣對應由 🟡 升為 ✅。
