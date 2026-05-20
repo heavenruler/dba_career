@@ -59,11 +59,14 @@ case "$DB" in
     ;;
   ybdb)
     PORT="${YBDB_PORT:-5433}"; USER="${YBDB_USER:-yugabyte}"; DBNAME="${YBDB_DB:-tpcc}"
-    # YSQL connects to "yugabyte" db to drop/create the target
-    psql "postgres://${USER}@${DB_HOST}:${PORT}/yugabyte" -v ON_ERROR_STOP=1 -c "
-      DROP DATABASE IF EXISTS $DBNAME;
-      CREATE DATABASE $DBNAME;
-    " 2>&1 | tee "$PREP_DIR/drop-create.log"
+    # YSQL connects to "yugabyte" db to drop/create the target.
+    # NOTE: each -c runs in its own transaction; combining both stmts under a
+    # single -c wraps them in one implicit transaction, which YSQL rejects
+    # with "DROP DATABASE cannot run inside a transaction block".
+    psql "postgres://${USER}@${DB_HOST}:${PORT}/yugabyte" -v ON_ERROR_STOP=1 \
+      -c "DROP DATABASE IF EXISTS $DBNAME" \
+      -c "CREATE DATABASE $DBNAME" \
+      2>&1 | tee "$PREP_DIR/drop-create.log"
     ;;
 esac
 info "drop+create done"
