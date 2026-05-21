@@ -1,0 +1,24 @@
+=== DB-HOST OS gate (172.24.40.32) ===
+[THP]
+[always] madvise never
+[sysctl]
+30
+30
+10
+[ulimit -n]
+1024
+[governor]
+(no cpufreq, virtual guest OK)
+[chrony tracking]
+Reference ID    : AC13FE07 (172.19.254.7)
+Stratum         : 7
+Ref time (UTC)  : Wed May 20 13:55:44 2026
+System time     : 0.000162128 seconds fast of NTP time
+Last offset     : +0.000312483 seconds
+RMS offset      : 0.000312483 seconds
+Frequency       : 10.635 ppm slow
+Residual freq   : +0.458 ppm
+Skew            : 14.798 ppm
+Root delay      : 0.038717695 seconds
+
+os-gate-pass=false
