@@ -8,22 +8,24 @@
 |---|---|---:|---|---|
 | TiDB | 單節點虛擬機，READ COMMITTED / REPEATABLE READ | **13,874** | 單節點完成；三節點與 Kubernetes 待重跑 | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md) |
 | CockroachDB | 單節點虛擬機，READ COMMITTED / REPEATABLE READ / SERIALIZABLE | **10,830** | 單節點三 isolation 完成；三節點與 Kubernetes 待執行 | [流程紀錄](./crdb-tc1/S-BASE/pipeline-log.md) |
-| YugabyteDB | 單節點虛擬機，READ COMMITTED / REPEATABLE READ / SERIALIZABLE | **11,436** | vm-1node 三 iso v4.7 完成：rc 11,436 ＞ rr 1,879 ＞ strict 1,130（反 CRDB pattern，因 YBDB rc 為 CPU-bound 已無 headroom）；vm-3node / Kubernetes 待測；pre-v4.7 single-run 與 K8s 歷史已備份於 [yuga-tc1-old/](./yuga-tc1-old/) | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md) |
+| YugabyteDB | 單節點虛擬機，READ COMMITTED / REPEATABLE READ / SERIALIZABLE | **11,436** | vm-1node 三 iso v4.7 完成：rc 11,436 ＞ rr 1,879 ＞ strict 1,130（反 CockroachDB pattern，因 YugabyteDB rc 為 CPU-bound 已無 headroom）；vm-3node / Kubernetes 待測；pre-v4.7 single-run 與 K8s 歷史已備份於 [yuga-tc1-old/](./yuga-tc1-old/) | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md) |
 
-> 同硬體 vm-1node 對照（4 vCPU / 15 GiB / single XFS, 5-round mean，9 組 (db × iso)）：TiDB rr 13,874（t128）＞ TiDB rc 13,064（t128）＞ YugabyteDB rc 11,436（t32）＞ CRDB strict 10,830（t64）＞ CRDB rc 9,134（t64）＞ CRDB rr 3,788（t128）＞ YBDB rr 1,879（t32）＞ **YBDB strict 1,130（t32）**。三家皆 5-round mean、口徑一致。
+> 同硬體 vm-1node 對照（4 vCPU / 15 GiB / single XFS, 5-round mean，9 組 (db × iso)）：TiDB rr 13,874（t128）＞ TiDB rc 13,064（t128）＞ YugabyteDB rc 11,436（t32）＞ CockroachDB strict 10,830（t64）＞ CockroachDB rc 9,134（t64）＞ CockroachDB rr 3,788（t128）＞ YugabyteDB rr 1,879（t32）＞ **YugabyteDB strict 1,130（t32）**。三家皆 5-round mean、口徑一致。
 
 ## 已驗證結果
 
-| 資料庫 | 案例 | 隔離級 | 來源目錄 | 併發 | tpmC | p99 (ms) | 判讀 |
-|---|---|---|---|---:|---:|---:|---|
-| TiDB | 單節點虛擬機 | READ COMMITTED | [tidb-vm-1node-rc-20260518T202009+0800](./tidb-tc1/S-BASE/vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/) | 128 | 13,064 | 597 | RC baseline；CPU-bound（%user 80.8%、%iowait 3.1%）|
-| TiDB | 單節點虛擬機 | REPEATABLE READ | [tidb-vm-1node-rr-20260519T001949+0800](./tidb-tc1/S-BASE/vm-1node-rr/tidb-vm-1node-rr-20260519T001949+0800/) | 128 | **13,874** | 503 | **TiDB 最高 tpmC**；pessimistic 模式零 error |
-| CockroachDB | 單節點虛擬機 | READ COMMITTED | [crdb-vm-1node-rc-20260519T085346+0800](./crdb-tc1/S-BASE/vm-1node-rc/crdb-vm-1node-rc-20260519T085346+0800/) | 64 | 9,134 | 440 | RC 在 t16 起即被 fsync IO 卡死（%iowait 18%）|
-| CockroachDB | 單節點虛擬機 | REPEATABLE READ | [crdb-vm-1node-rr-20260519T124506+0800](./crdb-tc1/S-BASE/vm-1node-rr/crdb-vm-1node-rr-20260519T124506+0800/) | 128 | 3,788 | 604 | preview RR；retry storm（DB %idle 46%、127 err/round）|
-| CockroachDB | 單節點虛擬機 | SERIALIZABLE | [crdb-vm-1node-strict-20260519T164057+0800](./crdb-tc1/S-BASE/vm-1node-strict/crdb-vm-1node-strict-20260519T164057+0800/) | 64 | **10,830** | 227 | **CRDB 最高 tpmC**；t32+ 超越 RC（反直覺，預設最快）；t128 mean 仍 10,456 / p99 487ms，高併發保持領先 |
-| YugabyteDB | 單節點虛擬機 | READ COMMITTED | [ybdb-vm-1node-rc-20260520T134929+0800](./yuga-tc1/S-BASE/vm-1node-rc/ybdb-vm-1node-rc-20260520T134929+0800/) | 32 | **11,436** | 216 | **YBDB v4.7 baseline**；5-round mean，零 error；t32 為 peak（t128 -4.8% 過飽和）|
-| YugabyteDB | 單節點虛擬機 | REPEATABLE READ | [ybdb-vm-1node-rr-20260520T215216+0800](./yuga-tc1/S-BASE/vm-1node-rr/ybdb-vm-1node-rr-20260520T215216+0800/) | 32 | 1,879 | 174 | snapshot iso（非 PG 標準 RR）；hot row retry storm，每 round = thread − 1 errors；DB %idle 67% — coordination bound 非 CPU/IO |
-| YugabyteDB | 單節點虛擬機 | SERIALIZABLE | [ybdb-vm-1node-strict-20260521T091048+0800](./yuga-tc1/S-BASE/vm-1node-strict/ybdb-vm-1node-strict-20260521T091048+0800/) | 32 | 1,130 | 54 | SSI；YBDB rc 為 CPU-bound 所以 SSI 反而比 rc / rr 都慢（與 CRDB SSI ＞ rc 相反）；p99 全 iso 最低但因 throughput -90% queue 短的副作用；DB %idle 70% |
+> `error rate` 口徑：`Σ *_ERR / Σ (* + *_ERR)` × 100%（5 個 TPC-C transaction type 全部加總）；取數來源 `runs/threads-X/round-Y/go-tpc-stdout.txt` 的 `[Summary]` 行，由 [`tests/common/summary-from-stdout.py`](../tests/common/summary-from-stdout.py) 解析後寫入各 suite 的 `summary.json`。
+
+| 資料庫 | 案例 | 隔離級 | 來源目錄 | 併發 | tpmC | p99 (ms) | error rate | 判讀 |
+|---|---|---|---|---:|---:|---:|---:|---|
+| TiDB | 單節點虛擬機 | READ COMMITTED | [tidb-vm-1node-rc-20260518T202009+0800](./tidb-tc1/S-BASE/vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/) | 128 | 13,064 | 597 | 0.000% | RC baseline；CPU-bound（%user 80.8%、%iowait 3.1%）|
+| TiDB | 單節點虛擬機 | REPEATABLE READ | [tidb-vm-1node-rr-20260519T001949+0800](./tidb-tc1/S-BASE/vm-1node-rr/tidb-vm-1node-rr-20260519T001949+0800/) | 128 | **13,874** | 503 | 0.000% | **TiDB 最高 tpmC**；pessimistic 模式零 error |
+| CockroachDB | 單節點虛擬機 | READ COMMITTED | [crdb-vm-1node-rc-20260519T085346+0800](./crdb-tc1/S-BASE/vm-1node-rc/crdb-vm-1node-rc-20260519T085346+0800/) | 64 | 9,134 | 440 | 0.000% | RC 在 t16 起即被 fsync IO 卡死（%iowait 18%）|
+| CockroachDB | 單節點虛擬機 | REPEATABLE READ | [crdb-vm-1node-rr-20260519T124506+0800](./crdb-tc1/S-BASE/vm-1node-rr/crdb-vm-1node-rr-20260519T124506+0800/) | 128 | 3,788 | 604 | 0.300% | preview RR；retry storm（DB %idle 46%、127 err/round）|
+| CockroachDB | 單節點虛擬機 | SERIALIZABLE | [crdb-vm-1node-strict-20260519T164057+0800](./crdb-tc1/S-BASE/vm-1node-strict/crdb-vm-1node-strict-20260519T164057+0800/) | 64 | **10,830** | 227 | 0.051% | **CockroachDB 最高 tpmC**；t32+ 超越 RC（反直覺，預設最快）；t128 mean 仍 10,456 / p99 487ms，高併發保持領先 |
+| YugabyteDB | 單節點虛擬機 | READ COMMITTED | [ybdb-vm-1node-rc-20260520T134929+0800](./yuga-tc1/S-BASE/vm-1node-rc/ybdb-vm-1node-rc-20260520T134929+0800/) | 32 | **11,436** | 216 | 0.000% | **YugabyteDB v4.7 baseline**；5-round mean，零 error；t32 為 peak（t128 -4.8% 過飽和）|
+| YugabyteDB | 單節點虛擬機 | REPEATABLE READ | [ybdb-vm-1node-rr-20260520T215216+0800](./yuga-tc1/S-BASE/vm-1node-rr/ybdb-vm-1node-rr-20260520T215216+0800/) | 32 | 1,879 | 174 | 0.149% | snapshot iso（非 PG 標準 RR）；hot row retry storm，每 round = thread − 1 errors；DB %idle 67% — coordination bound 非 CPU/IO |
+| YugabyteDB | 單節點虛擬機 | SERIALIZABLE | [ybdb-vm-1node-strict-20260521T091048+0800](./yuga-tc1/S-BASE/vm-1node-strict/ybdb-vm-1node-strict-20260521T091048+0800/) | 32 | 1,130 | 54 | 0.248% | SSI；YugabyteDB rc 為 CPU-bound 所以 SSI 反而比 rc / rr 都慢（與 CockroachDB SSI ＞ rc 相反）；p99 全 iso 最低但因 throughput -90% queue 短的副作用；DB %idle 70% |
 
 ## 執行矩陣
 
@@ -37,9 +39,9 @@
 | CockroachDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 完成 (SERIALIZABLE) | 三 isolation 全完整；strict t64 為 vm-1node 峰值 |
 | CockroachDB | 三節點虛擬機，直連 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | CockroachDB | 三節點虛擬機，HAProxy | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
-| CockroachDB | Kubernetes，無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
-| CockroachDB | Kubernetes，有資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
-| YugabyteDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 完成（SERIALIZABLE）| 三 iso 全完整：rc 11,436 ＞ rr 1,879 ＞ strict 1,130（反 CRDB pattern；rc CPU-bound 故 SSI 無 IO headroom 可榨） |
+| CockroachDB | Kubernetes,無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
+| CockroachDB | Kubernetes,有資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
+| YugabyteDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 完成（SERIALIZABLE）| 三 iso 全完整：rc 11,436 ＞ rr 1,879 ＞ strict 1,130（反 CockroachDB pattern；rc CPU-bound 故 SSI 無 IO headroom 可榨） |
 | YugabyteDB | 三節點虛擬機，直連 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | YugabyteDB | 三節點虛擬機，HAProxy | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | YugabyteDB | Kubernetes，無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程；pre-v4.7 單次 10min wrapper 僅作歷史參考 |
@@ -51,23 +53,23 @@
 
 - 單節點 RC 與 RR 已完成。pessimistic 模式下 RR 比 RC 快 +6.2% tpmC（t128: 13,874 vs 13,064）、p99 低（503 vs 597ms），整輪全 20 round 零 NEW_ORDER_ERR。
 - CPU-bound：%iowait < 5%、sda %util ≤ 51%、t128 %user mean 約 95.5%（瞬間接近 100%）。
-- TiDB 不支援原生 SERIALIZABLE，strict 在工具鏈上等價於 RR；跨家 strict 對標時須注意此點，不能直比 CRDB / YBDB 的 SSI。
+- TiDB 不支援原生 SERIALIZABLE，strict 在工具鏈上等價於 RR；跨家 strict 對標時須注意此點，不能直比 CockroachDB / YugabyteDB 的 SSI。
 - 三節點與 Kubernetes 舊數據已清空，等待 PoC v4.7 重跑。
 
 ### CockroachDB
 
 - 單節點三 isolation（RC / RR / SERIALIZABLE）全完整。**SERIALIZABLE 反而是最快**（t32+ 比 RC 高 +10~19% tpmC、p99 低一個量級）：RC 自 t16 起被 fsync IO 卡死（%idle 5% / %iowait 18%），strict 走 read-refresh 路徑 IO 更省、有 CPU headroom。
-- preview RR 是最慢選項（t128: 3,788 tpmC，比 RC -57% / 比 TiDB RR -72.7%）；雖然 RR 在 CRDB 與 TiDB 內部都 = SI，但 CRDB 採 first-committer-wins + client retry，無等效於 TiDB `tidb_txn_mode=pessimistic` 的全域開關。
+- preview RR 是最慢選項（t128: 3,788 tpmC，比 RC -57% / 比 TiDB RR -72.7%）；雖然 RR 在 CockroachDB 與 TiDB 內部都 = SI，但 CockroachDB 採 first-committer-wins + client retry，無等效於 TiDB `tidb_txn_mode=pessimistic` 的全域開關。
 - starting-gun storm：RR/strict 兩者在每 round 起始爆 retry（per-txn snapshot ts 同步衝突）；RC 因 per-statement snapshot 完全免疫。
 - 詳細機制與比較見 [crdb-tc1 流程紀錄 TL;DR](./crdb-tc1/S-BASE/pipeline-log.md#tldr--vm-1node-三-isolation-矩陣完成2026-05-19)。
 
 ### YugabyteDB
 
 - 2025.2.2 LTS + 有效 Read Committed（`yb_enable_read_committed_isolation=true` tserver gflag + session iso 雙閘）後 TPC-C 才有可比結果；三 iso 全部以 `SHOW transaction_isolation` + `SHOW yb_effective_transaction_isolation_level` 雙閘驗證生效，無 silent fallback。
-- **vm-1node-rc**：peak **11,436 tpmC @ t32**（5-round mean），零 NEW_ORDER_ERR / 20 round；CPU-bound 含異常高 %sys (19%) — YSQL postgres ↔ DocDB tserver 跨進程 RPC 拉走 1/5 CPU；對比 TiDB %sys 9% / CRDB %sys 5.5%。
-- **vm-1node-rr**：peak **1,879 tpmC @ t32**，比 rc **-84%**；YBDB rr = snapshot isolation 撞 SI hot row → 每 round **線性 N − 1 errors**（與 CRDB rr 完全相同 pattern）；DB-host %idle 66-67% 全程，瓶頸在 transaction coordination layer。
+- **vm-1node-rc**：peak **11,436 tpmC @ t32**（5-round mean），零 NEW_ORDER_ERR / 20 round；CPU-bound 含異常高 %sys (19%) — YSQL postgres ↔ DocDB tserver 跨進程 RPC 拉走 1/5 CPU；對比 TiDB %sys 9% / CockroachDB %sys 5.5%。
+- **vm-1node-rr**：peak **1,879 tpmC @ t32**，比 rc **-84%**；YugabyteDB rr = snapshot isolation 撞 SI hot row → 每 round **線性 N − 1 errors**（與 CockroachDB rr 完全相同 pattern）；DB-host %idle 66-67% 全程，瓶頸在 transaction coordination layer。
 - **vm-1node-strict**：peak **1,130 tpmC @ t32**，比 rc **-90%**、比 rr **再砍 -40%**；errors ≈ N-1 但比 rr 略少 ~5%（SSI early-abort 救回部分衝突）；DB %idle 70% 為三 iso 最高、disk %util 70% 為三 iso 最高（SSI version metadata + read-refresh 小 IO 放大）。
-- **三 iso 排序：rc ＞＞ rr ＞ strict** — 與 CRDB「strict ＞ rc ＞ rr」**完全相反**；機制：CRDB rc 為 IO-bound 故 SSI 走 CPU 路徑可避瓶頸；YBDB rc 已 CPU-bound 無 headroom 可榨。
+- **三 iso 排序：rc ＞＞ rr ＞ strict** — 與 CockroachDB「strict ＞ rc ＞ rr」**完全相反**；機制：CockroachDB rc 為 IO-bound 故 SSI 走 CPU 路徑可避瓶頸；YugabyteDB rc 已 CPU-bound 無 headroom 可榨。
 - 詳見 [yuga-tc1 pipeline-log TL;DR](./yuga-tc1/S-BASE/pipeline-log.md#tldr--vm-1node-三-isolation-矩陣完成2026-05-20--21)。
 - vm-1node pre-v4.7 single-run / vm-3node-direct / vm-3node-HAProxy / K8s（unlimit & limit）等歷史結果已備份於 [`yuga-tc1-old/`](./yuga-tc1-old/)；v4.7 vm-3node / Kubernetes 重跑尚未排程。
 
@@ -81,12 +83,12 @@
 |---|---|
 | N1 | 本測試是 TPC-C-derived stress benchmark using go-tpc，非 audited TPC-C，不能與官方 TPC-C 排名直接比較。 |
 | N2 | go-tpc 本輪沒有 think time / keying time，執行緒完成一筆交易後會立即送下一筆，因此 efficiency 超過 100% 屬正常。 |
-| N3 | isolation 必須由 connection string 與 gate 記錄共同確認，避免 driver 或資料庫預設值造成測試口徑偏移（CRDB 採 isolation 雙閘 = `isolation-db.txt` + `isolation-driver-verify.txt`）。 |
-| N4 | v4.7 標準格式：20 分鐘 warmup、每個併發水位 5 round × 5 分鐘、4 thread groups（16/32/64/128）、DB-host 雙邊 OS 監控（mpstat/iostat/vmstat/sar）。TiDB / CRDB / YugabyteDB vm-1node-rc 已採此格式（YBDB 為 commit `afe047d` 後在 yuga-tc1/S-BASE/vm-1node-rc/）；YBDB rr / strict / vm-3node / Kubernetes 重跑尚未排程；YBDB pre-v4.7 single-run 已備份於 yuga-tc1-old/。 |
-| N5 | suite marker `.gate.done` / `.prepare.done` / `.gate-isolation.done` / `.run.done` / `.collect.done` / `.suite.done` 代表該案例流程鏈完整。 |
-| N6 | CRDB / TiDB / YugabyteDB 三家 vm-1node 全 iso 的 tpmC 與 latency p50/p95/p99 已全為 5-round mean，口徑一致。 |
+| N3 | isolation 必須由 connection string 與 gate 記錄共同確認，避免 driver 或資料庫預設值造成測試口徑偏移（CockroachDB 採 isolation 雙閘 = `isolation-db.txt` + `isolation-driver-verify.txt`；YugabyteDB 加 `SHOW yb_effective_transaction_isolation_level` 三層驗證）。 |
+| N4 | v4.7 標準格式：20 分鐘 warmup、每個併發水位 5 round × 5 分鐘、4 thread groups（16/32/64/128）、DB-host 雙邊 OS 監控（mpstat/iostat/vmstat/sar）。TiDB / CockroachDB / YugabyteDB vm-1node 三家全 iso 已採此格式；YugabyteDB vm-3node / Kubernetes 重跑尚未排程；YugabyteDB pre-v4.7 single-run 已備份於 yuga-tc1-old/。 |
+| N5 | suite marker `.gate.done` / `.prepare.done` / `.gate-isolation.done` / `.run.done` / `.collect.done` / `.suite.done` + `.db-config.done` 代表該案例流程鏈完整。 |
+| N6 | CockroachDB / TiDB / YugabyteDB 三家 vm-1node 全 iso 的 tpmC 與 latency p50/p95/p99 已全為 5-round mean，口徑一致；數據來源為 `runs/threads-*/round-*/go-tpc-stdout.txt` + `[tests/common/summary-from-stdout.py](../tests/common/summary-from-stdout.py)` 解析後落地的 `summary.json`。 |
 | N7 | TiDB 三節點與 Kubernetes 數據已刻意清空，等待 PoC v4.7 重跑後再回填。 |
-| N8 | CRDB 機制描述以 artifact 數據與[官方 v26.2 docs](https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer) 為主；server-internal retry 等未直接量測項以「推測」呈現，待 trace / statement diagnostics 補強。 |
+| N8 | CockroachDB 機制描述以 artifact 數據與[官方 v26.2 docs](https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer) 為主；server-internal retry 等未直接量測項以「推測」呈現，待 trace / statement diagnostics 補強。 |
 
 ## 參考
 
@@ -94,5 +96,6 @@
 - CockroachDB 流程紀錄：[crdb-tc1/S-BASE/pipeline-log.md](./crdb-tc1/S-BASE/pipeline-log.md)
 - YugabyteDB 流程紀錄：[yuga-tc1/S-BASE/pipeline-log.md](./yuga-tc1/S-BASE/pipeline-log.md)
 - CockroachDB 歷史資料（已 deprecated）：[cockroach-tc1/S-BASE/pipeline-log.md](./cockroach-tc1/S-BASE/pipeline-log.md)
+- Summary parser（從 stdout 補產 summary.json）：[tests/common/summary-from-stdout.py](../tests/common/summary-from-stdout.py)
 - Codex 文件審計 prompt：[audit-prompt.md](./audit-prompt.md)
 - 歷史 README 備份：[README_old.md](./README_old.md)
