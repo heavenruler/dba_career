@@ -6,7 +6,7 @@
 
 ## TL;DR — vm-1node 三 isolation 矩陣完成（2026-05-20 / 21）
 
-**核心結論**：YugabyteDB 2025.2.2 LTS 在 4 vCPU + single XFS 硬體下，**rc ＞ rr ＞ strict** — 與 CRDB「strict ＞ rc ＞ rr」**完全相反**。原因：YBDB rc 本身 CPU-bound（無 IO headroom 可榨），SSI 額外的 read-refresh / serializable detector 直接吃 CPU，反而拖慢；對比 CRDB rc IO-bound（fsync ceiling），SSI 改走 CPU 路徑剛好避開 IO 瓶頸。
+**核心結論**：YugabyteDB 2025.2.2 LTS 在 4 vCPU + single XFS 硬體下，**rc ＞ rr ＞ strict** — 與 CockroachDB「strict ＞ rc ＞ rr」**完全相反**。原因：YugabyteDB rc 本身 CPU-bound（無 IO headroom 可榨），SSI 額外的 read-refresh / serializable detector 直接吃 CPU，反而拖慢；對比 CockroachDB rc IO-bound（fsync ceiling），SSI 改走 CPU 路徑剛好避開 IO 瓶頸。
 
 ### tpmC 排行（5-round mean，4 vCPU + single XFS）
 
@@ -18,20 +18,20 @@
 
 ### 三大發現
 
-1. **rc 是真 RC、零 error**：tserver gflag `yb_enable_read_committed_isolation=true` + session iso 雙閘 + `yb_effective_transaction_isolation_level` gate 三層驗證，20 round / 53,721 NEW_ORDER 全成功；對比 CRDB rr 412 errors / 20 round。**不啟用 gflag 會 silent fallback 到 SI → 跑出來的「RC」其實是 RR**（=本 rr 表）。
-2. **rr / strict 都撞 hot row + 都接近 N−1 error pattern**：YBDB rr (SI) 與 strict (SSI) 兩個 isolation 都因 TPC-C district / warehouse hot row 觸發衝突；rr 精確 N−1、strict 略少（SSI 偶有 early-abort 或 read-refresh 救回）。**兩者 throughput 都 flat-line ~1,100-1,800**，與 CRDB rr 同病；TiDB rr 採 pessimistic lock-wait 不 retry，是同硬體下唯一能維持 13,874 tpmC 的 RR 實作。
-3. **strict ＜ rr 反 CRDB pattern 的機制歸納**：
-   - CRDB rc 為 IO-wait bound（%iowait 18%、%idle 5%、%user 68%）→ strict 走 CPU-heavy read-refresh 路徑剛好避開 IO 瓶頸，**strict 10,830 ＞ rc 9,134**
-   - YBDB rc 為 CPU-bound（%user 74% + %sys 18% ≈ 92% 利用率、%idle 1.9%、%iowait 0.25%）→ strict 的 serializable detector + read-refresh 直接搶 CPU，**strict 1,130 ＜ rc 11,436**（砍 90%）
-   - **規律**：「強 iso 反而快」只在 baseline IO-bound 時成立；YBDB / TiDB 等 CPU-bound 系統下，強 iso 直接拖慢
+1. **rc 是真 RC、零 error**：tserver gflag `yb_enable_read_committed_isolation=true` + session iso 雙閘 + `yb_effective_transaction_isolation_level` gate 三層驗證，20 round / 53,721 NEW_ORDER 全成功；對比 CockroachDB rr 412 errors / 20 round。**不啟用 gflag 會 silent fallback 到 SI → 跑出來的「RC」其實是 RR**（=本 rr 表）。
+2. **rr / strict 都撞 hot row + 都接近 N−1 error pattern**：YugabyteDB rr (SI) 與 strict (SSI) 兩個 isolation 都因 TPC-C district / warehouse hot row 觸發衝突；rr 精確 N−1、strict 略少（SSI 偶有 early-abort 或 read-refresh 救回）。**兩者 throughput 都 flat-line ~1,100-1,800**，與 CockroachDB rr 同病；TiDB rr 採 pessimistic lock-wait 不 retry，是同硬體下唯一能維持 13,874 tpmC 的 RR 實作。
+3. **strict ＜ rr 反 CockroachDB pattern 的機制歸納**：
+   - CockroachDB rc 為 IO-wait bound（%iowait 18%、%idle 5%、%user 68%）→ strict 走 CPU-heavy read-refresh 路徑剛好避開 IO 瓶頸，**strict 10,830 ＞ rc 9,134**
+   - YugabyteDB rc 為 CPU-bound（%user 74% + %sys 18% ≈ 92% 利用率、%idle 1.9%、%iowait 0.25%）→ strict 的 serializable detector + read-refresh 直接搶 CPU，**strict 1,130 ＜ rc 11,436**（砍 90%）
+   - **規律**：「強 iso 反而快」只在 baseline IO-bound 時成立；YugabyteDB / TiDB 等 CPU-bound 系統下，強 iso 直接拖慢
 4. **strict p99 t128 = 54 ms < rr 1020 ms < rc 1000 ms** — strict 因 throughput 砍 10x、worker queue 短 → latency 反而最低；但這是 **「吞吐被閘住、queue 沒累積」的副作用**，非 strict 真的快
 
 ### 業務啟示
 
-- YBDB **保留預設 RC 是正確選擇**：rr / strict 都拿不到任何性能 / 一致性收益（rc 已是 per-statement snapshot RC、提供合理一致性保證）
-- 跨家 strict 三家對比：**CRDB strict 10,830 ＞ YBDB strict 1,130**（CRDB SSI 10x YBDB SSI）。CRDB SSI 透過 read-refresh + interactive 衝突偵測在 IO-bound baseline 上反而快；YBDB SSI 在 CPU-bound baseline 上把所有 isolation 都拖到同一個 ~1,100 ceiling
-- 跨家 RR 三胞胎：**TiDB rr 13,874（pessimistic lock-wait）＞ CRDB rr 3,788（preview SI）＞ YBDB rr 1,879（SI）**。三家 RR 名同實異，TiDB 是唯一可承受 hot row 的 RR
-- 同硬體 9 組對標（5-round mean）：TiDB rr 13,874 ＞ TiDB rc 13,064 ＞ YBDB rc 11,436 ＞ CRDB strict 10,830 ＞ CRDB rc 9,134 ＞ CRDB rr 3,788 ＞ YBDB rr 1,879 ＞ **YBDB strict 1,130** ←本輪新增
+- YugabyteDB **保留預設 RC 是正確選擇**：rr / strict 都拿不到任何性能 / 一致性收益（rc 已是 per-statement snapshot RC、提供合理一致性保證）
+- 跨家 strict 三家對比：**CockroachDB strict 10,830 ＞ YugabyteDB strict 1,130**（CockroachDB SSI 10x YugabyteDB SSI）。CockroachDB SSI 透過 read-refresh + interactive 衝突偵測在 IO-bound baseline 上反而快；YugabyteDB SSI 在 CPU-bound baseline 上把所有 isolation 都拖到同一個 ~1,100 ceiling
+- 跨家 RR 三胞胎：**TiDB rr 13,874（pessimistic lock-wait）＞ CockroachDB rr 3,788（preview SI）＞ YugabyteDB rr 1,879（SI）**。三家 RR 名同實異，TiDB 是唯一可承受 hot row 的 RR
+- 同硬體 9 組對標（5-round mean）：TiDB rr 13,874 ＞ TiDB rc 13,064 ＞ YugabyteDB rc 11,436 ＞ CockroachDB strict 10,830 ＞ CockroachDB rc 9,134 ＞ CockroachDB rr 3,788 ＞ YugabyteDB rr 1,879 ＞ **YugabyteDB strict 1,130** ←本輪新增
 
 ### 完整資料目錄
 
@@ -42,6 +42,32 @@
 | strict | 20260521T091048+0800 | **1,130 @ t32** | t16=14.6 → t128=121.8（≈N−1，比 rr 少 ~5%）| [§ vm-1node-strict](#vm-1node-strict--2026-05-21poc-v47-serializable-isolation--ssi) |
 
 下一步：vm-3node-direct / vm-3node-haproxy（驗證 cross-zone Raft replication 對三家 iso 衝擊）+ K8s 系列。
+
+---
+
+## 取數來源（Data trace）
+
+所有 tpmC / latency / error rate / DB-host 飽和指標皆可從 artifact 目錄逐步重現，避免「pipeline-log 數字 vs 實際 stdout」漂移。
+
+| 數據類型 | 來源檔案 | 取數工具 / 計算口徑 |
+|---------|----------|---------------------|
+| `tpmC mean` / `NO p50/p95/p99 mean` / `tpmTotal mean` / `efficiency mean` | `runs/threads-<N>/round-<R>/go-tpc-stdout.txt`（5 round per thread group）| [`tests/common/summary-from-stdout.py`](../../../tests/common/summary-from-stdout.py) 解析 `[Summary] NEW_ORDER` 與 `tpmC: ...` 行，輸出 `summary.json`；本檔取 `thread_results.<N>.{tpmC_mean, NEW_ORDER.p50_mean_ms, ...}` 為 5-round mean |
+| `range/mean` 穩定度 | 同上 | `(max(tpmC_per_round) - min(tpmC_per_round)) / tpmC_mean × 100%` |
+| `error rate (all_txn)` | 同上 `[Summary] *_ERR` 行（5 transaction types） | `Σ *_ERR count / Σ (* + *_ERR) count × 100%`（per F-001 audit 口徑）；落地至 `summary.json.thread_results.<N>.all_txn.error_rate_pct` |
+| `NEW_ORDER_ERR / round` 統計 | 同上 | `summary.json.thread_results.<N>.NEW_ORDER.error_count / 5 round` |
+| DB-host 飽和指標（%user / %sys / %iowait / %idle / disk %util）| `runs/threads-<N>/round-<R>/{mpstat-db.txt, iostat-1s-db.txt}` | round-3 mid-run 1s 取樣，跨 round 計算 `mean(line[%idle], %iowait)`；指令範例：`awk '$2=="all" {usr+=$3; ...} END{...}'` |
+| isolation gate 雙閘證據 | `gate/isolation-db.txt` + `gate/isolation-driver-verify.txt` + `.gate-isolation.done`（JSON marker）| `psql -c "SHOW transaction_isolation" -c "SHOW yb_effective_transaction_isolation_level"` 各 dump 一行 |
+| tserver gflag dump | `db-config/cluster-settings.txt` + `db-config/effective-config.txt` | collect 階段 `db-config-dump.sh` 從 `:9000/varz` 抓 |
+| Round 結構完整性驗證 | `.gate.done` / `.prepare.done` / `.gate-isolation.done` / `.run.done` / `.collect.done` / `.db-config.done` / `.suite.done` | 7 個 marker 全在 = phase chain 完整 |
+
+重新計算 vm-1node-rc t32 5-round mean 範例：
+
+```bash
+jq '.thread_results."32".tpmC_mean,
+    .thread_results."32".NEW_ORDER.p99_mean_ms,
+    .thread_results."32".all_txn.error_rate_pct' \
+  results/yuga-tc1/S-BASE/vm-1node-rc/ybdb-vm-1node-rc-20260520T134929+0800/summary.json
+```
 
 ---
 
@@ -89,7 +115,7 @@ SHOW yb_effective_transaction_isolation_level;        -- 底層實際 isolation
 
 ## v4.7 重跑 setup 修法紀錄（2026-05-20）
 
-第一次 `make vm1-ybdb-rc` 啟動到 suite 完成共撞 8 個 YBDB-specific 問題（tidb/crdb 路徑都不會觸發），全數修進 `poc/ansible/playbooks/yugabyte-vm1.yml`、`poc/tests/common/prepare.sh`、`poc/tests/common/gate-isolation.sh`、`poc/tests/common/db-config-dump.sh`、`poc/tests/common/collect.sh`。本段把 root cause / 修法 / commit SHA 留檔，避免下次 rr / strict / vm-3node 重跑時又踩同樣坑。
+第一次 `make vm1-ybdb-rc` 啟動到 suite 完成共撞 8 個 YugabyteDB-specific 問題（tidb/crdb 路徑都不會觸發），全數修進 `poc/ansible/playbooks/yugabyte-vm1.yml`、`poc/tests/common/prepare.sh`、`poc/tests/common/gate-isolation.sh`、`poc/tests/common/db-config-dump.sh`、`poc/tests/common/collect.sh`。本段把 root cause / 修法 / commit SHA 留檔，避免下次 rr / strict / vm-3node 重跑時又踩同樣坑。
 
 ### 修法總覽
 
@@ -98,10 +124,10 @@ SHOW yb_effective_transaction_isolation_level;        -- 底層實際 isolation
 | 1 | ansible deploy | `Could not import the dnf python module using /usr/bin/python3.12` | inventory 用 python3.12，但 AlmaLinux 8.10 的 dnf python bindings 只在 `/usr/libexec/platform-python` (3.6)；`ansible.builtin.dnf` 模組需要這個 binding | 兩段 `ansible.builtin.dnf` 改為 `ansible.builtin.shell` + `rpm -q` idempotent install（與 tidb-vm1.yml 同 pattern）| [`c88f7d4`](#) |
 | 2 | ansible deploy | `Wait for YSQL port` timeout 240s | fresh VM 上 `yugabyted status` 即使「is not running」也回 **rc=0**，所以 `when: yb_status.rc != 0` 條件被 skip → `Start YugabyteDB RF=1` 永遠不會跑 | 條件改為 `'is not running' in (yb_status.stdout \| default(''))` ，rc!=0 作 backstop | [`e5ccc11`](#) |
 | 3 | prepare DROP/CREATE | `ERROR: DROP DATABASE cannot run inside a transaction block` | `psql -c "DROP; CREATE"` 兩 stmt 在同一 implicit txn；YSQL/PG 禁 DROP DATABASE 在 txn 內 | 拆兩個 `-c` flag，各自獨立 txn | [`904c80c`](#) |
-| 4 | go-tpc prepare | suite 卡在 `begin to check warehouse 1 at condition 3.3.2.x` 1h+ 不結束 | go-tpc 預設 prepare 完跑 inline consistency check；3.3.2.x 系列為跨表 aggregate，YB 2025.2 上會卡 30+ min | YBDB 加 `--no-check`；後續 `check-all` 步驟 YBDB 也跳過，改用 row-count 驗整性 | [`99cb5a3`](#) |
+| 4 | go-tpc prepare | suite 卡在 `begin to check warehouse 1 at condition 3.3.2.x` 1h+ 不結束 | go-tpc 預設 prepare 完跑 inline consistency check；3.3.2.x 系列為跨表 aggregate，YB 2025.2 上會卡 30+ min | YugabyteDB 加 `--no-check`；後續 `check-all` 步驟 YugabyteDB 也跳過，改用 row-count 驗整性 | [`99cb5a3`](#) |
 | 5 | prepare DROP DATABASE | `ERROR: database "tpcc" is being accessed by other users` | 前次 suite kill 後 go-tpc 連線在 YB 仍 lingering（YSQL session state 由 tserver 保留至 TCP 驅逐或顯式 terminate）| DROP 前 `pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='<db>' AND pid<>pg_backend_pid()`，多 `-c` 不在同 txn | [`fc76fe4`](#) |
-| 6 | prepare schema+EXPLAIN dump | `ERROR: column c.relhasoids does not exist` ＋ psql rc=1 → `set -euo pipefail` 殺 suite | AlmaLinux 8.10 內建 psql（postgresql 套件，PG ≤11）的 `\d+` 查 `pg_class.relhasoids`，PG 12+ 已移除此 column，YB 2025.2 catalog 沒這欄 | YBDB schema/EXPLAIN dump 改用 yugabyte 隨附的 `ysqlsh`（catalog 同步）；其它 plain-SQL（DROP/CREATE/ANALYZE/row-count）保留 psql | [`8069ada`](#) |
-| 7 | gate-isolation | （preemptive；本輪 playbook 已設 gflag，gate 未踩；保留為 future-proof）原 `SHOW transaction_isolation` 通過不代表 effective 真為 RC | YB 雙閘要求：session 層 `transaction_isolation` ＋ tserver gflag `yb_enable_read_committed_isolation`；缺 gflag 時前者顯示 `read committed`，但 `yb_effective_transaction_isolation_level` 退回 `repeatable read`，跑出來的 RC 結果其實是 SI | YBDB DB-gate ＋ driver-gate 兩段都加 `SHOW yb_effective_transaction_isolation_level`；effective 必須等於 expected 否則 die，hint 指向 tserver gflag；JSON marker 多帶 `yb_effective_db` / `yb_effective_driver` | [`b9b3b43`](#) |
+| 6 | prepare schema+EXPLAIN dump | `ERROR: column c.relhasoids does not exist` ＋ psql rc=1 → `set -euo pipefail` 殺 suite | AlmaLinux 8.10 內建 psql（postgresql 套件，PG ≤11）的 `\d+` 查 `pg_class.relhasoids`，PG 12+ 已移除此 column，YB 2025.2 catalog 沒這欄 | YugabyteDB schema/EXPLAIN dump 改用 yugabyte 隨附的 `ysqlsh`（catalog 同步）；其它 plain-SQL（DROP/CREATE/ANALYZE/row-count）保留 psql | [`8069ada`](#) |
+| 7 | gate-isolation | （preemptive；本輪 playbook 已設 gflag，gate 未踩；保留為 future-proof）原 `SHOW transaction_isolation` 通過不代表 effective 真為 RC | YB 雙閘要求：session 層 `transaction_isolation` ＋ tserver gflag `yb_enable_read_committed_isolation`；缺 gflag 時前者顯示 `read committed`，但 `yb_effective_transaction_isolation_level` 退回 `repeatable read`，跑出來的 RC 結果其實是 SI | YugabyteDB DB-gate ＋ driver-gate 兩段都加 `SHOW yb_effective_transaction_isolation_level`；effective 必須等於 expected 否則 die，hint 指向 tserver gflag；JSON marker 多帶 `yb_effective_db` / `yb_effective_driver` | [`b9b3b43`](#) |
 | 8 | collect (`db-config-dump.sh` + collect.sh env / log tail) | suite rc=1 在 `[4/4] collect` 1 秒內爆 | `db-config-dump.sh` 用 `curl -s /varz \| head -200` — head close pipe 後 curl 收 SIGPIPE 退 **rc=23 (Write error)**，`set -o pipefail` 抓出來、`set -e` 殺 script；之後 collect.sh 的 env snapshot / DB log tail ssh 失敗也是 fatal | (a) db-config-dump.sh 拆 tmpfile two-step 避 SIGPIPE，加 `--max-time 30`、`ysql_default_transaction_isolation` / `yb_effective_transaction_isolation_level`；(b) collect.sh env snapshot + DB log tail 加 `\|\| warn`，optional metadata 不殺 suite | [`279697b`](#) |
 
 ### 為什麼 tidb / crdb 沒踩這些坑
@@ -109,17 +135,17 @@ SHOW yb_effective_transaction_isolation_level;        -- 底層實際 isolation
 | 修法 | tidb | crdb |
 |------|------|------|
 | #1 `ansible.builtin.dnf` | tidb-vm1.yml / cockroach-vm1.yml 早已用 `shell` + `rpm -q` pattern（先前 cockroach deploy bug 修過）| 同 tidb |
-| #2 status gate | TiDB 用 `tiup cluster display` 判斷集群狀態（有明確 exit code 語意）；CRDB 用 `start-single-node` 本身 idempotent | 同 tidb |
+| #2 status gate | TiDB 用 `tiup cluster display` 判斷集群狀態（有明確 exit code 語意）；CockroachDB 用 `start-single-node` 本身 idempotent | 同 tidb |
 | #3 DROP/CREATE in txn | MySQL 與 CockroachDB SQL 都允許 DDL 在 implicit txn；`mysql -e "DROP;CREATE"` 與 `cockroach sql -e "DROP;CREATE"` 正常 | 同 tidb |
-| #4 slow consistency check | TiDB / CRDB check-all 都在合理時間內（TiDB 52min prepare 內含、CRDB 43min 內含），可直接用 go-tpc 原生 check | 同 tidb |
-| #5 lingering session | TiDB / CRDB 的 `DROP DATABASE` 不被現存連線 pin（TiDB 自動失效、CRDB 預設允許 force drop）| 同 tidb |
-| #6 psql `\d+` 與 PG catalog | TiDB 不用 psql；CRDB 接 PG protocol 但 schema dump 用 `cockroach sql -e "SHOW CREATE TABLE"`，不走 psql meta-command | 同 tidb |
-| #7 雙閘 iso 驗證 | TiDB 用 `SHOW VARIABLES` + active txn 即可（沒有 effective vs session 落差）；CRDB 也只有 `SHOW transaction_isolation` 一層 | 同 tidb |
-| #8 curl `\|head` SIGPIPE | TiDB 用 `mysql -e` + remote `tiup cluster show-config` 不 pipe curl；CRDB 用 `cockroach sql -e "SHOW ALL CLUSTER SETTINGS"` 直接 redirect | 同 tidb |
+| #4 slow consistency check | TiDB / CockroachDB check-all 都在合理時間內（TiDB 52min prepare 內含、CockroachDB 43min 內含），可直接用 go-tpc 原生 check | 同 tidb |
+| #5 lingering session | TiDB / CockroachDB 的 `DROP DATABASE` 不被現存連線 pin（TiDB 自動失效、CockroachDB 預設允許 force drop）| 同 tidb |
+| #6 psql `\d+` 與 PG catalog | TiDB 不用 psql；CockroachDB 接 PG protocol 但 schema dump 用 `cockroach sql -e "SHOW CREATE TABLE"`，不走 psql meta-command | 同 tidb |
+| #7 雙閘 iso 驗證 | TiDB 用 `SHOW VARIABLES` + active txn 即可（沒有 effective vs session 落差）；CockroachDB 也只有 `SHOW transaction_isolation` 一層 | 同 tidb |
+| #8 curl `\|head` SIGPIPE | TiDB 用 `mysql -e` + remote `tiup cluster show-config` 不 pipe curl；CockroachDB 用 `cockroach sql -e "SHOW ALL CLUSTER SETTINGS"` 直接 redirect | 同 tidb |
 
-### YBDB-specific 影響項
+### YugabyteDB-specific 影響項
 
-- **整性驗證口徑**：YBDB 路徑改用 row-count 取代 go-tpc check-all；資料完整性 vs TiDB / CRDB 的 14-condition 嚴格度有差，但對 tpmC / latency 結果不影響（檢核僅在 prepare 結尾、run 前；run 用相同 go-tpc workload）
+- **整性驗證口徑**：YugabyteDB 路徑改用 row-count 取代 go-tpc check-all；資料完整性 vs TiDB / CockroachDB 的 14-condition 嚴格度有差，但對 tpmC / latency 結果不影響（檢核僅在 prepare 結尾、run 前；run 用相同 go-tpc workload）
 - **預期 row counts (W=128)**：warehouse 128 / district 1,280 / customer 3,840,000 / history 3,840,000 / item 100,000 / stock 12,800,000 / new_order 1,152,000 / orders 3,840,000 / order_line ~38.4M (5-15 lines per order, randomised) — 本輪實測 order_line = 38,410,536 ✓ 對齊
 - **Gate WARN（本輪不致命）**：
   - `DB-host THP != never` / `vm.swappiness > 5` / `ulimit -n < 65536` — yugabyte-vm1.yml 尚未含 OS tuning task（tidb-vm1.yml 有「OS tuning」段）；本輪先不卡 gate，下一輪 rr / strict 前要補
@@ -129,7 +155,7 @@ SHOW yb_effective_transaction_isolation_level;        -- 底層實際 isolation
 
 ## vm-1node-rc — 2026-05-20（PoC v4.7 baseline，含 DB-host OS 監控）
 
-> **本段目的**：PoC v4.7 框架下的 YBDB vm-1node RC 正式 baseline，配套：detached suite wrapper、多輪平均、isolation 雙閘（session + effective）、**client + DB-host 雙邊 OS 監控**。取代 yuga-tc1-old 內 2026-05-14 單次 10 min 結果，作為後續 rr/strict 與其他 DB 對標的可重現基線。
+> **本段目的**：PoC v4.7 框架下的 YugabyteDB vm-1node RC 正式 baseline，配套：detached suite wrapper、多輪平均、isolation 雙閘（session + effective）、**client + DB-host 雙邊 OS 監控**。取代 yuga-tc1-old 內 2026-05-14 單次 10 min 結果，作為後續 rr/strict 與其他 DB 對標的可重現基線。
 
 ### 環境
 - 節點：.32 (172.24.40.32) 單節點，yugabyted RF=1
@@ -225,12 +251,12 @@ OS gate（本輪 WARN 但不卡）：
 | 64  | 11283 | 11373 | 11289 | 11123 | 11133 |
 | 128 | 11224 | 10786 | 10869 | 10694 | 10851 |
 
-- **range/mean 2.2-4.9%**：比 TiDB rc（5.0-8.3%）、CRDB rc（4.7-9.1%）都更穩定；YBDB 對 round 邊界 housekeeping 不敏感。
+- **range/mean 2.2-4.9%**：比 TiDB rc（5.0-8.3%）、CockroachDB rc（4.7-9.1%）都更穩定；YugabyteDB 對 round 邊界 housekeeping 不敏感。
 - r1 並未明顯偏離（t16 r1 10610 vs r5 10864、t128 r1 11224 vs r5 10851）；warmup 20min @ 64t 已把 DocDB tablet cache、PG plan cache、connection pool 全暖完。
 
 ### DB-host (.32) 飽和分析 ★
 
-> **核心發現**：YBDB vm-1node 在 4 vCPU 下是 **CPU-bound（%idle 接近 0）**，但 CPU 路徑與 TiDB / CRDB 不同 — **%sys 異常高（18-19%）**，磁碟 / IO 全程有大量餘裕。
+> **核心發現**：YugabyteDB vm-1node 在 4 vCPU 下是 **CPU-bound（%idle 接近 0）**，但 CPU 路徑與 TiDB / CockroachDB 不同 — **%sys 異常高（18-19%）**，磁碟 / IO 全程有大量餘裕。
 
 #### 1. mpstat-db.txt — 4 vCPU 使用率（round-3 mid-run，每組 305 個 1s 樣本）
 
@@ -255,37 +281,37 @@ OS gate（本輪 WARN 但不卡）：
 | 假設 | 驗證 | 證據 |
 |------|------|------|
 | CPU 飽和 | ✓ | %idle mean t64+ < 3%，瞬間 0%；%user 增長 63→75% |
-| %sys 比例異常高 | ✓ | 18-19% 全 thread group；對比 TiDB 9-11%、CRDB 5-6%；推測 YSQL postgres → DocDB tserver 跨進程通訊 + DocDB 內部 RPC 多耗 syscall 與 context switch |
-| IO 非瓶頸 | ✓ | %iowait t32+ < 2%、sda %util 全程 ≤ 50%；DocDB 的 RocksDB WAL 寫入批量化比 CRDB Raft+Pebble fsync 更積極 |
+| %sys 比例異常高 | ✓ | 18-19% 全 thread group；對比 TiDB 9-11%、CockroachDB 5-6%；推測 YSQL postgres → DocDB tserver 跨進程通訊 + DocDB 內部 RPC 多耗 syscall 與 context switch |
+| IO 非瓶頸 | ✓ | %iowait t32+ < 2%、sda %util 全程 ≤ 50%；DocDB 的 RocksDB WAL 寫入批量化比 CockroachDB Raft+Pebble fsync 更積極 |
 | t64+ 無收益 | ✓ tpmC + CPU 雙證 | tpmC 32→64 -1.7%、64→128 -3.2%；%idle 從 t32 3.29% 降到 t128 1.89%（CPU 一直滿）但 throughput 沒上升 |
 
 ### vs 同硬體對比 ★
 
-#### vs TiDB rc / CRDB rc（5-round mean 同口徑）
+#### vs TiDB rc / CockroachDB rc（5-round mean 同口徑）
 
-| threads | TiDB rc | CRDB rc | YBDB rc | YBDB vs TiDB | YBDB vs CRDB |
+| threads | TiDB rc | CockroachDB rc | YugabyteDB rc | YugabyteDB vs TiDB | YugabyteDB vs CockroachDB |
 |---------|---------|---------|---------|--------------|--------------|
 | 16  | 10,074 | 9,034 | **10,653** | +5.7% | +17.9% |
 | 32  | 11,728 | 9,020 | **11,436** | -2.5% | +26.8% |
 | 64  | 12,744 | 9,134 | 11,240 | -11.8% | +23.0% |
 | 128 | **13,064** | 8,813 | 10,885 | -16.7% | +23.5% |
 
-| threads | TiDB p99 (ms) | CRDB p99 (ms) | YBDB p99 (ms) | YBDB vs TiDB | YBDB vs CRDB |
+| threads | TiDB p99 (ms) | CockroachDB p99 (ms) | YugabyteDB p99 (ms) | YugabyteDB vs TiDB | YugabyteDB vs CockroachDB |
 |---------|---------------|---------------|---------------|--------------|--------------|
 | 16  | 94  | 113 | 104  | +11% | -8% |
 | 32  | 163 | 223 | 216  | +33% | -3% |
 | 64  | 305 | 440 | 440  | +44% | 0% |
 | 128 | 597 | 926 | 1000 | +68% | +8% |
 
-| DB-host | TiDB %idle | CRDB %idle | YBDB %idle | TiDB %iowait | CRDB %iowait | YBDB %iowait | TiDB %sys | CRDB %sys | YBDB %sys |
+| DB-host | TiDB %idle | CockroachDB %idle | YugabyteDB %idle | TiDB %iowait | CockroachDB %iowait | YugabyteDB %iowait | TiDB %sys | CockroachDB %sys | YugabyteDB %sys |
 |---------|-----------|-----------|-----------|--------------|--------------|--------------|-----------|-----------|-----------|
 | t16  | 9.45% | 5.77% | 6.99% | 4.6% | 18.5% | 5.5%  | 11.0% | 5.6% | **19.1%** |
 | t128 | 4.52% | 4.99% | **1.89%** | 3.1% | 18.8% | 0.25% | 9.0%  | 5.5% | **18.5%** |
 
 **三家飽和成因不同**：
 - **TiDB**：CPU-bound、%user dominant（80%）、%sys 中位（9%）、%iowait 低（3%）→ 加 thread 把 CPU 擠到 95%+ 就到天花板
-- **CRDB**：IO-wait bound、%iowait 18-19% 立即觸頂、%idle 5% 全程 → 加 thread 只是 queue 長
-- **YBDB**：CPU-bound 但異常高 %sys 19%、%iowait 低（< 5%）、%idle 接近 0 → CPU 路徑被 syscall / IPC / DocDB internal RPC 拉走 1/5；DocDB WAL fsync 批量化比 CRDB 積極（YB 用 RocksDB block-based + DocDB row-cache，CRDB 用 Pebble + Raft log per-commit fsync）
+- **CockroachDB**：IO-wait bound、%iowait 18-19% 立即觸頂、%idle 5% 全程 → 加 thread 只是 queue 長
+- **YugabyteDB**：CPU-bound 但異常高 %sys 19%、%iowait 低（< 5%）、%idle 接近 0 → CPU 路徑被 syscall / IPC / DocDB internal RPC 拉走 1/5；DocDB WAL fsync 批量化比 CockroachDB 積極（YB 用 RocksDB block-based + DocDB row-cache，CockroachDB 用 Pebble + Raft log per-commit fsync）
 
 #### vs pre-v4.7 single-run（yuga-tc1-old 內，2026-05-14, single 10min）
 
@@ -296,7 +322,7 @@ OS gate（本輪 WARN 但不卡）：
 | 64  | 9,982  | 11,240 | +12.6% | 同上 |
 | 128 | 8,906  | 10,885 | +22.2% | 高併發更受益於完整 warmup |
 
-→ v4.7 把高併發水位的數字從 8,906 拉到 10,885（+22%），驗證 **warmup 從 5min 延長到 20min、warmup_threads=64** 確實對 YBDB 像對 TiDB 一樣有效（PoC-DESIGN §8.2）。
+→ v4.7 把高併發水位的數字從 8,906 拉到 10,885（+22%），驗證 **warmup 從 5min 延長到 20min、warmup_threads=64** 確實對 YugabyteDB 像對 TiDB 一樣有效（PoC-DESIGN §8.2）。
 
 ### Saturation 分析
 
@@ -314,15 +340,15 @@ DB %iowait: 5.50%  1.54%  0.39%  0.25%         ← IO 全程非瓶頸
 DB disk%util: 49.7%  47.6%  42.0%  42.8%       ← 磁碟未滿
 ```
 
-**結論**：YBDB vm-1node RC 的甜點在 **t32（11,436 tpmC、p99 216ms）**。t64 換 2x latency 只少 1.7% tpmC、t128 換 4.6x latency 還倒退 4.8%；**真正天花板是 4 vCPU 在 YSQL+DocDB 雙進程架構下的 CPU 預算**（19% 給 %sys，剩 75% 給 %user），磁碟有大量餘裕（%util ≤ 50%）。
+**結論**：YugabyteDB vm-1node RC 的甜點在 **t32（11,436 tpmC、p99 216ms）**。t64 換 2x latency 只少 1.7% tpmC、t128 換 4.6x latency 還倒退 4.8%；**真正天花板是 4 vCPU 在 YSQL+DocDB 雙進程架構下的 CPU 預算**（19% 給 %sys，剩 75% 給 %user），磁碟有大量餘裕（%util ≤ 50%）。
 
 ### 觀察
 
 - **t32 是甜點**：5 round mean 11,436 tpmC、p99 216ms，DB %idle 3.29% — 剛好榨出 CPU 又沒撞牆。
 - **t128 已過飽和**：p99 突破 1s、tpmC 邊際 -4.8%；高併發放大連線管理 overhead。
-- **零 error**：v4.7 雙閘 (`yb_effective_transaction_isolation_level = read committed`) 確保 RC 真生效，沒有 silent fallback 到 SI 造成 retry storm（對比 CRDB rr 412 errors / 20 round）。
-- **%sys 19% 異常**：架構特異 — YSQL postgres 與 DocDB tserver 是**兩個獨立 process**（YSQL 把 SQL 解析 / plan 後透過 RPC 送給 DocDB tserver 執行），跨進程 RPC + 序列化 / 反序列化吃掉 1/5 CPU。TiDB（SQL 層 + storage TiKV 也是兩 process 但 SQL 是 TCP grpc 不是 syscall-heavy IPC）相對 9-11%、CRDB（SQL + storage 同 process）只 5-6%。
-- **DocDB WAL 寫入比 CRDB 積極**：%iowait < 5% vs CRDB 17-19%；YB 預設 `durable_wal_write=true` + `interval_durable_wal_write_ms=1000` 把 fsync 批量化到 1s 區間，CRDB 預設 per-commit fsync。
+- **零 error**：v4.7 雙閘 (`yb_effective_transaction_isolation_level = read committed`) 確保 RC 真生效，沒有 silent fallback 到 SI 造成 retry storm（對比 CockroachDB rr 412 errors / 20 round）。
+- **%sys 19% 異常**：架構特異 — YSQL postgres 與 DocDB tserver 是**兩個獨立 process**（YSQL 把 SQL 解析 / plan 後透過 RPC 送給 DocDB tserver 執行），跨進程 RPC + 序列化 / 反序列化吃掉 1/5 CPU。TiDB（SQL 層 + storage TiKV 也是兩 process 但 SQL 是 TCP grpc 不是 syscall-heavy IPC）相對 9-11%、CockroachDB（SQL + storage 同 process）只 5-6%。
+- **DocDB WAL 寫入比 CockroachDB 積極**：%iowait < 5% vs CockroachDB 17-19%；YB 預設 `durable_wal_write=true` + `interval_durable_wal_write_ms=1000` 把 fsync 批量化到 1s 區間，CockroachDB 預設 per-commit fsync。
 - **`efficiency > 100%` 屬正常**：go-tpc 不打 keying/think time，是本 PoC 內部對標的相對指標，**不可與 TPC-C 官網數字直接比**。
 
 ### 結論
@@ -335,7 +361,7 @@ YugabyteDB v2025.2.2.2 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t32
 
 ## vm-1node-rr — 2026-05-21（PoC v4.7，snapshot isolation + retry storm）
 
-> **本段目的**：在同硬體 / 同流程下取得 YugabyteDB vm-1node RR baseline（YB rr = snapshot isolation，**非** PG 標準 RR 語意），對照 rc 與 CRDB rr / TiDB rr 觀察 write conflict 處理差異。
+> **本段目的**：在同硬體 / 同流程下取得 YugabyteDB vm-1node RR baseline（YB rr = snapshot isolation，**非** PG 標準 RR 語意），對照 rc 與 CockroachDB rr / TiDB rr 觀察 write conflict 處理差異。
 
 ### 環境
 - 與 `vm-1node-rc` 相同硬體 / YB v2025.2.2.2 build 11 / 同 ansible playbook / 同 tserver gflag，唯一差異：**iso=rr**
@@ -363,7 +389,7 @@ YugabyteDB v2025.2.2.2 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t32
 | `SHOW transaction_isolation` | `repeatable read` | `repeatable read` ✓ | `repeatable read` ✓ |
 | `SHOW yb_effective_transaction_isolation_level` | `repeatable read` | `repeatable read` ✓ | `repeatable read` ✓ |
 
-→ session 與 effective 都對齊 `repeatable read`；YBDB 的 rr 在底層 = snapshot isolation（per official [YBDB Isolation Levels doc](https://docs.yugabyte.com/stable/architecture/transactions/isolation-levels/) 「YugabyteDB's REPEATABLE READ isolation level corresponds to PostgreSQL's REPEATABLE READ, and is implemented using Snapshot Isolation」）。
+→ session 與 effective 都對齊 `repeatable read`；YugabyteDB 的 rr 在底層 = snapshot isolation（per official [YugabyteDB Isolation Levels doc](https://docs.yugabyte.com/stable/architecture/transactions/isolation-levels/) 「YugabyteDB's REPEATABLE READ isolation level corresponds to PostgreSQL's REPEATABLE READ, and is implemented using Snapshot Isolation」）。
 
 ### Prepare
 - 時間：47 min（DROP/CREATE + load + row-count + quiesce + ANALYZE，與 rc 一致）
@@ -392,15 +418,15 @@ YugabyteDB v2025.2.2.2 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t32
 | 64  | 1837 | 1933 | 1860 | 1804 | 1802 |
 | 128 | 2014 | 1812 | 1774 | 1797 | **1173** |
 
-### Error 分析 — **N-1 pattern** 與 CRDB rr 完全相同
+### Error 分析 — **N-1 pattern** 與 CockroachDB rr 完全相同
 
 | iso | thread | err / round | err 結構 |
 |-----|--------|-------------|----------|
-| YBDB rr t16  | 15 | NEW_ORDER ~5 + PAYMENT ~10 + 偶爾 STOCK_LEVEL |
-| YBDB rr t32  | 31 | 多 PAYMENT (~17) + NEW_ORDER (~13) |
-| YBDB rr t64  | 63 | PAYMENT (~40) + NEW_ORDER (~23) |
-| YBDB rr t128 | 127 | PAYMENT (~83) + NEW_ORDER (~43) |
-| **CRDB rr 對照** | 同 thread | 15/31/63/127（完全相同 N-1） | NEW_ORDER 為主 + 偶爾 PAYMENT |
+| YugabyteDB rr t16  | 15 | NEW_ORDER ~5 + PAYMENT ~10 + 偶爾 STOCK_LEVEL |
+| YugabyteDB rr t32  | 31 | 多 PAYMENT (~17) + NEW_ORDER (~13) |
+| YugabyteDB rr t64  | 63 | PAYMENT (~40) + NEW_ORDER (~23) |
+| YugabyteDB rr t128 | 127 | PAYMENT (~83) + NEW_ORDER (~43) |
+| **CockroachDB rr 對照** | 同 thread | 15/31/63/127（完全相同 N-1） | NEW_ORDER 為主 + 偶爾 PAYMENT |
 
 **N-1 機制**（兩家共有 SI hot row）：
 1. round 起始 N 個 worker 同時 BEGIN，每個取 snapshot ts 落在毫秒級窗口
@@ -408,7 +434,7 @@ YugabyteDB v2025.2.2.2 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t32
 3. **first committer wins**：第一個 worker commit 成功，剩 N-1 個拿 `SerializationFailure` / `WriteTooOldError` abort
 4. client retry 後再次撞，5min round 內 retry 次數累積 → 但 go-tpc 的 `[Summary] NEW_ORDER_ERR` 只算到 unique abort，故 = N-1
 
-**差別**：YBDB rr `[Summary] PAYMENT_ERR` 出現率高於 NEW_ORDER_ERR（t128 r5: PAYMENT 77 vs NEW_ORDER 49），CRDB rr 則 NEW_ORDER 為主。推測為兩家對 PAYMENT 的 `UPDATE warehouse SET w_ytd = ... WHERE w_id = ...` 衝突偵測時機不同。
+**差別**：YugabyteDB rr `[Summary] PAYMENT_ERR` 出現率高於 NEW_ORDER_ERR（t128 r5: PAYMENT 77 vs NEW_ORDER 49），CockroachDB rr 則 NEW_ORDER 為主。推測為兩家對 PAYMENT 的 `UPDATE warehouse SET w_ytd = ... WHERE w_id = ...` 衝突偵測時機不同。
 
 ### DB-host (.32) 飽和分析 ★（與 rc / 與 TiDB rr 完全不同）
 
@@ -419,7 +445,7 @@ YugabyteDB v2025.2.2.2 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t32
 | 64  | 13.1% | 5.3% | 12.06% | **67.87%** | 1.50% | 63.5% |
 | 128 | 14.1% | 5.8% | 11.77% | **66.57%** | **0.50%** | 62.3% |
 
-> **核心發現**：YBDB rr 與 rc / TiDB rr 截然不同 — **DB 機器同時 idle 大量 CPU (66-67%) + 11-13% iowait + disk %util 62-64%**。瓶頸不在 DB host 資源層，而在 **transaction coordination layer（retry storm + abort 後 client 等待）**。
+> **核心發現**：YugabyteDB rr 與 rc / TiDB rr 截然不同 — **DB 機器同時 idle 大量 CPU (66-67%) + 11-13% iowait + disk %util 62-64%**。瓶頸不在 DB host 資源層，而在 **transaction coordination layer（retry storm + abort 後 client 等待）**。
 
 | 假設 | 驗證 | 證據 |
 |------|------|------|
@@ -428,7 +454,7 @@ YugabyteDB v2025.2.2.2 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t32
 | 飽和是 **retry storm**（SI hot row + client retry loop） | ✓ | err TPM 線性 = thread−1；DB %idle 66-67% 表示 worker 大部分時間在等 retry 或 conflict abort 回 client |
 | **rc 與 rr 飽和成因 mirror** | ✓ | rc CPU-bound + 高 %sys（IPC overhead）／ rr DB-idle + transaction-bound（retry overhead）— rr 把 rc 的「實際工作」換成「失敗 + retry」 |
 
-### vs YBDB rc 對比
+### vs YugabyteDB rc 對比
 
 | threads | rc tpmC | rr tpmC | Δ tpmC | rc p99 (ms) | rr p99 (ms) | rc err | rr err |
 |---------|---------|---------|--------|-------------|-------------|--------|--------|
@@ -442,18 +468,18 @@ YugabyteDB v2025.2.2.2 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t32
 | rc t128 | 74.7% | 18.5% | 0.25% | 1.89% | 42.8% |
 | rr t128 | 14.1% | 5.8% | 11.77% | **66.57%** | 62.3% |
 
-→ **YBDB 切 rc → rr 在本 workload 上沒有任何性能 / 一致性收益**，純損失 6x throughput；rr 真正用途為「需要 per-txn snapshot 但能接受 retry 成本」的查詢-重 OLTP 系統。
+→ **YugabyteDB 切 rc → rr 在本 workload 上沒有任何性能 / 一致性收益**，純損失 6x throughput；rr 真正用途為「需要 per-txn snapshot 但能接受 retry 成本」的查詢-重 OLTP 系統。
 
-### vs CRDB rr / TiDB rr 對比（三家 RR 機制）
+### vs CockroachDB rr / TiDB rr 對比（三家 RR 機制）
 
-| threads | YBDB rr | CRDB rr | TiDB rr (pessimistic) | YBDB:CRDB | TiDB:YBDB |
+| threads | YugabyteDB rr | CockroachDB rr | TiDB rr (pessimistic) | YugabyteDB:CockroachDB | TiDB:YugabyteDB |
 |---------|---------|---------|-----------------------|-----------|-----------|
 | 16  | 1,846 | 3,229 | 11,196 | 0.57x | 6.1x |
 | 32  | 1,879 | 3,577 | 12,831 | 0.53x | 6.8x |
 | 64  | 1,847 | 3,594 | 13,743 | 0.51x | 7.4x |
 | 128 | 1,714 | 3,788 | **13,874** | 0.45x | 8.1x |
 
-| 機制 | YBDB rr | CRDB rr (preview) | TiDB rr (pessimistic) |
+| 機制 | YugabyteDB rr | CockroachDB rr (preview) | TiDB rr (pessimistic) |
 |------|---------|------|-------|
 | 預設 RR 實作 | snapshot isolation per official docs | snapshot isolation (preview feature; iso=Snapshot 在 artifact log) | snapshot isolation per official docs |
 | Hot row write 衝突處理 | first committer wins → `SerializationFailure` → client retry | first committer wins → `WriteTooOldError` → client retry | **row lock 排隊**（後者 wait） |
@@ -461,7 +487,7 @@ YugabyteDB v2025.2.2.2 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t32
 | Error pattern | 線性 N-1 / round | 線性 N-1 / round | 0 errors |
 | 全域 pessimistic toggle | ❌ | ❌ | ✓ `tidb_txn_mode=pessimistic` |
 
-**結論**：YBDB 與 CRDB 兩家 RR 都是 optimistic SI，撞 hot row 表現相似（YBDB 比 CRDB 更慢 -45-50% 推測為 DocDB / YSQL 雙進程的 IPC retry cost 高於 CRDB 單進程）；TiDB 是 7-8 倍 throughput 唯一可承受 hot-row contention 的 RR 實作。
+**結論**：YugabyteDB 與 CockroachDB 兩家 RR 都是 optimistic SI，撞 hot row 表現相似（YugabyteDB 比 CockroachDB 更慢 -45-50% 推測為 DocDB / YSQL 雙進程的 IPC retry cost 高於 CockroachDB 單進程）；TiDB 是 7-8 倍 throughput 唯一可承受 hot-row contention 的 RR 實作。
 
 ### Saturation 分析
 
@@ -478,27 +504,27 @@ DB %iowait: 13.17% 12.72% 12.06% 11.77%         ← IO wait 中位、隨 thread 
 err / round:   15    31    63   127             ← 線性 N-1
 ```
 
-**結論**：YBDB rr 的 tpmC 天花板 ~1,850（4 vCPU 硬體下，所有 thread group 完全 flat），latency 在 t128 因 hot-row queue 累積爆炸到 1s。**真正瓶頸不在硬體，在 SI 寫衝突 + retry storm**。
+**結論**：YugabyteDB rr 的 tpmC 天花板 ~1,850（4 vCPU 硬體下，所有 thread group 完全 flat），latency 在 t128 因 hot-row queue 累積爆炸到 1s。**真正瓶頸不在硬體，在 SI 寫衝突 + retry storm**。
 
 ### 觀察
 
-- **rr ≠ RC「升級版」**：本次數據反證「越強 isolation 越慢」直覺中**rc → rr 砍 6x throughput 的代價**，因 YBDB / CRDB rr 都用 optimistic SI（snapshot ts + first-committer-wins），與 PG 標準 RR（serial txn ordering via SS2PL）行為完全不同
-- **N-1 error pattern 為 SI hot row 共通病**：本輪首次同時驗證 YBDB rr 與 CRDB rr 都精確產生 N-1 errors/round，**確認 SI + TPC-C district hot row 是 deterministic 衝突源**
+- **rr ≠ RC「升級版」**：本次數據反證「越強 isolation 越慢」直覺中**rc → rr 砍 6x throughput 的代價**，因 YugabyteDB / CockroachDB rr 都用 optimistic SI（snapshot ts + first-committer-wins），與 PG 標準 RR（serial txn ordering via SS2PL）行為完全不同
+- **N-1 error pattern 為 SI hot row 共通病**：本輪首次同時驗證 YugabyteDB rr 與 CockroachDB rr 都精確產生 N-1 errors/round，**確認 SI + TPC-C district hot row 是 deterministic 衝突源**
 - **零 SerializationFailure 在 rc / N-1 SerializationFailure 在 rr**：本檔 [`修法 #7`](#修法總覽) 的 dual-gate 確保 rc 與 rr 各跑各的 iso，沒有 silent fallback；run-phase artifact 內 `[Summary] *_ERR` 反映實際 abort 數
-- **PAYMENT_ERR 比 NEW_ORDER_ERR 多**：YBDB rr 特有現象（CRDB rr NEW_ORDER 為主），推測 PAYMENT 的 `UPDATE warehouse SET w_ytd = ...` 在 DocDB SI 下衝突偵測較早 trigger（每 warehouse PK 才 128 行，比 district 1280 更熱）；需 trace 進一步佐證
+- **PAYMENT_ERR 比 NEW_ORDER_ERR 多**：YugabyteDB rr 特有現象（CockroachDB rr NEW_ORDER 為主），推測 PAYMENT 的 `UPDATE warehouse SET w_ytd = ...` 在 DocDB SI 下衝突偵測較早 trigger（每 warehouse PK 才 128 行，比 district 1280 更熱）；需 trace 進一步佐證
 - **DB-host disk %util 63% > rc 42%**：rr 雖 throughput 砍 6x，但 disk 反而比 rc 更忙 — 推測 SI version metadata 寫入 + retry 重讀放大 IO overhead
 
 ### 結論
 
 YugabyteDB v2025.2.2.2 vm-1node RR 在 4 vCPU + single disk 硬體下：
 - **吞吐天花板 ~1,850 tpmC**（比 rc 11,436 砍 84%、比 TiDB rr 13,874 少 87%）
-- **err 線性 = thread − 1**（t16=15、t32=31、t64=63、t128=127）— 與 CRDB rr **完全相同** N-1 pattern，是 SI hot row 共通病
+- **err 線性 = thread − 1**（t16=15、t32=31、t64=63、t128=127）— 與 CockroachDB rr **完全相同** N-1 pattern，是 SI hot row 共通病
 - **DB-host 大量 idle**（%idle 66-67%）+ **不飽和的 IO**（%iowait ~12%、disk %util 63%）— 瓶頸 = **transaction coordination layer (retry storm)**
 
 **業務啟示**：
-- YBDB 預設 RC 是正確選擇；本 workload 切 rr 純損失 throughput 不換來任何收益
-- 若 app 必須 per-txn snapshot 一致性語意，**首選 TiDB pessimistic rr**（同硬體 7-8x throughput）；YBDB / CRDB rr 都不適合 hot-row 場景
-- vm-3node 重跑時預期 YBDB rr 受 cross-zone DocDB Raft replication 進一步惡化 — 寫 fan-out × retry overhead 雙重打擊
+- YugabyteDB 預設 RC 是正確選擇；本 workload 切 rr 純損失 throughput 不換來任何收益
+- 若 app 必須 per-txn snapshot 一致性語意，**首選 TiDB pessimistic rr**（同硬體 7-8x throughput）；YugabyteDB / CockroachDB rr 都不適合 hot-row 場景
+- vm-3node 重跑時預期 YugabyteDB rr 受 cross-zone DocDB Raft replication 進一步惡化 — 寫 fan-out × retry overhead 雙重打擊
 
 ---
 
@@ -508,7 +534,7 @@ YugabyteDB v2025.2.2.2 vm-1node RR 在 4 vCPU + single disk 硬體下：
 
 ## vm-1node-strict — 2026-05-21（PoC v4.7，serializable isolation = SSI）
 
-> **本段目的**：在同硬體 / 同流程下完成 YugabyteDB vm-1node 三 isolation 矩陣的最後一塊：原生 SERIALIZABLE（SSI）。對標 CRDB SSI 觀察「強 iso 反而快」是否在 YBDB 成立。
+> **本段目的**：在同硬體 / 同流程下完成 YugabyteDB vm-1node 三 isolation 矩陣的最後一塊：原生 SERIALIZABLE（SSI）。對標 CockroachDB SSI 觀察「強 iso 反而快」是否在 YugabyteDB 成立。
 
 ### 環境
 - 與 `vm-1node-rc` / `vm-1node-rr` 相同硬體 / YB v2025.2.2.2 build 11 / 同 ansible playbook / 同 tserver gflag，唯一差異：**iso=strict（serializable）**
@@ -536,7 +562,7 @@ YugabyteDB v2025.2.2.2 vm-1node RR 在 4 vCPU + single disk 硬體下：
 | `SHOW transaction_isolation` | `serializable` | `serializable` ✓ | `serializable` ✓ |
 | `SHOW yb_effective_transaction_isolation_level` | `serializable` | `serializable` ✓ | `serializable` ✓ |
 
-→ session 與 effective 都對齊 `serializable`，conn-params `default_transaction_isolation=serializable` URL-decode 正確 → tserver 與 YSQL 都認得。YBDB SSI 全程啟用，無 silent fallback（不像 rc 需 tserver gflag `yb_enable_read_committed_isolation`）。
+→ session 與 effective 都對齊 `serializable`，conn-params `default_transaction_isolation=serializable` URL-decode 正確 → tserver 與 YSQL 都認得。YugabyteDB SSI 全程啟用，無 silent fallback（不像 rc 需 tserver gflag `yb_enable_read_committed_isolation`）。
 
 ### Prepare
 - 時間：52 min（DROP/CREATE + load 38 min + row-count + quiesce + ANALYZE，比 rc/rr 略長 ~5 min）
@@ -589,7 +615,7 @@ PAYMENT_ERR / NEW_ORDER_ERR 比例：
 | 64  | 10.5% | 4.9% | 12.49% | **70.56%** | 7.04%  | 68.6% |
 | 128 | 10.9% | 5.1% | 12.46% | **70.02%** | **5.76%** | 68.6% |
 
-> **核心發現**：strict 比 rr 還更 idle（rr 為 66-67%、strict 為 70-71%）— 三家三 iso 中 **DB-host 利用率最低的一組**，throughput 卻是 YBDB 三 iso 最低。瓶頸 100% 在 transaction coordination layer（SSI serializable detector + read-refresh round-trip）。
+> **核心發現**：strict 比 rr 還更 idle（rr 為 66-67%、strict 為 70-71%）— 三家三 iso 中 **DB-host 利用率最低的一組**，throughput 卻是 YugabyteDB 三 iso 最低。瓶頸 100% 在 transaction coordination layer（SSI serializable detector + read-refresh round-trip）。
 
 | 維度 | rc t128 | rr t128 | strict t128 |
 |------|---------|---------|-------------|
@@ -602,7 +628,7 @@ PAYMENT_ERR / NEW_ORDER_ERR 比例：
 
 → strict disk %util 68.6% **比 rc 42.8% 高 60%**，但 throughput 砍 10x；**disk-per-txn 寫入放大**。推測為 SSI version metadata + read-refresh 過程的 DocDB tablet meta read/write 大量小 IO。
 
-### vs YBDB rc / rr 對比
+### vs YugabyteDB rc / rr 對比
 
 | threads | rc tpmC | rr tpmC | strict tpmC | strict vs rc | strict vs rr |
 |---------|---------|---------|-------------|--------------|--------------|
@@ -620,17 +646,17 @@ PAYMENT_ERR / NEW_ORDER_ERR 比例：
 
 → **strict p99 t128 = 54 ms 全 iso 最低**（rr/rc 都接近 1000ms）— 但這是 **「throughput 被閘住、queue 沒累積」的副作用**，非 strict 本質快。完成的少數 NEW_ORDER 確實單筆延遲低；但 throughput 砍 10x 換來的低 p99，business 體感是「app 等資料庫等很久後拿到的單筆比 rc/rr 快一點」，不是 win。
 
-### vs CRDB strict 對比 ★ — 反 pattern 機制歸納
+### vs CockroachDB strict 對比 ★ — 反 pattern 機制歸納
 
-| 維度 | CRDB strict | YBDB strict |
+| 維度 | CockroachDB strict | YugabyteDB strict |
 |------|-------------|-------------|
 | tpmC peak | 10,830 @ t64 | 1,130 @ t32 |
 | vs 自家 rc | **+18.6%** @ t64（超越 RC）| **-90.1%** @ t32（遠不如 RC）|
 | 自家 rc 飽和 | IO-wait bound（%iowait 18%、%idle 5%、%user 68%）| CPU-bound（%user 74% + %sys 18% ≈ 92%、%idle 1.9%、%iowait 0.25%）|
 | strict 對 rc 的 CPU 增量影響 | rc 有 30% CPU headroom → strict 改走 CPU-heavy read-refresh **無感** | rc 已撞 CPU ceiling → strict 額外 CPU 工作**直接搶 CPU budget** |
-| 結論 | 反直覺 strict ＞ rc | 順直覺 strict ＜ rc，**但反 CRDB pattern** |
+| 結論 | 反直覺 strict ＞ rc | 順直覺 strict ＜ rc，**但反 CockroachDB pattern** |
 
-**規律歸納**：「**強 isolation 反而快**」這個直覺反例只在 **baseline RC 為 IO-bound** 時成立（CRDB 用 per-commit fsync 撞 IO wall）。當 baseline 為 CPU-bound（YBDB、TiDB），SSI / SS2PL 的額外 CPU 工作直接拖慢，無法翻盤。
+**規律歸納**：「**強 isolation 反而快**」這個直覺反例只在 **baseline RC 為 IO-bound** 時成立（CockroachDB 用 per-commit fsync 撞 IO wall）。當 baseline 為 CPU-bound（YugabyteDB、TiDB），SSI / SS2PL 的額外 CPU 工作直接拖慢，無法翻盤。
 
 ### Saturation 分析
 
@@ -648,26 +674,26 @@ sda %util: 70.4%  70.6%  68.6%  68.6%       ← disk 利用率反而高（!）
 err / round: 14.6  30.2  58.2  121.8        ← ≈ N-1
 ```
 
-**結論**：YBDB strict throughput 的天花板 ~1,130（4 vCPU 硬體下），所有 thread 完全 flat、無 scale-out 跡象。瓶頸在 SSI serializable detector + read-refresh 的單線程化 coordination 層；DB-host CPU 大量閒置 + disk %util 70% 反差，可能是 read-refresh 階段大量小 IO 但無法 batch。
+**結論**：YugabyteDB strict throughput 的天花板 ~1,130（4 vCPU 硬體下），所有 thread 完全 flat、無 scale-out 跡象。瓶頸在 SSI serializable detector + read-refresh 的單線程化 coordination 層；DB-host CPU 大量閒置 + disk %util 70% 反差，可能是 read-refresh 階段大量小 IO 但無法 batch。
 
 ### 觀察
 
 - **strict 是三 iso 中最慢、但 latency 最穩**（range/mean t128 = 1.8% 為三 iso 最低）；strict 的「穩定的慢」勝過 rr 的「波動的慢」（rr t128 r5 collapse 至 1173），對 SLA 一致性敏感的 app 反而適合
 - **strict ≈ N-1 errors 但 NEW_ORDER 占比比 PAYMENT 高**（與 rr 相反）— SSI serializable detector 對 district hot row 的偵測比 SI 早 trigger；PAYMENT 的 warehouse 衝突在 read-refresh 階段救回
 - **strict disk %util 70% 異常高**（rc 43% / rr 62%）— 推測為 SSI version metadata + read-refresh 的 DocDB tablet meta read/write 放大 IO；待 DocDB `tablet/transactions` 指標進一步驗證
-- **反 CRDB pattern**：CRDB strict ＞ rc 因 CRDB rc 為 IO-bound，SSI 改走 CPU 路徑剛好避瓶頸；YBDB rc 為 CPU-bound 已無 headroom，strict 不可能翻盤
+- **反 CockroachDB pattern**：CockroachDB strict ＞ rc 因 CockroachDB rc 為 IO-bound，SSI 改走 CPU 路徑剛好避瓶頸；YugabyteDB rc 為 CPU-bound 已無 headroom，strict 不可能翻盤
 
 ### 結論
 
 YugabyteDB v2025.2.2.2 vm-1node strict (SERIALIZABLE / SSI) 在 4 vCPU + single disk 硬體下：
-- **吞吐天花板 ~1,130 tpmC**（比 rc 11,436 砍 90%、比 rr 1,879 還少 40%、比 CRDB strict 10,830 少 90%）
+- **吞吐天花板 ~1,130 tpmC**（比 rc 11,436 砍 90%、比 rr 1,879 還少 40%、比 CockroachDB strict 10,830 少 90%）
 - **err ≈ N-1**（t16=14.6、t32=30.2、t64=58.2、t128=121.8）— 與 rr 同 pattern 但略少 ~5%（SSI 早期偵測 + read-refresh 救回部分衝突）
 - **DB-host 70%+ idle、disk %util 70%** — coordination-layer bound + 小 IO 放大
 
 **業務啟示**：
-- YBDB strict 在本 workload **不是 CRDB-style「反直覺最快」的選項**；rc 仍最快
-- 若 app 需要嚴格 serializable 一致性，YBDB strict 是正確選項，但 throughput 預期會砍 10x；應提早做 capacity planning
-- 跨家 strict 比較：CRDB SSI 10x YBDB SSI tpmC，因 CRDB SSI 善用 IO headroom；YBDB SSI 在 CPU-bound baseline 上把吞吐拖到底
+- YugabyteDB strict 在本 workload **不是 CockroachDB-style「反直覺最快」的選項**；rc 仍最快
+- 若 app 需要嚴格 serializable 一致性，YugabyteDB strict 是正確選項，但 throughput 預期會砍 10x；應提早做 capacity planning
+- 跨家 strict 比較：CockroachDB SSI 10x YugabyteDB SSI tpmC，因 CockroachDB SSI 善用 IO headroom；YugabyteDB SSI 在 CPU-bound baseline 上把吞吐拖到底
 
 ---
 
@@ -690,7 +716,7 @@ YugabyteDB v2025.2.2.2 vm-1node strict (SERIALIZABLE / SSI) 在 4 vCPU + single 
 | 平均口徑 | tpmC / p50 / p95 / p99 全為 5-round mean，range/mean 看穩定性 | ✅（range/mean 2.2-4.9%）|
 | Latency aggregate | NO p50 / p95 / p99（5-round mean） | ✅ |
 | 三 isolation 矩陣 | RC + RR + Strict | RC ✅ ; RR / Strict 待測 |
-| go-tpc `--check-all` | §8.1 列出（但 §4.1 強制對齊未列）| **deviation**：YBDB 跳過，改 row-count 9 表（W=128 對齊預期）— 文件已備案 [`修法 #4`](#修法總覽)|
+| go-tpc `--check-all` | §8.1 列出（但 §4.1 強制對齊未列）| **deviation**：YugabyteDB 跳過，改 row-count 9 表（W=128 對齊預期）— 文件已備案 [`修法 #4`](#修法總覽)|
 
 ---
 

@@ -1,6 +1,11 @@
-# YugabyteDB TPC-C Pipeline Log — yuga-tc1 / S-BASE
+# YugabyteDB TPC-C Pipeline Log — yuga-tc1-old / S-BASE（DEPRECATED ARCHIVE）
 
-> 本檔為 PoC v4.7 框架下的 YugabyteDB baseline。**先前 pre-v4.7 single-run wrapper 結果（vm-1node、k8s-3node-unlimit、k8s-3node-limit、YugabyteDB 2.20 issue 紀錄、AlmaLinux 8.10 改造紀錄）已全數存檔於 [`pipeline-log_old.md`](./pipeline-log_old.md)**。本檔等待 v4.7 detached suite（5-round × 5 min × 4 thread groups + 20min warmup × DB-host 雙邊監控）三 isolation 矩陣重跑後填入。
+> ⚠️ **本目錄為封存歷史資料，不再更新**。原為 PoC v4.7 框架下 YugabyteDB baseline 的「待重跑」骨架；2026-05-21 三 iso v4.7 重跑完成後，active 紀錄已搬至 [`../../yuga-tc1/S-BASE/pipeline-log.md`](../../yuga-tc1/S-BASE/pipeline-log.md)。
+>
+> 本目錄保留：
+> - 此檔（待重跑骨架原版，便於追溯改寫前狀態）
+> - [`pipeline-log_old.md`](./pipeline-log_old.md) — pre-v4.7 single-run wrapper 結果與 YugabyteDB 2.20 / AlmaLinux 8.10 改造歷史紀錄
+> - 各 pre-v4.7 結果目錄：vm-1node/20260514-1337、k8s-3node-{unlimit,limit}/202605* 等
 
 ---
 
