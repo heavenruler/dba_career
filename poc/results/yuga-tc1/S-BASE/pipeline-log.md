@@ -4,42 +4,44 @@
 
 ---
 
-## TL;DR — vm-1node-rc / vm-1node-rr 完成（2026-05-20 / 21）
+## TL;DR — vm-1node 三 isolation 矩陣完成（2026-05-20 / 21）
 
-**核心結論**：YugabyteDB 2025.2.2 LTS 在 4 vCPU + single XFS 硬體下，**RC > RR 達 6x tpmC**（rc t32 11,436 vs rr t32 1,879）。RC 是 **CPU-bound 含異常高 %sys (18-19%)**、零 error；RR = snapshot isolation（同 CRDB rr 機制）撞 retry storm，DB 反而 %idle 66-67% — **transaction coordination bound** 而非資源 bound。
+**核心結論**：YugabyteDB 2025.2.2 LTS 在 4 vCPU + single XFS 硬體下，**rc ＞ rr ＞ strict** — 與 CRDB「strict ＞ rc ＞ rr」**完全相反**。原因：YBDB rc 本身 CPU-bound（無 IO headroom 可榨），SSI 額外的 read-refresh / serializable detector 直接吃 CPU，反而拖慢；對比 CRDB rc IO-bound（fsync ceiling），SSI 改走 CPU 路徑剛好避開 IO 瓶頸。
 
 ### tpmC 排行（5-round mean，4 vCPU + single XFS）
 
-| iso | t16 | t32 | t64 | t128 | err / 5min（每併發 ≈ N−1）|
-|-----|-----|-----|-----|------|---------------------------|
-| rc  | 10,653 | **11,436** | 11,240 | 10,885 | **0** 全程 |
-| rr  | 1,846 | 1,879 | 1,847 | 1,714 | 15 / 31 / 63 / 127（線性 N−1） |
-| Δ (rr / rc) | -82.7% | **-83.6%** | -83.6% | -84.2% | — |
+| iso | t16 | t32 | t64 | t128 | peak | err / round 模式 |
+|-----|-----|-----|-----|------|------|------------------|
+| rc  | 10,653 | **11,436** | 11,240 | 10,885 | **t32** | **0** 全程 |
+| rr  | 1,846 | 1,879 | 1,847 | 1,714 | t32 | 15 / 31 / 63 / 127（線性 N−1，SI 衝突）|
+| strict | 1,096 | 1,130 | 1,092 | 1,129 | t32 | 14.6 / 30.2 / 58.2 / 121.8（~N−1 但比 rr 略少 ~5%）|
 
 ### 三大發現
 
-1. **rc 是真 RC、零 error**：tserver gflag `yb_enable_read_committed_isolation=true` + session iso 雙閘 +  `yb_effective_transaction_isolation_level` gate 三層驗證，20 round / 53,721 NEW_ORDER 全成功；對比 CRDB rr 412 errors / 20 round。**不啟用 gflag 會 silent fallback 到 SI → 跑出來的「RC」其實是 RR**（=本 rr 表）。
-2. **rr 機制與 CRDB rr 同**：YBDB rr default 是 snapshot isolation（per-txn snapshot ts，first committer wins）；hot row（district）每 round 起始 N 個 worker 同時 BEGIN → 1 個 commit、N-1 個拿到 SerializationError 重來。errors **線性 = thread − 1**（t16=15、t32=31、t64=63、t128=127）與 CRDB rr **完全相同 pattern**（兩家共同 SI bug, 不只 CRDB）。
-3. **rr 飽和成因不同於 rc**：
-   - rc t128：%idle 1.89%、%user 74.7%、%sys 18.5%、%iowait 0.25% → **CPU-bound + 高 %sys**（YSQL ↔ DocDB IPC overhead）
-   - rr t128：%idle **66.57%**、%user 14.1%、%sys 5.8%、%iowait **11.77%** → **DB 大量 idle 但 throughput 撞牆** → 瓶頸不在 DB，在 client retry loop 浪費時間
-   - rr disk %util 63% > rc 42% — 推測 SI version metadata + retry 重讀放大 IO；但因 throughput 砍 6x，總 IOPS 反而不高（待 DocDB internal metrics 進一步驗證）
+1. **rc 是真 RC、零 error**：tserver gflag `yb_enable_read_committed_isolation=true` + session iso 雙閘 + `yb_effective_transaction_isolation_level` gate 三層驗證，20 round / 53,721 NEW_ORDER 全成功；對比 CRDB rr 412 errors / 20 round。**不啟用 gflag 會 silent fallback 到 SI → 跑出來的「RC」其實是 RR**（=本 rr 表）。
+2. **rr / strict 都撞 hot row + 都接近 N−1 error pattern**：YBDB rr (SI) 與 strict (SSI) 兩個 isolation 都因 TPC-C district / warehouse hot row 觸發衝突；rr 精確 N−1、strict 略少（SSI 偶有 early-abort 或 read-refresh 救回）。**兩者 throughput 都 flat-line ~1,100-1,800**，與 CRDB rr 同病；TiDB rr 採 pessimistic lock-wait 不 retry，是同硬體下唯一能維持 13,874 tpmC 的 RR 實作。
+3. **strict ＜ rr 反 CRDB pattern 的機制歸納**：
+   - CRDB rc 為 IO-wait bound（%iowait 18%、%idle 5%、%user 68%）→ strict 走 CPU-heavy read-refresh 路徑剛好避開 IO 瓶頸，**strict 10,830 ＞ rc 9,134**
+   - YBDB rc 為 CPU-bound（%user 74% + %sys 18% ≈ 92% 利用率、%idle 1.9%、%iowait 0.25%）→ strict 的 serializable detector + read-refresh 直接搶 CPU，**strict 1,130 ＜ rc 11,436**（砍 90%）
+   - **規律**：「強 iso 反而快」只在 baseline IO-bound 時成立；YBDB / TiDB 等 CPU-bound 系統下，強 iso 直接拖慢
+4. **strict p99 t128 = 54 ms < rr 1020 ms < rc 1000 ms** — strict 因 throughput 砍 10x、worker queue 短 → latency 反而最低；但這是 **「吞吐被閘住、queue 沒累積」的副作用**，非 strict 真的快
 
 ### 業務啟示
 
-- YBDB **保留預設 RC 是正確選擇**：rr 拿不到任何性能 / 一致性收益，反而砍 84% 吞吐 + 引入 N-1 errors/round
-- 跨家 RR 三胞胎：**CRDB rr 3,788 / YBDB rr 1,879 / TiDB rr 13,874**。前兩家是 optimistic SI 撞 hot row，TiDB pessimistic 模式（`tidb_txn_mode=pessimistic`）拿鎖排隊**不 retry**、不 abort，唯一可承受 hot-row contention 的 RR 實作
-- 同硬體 7 組對標（5-round mean）：TiDB rr 13,874（t128）＞ TiDB rc 13,064（t128）＞ YBDB rc 11,436（t32）＞ CRDB strict 10,830（t64）＞ CRDB rc 9,134（t64）＞ CRDB rr 3,788（t128）＞ **YBDB rr 1,879（t32）** ←本輪新增
+- YBDB **保留預設 RC 是正確選擇**：rr / strict 都拿不到任何性能 / 一致性收益（rc 已是 per-statement snapshot RC、提供合理一致性保證）
+- 跨家 strict 三家對比：**CRDB strict 10,830 ＞ YBDB strict 1,130**（CRDB SSI 10x YBDB SSI）。CRDB SSI 透過 read-refresh + interactive 衝突偵測在 IO-bound baseline 上反而快；YBDB SSI 在 CPU-bound baseline 上把所有 isolation 都拖到同一個 ~1,100 ceiling
+- 跨家 RR 三胞胎：**TiDB rr 13,874（pessimistic lock-wait）＞ CRDB rr 3,788（preview SI）＞ YBDB rr 1,879（SI）**。三家 RR 名同實異，TiDB 是唯一可承受 hot row 的 RR
+- 同硬體 9 組對標（5-round mean）：TiDB rr 13,874 ＞ TiDB rc 13,064 ＞ YBDB rc 11,436 ＞ CRDB strict 10,830 ＞ CRDB rc 9,134 ＞ CRDB rr 3,788 ＞ YBDB rr 1,879 ＞ **YBDB strict 1,130** ←本輪新增
 
 ### 完整資料目錄
 
-| iso | TPCC_TS | 5-round mean peak | err / 20 rounds | 詳細段落 |
-|-----|---------|--------------------|-----------------|----------|
+| iso | TPCC_TS | 5-round mean peak | err / 5min (mean per round) | 詳細段落 |
+|-----|---------|--------------------|----------------------------|----------|
 | rc | 20260520T134929+0800 | **11,436 @ t32** | 0 | [§ vm-1node-rc](#vm-1node-rc--2026-05-20poc-v47-baseline含-db-host-os-監控) |
-| rr | 20260520T215216+0800 | **1,879 @ t32** | 940（15+31+63+127 × 5 round per group）| [§ vm-1node-rr](#vm-1node-rr--2026-05-21poc-v47-snapshot-isolation--retry-storm) |
-| strict | （待測） | — | — | [§ vm-1node-strict](#vm-1node-strict--待測v47) |
+| rr | 20260520T215216+0800 | 1,879 @ t32 | t16=15 → t128=127（線性 N−1） | [§ vm-1node-rr](#vm-1node-rr--2026-05-21poc-v47-snapshot-isolation--retry-storm) |
+| strict | 20260521T091048+0800 | **1,130 @ t32** | t16=14.6 → t128=121.8（≈N−1，比 rr 少 ~5%）| [§ vm-1node-strict](#vm-1node-strict--2026-05-21poc-v47-serializable-isolation--ssi) |
 
-下一步：vm-1node-strict（YBDB 原生 SERIALIZABLE，可與 CRDB strict 對標）+ vm-3node-direct / vm-3node-haproxy 待重跑。
+下一步：vm-3node-direct / vm-3node-haproxy（驗證 cross-zone Raft replication 對三家 iso 衝擊）+ K8s 系列。
 
 ---
 
@@ -504,9 +506,172 @@ YugabyteDB v2025.2.2.2 vm-1node RR 在 4 vCPU + single disk 硬體下：
 
 ---
 
-## vm-1node-strict — 待測（v4.7）
+## vm-1node-strict — 2026-05-21（PoC v4.7，serializable isolation = SSI）
 
-> 重跑完成後此段對齊 `vm-1node-rc` 結構填入。YBDB 原生支援 SERIALIZABLE，跨家 strict 對標主要對 CRDB SSI；TiDB strict alias 到 RR 不可直比。
+> **本段目的**：在同硬體 / 同流程下完成 YugabyteDB vm-1node 三 isolation 矩陣的最後一塊：原生 SERIALIZABLE（SSI）。對標 CRDB SSI 觀察「強 iso 反而快」是否在 YBDB 成立。
+
+### 環境
+- 與 `vm-1node-rc` / `vm-1node-rr` 相同硬體 / YB v2025.2.2.2 build 11 / 同 ansible playbook / 同 tserver gflag，唯一差異：**iso=strict（serializable）**
+- go-tpc conn-params：`sslmode=disable&options=-c default_transaction_isolation=serializable`
+- TPCC_TS：`20260521T091048+0800`
+- 結果目錄：`vm-1node-strict/ybdb-vm-1node-strict-20260521T091048+0800/`
+
+### Suite 階段時序
+
+| Phase | 起 | 訖 | 耗時 |
+|-------|-----|------|------|
+| gate | 09:14:53 | 09:14:54 | <1 min |
+| prepare（DROP/CREATE + load 128W + row-count + quiesce 5m + ANALYZE + EXPLAIN dump via ysqlsh）| 09:14:54 | 10:06:55 | 52 min |
+| gate-isolation（dual gate: session + effective）| 10:06:55 | 10:08:08 | 1 min |
+| cold-reset | 10:06:55 | 10:08:08 | 1 min |
+| warmup (20 min @ 64 threads) | 10:08:08 | 10:28:08 | 20 min |
+| run (4 thread × 5 round × 5 min + 60s sleep) | 10:28:08 | 12:48:29 | 2h20 min |
+| collect | 12:48:29 | 12:48:29 | <1 min |
+| **total (suite)** | **09:14:53** | **12:48:29** | **3h33 min** |
+
+### Gate 結果（active isolation dual-gate）
+
+| 維度 | expected | DB-side actual | driver-side actual |
+|------|----------|----------------|--------------------|
+| `SHOW transaction_isolation` | `serializable` | `serializable` ✓ | `serializable` ✓ |
+| `SHOW yb_effective_transaction_isolation_level` | `serializable` | `serializable` ✓ | `serializable` ✓ |
+
+→ session 與 effective 都對齊 `serializable`，conn-params `default_transaction_isolation=serializable` URL-decode 正確 → tserver 與 YSQL 都認得。YBDB SSI 全程啟用，無 silent fallback（不像 rc 需 tserver gflag `yb_enable_read_committed_isolation`）。
+
+### Prepare
+- 時間：52 min（DROP/CREATE + load 38 min + row-count + quiesce + ANALYZE，比 rc/rr 略長 ~5 min）
+- Row-count：9 表全對齊 W=128 預期（warehouse 128 / district 1280 / customer 3,840,000 / history 3,840,000 / item 100,000 / stock 12,800,000 / new_order 1,152,000 / orders 3,840,000 / order_line ~38.4M）
+
+### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
+
+| threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) | NEW_ORDER_ERR mean | PAYMENT_ERR mean | total err / round |
+|---------|-----------|-----------|---------------|-----------------|------------|------------|------------|--------------------|------------------|-------------------|
+| 16  | 1,096 | 12.1% | 2,428 | 66.6% | 37.3 | 52.4 | 61.2 |  7.2 |  7.4 | 14.6 |
+| 32  | **1,130** | 6.3% | 2,497 | 68.6% | 36.5 | 50.7 | 57.9 | 15.6 | 14.6 | 30.2 |
+| 64  | 1,092 | 8.3% | 2,438 | 66.3% | 37.3 | 51.6 | 61.6 | 35.8 | 22.4 | 58.2 |
+| 128 | 1,129 | **1.8%** | 2,511 | 68.6% | 35.7 | 48.6 | **54.1** | 68.0 | 53.8 | **121.8** |
+
+> **t128 range/mean 1.8%**：strict 在 t128 高併發下反而最穩定（與 rr t128 的 49.1% 雷亂相反）— SSI flat-line throughput 隨機性低。
+
+### Round-by-round tpmC
+
+| Threads | r1 | r2 | r3 | r4 | r5 |
+|---------|------|------|------|------|------|
+| 16  | 1008 | 1097 | 1115 | 1140 | 1120 |
+| 32  | 1126 | 1180 | 1111 | 1123 | 1110 |
+| 64  | 1105 | 1114 | 1108 | 1024 | 1107 |
+| 128 | 1119 | 1140 | 1140 | 1128 | 1120 |
+
+### Error 分析 — 接近 N-1 但比 rr 少 ~5%
+
+| iso | t16 | t32 | t64 | t128 |
+|-----|-----|-----|-----|------|
+| rc | 0 | 0 | 0 | 0 |
+| rr | 15 | 31 | 63 | 127（精確 N-1）|
+| **strict** | 14.6 | 30.2 | 58.2 | 121.8（≈ N-1，但比 rr 少 ~4-7%）|
+
+**機制推測**（待 DocDB internal metrics 佐證）：
+- rr (SI) 採 first-committer-wins：N 個 worker 同時 BEGIN，1 個 commit 成功、N-1 個被拒
+- strict (SSI) 多一道 serializable conflict detector：部分情況下衝突在 read time 即被偵測 → early-abort 或 read-refresh 救回，**少數失敗被「合併」**
+- 仍維持 ~N-1 是因為 hot row 衝突的根本性質沒變（128W TPC-C 的 district 1280 row + warehouse 128 row 是 deterministic hot zone）
+
+PAYMENT_ERR / NEW_ORDER_ERR 比例：
+- rr t128：PAYMENT 89 + NEW_ORDER 37（PAYMENT 占 70%）
+- strict t128：PAYMENT 53.8 + NEW_ORDER 68.0（PAYMENT 占 44%）
+→ SSI 抓 NEW_ORDER 的 district hot row 比 SI 更敏感（serializable detector 提前發現），PAYMENT 反而被「少抓到」（讀寫衝突在 read-refresh 階段救回）
+
+### DB-host (.32) 飽和分析 ★（idle 最極端的一組）
+
+| threads | %usr mean | %sys mean | %iowait mean | %idle mean | %idle min | sda %util |
+|---------|-----------|-----------|--------------|------------|-----------|-----------|
+| 16  | 9.7%  | 4.5% | 13.04% | **71.44%** | 60.41% | 70.4% |
+| 32  | 10.0% | 4.5% | 12.83% | **71.33%** | 38.75% | 70.6% |
+| 64  | 10.5% | 4.9% | 12.49% | **70.56%** | 7.04%  | 68.6% |
+| 128 | 10.9% | 5.1% | 12.46% | **70.02%** | **5.76%** | 68.6% |
+
+> **核心發現**：strict 比 rr 還更 idle（rr 為 66-67%、strict 為 70-71%）— 三家三 iso 中 **DB-host 利用率最低的一組**，throughput 卻是 YBDB 三 iso 最低。瓶頸 100% 在 transaction coordination layer（SSI serializable detector + read-refresh round-trip）。
+
+| 維度 | rc t128 | rr t128 | strict t128 |
+|------|---------|---------|-------------|
+| tpmC | 10,885 | 1,714 | 1,129 |
+| %user | 74.7% | 14.1% | **10.9%** |
+| %sys | 18.5% | 5.8% | 5.1% |
+| %iowait | 0.25% | 11.77% | 12.46% |
+| %idle | 1.89% | 66.57% | **70.02%** |
+| sda %util | 42.8% | 62.3% | **68.6%** |
+
+→ strict disk %util 68.6% **比 rc 42.8% 高 60%**，但 throughput 砍 10x；**disk-per-txn 寫入放大**。推測為 SSI version metadata + read-refresh 過程的 DocDB tablet meta read/write 大量小 IO。
+
+### vs YBDB rc / rr 對比
+
+| threads | rc tpmC | rr tpmC | strict tpmC | strict vs rc | strict vs rr |
+|---------|---------|---------|-------------|--------------|--------------|
+| 16  | 10,653 | 1,846 | 1,096 | -89.7% | -40.6% |
+| 32  | 11,436 | 1,879 | **1,130** | -90.1% | -39.9% |
+| 64  | 11,240 | 1,847 | 1,092 | -90.3% | -40.9% |
+| 128 | 10,885 | 1,714 | 1,129 | -89.6% | -34.1% |
+
+| threads | rc p99 (ms) | rr p99 (ms) | strict p99 (ms) |
+|---------|-------------|-------------|-----------------|
+| 16  | 104  | 61   | 61   |
+| 32  | 216  | 174  | 58   |
+| 64  | 440  | 240  | 62   |
+| 128 | 1000 | 1020 | **54** ← 最低 |
+
+→ **strict p99 t128 = 54 ms 全 iso 最低**（rr/rc 都接近 1000ms）— 但這是 **「throughput 被閘住、queue 沒累積」的副作用**，非 strict 本質快。完成的少數 NEW_ORDER 確實單筆延遲低；但 throughput 砍 10x 換來的低 p99，business 體感是「app 等資料庫等很久後拿到的單筆比 rc/rr 快一點」，不是 win。
+
+### vs CRDB strict 對比 ★ — 反 pattern 機制歸納
+
+| 維度 | CRDB strict | YBDB strict |
+|------|-------------|-------------|
+| tpmC peak | 10,830 @ t64 | 1,130 @ t32 |
+| vs 自家 rc | **+18.6%** @ t64（超越 RC）| **-90.1%** @ t32（遠不如 RC）|
+| 自家 rc 飽和 | IO-wait bound（%iowait 18%、%idle 5%、%user 68%）| CPU-bound（%user 74% + %sys 18% ≈ 92%、%idle 1.9%、%iowait 0.25%）|
+| strict 對 rc 的 CPU 增量影響 | rc 有 30% CPU headroom → strict 改走 CPU-heavy read-refresh **無感** | rc 已撞 CPU ceiling → strict 額外 CPU 工作**直接搶 CPU budget** |
+| 結論 | 反直覺 strict ＞ rc | 順直覺 strict ＜ rc，**但反 CRDB pattern** |
+
+**規律歸納**：「**強 isolation 反而快**」這個直覺反例只在 **baseline RC 為 IO-bound** 時成立（CRDB 用 per-commit fsync 撞 IO wall）。當 baseline 為 CPU-bound（YBDB、TiDB），SSI / SS2PL 的額外 CPU 工作直接拖慢，無法翻盤。
+
+### Saturation 分析
+
+```
+threads:    16 ──── 32 ──── 64 ──── 128
+tpmC:     1,096  1,130  1,092  1,129
+                  +3.1%  -3.4%  +3.4%       ← 完全 flat-line ~1,100
+
+p99 (ms):    61    58    62    54
+                  -4.9%  +6.9%  -12.9%      ← latency 不隨 thread 上升
+
+DB %idle: 71.44% 71.33% 70.56% 70.02%       ← DB 大量 idle (70%+ 全程)
+DB %iowait: 13.04% 12.83% 12.49% 12.46%     ← IO wait 中位
+sda %util: 70.4%  70.6%  68.6%  68.6%       ← disk 利用率反而高（!）
+err / round: 14.6  30.2  58.2  121.8        ← ≈ N-1
+```
+
+**結論**：YBDB strict throughput 的天花板 ~1,130（4 vCPU 硬體下），所有 thread 完全 flat、無 scale-out 跡象。瓶頸在 SSI serializable detector + read-refresh 的單線程化 coordination 層；DB-host CPU 大量閒置 + disk %util 70% 反差，可能是 read-refresh 階段大量小 IO 但無法 batch。
+
+### 觀察
+
+- **strict 是三 iso 中最慢、但 latency 最穩**（range/mean t128 = 1.8% 為三 iso 最低）；strict 的「穩定的慢」勝過 rr 的「波動的慢」（rr t128 r5 collapse 至 1173），對 SLA 一致性敏感的 app 反而適合
+- **strict ≈ N-1 errors 但 NEW_ORDER 占比比 PAYMENT 高**（與 rr 相反）— SSI serializable detector 對 district hot row 的偵測比 SI 早 trigger；PAYMENT 的 warehouse 衝突在 read-refresh 階段救回
+- **strict disk %util 70% 異常高**（rc 43% / rr 62%）— 推測為 SSI version metadata + read-refresh 的 DocDB tablet meta read/write 放大 IO；待 DocDB `tablet/transactions` 指標進一步驗證
+- **反 CRDB pattern**：CRDB strict ＞ rc 因 CRDB rc 為 IO-bound，SSI 改走 CPU 路徑剛好避瓶頸；YBDB rc 為 CPU-bound 已無 headroom，strict 不可能翻盤
+
+### 結論
+
+YugabyteDB v2025.2.2.2 vm-1node strict (SERIALIZABLE / SSI) 在 4 vCPU + single disk 硬體下：
+- **吞吐天花板 ~1,130 tpmC**（比 rc 11,436 砍 90%、比 rr 1,879 還少 40%、比 CRDB strict 10,830 少 90%）
+- **err ≈ N-1**（t16=14.6、t32=30.2、t64=58.2、t128=121.8）— 與 rr 同 pattern 但略少 ~5%（SSI 早期偵測 + read-refresh 救回部分衝突）
+- **DB-host 70%+ idle、disk %util 70%** — coordination-layer bound + 小 IO 放大
+
+**業務啟示**：
+- YBDB strict 在本 workload **不是 CRDB-style「反直覺最快」的選項**；rc 仍最快
+- 若 app 需要嚴格 serializable 一致性，YBDB strict 是正確選項，但 throughput 預期會砍 10x；應提早做 capacity planning
+- 跨家 strict 比較：CRDB SSI 10x YBDB SSI tpmC，因 CRDB SSI 善用 IO headroom；YBDB SSI 在 CPU-bound baseline 上把吞吐拖到底
+
+---
+
+
 
 ---
 

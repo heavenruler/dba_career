@@ -1,0 +1,14 @@
+{
+  "phase": "gate-isolation",
+  "db": "ybdb",
+  "topology": "vm-1node",
+  "iso": "strict",
+  "ts": "20260521T091048+0800",
+  "db_host": "172.24.40.32",
+  "conn_params": "sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable",
+  "isolation_expected": "serializable",
+  "isolation_actual": "serializable",
+  "driver_actual": "serializable",
+  "yb_effective_db": "serializable",
+  "yb_effective_driver": "serializable"
+}

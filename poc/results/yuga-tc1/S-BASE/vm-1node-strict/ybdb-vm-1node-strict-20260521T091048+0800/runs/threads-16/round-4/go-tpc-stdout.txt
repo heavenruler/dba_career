@@ -1,0 +1,196 @@
+2026/05/21 10:49:12 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+[2026-05-21 10:49:12] execute run failed, err exec SELECT c_first, c_middle, c_last, c_street_1, c_street_2, c_city, c_state, c_zip, c_phone,
+c_credit, c_credit_lim, c_discount, c_balance, c_since FROM customer WHERE c_w_id = ? AND c_d_id = ? 
+AND c_id = ? FOR UPDATE failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec SELECT c_first, c_middle, c_last, c_street_1, c_street_2, c_city, c_state, c_zip, c_phone,
+c_credit, c_credit_lim, c_discount, c_balance, c_since FROM customer WHERE c_w_id = ? AND c_d_id = ? 
+AND c_id = ? FOR UPDATE failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:12] execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:12] execute run failed, err exec INSERT INTO orders (o_id, o_d_id, o_w_id, o_c_id, o_entry_d, o_ol_cnt, o_all_local) VALUES (?, ?, ?, ?, ?, ?, ?) failed pq: current transaction is expired or aborted (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec INSERT INTO orders (o_id, o_d_id, o_w_id, o_c_id, o_entry_d, o_ol_cnt, o_all_local) VALUES (?, ?, ?, ?, ?, ?, ?) failed pq: current transaction is expired or aborted (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec UPDATE district SET d_next_o_id = ? + 1 WHERE d_id = ? AND d_w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec UPDATE district SET d_next_o_id = ? + 1 WHERE d_id = ? AND d_w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec UPDATE district SET d_next_o_id = ? + 1 WHERE d_id = ? AND d_w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec UPDATE district SET d_next_o_id = ? + 1 WHERE d_id = ? AND d_w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec UPDATE district SET d_next_o_id = ? + 1 WHERE d_id = ? AND d_w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec UPDATE district SET d_next_o_id = ? + 1 WHERE d_id = ? AND d_w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec UPDATE district SET d_next_o_id = ? + 1 WHERE d_id = ? AND d_w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec UPDATE warehouse SET w_ytd = w_ytd + ? WHERE w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec UPDATE district SET d_next_o_id = ? + 1 WHERE d_id = ? AND d_w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec UPDATE district SET d_next_o_id = ? + 1 WHERE d_id = ? AND d_w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec UPDATE district SET d_next_o_id = ? + 1 WHERE d_id = ? AND d_w_id = ? failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec SELECT d_next_o_id, d_tax FROM district WHERE d_id = ? AND d_w_id = ? FOR UPDATE failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[2026-05-21 10:49:13] execute run failed, err exec SELECT d_next_o_id, d_tax FROM district WHERE d_id = ? AND d_w_id = ? FOR UPDATE failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec SELECT d_next_o_id, d_tax FROM district WHERE d_id = ? AND d_w_id = ? FOR UPDATE failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+execute run failed, err exec SELECT d_next_o_id, d_tax FROM district WHERE d_id = ? AND d_w_id = ? FOR UPDATE failed pq: deadlock detected (query layer retry isn't possible because this is not the first command in the transaction. Consider using READ COMMITTED isolation level.)
+[Current] DELIVERY - Takes(s): 8.3, Count: 16, TPM: 116.1, Sum(ms): 678.8, Avg(ms): 42.3, 50th(ms): 44.0, 90th(ms): 46.1, 95th(ms): 46.1, 99th(ms): 50.3, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] NEW_ORDER - Takes(s): 9.3, Count: 162, TPM: 1039.9, Sum(ms): 9085.3, Avg(ms): 56.3, 50th(ms): 37.7, 90th(ms): 48.2, 95th(ms): 52.4, 99th(ms): 570.4, 99.9th(ms): 738.2, Max(ms): 738.2
+[Current] NEW_ORDER_ERR - Takes(s): 9.3, Count: 8, TPM: 51.4, Sum(ms): 5007.5, Avg(ms): 623.9, 50th(ms): 570.4, 90th(ms): 771.8, 95th(ms): 872.4, 99th(ms): 872.4, 99.9th(ms): 872.4, Max(ms): 872.4
+[Current] ORDER_STATUS - Takes(s): 9.6, Count: 15, TPM: 93.9, Sum(ms): 236.8, Avg(ms): 15.9, 50th(ms): 11.0, 90th(ms): 23.1, 95th(ms): 23.1, 99th(ms): 83.9, 99.9th(ms): 83.9, Max(ms): 83.9
+[Current] PAYMENT - Takes(s): 9.6, Count: 163, TPM: 1022.5, Sum(ms): 2556.6, Avg(ms): 15.8, 50th(ms): 12.1, 90th(ms): 14.7, 95th(ms): 15.7, 99th(ms): 17.8, 99.9th(ms): 637.5, Max(ms): 637.5
+[Current] PAYMENT_ERR - Takes(s): 9.6, Count: 7, TPM: 43.9, Sum(ms): 4258.7, Avg(ms): 613.3, 50th(ms): 771.8, 90th(ms): 872.4, 95th(ms): 906.0, 99th(ms): 906.0, 99.9th(ms): 906.0, Max(ms): 906.0
+[Current] STOCK_LEVEL - Takes(s): 8.5, Count: 17, TPM: 120.3, Sum(ms): 145.1, Avg(ms): 8.6, 50th(ms): 8.9, 90th(ms): 9.4, 95th(ms): 10.0, 99th(ms): 10.0, 99.9th(ms): 10.0, Max(ms): 10.0
+[Current] DELIVERY - Takes(s): 9.4, Count: 13, TPM: 82.6, Sum(ms): 575.8, Avg(ms): 44.1, 50th(ms): 44.0, 90th(ms): 52.4, 95th(ms): 52.4, 99th(ms): 52.4, 99.9th(ms): 52.4, Max(ms): 52.4
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 203, TPM: 1223.9, Sum(ms): 7201.3, Avg(ms): 35.4, 50th(ms): 37.7, 90th(ms): 46.1, 95th(ms): 48.2, 99th(ms): 50.3, 99.9th(ms): 54.5, Max(ms): 54.5
+[Current] ORDER_STATUS - Takes(s): 9.8, Count: 12, TPM: 73.1, Sum(ms): 124.0, Avg(ms): 10.4, 50th(ms): 10.5, 90th(ms): 13.1, 95th(ms): 13.1, 99th(ms): 14.7, 99.9th(ms): 14.7, Max(ms): 14.7
+[Current] PAYMENT - Takes(s): 10.0, Count: 157, TPM: 942.2, Sum(ms): 1885.5, Avg(ms): 12.0, 50th(ms): 12.1, 90th(ms): 14.2, 95th(ms): 15.2, 99th(ms): 17.8, 99.9th(ms): 19.9, Max(ms): 19.9
+[Current] STOCK_LEVEL - Takes(s): 9.3, Count: 16, TPM: 102.9, Sum(ms): 137.4, Avg(ms): 8.6, 50th(ms): 8.9, 90th(ms): 10.0, 95th(ms): 10.0, 99th(ms): 10.0, 99.9th(ms): 10.0, Max(ms): 10.0
+[Current] DELIVERY - Takes(s): 7.9, Count: 15, TPM: 114.0, Sum(ms): 713.8, Avg(ms): 47.5, 50th(ms): 48.2, 90th(ms): 52.4, 95th(ms): 52.4, 99th(ms): 54.5, 99.9th(ms): 54.5, Max(ms): 54.5
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 185, TPM: 1110.4, Sum(ms): 6788.1, Avg(ms): 36.7, 50th(ms): 37.7, 90th(ms): 48.2, 95th(ms): 50.3, 99th(ms): 54.5, 99.9th(ms): 56.6, Max(ms): 56.6
+[Current] ORDER_STATUS - Takes(s): 6.8, Count: 14, TPM: 123.7, Sum(ms): 155.8, Avg(ms): 11.1, 50th(ms): 12.1, 90th(ms): 14.2, 95th(ms): 14.2, 99th(ms): 15.7, 99.9th(ms): 15.7, Max(ms): 15.7
+[Current] PAYMENT - Takes(s): 10.0, Count: 166, TPM: 997.3, Sum(ms): 2133.9, Avg(ms): 12.9, 50th(ms): 13.1, 90th(ms): 15.2, 95th(ms): 16.3, 99th(ms): 18.9, 99.9th(ms): 21.0, Max(ms): 21.0
+[Current] STOCK_LEVEL - Takes(s): 9.8, Count: 15, TPM: 91.8, Sum(ms): 130.2, Avg(ms): 8.7, 50th(ms): 8.9, 90th(ms): 10.0, 95th(ms): 10.0, 99th(ms): 10.5, 99.9th(ms): 10.5, Max(ms): 10.5
+[Current] DELIVERY - Takes(s): 9.7, Count: 8, TPM: 49.3, Sum(ms): 424.8, Avg(ms): 53.0, 50th(ms): 52.4, 90th(ms): 62.9, 95th(ms): 67.1, 99th(ms): 67.1, 99.9th(ms): 67.1, Max(ms): 67.1
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 163, TPM: 979.7, Sum(ms): 7200.6, Avg(ms): 44.2, 50th(ms): 44.0, 90th(ms): 58.7, 95th(ms): 62.9, 99th(ms): 71.3, 99.9th(ms): 71.3, Max(ms): 71.3
+[Current] ORDER_STATUS - Takes(s): 9.7, Count: 16, TPM: 98.8, Sum(ms): 205.0, Avg(ms): 12.8, 50th(ms): 12.1, 90th(ms): 16.3, 95th(ms): 17.8, 99th(ms): 18.9, 99.9th(ms): 18.9, Max(ms): 18.9
+[Current] PAYMENT - Takes(s): 9.9, Count: 128, TPM: 772.6, Sum(ms): 1998.2, Avg(ms): 15.6, 50th(ms): 15.7, 90th(ms): 18.9, 95th(ms): 21.0, 99th(ms): 25.2, 99.9th(ms): 26.2, Max(ms): 26.2
+[Current] STOCK_LEVEL - Takes(s): 9.3, Count: 13, TPM: 83.6, Sum(ms): 133.1, Avg(ms): 10.3, 50th(ms): 10.5, 90th(ms): 11.5, 95th(ms): 11.5, 99th(ms): 12.1, 99.9th(ms): 12.1, Max(ms): 12.1
+[Current] DELIVERY - Takes(s): 8.9, Count: 13, TPM: 87.5, Sum(ms): 664.1, Avg(ms): 51.1, 50th(ms): 50.3, 90th(ms): 60.8, 95th(ms): 60.8, 99th(ms): 65.0, 99.9th(ms): 65.0, Max(ms): 65.0
+[Current] NEW_ORDER - Takes(s): 9.9, Count: 157, TPM: 952.7, Sum(ms): 6405.2, Avg(ms): 40.8, 50th(ms): 41.9, 90th(ms): 54.5, 95th(ms): 56.6, 99th(ms): 60.8, 99.9th(ms): 65.0, Max(ms): 65.0
+[Current] ORDER_STATUS - Takes(s): 9.7, Count: 7, TPM: 43.4, Sum(ms): 81.3, Avg(ms): 11.5, 50th(ms): 11.0, 90th(ms): 13.1, 95th(ms): 16.8, 99th(ms): 16.8, 99.9th(ms): 16.8, Max(ms): 16.8
+[Current] PAYMENT - Takes(s): 10.0, Count: 179, TPM: 1075.3, Sum(ms): 2633.3, Avg(ms): 14.7, 50th(ms): 14.7, 90th(ms): 18.9, 95th(ms): 19.9, 99th(ms): 26.2, 99.9th(ms): 29.4, Max(ms): 29.4
+[Current] STOCK_LEVEL - Takes(s): 8.8, Count: 13, TPM: 88.9, Sum(ms): 133.3, Avg(ms): 10.2, 50th(ms): 10.5, 90th(ms): 11.0, 95th(ms): 11.0, 99th(ms): 12.6, 99.9th(ms): 12.6, Max(ms): 12.6
+[Current] DELIVERY - Takes(s): 9.8, Count: 16, TPM: 98.0, Sum(ms): 746.4, Avg(ms): 46.4, 50th(ms): 46.1, 90th(ms): 52.4, 95th(ms): 52.4, 99th(ms): 67.1, 99.9th(ms): 67.1, Max(ms): 67.1
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 187, TPM: 1125.0, Sum(ms): 6711.3, Avg(ms): 35.9, 50th(ms): 35.7, 90th(ms): 48.2, 95th(ms): 52.4, 99th(ms): 58.7, 99.9th(ms): 71.3, Max(ms): 71.3
+[Current] ORDER_STATUS - Takes(s): 9.0, Count: 21, TPM: 140.4, Sum(ms): 204.3, Avg(ms): 9.8, 50th(ms): 9.4, 90th(ms): 12.1, 95th(ms): 12.6, 99th(ms): 14.7, 99.9th(ms): 14.7, Max(ms): 14.7
+[Current] PAYMENT - Takes(s): 9.8, Count: 170, TPM: 1042.6, Sum(ms): 2161.7, Avg(ms): 12.7, 50th(ms): 12.6, 90th(ms): 15.7, 95th(ms): 16.8, 99th(ms): 18.9, 99.9th(ms): 19.9, Max(ms): 19.9
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 12, TPM: 72.7, Sum(ms): 112.4, Avg(ms): 9.3, 50th(ms): 9.4, 90th(ms): 10.5, 95th(ms): 10.5, 99th(ms): 13.6, 99.9th(ms): 13.6, Max(ms): 13.6
+[Current] DELIVERY - Takes(s): 9.9, Count: 15, TPM: 91.0, Sum(ms): 691.7, Avg(ms): 46.1, 50th(ms): 46.1, 90th(ms): 54.5, 95th(ms): 54.5, 99th(ms): 58.7, 99.9th(ms): 58.7, Max(ms): 58.7
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 187, TPM: 1124.5, Sum(ms): 6978.6, Avg(ms): 37.3, 50th(ms): 37.7, 90th(ms): 48.2, 95th(ms): 50.3, 99th(ms): 54.5, 99.9th(ms): 58.7, Max(ms): 58.7
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 16, TPM: 96.3, Sum(ms): 161.0, Avg(ms): 10.1, 50th(ms): 10.5, 90th(ms): 11.5, 95th(ms): 12.6, 99th(ms): 14.2, 99.9th(ms): 14.2, Max(ms): 14.2
+[Current] PAYMENT - Takes(s): 9.9, Count: 155, TPM: 941.6, Sum(ms): 1940.9, Avg(ms): 12.5, 50th(ms): 12.1, 90th(ms): 15.7, 95th(ms): 16.8, 99th(ms): 18.9, 99.9th(ms): 21.0, Max(ms): 21.0
+[Current] STOCK_LEVEL - Takes(s): 8.6, Count: 17, TPM: 118.7, Sum(ms): 157.6, Avg(ms): 9.2, 50th(ms): 9.4, 90th(ms): 10.5, 95th(ms): 11.5, 99th(ms): 11.5, 99.9th(ms): 11.5, Max(ms): 11.5
+[Current] DELIVERY - Takes(s): 9.5, Count: 16, TPM: 100.6, Sum(ms): 716.8, Avg(ms): 44.8, 50th(ms): 44.0, 90th(ms): 50.3, 95th(ms): 56.6, 99th(ms): 58.7, 99.9th(ms): 58.7, Max(ms): 58.7
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 184, TPM: 1106.8, Sum(ms): 6566.0, Avg(ms): 35.6, 50th(ms): 35.7, 90th(ms): 48.2, 95th(ms): 50.3, 99th(ms): 52.4, 99.9th(ms): 60.8, Max(ms): 60.8
+[Current] ORDER_STATUS - Takes(s): 9.2, Count: 14, TPM: 91.0, Sum(ms): 141.4, Avg(ms): 10.1, 50th(ms): 10.0, 90th(ms): 13.1, 95th(ms): 13.1, 99th(ms): 13.6, 99.9th(ms): 13.6, Max(ms): 13.6
+[Current] PAYMENT - Takes(s): 9.9, Count: 190, TPM: 1150.5, Sum(ms): 2345.1, Avg(ms): 12.3, 50th(ms): 12.1, 90th(ms): 14.7, 95th(ms): 16.8, 99th(ms): 19.9, 99.9th(ms): 27.3, Max(ms): 27.3
+[Current] STOCK_LEVEL - Takes(s): 9.4, Count: 17, TPM: 108.8, Sum(ms): 158.8, Avg(ms): 9.3, 50th(ms): 9.4, 90th(ms): 11.0, 95th(ms): 11.0, 99th(ms): 12.1, 99.9th(ms): 12.1, Max(ms): 12.1
+[Current] DELIVERY - Takes(s): 9.7, Count: 17, TPM: 104.6, Sum(ms): 742.2, Avg(ms): 43.6, 50th(ms): 44.0, 90th(ms): 48.2, 95th(ms): 48.2, 99th(ms): 52.4, 99.9th(ms): 52.4, Max(ms): 52.4
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 201, TPM: 1208.7, Sum(ms): 6884.2, Avg(ms): 34.2, 50th(ms): 33.6, 90th(ms): 48.2, 95th(ms): 50.3, 99th(ms): 56.6, 99.9th(ms): 60.8, Max(ms): 60.8
+[Current] ORDER_STATUS - Takes(s): 8.9, Count: 12, TPM: 80.8, Sum(ms): 127.0, Avg(ms): 10.5, 50th(ms): 9.4, 90th(ms): 14.2, 95th(ms): 14.2, 99th(ms): 15.2, 99.9th(ms): 15.2, Max(ms): 15.2
+[Current] PAYMENT - Takes(s): 9.8, Count: 172, TPM: 1053.5, Sum(ms): 2050.9, Avg(ms): 11.9, 50th(ms): 11.5, 90th(ms): 14.7, 95th(ms): 15.7, 99th(ms): 18.9, 99.9th(ms): 28.3, Max(ms): 28.3
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 14, TPM: 84.5, Sum(ms): 131.9, Avg(ms): 9.5, 50th(ms): 9.4, 90th(ms): 10.5, 95th(ms): 10.5, 99th(ms): 13.1, 99.9th(ms): 13.1, Max(ms): 13.1
+[Current] DELIVERY - Takes(s): 9.3, Count: 16, TPM: 103.4, Sum(ms): 701.3, Avg(ms): 43.6, 50th(ms): 44.0, 90th(ms): 48.2, 95th(ms): 50.3, 99th(ms): 56.6, 99.9th(ms): 56.6, Max(ms): 56.6
+[Current] NEW_ORDER - Takes(s): 9.9, Count: 181, TPM: 1091.6, Sum(ms): 6484.4, Avg(ms): 35.8, 50th(ms): 37.7, 90th(ms): 46.1, 95th(ms): 48.2, 99th(ms): 52.4, 99.9th(ms): 54.5, Max(ms): 54.5
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 15, TPM: 90.0, Sum(ms): 141.4, Avg(ms): 9.4, 50th(ms): 9.4, 90th(ms): 12.6, 95th(ms): 12.6, 99th(ms): 13.6, 99.9th(ms): 13.6, Max(ms): 13.6
+[Current] PAYMENT - Takes(s): 10.0, Count: 200, TPM: 1202.0, Sum(ms): 2448.2, Avg(ms): 12.2, 50th(ms): 12.1, 90th(ms): 15.2, 95th(ms): 16.3, 99th(ms): 30.4, 99.9th(ms): 31.5, Max(ms): 31.5
+[Current] STOCK_LEVEL - Takes(s): 9.5, Count: 14, TPM: 88.7, Sum(ms): 130.6, Avg(ms): 9.3, 50th(ms): 8.9, 90th(ms): 10.5, 95th(ms): 10.5, 99th(ms): 13.1, 99.9th(ms): 13.1, Max(ms): 13.1
+[Current] DELIVERY - Takes(s): 9.4, Count: 16, TPM: 102.5, Sum(ms): 756.4, Avg(ms): 47.4, 50th(ms): 48.2, 90th(ms): 52.4, 95th(ms): 56.6, 99th(ms): 60.8, 99.9th(ms): 60.8, Max(ms): 60.8
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 177, TPM: 1062.0, Sum(ms): 6644.4, Avg(ms): 37.6, 50th(ms): 37.7, 90th(ms): 50.3, 95th(ms): 52.4, 99th(ms): 58.7, 99.9th(ms): 67.1, Max(ms): 67.1
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 14, TPM: 84.7, Sum(ms): 150.6, Avg(ms): 10.7, 50th(ms): 10.5, 90th(ms): 13.1, 95th(ms): 13.1, 99th(ms): 14.2, 99.9th(ms): 14.2, Max(ms): 14.2
+[Current] PAYMENT - Takes(s): 9.9, Count: 170, TPM: 1025.7, Sum(ms): 2225.3, Avg(ms): 13.1, 50th(ms): 13.1, 90th(ms): 15.7, 95th(ms): 16.8, 99th(ms): 22.0, 99.9th(ms): 27.3, Max(ms): 27.3
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 16, TPM: 96.4, Sum(ms): 152.0, Avg(ms): 9.5, 50th(ms): 9.4, 90th(ms): 10.5, 95th(ms): 11.0, 99th(ms): 12.1, 99.9th(ms): 12.1, Max(ms): 12.1
+[Current] DELIVERY - Takes(s): 8.8, Count: 19, TPM: 129.8, Sum(ms): 926.6, Avg(ms): 48.9, 50th(ms): 48.2, 90th(ms): 56.6, 95th(ms): 56.6, 99th(ms): 83.9, 99.9th(ms): 83.9, Max(ms): 83.9
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 182, TPM: 1093.0, Sum(ms): 6678.8, Avg(ms): 36.7, 50th(ms): 37.7, 90th(ms): 50.3, 95th(ms): 56.6, 99th(ms): 60.8, 99.9th(ms): 65.0, Max(ms): 65.0
+[Current] ORDER_STATUS - Takes(s): 9.4, Count: 13, TPM: 82.8, Sum(ms): 135.1, Avg(ms): 10.5, 50th(ms): 10.5, 90th(ms): 13.1, 95th(ms): 13.1, 99th(ms): 13.6, 99.9th(ms): 13.6, Max(ms): 13.6
+[Current] PAYMENT - Takes(s): 9.9, Count: 157, TPM: 951.9, Sum(ms): 2070.2, Avg(ms): 13.2, 50th(ms): 12.6, 90th(ms): 17.8, 95th(ms): 18.9, 99th(ms): 28.3, 99.9th(ms): 35.7, Max(ms): 35.7
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 16, TPM: 96.2, Sum(ms): 154.2, Avg(ms): 9.6, 50th(ms): 10.0, 90th(ms): 11.0, 95th(ms): 11.5, 99th(ms): 13.6, 99.9th(ms): 13.6, Max(ms): 13.6
+[Current] DELIVERY - Takes(s): 9.0, Count: 15, TPM: 100.0, Sum(ms): 670.5, Avg(ms): 44.7, 50th(ms): 44.0, 90th(ms): 50.3, 95th(ms): 50.3, 99th(ms): 65.0, 99.9th(ms): 65.0, Max(ms): 65.0
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 201, TPM: 1211.7, Sum(ms): 6887.2, Avg(ms): 34.3, 50th(ms): 35.7, 90th(ms): 46.1, 95th(ms): 48.2, 99th(ms): 52.4, 99.9th(ms): 54.5, Max(ms): 54.5
+[Current] ORDER_STATUS - Takes(s): 7.5, Count: 10, TPM: 80.1, Sum(ms): 103.6, Avg(ms): 10.3, 50th(ms): 10.0, 90th(ms): 12.6, 95th(ms): 13.1, 99th(ms): 13.1, 99.9th(ms): 13.1, Max(ms): 13.1
+[Current] PAYMENT - Takes(s): 10.0, Count: 183, TPM: 1099.2, Sum(ms): 2156.7, Avg(ms): 11.8, 50th(ms): 12.1, 90th(ms): 14.2, 95th(ms): 15.2, 99th(ms): 16.3, 99.9th(ms): 22.0, Max(ms): 22.0
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 14, TPM: 84.8, Sum(ms): 126.2, Avg(ms): 9.0, 50th(ms): 8.4, 90th(ms): 10.0, 95th(ms): 10.0, 99th(ms): 16.8, 99.9th(ms): 16.8, Max(ms): 16.8
+[Current] DELIVERY - Takes(s): 8.9, Count: 15, TPM: 100.9, Sum(ms): 640.0, Avg(ms): 42.6, 50th(ms): 41.9, 90th(ms): 50.3, 95th(ms): 50.3, 99th(ms): 52.4, 99.9th(ms): 52.4, Max(ms): 52.4
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 189, TPM: 1137.9, Sum(ms): 6706.5, Avg(ms): 35.5, 50th(ms): 37.7, 90th(ms): 46.1, 95th(ms): 48.2, 99th(ms): 54.5, 99.9th(ms): 58.7, Max(ms): 58.7
+[Current] ORDER_STATUS - Takes(s): 9.3, Count: 17, TPM: 109.5, Sum(ms): 163.1, Avg(ms): 9.6, 50th(ms): 9.4, 90th(ms): 11.5, 95th(ms): 12.6, 99th(ms): 13.1, 99.9th(ms): 13.1, Max(ms): 13.1
+[Current] PAYMENT - Takes(s): 10.0, Count: 197, TPM: 1183.0, Sum(ms): 2309.8, Avg(ms): 11.7, 50th(ms): 11.5, 90th(ms): 14.7, 95th(ms): 15.7, 99th(ms): 19.9, 99.9th(ms): 22.0, Max(ms): 22.0
+[Current] STOCK_LEVEL - Takes(s): 9.0, Count: 13, TPM: 86.3, Sum(ms): 109.1, Avg(ms): 8.3, 50th(ms): 8.4, 90th(ms): 10.0, 95th(ms): 10.0, 99th(ms): 14.2, 99.9th(ms): 14.2, Max(ms): 14.2
+[Current] DELIVERY - Takes(s): 9.9, Count: 17, TPM: 102.7, Sum(ms): 758.7, Avg(ms): 44.5, 50th(ms): 44.0, 90th(ms): 48.2, 95th(ms): 52.4, 99th(ms): 65.0, 99.9th(ms): 65.0, Max(ms): 65.0
+[Current] NEW_ORDER - Takes(s): 9.9, Count: 188, TPM: 1141.3, Sum(ms): 6489.6, Avg(ms): 34.5, 50th(ms): 35.7, 90th(ms): 46.1, 95th(ms): 48.2, 99th(ms): 52.4, 99.9th(ms): 54.5, Max(ms): 54.5
+[Current] ORDER_STATUS - Takes(s): 9.4, Count: 18, TPM: 114.5, Sum(ms): 172.7, Avg(ms): 9.6, 50th(ms): 9.4, 90th(ms): 11.5, 95th(ms): 12.1, 99th(ms): 12.6, 99.9th(ms): 12.6, Max(ms): 12.6
+[Current] PAYMENT - Takes(s): 10.0, Count: 197, TPM: 1182.2, Sum(ms): 2376.9, Avg(ms): 12.1, 50th(ms): 12.1, 90th(ms): 14.7, 95th(ms): 16.3, 99th(ms): 17.8, 99.9th(ms): 18.9, Max(ms): 18.9
+[Current] STOCK_LEVEL - Takes(s): 9.6, Count: 16, TPM: 100.4, Sum(ms): 129.9, Avg(ms): 8.1, 50th(ms): 8.4, 90th(ms): 8.9, 95th(ms): 9.4, 99th(ms): 10.0, 99.9th(ms): 10.0, Max(ms): 10.0
+[Current] DELIVERY - Takes(s): 9.8, Count: 18, TPM: 110.4, Sum(ms): 792.4, Avg(ms): 44.0, 50th(ms): 44.0, 90th(ms): 48.2, 95th(ms): 48.2, 99th(ms): 50.3, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 199, TPM: 1197.7, Sum(ms): 6645.3, Avg(ms): 33.4, 50th(ms): 33.6, 90th(ms): 44.0, 95th(ms): 48.2, 99th(ms): 48.2, 99.9th(ms): 56.6, Max(ms): 56.6
+[Current] ORDER_STATUS - Takes(s): 9.7, Count: 13, TPM: 80.7, Sum(ms): 134.1, Avg(ms): 10.3, 50th(ms): 11.0, 90th(ms): 13.6, 95th(ms): 13.6, 99th(ms): 14.2, 99.9th(ms): 14.2, Max(ms): 14.2
+[Current] PAYMENT - Takes(s): 9.9, Count: 187, TPM: 1127.9, Sum(ms): 2261.8, Avg(ms): 12.1, 50th(ms): 12.1, 90th(ms): 14.2, 95th(ms): 15.7, 99th(ms): 17.8, 99.9th(ms): 22.0, Max(ms): 22.0
+[Current] STOCK_LEVEL - Takes(s): 9.5, Count: 12, TPM: 75.9, Sum(ms): 96.0, Avg(ms): 8.0, 50th(ms): 8.4, 90th(ms): 8.9, 95th(ms): 8.9, 99th(ms): 9.4, 99.9th(ms): 9.4, Max(ms): 9.4
+[Current] DELIVERY - Takes(s): 9.5, Count: 21, TPM: 132.2, Sum(ms): 857.4, Avg(ms): 40.8, 50th(ms): 41.9, 90th(ms): 44.0, 95th(ms): 46.1, 99th(ms): 46.1, 99.9th(ms): 46.1, Max(ms): 46.1
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 209, TPM: 1257.4, Sum(ms): 6812.6, Avg(ms): 32.6, 50th(ms): 32.5, 90th(ms): 41.9, 95th(ms): 44.0, 99th(ms): 50.3, 99.9th(ms): 52.4, Max(ms): 52.4
+[Current] ORDER_STATUS - Takes(s): 9.8, Count: 20, TPM: 123.0, Sum(ms): 210.0, Avg(ms): 10.5, 50th(ms): 10.5, 90th(ms): 13.1, 95th(ms): 14.7, 99th(ms): 15.7, 99.9th(ms): 15.7, Max(ms): 15.7
+[Current] PAYMENT - Takes(s): 9.9, Count: 168, TPM: 1018.0, Sum(ms): 1919.2, Avg(ms): 11.4, 50th(ms): 11.5, 90th(ms): 13.6, 95th(ms): 14.7, 99th(ms): 16.8, 99.9th(ms): 18.9, Max(ms): 18.9
+[Current] STOCK_LEVEL - Takes(s): 9.8, Count: 16, TPM: 97.8, Sum(ms): 130.2, Avg(ms): 8.2, 50th(ms): 7.9, 90th(ms): 9.4, 95th(ms): 10.0, 99th(ms): 11.0, 99.9th(ms): 11.0, Max(ms): 11.0
+[Current] DELIVERY - Takes(s): 9.9, Count: 23, TPM: 139.3, Sum(ms): 946.2, Avg(ms): 41.0, 50th(ms): 41.9, 90th(ms): 46.1, 95th(ms): 50.3, 99th(ms): 50.3, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 191, TPM: 1148.1, Sum(ms): 6240.7, Avg(ms): 32.7, 50th(ms): 33.6, 90th(ms): 44.0, 95th(ms): 46.1, 99th(ms): 48.2, 99.9th(ms): 60.8, Max(ms): 60.8
+[Current] ORDER_STATUS - Takes(s): 9.8, Count: 15, TPM: 91.4, Sum(ms): 162.6, Avg(ms): 10.8, 50th(ms): 11.0, 90th(ms): 13.6, 95th(ms): 13.6, 99th(ms): 14.7, 99.9th(ms): 14.7, Max(ms): 14.7
+[Current] PAYMENT - Takes(s): 9.9, Count: 207, TPM: 1248.8, Sum(ms): 2415.9, Avg(ms): 11.7, 50th(ms): 12.1, 90th(ms): 14.2, 95th(ms): 15.2, 99th(ms): 16.8, 99.9th(ms): 17.8, Max(ms): 17.8
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 22, TPM: 133.4, Sum(ms): 176.0, Avg(ms): 8.0, 50th(ms): 8.4, 90th(ms): 8.9, 95th(ms): 8.9, 99th(ms): 9.4, 99.9th(ms): 9.4, Max(ms): 9.4
+[Current] DELIVERY - Takes(s): 9.8, Count: 21, TPM: 129.1, Sum(ms): 848.6, Avg(ms): 40.3, 50th(ms): 41.9, 90th(ms): 44.0, 95th(ms): 44.0, 99th(ms): 48.2, 99.9th(ms): 48.2, Max(ms): 48.2
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 198, TPM: 1191.0, Sum(ms): 6468.3, Avg(ms): 32.7, 50th(ms): 32.5, 90th(ms): 44.0, 95th(ms): 46.1, 99th(ms): 48.2, 99.9th(ms): 52.4, Max(ms): 52.4
+[Current] ORDER_STATUS - Takes(s): 9.4, Count: 15, TPM: 95.3, Sum(ms): 144.0, Avg(ms): 9.6, 50th(ms): 8.9, 90th(ms): 12.6, 95th(ms): 12.6, 99th(ms): 15.7, 99.9th(ms): 15.7, Max(ms): 15.7
+[Current] PAYMENT - Takes(s): 10.0, Count: 207, TPM: 1246.2, Sum(ms): 2338.7, Avg(ms): 11.3, 50th(ms): 11.5, 90th(ms): 14.2, 95th(ms): 15.2, 99th(ms): 16.8, 99.9th(ms): 17.8, Max(ms): 17.8
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 15, TPM: 90.7, Sum(ms): 116.0, Avg(ms): 7.8, 50th(ms): 7.9, 90th(ms): 8.9, 95th(ms): 8.9, 99th(ms): 9.4, 99.9th(ms): 9.4, Max(ms): 9.4
+[Current] DELIVERY - Takes(s): 9.3, Count: 22, TPM: 141.9, Sum(ms): 932.8, Avg(ms): 42.3, 50th(ms): 41.9, 90th(ms): 48.2, 95th(ms): 48.2, 99th(ms): 50.3, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 191, TPM: 1147.7, Sum(ms): 6605.9, Avg(ms): 34.6, 50th(ms): 35.7, 90th(ms): 44.0, 95th(ms): 46.1, 99th(ms): 50.3, 99.9th(ms): 52.4, Max(ms): 52.4
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 16, TPM: 97.1, Sum(ms): 161.0, Avg(ms): 10.1, 50th(ms): 10.5, 90th(ms): 12.6, 95th(ms): 12.6, 99th(ms): 13.1, 99.9th(ms): 13.1, Max(ms): 13.1
+[Current] PAYMENT - Takes(s): 10.0, Count: 180, TPM: 1083.0, Sum(ms): 2067.1, Avg(ms): 11.5, 50th(ms): 11.5, 90th(ms): 13.6, 95th(ms): 14.7, 99th(ms): 15.7, 99.9th(ms): 16.3, Max(ms): 16.3
+[Current] STOCK_LEVEL - Takes(s): 9.8, Count: 23, TPM: 140.3, Sum(ms): 187.0, Avg(ms): 8.2, 50th(ms): 8.4, 90th(ms): 9.4, 95th(ms): 9.4, 99th(ms): 10.0, 99.9th(ms): 10.0, Max(ms): 10.0
+[Current] DELIVERY - Takes(s): 9.7, Count: 11, TPM: 67.8, Sum(ms): 463.8, Avg(ms): 42.6, 50th(ms): 44.0, 90th(ms): 48.2, 95th(ms): 48.2, 99th(ms): 48.2, 99.9th(ms): 48.2, Max(ms): 48.2
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 203, TPM: 1219.8, Sum(ms): 6898.3, Avg(ms): 34.0, 50th(ms): 35.7, 90th(ms): 46.1, 95th(ms): 48.2, 99th(ms): 52.4, 99.9th(ms): 65.0, Max(ms): 65.0
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 12, TPM: 72.6, Sum(ms): 112.1, Avg(ms): 9.3, 50th(ms): 8.9, 90th(ms): 11.5, 95th(ms): 11.5, 99th(ms): 12.1, 99.9th(ms): 12.1, Max(ms): 12.1
+[Current] PAYMENT - Takes(s): 10.0, Count: 192, TPM: 1152.7, Sum(ms): 2333.0, Avg(ms): 12.2, 50th(ms): 12.1, 90th(ms): 15.2, 95th(ms): 15.7, 99th(ms): 17.8, 99.9th(ms): 22.0, Max(ms): 22.0
+[Current] STOCK_LEVEL - Takes(s): 9.6, Count: 14, TPM: 87.4, Sum(ms): 124.6, Avg(ms): 9.0, 50th(ms): 8.9, 90th(ms): 11.0, 95th(ms): 11.0, 99th(ms): 13.6, 99.9th(ms): 13.6, Max(ms): 13.6
+[Current] DELIVERY - Takes(s): 9.4, Count: 23, TPM: 146.8, Sum(ms): 967.0, Avg(ms): 42.2, 50th(ms): 41.9, 90th(ms): 48.2, 95th(ms): 50.3, 99th(ms): 54.5, 99.9th(ms): 54.5, Max(ms): 54.5
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 194, TPM: 1168.2, Sum(ms): 6655.1, Avg(ms): 34.3, 50th(ms): 35.7, 90th(ms): 44.0, 95th(ms): 46.1, 99th(ms): 48.2, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] ORDER_STATUS - Takes(s): 9.7, Count: 22, TPM: 136.1, Sum(ms): 226.9, Avg(ms): 10.2, 50th(ms): 10.5, 90th(ms): 13.6, 95th(ms): 13.6, 99th(ms): 14.2, 99.9th(ms): 14.2, Max(ms): 14.2
+[Current] PAYMENT - Takes(s): 9.9, Count: 165, TPM: 1002.5, Sum(ms): 1929.2, Avg(ms): 11.7, 50th(ms): 12.1, 90th(ms): 14.2, 95th(ms): 15.2, 99th(ms): 16.3, 99.9th(ms): 22.0, Max(ms): 22.0
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 15, TPM: 91.2, Sum(ms): 121.6, Avg(ms): 8.1, 50th(ms): 8.4, 90th(ms): 8.9, 95th(ms): 8.9, 99th(ms): 10.0, 99.9th(ms): 10.0, Max(ms): 10.0
+[Current] DELIVERY - Takes(s): 9.1, Count: 16, TPM: 105.2, Sum(ms): 674.8, Avg(ms): 42.2, 50th(ms): 41.9, 90th(ms): 46.1, 95th(ms): 46.1, 99th(ms): 50.3, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 199, TPM: 1194.3, Sum(ms): 6533.1, Avg(ms): 32.9, 50th(ms): 32.5, 90th(ms): 44.0, 95th(ms): 46.1, 99th(ms): 48.2, 99.9th(ms): 48.2, Max(ms): 48.2
+[Current] ORDER_STATUS - Takes(s): 7.8, Count: 20, TPM: 153.6, Sum(ms): 202.1, Avg(ms): 10.1, 50th(ms): 10.5, 90th(ms): 11.5, 95th(ms): 14.2, 99th(ms): 18.9, 99.9th(ms): 18.9, Max(ms): 18.9
+[Current] PAYMENT - Takes(s): 10.0, Count: 210, TPM: 1261.9, Sum(ms): 2400.9, Avg(ms): 11.4, 50th(ms): 11.5, 90th(ms): 13.6, 95th(ms): 14.7, 99th(ms): 15.7, 99.9th(ms): 17.8, Max(ms): 17.8
+[Current] STOCK_LEVEL - Takes(s): 9.4, Count: 16, TPM: 101.8, Sum(ms): 132.8, Avg(ms): 8.3, 50th(ms): 8.4, 90th(ms): 9.4, 95th(ms): 10.0, 99th(ms): 13.1, 99.9th(ms): 13.1, Max(ms): 13.1
+[Current] DELIVERY - Takes(s): 9.4, Count: 20, TPM: 128.0, Sum(ms): 826.5, Avg(ms): 41.3, 50th(ms): 41.9, 90th(ms): 46.1, 95th(ms): 46.1, 99th(ms): 50.3, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 190, TPM: 1141.2, Sum(ms): 6431.4, Avg(ms): 33.9, 50th(ms): 35.7, 90th(ms): 44.0, 95th(ms): 46.1, 99th(ms): 50.3, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] ORDER_STATUS - Takes(s): 9.3, Count: 12, TPM: 77.6, Sum(ms): 117.5, Avg(ms): 9.9, 50th(ms): 9.4, 90th(ms): 12.1, 95th(ms): 12.1, 99th(ms): 13.1, 99.9th(ms): 13.1, Max(ms): 13.1
+[Current] PAYMENT - Takes(s): 9.9, Count: 212, TPM: 1280.2, Sum(ms): 2450.3, Avg(ms): 11.6, 50th(ms): 11.5, 90th(ms): 13.6, 95th(ms): 14.7, 99th(ms): 17.8, 99.9th(ms): 21.0, Max(ms): 21.0
+[Current] STOCK_LEVEL - Takes(s): 9.2, Count: 14, TPM: 91.2, Sum(ms): 114.8, Avg(ms): 8.2, 50th(ms): 8.4, 90th(ms): 9.4, 95th(ms): 9.4, 99th(ms): 10.0, 99.9th(ms): 10.0, Max(ms): 10.0
+[Current] DELIVERY - Takes(s): 9.0, Count: 23, TPM: 153.4, Sum(ms): 937.3, Avg(ms): 40.3, 50th(ms): 41.9, 90th(ms): 44.0, 95th(ms): 44.0, 99th(ms): 46.1, 99.9th(ms): 46.1, Max(ms): 46.1
+[Current] NEW_ORDER - Takes(s): 9.9, Count: 189, TPM: 1142.0, Sum(ms): 6253.6, Avg(ms): 33.1, 50th(ms): 33.6, 90th(ms): 44.0, 95th(ms): 46.1, 99th(ms): 48.2, 99.9th(ms): 48.2, Max(ms): 48.2
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 20, TPM: 120.9, Sum(ms): 184.5, Avg(ms): 9.3, 50th(ms): 10.0, 90th(ms): 12.1, 95th(ms): 12.1, 99th(ms): 12.6, 99.9th(ms): 12.6, Max(ms): 12.6
+[Current] PAYMENT - Takes(s): 10.0, Count: 216, TPM: 1296.0, Sum(ms): 2468.8, Avg(ms): 11.4, 50th(ms): 11.5, 90th(ms): 13.6, 95th(ms): 14.2, 99th(ms): 16.3, 99.9th(ms): 18.9, Max(ms): 18.9
+[Current] STOCK_LEVEL - Takes(s): 9.7, Count: 10, TPM: 62.1, Sum(ms): 81.8, Avg(ms): 8.2, 50th(ms): 8.4, 90th(ms): 9.4, 95th(ms): 10.0, 99th(ms): 10.0, 99.9th(ms): 10.0, Max(ms): 10.0
+[Current] DELIVERY - Takes(s): 10.0, Count: 16, TPM: 96.2, Sum(ms): 643.0, Avg(ms): 40.2, 50th(ms): 39.8, 90th(ms): 44.0, 95th(ms): 44.0, 99th(ms): 46.1, 99.9th(ms): 46.1, Max(ms): 46.1
+[Current] NEW_ORDER - Takes(s): 9.9, Count: 200, TPM: 1211.0, Sum(ms): 6482.8, Avg(ms): 32.4, 50th(ms): 33.6, 90th(ms): 44.0, 95th(ms): 44.0, 99th(ms): 48.2, 99.9th(ms): 54.5, Max(ms): 54.5
+[Current] ORDER_STATUS - Takes(s): 9.3, Count: 22, TPM: 142.2, Sum(ms): 195.4, Avg(ms): 8.9, 50th(ms): 8.9, 90th(ms): 11.5, 95th(ms): 12.1, 99th(ms): 12.1, 99.9th(ms): 12.1, Max(ms): 12.1
+[Current] PAYMENT - Takes(s): 10.0, Count: 217, TPM: 1306.5, Sum(ms): 2450.9, Avg(ms): 11.3, 50th(ms): 11.0, 90th(ms): 13.6, 95th(ms): 15.7, 99th(ms): 16.8, 99.9th(ms): 19.9, Max(ms): 19.9
+[Current] STOCK_LEVEL - Takes(s): 9.7, Count: 19, TPM: 117.4, Sum(ms): 150.4, Avg(ms): 7.9, 50th(ms): 8.4, 90th(ms): 8.9, 95th(ms): 8.9, 99th(ms): 10.0, 99.9th(ms): 10.0, Max(ms): 10.0
+[Current] DELIVERY - Takes(s): 10.0, Count: 17, TPM: 102.2, Sum(ms): 712.5, Avg(ms): 41.9, 50th(ms): 41.9, 90th(ms): 46.1, 95th(ms): 48.2, 99th(ms): 50.3, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 198, TPM: 1193.4, Sum(ms): 6737.2, Avg(ms): 34.0, 50th(ms): 35.7, 90th(ms): 44.0, 95th(ms): 46.1, 99th(ms): 50.3, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] ORDER_STATUS - Takes(s): 8.2, Count: 15, TPM: 110.4, Sum(ms): 156.1, Avg(ms): 10.4, 50th(ms): 10.5, 90th(ms): 13.1, 95th(ms): 13.1, 99th(ms): 15.2, 99.9th(ms): 15.2, Max(ms): 15.2
+[Current] PAYMENT - Takes(s): 9.9, Count: 191, TPM: 1157.6, Sum(ms): 2224.9, Avg(ms): 11.6, 50th(ms): 12.1, 90th(ms): 14.2, 95th(ms): 14.7, 99th(ms): 15.7, 99.9th(ms): 17.8, Max(ms): 17.8
+[Current] STOCK_LEVEL - Takes(s): 9.6, Count: 14, TPM: 87.4, Sum(ms): 115.9, Avg(ms): 8.2, 50th(ms): 8.4, 90th(ms): 9.4, 95th(ms): 9.4, 99th(ms): 9.4, 99.9th(ms): 9.4, Max(ms): 9.4
+[Current] DELIVERY - Takes(s): 9.4, Count: 17, TPM: 108.2, Sum(ms): 736.9, Avg(ms): 43.1, 50th(ms): 44.0, 90th(ms): 46.1, 95th(ms): 46.1, 99th(ms): 50.3, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] NEW_ORDER - Takes(s): 9.9, Count: 184, TPM: 1109.6, Sum(ms): 6276.4, Avg(ms): 34.2, 50th(ms): 35.7, 90th(ms): 46.1, 95th(ms): 48.2, 99th(ms): 50.3, 99.9th(ms): 52.4, Max(ms): 52.4
+[Current] ORDER_STATUS - Takes(s): 9.0, Count: 11, TPM: 73.1, Sum(ms): 102.1, Avg(ms): 9.3, 50th(ms): 9.4, 90th(ms): 12.6, 95th(ms): 12.6, 99th(ms): 13.1, 99.9th(ms): 13.1, Max(ms): 13.1
+[Current] PAYMENT - Takes(s): 10.0, Count: 223, TPM: 1338.7, Sum(ms): 2701.3, Avg(ms): 12.1, 50th(ms): 12.1, 90th(ms): 14.7, 95th(ms): 15.2, 99th(ms): 18.9, 99.9th(ms): 18.9, Max(ms): 18.9
+[Current] STOCK_LEVEL - Takes(s): 9.8, Count: 13, TPM: 79.3, Sum(ms): 109.6, Avg(ms): 8.5, 50th(ms): 8.4, 90th(ms): 9.4, 95th(ms): 9.4, 99th(ms): 11.0, 99.9th(ms): 11.0, Max(ms): 11.0
+[Current] DELIVERY - Takes(s): 9.6, Count: 21, TPM: 130.9, Sum(ms): 884.7, Avg(ms): 42.1, 50th(ms): 41.9, 90th(ms): 50.3, 95th(ms): 50.3, 99th(ms): 50.3, 99.9th(ms): 50.3, Max(ms): 50.3
+[Current] NEW_ORDER - Takes(s): 9.9, Count: 199, TPM: 1200.4, Sum(ms): 6487.4, Avg(ms): 32.6, 50th(ms): 33.6, 90th(ms): 41.9, 95th(ms): 44.0, 99th(ms): 48.2, 99.9th(ms): 52.4, Max(ms): 52.4
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 25, TPM: 150.0, Sum(ms): 246.5, Avg(ms): 9.8, 50th(ms): 10.5, 90th(ms): 12.1, 95th(ms): 12.1, 99th(ms): 13.6, 99.9th(ms): 13.6, Max(ms): 13.6
+[Current] PAYMENT - Takes(s): 10.0, Count: 187, TPM: 1123.3, Sum(ms): 2124.0, Avg(ms): 11.4, 50th(ms): 11.5, 90th(ms): 13.6, 95th(ms): 14.7, 99th(ms): 16.3, 99.9th(ms): 17.8, Max(ms): 17.8
+[Current] STOCK_LEVEL - Takes(s): 9.5, Count: 22, TPM: 138.3, Sum(ms): 180.9, Avg(ms): 8.3, 50th(ms): 8.4, 90th(ms): 9.4, 95th(ms): 10.0, 99th(ms): 11.0, 99.9th(ms): 11.0, Max(ms): 11.0
+[Current] DELIVERY - Takes(s): 9.8, Count: 20, TPM: 122.4, Sum(ms): 824.7, Avg(ms): 41.3, 50th(ms): 41.9, 90th(ms): 46.1, 95th(ms): 46.1, 99th(ms): 46.1, 99.9th(ms): 46.1, Max(ms): 46.1
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 196, TPM: 1177.9, Sum(ms): 6481.7, Avg(ms): 33.1, 50th(ms): 32.5, 90th(ms): 44.0, 95th(ms): 46.1, 99th(ms): 48.2, 99.9th(ms): 54.5, Max(ms): 54.5
+[Current] ORDER_STATUS - Takes(s): 9.3, Count: 13, TPM: 84.1, Sum(ms): 121.5, Avg(ms): 9.3, 50th(ms): 10.0, 90th(ms): 11.0, 95th(ms): 11.0, 99th(ms): 11.5, 99.9th(ms): 11.5, Max(ms): 11.5
+[Current] PAYMENT - Takes(s): 10.0, Count: 209, TPM: 1257.5, Sum(ms): 2327.1, Avg(ms): 11.1, 50th(ms): 11.5, 90th(ms): 13.6, 95th(ms): 14.2, 99th(ms): 15.2, 99.9th(ms): 16.8, Max(ms): 16.8
+[Current] STOCK_LEVEL - Takes(s): 9.7, Count: 20, TPM: 123.7, Sum(ms): 160.1, Avg(ms): 8.0, 50th(ms): 7.9, 90th(ms): 8.9, 95th(ms): 10.0, 99th(ms): 10.0, 99.9th(ms): 10.0, Max(ms): 10.0
+Finished
+[Summary] DELIVERY - Takes(s): 298.3, Count: 516, TPM: 103.8, Sum(ms): 22456.7, Avg(ms): 43.5, 50th(ms): 44.0, 90th(ms): 50.3, 95th(ms): 52.4, 99th(ms): 65.0, 99.9th(ms): 67.1, Max(ms): 83.9
+[Summary] NEW_ORDER - Takes(s): 299.4, Count: 5688, TPM: 1140.0, Sum(ms): 201758.4, Avg(ms): 35.5, 50th(ms): 35.7, 90th(ms): 46.1, 95th(ms): 50.3, 99th(ms): 56.6, 99.9th(ms): 352.3, Max(ms): 738.2
+[Summary] NEW_ORDER_ERR - Takes(s): 299.4, Count: 8, TPM: 1.6, Sum(ms): 5007.5, Avg(ms): 623.9, 50th(ms): 570.4, 90th(ms): 771.8, 95th(ms): 872.4, 99th(ms): 872.4, 99.9th(ms): 872.4, Max(ms): 872.4
+[Summary] ORDER_STATUS - Takes(s): 299.6, Count: 465, TPM: 93.1, Sum(ms): 4779.5, Avg(ms): 10.3, 50th(ms): 10.5, 90th(ms): 13.1, 95th(ms): 14.2, 99th(ms): 16.8, 99.9th(ms): 83.9, Max(ms): 83.9
+[Summary] PAYMENT - Takes(s): 299.6, Count: 5555, TPM: 1112.6, Sum(ms): 67706.4, Avg(ms): 12.2, 50th(ms): 12.1, 90th(ms): 15.2, 95th(ms): 16.3, 99th(ms): 19.9, 99.9th(ms): 29.4, Max(ms): 637.5
+[Summary] PAYMENT_ERR - Takes(s): 299.6, Count: 7, TPM: 1.4, Sum(ms): 4258.7, Avg(ms): 613.3, 50th(ms): 771.8, 90th(ms): 872.4, 95th(ms): 906.0, 99th(ms): 906.0, 99.9th(ms): 906.0, Max(ms): 906.0
+[Summary] STOCK_LEVEL - Takes(s): 298.5, Count: 468, TPM: 94.1, Sum(ms): 4039.5, Avg(ms): 8.6, 50th(ms): 8.4, 90th(ms): 10.5, 95th(ms): 11.0, 99th(ms): 13.1, 99.9th(ms): 16.8, Max(ms): 16.8
+tpmC: 1140.0, tpmTotal: 2543.6, efficiency: 69.3%
