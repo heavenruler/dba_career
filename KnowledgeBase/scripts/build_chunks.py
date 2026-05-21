@@ -285,6 +285,18 @@ def write_jsonl(path: Path, rows: list[dict]) -> None:
             file.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def load_jsonl(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def merge_for_doc(existing: list[dict], new: list[dict], doc_id: str) -> list[dict]:
+    """Drop existing rows belonging to doc_id, then append the new rows."""
+    kept = [row for row in existing if row.get("doc_id") != doc_id]
+    return kept + new
+
+
 def title_from_text(text: str, fallback: str) -> str:
     for line in text.splitlines():
         stripped = line.strip().lstrip("#").strip()
@@ -379,11 +391,13 @@ def main() -> int:
     documents = []
     chunks = []
     missing = []
+    target_seen = False
 
     for doc in manifest_docs:
         doc_id = doc["doc_id"]
         if args.doc_id and doc_id != args.doc_id:
             continue
+        target_seen = True
         source_content = filtered_source_json(doc_id) or extracted_source_md(doc_id)
         source_pdf = COLLECTOR_DIR / f"{doc_id}.pdf"
 
@@ -401,6 +415,13 @@ def main() -> int:
         document_record, chunk_records = build_records_for_document(doc, source_content, source_pdf)
         documents.append(document_record)
         chunks.extend(chunk_records)
+
+    if args.doc_id:
+        if not target_seen:
+            raise SystemExit(f"doc_id not found in manifest: {args.doc_id}")
+        documents = merge_for_doc(load_jsonl(DOCUMENTS_PATH), documents, args.doc_id)
+        chunks = merge_for_doc(load_jsonl(CHUNKS_PATH), chunks, args.doc_id)
+        missing = merge_for_doc(load_jsonl(MISSING_PATH), missing, args.doc_id)
 
     write_jsonl(DOCUMENTS_PATH, documents)
     write_jsonl(CHUNKS_PATH, chunks)
