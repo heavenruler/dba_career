@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import urllib.error
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -95,14 +96,26 @@ def filtered_output_path(doc_id: str) -> Path:
 def build_prompt(doc: dict, text: str) -> str:
     clipped = text[:MAX_INPUT_CHARS]
     return f"""
-你是 DBA 知識庫建置助手。請從 PDF 抽出的全文中過濾出真正有知識價值的內容。
+你是個人知識庫建置助手。請從 PDF 抽出的全文中過濾出真正有知識價值的內容。
 
-任務：
-1. 保留可用於 DBA/資料庫工程知識庫的技術內容。
-2. 移除廣告、側欄、作者卡片、導覽、推薦閱讀、評論、版權聲明、頁碼、重複頁眉頁腳。
-3. 不要捏造原文沒有的內容。
-4. 可整理語句，但要保留技術含義、參數、SQL、命令、風險條件。
-5. section content 要可直接拆塊進 RAG；避免空泛摘要。
+涵蓋範疇（不局限於以下，遇到任一即視為有價值）：
+- 技術類：DBA / 資料庫、架構設計、分析設計師、SRE / DevOps / SecOps、平台工程、雲端、可觀測性、效能調優、軟體工程實務
+- 人文類：心理學、認知科學、行為經濟、溝通、領導力、決策框架
+- 職涯類：職場、面試（system design / behavior / coding）、簡歷、薪資談判、職涯規劃
+- 其他：研究方法、學習方法、行業案例、事故覆盤、書摘要點
+
+任務（嚴格遵守 extractive-only 規則）：
+1. 任一上述範疇有訊息密度的內容都保留；不要因為「不是 DBA」就丟掉。
+2. **section.content 必須是原文逐字片段（extractive）**：
+   - 不要改寫、意譯、潤飾、補充說明、加範例、加類比、加結論
+   - 不要拼接不相鄰段落；保留原段落結構與順序
+   - SQL / 命令 / 參數 / 程式碼 / 數字 / 公式 一字不動照抄（含原本縮排、註解、空白行、行號）
+   - 若該段在原文中出現多次（如重複頁眉），只保留一次
+3. 移除雜訊：廣告、側欄、作者卡片、導覽、推薦閱讀、評論、版權聲明、頁碼、頁眉頁腳、URL、時間戳、訂閱/打賞引導、無關促銷
+4. heading 可由你命名（給每段一個短標題）；summary、tags、discarded_noise 可由你撰寫；除此之外 **content 欄位一律 extractive**
+5. 不要捏造原文沒有的內容；找不到對應章節寧可不列、不要硬擠
+6. discarded_noise 列出你丟掉的雜訊類型即可（不必逐字引用）
+7. tags 反映文件的真實主題（可同時混合上述範疇，例如 ['SRE','事故覆盤','溝通']）
 
 文件資訊：
 doc_id: {doc["doc_id"]}
@@ -158,10 +171,19 @@ def call_openai(prompt: str, model: str) -> dict:
         text = result["output"][0]["content"][0]["text"]
     except (KeyError, IndexError, TypeError) as exc:
         raise RuntimeError(f"Unexpected OpenAI response shape: {json.dumps(result, ensure_ascii=False)[:1000]}") from exc
-    return json.loads(text)
+    knowledge = json.loads(text)
+    return knowledge, {"tokens": result.get("usage") or {}, "rate_limits": None}
 
 
-def call_codex(prompt: str, model: str | None) -> dict:
+def format_openai_usage(usage: dict) -> str:
+    tokens = usage.get("tokens") or {}
+    inp = tokens.get("input_tokens", 0)
+    out = tokens.get("output_tokens", 0)
+    total = tokens.get("total_tokens", inp + out)
+    return f"tokens  in={inp} out={out} total={total} (OpenAI API；無 5h window 概念，依帳單計費)"
+
+
+def call_codex(prompt: str, model: str | None) -> tuple[dict, dict]:
     with tempfile.TemporaryDirectory() as tmp_dir:
         schema_path = Path(tmp_dir) / "schema.json"
         output_path = Path(tmp_dir) / "codex-output.json"
@@ -178,6 +200,7 @@ def call_codex(prompt: str, model: str | None) -> dict:
             str(schema_path),
             "--output-last-message",
             str(output_path),
+            "--json",
             "-",
         ]
         if model:
@@ -194,11 +217,78 @@ def call_codex(prompt: str, model: str | None) -> dict:
             raise RuntimeError(f"codex exec failed ({proc.returncode}): {proc.stderr or proc.stdout}")
         if not output_path.exists():
             raise RuntimeError("codex exec did not write an output message")
-        output_text = output_path.read_text(encoding="utf-8").strip()
-        return json.loads(output_text)
+
+        tokens: dict = {}
+        thread_id: str | None = None
+        for line in proc.stdout.splitlines():
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            etype = event.get("type")
+            if etype == "thread.started":
+                thread_id = event.get("thread_id")
+            elif etype == "turn.completed":
+                tokens = event.get("usage") or {}
+
+        rate_limits = read_codex_rate_limits(thread_id) if thread_id else None
+        knowledge = json.loads(output_path.read_text(encoding="utf-8").strip())
+        return knowledge, {"tokens": tokens, "rate_limits": rate_limits}
 
 
-def filter_doc(doc: dict, provider: str, model: str | None) -> Path:
+def read_codex_rate_limits(thread_id: str) -> dict | None:
+    sessions_dir = Path.home() / ".codex" / "sessions"
+    if not sessions_dir.exists():
+        return None
+    for path in sessions_dir.rglob(f"rollout-*-{thread_id}.jsonl"):
+        try:
+            last = None
+            for line in path.read_text(encoding="utf-8").splitlines():
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if event.get("type") != "event_msg":
+                    continue
+                payload = event.get("payload", {})
+                if payload.get("type") == "token_count":
+                    last = payload.get("rate_limits")
+            return last
+        except OSError:
+            return None
+    return None
+
+
+def format_codex_usage(usage: dict) -> str:
+    tokens = usage.get("tokens") or {}
+    inp = tokens.get("input_tokens", 0)
+    cached = tokens.get("cached_input_tokens", 0)
+    out = tokens.get("output_tokens", 0)
+    reasoning = tokens.get("reasoning_output_tokens", 0)
+    parts = [
+        f"tokens  in={inp} (cached={cached}) out={out} reasoning={reasoning} total={inp + out}",
+    ]
+
+    limits = usage.get("rate_limits") or {}
+    primary = limits.get("primary")
+    secondary = limits.get("secondary")
+    plan = limits.get("plan_type")
+    if primary:
+        used = primary.get("used_percent", 0)
+        reset = primary.get("resets_at")
+        reset_str = datetime.fromtimestamp(reset).strftime("%Y-%m-%d %H:%M") if reset else "?"
+        parts.append(f"5h window used={used:.1f}% remaining={100 - used:.1f}% resets@{reset_str}")
+    if secondary:
+        used = secondary.get("used_percent", 0)
+        reset = secondary.get("resets_at")
+        reset_str = datetime.fromtimestamp(reset).strftime("%Y-%m-%d %H:%M") if reset else "?"
+        parts.append(f"7d window used={used:.1f}% remaining={100 - used:.1f}% resets@{reset_str}")
+    if plan:
+        parts.append(f"plan={plan}")
+    return " | ".join(parts)
+
+
+def filter_doc(doc: dict, provider: str, model: str | None) -> tuple[Path, dict, str]:
     source_path = extracted_text_path(doc["doc_id"])
     if not source_path.exists():
         raise FileNotFoundError(f"Missing extracted text: {source_path.relative_to(ROOT)}. Run make extract_pdf DOC_ID={doc['doc_id']} first.")
@@ -206,11 +296,13 @@ def filter_doc(doc: dict, provider: str, model: str | None) -> Path:
     text = source_path.read_text(encoding="utf-8", errors="replace")
     prompt = build_prompt(doc, text)
     if provider == "codex":
-        knowledge = call_codex(prompt, model)
+        knowledge, usage = call_codex(prompt, model)
         filter_model = model or "codex-default"
+        usage_line = format_codex_usage(usage)
     elif provider == "openai":
-        knowledge = call_openai(prompt, model or DEFAULT_MODEL)
+        knowledge, usage = call_openai(prompt, model or DEFAULT_MODEL)
         filter_model = model or DEFAULT_MODEL
+        usage_line = format_openai_usage(usage)
     else:
         raise ValueError(f"Unsupported provider: {provider}")
 
@@ -221,12 +313,13 @@ def filter_doc(doc: dict, provider: str, model: str | None) -> Path:
         "source_md": str(source_path.relative_to(ROOT)),
         "filter_provider": provider,
         "filter_model": filter_model,
+        "filter_usage": usage,
     })
 
     output_path = filtered_output_path(doc["doc_id"])
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(knowledge, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return output_path
+    return output_path, usage, usage_line
 
 
 def parse_args() -> argparse.Namespace:
@@ -242,8 +335,14 @@ def main() -> int:
     docs = parse_manifest()
     if args.doc_id not in docs:
         raise SystemExit(f"doc_id not found in manifest: {args.doc_id}")
-    output_path = filter_doc(docs[args.doc_id], args.provider, args.model or (DEFAULT_CODEX_MODEL if args.provider == "codex" else DEFAULT_MODEL))
+    output_path, _usage, usage_line = filter_doc(
+        docs[args.doc_id],
+        args.provider,
+        args.model or (DEFAULT_CODEX_MODEL if args.provider == "codex" else DEFAULT_MODEL),
+    )
     print(f"filtered -> {output_path.relative_to(ROOT)}")
+    if usage_line:
+        print(f"usage     {usage_line}")
     return 0
 
 
