@@ -1,6 +1,9 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc audit_sources build_chunks clean_generated
+.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated
+
+# 預設 filter_test 對象（可覆寫：make filter_test DOC_ID=<md5>）
+FILTER_TEST_DOC_ID ?= 44862aef1f3e9f432840f303bb9da948
 
 help:
 	@printf '%s\n' \
@@ -36,6 +39,11 @@ help:
 		'' \
 		'  make filter_doc DOC_ID=<md5> PROVIDER=openai MODEL=gpt-5.4-mini' \
 		'      uses OpenAI API and requires OPENAI_API_KEY' \
+		'' \
+		'  make filter_test' \
+		'      force-rerun LLM filter on $(FILTER_TEST_DOC_ID) (test sample, 預設 5KB doc):' \
+		'      → 刪除 generated/filtered/<DOC_ID>/ 舊結果 → 重跑 filter → rebuild chunks' \
+		'      Override: make filter_test DOC_ID=<md5>' \
 		'' \
 		'Notes:' \
 		'  - build_chunks prefers generated/filtered/<doc_id>/knowledge.json.' \
@@ -81,6 +89,16 @@ filter_doc:
 	fi
 	@python3 scripts/filter_doc.py --doc-id $(DOC_ID) $(if $(PROVIDER),--provider $(PROVIDER),) $(if $(MODEL),--model $(MODEL),)
 	@echo "已建立 generated/filtered/$(DOC_ID)/knowledge.json"
+
+# 強制重跑單一 doc 的 LLM filter：先刪舊 filtered 結果再產新，再 rebuild 該 doc 的 chunks
+# 預設 DOC_ID=$(FILTER_TEST_DOC_ID)；可覆寫：make filter_test DOC_ID=<md5> [PROVIDER=openai MODEL=gpt-5.4-mini]
+filter_test: DOC_ID ?= $(FILTER_TEST_DOC_ID)
+filter_test:
+	@echo "[filter_test] target DOC_ID=$(DOC_ID)"
+	@rm -rf generated/filtered/$(DOC_ID)
+	@python3 scripts/filter_doc.py --doc-id $(DOC_ID) $(if $(PROVIDER),--provider $(PROVIDER),) $(if $(MODEL),--model $(MODEL),)
+	@python3 scripts/build_chunks.py --doc-id $(DOC_ID)
+	@echo "[filter_test] 完成 generated/filtered/$(DOC_ID)/knowledge.json 並已 rebuild 該 doc 的 chunks"
 
 # 從 generated/filtered 或 generated/extracted 建立知識庫拆塊資料
 build_chunks:
