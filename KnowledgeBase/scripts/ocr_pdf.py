@@ -216,6 +216,8 @@ def main() -> int:
         print(f"  - {stem}: {reason}")
     if len(failed) > 10:
         print(f"  ... +{len(failed) - 10}")
+    if not targets:
+        return 0
     return 0 if ok else 1
 
 
