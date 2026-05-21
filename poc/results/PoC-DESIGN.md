@@ -239,6 +239,26 @@ vm-3node-haproxy-3s3r          ✓     -     -
 >
 > **嚴格限制聲明**：本 PoC 對「拉高隔離級的成本」量化只在 **vm-1node** 觀察。**不可外推到 Raft quorum 下**的 distributed transaction abort/retry 行為——quorum 下 SERIALIZABLE 的 conflict cost 可能與 single-node 不同數量級。
 
+#### 6.3.1 vm-3node 用 RC 的實測驗證（vm-1node 9 組數據佐證，2026-05-21）
+
+> 本段以 vm-1node 已完成的 9 組 (db × iso) 5-round mean 數據驗證 §6.3「vm-3node 全 RC」決策，避免日後 reviewer 重複質疑「為何不混 iso 跑 vm-3node」。
+
+| Iso | TiDB tpmC / err rate | CockroachDB tpmC / err rate | YugabyteDB tpmC / err rate | 是否適合 vm-3node cross-DB baseline |
+|-----|----------------------|------------------------------|------------------------------|-------------------------------------|
+| **rc** | 13,064 / **0%** | 9,134 / **0%** | 11,436 / **0%** | ✅ **三家全零 error、皆 CPU/IO-bound、口徑乾淨** |
+| rr | 13,874 / 0% | 3,788 / 0.300% | 1,879 / 0.149% | ❌ TiDB pessimistic 獨贏；CockroachDB / YugabyteDB 撞 SI retry storm（N−1 errors/round）|
+| strict | — (alias to rr) | 10,830 / 0.051% | 1,130 / 0.248% | ❌ TiDB 無原生 SSI；CockroachDB / YugabyteDB strict 相差 ~10x（CockroachDB rc IO-bound 故 SSI 反而最快、YugabyteDB rc 已 CPU-bound 故 SSI 拖底）|
+
+**判斷依據**：
+1. **RC 是唯一所有三家「機制正常運作 + 零 error」的 iso** — vm-3node 的 primary 觀察是 `scale-out ratio / Raft replication 成本 / cross-zone latency`，這些訊號不該被 isolation cost 污染。
+2. **RR 在 vm-3node 預期更糟**：YugabyteDB / CockroachDB 兩家 RR = optimistic SI，在 vm-3node 下 Raft quorum 跨 zone 確認延遲會放大 hot-row first-committer-wins 的 round trip → retry storm 從 vm-1node 的 N−1 errors/round 進一步惡化。
+3. **strict 在 vm-3node 預期撕裂更大**：CockroachDB SSI 走 read-refresh 路徑、YugabyteDB SSI 多一道 serializable detector，兩家在 Raft commit latency 拉長後成本差異會被放大、跨 DB 對標失真。
+4. **TiDB strict 即 RR**：跨 DB strict 對標時 TiDB 無 native SSI 可比，混 iso 即等於放棄 TiDB strict 軸。
+
+**結論：vm-3node 12 cell (4 子拓撲 × 3 DB) 全跑 RC**，總時數約 12 × 3.5h = 42h（~2 工作日）。
+
+**可選 stretch goal（非 spec 必要）**：在最複雜的 `vm-3node-3s3r` 子拓撲對 CockroachDB / YugabyteDB 補一組 strict、TiDB 補一組 rr，作 **vm-3node iso 排行是否承襲 vm-1node** 的 sanity check。+3 runs ≈ +10.5h，僅在前 12 cell 全完成後考慮。
+
 ### 6.4 本輪實作範圍與 wall-clock 估算
 
 #### 6.4.1 Phase 切分
