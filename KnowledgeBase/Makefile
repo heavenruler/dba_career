@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help commit md5_fix extract_pdf filter_doc audit_sources build_chunks clean_generated
+.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc audit_sources build_chunks clean_generated
 
 help:
 	@printf '%s\n' \
@@ -22,11 +22,13 @@ help:
 		'  make build_chunks DOC_ID=<md5>' \
 		'' \
 		'Batch / maintenance:' \
-		'  make md5_fix            repair missing/incorrect MD5 values in output_with_md5.txt' \
-		'  make extract_pdf        extract all manifest PDFs found under collector/' \
-		'  make audit_sources      compare manifest, collector PDFs, and extracted text' \
-		'  make build_chunks       build chunks for all extracted/filtered documents' \
-		'  make clean_generated    delete generated/ rebuildable outputs' \
+		'  make md5_fix             repair missing/incorrect MD5 values in output_with_md5.txt' \
+		'  make reconcile_manifest  append orphan PDF entries to output_with_md5.txt (from pdfinfo)' \
+		'  make extract_pdf         extract every collector PDF (strict mode: frontmatter+page markers+sha256)' \
+		'  make ocr_pdf             OCR every needs_ocr doc (image-only PDFs); requires tesseract-lang' \
+		'  make audit_sources       compare manifest, collector PDFs, and extracted text' \
+		'  make build_chunks        build chunks for all extracted/filtered documents (page-tracked)' \
+		'  make clean_generated     delete generated/ rebuildable outputs' \
 		'' \
 		'LLM filtering:' \
 		'  make filter_doc DOC_ID=<md5>' \
@@ -47,6 +49,20 @@ commit:
 md5_fix:
 	@python3 scripts/md5_fix.py
 	@echo "已修補 output_with_md5.txt 的 MD5 欄位"
+
+# 從 PDF metadata 反推 orphan PDFs 的 title/url 並補進 output_with_md5.txt
+reconcile_manifest:
+	@python3 scripts/reconcile_manifest.py
+	@echo "已 reconcile output_with_md5.txt"
+
+# 對 needs_ocr=true 的 PDF（avg_chars_per_page 過低 / 純圖像）跑 tesseract OCR
+ocr_pdf:
+	@if [ -z "$(DOC_ID)" ]; then \
+		python3 scripts/ocr_pdf.py --all; \
+	else \
+		python3 scripts/ocr_pdf.py --doc-id $(DOC_ID); \
+	fi
+	@echo "已 OCR 圖像 PDF（更新 full.md 與 metadata.json）"
 
 # 從 collector/*.pdf 解析正文到 generated/extracted
 extract_pdf:

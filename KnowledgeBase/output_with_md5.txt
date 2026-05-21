@@ -522,14 +522,6 @@ https://mp.weixin.qq.com/s/GnY3gMmmv78eEG5tt_wDEA
 https://mp.weixin.qq.com/s/TU82SfCWYBJoFQ6c7JiHBQ
 65345b7d3cd1b42a7c2fc5184097e77b
 ----
-淘宝质量保障之主动预警能力建设
-https://mp.weixin.qq.com/s/rDrj3DhO3dhc7x2ewj5y_w
-1cacda269b0dafc0d0c693ab78fcb2c7
-----
-"慢SQL"治理的几点思考
-https://mp.weixin.qq.com/s/-OcciTrwcTGKAWdjJQY4_g
-928473265cdc10481ccbce541bba4a5b
-----
 一键生成MySQL巡检报告
 https://www.modb.pro/db/1931959384364560384
 29ecf63fcd34313a9a5e06c2b97a01c4
@@ -625,10 +617,6 @@ bbe9baf20037a60a6bda0752abc273be
 深度解析MySQL的半连接转换
 https://www.modb.pro/db/1943504966363131904
 8b3b99d613c2bf75e4779522b9170476
-----
-MySQL 8.0 性能优化实战：性能提升的全方位调优方案
-https://www.modb.pro/db/1937788365559050240
-68739bb3073ab7d8c92fd54feacfcfe9
 ----
 使用 MySQL Clone 插件为MGR集群添加节点
 https://www.modb.pro/db/1948016960059486208
@@ -1221,10 +1209,6 @@ f08a253aedb8ac4520ff1c7255c419dd
 PostgreSQL运维篇--日常运维集合①h
 ttps://mp.weixin.qq.com/s/ir1ngKCLMOPGIt6EEUVS6A
 63b60d9696e9cc24fcdaeb89c42fb825
-----
-破解gh-ost变更导致MySQL表膨胀之谜｜得物技术
-https://mp.weixin.qq.com/s/gkRqwk_kvY1BVzML6cPfpQ
-e3177aa0c78f29ff04351a044e709e05
 ----
 Yulu's Data Breakthrough: 72% Storage Savings & Scalability with TiDB
 https://www.mydbops.com/case-studies/yulu-tidb-database-migration-performance
@@ -1901,4 +1885,1700 @@ https://mp.weixin.qq.com/s/IbXREmGAh9S3_HHWVNGXog
 不仅是“去 O”，更是构建企业数字化的新底座｜TiDB vs Oracle 第四篇
 https://mp.weixin.qq.com/s/YA964MRrUhLQQPALy9uuOQ
 fa843817c6394b172bad7d0f77bb51fd
+----
+DBA不仅仅是管理数据库--也要管理中间件 - 墨天轮
+https://www.modb.pro/db/1754509205180600320
+0019408e20acf5f3555bc2459da94fba
+----
+云原生可观测领域的半壁江山，这次被 Grafana 和 Cilium 给拿下了-CSDN博客
+https://blog.csdn.net/alex_yangchuansheng/article/details/128681290
+0044dc5ad4496e51b7de50f10b0273fa
+----
+探索Redis与MySQL的双写问题-阿里云开发者社区
+https://developer.aliyun.com/article/1347071
+014f6d8449fb1d87feb08583d79ba2b0
+----
+B 站轻量级容灾演练体系构建与业务实践
+https://mp.weixin.qq.com/s/nDD6ChSzzOdpOOWntTBasA
+02005b363a530bfca0b776f7a0ccd481
+----
+PG vs MySQL 统计信息收集的异同 - 墨天轮
+https://www.modb.pro/db/1881532545678979072
+02222d3b5e103580e0ba3e888fcb3677
+----
+技术 011 - 《My Philosophy on Alerting》- 监控报警的哲学 - 知乎
+https://zhuanlan.zhihu.com/p/266870885
+02581dc354de9f20ea6917d6e6764de8
+----
+转行DBA，给你分享数据库运维的N条建议（随时更新） - 墨天轮
+https://www.modb.pro/db/654692
+029ba53675722edcf473b3cbf8963ab8
+----
+【稳定性】浅谈团队如何做好系统稳定性 · 测试之家
+https://testerhome.com/column_channels/39520
+03157529f9534b578a94fb57dc20c6a7
+----
+整洁架构演进之路——京东广告投放平台实战
+https://mp.weixin.qq.com/s/ZjV8_22eneWmdkI3bBi9tQ
+0382a897347df4798d7e22baeca3dca9
+----
+二级缓存架构极致提升系统性能
+https://mp.weixin.qq.com/s/R_Qg0N46OkFm_eLAq_UZLw
+04b541b98be61d1cc8ac33859a4d8a26
+----
+TiDB 学习之路从部署开始 - 墨天轮
+https://www.modb.pro/db/1788935978215870464
+0756a3aeba95614e8f995f77620e9a24
+----
+grant之后为什么要flush privileges_flush grant;-CSDN博客
+https://blog.csdn.net/MariaOzawa/article/details/107003386
+07a24e9e6324a0563f5cb3deff2b1f58
+----
+如何精确监控DB响应延时-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/1868221
+07a3538f5432289854dc9757b45aede7
+----
+运维实践｜MySQL命令之perror - 墨天轮
+https://www.modb.pro/db/1762038265985699840
+07a717881b13a95b7c412894c5c890a6
+----
+MySQL查询为什么选择使用这个索引？——基于MySQL 8.0.22索引成本计算_mysql8回表io成本常数-CSDN博客
+https://blog.csdn.net/qq_34115899/article/details/120217907
+07ef646c6cb296008218c2bde1fa7c48
+----
+你真的理解mysql的事务隔离吗？
+https://mp.weixin.qq.com/s?__biz=MzI1NTQwNDU4MA==&mid=2247483774&idx=1&sn=6e9636ff66bd644db2ac46fad3df4228&chksm=ea373e35dd40b7235881e349f4c0425df99513995e9d2f83ab02432b5f4151549743fc1bd845&scene=132#wechat_redirect
+085302eadb992a732a584739377a1221
+----
+MySQL性能监控全掌握，快来get关键指标及采集方法！-阿里云开发者社区
+https://developer.aliyun.com/article/1207546
+08bdb13c0f6e56c65e34f257e2361501
+----
+运维服务绩效考核指标V1.0【拿来即用】
+https://mp.weixin.qq.com/s/MpTRHB5nfMpeiHOo6jkDsA
+08efda3a78c7dff8e52444546f14ed46
+----
+Migrating Facebook to MySQL 8.0 - Engineering at Meta
+https://engineering.fb.com/2021/07/22/core-infra/mysql/
+092ce3de80a63a589d6aa18c2a35a3b7
+----
+关于MySQL checkpoint - 海东潮 - 博客园
+https://www.cnblogs.com/DataArt/p/10236642.html
+098499a5822a1ebae8f2016ac0d796e4
+----
+[MYSQL] 忘记root密码时, 不需要重启也能强制修改了! - 墨天轮
+https://www.modb.pro/db/1887314304005844992
+09e74f0a28f3954c6ffca5acac1d6de0
+----
+用Docker-Compose / K8s 快速安装MySQL 和 Redis项目开发中最常用的就是MySQL和Redi - 掘金
+https://juejin.cn/post/7468973568813727781
+0a0365f5ed663011f439ecd86a77ace5
+----
+如何画好架构图：7种常用类型与示例
+https://mp.weixin.qq.com/s/AQWckbTwamt3tISh-bKxxQ
+0aafc5cc111c00e82970042bc8bcf339
+----
+专栏 - TIDB数据库在某省妇幼业务系统应用 | TiDB 社区
+https://tidb.net/blog/04f1c28f
+0af9a91eb4e5ff6d75d3b951a1a9b6e2
+----
+(2 封私信) MySQL性能诊断实践之系统观测工具 - 知乎
+https://zhuanlan.zhihu.com/p/43219451
+0b815a98abff315fe50e653f5df3a6bb
+----
+使用 Blue-Green Deploy 把 Mysql 5.7 升級到 8.0 | by Justin Hollly | Medium
+https://justinhollly.medium.com/%E4%BD%BF%E7%94%A8-blue-green-deploy-%E6%8A%8A-mysql-5-7-%E5%8D%87%E7%B4%9A%E5%88%B0-8-0-4272eacc7ffc
+0b89d4063faab9584c2a02a17afec5d7
+----
+BitPacking
+https://blog.xiayf.cn/posts/team-dev-process-std.html
+0ba61f00c841e9c8807906298c8adb3d
+----
+一文让你对mysql索引底层实现明明白白作者：京东零售 韩航云 开篇： 图片是本人随笔画的，有点粗糙，望大家谅解，如有不 - 掘金
+https://juejin.cn/post/7460467888031514658
+0c13009f75e503fc241380577e1e1714
+----
+专栏 - TiDB 三中心"脑裂"场景探讨 | TiDB 社区
+https://tidb.net/blog/07b42ec0
+0c7834f8ba6b520d05f5d04933e9c78b
+----
+Redis Explained - by Mahdi Yusuf
+https://architecturenotes.co/p/redis
+0c8514fb2935bb0e8dc7f792246a6d3d
+----
+InnoDB 索引与 Online DDL 的结合：业务不中断的优化秘诀InnoDB加索引是否会锁表 在InnoDB存储 - 掘金
+https://juejin.cn/post/7459359268521836570
+0cc7ff4443fbb0cb3c90ca79bc6b9dcd
+----
+学习 MySQL 必须了解的几个 Undo 概念Undo 模块的第一篇，聊聊 Undo 相关的几个概念。 > 作者：操盛 - 掘金
+https://juejin.cn/post/7446981141453324315
+0d98d837392fad916ca0ec993690421e
+----
+MySQL 性能优化：从普通程序员的角度出发《普通开发者的MySQL优化指南》详解了常见优化方向，包括数据表优化、SQL - 掘金
+https://juejin.cn/post/7461587929447301139
+0dee63158798f5b970a4b7475220948d
+----
+MySQL的默认隔离级别为什么是RR，而不是RCMySQL 的默认隔离级别为什么是 RR，而不是 RC？MySQL5.0 - 掘金
+https://juejin.cn/post/7422848805049040896
+0e1e0313ecb9fbd59e27a609cef0705f
+----
+6 mysql底层解析——缓存，Innodb_buffer_pool，包括连接、解析、缓存、引擎、存储等-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/1508324
+0e9882cbb3c7917b26251aba1dd71df1
+----
+性能运维 -- 借助pstack + strace排查SQL性能问题 - 墨天轮
+https://www.modb.pro/db/1764818856233734144
+0f81bb5e9e927269f46f5dfa3b2bcbea
+----
+腾讯音乐：说说Redis脑裂问题？Redis 脑裂问题是指，在 Redis 哨兵模式或集群模式中，由于网络原因，导致主节 - 掘金
+https://juejin.cn/post/7358670107901886501
+101850f77b5ef2dedab91a52e2ed7742
+----
+EXPLAIN TYPE 列的 JOIN 常见场景详解（上）专栏连载至此，相信读者们已经对一条 SQL 的优化步骤、执行 - 掘金
+https://juejin.cn/post/7456635153332731919
+1059aadb9ba78b94ac181ac7b2f82d3d
+----
+知识积累能力是DBA最为重要的能力
+https://mp.weixin.qq.com/s/yRRwTGYuo9DJZ0Rp92OqAQ
+1071aa59c60a8ef26436ef8fafd33b40
+----
+如何熟悉一个陌生系统在日常开发过程中，我们经常需要去承接一个陌生的系统，而且承接的系统都很复杂，那我们应该如何快速去熟悉 - 掘金
+https://juejin.cn/post/7357957809072406562
+107b1af0b7b25d9fbe7c070feba47834
+----
+分布式数据库的进度管理：TiDB 备份恢复工具 PiTR 的原理与实践导读 对于一款企业级数据库产品而言，数据的安全性和 - 掘金
+https://juejin.cn/post/7423293748974698547
+1102319937fa39dcd53a9a6f556fedde
+----
+渗透测试报告一键生成工具 - 运维派
+https://www.yunweipai.com/46853.html
+1159c05117645b15e71f1e88c68fd704
+----
+A Modern Guide to MySQL Performance Monitoring | MetricFire
+https://www.metricfire.com/blog/a-modern-guide-to-mysql-performance-monitoring/
+116d0744d4b5407d9e5c6eb9fc324405
+----
+专栏 - TiDB与MySQL在备份容灾体系的衡量对比 | TiDB 社区
+https://tidb.net/blog/8788eb77
+11943de59bf565b7d958f82d5ef421cf
+----
+在MongoDB建模1对N关系的基本方法 - 墨天轮
+https://www.modb.pro/db/1770628513246285824
+13802f213af712dae47aa9d1df634b54
+----
+【小白请绕道】Redis 的 I/O 多路复用技术，它是如何工作的？Redis 的 I/O 多路复用技术是其高性能的关键 - 掘金
+https://juejin.cn/post/7417746324387135539
+1383af16f652ba96ef3a1a2ccd7811cb
+----
+Say Hello to Grafana OnCall. A Practical Guide to Grafana OnCall | by Magsther | Medium
+https://medium.com/@magstherdev/say-hello-to-grafana-oncall-e78f548b2227
+13c9a75a3b73f640e3b274638cd14d59
+----
+SQL语句Cost花费判断 - 墨天轮
+https://www.modb.pro/db/624887
+13de9bafc7f57700887118dc971f3b70
+----
+TiDB 的列式存储引擎是如何实现的？ | PingCAP 平凯星辰
+https://cn.pingcap.com/blog/how-tidb-implements-columnar-storage-engine/
+156269ef29fe4a830a34022ba79f9974
+----
+数据库异常智能分析与诊断 - 美团技术团队
+https://tech.meituan.com/2022/05/05/meituan-database-autonomy-service.html
+15c525f09b5d02cf6690c65d97756f1f
+----
+关于“稳定性建设”的一些思考
+https://mp.weixin.qq.com/s/BJGlXQ0se0g7CJvpiJ3ysw
+1764f90c573a90e5562b3b781ab886db
+----
+MySQL 核心模块揭秘 | 51 期 | 开年暖场，回顾和展望
+https://mp.weixin.qq.com/s/53kGERLxnvDQVlsKY4WmIQ
+1779f76e21a977df4b808288e4b2132a
+----
+mysql中的Innodb_buffer_pool_mysql 的 innodb buffer pool-CSDN博客
+https://blog.csdn.net/wzngzaixiaomantou/article/details/121064577
+1910e6904f0fb569a19be4a24b171c18
+----
+图灵奖数据库大师Stonebraker师徒对数据库近20年发展与展望的2万字论文
+https://mp.weixin.qq.com/s/E3cvL7H-VZNw-q89nofjLg
+195a316902e2c6ebcb72754be0fec3b2
+----
+看完这篇，你的API服务设计能力将再次进化!本篇文章旨在探讨在遵循通用设计规范之外，服务设计过程中需要考虑的关键因素。希 - 掘金
+https://juejin.cn/post/7389952503040933898
+1a4fa6e37f7eb683ca1f8496b00cb1f0
+----
+真·Redis缓存优化—97%的优化率你见过嘛？ | 京东云技术团队本文通过一封618前的R2M(公司内部缓存组件，可以 - 掘金
+https://juejin.cn/post/7283150465525137468
+1ccd2bc3061d196cb93e40b4a3d8a197
+----
+别再纠结线程池池大小、线程数量了，哪有什么固定公式 | 京东云技术团队可能很多人都看到过一个线程数设置的理论： CPU - 掘金
+https://juejin.cn/post/7280429214608146490
+1d98657cac48cb47af146f250f965e3b
+----
+MySQL 全文索引
+https://mp.weixin.qq.com/s/GhnX4zLBYfIL7UCsLKvZpg
+1da8692fcd96135669d10058ee6ba62b
+----
+TiDB 底层存储结构 LSM 树原理介绍随着数据量的增大，传统关系型数据库越来越不能满足对于海量数据存储的需求。对于分 - 掘金
+https://juejin.cn/post/7187222825819144250
+1de9b7d1440ed70776bf9f305e14a986
+----
+基于代价的慢查询优化建议 - 美团技术团队
+https://tech.meituan.com/2022/04/21/slow-query-optimized-advice-driven-by-cost-model.html
+1e5a96baa1b47abd695db96226e4d814
+----
+权限管控，还可以再简单点 - 墨天轮
+https://www.modb.pro/db/1794373113622368256
+1feba66c0577ef67ed23beb17c43025f
+----
+sqlmapproject/sqlmap: Automatic SQL injection and database takeover tool
+https://github.com/sqlmapproject/sqlmap
+2001810f78059400d786baaaa6efa019
+----
+系统技术规划的几点概要思路每年年底或年初都会有各种总结规划，业务部门有业务的规划，研发部门有研发的技术规划，下面分享一下 - 掘金
+https://juejin.cn/post/7347667834793738266
+20b82eeff9bce51ccb1902caead3b6ce
+----
+Redis 性能刺客，大key在使用 Redis 的过程中，如果未能及时发现并处理 Big keys（`大Key`”）， - 掘金
+https://juejin.cn/post/7298989375370166298
+20ebd916b868d194b735cd2e2e7de577
+----
+从MySQL索引下推看性能优化：减少回表，提升查询效率接着上篇索引优化全攻略：提升排序、GROUP BY与分页性能今天我 - 掘金
+https://juejin.cn/post/7442722732335628342
+217028f183386f55576c92270b1185be
+----
+用蜜蜂(eBPF)来追踪海豚(MySQL)，性能追的上吗 - 墨天轮
+https://www.modb.pro/db/1799008894466478080
+220a46a80d79e7909277fef80cca9a77
+----
+Neo的技术博客 广告系统的平台架构与交互流程 |
+https://neoremind.com/2020/01/ad_system_architecture/
+2296c5e7ce59cc0f3284c0606862789b
+----
+暴揍ELK 痛打Loki - VictoriaLogs 搭建Syslog日志收集存储系统
+https://mp.weixin.qq.com/s/0ydkoQqkKq4Vu7yVqTwFpg
+2331b3144809d3d7f9412ed9cd0d0341
+----
+【redis】redis压力测试工具-----redis-benchmark-CSDN博客
+https://blog.csdn.net/bandaoyu/article/details/103143475
+2434111e62fe5a91f5e4ce60efc1ff6c
+----
+Rakuten 乐天积分系统从 Cassandra 到 TiDB 的选型与实战
+https://mp.weixin.qq.com/s/7iE0YK2zpovvEPsLKBEjyg
+24a666bdd34b1551caf3ff2bdc6133e2
+----
+提升资源利用率与保障服务质量，鱼与熊掌不可兼得？ - 美团技术团队
+https://tech.meituan.com/2022/08/11/load-auto-regulator.html
+24d897b7785f2b5d7e54d6af153d3ac1
+----
+重现一条简单SQL的优化过程-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/2321910
+2521eca551359e30b8f64337d32bfc87
+----
+架构师必备底层逻辑：设计与建模
+https://mp.weixin.qq.com/s/un3JRdel2qYuUuw0x7lpSA
+25e668d98d19f77bb58ca2a397715405
+----
+Google工程师如何在实践中避免和处理故障鲁迅曾说：决定一个程序员的表现如何，除了他写的代码、完成的需求多少多好，还有 - 掘金
+https://juejin.cn/post/7412836534237544489
+265e03c33a8abcd3cfe08219bf970788
+----
+MySQL为什么"错误"选择代价更大的索引-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/1922139
+2669ad45cecf54d617286f26b3add8cf
+----
+Linux进程管理和启动流程_13235823的技术博客_51CTO博客
+https://blog.51cto.com/u_13245823/9202174
+26bd06e3f8f79d60d645c40bafe81cb0
+----
+专栏 - TiDB VS MySQL 场景选择 | TiDB 社区
+https://tidb.net/blog/97548bb4
+26d1287a6f77a08fffc38a6a01a1c9df
+----
+23｜大型研发架构团队的AOM实践-技术领导力实战笔记 2022-极客时间
+https://time.geekbang.org/column/article/615813
+276062bf162565814aa4e70e14b7db0d
+----
+SHOPLINE x TiDB丨集群成本降低 50%！跨境电商 SHOPLINE 交易、商品管理等核心业务的数据库升级之路 - 掘金
+https://juejin.cn/post/7405153978139230234
+27e9099df9be2e5a232b1bb47113906b
+----
+Redis Sentinel-深入浅出原理和实战-redis实战 pdf
+https://www.51cto.com/article/634230.html
+27ee62e48490adce210c13eb3c0a9c63
+----
+【稳定性】稳定性建设之变更管理
+https://mp.weixin.qq.com/s/ymuPq2mFLDUbtzk7aw1_zg
+290705b8cfe5c418572d1f2f7d66a8f8
+----
+揭秘10亿+高并发应用如何实现高效稳定的开发和运维揭秘10亿+高并发应用如何实现高效稳定的开发和运维，无论你是云原生技术 - 掘金
+https://juejin.cn/post/7381362667719917619
+29124bfed232ff376eac386866d868a4
+----
+专栏 - 国产数据库“同城两中心”容灾方案对比，TiDB表现优秀 | TiDB 社区
+https://tidb.net/blog/af773cb8
+2912766936bb510774c1551dd89fa3b9
+----
+软件架构，一切尽在权衡本文要介绍的是 2021 年 O'Reilly 出版的书籍 Software Architectu - 掘金
+https://juejin.cn/post/7380579033547685925
+29407d2fed04e0cb2684a676ffea3fa5
+----
+什么才是架构师的真内核？
+https://mp.weixin.qq.com/s/v3F1pBdG444I9_3pi-718Q
+29923a2ff3e48bb8fa82bdd2c75cd4ca
+----
+人人都是架构师-清晰架构 | 京东物流技术团队前言 了解清晰架构之前需要大家先熟悉以下常见架构方案： 清晰架构（Expl - 掘金
+https://juejin.cn/post/7337533680239231030
+2ac31a1732680e72a16f3f3c2b711d09
+----
+九. Redis 持久化-AOF(详细讲解说明，一个配置一个说明分析，步步讲解到位 2)九. Redis 持久化-AOF - 掘金
+https://juejin.cn/post/7467413681837129765
+2aea9f3c4968a9344f8d1384cb709267
+----
+Why Do We Need a Message Queue? - ByteByteGo Newsletter
+https://blog.bytebytego.com/p/why-do-we-need-a-message-queue
+2b72721c0360d3db80da67d933324c06
+----
+招行面试：高并发写，为什么不推荐关系数据？
+https://mp.weixin.qq.com/s/PKsa-7eZqXDg3tpgJKCAAw
+2be116ef3fe501312dc262e4bf18ed04
+----
+前任开发在代码里下毒，支付下单居然没加幂等
+https://mp.weixin.qq.com/s/b3dOUC24Erbz4JAAtXLkMQ
+2c0e221a4d2a3d0e11df8e9bcdd8514e
+----
+一次线上脑裂故障让我彻底搞懂了Redis集群原理这又是一个线上大规模故障引发的案例，而且居然是罕见的“脑裂”故障，只能说 - 掘金
+https://juejin.cn/post/7411799494415663138
+2c5c534818a5d59287014c32c39219cd
+----
+通过 gitHub Action 自动发布博客文章因为之前的博客升级了，并且 gh-pages deploy 的命令好像 - 掘金
+https://juejin.cn/post/7348703569053597733
+2cc68248d145f410fb0e967bb6a0f880
+----
+PostgreSQL SQL优化用兵法，优化后提高 140倍速度 - 墨天轮
+https://www.modb.pro/db/1887681495481987072
+2d2497bf4c0c4b1f1e89aef13fecb77d
+----
+如何画好一张架构图？
+https://mp.weixin.qq.com/s?__biz=MzI2NDU4OTExOQ==&mid=2247669912&idx=1&sn=1bac1d9158eacf894dd43c0eed5b1bf9&chksm=ebd1bac443515acfc5d2d2a2ca9572b9b62ccf097d3cef224f4935105d771e02e930a352c7dd&scene=132&exptype=timeline_recommend_article_extendread_samebiz&show_related_article=1&subscene=0&scene=132#wechat_redirect
+2e4744acfe6ffc0fec8a6937fb8689ee
+----
+如何高效实现缓存预热？一文了解九大方法 什么是缓存预热 缓存预热是一种在系统启动或运行过程中，提前加载热点数据到缓存的 - 掘金
+https://juejin.cn/post/7459021463329865728
+2e87ddfff75380625588a9e56566fd56
+----
+Redis 7.0 源码调试环境搭建与源码导读技巧-redis源码分析
+https://www.51cto.com/article/741365.html
+2f0189726bba86fd958eb14e09388674
+----
+什么是系统可用性？如何提升可用性？日常开发中，我们经常听到系统的可用性是几个 9这样的描述，因此，这篇文章，我们将探讨什 - 掘金
+https://juejin.cn/post/7401176351057903625
+304d33ad22f32d52cc212a8465a01613
+----
+假期结束了，DBA们又要忙起来了 - 墨天轮
+https://www.modb.pro/db/1887035552977924096
+306a2fdd62275d347be82a00faf87f3e
+----
+基于主动元数据构建智能数据治理体系|京东零售技术实践
+https://mp.weixin.qq.com/s/E-WFkKoExKyEFHfwe6bMqw
+30b2eb3f014c6499f0fada785c70fc9b
+----
+数据库性能优化之道：Buffer Pool 深度剖析（二）1. Buffer Pool 的组成 Buffer Pool - 掘金
+https://juejin.cn/post/7459286686830215205
+30f14ae923d74b101276b457397c9e56
+----
+「合集」三年50篇，TiDB干货全收录 - 墨天轮
+https://www.modb.pro/db/1842152043118686208?utm_source=index_ori
+310a7f3d66d1b7fd7cb120662fec10f0
+----
+myhhub/stock: stock股票.获取股票数据,计算股票指标,筹码分布,识别股票形态,综合选股,选股策略,股票验证回测,股票自动交易,支持PC及移动设备。
+https://github.com/myhhub/stock
+316046afa4a8a6b4d16334018c69e804
+----
+DBA不仅仅是管理数据库--也要管理好需求 - 墨天轮
+https://www.modb.pro/db/1754839133021360128
+317f32cc2d1a887c396b32809ebb9252
+----
+MongoDB 写安全(Write Concern)_writeconcern-CSDN博客
+https://blog.csdn.net/leshami/article/details/52913705
+323dcd05c49a0ccdd23533064c92937d
+----
+oracle awr 报告详解 - 墨天轮
+https://www.modb.pro/db/1889567271404711936
+32e1c4ac785a9c814df4739817f6ef6e
+----
+架构设计的悖论，复用是美好的还是邪恶的
+https://mp.weixin.qq.com/s/0jNNTZZfw24Vv85XdwK-tQ
+3398a6ca1b1c193f45e75fbf1aef8266
+----
+默认配置下，为什么 MySQL 8.0 比 MySQL 5.7 慢？
+https://mp.weixin.qq.com/s/9gAWS_UUpyFlDXP2xsZG-g
+3417bbea01f3da303fe6587e9ec538f1
+----
+MySQL底层概述—7.优化原则及慢查询 - 东阳马生架构 - 博客园
+https://www.cnblogs.com/mjunz/p/18579992
+34608efa79dafe8421af5c2c7c9d3038
+----
+Software Architecture is Hard | by Oz Anani | Medium
+https://medium.com/@ozanani/software-architecture-is-hard-71fe3ddafb60
+359626bc5641e31d9fe81b2ac8e446bd
+----
+profiling中要关注哪些信息 · MySQL FAQ系列整理 · 看云
+https://www.kancloud.cn/thinkphp/mysql-faq/47449
+364f4dfffda278498ec5ad5699969eeb
+----
+MYSQL统计信息详解
+https://mp.weixin.qq.com/s/VP2rPtMFIEYouGEy1QaHPA
+367d191d3c04c078f0fbe3096c65c976
+----
+OceanBase在传统监控数据存储的应用 | 优秀征文分享
+https://mp.weixin.qq.com/s/IDfaxZRf0FDlsab1CwiFDg
+371ee94759aab8f941c8e302145321f0
+----
+MySQL数据库巡检报告，一条命令搞定，省心又省力！
+https://mp.weixin.qq.com/s?__biz=MzI3MzE5Mjg1Mg==&mid=2247484697&idx=1&sn=39416398dfba9e8f9fa0b3f300d2dbae&chksm=eb2647e2dc51cef4da5e4ec87b17743c6cb51aab1cf36d28d418be891cb65d966671b3bcf50b&cur_album_id=3470107659469307906&scene=189#wechat_redirect
+372f7d390eae89de0de5f617d18d4fdd
+----
+TiDB介绍及设计原理TiDB是一个支持海量数据存储的分布式数据库，TiDB需要解决分布式数据存储OLTP需求，并添加支 - 掘金
+https://juejin.cn/post/7415672130191556608
+384e3ca8b05dbed3b6ca32222678ca7f
+----
+唐刘：当 SaaS 爱上 TiDB（一）- 行业挑战与 TiDB 的应对之道系列文章将从技术原理和真实用户体验两个角度深 - 掘金
+https://juejin.cn/post/7390319475520225332
+396492f261f31bd2daba732f62a2633b
+----
+MySQL 8.0.35 企业版比社区版性能高出 25%？# 前言 说实话，比较一下这两个 MySQL 发行版，并不会让 - 掘金
+https://juejin.cn/post/7339892484334059557
+39f02aea862b12f6283f50d2a9ac4e1c
+----
+技术分享 | MySQL 表空间碎片整理方法-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/1848499
+3aba28a31c245563bc6d4253665d9938
+----
+MySQL中的SQL调优设计SQL调优有哪些基本原则？ 导致SQL查询效率比较低的原因,主要包括数据量,数据访问量,数据 - 掘金
+https://juejin.cn/post/7358109207994712075
+3aef6722b6a737086a27c76a4aab979f
+----
+技术译文 | MySQL 8.4.3 和 9.1.0：显著提升性能！
+https://mp.weixin.qq.com/s/IEbamb9-OzMFCS9lh0sRvA
+3af90e819f357a240e851eb7f9e58f5c
+----
+从一个故障案例谈数据库运维中的数字化分析之路 - 墨天轮
+https://www.modb.pro/db/1858344140996620288
+3c5969ada6e425d2b91e3c2d25bd33c3
+----
+为什么说MySQL单表行数不要超过2000w?-mysql 查询表行数
+https://www.51cto.com/article/721621.html
+3ce26dec621f56b972282463c68c3417
+----
+10种数据库技术的发展历程与现状
+https://mp.weixin.qq.com/s/AAxlJzX_S_-ScJRtUktm4g
+3de90bfbaff6cd7491e37c7fb5714cd6
+----
+可觀測性宇宙的第一天 - Grafana LGTM 全家桶的起點 - iT 邦幫忙::一起幫忙解決難題，拯救 IT 人的一天
+https://ithelp.ithome.com.tw/articles/10319012
+3e173690a95f3a280107fad07829a712
+----
+MySQL 在线开启GTID的每个阶段是要做什么 - ZhenXing_Yu - 博客园
+https://www.cnblogs.com/zhenxing/p/15612793.html
+3f02310b7e8d40d8a61662a93f4fc153
+----
+CentOS-Stream9 上安装 Postgresql 17 from Source Code - 墨天轮
+https://www.modb.pro/db/1843469275967881216
+3fd8b956d4a659320637c2cfc220963b
+----
+【MySQL 8.x】定制化 MySQL 8.2.0 编译选项 - 墨天轮
+https://www.modb.pro/db/1722794246820945920?utm_source=index_ai
+400140b9fdd43e06dc075915fd2384d1
+----
+Cutting over: Our journey from AWS Aurora MySQL to TiDB | Plaid
+https://plaid.com/blog/switching-to-tidb/
+41446ccd753567640b5543201715fb85
+----
+MySQL 优化利器 SHOW PROFILE 的实现原理 - 墨天轮
+https://www.modb.pro/db/1870997338144124928
+4161c619d44a078a2cbebea93dd7a452
+----
+复杂SQL治理实践 | 京东物流技术团队一、前言 软件在持续的开发和维护过程中，会不断添加新功能和修复旧的缺陷，这往往伴 - 掘金
+https://juejin.cn/post/7328603400304033803
+4210c288c9a0ab0b576a21322ded5cf7
+----
+这些BUG，防不胜防常见时间case与防护分析 话不多说，上干货！笔者经过长年累月的积累，针对常见的时间case已在本文 - 掘金
+https://juejin.cn/post/7350142836622819391
+44b0a9b336e6d445876bd777a34fb8b2
+----
+云数据库RDS MySQL Serverless已来
+https://mp.weixin.qq.com/s?__biz=MzIxNTQ0MDQxNg==&mid=2247510738&idx=1&sn=75067ceadf0492bebca6167d8caa63b5&chksm=979aa79da0ed2e8b4e796411c30a9949203e39a4c4b2cf1ecabbd3572682c83f2e56e59dfd61&scene=21#wechat_redirect
+44d83d0f5a4348f978a8cea38026c881
+----
+专栏 - AmzTrends x TiDB Serverless：通过云原生改造实现全局成本降低 80% | TiDB 社区
+https://tidb.net/blog/4b000356
+4518a11992998316304cb48a35f79dd6
+----
+解锁Linux“故障宝藏”：Core Dump分析秘籍
+https://mp.weixin.qq.com/s/mcMzYHzgHm22V93CPqORXg
+45526cc680de3ac7e39e27e4f1ea82d6
+----
+2.8万字总结：OceanBase数据库在金融核心系统升级路径与场景实践 - 墨天轮
+https://www.modb.pro/db/1795327113104019456
+46dd0fd233797b1d5a31ea05b7a7c84b
+----
+该开始关注 MySQL 8.4 了
+https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653941503&idx=1&sn=1dfcf3599797c0ea0d83fa6595e597c4&chksm=bd3b74958a4cfd838db0885e9aa1866c05c3e77a04dd96ea00d0882ed8982f08e1fb45c453c1&scene=178&cur_album_id=1337959503719137280#rd
+474db9c225132febf28cf0237f6756b5
+----
+云计算与企业IT成本治理时至今日，云计算已逐步替代传统IT中服务器、存储、虚拟化等单体软硬件的IT架构，成为企业IT能力 - 掘金
+https://juejin.cn/post/7381660102476546048
+4752cf81d989834ca56dd7677283b7c6
+----
+如何将技术债务纳入路线图_软件工程_InfoQ精选文章
+https://www.infoq.cn/article/yNcE04ykpAlHTcoAdum6
+47b4511182e6e82b208a708e923a4ed1
+----
+Redis面试题集锦缓存击穿/缓存穿透/缓存雪崩 缓存穿透 缓存穿透是指用户请求的数据在缓存中不存在即没有命中，同时在数 - 掘金
+https://juejin.cn/post/7323203575618076687
+47caffb02a1d2f628c02e1ee74619b99
+----
+微服务与分布式系统设计看这篇就够了！
+https://mp.weixin.qq.com/s/wg_EkeogSkjGaChvsLsaVw
+47eb1dc6abbb4d9c6c213ae7755adae2
+----
+DR Auto-Sync：TiDB 同城两中心自适应同步复制技术解析
+https://mp.weixin.qq.com/s?__biz=MzI3NDIxNTQyOQ==&mid=2247522427&idx=1&sn=f263d59ee39aaf896cc29354c01480b9&scene=21#wechat_redirect
+48561f1691da582df595307bd02a614b
+----
+淘宝信息流融合混排服务升级
+https://mp.weixin.qq.com/s/J0ut6xuy1e2GyEbELlq9QA
+48e5bb727a8d69b48b14d4e7cf1171d1
+----
+redis-哨兵 | MadeLife
+https://suntw2015.github.io/2019/11/18/redis-sentinel/
+49bd088a990a7dda68e668d5c27c4c34
+----
+在 Kubernetes 上跑数据库，真的没有意义么？ - 墨天轮
+https://www.modb.pro/db/430650
+49d6d7ab28010ed561100dc3178b7872
+----
+架构师基本功：如何画好一张UML用例图？
+https://mp.weixin.qq.com/s/lDOBj3se7RraeRVzsXNSrA
+4a533f9955a7b50cb4596468c058eb7f
+----
+MySQL 运维高危操作 - 墨天轮
+https://www.modb.pro/db/401284
+4c5c7ea86f85576b90bde65b02e956c3
+----
+使用 TiUP 部署 TiDB 集群 | TiDB 文档中心
+https://docs.pingcap.com/zh/tidb/stable/production-deployment-using-tiup
+4c72c06d793ff8b0156e5dde9d646324
+----
+建议收藏|MySQL DBA 防坑指南
+https://mp.weixin.qq.com/s/iy9mAwahHWo4V3tyYGm6jw
+4ce0b3f917daa79230d277dfbc115c16
+----
+深夜网络故障秒解决！这个开源监控工具让运维告别通宵
+https://mp.weixin.qq.com/s/qZ4k3ipDHW5T_sPpbt8vcw
+4f0b91ec24b33fd77f9ee4c0bd56977f
+----
+分布式系统架构7：本地缓存1.引入缓存的影响 我们在开发时，用到缓存的情况，无非就是为了减少客户端对相同资源的重复请求， - 掘金
+https://juejin.cn/post/7460602380917325887
+500d284589890b157a375d0716f15a67
+----
+Galera Cluster真的沒有同步延遲嗎?- 進擊的網管Jay
+https://www.sre-devops.info/galera-cluster-sync/
+5037fe8c2b130ac3ec51ab1522d6e874
+----
+专栏 - 月活超 1.1 亿，用户超 4 亿，你也在用的「知乎」是如何在超大规模 TiDB 集群上玩转多云多活的？ | TiDB 社区
+https://tidb.net/blog/ae59475c
+5048ef6006bc902710136f9d234bc350
+----
+使用podman搭建MySQL 8.0主从避坑指北镜像准备和选择 由于mysql自带许多工具，比如mysqlbinlog - 掘金
+https://juejin.cn/post/7397028381974331401
+50c4dffbe1dc2f4c90bcb36f2fa1ff79
+----
+Mysql JOIN 的高阶使用 在数据库操作中，JOIN 操作和 UNION 操作是数据关联与合并的重要工具。它们不仅 - 掘金
+https://juejin.cn/post/7460354454832496679
+51c199aad1722448a7614d1775936198
+----
+看透Oracle DBA赚钱的另外一层逻辑 - 墨天轮
+https://www.modb.pro/db/1887319517781569536
+51ddf38d06733b767208de80242be46e
+----
+分库分表已成为过去式，使用分布式数据库才是未来当我们使用 Mysql数据库到达一定量级以后，性能就会逐步下降，而解决此类 - 掘金
+https://juejin.cn/post/7329413905028579340
+5341b6858256a0774fc3ae4e1b17768d
+----
+像架构师一样去思考_架构_InfoQ精选文章
+https://www.infoq.cn/article/LNZVV3MHvlYAMvKFOmpD
+53834403bd0eb43fa85470bd5d81809d
+----
+基于 Grafana LGTM 可观测性平台的快速构建_可观测性_Grafana 爱好者_InfoQ写作社区
+https://xie.infoq.cn/article/a86a5daed44bc363abb392203
+539651cce16d117833dbb8af11c8046c
+----
+全网最详细之pt-osc 处理MySQL外键表流程分析_10931853的技术博客_51CTO博客
+https://blog.51cto.com/wujianwei/4934461
+542079bda9492131b774e9eed82ebd01
+----
+实战过程记录：濒临宕机的业务系统仅优化1个SQL即恢复！！ - 墨天轮
+https://www.modb.pro/db/1758418439165267968
+5450d4d89dd0b48d368c766133e165a4
+----
+MySQL8.0.40 MGR集群安装部署及管理 - 墨天轮
+https://www.modb.pro/db/1871362852146135040
+54711fcb27d9bfcc2ddd6a778b3b5ac9
+----
+数据库常见性能故障应急场景 - 墨天轮
+https://www.modb.pro/db/1863488822995075072
+54bf88b72446638d64f703c20b0e4b3c
+----
+cookieY/Yearning:  A most popular sql audit platform for mysql
+https://github.com/cookieY/Yearning
+578cf5fdbe13139280cfb700f3ff31ee
+----
+可观测性与传统监控的区别和联系 - OSCHINA - 中文开源技术交流社区
+https://my.oschina.net/morflameblog/blog/15316524
+57a54890436038bbdcc3abcd130d9785
+----
+从源码分析，MySQL优化器如何估算SQL语句的访问行数本文将从源码角度分析SQL优化器代价估算的基础——行数估算，并总 - 掘金
+https://juejin.cn/post/7435664118186590259
+58533fe1f1c6095cb0e2f3955e58159b
+----
+数据规模超 1PB ，揭秘网易游戏规模化 TiDB SaaS 服务建设实践_数据库_田维繁_InfoQ精选文章
+https://www.infoq.cn/article/JUuV6eTWSmijj8rFkGPI
+58c1dbeba8e91e42b491ec2aa92ca656
+----
+监控系统中的95分位，90分位，是什么？解释下什么是分位数 分位数(Quantile)，TP=Top Percentil - 掘金
+https://juejin.cn/post/7381407777598160948
+59f0e31cba4c06395b7f87db795e44d2
+----
+如何在 TiDB 上高效运行序列号生成服务 | PingCAP 平凯星辰
+https://cn.pingcap.com/blog/how-to-run-the-serial-number-generation-service-efficiently-on-tidb/
+5a12b61dad7853075f20eae390ee29c2
+----
+对号入座，快看看你的应用系统用了哪些高并发技术？ · 测试之家
+https://testerhome.com/column_channels/39568
+5a3e9a95c25c9898938317a9e04aa65a
+----
+不作死就不会死！Redis缩容导致线上大规模故障的惨痛经历唉，小趴菜我最近又犯事了，怎么会是捏？Redis缩容又故障了， - 掘金
+https://juejin.cn/post/7409333772967526426
+5affc9038bdd2ecfa79730a7fcdcad38
+----
+运维加薪技术——微服务拆分规范
+https://mp.weixin.qq.com/s/W3iCdtYIY2oNYL_lgAvuDQ
+5b4bc25279258c48724bcc837524acd5
+----
+Oracle DBA必备的101道面试题答案终于来了（10000人已收藏） - 墨天轮
+https://www.modb.pro/db/1873906690463121408
+5b5b3c8a84ca9d82265291dd5df410cb
+----
+我说MySQL每张表最好不超过2000万数据，面试官让我回去等通知？面试官：麻烦你好好看看这篇文章，再告诉我，每张表 - 掘金
+https://juejin.cn/post/7165689453124517896
+5b7666c86b5b31b53878096412a71aa2
+----
+囧...执行analyze table意外导致waiting for table flush-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/1791573
+5bf9d1d0905f632298cf0a98cefd6aa9
+----
+MongoDB集合结构分析工具Variety_SQL Server Deep Dive的技术博客_51CTO博客
+https://blog.51cto.com/ultrasql/1753896
+5cb911c327da3ce8b96baa5a7090d0b2
+----
+一文详解架构设计的本质
+https://mp.weixin.qq.com/s/DexGYBRJzlur5iNecD4Y3Q?poc_token=HLhQiWejLhg-XRol2rZEo8OK8mzcBNTdGi9mZ22E
+5cf669dc724cc9b8f13dc47ad1c764dd
+----
+MySql优化（三）详细解读InnoDB存储引擎_my.cnf innodb-read-io-thread-CSDN博客
+https://blog.csdn.net/cyl101816/article/details/115794170
+5e700227287ae6f14ad8d3a305c804ab
+----
+狂飙 50 倍丨TiDB DDL 框架优化深度解析
+https://mp.weixin.qq.com/s/vhgat9oHRsBpAaN2j6vBwQ
+5ed07e0d53e0bc8751e51c4f404aeebe
+----
+二、从数据库架构选型看 TiDB 常见应用场景 | TiDB Books
+https://tidb.net/book/db-selection/database%20infrastructure
+5f21306297f8c498e3fd82aa65287180
+----
+运维实践｜浅谈explain的使用 - 墨天轮
+https://www.modb.pro/db/1774424140342169600
+5f3d079a8a599f1c3f17644b42d1059d
+----
+DDD落地指南-架构师眼中的餐厅在去年、我整理了一篇名为《如何做架构设计？》的文章，主要探讨了架构设计的目标和过程，然而 - 掘金
+https://juejin.cn/post/7357957599844122624
+5f6455b1073443e92c1507c8d17a3872
+----
+Redis基础知识典藏版：架构设计、功能特性、应用场景、操作命令……
+https://mp.weixin.qq.com/s/H6cGiahUreVFh34wbkFF8g
+6071e9a6c8582c6e7686babe133f4129
+----
+高并发linux内核参数调优 - 知无不言~ - 博客园
+https://www.cnblogs.com/louwj/p/17162891.html
+618c058a407fb5679ebedda83f6a9e02
+----
+朗DBA福利来了！《YashanDB数据库概念手册》正式发布 - 墨天轮
+https://www.modb.pro/db/1792374336438489088
+62a96627bcdda9e587dd92af4b4d623e
+----
+grafanafans/club: The path to learn observability following Grafana LGTM stack.
+https://github.com/grafanafans/club
+6326e10c25c00731fb010b2ae6feab55
+----
+Redis 系列（一）：认识 Redis最近在整理 Redis 的相关知识体系，书和博客都看了很多，知识点零零碎碎不成体 - 掘金
+https://juejin.cn/post/7337298499820797987
+63a37d9b9ca98f9b3b99170e36b50550
+----
+注意啦！mysql 唯一键冲突与解决冲突时的死锁风险-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/2031570
+641c6bf58c66c8289d1f3afb9c8322c5
+----
+专栏 - 为什么说TiDB在线扩容对业务几乎没有影响 | TiDB 社区
+https://tidb.net/blog/e82b2c5f
+65a4c9cc26789c98e196bd0be9c0a1e3
+----
+Redis运维之内核参数调优 - 墨天轮
+https://www.modb.pro/db/1724603991509245952
+65e8c6a2dd8b1a4db8fc533d6848dd7b
+----
+什么是 NineData - NineData Docs
+https://docs.ninedata.cloud/
+660aeb24aa4b3f8caac70aa7af0129c0
+----
+MySQL内存为什么不断增高，怎么让它释放
+https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653938861&idx=1&sn=2de853dd9120693b85d91c78330249f2&chksm=bd3b7ec78a4cf7d1a95fe21ad7cff60d61c8f913f75269eec931c671e6959aa852d9525e8858&scene=178&cur_album_id=1337959503719137280#rd
+662013dda71c61bbe2c09ad1428dad4e
+----
+MySQL 的JSON类型违反第一范式吗？MySQL 在 5.7 版本中正式引入了原生的 JSON 数据类型，网上很多人 - 掘金
+https://juejin.cn/post/7471150465453785129
+66b76895904726f19c1fb184b1c8fc81
+----
+意想不到的MySQL复制延迟原因-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/2185088
+681f331f41efc7e130c57fe0adb36cfd
+----
+一文聊聊我理解的技术PM
+https://mp.weixin.qq.com/s/0yhC1VRy_0C2gw0xWZ5Akg
+6871c262dcc21d3c3b7ce4ec16a536e6
+----
+告警平台：给告警一个胶带
+https://mp.weixin.qq.com/s?__biz=Mzg3Njc0NTgwMg==&mid=2247496204&idx=1&sn=9738c7048008cc5f869e1ac50180480c&chksm=cf2f3729f858be3f790c49155566d40f63dffccaa4d52594277b1c1857ac070c00e87aa73f17&scene=178&cur_album_id=3289447926347317252#
+6966be31852851e890b6396710a52af8
+----
+在Netflix构建全球缓存系统：深入了解全局复制
+https://mp.weixin.qq.com/s/pYTzgXcWYYpruj7BwU8GDA
+6b201bfea29e61bcdf3f42feadad8183
+----
+云监控的盲点：用户视角监控云应用性能时，主干网、最后一公里和无线网络不仅仅是画面的一部分，它们就是画面本身。 互联网中心 - 掘金
+https://juejin.cn/post/7460404339564560418
+6c01c7f8685f78a5297bd600c889a0eb
+----
+TiDB 优化器丨执行计划和 SQL 算子解读最佳实践导读 在数据库系统中，查询优化器是数据库管理系统的核心组成部分，负 - 掘金
+https://juejin.cn/post/7423288346123993115
+6c32ebeee3402f4f05f5d5ab547357db
+----
+TiDB HTAP 深度解读 - 知乎
+https://zhuanlan.zhihu.com/p/205663113
+6c436d6832ca311822f9cc006336ff54
+----
+详解MySQL字符集和Collation-阿里云开发者社区
+https://developer.aliyun.com/article/1462909
+70d6796cf7d059fc575ac8263506713b
+----
+缓存预热怎么选？九大场景对号入座！以下是上述几种缓存预热方案的具体场景案例，帮助您更好地理解它们的适用场景和实际应用。 - 掘金
+https://juejin.cn/post/7458943861266481204
+71831de8268009bbe981d3081b1acc19
+----
+Cross-DC Deployment Solutions | TiDB Archived Docs
+https://docs-archive.pingcap.com/tidb/v3.0/geo-redundancy-deployment
+71ad51e40af1dcc472d06992997d0516
+----
+从工程师到技术 leader 的思维升级 · 测试之家
+https://testerhome.com/articles/39339
+71b2e5d43a3491634adaa66b8824b45f
+----
+数据库优化
+https://mp.weixin.qq.com/s/Phlip5cYPfj5bsJ2WSI-gw
+72ef824ce9b8942f1539498272bee9f4
+----
+三歪连MySQL大表怎么DDL变更都不懂-鸿蒙开发者社区-51CTO.COM
+https://ost.51cto.com/posts/11578
+747015c71672d076a19bf363ff9e7bc5
+----
+近期客户需求巡检自己编写整理的SQL - 墨天轮
+https://www.modb.pro/db/1844285953962246144
+747278457a0b9e4b440922031694b5c9
+----
+B站前端错误监控实践
+https://mp.weixin.qq.com/s/S-MydbfRdT94z-FhvAbFCA
+749b755e560d76f0bc0411393ba9573c
+----
+数据库内核月报
+http://mysql.taobao.org/monthly/2023/01/04/
+7506a36633e3bc12944c670f6319ebd6
+----
+DBA计划外工作的一点思考-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/1422966
+756ed68c2e8bb8dbc4f5a0f01cec6362
+----
+一个不可思议的SQL优化过程及扩展几个需掌握的几个知识点 - 墨天轮
+https://www.modb.pro/db/1869200405658349568
+75be5e203e2525680ca0da0f0f670615
+----
+MySQL 8.0不再担心被垃圾SQL搞爆内存
+https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939777&idx=1&sn=da6b97b8d302b0b910fa52147e0f6854&scene=21&poc_token=HFD5m2ijUGUOXzkmhBJ8wY9qIySDJMglxglVMSik
+75f22d95afec6fbdec8ad6a7b593cde7
+----
+案例合集｜探索 TiDB Serverless 在新能源、跨境电商领域的应用 - 墨天轮
+https://www.modb.pro/db/1770994779207307264
+7666e36cec2c5fd31b82eae21f936855
+----
+九. Redis 持久化-RDB(详细讲解说明，一个配置一个说明分析，步步讲解到位)九. Redis 持久化-RDB( - 掘金
+https://juejin.cn/post/7467197845906931750
+7760f6bf93ac47495e17db3da739d9d4
+----
+部署更轻松了，Github Action自动化部署Hexo：代码推送，云服务器自动部署部署更轻松了，Github Act - 掘金
+https://juejin.cn/post/7347958786050752563
+77c9c1d6afbff80e7276eb15cce12e49
+----
+妙啊！ 不改一行代码，如何做到Redis毫秒级大key发现不改一行代码！如何做到Redis毫秒级大key发现？ eBPF - 掘金
+https://juejin.cn/post/7416902555187216435
+77e2359b6ffe175ae1fe9d40cb96f4b7
+----
+业务数据治理体系化思考与实践 - 美团技术团队
+https://tech.meituan.com/2022/05/12/business-data-governance.html
+78aebc04d946bc99a8428426dfdc8163
+----
+数据质量和数据治理的关系 | 京东云技术团队很多不太了解的人会认为：数据治理就是干数据清洗的。 近两年，在我们公司，数据 - 掘金
+https://juejin.cn/post/7329448423327875111
+792df6acaebabccdf938d861398e4a61
+----
+7.5 LTS 解读 ｜ Runaway Queries 管理、高性能数据批处理方案、DDL 启停特性 - 墨天轮
+https://www.modb.pro/db/1767005807938441216
+798696a57435063e63ece1615aaf44b1
+----
+TiDB 7.4 发版：正式兼容 MySQL 8.0 | PingCAP 平凯星辰
+https://cn.pingcap.com/blog/tidb-7-4-release/
+798bbffe8d7f44758e997a633940616f
+----
+MySQL运行时的可观测性
+https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653940337&idx=1&sn=c6d88bea92069d4b9347939a6c8c2615&chksm=bd3b701b8a4cf90d066b9a62036d37a04f13379cf4042c64a6909e11c7c2fa0d3a2b5bad5434&scene=178&cur_album_id=1337959503719137280#rd
+7a60dc31f53e71ff0b92421183087387
+----
+MySQL性能分析的“秘密武器”，深度剖析SQL问题 - 墨天轮
+https://www.modb.pro/db/1882246676358901760
+7bff90a70d31863b2836c1fa9e5c903e
+----
+redis - 快取雪崩、擊穿、穿透 - Po-Ching Liu - Medium
+https://totoroliu.medium.com/redis-%E5%BF%AB%E5%8F%96%E9%9B%AA%E5%B4%A9-%E6%93%8A%E7%A9%BF-%E7%A9%BF%E9%80%8F-8bc02f09fe8f
+7c13c82a8913f6c6ef6bc8b0e1b3894d
+----
+后端 - 索引下推，这个点你肯定不知道！ - 艾小仙 - SegmentFault 思否
+https://segmentfault.com/a/1190000040592410
+7c66d17390ff9a6df1b863861bd07b29
+----
+数据建模 - 数据库手册 - MongoDB Docs
+https://www.mongodb.com/zh-cn/docs/manual/data-modeling/
+7cfa2cbed43e77115142e6d573d2f440
+----
+基于Prometheus、Thanos与Grafana的监控体系详解说明： Grafana通过Thanos Query从 - 掘金
+https://juejin.cn/post/7416562712023334966
+7d340f3f760b1d950f29747526397cbd
+----
+千万级高性能长连接Go服务架构实践
+https://mp.weixin.qq.com/s/E8rO4uBkFpcLAb_LsBOphw
+7d56bd12f7ce4e49c7679dc0a74db7e0
+----
+单体架构和微服务架构到底哪个好？
+https://mp.weixin.qq.com/s/XTHhcaHPcvu4qvgk6Gn8yg
+7de0d091d91c88f84dcf3593a6f7462d
+----
+MySQL好玩新特性：离线模式
+https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939795&idx=1&sn=09fb7a57c221b1a33d1cb102c4118a0c&chksm=bd3b72398a4cfb2f840faac4c435a23b9f4d32892653e5a728595901fc5003111a1d5b13fed3&scene=178&cur_album_id=1337959503719137280#rd
+7e890105f953a5640b5d254878d8d5a9
+----
+MongoDB 提升效能的18原則（開發設計階段）
+https://topic.alibabacloud.com/tc/a/18-principles-for-mongodb-boost-performance-development-design-phase_1_45_30001027.html
+80289b23686d00a83a80ca6767f3eb4f
+----
+xtrabackup 8.0如何恢复单表-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/1970574
+813c74ea2eee6595f183870c6c05af83
+----
+MySQL8索引篇：性能提升了100%！！-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/2023881
+814120882b6dc79670eb6ef15d5d275d
+----
+MySQL一条命令生成数据库巡检报告进阶-生成更好看更美观的报告
+https://mp.weixin.qq.com/s/NwUdE9S-6hvxqRD88nB5Fw
+81bbce42402ad3067c110d8408b6b2f2
+----
+异地多活架构进阶：如何解决写后立即读场景问题？
+https://mp.weixin.qq.com/s/ymLxvExLhtW1ZqYVPnf3kg
+81bdab7c9176334dde17b66f985af117
+----
+PostgreSQL 17 主从部署、配置优化及备份脚本最佳实践 - 墨天轮
+https://www.modb.pro/db/1888138845368102912
+825f016a8bf6ec8012fbbcff9da759e6
+----
+架构提效的矛盾和矛盾的主要方面
+https://mp.weixin.qq.com/s/mEIVt4lkkDdr9O0xWSlCiQ
+82ca5379bc881cf9c7fb9bcc7785428c
+----
+20.1k star! 太强了，一个浏览器直接能跑20+种操作系统！
+https://mp.weixin.qq.com/s/wn2KkWDnexTCk0HR-Y2A1w
+82d9c578076157c35ced42d85a3e94d1
+----
+网易互娱的数据库选型和 TiDB 应用实践计费组是为网易互娱产品提供统一登录和支付高效解决方案的公共支持部门，对内是互娱 - 掘金
+https://juejin.cn/post/6844903975813120007
+8366ac8078d401444ca48174d32e1197
+----
+MYSQL proxysql 在深入 信息获取和信息输出-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/1695487
+836dd0d3a1fafd647498cb0d2cbe5083
+----
+(2 封私信) Redis LRU 算法和LFU算法 - 知乎
+https://zhuanlan.zhihu.com/p/363750871
+83bd3cfd4b71fc8fb1ebfbc9cc02eb91
+----
+jerry048/Tune
+https://github.com/jerry048/Tune
+83d996e5abc2f5d910e35c6f73dfa4f8
+----
+DBA是个创业成功率比较高的职业
+https://mp.weixin.qq.com/s/c0M4ePXGjn5426-IBjaaAA
+8413ed49d763ba958296992331692b3e
+----
+学会这招轻松解决数据库分布式锁痛点
+https://mp.weixin.qq.com/s/njSX6nHhLlTMfaoKgZzphg
+860d10697bbb76c235fcd77274dab0fb
+----
+Redis 分布式锁：实现与应用在分布式系统中，为了保证数据的一致性和并发控制，常常需要使用分布式锁。Redis 作为一 - 掘金
+https://juejin.cn/post/7411480128528973878
+86d4255c1e9b4491db7e123bc5356267
+----
+黄东旭：“向量数据库”还是“向量搜索插件 + SQL 数据库”？丨我对 2024 年数据库发展趋势的思考 - 墨天轮
+https://www.modb.pro/db/1757838903222554624
+86e6ff1f64f293b7dbda6ccc1fad65e3
+----
+架构师之道：架构演变史：从建筑学到架构设计“Arkitekton”直译为“主建筑师”，揭示了“架构”一词背后的深层含义， - 掘金
+https://juejin.cn/post/7360535023915991090
+8704c7ff9b9fa201451e5d17e8e1c243
+----
+程序员，当你意识到这一点，说明你成熟了...
+https://mp.weixin.qq.com/s/ovZN7ikLy2cwOgWPQ5TR4w
+887c7e2b69aa6bead1af5e79229cd57c
+----
+数据库慢SQL治理，让业务跑得更快 - 墨天轮
+https://www.modb.pro/db/1881879271417851904
+88c8a4cc3a0652039894b5a92745d5d7
+----
+提升用户体验的UUID设计策略
+https://mp.weixin.qq.com/s/m0IMJY_F4CcFFJ2KNIO15A
+89f733a8723e36f2f85fe570fbe1ce02
+----
+直观且高效！一个 Redis 可视化工具！Redis Insight —— 一个基于 Electron、Monaco E - 掘金
+https://juejin.cn/post/7460116391192363058
+89f9984a8f95983ed998b21c78e1358e
+----
+15个系统设计权衡关键点：构建高性能系统的黄金法则在系统设计中，性能是一个关键的考量因素，尤其是在面对大规模用户、复杂业 - 掘金
+https://juejin.cn/post/7460386228237254719
+8b00523b7afd9201d9eba6bc4ceb6f1b
+----
+中小银行如何构建智能风控体系？明确业务需求比盲目求新更重要_银行_李忠良_InfoQ精选文章
+https://www.infoq.cn/article/a1uk0eGDAxBQN8F8AcFY
+8b0dc82c8bc537b2bfadc1194f6dda77
+----
+知乎 PB 级别 TiDB 数据库在线迁移实践导读 本文由知乎数据库负责人代晓磊老师老师撰写，全面介绍了知乎几十套 Ti - 掘金
+https://juejin.cn/post/7418412937607708708
+8b12c380d76b70ee02aeec4ff21f3d63
+----
+How a new database architecture supports scale and reliability in TiDB | InfoWorld
+https://www.infoworld.com/article/2336288/how-a-new-database-architecture-supports-scale-and-reliability-in-tidb.html
+8e431cf3f342da1daa965db08504102f
+----
+如何阅读MySQL死锁日志-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/2185083
+8e61ea932eead7717bffe5e2796f001a
+----
+Multi-Region Distributed SQL Transaction Latency - DEV Community
+https://dev.to/aws-heroes/multi-region-distributed-sql-transaction-latency-512n
+8feff8720c498d0cc1d51b5c453d23c9
+----
+microsoft/garnet: Garnet is a remote cache-store from Microsoft Research that offers strong performance (throughput and latency), scalability, storage, recovery, cluster sharding, key migration, and replication features. Garnet can work with existing Redis clients.
+https://github.com/microsoft/garnet
+90b30a59a13f8100785328229e12c2f4
+----
+天啊，这个MySQL故障定位方法太好用了！ - 环信
+https://www.easemob.com/news/6560
+913838650560b9b03c229fddfad4cdd3
+----
+B站直播S14保障全解析：高效保障技术实践
+https://mp.weixin.qq.com/s/Qci7QYgUtpvwsP8l7n1fpw
+919208eda3c2cbdf3d382535ea6588fe
+----
+详解 Redis 分布式锁的 5 种方案-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/2321395
+91fb322e736a26fcf759fec5ed8d65f3
+----
+从零开始学习MySQL调试跟踪（1）
+https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939856&idx=1&sn=7103a8215ec2b8c6278f94c3cc011c0a&chksm=bd3b72fa8a4cfbec8b8584ba04f6ec980e59826bbbf29c30e699121b91871c2fbe24307fdb97&scene=178&cur_album_id=1337959503719137280#rd
+922b703f278bb1f6fe3372861644106e
+----
+【稳定性】稳定性建设之依赖设计背景 随着分布式微服务的发展，一个普通的应用可能会依赖于许多其他服务，这给系统的限流降级、 - 掘金
+https://juejin.cn/post/7348363874964045824
+92d095e0a7ede211a14fbe4ef30812e3
+----
+Terraform — Best Practices. Best practices for using Terraform. | by Ashish Patel | DevOps Mojo | Medium
+https://medium.com/devops-mojo/terraform-best-practices-top-best-practices-for-terraform-configuration-style-formatting-structure-66b8d938f00c
+92db090625bfc7b86caa1cf54d6814d2
+----
+打破认知幻像：你写的SQL是否如你心意？ - 墨天轮
+https://www.modb.pro/db/1788830043766067200
+93780619a420a021f8a62310bf13318e
+----
+基于主动元数据构建智能数据治理体系|京东零售技术实践
+https://mp.weixin.qq.com/s/E-WFkKoExKyEFHfwe6bMqw
+9398151483b56361b103e7ad85c07221
+----
+后端架构师必备：提升系统性能的 6 大核心优化策略【说明】全文约 16000 字，阅读需要约 30 分钟。是关于后端性能 - 掘金
+https://juejin.cn/post/7416529648417488948
+9425cd7265c2bc64e72af5ac5b1c551c
+----
+美团二面:如何解决Redis热点key问题大家好，我是田螺。 有位星球粉丝去美团面试，被问到：Redis的热点Key是怎 - 掘金
+https://juejin.cn/post/7411480128529137718
+9481b6b1dc40262da708cc295fcfcf53
+----
+一名开发者眼中的 TiDB 与 MySQL 的选择丨TiDB Community | PingCAP 平凯星辰
+https://cn.pingcap.com/blog/choice-between-tidb-and-mysql/
+952a764dbd7eedde0553cb5770b52c05
+----
+mysql 内存使用率高问题排查 - 墨天轮
+https://www.modb.pro/db/1887320605045829632
+97425cfd61349709f701d3e36551b7cf
+----
+[MySQL FAQ]系列 — MySQL复制中slave延迟监控-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/2185089
+9793d273762077412ec1100458f4fee7
+----
+攻克多版本运维难题：爱奇艺百套 TiDB 集群升级至 v7.1.5 实战宝典来袭！
+https://mp.weixin.qq.com/s/o1cvyD8q9BOv1pPcUaZClw
+9929353f479a3a7a23234d1e51b7376a
+----
+瓜子二手车 x TiDB 丨平均耗时降低 30%，TiDB HTAP 在瓜子二手车财务中台结账核心系统的深度实践 - 掘金
+https://juejin.cn/post/7418408493650362387
+994273e100bbe317b24d730c3600aa47
+----
+开源全方位运维监控工具：HertzBeatHertzBeat：实时监控系统性能，精准预警保障业务稳定- 精选真开源，释放 - 掘金
+https://juejin.cn/post/7358691823545663523
+99574e36ba022a0a02cf9b9545f7d55a
+----
+TiDB 整体架构 | TiDB 文档中心
+https://docs.pingcap.com/zh/tidb/stable/tidb-architecture
+99ab36a846be3cd2bd2237ea2ff882da
+----
+【专家有话说第四期】多年DBA实战生涯有哪些经验教训、常见误区？ - 墨天轮
+https://www.modb.pro/db/1858459514144567296
+9a3940bcde09289b13996507d0bb3452
+----
+爱奇艺大数据多 AZ 统一调度架构
+https://mp.weixin.qq.com/s/Hmpe7cgVEfWRBfMvFFkGPw
+9a76ee763859f779a95930cd98f997d1
+----
+高性能无锁并发框架Disruptor，太强了！前言 Disruptor是一个开源框架，研发的初衷是为了解决高并发下队列锁 - 掘金
+https://juejin.cn/post/7325684511253839898
+9ab508ea9d37ca7e68022a4d97c17d86
+----
+从MySQL迁移到PostgreSQL经验总结最近一两周在做从MySQL迁移到PostgreSQL的任务(新项目，历史包 - 掘金
+https://juejin.cn/post/7460410854775455794
+9b34444b962ceaf7a53426a01d11698e
+----
+The Optimizer Cost Model from MariaDB 11.0 | MariaDB Documentation
+https://mariadb.com/docs/general-resources/development-articles/mariadb-internals/mariadb-internals-documentation-query-optimizer/the-optimizer-cost-model-from-mariadb-11-0
+9b85d8a7fc8e89c6fd28c45d4d15b9e1
+----
+招行面试： 分布式调度 设计，要考虑 哪些问题？
+https://mp.weixin.qq.com/s/8yMhYexEcSf_LGjAEVRO7w
+9de93ff7cc8284361c55959ed7b7b58a
+----
+processlist中哪些状态要引起关注 · MySQL FAQ系列整理 · 看云
+https://www.kancloud.cn/thinkphp/mysql-faq/47446
+9e92b067b97402a563e5c4b170238c0c
+----
+MySQL ProxySql 由于漏洞扫描导致的 PROXYSQL CPU 超高-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/1706112
+9f30c18db7a9308c4d4fc06a8b4e45c1
+----
+数据库内核工程师必读论文清单
+https://mp.weixin.qq.com/s?__biz=MzI2NDU4OTExOQ==&mid=2247677031&idx=1&sn=a5d627c47d987bd8fe8f53ab27d8ed81&chksm=eaa62e37ddd1a721c300ac30d3a9c75b9dca023d3b32a6582a09799cf1084d2cf69e2e7d73b5&scene=178&cur_album_id=2650119358723145730#rd
+a2487e6a2ea1cdfdfc4320249e7d1208
+----
+MySQL-extra常见的额外信息 - 墨天轮
+https://www.modb.pro/db/1772429352336166912
+a298dd2bf5726df03a02ce438b399390
+----
+专栏 - 一文概述TiDB中的索引类型 | TiDB 社区
+https://tidb.net/blog/d2e54cba
+a2deaba167d624726b75f88ce7683a87
+----
+PG vs MySQL mvcc机制实现的异同 - 墨天轮
+https://www.modb.pro/db/1879802616004227072
+a2eba635f7a208fceb4b1753c6184b17
+----
+数据库性能优化之道：Buffer Pool 深度剖析（三）1. Buffer Pool 与数据库操作的简单理解 通俗解释 - 掘金
+https://juejin.cn/post/7459286862831845427
+a341f53008e995783c31665b88ea62d8
+----
+轻松驾驭！Prometheus 如何监控指标，快速定位故障 - 运维派
+https://www.yunweipai.com/44575.html
+a4321b7b5f8ee0884724922720b61595
+----
+使用MariaDB Thread Pool實現DB端的連接池 - 進擊的網管Jay
+https://www.sre-devops.info/mariadb-thread-pool/
+a496ce8991961e0a30a98cdcb608319d
+----
+xykt/IPQuality: IP质量检测脚本 - IP Quality Check Script
+https://github.com/xykt/IPQuality
+a4bece0fd22b660823f13109f8c9c56d
+----
+Day30 Redis架構實戰-Redis Request Routing/效能監控與調教 - iT 邦幫忙::一起幫忙解決難題，拯救 IT 人的一天
+https://ithelp.ithome.com.tw/articles/10281889
+a586506fbf5e39188e8662c2a5ef36ae
+----
+再谈Raft一致性算法本文基于对分布式存储以及Raft算法的理解，再浅浅的分析分布式存储以及Raft为解决分布式系统问题 - 掘金
+https://juejin.cn/post/7393606971927248911
+a63b722e337c94c448469cbaeda2780a
+----
+MySQL进阶之路（二十一）—— 5分钟搞懂MySQL中的优化器与成本模型_mysql中的true card cost-CSDN博客
+https://blog.csdn.net/weixin_44829930/article/details/121658314
+a69f1499718af619f505a7bc9a176ea0
+----
+MYSQL 8 VS MYSQL 5.7 在复杂查询中 到底好了多少 - 墨天轮
+https://www.modb.pro/db/21707
+a6a1c3c0e928e9f97c6e3fc32e91ce5d
+----
+单元化架构在字节跳动的落地实践
+https://mp.weixin.qq.com/s/D01aZ5uNbuXCAjELMC1h3w
+a7a153849277d6daeda5f742f7b4499c
+----
+从一个事故中理解Redis（几乎）所有知识点
+https://mp.weixin.qq.com/s/39Q5-vvIBmlmRVW8tzdjyA
+a83040219e29aee212c16a1479831a52
+----
+如何做标准化？| 京东云技术团队 · 测试之家
+https://testerhome.com/column_channels/38873
+a83ab541d88ff0e8ac0314cd43a161a1
+----
+一次“诡异”的 Ansible 密码问题排查，最后的“真相”竟是这样_LinkSLA智能运维管家的技术博客_51CTO博客
+https://blog.51cto.com/u_15576159/5868439
+a85522ecb488168b0df0394577ff026b
+----
+ArgoCD 的雷 碰過的人就知道 @TSMC IT Community Meetup #4 | PPT
+https://www.slideshare.net/slideshow/argocd-tsmc-it-community-meetup-4/271235173
+a9a45617eedb98682e148905278d00f1
+----
+MySQL高阶调优，一文让你从入门到精通！ - 墨天轮
+https://www.modb.pro/db/1734824646452256768
+aa5eda94ae1f55aaf2e53ca0bef8e683
+----
+Upgrading GitHub.com to MySQL 8.0 - The GitHub Blog
+https://github.blog/engineering/upgrading-github-com-to-mysql-8-0/
+ab87bac92f55d2e012d82cbf529154f5
+----
+【TiDB 社区第三届专栏征文大赛】TiDB 在单机上模拟部署生产环境集群 - 墨天轮
+https://www.modb.pro/db/1793938829178130432
+abd1e7518133ab15bc87e957a32b00b7
+----
+TiDB x DeepSeek 打造更好用的国产知识库问答系统解决方案 - 墨天轮
+https://www.modb.pro/db/1887283115119357952?utm_source=index_ori
+ac58ca0b42a9832dd7b708c2c7f5a566
+----
+再聊对架构决策记录的一些思考1 引言 第一次在社区发文聊ADR（架构决策记录）是在2022年8月份，在文章（ 轻量级AD - 掘金
+https://juejin.cn/post/7344567669892595752
+acd99de92c32e4d3c54c7d710714ccd8
+----
+五年沉淀，微信全平台终端数据库WCDB迎来重大升级！
+https://mp.weixin.qq.com/s/RWCqLD0M_WGCrCcz0oQIcQ
+add7e8f0135831a046531de5ef1ef67b
+----
+MySQL 学习系列：01_安装部署MySQL 8.2.0 并使用changer master 传统方式搭建部署一主一从操作记录 - 墨天轮
+https://www.modb.pro/db/1759486743346761728
+adff8ea24b970c9925d7421a9c0d0708
+----
+MySQL 如何插入记录的 Undo 日志？Undo 模块的第二篇，聊聊插入记录产生的 Undo 日志格式。 > 作者： - 掘金
+https://juejin.cn/post/7456616263915257871
+ae312ce915141a3b796a129cd7d7170b
+----
+Linux 8 快速安装 PostgreSQL 17.2 - 墨天轮
+https://www.modb.pro/db/1869408088034394112
+ae414e4585126b7eff4d087d8839968d
+----
+TiDB 8.5 LTS 发版——支持无限扩展，开启 AI 就绪新时代
+https://mp.weixin.qq.com/s/Q4bAEZgzK_usZNswDiOH6g
+ae6616771df941ce874202bb047524f3
+----
+你需要什么样的资源隔离？丨TiDB 资源隔离最佳实践本文以实际案例为切入点，详细解读了 Placement Rules - 掘金
+https://juejin.cn/post/7460215684438818850
+af6b995ef368286d525216dce480e634
+----
+一键启动 Oracle Database 23c Free - 墨天轮
+https://www.modb.pro/db/1772307167801085952
+afb454044deb7c2fb8e95d70070900fa
+----
+dragonflydb/dragonfly: A modern replacement for Redis and Memcached
+https://github.com/dragonflydb/dragonfly
+afecd65684d2f2a9566d8d83211a72e9
+----
+架构师必备10大接口性能优化秘技，条条经典！
+https://mp.weixin.qq.com/s/CQ-ePndjTSqCZ9l6YdwUUA
+b0b7db4bb8f74dbe80c088d52dd5fa55
+----
+数据库性能优化之道：Buffer Pool 深度剖析（一）1. 什么是 Buffer Pool？ 通俗解释： Buffe - 掘金
+https://juejin.cn/post/7459285932069797898
+b0e035468657e143017813f07af2263f
+----
+MySQL 8.0版本mysqld消耗大量主机内存不释放还可能导致数据库重启【排查与解决】
+https://mp.weixin.qq.com/s/vR8TDW-Md5-2rUm6MgbU6Q
+b0f328c98f3099e1010db8564c79a3e1
+----
+这句简单的sql，如何加索引？颠覆了我多年的认知掘金多能人，原理性内容可留言。 不啰嗦，直接入正题。问题是这样的。请问下 - 掘金
+https://juejin.cn/post/6844903927821893646
+b121609000b4d8151c7644a80e0b1da1
+----
+为何要小表驱动大表？为什么要小表驱动大表？ MySQL在执行Join操作时，优先使用较小的表作为驱动表（也称为外层表）去 - 掘金
+https://juejin.cn/post/7460125459046481920
+b15cea0e52bc2b147a982bd0d42b77f5
+----
+Top key metrics for monitoring MySQL | Sysdig
+https://sysdig.com/blog/mysql-monitoring/
+b3172b34c930168aaa8f7c70759de72d
+----
+blueswen/observability-workshop-101: Build a lab scale end-to-end Observability Platform.
+https://github.com/blueswen/observability-workshop-101
+b49bd03601324599bb5aec4fbdd0835b
+----
+谈谈分布式数据库的分片键选择准则和数据重分布的思考 - 墨天轮
+https://www.modb.pro/db/1827055525554642944
+b4b1abba675ec98a51ed46678dd748af
+----
+千万级数据深分页查询 SQL 性能优化实践 · 测试之家
+https://testerhome.com/column_channels/38863
+b4c969cc750dfea59f6824a3c3a6884a
+----
+爆发式增长业务的高可用架构优化之路_阿里巴巴_Xue Liang_InfoQ精选文章
+https://www.infoq.cn/article/g0AHX9q7whjA3XxMv1do
+b5c82627ea7a00b7d09324820dd309ac
+----
+Innodb的覆盖索引实践 - 墨天轮
+https://www.modb.pro/db/1759522060955111424
+b79dbda815b5964f80e03209fc7b8e33
+----
+图数据库采购 | 做好三大问题的前置思考 - 墨天轮
+https://www.modb.pro/db/1783376071580258304
+b7ac18169e19ad481417d57f8691ddd1
+----
+MySQL OCP 认证考试你知道吗？ - 墨天轮
+https://www.modb.pro/db/53492
+b7c012df75c4a8c65ceb74ab23a90ab6
+----
+技术分享 | 数据库产品选型测试 集中式与分布式 - 墨天轮
+https://www.modb.pro/db/1753305412787064832
+b7fb2cf132e9b86c3637ef3e3767376b
+----
+故障分析 | 为什么 MySQL 8.0.13 要引入新参数 sql_require_primary_key？
+https://mp.weixin.qq.com/s/qZ7sMBMFfvKiIhErQAPqVQ
+b99633e6d09d838bd40f4241534d131e
+----
+缓存有大key?你得知道的一些手段
+https://mp.weixin.qq.com/s/uM29jpkGlprQKIXho9w_AQ
+b9baf5df840c23c5921f322b1d662874
+----
+actiontech/sqle: 一个支持多种不同类型数据库，覆盖事前控制、事后监督、标准发布场景，帮助您建立质量规范的SQL全生命周期质量管理平台
+https://github.com/actiontech/sqle
+bafa55700417ec6e1448c610ccf633dd
+----
+数据指标体系搭建实践
+https://mp.weixin.qq.com/s/l_9CJGsdKjV9pIOgkqncsQ
+bc1e1aaf502c59c8416a933e838f545e
+----
+Undo 表空间分配回滚段事务写第一条 Undo 日志之前，需要先分配回滚段。 > 作者：操盛春，爱可生技术专家，公众号 - 掘金
+https://juejin.cn/post/7456613918410457103
+bc6f838fdd36f9c671f80a91cab79951
+----
+TiDB 资源管控的对撞测试以及最佳实践架构本文将从业务角度切入，通过对不同类型业务(OLTP 和 OLAP)在资源管控 - 掘金
+https://juejin.cn/post/7387568946339774516
+bf72f910f228526b8a13ab54f5299b4c
+----
+MySQL数据库idb文件过大处理方法
+https://mp.weixin.qq.com/s/F_neAD1Ujmi2WIKJQYZqBw
+c1131b0454f0681cee2e3419ff02c5fe
+----
+Redis Multi-Threaded Network Model - SoByte
+https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/
+c1c5a19002363ec9e4f3d22659442fce
+----
+DBdoctor产品体验报告 - 墨天轮
+https://www.modb.pro/db/1784496701532360704
+c21523ba09f0a9369ac170ed350c6716
+----
+Oracle Database 23ai 体验 - 墨天轮
+https://www.modb.pro/db/1786585474910998528
+c5a76aae24d9e59bbb652f3cac0f0373
+----
+MySQL如何加速读写速度？来看看Buffer Pool什么是 Buffer Pool 什么是 Buffer Pool？ - 掘金
+https://juejin.cn/post/7461825527058546726
+c5ccce85f8dd2d29e4493536ecda5797
+----
+这些年背过的面试题——MySQL篇
+https://mp.weixin.qq.com/s/L26rI11OV8hrfJVy5Yu78g
+c5f0e561e700c1ccba0c1fa2ba7ab330
+----
+2025 年宣布一件大事，Oracle 一键安装脚本开源了！ - 墨天轮
+https://www.modb.pro/db/1878623781711785984
+c6d772c8efb21f71e0ac6c7c4556c7c8
+----
+高频面题： 你们线上 QPS 多少？你 怎么知道的？
+https://mp.weixin.qq.com/s/Q8niqMkUhixL7NlQIUgvaA
+c6d910c00e0be92213b9cc93886ca326
+----
+新闻 | MySQL 9.2.0 有哪些功能新增、弃用和删除？2025 年 1 月 21 日，MySQL 9.2.0 版 - 掘金
+https://juejin.cn/post/7468533169965596699
+c6fa92e5ff944c2e247abef4b82d02a3
+----
+MySQL数据库审计采集技术调研之Packetbeat，eBPF-阿里云开发者社区
+https://developer.aliyun.com/article/852651
+c7fe39393f4a540c8962e2a8d7ef3ebe
+----
+浅析MySQL代价估计器-阿里云开发者社区
+https://developer.aliyun.com/article/1450053
+c7fe501ea5c0351c788748b4669f0b48
+----
+【建议收藏】7000+字的TIDB保姆级简介，你见过吗## TIDB简介 ![Database of Databases - 掘金
+https://juejin.cn/post/7213956241613684797
+c878673f99e69883937d54a6b5b740df
+----
+34.5K star！又来一款全能开源笔记神器，超好用！
+https://mp.weixin.qq.com/s/RZ2rGq7eZOh1fzdTNeLanA
+c95827d768117332fbe12c185270d3c1
+----
+为什么高手都要用非阻塞IO？非阻塞I/O极大的提高了系统运行效率。另外还有很多同学说非阻塞IO快，阻塞IO慢，真的是这样 - 掘金
+https://juejin.cn/post/7381752542982520886
+c96f1895052b469c48c42ddb0c22b9a0
+----
+Galera Cluster一致性问题本文主要说明MariaDB Galera Cluster + ProxySQL 方 - 掘金
+https://juejin.cn/post/6961245441136525320
+c987ef17da2cd800c929f41f933f30f9
+----
+MVCC如何应对MySQL并发问题数据库使用事务来保持数据最终一致性，但是在并发下执行事务，会引起脏读、不可重复读、幻读 - 掘金
+https://juejin.cn/post/7460346925407240232
+ca14bed799d35fc4adb9a0f62af1bd8a
+----
+过度设计的架构师们，应该拿去祭天我发现一个非常有趣的现象。 十多年前，那时“美女”这个称谓还是非常稀缺值钱的，被这么称呼 - 掘金
+https://juejin.cn/post/7287144182967107638
+cafa830ebf998bb3583c865eb01444cd
+----
+彩虹桥架构演进之路-负载均衡篇｜得物技术
+https://mp.weixin.qq.com/s/5q7XOs2bC55coE12wcHIbA
+cb41093a0ba5cf6f375f46b3e1e3ff96
+----
+DBCP一个配置，浪费了MySQL 50%的性能！1. 引言 研究背景 数据库性能的重要性 数据库性能优化对于保证应用的 - 掘金
+https://juejin.cn/post/7350214909056483366
+ccb59c456a3bd191d7826ccb513aa08c
+----
+Mysql DATETIME 毫秒坑今天写代码突发一个诡异的 bug，代码逻辑大概如下。 先生成退款单入库，再调京东接口 - 掘金
+https://juejin.cn/post/7460418134312255514
+cde9a293df0148928f7f6abdb8d99c8e
+----
+架构师之道：介绍了那么多，技术中架构到底什么？通过前面的介绍，我们对架构的历史脉络有了一些基本的认识。我们来深入思考一下 - 掘金
+https://juejin.cn/post/7360990621853138970
+cfd2624b5bcccd703547d420ed4ca6c1
+----
+MySQL 数据库认证考试介绍（2024 版）
+https://mp.weixin.qq.com/s?__biz=MzU5NzQ0ODU2Ng==&mid=2247484391&idx=1&sn=2687de6db8909bb67505e0dd85154305&chksm=fe5201fec92588e84c2f559ef9a22bfe4504d704e50841431f04b406f1208653cdf9df65e399&cur_album_id=3002610604030836737&scene=189#wechat_redirect
+d031211a2d6e799ebde9a48c5f5e255b
+----
+针不戳！GitHub Actions 入坑指南什么是 GitHub Actions？ 相信关注技术前沿的同学，多少也了解 - 掘金
+https://juejin.cn/post/6960126908180725773
+d13e12a68a7744bac4a4c20663d079a4
+----
+[MYSQL] mysql数据加密原理和解析 - 墨天轮
+https://www.modb.pro/db/1839571466908610560
+d1599c75c0446a7645889953a54ed234
+----
+出海案例合辑丨TiDB Cloud 在金融、社交、智能风控领域的最佳实践 - 墨天轮
+https://www.modb.pro/db/616890
+d17e415e3ea9f029b01340b4871dd160
+----
+TiDB 社区智慧合集丨TiDB 相关 SQL 脚本大全 | PingCAP 平凯星辰
+https://cn.pingcap.com/blog/tidb-related-sql-script-collection/
+d2b3ef56ccfd2ae6244fd35de8c7c8bd
+----
+效率+100%: MySQL运维脚本大揭秘
+https://mp.weixin.qq.com/s/QODPfuInGvwuompEIIzRLA
+d2ba048e0f911a5cdd01fd9fa96b859c
+----
+guide/数据库规范/Mysql数据结构设计及开发规范.md at master · wanfangdata/guide
+https://github.com/wanfangdata/guide/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%A7%84%E8%8C%83/Mysql%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1%E5%8F%8A%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83.md
+d30f1d26fac1b8e04980a7f140c504c4
+----
+MySQL数据库面试题总结（2022最新版）_mysql面试题-CSDN博客
+https://blog.csdn.net/adminpd/article/details/122910606
+d35c4e4aac3ce13fbc2a096f93a6ca98
+----
+专栏 - 干掉DBA！产品经理运维 TiDB，用非技术手段攻克技术挑战 | TiDB 社区
+https://tidb.net/blog/14f041fe
+d386afd23ee5ad3fa31a559ace99110c
+----
+自动化的 10 项准备工作 · 测试之家
+https://testerhome.com/articles/38867
+d3a854f925bc3e4c738bb5bd5481f95b
+----
+基于时间维度水平拆分的多 TiDB 集群统一数据路由/联邦查询技术的实践
+https://mp.weixin.qq.com/s/r4hKZdRrQ9fVF7I2acs4-g
+d4e783dc4c78c15bde1f58f19bcd1e21
+----
+mysql一键安装脚本分享 - 墨天轮
+https://www.modb.pro/db/1869582557990367232
+d51a210888d75c34c12f3f2b5d887459
+----
+数据库高可用架构的尽头是RAC吗？
+https://mp.weixin.qq.com/s/BGRaf08kJA6d5_JCL1qBuw
+d5c67c9dabfacf13dbf7d7b7a460938a
+----
+远程开发和 CI 一回事
+https://mp.weixin.qq.com/s/kLL0uH1CAZdCGGVMOv2fwQ
+d73fc36354cc01a508c070aa678423e5
+----
+Redis 缓存击穿（失效）、缓存穿透、缓存雪崩怎么解决？-redis缓存穿透
+https://www.51cto.com/article/703396.html
+d74fed5a0ea1396efe26284e1e7e0dc9
+----
+選擇 IaC 工具是多選題，而不是單選題 - 魂系架構 Phil's Workspace
+https://blog.pichuang.com.tw/20230301-iac-personal-experiences.html
+d767729aa8c1ba344a005fd2c957e3a0
+----
+不可思议！平均执行耗时仅1.5ms的接口在超时时间100ms下成功率竟然还不到5个9！！本文深入分析了平均耗时仅有1.5 - 掘金
+https://juejin.cn/post/7459797004202508314
+d878c8bd4435c697819401293e6cb373
+----
+数据库指标集的设计思路
+https://mp.weixin.qq.com/s/qbA6B6nJCn_NWxc--CwOLA
+d8d64e1cf5a12828ca30a9f84dce3ff6
+----
+MySQL运维实践｜稀里糊涂的解决了MySQL子账号过期、密钥问题 - 墨天轮
+https://www.modb.pro/db/1881545691021979648
+d8fe534bcb7c4945ecc285d3f14d044e
+----
+kejilion/sh: KEJILION.SH 一款全功能的Linux管理脚本！An all-in-one Linux management script!
+https://github.com/kejilion/sh
+da9ec6ae216546915b14e556228aacf6
+----
+MySQL 分配 Undo 段分配完回滚段，接下来该分享 Undo 段了。 > 作者：操盛春，爱可生技术专家，公众号『一 - 掘金
+https://juejin.cn/post/7456622508910067739
+dacc7b2ec50c463fd88b3c0f76cfad04
+----
+MySQL8.0后的double write有什么变化 - 墨天轮
+https://www.modb.pro/db/1871454243706646528
+db466c72aba42f19b73eb86c22209606
+----
+《MySQL开发规范》过时了，视图的查询性能提升了一万倍-腾讯云开发者社区-腾讯云
+https://cloud.tencent.com/developer/article/2005391
+dbfd739fa6148e81c1b1e24263eafbf3
+----
+MySQL8.0参数配置不生效问题排查诊断 - 墨天轮
+https://www.modb.pro/db/1774722559522705408
+dc37e86fabf6151f7244030e5ad0f71f
+----
+一次线上生产库的全流程切换完整方案本篇介绍了一次数据库迁移的完整方案。 本次需要改造的系统为一个较为陈旧的技术栈系统，其 - 掘金
+https://juejin.cn/post/7463112586226827303
+dcda36a9b4a96a259d5f64f830720cd6
+----
+专栏 - 一文了解TiDB的数据对比工具sync-diff-inspector | TiDB 社区
+https://tidb.net/blog/23f49fc7
+dd56bb459d0f428afe156adecbfd2455
+----
+Raft一致性算法Raft算法是分布式存储比较常用的一致性算法之一，本文主要还是按照论文顺序来拆分讲解下Raft算法。 - 掘金
+https://juejin.cn/post/7390188606256840704
+de0b10ad6a3933d4997a21c64f7947d7
+----
+B站大数据平台故障自愈实践
+https://mp.weixin.qq.com/s/Gd_YqiCwFuRkemofnom7lw
+de2791b620b63753c4bc05e868e8cbb9
+----
+MongoDB磁盘清理那些事儿_mongodb_循环智能_InfoQ写作社区
+https://xie.infoq.cn/article/d8cb871a7733646996f60641a
+ded2afddbbecda4a36a0bd8da64ba6b1
+----
+【建议收藏】数据库源码学习调试利器之 CGDBCGDB 是 GDB 的一个前端工具，通过提供更丰富的界面来增强 GDB - 掘金
+https://juejin.cn/post/7429591580799680549
+df1ae51824a2a79e5ce2a4ae746cc4c1
+----
+拒绝全表扫描！3个提升MySQL深度分页技巧！分析MySQL深度分页性能问题，并介绍了3种优化方案：子查询接力、游标分页 - 掘金
+https://juejin.cn/post/7471898162028167179
+e1462e7727b76b3201c2f59f40b77572
+----
+分布式系统架构8：分布式缓存1. AP还是CP Redis 集群就是典型的 AP 式，它具有高性能、高可用等特点，但它却 - 掘金
+https://juejin.cn/post/7461631499374100516
+e329d14d82af19f8c8732410e682d876
+----
+多线程读写锁产生死锁的故障解决方案
+https://mp.weixin.qq.com/s/m6JPAkwUdNivsOGft-lR8w
+e3635325a2d98d51abd3e0bd1e897305
+----
+全新升级！TiCDC 新架构试用通道已开启，解锁 TiDB 数据同步新体验
+https://mp.weixin.qq.com/s/RyR2G-aa8nbsMAnpJFhRIw
+e39884e8aca3522cda02bf919f91f604
+----
+Github Action 是什么？能干什么？怎么做到的？如何开发一个action通过这篇文章简单讲一下Github A - 掘金
+https://juejin.cn/post/7348653890587557925
+e41eacaaad9129ff0d437bf1ff5abdbe
+----
+稳定性方法论：可灰度 & 可监控 & 可回滚业务系统核心目标是挣钱，系统稳定性建设核心是防止丢钱（丢钱逻辑如下图所示）， - 掘金
+https://juejin.cn/post/7349002962867896320
+e48e705554489935651e667b574d3058
+----
+高性能！易用友好的开源实时监控系统！HertzBeat —— 一个易用友好的开源实时监控告警系统，无需 Agent, 高 - 掘金
+https://juejin.cn/post/7443353905477959718
+e5a322b63e6589f1fba641056b49008d
+----
+MySQL 是怎么做并发控制的？
+https://mp.weixin.qq.com/s/EjKtAj9H6KpuRlWAfoLYSA
+e6737cbc96da2ff050b837cf2d0e665f
+----
+十年后数据库还是不敢拥抱NUMA？ - 知乎
+https://zhuanlan.zhihu.com/p/387117470
+e70189e2613b25fdc54c24dd0bacdaf2
+----
+奇思妙想的SQL｜兼顾性能的数据倾斜处理新姿势
+https://mp.weixin.qq.com/s/VGgT1faRKGnUuQ-HHQ3Q5g
+e7159a79bff33500e66dcd8c83b194c2
+----
+Redis高级特性与应用——发布订阅、Stream、慢查询、Pipeline、事务、Lua脚本概述 本篇文章概要： 发布 - 掘金
+https://juejin.cn/post/7412486021172248587
+e7827ac48447228327d033fd51d65087
+----
+亚马逊 CTO 20 年架构经验之道：俭约架构师的七大黄金法则！_框架_Tina_InfoQ精选文章
+https://www.infoq.cn/article/09TYeIY7K1hcFuu7tik0
+e7a93957c877ec7aa35b668de07db479
+----
+Oracle 官方文档整理以及阅读指南 - 墨天轮
+https://www.modb.pro/db/1830801976084488192
+e7eca656effbcb1f7a834641d6b4e66e
+----
+深度探索Jemalloc：内存分配与优化实践
+https://mp.weixin.qq.com/s/PuQaqbCpFbtZQBloCEHCdA
+e9306a342d9b36289c228d0dadb76b0c
+----
+得物自建 Redis 无人值守资源均衡调度设计与实现目前，得物 Redis 管理平台管理着几千台 Redis-serve - 掘金
+https://juejin.cn/post/7416247734553067535
+e971799877653511eabc9df4aeea104c
+----
+数据库设计(MySQL)避坑指南 - 墨天轮
+https://www.modb.pro/db/1762011570709229568
+e9e93bba19be3d44d59ca672e4ca49b2
+----
+离线部署TiDB 8.1.0 集群 - 墨天轮
+https://www.modb.pro/db/1794004852519014400
+ea385de9c0b44e5dd00d7baa05e5d0b7
+----
+系统设计中 跨时区问题 解决方案hello，大家好，我是张张，「架构精进之路」公号作者。 一、背景 假如开发一套统一的系 - 掘金
+https://juejin.cn/post/7362722064069869605
+eac970515cc6b06b1b335d2273c954fd
+----
+一文看懂微服务世界性技术难题——分布式事务
+https://mp.weixin.qq.com/s?__biz=MzI2NDU4OTExOQ==&mid=2247676257&idx=1&sn=bb106c9d1f7c1a3dbd3f75b362c9d041&chksm=eaa62b31ddd1a227f6d861c5ef59e5f6c4301995327cbd5e2aa8b62b35ae23818b74debccc5b&scene=178&cur_album_id=2650119358723145730#rd
+ebd1229c005d4aa71c1428465b0cf000
+----
+Redis内存回收1.Redis内存回收 Redis之所以性能强，最主要的原因就是基于内存存储。然而单节点的Redis其 - 掘金
+https://juejin.cn/post/7405770868506492943
+ebd5be6a2515570bc962b5b5532c9494
+----
+TiDB 在个推丨掌握这两个调优技巧，让 TiDB 性能提速千倍！ | PingCAP 平凯星辰
+https://cn.pingcap.com/blog/tidb-in-getui/
+ec20509e594012ab4e3a3bc4200fc1ab
+----
+如何从0-1的建设云上稳定性？
+https://mp.weixin.qq.com/s/D7oZKUO6_2y4joVQUke4ZQ
+ec9347a5eee122f836c568ffffb8a27e
+----
+6种MySQL高可用方案对比分析_mysql的高可用方案-CSDN博客
+https://blog.csdn.net/m0_74825172/article/details/145189428
+eedc3f072f2fb6b4fa133eafc44bdace
+----
+高级SQL优化系列之外连接优化
+https://mp.weixin.qq.com/s?__biz=MzkyODM0NzE1Ng==&mid=2247483813&idx=1&sn=18ecaef134a1c847a2c115d739efa86e&chksm=c21b64def56cedc8eb5d4bdb438085e3771851fa964dca7ba58c113f6f43b2bfa2c1e454a4af&scene=132#wechat_redirect
+ef1d7c7aad615b5d23ecb62a7d6419c4
+----
+你的架构决策记录是否失去了它的目的？_业务架构_InfoQ精选文章
+https://www.infoq.cn/article/B6vpwhb9BYBuGhzwzw7Q
+ef62f06e66fcf9730ad9361a0cacd20b
+----
+技术分享 | 如何使用 bcc 工具观测 MySQL 延迟
+https://opensource.actionsky.com/20200324-mysql/
+f0bc01c71363634b79aaa1216000b41d
+----
+TiDB 中的自增主键有哪些使用限制，应该如何避免？大家好，我是V 哥，在TiDB中使用自增主键时，确实存在一些限制和潜 - 掘金
+https://juejin.cn/post/7416272705513111561
+f24cbbd6a04f8ca036d5113ed745aab5
+----
+【稳定性】从项目风险管理角度探讨系统稳定性背景： 在软件开发过程中，系统稳定性是一个重要的考量因素。它直接影响到软件的性 - 掘金
+https://juejin.cn/post/7348762390387556392
+f26a1d7db8751248a9458210f4ee342e
+----
+DBA的前景怎样？ - 墨天轮
+https://www.modb.pro/db/1695003964748156928
+f282805a621b32c9815451ada68aa6b7
+----
+关于业务架构基础知识的二三事儿： 业务能力_业务架构_钰湚—付晓岩_InfoQ精选文章
+https://www.infoq.cn/article/aFguYFcA85GN3fcMrv7i
+f28a6b0b0c287d980d0e6455bef1aa33
+----
+如何设计一个秒杀系统大家好，我是田螺。 最近有位星球好友问我，如何从整体角度，去设计一个秒杀系统。秒杀系统主要有这几个特 - 掘金
+https://juejin.cn/post/7380604196032495679
+f400595a754aef9c556f00d1fc68154a
+----
+MySQL 8.4 版本(LTS) 发布，一睹为快_mysql 8.4.4lts-CSDN博客
+https://blog.csdn.net/web13688565871/article/details/145270479
+f5afb7bc9f6e72f0554d4b087cb97916
+----
+架构师必备底层逻辑：分层架构设计
+https://mp.weixin.qq.com/s/t3tQbaAEAj-Uqclz0SSaMw
+f6283fbfef4f7fcabb4815abf6dd5846
+----
+GBASE南大通用专家访谈：走进深水区，核心系统需要什么样的（OLTP）数据库？ - 墨天轮
+https://www.modb.pro/db/1780138236219822080
+f71e5577f6761159acd6f588bff82b1a
+----
+sql调优实战：分页语句中你真的了解count stokey吗？sort order by的存在就一定很糟？ - 墨天轮
+https://www.modb.pro/db/1856961890262462464
+f7a8df8b89aff3049775b4d17e41f7a7
+----
+53 倍性能提升！TiDB 全局索引如何优化分区表查询？本文将详细介绍 TiDB 全局索引的工作原理、发展历程以及创建方 - 掘金
+https://juejin.cn/post/7472222630070943754
+f7f8b48dba959823223bde33edbe760d
+----
+美团面试：MySQL为什么 不用 Docker部署？
+https://mp.weixin.qq.com/s/PD-BjDw0G-e2WhBG1dn29A
+fa11d8c9e87a9646e588e48bc28e7d1e
+----
+MySQL运维MySQL运维 创建健壮的MySQL健康检查Python类 在本文中，我们将介绍如何创建一个强大而灵活的P - 掘金
+https://juejin.cn/post/7423106025195028507
+fabc880add2352bb94926c7d4ce0eb7d
+----
+Redis 内存突增时，如何定量分析其内存使用情况 - 墨天轮
+https://www.modb.pro/db/1838027438363865088
+fad7c38e3934be3d1ec05e72c73c16b7
+----
+从零开始学习MySQL调试跟踪（2）
+https://mp.weixin.qq.com/s?__biz=MjM5NzAzMTY4NQ==&mid=2653939868&idx=1&sn=117b3ec4105203d206a6eac31c327533&chksm=bd3b72f68a4cfbe0c15b25136e57f49001702457e50f1ec559c5b4aeb46be6b663343b5d04aa&scene=178&cur_album_id=1337959503719137280#rd
+fb3635d67aa05bfa9595045817adc308
+----
+来来来，快速撸 Redis 一遍！年底了，你发年终奖了么？是不是很不爽？不管是被动毕业还是主动毕业，生活还得继续是不是 - 掘金
+https://juejin.cn/post/7187322861550305341
+fc7fb93fd3428a7643605f8199852f6b
+----
+CentOS 7.9部署MySQL 8.4.3 LTS保姆级手册 - 墨天轮
+https://www.modb.pro/db/1868256418189557760
+fd6dead109635f62ce365e007efaeda7
+----
+什么才是真正的架构设计？
+https://mp.weixin.qq.com/s/7_SU77SKgI-GLyjMZeavsQ
+ff238e5e10abf4370f715e5e481a053f
 ----

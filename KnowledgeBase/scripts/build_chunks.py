@@ -20,6 +20,9 @@ MISSING_PATH = DATA_DIR / "missing_documents.jsonl"
 MIN_CHUNK_CHARS = 350
 MAX_CHUNK_CHARS = 900
 OVERLAP_CHARS = 120
+SENTENCE_END = re.compile(r"[。！？!?;；]\s*|\n{2,}")
+FRONTMATTER_RE = re.compile(r"\A---\n.*?\n---\n", re.DOTALL)
+PAGE_MARKER_RE = re.compile(r"<!--\s*page:(\d+)\s*-->")
 
 
 CATEGORY_RULES = [
@@ -135,6 +138,28 @@ def text_from_filtered_knowledge(path: Path) -> tuple[str, dict]:
     return "\n\n".join(parts).strip(), knowledge
 
 
+def strip_frontmatter(text: str) -> str:
+    return FRONTMATTER_RE.sub("", text, count=1)
+
+
+def page_for_position(page_offsets: list[tuple[int, int]], position: int) -> int | None:
+    """Return the page number whose [start,end) range contains position."""
+    if not page_offsets:
+        return None
+    result = page_offsets[0][0]
+    for page_no, start in page_offsets:
+        if start <= position:
+            result = page_no
+        else:
+            break
+    return result
+
+
+def page_offsets_from_text(text: str) -> list[tuple[int, int]]:
+    """List of (page_no, char_offset) for every page marker found."""
+    return [(int(m.group(1)), m.start()) for m in PAGE_MARKER_RE.finditer(text)]
+
+
 def clean_text(text: str) -> str:
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     text = re.sub(r"\n{3,}", "\n\n", text)
@@ -174,6 +199,17 @@ def split_paragraphs(text: str) -> list[str]:
     return [p for p in paragraphs if p]
 
 
+def safe_overlap(tail: str) -> str:
+    """Trim overlap to start after the nearest sentence boundary."""
+    if not tail:
+        return ""
+    match = list(SENTENCE_END.finditer(tail))
+    if not match:
+        return tail.strip()
+    boundary = match[0].end()
+    return tail[boundary:].strip()
+
+
 def chunk_text(text: str) -> list[str]:
     paragraphs = split_paragraphs(text)
     chunks = []
@@ -186,7 +222,7 @@ def chunk_text(text: str) -> list[str]:
             continue
 
         chunks.append(current.strip())
-        overlap = current[-OVERLAP_CHARS:].strip()
+        overlap = safe_overlap(current[-OVERLAP_CHARS * 2:])
         current = f"{overlap}\n\n{paragraph}" if overlap else paragraph
 
     if current.strip():
@@ -259,11 +295,14 @@ def title_from_text(text: str, fallback: str) -> str:
 
 def build_records_for_document(doc: dict, source_path: Path, source_pdf: Path | None, status: str = "ok") -> tuple[dict, list[dict]]:
     filtered_metadata = None
+    page_offsets: list[tuple[int, int]] = []
     if source_path.suffix == ".json":
         raw_text, filtered_metadata = text_from_filtered_knowledge(source_path)
         text = clean_text(raw_text)
     else:
         raw_text = source_path.read_text(encoding="utf-8", errors="replace")
+        raw_text = strip_frontmatter(raw_text)
+        page_offsets = page_offsets_from_text(raw_text)
         text = clean_text(raw_text)
 
     title = (filtered_metadata or {}).get("title") or doc.get("title") or title_from_text(text, doc["doc_id"])
@@ -296,14 +335,25 @@ def build_records_for_document(doc: dict, source_path: Path, source_pdf: Path | 
     }
 
     chunk_records = []
+    cursor = 0
     for index, chunk in enumerate(chunk_text(text), start=1):
         chunk_category, chunk_tags, chunk_confidence = classify(chunk, title)
+        page_start = page_end = None
+        if page_offsets:
+            search_from = text.find(chunk[:60], cursor) if len(chunk) >= 60 else -1
+            if search_from < 0:
+                search_from = cursor
+            page_start = page_for_position(page_offsets, search_from)
+            page_end = page_for_position(page_offsets, search_from + len(chunk))
+            cursor = search_from + len(chunk)
         chunk_records.append({
             **base_record,
             "chunk_id": f"{doc['doc_id']}:{index:04d}",
             "chunk_index": index,
             "content": chunk,
             "content_hash": content_hash(chunk),
+            "page_start": page_start,
+            "page_end": page_end,
             "primary_category": chunk_category if chunk_category != "待審核" else category,
             "tags": sorted(set(tags + chunk_tags)),
             "chunk_types": detect_chunk_types(chunk),
