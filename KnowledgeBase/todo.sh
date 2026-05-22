@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # todo.sh — LLM filter execution queue (auto-generated)
-# Generated: 2026-05-22 09:06
+# Generated: 2026-05-22 09:22
 #
 # Inventory (snapshot at generation):
 #   Total extracted docs : 897
@@ -28,7 +28,8 @@
 #   make todo            # 單獨重生 todo.sh
 #   make sync            # extract + OCR + chunks + audit + regen todo
 
-set -u
+set -o pipefail   # 讓 `make ... | tee` 抓得到 make 的 exit code
+# 不用 set -u：bash 3.x/4.x 對空 associative array 的處理不一致，會誤觸發 unbound
 cd "$(dirname "$0")"
 
 DRY_RUN=0
@@ -39,6 +40,18 @@ FAILED_LOG=filter_failed.log
 STATE_FILE=.todo.state
 mkdir -p generated/filtered
 touch "$STATE_FILE"
+
+# Ctrl-C / kill 時清掉子程序（make filter_doc / python / codex），不留孤兒
+cleanup() {
+  echo
+  echo "[todo.sh] interrupted, stopping current filter..."
+  pkill -P $$ 2>/dev/null || true
+  pkill -f "scripts/filter_doc.py" 2>/dev/null || true
+  pkill -f "codex exec --cd.*KnowledgeBase" 2>/dev/null || true
+  echo "[todo.sh] stopped. Progress saved in .todo.state. Re-run to resume."
+  exit 130
+}
+trap cleanup INT TERM
 
 # Build "done" set from state file (key=doc_id, value=1)
 declare -A DONE_SET
@@ -981,11 +994,11 @@ for DOC in "${DOCS[@]}"; do
   DONE=$((DONE + 1))
   TS=$(date '+%H:%M:%S')
   echo "[$TS] [$DONE/$TOTAL] filter $DOC" | tee -a "$LOG"
-  if make filter_doc DOC_ID="$DOC" >>"$LOG" 2>&1; then
+  # tee → stdout (前台即時看 token / 5h window) + filter_progress.log
+  if make filter_doc DOC_ID="$DOC" 2>&1 | tee -a "$LOG"; then
     # Mark done in state file (append-only, with UTC timestamp)
     echo "$DOC $(date -u '+%Y-%m-%dT%H:%M:%SZ') ok" >> "$STATE_FILE"
     DONE_SET["$DOC"]=1
-    tail -1 "$LOG"
   else
     FAILED_CNT=$((FAILED_CNT + 1))
     echo "$DOC" >> "$FAILED_LOG"
