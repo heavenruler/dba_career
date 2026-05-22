@@ -1,0 +1,17 @@
+{
+  "phase": "dry-run",
+  "db": "tidb",
+  "topology": "vm-3node-1s1r",
+  "sub_topology": "1s1r",
+  "iso": "rc",
+  "ts": "20260522T095010+0800",
+  "db_host": "172.24.40.32",
+  "node_count": 9,
+  "rf_expected": "1",
+  "rf_actual": "1",
+  "iso_expected": "READ-COMMITTED",
+  "iso_actual": "READ-COMMITTED",
+  "yb_effective_iso": "n/a",
+  "all_pass": true,
+  "fails": ""
+}
