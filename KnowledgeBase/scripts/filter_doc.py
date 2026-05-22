@@ -206,12 +206,15 @@ def call_codex(prompt: str, model: str | None) -> tuple[dict, dict]:
         if model:
             cmd[2:2] = ["--model", model]
 
+        # codex 在大文件 + reasoning 時可能跑 5–10 分鐘；舊版 300s 對 60K char 偏緊。
+        # 可用 env CODEX_TIMEOUT 覆寫（秒）。
+        timeout_s = int(os.environ.get("CODEX_TIMEOUT", "900"))
         proc = subprocess.run(
             cmd,
             input=prompt,
             text=True,
             capture_output=True,
-            timeout=300,
+            timeout=timeout_s,
         )
         if proc.returncode != 0:
             raise RuntimeError(f"codex exec failed ({proc.returncode}): {proc.stderr or proc.stdout}")
