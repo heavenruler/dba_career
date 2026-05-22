@@ -11,7 +11,8 @@
 #
 # Usage (runs on the TPC-C client / .31):
 #   gate.sh --db <tidb|crdb|ybdb> --iso <rc|rr|strict> \
-#           --db-host <ip>       --ts <timestamp>
+#           --db-host <ip>       --ts <timestamp> \
+#           [--topology <vm-1node|vm-3node-...>]    # default vm-1node (legacy)
 #
 # Env (Makefile-provided):
 #   TPCC_ARTIFACTS (default /tmp/poc-tpcc/artifacts)
@@ -20,20 +21,21 @@ set -euo pipefail
 SELF=$(cd "$(dirname "$0")" && pwd)
 source "$SELF/lib/common.sh"
 
-DB="" ISO="" DB_HOST="" TS=""
+DB="" ISO="" DB_HOST="" TS="" TOPO="vm-1node"
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --db)      DB=$2; shift 2 ;;
-    --iso)     ISO=$2; shift 2 ;;
-    --db-host) DB_HOST=$2; shift 2 ;;
-    --ts)      TS=$2; shift 2 ;;
+    --db)       DB=$2; shift 2 ;;
+    --iso)      ISO=$2; shift 2 ;;
+    --db-host)  DB_HOST=$2; shift 2 ;;
+    --ts)       TS=$2; shift 2 ;;
+    --topology) TOPO=$2; shift 2 ;;
     *) die "unknown arg: $1" ;;
   esac
 done
 [[ -n "$DB" && -n "$ISO" && -n "$DB_HOST" && -n "$TS" ]] || die "missing required args"
 
 : "${TPCC_ARTIFACTS:=/tmp/poc-tpcc/artifacts}"
-ROOT=$(artifact_dir "$DB" "vm-1node" "$ISO" "$TS")
+ROOT=$(artifact_dir "$DB" "$TOPO" "$ISO" "$TS")
 mk_artifact_tree "$ROOT"
 flock_phase "$ROOT" "gate"
 

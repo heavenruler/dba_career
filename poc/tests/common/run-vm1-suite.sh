@@ -73,7 +73,7 @@ info "log=$LOG_FILE"
 info "artifact=$(artifact_dir "$DB" "$TOPO" "$ISO" "$TS")"
 
 info "[1/4] gate"
-bash "$SELF/gate.sh" --db "$DB" --iso "$ISO" --db-host "$DB_HOST" --ts "$TS"
+bash "$SELF/gate.sh" --db "$DB" --iso "$ISO" --db-host "$DB_HOST" --ts "$TS" --topology "$TOPO"
 
 info "[2/4] prepare"
 bash "$SELF/prepare.sh" --db "$DB" --iso "$ISO" --topology "$TOPO" --db-host "$DB_HOST" --ts "$TS"

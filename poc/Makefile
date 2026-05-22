@@ -529,8 +529,10 @@ $(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),status-vm3-$(db)-$(sub)-rc
 	@ssh $(TPCC_CLIENT) "ls -la $(TPCC_ARTIFACTS)/$(DB)-vm-3node-$(SUB)-$(ISO)-*/dry-run/ 2>/dev/null | tail -20" || true
 
 # ---- vm3-<db>-<sub>-rc : full chain with EXECUTE=1 safety gate -----
-# Default: deploy + dry-run-confirm; stop at anchor.
-# With EXECUTE=1: continue prepare → gate → run → collect (fetch is manual).
+# Default: destroy-all + deploy + dry-run-confirm; stop at anchor.
+# With EXECUTE=1: Mac 同步跑 deploy 部分，gate→prepare→run→collect 透過
+# launch-vm1-suite.sh on .31 detached（mirror vm1-<db>-<iso> 設計，Mac 啟動後
+# 立刻返回；後續可關屏 / 斷網）。Fetch 仍人工。
 $(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),vm3-$(db)-$(sub)-rc)):
 	$(eval DB := $(word 2,$(subst -, ,$@)))
 	$(eval SUB := $(word 3,$(subst -, ,$@)))
@@ -545,13 +547,17 @@ $(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),vm3-$(db)-$(sub)-rc)):
 	$(MAKE) deploy-vm3-$(DB)-$(SUB)
 	$(MAKE) dryrun-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS)
 	@if [ "$(EXECUTE)" = "1" ]; then \
-	  echo "==> EXECUTE=1 — continuing to gate/prepare/run/collect"; \
-	  $(MAKE) gate-vm3-$(DB)-$(SUB)-$(ISO)    TPCC_TS=$(TS); \
-	  $(MAKE) prepare-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS); \
-	  $(MAKE) run-vm3-$(DB)-$(SUB)-$(ISO)     TPCC_TS=$(TS); \
-	  $(MAKE) collect-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS); \
-	  echo "==> vm3-$(DB)-$(SUB)-$(ISO) complete; ts=$(TS)"; \
-	  echo "==> fetch later: make fetch-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS)"; \
+	  echo "==> EXECUTE=1 — launching detached suite on $(TPCC_CLIENT)"; \
+	  ssh $(TPCC_CLIENT) "env $(TPCC_ENV) bash $(TPCC_SCRIPTS)/launch-vm1-suite.sh \
+	    --db $(DB) --iso $(ISO) --topology vm-3node-$(SUB) \
+	    --db-host $(HOST) --ts $(TS)"; \
+	  echo "==================================================================="; \
+	  echo "  Suite launched detached on $(TPCC_CLIENT) — Mac safe to disconnect."; \
+	  echo "  TPCC_TS:       $(TS)"; \
+	  echo "  Status check:  make status-vm3-$(DB)-$(SUB)-$(ISO)"; \
+	  echo "  Tail log:      ssh $(TPCC_CLIENT) tail -f $(TPCC_BASE)/logs/$(DB)-vm-3node-$(SUB)-$(ISO)-$(TS).log"; \
+	  echo "  Fetch later:   make fetch-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS)"; \
+	  echo "==================================================================="; \
 	else \
 	  echo "==================================================================="; \
 	  echo "  STOPPED AT DRY-RUN ANCHOR"; \

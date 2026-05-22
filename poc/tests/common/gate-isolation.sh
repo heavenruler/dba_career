@@ -3,20 +3,21 @@ set -euo pipefail
 SELF=$(cd "$(dirname "$0")" && pwd)
 source "$SELF/lib/common.sh"
 
-DB="" ISO="" DB_HOST="" TS=""
+DB="" ISO="" DB_HOST="" TS="" TOPO="vm-1node"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --db) DB=$2; shift 2 ;;
     --iso) ISO=$2; shift 2 ;;
     --db-host) DB_HOST=$2; shift 2 ;;
     --ts) TS=$2; shift 2 ;;
+    --topology) TOPO=$2; shift 2 ;;
     *) die "unknown arg: $1" ;;
   esac
 done
 [[ -n "$DB" && -n "$ISO" && -n "$DB_HOST" && -n "$TS" ]] || die "missing required args"
 
 : "${TPCC_ARTIFACTS:=/tmp/poc-tpcc/artifacts}"
-ROOT=$(artifact_dir "$DB" "vm-1node" "$ISO" "$TS")
+ROOT=$(artifact_dir "$DB" "$TOPO" "$ISO" "$TS")
 mk_artifact_tree "$ROOT"
 flock_phase "$ROOT" "gate-isolation"
 
@@ -120,7 +121,7 @@ write_phase_done "$ROOT" "gate-isolation" "$(cat <<JSON
 {
   "phase": "gate-isolation",
   "db": "$DB",
-  "topology": "vm-1node",
+  "topology": "$TOPO",
   "iso": "$ISO",
   "ts": "$TS",
   "db_host": "$DB_HOST",

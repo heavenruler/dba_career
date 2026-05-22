@@ -39,7 +39,14 @@ PREP_DIR="$ROOT/prepare"
 ISO_CONN_PARAMS=$(get_conn_params "$DB" "$ISO")
 DRIVER=$(get_driver "$DB")
 
-info "prepare root: $ROOT  db=$DB iso=$ISO topo=$TOPO host=$DB_HOST"
+# PoC-DESIGN §7.5.4 — vm-3node 每張表預期 shard 數（hard gate 比對基準）
+case "$TOPO" in
+  vm-3node-1s1r|vm-3node-1s3r) EXPECTED_SHARDS=1 ;;
+  vm-3node-3s1r|vm-3node-3s3r) EXPECTED_SHARDS=3 ;;
+  *)                           EXPECTED_SHARDS=0 ;;   # vm-1node / 其他 → 不 enforce
+esac
+
+info "prepare root: $ROOT  db=$DB iso=$ISO topo=$TOPO host=$DB_HOST expected_shards=$EXPECTED_SHARDS"
 
 # ---- 1. DROP + CREATE database ------------------------------------
 case "$DB" in
@@ -75,10 +82,15 @@ case "$DB" in
 esac
 info "drop+create done"
 
-# ---- 2. (vm-3node-1s1r / 1s3r YBDB only) pre-create schema ---------
-# Phase A: skip; Phase B/C: insert pre-create logic here (per §7.5.3)
+# ---- 2. (vm-3node-1s1r / 1s3r YBDB only) pre-create schema with SPLIT INTO 1 TABLETS
+# go-tpc 跑 CREATE TABLE IF NOT EXISTS，pre-create 後它會 skip CREATE；資料照常 INSERT。
+# PoC-DESIGN §7.5.3：YBDB default 3 tservers × ysql_num_shards_per_tserver=1 = 3 tablets，
+# 1s 拓樸要覆寫成 1 tablet 才符合「1 shard」設計。
 if [[ "$DB" == "ybdb" && ("$TOPO" == "vm-3node-1s1r" || "$TOPO" == "vm-3node-1s3r") ]]; then
-  warn "YBDB pre-create with SPLIT INTO 1 TABLETS not implemented yet (Phase B/C scope)"
+  info "YBDB pre-create 9 tables with SPLIT INTO 1 TABLETS"
+  psql "postgres://${USER}@${DB_HOST}:${PORT}/${DBNAME}" -v ON_ERROR_STOP=1 \
+    -f "$SELF/lib/ybdb-tpcc-schema-1tablet.sql" \
+    2>&1 | tee "$PREP_DIR/pre-create-1tablet.log"
 fi
 
 # ---- 3. go-tpc prepare ---------------------------------------------
@@ -93,6 +105,46 @@ go-tpc tpcc prepare \
   --warehouses="$WAREHOUSES" \
   $NOCHECK_ARG \
   2>&1 | tee "$PREP_DIR/go-tpc-prepare.log"
+
+# ---- 3b. (vm-3node 3s*r) post-prepare SPLIT 9 tables ---------------
+# PoC-DESIGN §7.5.1 (TiDB) / §7.5.2 (CRDB)：prepare 完整 128W 之後手動切 3 region/range。
+# YBDB 3s*r 走 cluster default 3 tservers × 1 = 3 tablets，不需 SPLIT。
+if [[ "$EXPECTED_SHARDS" == "3" ]]; then
+  info "post-prepare SPLIT 9 tables → 3 shards each ($DB)"
+  case "$DB" in
+    tidb)
+      mysql -h "$DB_HOST" -P "$PORT" -u "$USER" "$DBNAME" -e "
+        SPLIT TABLE warehouse  INDEX \`PRIMARY\` BETWEEN (1)         AND (128)              REGIONS 3;
+        SPLIT TABLE district   INDEX \`PRIMARY\` BETWEEN (1,1)       AND (128,10)           REGIONS 3;
+        SPLIT TABLE customer   INDEX \`PRIMARY\` BETWEEN (1,1,1)     AND (128,10,3000)      REGIONS 3;
+        SPLIT TABLE new_order  INDEX \`PRIMARY\` BETWEEN (1,1,2101)  AND (128,10,3000)      REGIONS 3;
+        SPLIT TABLE orders     INDEX \`PRIMARY\` BETWEEN (1,1,1)     AND (128,10,3000)      REGIONS 3;
+        SPLIT TABLE order_line INDEX \`PRIMARY\` BETWEEN (1,1,1,1)   AND (128,10,3000,15)   REGIONS 3;
+        SPLIT TABLE stock      INDEX \`PRIMARY\` BETWEEN (1,1)       AND (128,100000)       REGIONS 3;
+        SPLIT TABLE item       INDEX \`PRIMARY\` BETWEEN (1)         AND (100000)           REGIONS 3;
+        SPLIT TABLE history    INDEX \`PRIMARY\` BETWEEN (1)         AND (3840000)          REGIONS 3;
+      " 2>&1 | tee "$PREP_DIR/shard-split.log"
+      ;;
+    crdb)
+      cockroach sql --insecure --host="$DB_HOST:$PORT" -d "$DBNAME" -e "
+        ALTER TABLE warehouse  SPLIT AT VALUES (43), (86);
+        ALTER TABLE district   SPLIT AT VALUES (43, 1), (86, 1);
+        ALTER TABLE customer   SPLIT AT VALUES (43, 1, 1), (86, 1, 1);
+        ALTER TABLE new_order  SPLIT AT VALUES (43, 1, 2101), (86, 1, 2101);
+        ALTER TABLE orders     SPLIT AT VALUES (43, 1, 1), (86, 1, 1);
+        ALTER TABLE order_line SPLIT AT VALUES (43, 1, 1, 1), (86, 1, 1, 1);
+        ALTER TABLE stock      SPLIT AT VALUES (43, 1), (86, 1);
+        ALTER TABLE item       SPLIT AT VALUES (33334), (66667);
+        ALTER TABLE history    SPLIT AT VALUES ('00000043'), ('00000086');
+      " 2>&1 | tee "$PREP_DIR/shard-split.log"
+      ;;
+    ybdb)
+      info "YBDB 3s*r tablets 由 cluster default 3 tservers × ysql_num_shards_per_tserver=1 自然產生，不下 SPLIT"
+      ;;
+  esac
+  info "SPLIT done; sleep 30s waiting rebalance settle"
+  sleep 30
+fi
 
 # ---- 4. consistency / integrity verification -----------------------
 if [[ "$DB" == "ybdb" ]]; then
@@ -188,9 +240,67 @@ case "$DB" in
     ;;
 esac
 
-# ---- 8. (vm-3node only) shard-count hard gate ----------------------
-if [[ "$TOPO" != "vm-1node" ]]; then
-  warn "vm-3node shard-count hard gate not implemented yet (Phase B/C/D/E/F scope)"
+# ---- 8. (vm-3node only) shard-count hard gate (PoC-DESIGN §7.5.4) --
+# 9 張表逐張 query 實際 region/range/tablet 數，對比 EXPECTED_SHARDS；
+# 任一表不符 → fail-closed，abort 此組（不進 run 階段）。
+# fail-closed 邏輯：write shard-count.txt 後 die，prepare.done 不會寫，
+# Makefile chain（vm3-${db}-${sub}-rc）因 prepare 失敗就停止。
+if [[ "$EXPECTED_SHARDS" != "0" ]]; then
+  info "shard-count hard gate (expected=$EXPECTED_SHARDS per table × 9 tables)"
+  SHARD_REPORT="$PREP_DIR/shard-count.txt"
+  : > "$SHARD_REPORT"
+  ALL_PASS=true
+  TABLES="warehouse district customer new_order orders order_line stock item history"
+
+  case "$DB" in
+    tidb)
+      mysql -h "$DB_HOST" -P "$PORT" -u "$USER" -B -N -e "
+        SELECT TABLE_NAME, COUNT(*) AS region_count
+          FROM information_schema.tikv_region_status
+          WHERE DB_NAME='$DBNAME' AND IS_INDEX=0
+          GROUP BY TABLE_NAME;
+      " > "$PREP_DIR/.shard-raw.tsv" 2>&1 || true
+      ;;
+    crdb)
+      cockroach sql --insecure --host="$DB_HOST:$PORT" -d "$DBNAME" --format=tsv -e "
+        SELECT table_name, count(*) AS range_count
+          FROM crdb_internal.ranges
+          WHERE database_name='$DBNAME' AND index_name='primary'
+          GROUP BY table_name;
+      " 2>/dev/null | tail -n +2 > "$PREP_DIR/.shard-raw.tsv" || true
+      ;;
+    ybdb)
+      : > "$PREP_DIR/.shard-raw.tsv"
+      YB_MASTERS="172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100"
+      for tbl in $TABLES; do
+        n=$(ssh -o StrictHostKeyChecking=accept-new "root@$DB_HOST" \
+              "/opt/yugabyte/bin/yb-admin --master_addresses=$YB_MASTERS list_tablets ysql.$DBNAME $tbl 2>/dev/null | tail -n +2 | wc -l" \
+              2>/dev/null || echo 0)
+        printf "%s\t%s\n" "$tbl" "$n" >> "$PREP_DIR/.shard-raw.tsv"
+      done
+      ;;
+  esac
+
+  for tbl in $TABLES; do
+    actual=$(awk -v t="$tbl" '$1==t {print $2}' "$PREP_DIR/.shard-raw.tsv" 2>/dev/null || echo 0)
+    actual=${actual:-0}
+    if [[ "$actual" == "$EXPECTED_SHARDS" ]]; then
+      echo "table=$tbl expected=$EXPECTED_SHARDS actual=$actual pass=true"  >> "$SHARD_REPORT"
+    else
+      echo "table=$tbl expected=$EXPECTED_SHARDS actual=$actual pass=false" >> "$SHARD_REPORT"
+      ALL_PASS=false
+    fi
+  done
+
+  if $ALL_PASS; then
+    echo "overall_pass=true"  >> "$SHARD_REPORT"
+    info "shard-count gate PASSED ($EXPECTED_SHARDS shards/table × 9 tables)"
+  else
+    echo "overall_pass=false" >> "$SHARD_REPORT"
+    err  "shard-count gate FAILED — see $SHARD_REPORT"
+    cat "$SHARD_REPORT" >&2
+    die "shard-count hard gate fail-closed (PoC-DESIGN §7.5.4)"
+  fi
 fi
 
 # ---- 9. write prepare.done ----------------------------------------

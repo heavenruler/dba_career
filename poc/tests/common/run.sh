@@ -65,7 +65,7 @@ bash "$SELF/coldreset-${DB}.sh" --db-host "$DB_HOST"
 
 # ---- 2. active isolation gate (call gate-isolation.sh) -------------
 info "active isolation gate"
-bash "$SELF/gate-isolation.sh" --db "$DB" --iso "$ISO" --db-host "$DB_HOST" --ts "$TS"
+bash "$SELF/gate-isolation.sh" --db "$DB" --iso "$ISO" --db-host "$DB_HOST" --ts "$TS" --topology "$TOPO"
 
 # ---- 3. warmup 20m (single threads=64, no recording) ---------------
 info "warmup ${WARMUP_SEC}s (threads=64)"

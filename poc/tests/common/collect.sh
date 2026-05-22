@@ -40,7 +40,7 @@ info "collect: $ROOT"
 
 # ---- 1. db-config dump (call db-config-dump.sh from Step 2) -------
 if [[ -x "$SELF/db-config-dump.sh" ]]; then
-  bash "$SELF/db-config-dump.sh" --db "$DB" --iso "$ISO" --db-host "$DB_HOST" --ts "$TS" || \
+  bash "$SELF/db-config-dump.sh" --db "$DB" --iso "$ISO" --db-host "$DB_HOST" --ts "$TS" --topology "$TOPO" || \
     warn "db-config-dump.sh exited non-zero"
 fi
 
