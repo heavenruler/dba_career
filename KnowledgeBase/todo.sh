@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # todo.sh — LLM filter execution queue (auto-generated)
-# Generated: 2026-05-22 11:51
+# Generated: 2026-05-22 16:11
 #
 # Inventory (snapshot at generation):
 #   Total extracted docs : 897
-#   Already filtered     : 28  (auto-skipped)
-#   Pending              : 869
-#   Total char (trunc to 60000): 9,642,339
-#   Est. tokens          : ~12.2M
+#   Already filtered     : 76  (auto-skipped)
+#   Pending              : 821
+#   Total char (trunc to 60000): 8,173,501
+#   Est. tokens          : ~10.6M
 #   Est. 5h windows      : 9  (~45h wall-clock)
 #
 # Ordering: char_count desc (longest docs first — most noise to remove = highest filter value)
@@ -63,55 +63,7 @@ date '+%Y-%m-%d %H:%M:%S [todo.sh] start' | tee -a "$LOG"
 echo "[todo.sh] state file has ${#DONE_SET[@]} previously-marked docs" | tee -a "$LOG"
 
 DOCS=(
-  # === window 1/9 (1-100, avg 26959 chars/doc) ===
-  ae414e4585126b7eff4d087d8839968d  #  54910c  www.modb.pro              Linux 8 快速安装 PostgreSQL 17.2 - 墨天轮
-  46dd0fd233797b1d5a31ea05b7a7c84b  #  37201c  www.modb.pro              2.8万字总结：OceanBase数据库在金融核心系统升级路径与场景实践 - 墨天轮
-  41244ed80cb02c95a173325114b0285b  #  36620c  www.percona.com           Orchestrator (for Managing MySQL) High Availabilit
-  07ef646c6cb296008218c2bde1fa7c48  #  36486c  blog.csdn.net             MySQL查询为什么选择使用这个索引？——基于MySQL 8.0.22索引成本计算_mysql8回表
-  c4b1f8a2766668109219f8713e36d377  #  36229c  juejin.cn                 RocketMQ高性能揭秘：承载万亿级流量的架构奥秘｜得物技术
-  be275f1ba6718211207a8bea411b237f  #  36037c  mp.weixin.qq.com          验证 MySQL MGR 双机房双活架构可行性
-  814120882b6dc79670eb6ef15d5d275d  #  35736c  cloud.tencent.com         MySQL8索引篇：性能提升了100%！！-腾讯云开发者社区-腾讯云
-  7fa5526bae686214bbcb40c29a167309  #  35242c  mp.weixin.qq.com          高并发下连接池：性能飞升的魔法秘籍
-  44380ab34618101b2a7b528a7fba216f  #  35205c  mp.weixin.qq.com          MySQL 高可用：MHA 实现 MySQL 高可用
-  d35c4e4aac3ce13fbc2a096f93a6ca98  #  34380c  blog.csdn.net             MySQL数据库面试题总结（2022最新版）_mysql面试题-CSDN博客
-  47caffb02a1d2f628c02e1ee74619b99  #  33839c  juejin.cn                 Redis面试题集锦缓存击穿/缓存穿透/缓存雪崩 缓存穿透 缓存穿透是指用户请求的数据在缓存中不存在
-  400140b9fdd43e06dc075915fd2384d1  #  33277c  www.modb.pro              【MySQL 8.x】定制化 MySQL 8.2.0 编译选项 - 墨天轮
-  1c43151c2dd484439552d70e0dafbb01  #  33262c  www.modb.pro              用32张图，快速掌握Oracle 26AI体系结构
-  21374143cf71842dc5d7d1a8e1b36d40  #  32416c  mp.weixin.qq.com          去哪面试：1Wtps高并发，MySQL 热点行 问题， 怎么解决？
-  032a893337606d370fd014049066b747  #  32167c  mp.weixin.qq.com          InnoDB圣经：30个图 硬核解读 InnoDB 内存架构 和 磁盘架构 （ 万字 长文 ）
-  a921f24b9133afc247ffb8b7924bd74b  #  31179c  mp.weixin.qq.com          阿里面试：redis 突然变慢，如何定位？ 如何止血 ？ 如何 根治？
-  a2487e6a2ea1cdfdfc4320249e7d1208  #  31153c  mp.weixin.qq.com          数据库内核工程师必读论文清单
-  2d2497bf4c0c4b1f1e89aef13fecb77d  #  30693c  www.modb.pro              PostgreSQL SQL优化用兵法，优化后提高 140倍速度 - 墨天轮
-  3de90bfbaff6cd7491e37c7fb5714cd6  #  30583c  mp.weixin.qq.com          10种数据库技术的发展历程与现状
-  34f15cccf3863a41e0bad97c386b1e32  #  30539c  mp.weixin.qq.com          RocketMQ大战Kafka：Kafka有100W级吞吐，为何却死磕RocketMQ？
-  41446ccd753567640b5543201715fb85  #  30313c  plaid.com                 Cutting over: Our journey from AWS Aurora MySQL to
-  8feff8720c498d0cc1d51b5c453d23c9  #  29970c  dev.to                    Multi-Region Distributed SQL Transaction Latency -
-  2e34f0e79a7ff1abef3d20cbbd74f695  #  29747c  mp.weixin.qq.com          庖丁解InnoDB之B+Tree
-  34608efa79dafe8421af5c2c7c9d3038  #  29079c  www.cnblogs.com           MySQL底层概述—7.优化原则及慢查询 - 东阳马生架构 - 博客园
-  77e2359b6ffe175ae1fe9d40cb96f4b7  #  29056c  juejin.cn                 妙啊！ 不改一行代码，如何做到Redis毫秒级大key发现不改一行代码！如何做到Redis毫秒级大k
-  3aba28a31c245563bc6d4253665d9938  #  28970c  cloud.tencent.com         技术分享 | MySQL 表空间碎片整理方法-腾讯云开发者社区-腾讯云
-  abd1e7518133ab15bc87e957a32b00b7  #  28805c  www.modb.pro              【TiDB 社区第三届专栏征文大赛】TiDB 在单机上模拟部署生产环境集群 - 墨天轮
-  9de93ff7cc8284361c55959ed7b7b58a  #  28582c  mp.weixin.qq.com          招行面试： 分布式调度 设计，要考虑 哪些问题？
-  116d0744d4b5407d9e5c6eb9fc324405  #  28523c  www.metricfire.com        A Modern Guide to MySQL Performance Monitoring | M
-  9425cd7265c2bc64e72af5ac5b1c551c  #  28120c  juejin.cn                 后端架构师必备：提升系统性能的 6 大核心优化策略【说明】全文约 16000 字，阅读需要约 30 
-  dbfd739fa6148e81c1b1e24263eafbf3  #  27974c  cloud.tencent.com         《MySQL开发规范》过时了，视图的查询性能提升了一万倍-腾讯云开发者社区-腾讯云
-  b99aab95e87290f8dd024f1f1f0c67ce  #  27920c  mysql.taobao.org          庖丁解InnoDB之Lock
-  c7fe501ea5c0351c788748b4669f0b48  #  27817c  developer.aliyun.com      浅析MySQL代价估计器-阿里云开发者社区
-  52e38072515ecdc8bacde815def89053  #  27463c  www.mydbops.com           Password Management in MySQL 8: Switching Between 
-  098499a5822a1ebae8f2016ac0d796e4  #  27410c  www.cnblogs.com           关于MySQL checkpoint - 海东潮 - 博客园
-  15ae13e657d0a2cdbb7a9447df344ba9  #  27235c  mp.weixin.qq.com          万字详解：K8s核心组件与指标监控体系
-  d2b3ef56ccfd2ae6244fd35de8c7c8bd  #  26574c  cn.pingcap.com            TiDB 社区智慧合集丨TiDB 相关 SQL 脚本大全 | PingCAP 平凯星辰
-  29407d2fed04e0cb2684a676ffea3fa5  #  26558c  juejin.cn                 软件架构，一切尽在权衡本文要介绍的是 2021 年 O'Reilly 出版的书籍 Software 
-  5cb911c327da3ce8b96baa5a7090d0b2  #  26508c  blog.51cto.com            MongoDB集合结构分析工具Variety_SQL Server Deep Dive的技术博客_5
-  0c8514fb2935bb0e8dc7f792246a6d3d  #  26506c  architecturenotes.co      Redis Explained - by Mahdi Yusuf
-  dc49ec1d99211bce054ea259f9b4334e  #  26319c  mp.weixin.qq.com          VMware虚拟机上Oracle 19C RAC超详细静默安装部署流程
-  91fb322e736a26fcf759fec5ed8d65f3  #  26254c  cloud.tencent.com         详解 Redis 分布式锁的 5 种方案-腾讯云开发者社区-腾讯云
-  4752cf81d989834ca56dd7677283b7c6  #  26239c  juejin.cn                 云计算与企业IT成本治理时至今日，云计算已逐步替代传统IT中服务器、存储、虚拟化等单体软硬件的IT架
-  eb5ff1f17c4e634df8cd767f7474c5bc  #  26160c  mp.weixin.qq.com          数据治理这件事，90% 的公司都做错了
-  5c8d64c19d54db6cc2c80bc36051d9c1  #  26104c  mp.weixin.qq.com          用41张架构图，快速掌握Oracle 19C RAC原理
-  952a764dbd7eedde0553cb5770b52c05  #  25871c  cn.pingcap.com            一名开发者眼中的 TiDB 与 MySQL 的选择丨TiDB Community | PingCAP
-  512959109954895d2d6cfaed633e493f  #  25809c  www.pingcap.com           Zero-Downtime Upgrades: How TiDB Powers Always-On 
-  2434111e62fe5a91f5e4ce60efc1ff6c  #  25798c  blog.csdn.net             【redis】redis压力测试工具-----redis-benchmark-CSDN博客
+  # === window 1/9 (1-100, avg 21461 chars/doc) ===
   08bdb13c0f6e56c65e34f257e2361501  #  25710c  developer.aliyun.com      MySQL性能监控全掌握，快来get关键指标及采集方法！-阿里云开发者社区
   83bd3cfd4b71fc8fb1ebfbc9cc02eb91  #  25661c  zhuanlan.zhihu.com        (2 封私信) Redis LRU 算法和LFU算法 - 知乎
   c7fe39393f4a540c8962e2a8d7ef3ebe  #  25661c  developer.aliyun.com      MySQL数据库审计采集技术调研之Packetbeat，eBPF-阿里云开发者社区
@@ -164,7 +116,6 @@ DOCS=(
   a85522ecb488168b0df0394577ff026b  #  20995c  blog.51cto.com            一次“诡异”的 Ansible 密码问题排查，最后的“真相”竟是这样_LinkSLA智能运维管家的技
   ddb97d6b1a194b933b5d700d03dc362b  #  20925c  mp.weixin.qq.com          MySQL2PG v3.4.0 正式发布：支持 MySQL 5.7+ 完整评估和迁移报告的数据库迁移
   d767729aa8c1ba344a005fd2c957e3a0  #  20892c  blog.pichuang.com.tw      選擇 IaC 工具是多選題，而不是單選題 - 魂系架構 Phil's Workspace
-  # === window 2/9 (101-200, avg 17891 chars/doc) ===
   0756a3aeba95614e8f995f77620e9a24  #  20741c  www.modb.pro              TiDB 学习之路从部署开始 - 墨天轮
   5cf669dc724cc9b8f13dc47ad1c764dd  #  20739c  mp.weixin.qq.com          一文详解架构设计的本质
   8704c7ff9b9fa201451e5d17e8e1c243  #  20686c  juejin.cn                 架构师之道：架构演变史：从建筑学到架构设计“Arkitekton”直译为“主建筑师”，揭示了“架构”
@@ -213,6 +164,7 @@ DOCS=(
   d7fe63bdf2283b3983577c28e356c225  #  17915c  mp.weixin.qq.com          美团面试： ‘异地多活’ 都不用 ， 你们 项目 怎么实现 高可用呢？
   5e700227287ae6f14ad8d3a305c804ab  #  17885c  blog.csdn.net             MySql优化（三）详细解读InnoDB存储引擎_my.cnf innodb-read-io-thr
   90b30a59a13f8100785328229e12c2f4  #  17879c  github.com                microsoft/garnet: Garnet is a remote cache-store f
+  # === window 2/9 (101-200, avg 15771 chars/doc) ===
   f7f8b48dba959823223bde33edbe760d  #  17841c  juejin.cn                 53 倍性能提升！TiDB 全局索引如何优化分区表查询？本文将详细介绍 TiDB 全局索引的工作原理
   0677cdea45b5e1bbdaf50d1c4afded76  #  17818c  mp.weixin.qq.com          35 张图带你了解 Oracle AI Database 26ai 技术架构(上)
   b7fb2cf132e9b86c3637ef3e3767376b  #  17804c  www.modb.pro              技术分享 | 数据库产品选型测试 集中式与分布式 - 墨天轮
@@ -265,7 +217,6 @@ DOCS=(
   1a4fa6e37f7eb683ca1f8496b00cb1f0  #  15823c  juejin.cn                 看完这篇，你的API服务设计能力将再次进化!本篇文章旨在探讨在遵循通用设计规范之外，服务设计过程中需
   1e5a96baa1b47abd695db96226e4d814  #  15647c  tech.meituan.com          基于代价的慢查询优化建议 - 美团技术团队
   d74fed5a0ea1396efe26284e1e7e0dc9  #  15623c  www.51cto.com             Redis 缓存击穿（失效）、缓存穿透、缓存雪崩怎么解决？-redis缓存穿透
-  # === window 3/9 (201-300, avg 14000 chars/doc) ===
   2f7d940a3a2e1635b70fe4d038d9e330  #  15623c  mp.weixin.qq.com          TiDB × AI ：DeepSeek 时代你需要什么样的数据基座
   50301f09e4569d3c389c6146db83bd10  #  15614c  mp.weixin.qq.com          一文搞懂 MySQL InnoDB架构 Buffer Pool、Change Buffer、自适应哈
   384e3ca8b05dbed3b6ca32222678ca7f  #  15493c  juejin.cn                 TiDB介绍及设计原理TiDB是一个支持海量数据存储的分布式数据库，TiDB需要解决分布式数据存储O
@@ -314,6 +265,7 @@ DOCS=(
   b69f492e3b8214868eff4d6c09f68d8b  #  13926c  www.mydbops.com           Yulu's Data Breakthrough: 72% Storage Savings & Sc
   df1ae51824a2a79e5ce2a4ae746cc4c1  #  13919c  juejin.cn                 【建议收藏】数据库源码学习调试利器之 CGDBCGDB 是 GDB 的一个前端工具，通过提供更丰富的
   9406e0d6900611d537168e29f129a40e  #  13908c  mp.weixin.qq.com          一文搞懂腾讯云数据库都有啥？
+  # === window 3/9 (201-300, avg 12538 chars/doc) ===
   217028f183386f55576c92270b1185be  #  13908c  juejin.cn                 从MySQL索引下推看性能优化：减少回表，提升查询效率接着上篇索引优化全攻略：提升排序、GROUP 
   c6fa92e5ff944c2e247abef4b82d02a3  #  13904c  juejin.cn                 新闻 | MySQL 9.2.0 有哪些功能新增、弃用和删除？2025 年 1 月 21 日，MyS
   ccb59c456a3bd191d7826ccb513aa08c  #  13870c  juejin.cn                 DBCP一个配置，浪费了MySQL 50%的性能！1. 引言 研究背景 数据库性能的重要性 数据库性
@@ -366,7 +318,6 @@ DOCS=(
   23a35557d03da0e51c3396bd694b4bf5  #  12552c  juejin.cn                 理解 MySQL 的分组机制：GROUP BY、SELECT、HAVING 及索引优化理解 MySQ
   0cc7ff4443fbb0cb3c90ca79bc6b9dcd  #  12435c  juejin.cn                 InnoDB 索引与 Online DDL 的结合：业务不中断的优化秘诀InnoDB加索引是否会锁表
   b1736a85bcca8ec024c8adc6afac4036  #  12412c  mp.weixin.qq.com          TiDB 多列索引优化：从分钟级到毫秒级，实现超万倍延迟降低
-  # === window 4/9 (301-400, avg 11049 chars/doc) ===
   ea385de9c0b44e5dd00d7baa05e5d0b7  #  12292c  www.modb.pro              离线部署TiDB 8.1.0 集群 - 墨天轮
   341f2313c1791492b1c0284347ce6220  #  12283c  mp.weixin.qq.com          活动中台系统慢 SQL 治理实践
   fb3635d67aa05bfa9595045817adc308  #  12250c  mp.weixin.qq.com          从零开始学习MySQL调试跟踪（2）
@@ -415,6 +366,7 @@ DOCS=(
   fda87a7de4f9cc233b1d5413ae62fa22  #  11153c  www.modb.pro              MySQL 8.0 优化器迷思：索引误选是如何发生的？
   c05b559cdae28f2f430f663a7fcfd3e8  #  11134c  mp.weixin.qq.com          利用 MySQL 8.0 clone 插件远程克隆快速重建主从复制环境
   27e9099df9be2e5a232b1bb47113906b  #  11131c  juejin.cn                 SHOPLINE x TiDB丨集群成本降低 50%！跨境电商 SHOPLINE 交易、商品管理等核
+  # === window 4/9 (301-400, avg 10035 chars/doc) ===
   7de0d091d91c88f84dcf3593a6f7462d  #  11125c  mp.weixin.qq.com          单体架构和微服务架构到底哪个好？
   50c4dffbe1dc2f4c90bcb36f2fa1ff79  #  11113c  juejin.cn                 使用podman搭建MySQL 8.0主从避坑指北镜像准备和选择 由于mysql自带许多工具，比如m
   e1462e7727b76b3201c2f59f40b77572  #  11108c  juejin.cn                 拒绝全表扫描！3个提升MySQL深度分页技巧！分析MySQL深度分页性能问题，并介绍了3种优化方案：
@@ -467,7 +419,6 @@ DOCS=(
   8bb7ff28765ebc83a117b67f87d8b9de  #  10006c  www.modb.pro              为什么在配置顶格本地盘服务上运行数据库，数据量不大的情况下，CPU资源却显得并不“宽裕”？
   6c01c7f8685f78a5297bd600c889a0eb  #   9967c  juejin.cn                 云监控的盲点：用户视角监控云应用性能时，主干网、最后一公里和无线网络不仅仅是画面的一部分，它们就是画
   798696a57435063e63ece1615aaf44b1  #   9967c  www.modb.pro              7.5 LTS 解读 ｜ Runaway Queries 管理、高性能数据批处理方案、DDL 启停特
-  # === window 5/9 (401-500, avg 9048 chars/doc) ===
   2cc68248d145f410fb0e967bb6a0f880  #   9964c  juejin.cn                 通过 gitHub Action 自动发布博客文章因为之前的博客升级了，并且 gh-pages de
   32c69f4736b968a9f6f790d56bcccbe2  #   9928c  mp.weixin.qq.com          亿级流量系统架构设计系列——5.系统降级特技
   82e29afe90a9448e6d252c6f190ddc60  #   9927c  mp.weixin.qq.com          数据库巡检进入智能时代：异常检测算法的落地实践
@@ -516,6 +467,7 @@ DOCS=(
   792df6acaebabccdf938d861398e4a61  #   9249c  juejin.cn                 数据质量和数据治理的关系 | 京东云技术团队很多不太了解的人会认为：数据治理就是干数据清洗的。 近两
   02f7ce5680cb3c01e50450fddbe10d04  #   9183c  juejin.cn                 面试复盘：MySQL InnoDB 事务隔离级别与 MVCC 分析/为什么可重复读的死锁概率高？_ 
   23cf552d4947da4441ccb1acd5aa7079  #   9172c  mp.weixin.qq.com          掌握 SQL 子查询：让你成为查询优化高手
+  # === window 5/9 (401-500, avg 8102 chars/doc) ===
   44b0a9b336e6d445876bd777a34fb8b2  #   9138c  juejin.cn                 这些BUG，防不胜防常见时间case与防护分析 话不多说，上干货！笔者经过长年累月的积累，针对常见的
   2ab019b57c025f2f4972986577ee1f5c  #   9118c  mp.weixin.qq.com          TiDB 可观测性解读系列：索引与算子执行性能优化实践
   5bf9d1d0905f632298cf0a98cefd6aa9  #   9115c  cloud.tencent.com         囧...执行analyze table意外导致waiting for table flush-腾讯云
@@ -568,7 +520,6 @@ DOCS=(
   b4b1abba675ec98a51ed46678dd748af  #   8132c  www.modb.pro              谈谈分布式数据库的分片键选择准则和数据重分布的思考 - 墨天轮
   cb36d6d5588ad442a66262586b2e28ca  #   8119c  www.modb.pro              DBA运维压力大的根源是什么？分享3个提升效率的核心方法
   f0fa06631288db2fe941f72b59f6f429  #   8114c  mp.weixin.qq.com          腾讯面试：1亿用户的好友关系如何秒级查询共同好友？这套方案让性能提升100倍！
-  # === window 6/9 (501-600, avg 7012 chars/doc) ===
   3f933187d5510b2a9790706d699eaeba  #   8095c  mp.weixin.qq.com          PostgreSQL 18 最新版本发布了，看看都有啥？
   ec9347a5eee122f836c568ffffb8a27e  #   8055c  mp.weixin.qq.com          如何从0-1的建设云上稳定性？
   474db9c225132febf28cf0237f6756b5  #   8048c  mp.weixin.qq.com          该开始关注 MySQL 8.4 了
@@ -617,6 +568,7 @@ DOCS=(
   63b60d9696e9cc24fcdaeb89c42fb825  #   7104c  mp.weixin.qq.com          PostgreSQL运维篇--日常运维集合①h
   3e6aea7a585dd2262279f6bf9853912a  #   7100c  mp.weixin.qq.com          MySQL 升级后查询性能跳水，排序竟成“罪魁祸首”？
   f30c184d6c036d4d3d20f77b75f37302  #   7100c  www.modb.pro              聊聊跨数据库迁移的数据比对那些事儿 - 墨天轮
+  # === window 6/9 (501-600, avg 6033 chars/doc) ===
   276062bf162565814aa4e70e14b7db0d  #   7097c  time.geekbang.org         23｜大型研发架构团队的AOM实践-技术领导力实战笔记 2022-极客时间
   63f9298623511a70589f45ada9401398  #   7085c  mp.weixin.qq.com          字节一面：20亿手机号存储选int还是string？varchar还是char？为什么？
   9a76ee763859f779a95930cd98f997d1  #   7059c  mp.weixin.qq.com          爱奇艺大数据多 AZ 统一调度架构
@@ -669,7 +621,6 @@ DOCS=(
   2fe21428b063a29374872e8f8c584d26  #   6004c  mp.weixin.qq.com          数据库半月谈（2026.3.21~2026.4.3）
   77d153d0f7a90db44f7655a7644ccfa5  #   5988c  mp.weixin.qq.com          初识 ASH —— 打开数据库的「月光宝盒」
   e1a687e18d0243cbe8e8ed2e126360a4  #   5988c  mp.weixin.qq.com          为什么分布式系统中的“顺序”比你想象的更重要？
-  # === window 7/9 (601-700, avg 5237 chars/doc) ===
   daa4411582408500b5be400ff24ce477  #   5973c  mp.weixin.qq.com          MySQL参数innodb_buffer_pool_size优化方法
   cb50472fbcf5ad315a90dc00d2119e33  #   5958c  mp.weixin.qq.com          从 Oracle 迁移到 TiDB，架构哲学的碰撞｜TiDB vs Oracle 第二篇
   f2cff3040d8b002c70ec2f3b8b0ecd8f  #   5933c  mp.weixin.qq.com          字节内部演进实录：Redis 迁移 Valkey，以一体化破解 AI 集群规模魔咒
@@ -718,6 +669,7 @@ DOCS=(
   9c16734f4f56ad61ffa56829b66f32d1  #   5266c  mp.weixin.qq.com          MySQL的这个参数能让性能提升300%！你居然还不知道？
   49c909864f6e03166faa260b1a289797  #   5246c  mp.weixin.qq.com          PostgreSQL这个特性，害惨了搞数据恢复的兄弟们
   ce02df5a739df7820a4d3c2094ac4340  #   5245c  mp.weixin.qq.com          [MYSQL] mysql空间问题案例分享
+  # === window 7/9 (601-700, avg 4569 chars/doc) ===
   97dffaf7176f45379b87d01e34d47765  #   5244c  mp.weixin.qq.com          MemFree 辣么大，为啥报 out of memory？
   1800fe557ac5208c408f5d630bc6ae23  #   5229c  mp.weixin.qq.com          MySQL 性能优化：真正重要的变量
   4f288e377446e893136755b1f417aa89  #   5217c  mp.weixin.qq.com          什么是索引下推？什么是索引覆盖？什么是回表？
@@ -770,7 +722,6 @@ DOCS=(
   baf2bcd9d70b187a627c07e5e7a2a108  #   4591c  www.modb.pro              DBA转型的十二宫（3）唯技术论
   87ba322240f941f18209b19f0c2c47c4  #   4586c  mp.weixin.qq.com          跨机房ADG因带宽限制引起的GAP问题
   d73fc36354cc01a508c070aa678423e5  #   4545c  mp.weixin.qq.com          远程开发和 CI 一回事
-  # === window 8/9 (701-800, avg 3743 chars/doc) ===
   0c7834f8ba6b520d05f5d04933e9c78b  #   4529c  tidb.net                  专栏 - TiDB 三中心'脑裂'场景探讨 | TiDB 社区
   cc38ab37dcf288409015dfacbd09ad91  #   4528c  mp.weixin.qq.com          中国农业发展银行智能支付平台分布式数据库建设实践
   e0477f3220539ed579cca22dad329888  #   4499c  mp.weixin.qq.com          这才是“AI原生数据库”
@@ -819,6 +770,7 @@ DOCS=(
   0504718023db4a726279fd687d4bcab0  #   3909c  mp.weixin.qq.com          SQL优化实战：从慢如蜗牛到快如闪电的必杀技
   97425cfd61349709f701d3e36551b7cf  #   3900c  www.modb.pro              mysql 内存使用率高问题排查 - 墨天轮
   55eb11785caa1e1fa9d78eede1117a41  #   3867c  mp.weixin.qq.com          SCALE | SQLFlash 在 SQL 优化维度上的表现评估
+  # === window 8/9 (701-800, avg 2891 chars/doc) ===
   69639d8704c7656d30176be0d63596f7  #   3852c  mp.weixin.qq.com          告别 MySQL 分库分表， 重庆富民银行通过 TiDB 实现批量场景降本提效
   82fd48ba9e85d03f78cb5a709b291ebe  #   3843c  mp.weixin.qq.com          常见分布式事务理论梳理，2pc,3pc,AT,Saga,Seata
   1d02b0538b388d871bc9b697c65cbafb  #   3828c  mp.weixin.qq.com          写了 5 年 SQL，才发现可以用 (a, b) > (x, y) 这种神仙写法！
@@ -871,7 +823,6 @@ DOCS=(
   372f7d390eae89de0de5f617d18d4fdd  #   2904c  mp.weixin.qq.com          MySQL数据库巡检报告，一条命令搞定，省心又省力！
   f74081dd01bea8ccc790f779a7a8a47c  #   2902c  mp.weixin.qq.com          慢SQL优化别白忙！一份“报告”让老板秒懂你多强！
   a0293ae142b48d3d7526cc669c9b0475  #   2897c  mp.weixin.qq.com          问系统能支撑多少并发时该怎么回答
-  # === window 9/9 (801-869, avg 2145 chars/doc) ===
   8495e50507b55ca0516bab7e6232ab8b  #   2875c  mp.weixin.qq.com          MySQL 回表检测太难？这个SKill 帮你搞定
   fbcf77bf952164ea6e86aacf5457ec21  #   2812c  mp.weixin.qq.com          MySQL部分最新特性快速预览
   a496ce8991961e0a30a98cdcb608319d  #   2790c  www.sre-devops.info       使用MariaDB Thread Pool實現DB端的連接池 - 進擊的網管Jay
@@ -920,6 +871,7 @@ DOCS=(
   6b53c975ffe7e5c0754c8fa7e7917a15  #   1961c  mp.weixin.qq.com          Redis 8.2 来了！性能暴涨 49%，单机破百万 QPS
   063654e866338a631e508899ea458555  #   1959c  mp.weixin.qq.com          别再让IT背锅了！数据质量的第一责任人是业务
   e5f93f1a236836228efea418a70ea536  #   1952c  mp.weixin.qq.com          「合集」MySQL 8.x 系列文章汇总
+  # === window 9/9 (801-821, avg 1570 chars/doc) ===
   138b23cffd575b9b0021fa7e1a840eaf  #   1943c  mp.weixin.qq.com          透明分布式是蜜糖还是毒药?
   f23997bda0e84488df8ab87e753bb69c  #   1910c  mp.weixin.qq.com          MySQL 8.0参数默认值变更，恐致性能下降3倍多
   c95827d768117332fbe12c185270d3c1  #   1905c  mp.weixin.qq.com          34.5K star！又来一款全能开源笔记神器，超好用！
@@ -979,6 +931,15 @@ for DOC in "${DOCS[@]}"; do
     FAILED_CNT=$((FAILED_CNT + 1))
     echo "$DOC" >> "$FAILED_LOG"
     echo "  ⚠️  FAIL $DOC (continuing). Reason in $LOG; if quota hit, re-run after 5h window resets."
+  fi
+
+  # 5h window 額度保護：剩餘 < 10% 即停（保留緩衝避免硬封）
+  # 來源：filter_doc.py 每篇印 `5h window used=X% remaining=Y%`，抓最新一筆
+  REMAIN=$(grep -oE '5h window used=[0-9.]+% remaining=[0-9.]+' "$LOG" 2>/dev/null | tail -1 | sed -E 's/.*remaining=//')
+  if [[ -n "$REMAIN" ]] && awk -v r="$REMAIN" 'BEGIN{exit !(r+0 < 10)}'; then
+    echo "[todo.sh] 5h window remaining=${REMAIN}% < 10% → 停止以保護額度" | tee -a "$LOG"
+    echo "  resume: make filter_all  (5h window 重置後再跑)" | tee -a "$LOG"
+    exit 0
   fi
 done
 
