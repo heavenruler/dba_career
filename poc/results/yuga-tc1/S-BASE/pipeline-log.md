@@ -720,6 +720,169 @@ YugabyteDB v2025.2.2.2 vm-1node strict (SERIALIZABLE / SSI) 在 4 vCPU + single 
 
 ---
 
+## vm-3node 系列（4 sub-topology × RC，PoC-DESIGN §6.3.2）
+
+> 本段為 YugabyteDB 2025.2 在 vm-3node 拓樸 / `READ COMMITTED` 隔離級下的 4 個 sub-topology baseline 規劃。資料填寫前以 `dry-run` anchor 確認 cluster topology / RF / iso preset 與設計一致，再由人工放行 `EXECUTE=1` 進入 prepare/run/collect。
+
+### 共同元件分配（3 顆 VM）
+
+```
+            client (.31)
+              │  go-tpc → :5433 (YSQL)
+              ▼
+   ┌──────────┴──────────┐
+   │     172.24.40.32    │  ← client 入口 / cluster bootstrap node
+   │  yb-master + 7100   │
+   │  yb-tserver + 5433  │
+   └─────────┬───────────┘
+             │ Raft (master quorum, tserver tablet Raft)
+   ┌─────────┴────────────────────────┐
+   │                                  │
+┌──┴──────────────────┐    ┌──────────┴───────────┐
+│  172.24.40.33       │    │  172.24.40.34        │
+│  master + tserver   │    │  master + tserver    │
+└─────────────────────┘    └──────────────────────┘
+```
+
+yb-master×3 滿足 Raft quorum；yb-tserver×3 滿足 RF=3 placement；client 統一 .32:5433 進入。
+
+### vm-3node-1s1r-rc
+
+> 1 shard × 1 replica：3-tserver cluster 但 RF=1、每表 1 tablet。對照 vm-1node-rc 量化「cluster framework + remote coord」純成本。
+
+#### 拓樸示意
+
+```
+yb-master quorum (3)
+.32 master ⇄ .33 master ⇄ .34 master  (RF=1)
+                  ▲ tablet placement / leader election
+yb-tserver
+.32 [t.tablet-leader]    .33 (no replica)    .34 (no replica)
+                       └─ RF=1 只在 1 tserver
+client → .32:5433 (YSQL gateway 路由 to tablet leader)
+```
+
+#### 關鍵 DB 設定
+
+| 維度 | 設定 | 來源 |
+|---|---|---|
+| `yugabyted start --rf` | `1` | `yugabyte-vm3.yml` (`yb_rf`) |
+| tserver `yb_enable_read_committed_isolation` | `true` | RC 必要前提 |
+| tserver `enable_automatic_tablet_splitting` | `false` | controlled experiment（§7.5.3）|
+| tserver `ysql_num_shards_per_tserver` | `1` | 控 default tablet 數 |
+| tserver `durable_wal_write` / `require_durable_wal_write` | `true` / `true` | fsync-on-commit |
+| Pre-create schema | 9 張表 `SPLIT INTO 1 TABLETS` | prepare 階段（避 3 tserver × 1 預設成 3 tablets）|
+| conn-params (RC) | `options=-c default_transaction_isolation=read committed` | §7.3 |
+
+#### Dry-run 預期
+
+- `cluster-topology.txt` ≥ 3 tserver Alive（`yb-admin list_all_tablet_servers`）
+- `replication-factor.txt`（`yb-admin get_universe_config`）`num_replicas = 1`
+- `iso-preset.txt`：`transaction_isolation = read committed`、`yb_effective_transaction_isolation_level = read committed`（雙閘檢驗，避 silent SI fallback）
+- `cluster-health.txt` = `SELECT 1` 回 1
+
+#### Execute 結果
+
+> 待 `make vm3-ybdb-1s1r-rc EXECUTE=1 TPCC_TS=<ts>` 完成後回填 5-round mean tpmC / p50 / p95 / p99 / error rate，並與 vm-1node-rc 對照 scale-out ratio。
+
+### vm-3node-1s3r-rc
+
+> 1 shard × 3 replica：3 tserver 各持 1 tablet replica，leader + 2 follower。對照 1s1r 量化「Raft 3-replica 寫入成本」。
+
+#### 拓樸示意
+
+```
+yb-master quorum (3)
+.32 master ⇄ .33 master ⇄ .34 master  (RF=3)
+yb-tserver
+.32 [t.tablet-leader]
+.33 [t.tablet-follower] ←─┐ Raft majority commit
+.34 [t.tablet-follower] ←─┘
+client → .32:5433
+```
+
+#### 關鍵 DB 設定
+
+| 維度 | 設定 |
+|---|---|
+| `yugabyted start --rf` | `3` |
+| Pre-create schema | 9 張表 `SPLIT INTO 1 TABLETS` |
+| 其餘 | 同 1s1r |
+
+#### Dry-run 預期
+
+- `replication-factor.txt`：`num_replicas = 3`
+- 其餘同 1s1r。
+
+#### Execute 結果
+
+> 待回填；與 1s1r 比 → Raft 3-replica 寫入 amplification。
+
+### vm-3node-3s1r-rc
+
+> 3 shard × 1 replica：每表 3 tablet 自然分散到 3 tserver（3 × 1 = 3）。對照 1s1r 量化「sharding 對 OLTP 效應」。
+
+#### 拓樸示意
+
+```
+yb-master quorum (3, RF=1)
+yb-tserver
+.32 [t.tablet-A-leader]  .33 [t.tablet-B-leader]  .34 [t.tablet-C-leader]
+     └ RF=1                └ RF=1                  └ RF=1
+client → .32:5433
+```
+
+#### 關鍵 DB 設定
+
+| 維度 | 設定 |
+|---|---|
+| `yugabyted start --rf` | `1` |
+| Pre-create schema | **不需要**；3 tserver × `ysql_num_shards_per_tserver=1` = 3 tablets 自然 |
+| Hard gate | `yb-admin list_tablets ysql.tpcc <table>` 9 表 = 3 tablets |
+| 其餘 | 同 1s1r |
+
+#### Dry-run 預期
+
+- 同 1s1r（shard gate 由 prepare 執行）。
+
+#### Execute 結果
+
+> 待回填；與 1s1r 比 → sharding 純效應；驗 tablet leader 是否 evenly distributed。
+
+### vm-3node-3s3r-rc
+
+> 3 shard × 3 replica：完整 sharded + replicated cluster。對照 1s3r 量化「sharding 在 RF=3 下的攤平效益」；與 3s1r 比 → replication overhead in sharded cluster。
+
+#### 拓樸示意
+
+```
+yb-master quorum (3, RF=3)
+yb-tserver（每 tserver 持有所有 tablet 的某 replica）
+.32 [A-leader / B-follower / C-follower]
+.33 [A-follower / B-leader / C-follower]
+.34 [A-follower / B-follower / C-leader]
+client → .32:5433
+```
+
+#### 關鍵 DB 設定
+
+| 維度 | 設定 |
+|---|---|
+| `yugabyted start --rf` | `3` |
+| Pre-create schema | **不需要** |
+| 其餘 | 同 3s1r |
+
+#### Dry-run 預期
+
+- `replication-factor.txt`：`num_replicas = 3`
+- 其餘同 1s1r。
+
+#### Execute 結果
+
+> 待回填；與 3s1r 比 → replication 成本 in sharded cluster；與 1s3r 比 → sharding 攤平效益。
+
+---
+
 ## K8s 段 — 已存檔於 yuga-tc1-old
 
 > 2026-05-13 的 k8s-3node-unlimit / k8s-3node-limit 為 pre-v4.7 單次 10min wrapper 結果，已隨主檔清空動作備份於 [`../../yuga-tc1-old/S-BASE/`](../../yuga-tc1-old/S-BASE/) ＋ [`pipeline-log_old.md`](../../yuga-tc1-old/S-BASE/pipeline-log_old.md)（pre-v4.7 narrative）。待 K8s 環境以 v4.7 detached suite 重跑後，將回填正式段落。

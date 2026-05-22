@@ -1,0 +1,313 @@
+---
+# Deploy TiDB vm-3node cluster (PD×3 + TiKV×3 + TiDB×1)
+#
+# Required extra-vars:
+#   tidb_sub_topology=1s1r|1s3r|3s1r|3s3r   (RF + shard preset)
+#
+# Derived vars:
+#   tidb_replicas = 1 (when *1r) / 3 (when *3r)
+#   shard count itself is enforced in prepare.sh via SPLIT TABLE (§7.5.1)
+#
+# Layout (matches PoC-DESIGN §6.3.2.1):
+#   .32 (vm3_primary): PD + TiKV + TiDB(4000)  <- client entry
+#   .33 (vm3_workers): PD + TiKV
+#   .34 (vm3_workers): PD + TiKV
+
+- name: Deploy TiDB vm-3node cluster
+  hosts: vm3_primary
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    tidb_cluster_name: tpcc-tidb-vm3
+    tidb_version: v8.5.2
+    tidb_topology_path: /root/tidb-vm3-topology.yaml
+    tidb_replicas: "{{ '3' if tidb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+    tidb_host_primary: "172.24.40.32"
+    tidb_host_w1: "172.24.40.33"
+    tidb_host_w2: "172.24.40.34"
+  tasks:
+    - name: Sanity check tidb_sub_topology
+      ansible.builtin.assert:
+        that:
+          - tidb_sub_topology in ['1s1r', '1s3r', '3s1r', '3s3r']
+        fail_msg: "tidb_sub_topology must be one of 1s1r/1s3r/3s1r/3s3r (got '{{ tidb_sub_topology | default('UNSET') }}')"
+
+    - name: Install TiDB prerequisites on .32 (control + worker tooling)
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar openssh-clients mysql sysstat; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          dnf install -y --setopt=keepcache=1 "$pkg"
+        done
+      args:
+        executable: /bin/bash
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: Ensure root SSH key exists for tiup cluster
+      ansible.builtin.user:
+        name: root
+        generate_ssh_key: true
+        ssh_key_bits: 4096
+        ssh_key_file: /root/.ssh/id_rsa
+
+    - name: Read root public key
+      ansible.builtin.slurp:
+        src: /root/.ssh/id_rsa.pub
+      register: tidb_root_pubkey
+
+    - name: Install TiUP
+      ansible.builtin.shell: |
+        curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
+      args:
+        creates: /root/.tiup/bin/tiup
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Add TiUP to root profile
+      ansible.builtin.lineinfile:
+        path: /root/.bash_profile
+        line: 'export PATH=$PATH:/root/.tiup/bin'
+        create: true
+        mode: "0644"
+
+    - name: Install tiup cluster component
+      ansible.builtin.command: /root/.tiup/bin/tiup install cluster
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+# Prepare each worker (.33 / .34) — prereqs + accept .32 SSH key + OS tuning
+- name: Prepare TiDB worker nodes (.33, .34)
+  hosts: vm3_db
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+  tasks:
+    - name: Install TiDB node prerequisites
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar openssh-clients sysstat; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          dnf install -y --setopt=keepcache=1 "$pkg"
+        done
+      args:
+        executable: /bin/bash
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: OS tuning (swappiness / THP / ulimit)
+      ansible.builtin.shell: |
+        set -e
+        sysctl -w vm.swappiness=1
+        echo "vm.swappiness = 1" > /etc/sysctl.d/99-tidb.conf
+        echo never > /sys/kernel/mm/transparent_hugepage/enabled
+        echo never > /sys/kernel/mm/transparent_hugepage/defrag
+        grep -q "transparent_hugepage" /etc/rc.d/rc.local 2>/dev/null || {
+          echo 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' >> /etc/rc.d/rc.local
+          echo 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'  >> /etc/rc.d/rc.local
+          chmod +x /etc/rc.d/rc.local
+        }
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Set ulimit nofile
+      ansible.builtin.copy:
+        dest: /etc/security/limits.d/99-tidb.conf
+        mode: "0644"
+        content: |
+          root soft nofile 65536
+          root hard nofile 65536
+          * soft nofile 65536
+          * hard nofile 65536
+
+    - name: Authorize .32 root key on this node for tiup SSH
+      ansible.posix.authorized_key:
+        user: root
+        state: present
+        key: "{{ hostvars['172.24.40.32']['tidb_root_pubkey']['content'] | b64decode | trim }}"
+
+# Back to .32 — render topology and deploy
+- name: Render topology and deploy TiDB vm-3node cluster
+  hosts: vm3_primary
+  become: true
+  gather_facts: false
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    tidb_cluster_name: tpcc-tidb-vm3
+    tidb_version: v8.5.2
+    tidb_topology_path: /root/tidb-vm3-topology.yaml
+    tidb_replicas: "{{ '3' if tidb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+    tidb_host_primary: "172.24.40.32"
+    tidb_host_w1: "172.24.40.33"
+    tidb_host_w2: "172.24.40.34"
+  tasks:
+    - name: Render TiDB vm-3node topology (sub_topology={{ tidb_sub_topology }}, replicas={{ tidb_replicas }})
+      ansible.builtin.copy:
+        dest: "{{ tidb_topology_path }}"
+        mode: "0644"
+        content: |
+          global:
+            user: "tidb"
+            ssh_port: 22
+            deploy_dir: "/tidb-deploy"
+            data_dir: "/tidb-data"
+
+          server_configs:
+            tidb:
+              mem-quota-query: 3221225472
+              performance.feedback-probability: 0
+              performance.run-auto-analyze: false
+            tikv:
+              storage.block-cache.capacity: "5GB"
+              raftstore.sync-log: true
+              coprocessor.region-split-size: "128GB"
+              coprocessor.region-max-size: "128GB"
+            pd:
+              replication.max-replicas: {{ tidb_replicas }}
+              schedule.leader-schedule-limit: 0
+              schedule.region-schedule-limit: 0
+              schedule.replica-schedule-limit: 0
+
+          pd_servers:
+            - host: {{ tidb_host_primary }}
+              client_port: 2379
+              peer_port: 2380
+              deploy_dir: "/tidb-deploy/pd-2379"
+              data_dir: "/tidb-data/pd-2379"
+              log_dir: "/tidb-deploy/pd-2379/log"
+            - host: {{ tidb_host_w1 }}
+              client_port: 2379
+              peer_port: 2380
+              deploy_dir: "/tidb-deploy/pd-2379"
+              data_dir: "/tidb-data/pd-2379"
+              log_dir: "/tidb-deploy/pd-2379/log"
+            - host: {{ tidb_host_w2 }}
+              client_port: 2379
+              peer_port: 2380
+              deploy_dir: "/tidb-deploy/pd-2379"
+              data_dir: "/tidb-data/pd-2379"
+              log_dir: "/tidb-deploy/pd-2379/log"
+
+          tidb_servers:
+            - host: {{ tidb_host_primary }}
+              port: 4000
+              status_port: 10080
+              deploy_dir: "/tidb-deploy/tidb-4000"
+              log_dir: "/tidb-deploy/tidb-4000/log"
+
+          tikv_servers:
+            - host: {{ tidb_host_primary }}
+              port: 20160
+              status_port: 20180
+              deploy_dir: "/tidb-deploy/tikv-20160"
+              data_dir: "/tidb-data/tikv-20160"
+              log_dir: "/tidb-deploy/tikv-20160/log"
+            - host: {{ tidb_host_w1 }}
+              port: 20160
+              status_port: 20180
+              deploy_dir: "/tidb-deploy/tikv-20160"
+              data_dir: "/tidb-data/tikv-20160"
+              log_dir: "/tidb-deploy/tikv-20160/log"
+            - host: {{ tidb_host_w2 }}
+              port: 20160
+              status_port: 20180
+              deploy_dir: "/tidb-deploy/tikv-20160"
+              data_dir: "/tidb-data/tikv-20160"
+              log_dir: "/tidb-deploy/tikv-20160/log"
+      register: tidb_topology
+
+    - name: Check existing TiDB cluster
+      ansible.builtin.command: /root/.tiup/bin/tiup cluster display {{ tidb_cluster_name }}
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      register: tidb_cluster_display
+      failed_when: false
+      changed_when: false
+
+    - name: Deploy TiDB vm-3node cluster
+      ansible.builtin.command:
+        cmd: /root/.tiup/bin/tiup cluster deploy {{ tidb_cluster_name }} {{ tidb_version }} {{ tidb_topology_path }} --yes -i /root/.ssh/id_rsa
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      when: tidb_cluster_display.rc != 0
+
+    - name: Reload TiDB cluster config when topology changed
+      ansible.builtin.command:
+        cmd: /root/.tiup/bin/tiup cluster reload {{ tidb_cluster_name }} --yes
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      when:
+        - tidb_cluster_display.rc == 0
+        - tidb_topology.changed
+
+    - name: Ensure systemd drop-in dirs exist for TiDB cluster services
+      ansible.builtin.file:
+        path: "/etc/systemd/system/{{ item }}.service.d"
+        state: directory
+        mode: "0755"
+      loop:
+        - tikv-20160
+        - pd-2379
+        - tidb-4000
+
+    - name: Unset proxy for TiDB cluster services (gRPC C core ignores CIDR in no_proxy)
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/{{ item }}.service.d/no-proxy.conf"
+        mode: "0644"
+        content: |
+          [Service]
+          Environment="http_proxy="
+          Environment="https_proxy="
+          Environment="HTTP_PROXY="
+          Environment="HTTPS_PROXY="
+      loop:
+        - tikv-20160
+        - pd-2379
+        - tidb-4000
+
+    - name: Reload systemd after drop-in
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Start TiDB vm-3node cluster
+      ansible.builtin.command:
+        cmd: /root/.tiup/bin/tiup cluster start {{ tidb_cluster_name }}
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      register: tidb_start
+      changed_when: "'Started cluster' in (tidb_start.stdout + tidb_start.stderr)"
+      failed_when:
+        - tidb_start.rc != 0
+        - "'already started' not in (tidb_start.stdout + tidb_start.stderr)"
+
+    - name: Wait for TiDB SQL port on .32
+      ansible.builtin.wait_for:
+        host: "{{ tidb_host_primary }}"
+        port: 4000
+        timeout: 180
+
+    - name: Apply TiDB benchmark settings (auto-analyze + pessimistic)
+      ansible.builtin.command:
+        cmd: mysql -h {{ tidb_host_primary }} -P 4000 -uroot -e "SET GLOBAL tidb_enable_auto_analyze=OFF; SET GLOBAL tidb_txn_mode='pessimistic';"
+      changed_when: false
+
+    - name: Verify PD replication.max-replicas matches sub_topology
+      ansible.builtin.command:
+        cmd: mysql -h {{ tidb_host_primary }} -P 4000 -uroot -B -N -e "SELECT VALUE FROM information_schema.CLUSTER_CONFIG WHERE TYPE='pd' AND `KEY`='replication.max-replicas' LIMIT 1"
+      register: tidb_max_replicas
+      changed_when: false
+      failed_when:
+        - tidb_max_replicas.rc != 0 or (tidb_max_replicas.stdout | trim) != tidb_replicas

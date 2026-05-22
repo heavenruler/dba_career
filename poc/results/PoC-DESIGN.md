@@ -259,6 +259,79 @@ vm-3node-haproxy-3s3r          ✓     -     -
 
 **可選 stretch goal（非 spec 必要）**：在最複雜的 `vm-3node-3s3r` 子拓撲對 CockroachDB / YugabyteDB 補一組 strict、TiDB 補一組 rr，作 **vm-3node iso 排行是否承襲 vm-1node** 的 sanity check。+3 runs ≈ +10.5h，僅在前 12 cell 全完成後考慮。
 
+### 6.3.2 vm-3node 元件分配與 dry-run gate（2026-05-21 決策）
+
+> 本段定義 vm-3node 12 cell（4 子拓撲 × 3 DB）的物理元件落點與 dry-run 安全閘，避免 deploy 失敗未察直接燒掉 ~3.5h benchmark wall-clock。
+
+#### 6.3.2.1 物理元件落點（3 顆 VM = .32 / .33 / .34）
+
+| DB | .32（client 入口） | .33 | .34 | 客戶端連線 |
+|---|---|---|---|---|
+| **TiDB** | PD(2379) + TiKV(20160) + **TiDB(4000)** | PD + TiKV | PD + TiKV | `.32:4000`（單一 TiDB stateless 入口） |
+| **CockroachDB** | cockroach node 1（init）:26257 | cockroach node 2 | cockroach node 3 | `.32:26257` |
+| **YugabyteDB** | yb-master + yb-tserver:5433（cluster init） | yb-master + yb-tserver | yb-master + yb-tserver | `.32:5433` |
+
+**設計理由**：
+- **PD×3 / yb-master×3 = Raft quorum**：3 顆是最小可容錯 quorum（容忍 1 故障）。
+- **TiKV×3 / cockroach×3 / yb-tserver×3 = RF=3 store 數要求**（§4.4 規則：replica 必須跨不同 store）。
+- **TiDB 只 1 顆**：stateless 元件，3 顆需 HAProxy 才能受益；本 12 cell 為 direct 連線，1 顆已足；mem envelope 11 GB 也較寬鬆（PD ~1G + TiKV 5G + TiDB 3G = ~9G < 11G）。
+- **client 統一入口 `.32`**：與 vm-1node 一致，summary.json 取數路徑不變。
+- 3 顆 TiDB + HAProxy 屬 §6.4 Phase F 的 `vm-3node-haproxy-3s3r-rc`，不在本 12 cell 範圍。
+
+#### 6.3.2.2 4 sub-topology × 3 DB 設定矩陣
+
+| sub-topo | shard 數/表 | RF | TiDB | CRDB | YBDB |
+|---|---:|---:|---|---|---|
+| **1s1r** | 1 | 1 | `pd: replication.max-replicas=1`；無 SPLIT | `ALTER DB ... num_replicas=1`；無 SPLIT | `--rf=1`；pre-create `SPLIT INTO 1 TABLETS` |
+| **1s3r** | 1 | 3 | `pd: replication.max-replicas=3`；無 SPLIT | `ALTER DB ... num_replicas=3`；無 SPLIT | `--rf=3`；pre-create `SPLIT INTO 1 TABLETS` |
+| **3s1r** | 3 | 1 | `pd: replication.max-replicas=1`；prepare 後 SPLIT 9 表 × 3 region | `ALTER DB ... num_replicas=1`；prepare 後 SPLIT AT 9 表 | `--rf=1`；不 pre-create（3 tservers × 1 = 3 tablets 自然）|
+| **3s3r** | 3 | 3 | `pd: replication.max-replicas=3`；prepare 後 SPLIT 9 表 × 3 region | `ALTER DB ... num_replicas=3`；prepare 後 SPLIT AT 9 表 | `--rf=3`；不 pre-create |
+
+> shard 鎖定 SQL 與 hard gate 表清單見 §7.5（已寫明每家做法）。本表為 deploy 層級的差異總覽。
+
+#### 6.3.2.3 Dry-run gate（deploy 後、prepare 前）
+
+每 cell 預設跑到 deploy 完成即停在 `.dry-run.done` anchor，必須使用者顯式 `EXECUTE=1` 才放行進 prepare/run/collect/fetch。
+
+**設計動機**：
+- vm-3node deploy 任一失敗（PD quorum 沒對齊、node 沒 join、RF 沒設對）若直接進 prepare，會白燒 ~1h prepare + 20m warmup + 116m run，回到原點。
+- dry-run anchor 把 deploy 後的 cluster topology / RF / iso preset / health 全 dump 出來，由人工 5 min review 換 ~3.5h benchmark 不浪費。
+
+**Anchor 寫入位置**：`artifacts/<db>-vm-3node-<subtopo>-<iso>-<ts>/dry-run/`
+
+**內容（dry-run-confirm.sh 產出）**：
+
+| 檔案 | 內容 |
+|---|---|
+| `cluster-topology.txt` | TiDB: `tiup cluster display`；CRDB: `cockroach node status`；YBDB: `yb-admin list_all_tablet_servers` |
+| `replication-factor.txt` | TiDB: `SHOW CONFIG WHERE NAME='replication.max-replicas'`；CRDB: `SHOW ZONE CONFIGURATION FROM DATABASE tpcc`（prepare 前可能還沒 tpcc，改 `defaultdb`）；YBDB: `yb-admin get_universe_config` |
+| `cluster-health.txt` | TiDB: `SELECT 1`；CRDB: `cockroach node status --ranges`；YBDB: `curl :7000/cluster` |
+| `iso-preset.txt` | conn-params probe（同 §7.4 Layer B），確認 `BEGIN; SHOW transaction_isolation;` 與預期一致 |
+| `expected-vs-actual.txt` | 4 個項目逐項對比預期：node 數、PD/master quorum、RF、iso |
+| `.dry-run.done` | JSON: `{topology, rf_expected, rf_actual, iso_expected, iso_actual, all_pass}` |
+
+**流程**：
+```
+make vm3-tidb-1s1r-rc                  # 預設 dry-run only
+  → new-idc-vms (~5min)
+  → bootstrap-tpcc-client (~30s)
+  → deploy-vm3-tidb-1s1r (~10min)
+  → dry-run-confirm-vm3-tidb-1s1r-rc   # ~2min；dump topology+RF+iso+health
+  → .dry-run.done 寫入；script exit 0；提示「review 通過後加 EXECUTE=1 重跑」
+
+[人工 review]
+  cat results/tidb-tc1/S-BASE/vm-3node-1s1r-rc/<ts>/dry-run/*.txt
+
+make vm3-tidb-1s1r-rc EXECUTE=1        # 跳過 deploy（cluster 已在），直接接 prepare
+  → prepare (含 §7.5 shard 鎖定 + hard gate; ~60min)
+  → gate-isolation (~30s)
+  → run (warmup 20min + 5round × 4threads × 5min = 136min)
+  → collect (~3min)
+  → fetch 由人工 make fetch-vm3-... TPCC_TS=<ts> 拉回
+```
+
+> **fail-closed**：dry-run 任一項目對不上預期 → `.dry-run.done` 寫 `"all_pass": false` + 列出哪項對不上，不允許 `EXECUTE=1` 跳過（gate 內 hard check）。
+
 ### 6.4 本輪實作範圍與 wall-clock 估算
 
 #### 6.4.1 Phase 切分

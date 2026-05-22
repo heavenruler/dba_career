@@ -1,0 +1,314 @@
+---
+# Deploy YugabyteDB vm-3node cluster (3 yugabyted nodes, each with master+tserver)
+#
+# Required extra-vars:
+#   yb_sub_topology=1s1r|1s3r|3s1r|3s3r
+#
+# Notes:
+#   * RF set at cluster init via yugabyted --rf=N (1 for *1r, 3 for *3r).
+#   * tablet count per table controlled by:
+#     - cluster default: ysql_num_shards_per_tserver=1 (so 3 tservers × 1 = 3 tablets)
+#     - automatic split disabled: enable_automatic_tablet_splitting=false
+#     - 1s* sub-topology requires pre-create tables with SPLIT INTO 1 TABLETS (handled in prepare.sh)
+#   * Client connects to .32:5433.
+
+- name: Deploy YugabyteDB vm-3node cluster
+  hosts: vm3_db
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    yb_version: "2025.2.2.2"
+    yb_build: "b11"
+    yb_archive: "yugabyte-{{ yb_version }}-{{ yb_build }}-linux-x86_64.tar.gz"
+    yb_url: "https://software.yugabyte.com/releases/{{ yb_version }}/{{ yb_archive }}"
+    yb_install_dir: /opt/yugabyte
+    yb_base_dir: /var/yugabyte
+    yb_rf: "{{ '3' if yb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+    yb_master_flags: >-
+      enable_automatic_tablet_splitting=false
+    yb_tserver_flags: >-
+      memory_limit_hard_bytes=11811160064,
+      db_block_cache_size_percentage=50,
+      durable_wal_write=true,
+      require_durable_wal_write=true,
+      yb_enable_read_committed_isolation=true,
+      ysql_enable_auth=false,
+      ysql_enable_auto_analyze=false,
+      ysql_num_shards_per_tserver=1,
+      enable_automatic_tablet_splitting=false
+  tasks:
+    - name: Sanity check yb_sub_topology
+      ansible.builtin.assert:
+        that:
+          - yb_sub_topology in ['1s1r', '1s3r', '3s1r', '3s3r']
+        fail_msg: "yb_sub_topology must be one of 1s1r/1s3r/3s1r/3s3r (got '{{ yb_sub_topology | default('UNSET') }}')"
+
+    - name: Install YugabyteDB prerequisites
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar gzip python3-setuptools python3-six postgresql; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          dnf install -y --setopt=keepcache=1 "$pkg"
+        done
+      args:
+        executable: /bin/bash
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: OS tuning (swappiness / THP / ulimit)
+      ansible.builtin.shell: |
+        set -e
+        sysctl -w vm.swappiness=1
+        echo "vm.swappiness = 1" > /etc/sysctl.d/99-yugabyte.conf
+        echo never > /sys/kernel/mm/transparent_hugepage/enabled
+        echo never > /sys/kernel/mm/transparent_hugepage/defrag
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Create yugabyte user
+      ansible.builtin.user:
+        name: yugabyte
+        shell: /bin/bash
+        create_home: true
+
+    - name: Create YugabyteDB directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: yugabyte
+        group: yugabyte
+        mode: "0755"
+      loop:
+        - "{{ yb_install_dir }}"
+        - "{{ yb_base_dir }}"
+
+    - name: Download YugabyteDB archive
+      ansible.builtin.get_url:
+        url: "{{ yb_url }}"
+        dest: "/tmp/{{ yb_archive }}"
+        mode: "0644"
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Extract YugabyteDB
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ yb_archive }}"
+        dest: "{{ yb_install_dir }}"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+        creates: "{{ yb_install_dir }}/bin/yugabyted"
+        owner: yugabyte
+        group: yugabyte
+
+    - name: Run YugabyteDB post install
+      ansible.builtin.shell: |
+        {{ yb_install_dir }}/bin/post_install.sh
+        touch {{ yb_install_dir }}/.post_install_done
+      become_user: yugabyte
+      args:
+        creates: "{{ yb_install_dir }}/.post_install_done"
+      failed_when: false
+
+    - name: Link YugabyteDB client binaries
+      ansible.builtin.file:
+        src: "{{ yb_install_dir }}/bin/{{ item }}"
+        dest: "/usr/local/bin/{{ item }}"
+        state: link
+        force: true
+      loop:
+        - yugabyted
+        - ysqlsh
+        - yb-admin
+
+# Start the primary node (.32) first to bootstrap the cluster
+- name: Bootstrap YugabyteDB primary (.32)
+  hosts: vm3_primary
+  become: true
+  gather_facts: true
+  vars:
+    yb_install_dir: /opt/yugabyte
+    yb_base_dir: /var/yugabyte
+    yb_host_primary: "172.24.40.32"
+    yb_rf: "{{ '3' if yb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+    yb_master_flags: >-
+      enable_automatic_tablet_splitting=false
+    yb_tserver_flags: >-
+      memory_limit_hard_bytes=11811160064,
+      db_block_cache_size_percentage=50,
+      durable_wal_write=true,
+      require_durable_wal_write=true,
+      yb_enable_read_committed_isolation=true,
+      ysql_enable_auth=false,
+      ysql_enable_auto_analyze=false,
+      ysql_num_shards_per_tserver=1,
+      enable_automatic_tablet_splitting=false
+  tasks:
+    - name: Check yugabyted status on primary
+      ansible.builtin.command: "{{ yb_install_dir }}/bin/yugabyted status --base_dir={{ yb_base_dir }}"
+      become_user: yugabyte
+      register: yb_status_primary
+      failed_when: false
+      changed_when: false
+
+    - name: Start YugabyteDB primary (bootstrap, RF={{ yb_rf }})
+      ansible.builtin.command:
+        cmd: >-
+          {{ yb_install_dir }}/bin/yugabyted start
+          --base_dir={{ yb_base_dir }}
+          --advertise_address={{ yb_host_primary }}
+          --master_flags={{ (yb_master_flags | regex_replace('\s+', '')) | quote }}
+          --tserver_flags={{ (yb_tserver_flags | regex_replace('\s+', '')) | quote }}
+      become_user: yugabyte
+      when: "'is not running' in (yb_status_primary.stdout | default('')) or yb_status_primary.rc != 0"
+
+    - name: Wait for YSQL port on primary
+      ansible.builtin.wait_for:
+        host: "{{ yb_host_primary }}"
+        port: 5433
+        timeout: 240
+
+# Join workers (.33, .34) to the cluster
+- name: Join YugabyteDB workers
+  hosts: vm3_workers
+  become: true
+  gather_facts: true
+  vars:
+    yb_install_dir: /opt/yugabyte
+    yb_base_dir: /var/yugabyte
+    yb_host_primary: "172.24.40.32"
+    yb_master_flags: >-
+      enable_automatic_tablet_splitting=false
+    yb_tserver_flags: >-
+      memory_limit_hard_bytes=11811160064,
+      db_block_cache_size_percentage=50,
+      durable_wal_write=true,
+      require_durable_wal_write=true,
+      yb_enable_read_committed_isolation=true,
+      ysql_enable_auth=false,
+      ysql_enable_auto_analyze=false,
+      ysql_num_shards_per_tserver=1,
+      enable_automatic_tablet_splitting=false
+  tasks:
+    - name: Check yugabyted status on worker
+      ansible.builtin.command: "{{ yb_install_dir }}/bin/yugabyted status --base_dir={{ yb_base_dir }}"
+      become_user: yugabyte
+      register: yb_status_worker
+      failed_when: false
+      changed_when: false
+
+    - name: Start YugabyteDB worker (join existing cluster)
+      ansible.builtin.command:
+        cmd: >-
+          {{ yb_install_dir }}/bin/yugabyted start
+          --base_dir={{ yb_base_dir }}
+          --advertise_address={{ inventory_hostname }}
+          --join={{ yb_host_primary }}
+          --master_flags={{ (yb_master_flags | regex_replace('\s+', '')) | quote }}
+          --tserver_flags={{ (yb_tserver_flags | regex_replace('\s+', '')) | quote }}
+      become_user: yugabyte
+      when: "'is not running' in (yb_status_worker.stdout | default('')) or yb_status_worker.rc != 0"
+
+    - name: Wait for YSQL port on worker
+      ansible.builtin.wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 5433
+        timeout: 240
+
+# Final verification — set RF and check
+- name: Verify YugabyteDB cluster RF and health
+  hosts: vm3_primary
+  become: true
+  gather_facts: false
+  vars:
+    yb_install_dir: /opt/yugabyte
+    yb_host_primary: "172.24.40.32"
+    yb_rf: "{{ '3' if yb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+  tasks:
+    - name: Configure data placement / RF via yb-admin
+      ansible.builtin.command:
+        cmd: "{{ yb_install_dir }}/bin/yb-admin --master_addresses=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100 modify_universe_replication_info {{ yb_rf }}"
+      register: yb_rf_set
+      failed_when: false
+      changed_when: false
+
+    - name: Health check YugabyteDB
+      ansible.builtin.command:
+        cmd: "{{ yb_install_dir }}/bin/ysqlsh -h {{ yb_host_primary }} -p 5433 -U yugabyte -d yugabyte -c \"SELECT 1\""
+      become_user: yugabyte
+      changed_when: false
+
+    - name: Get cluster info for log
+      ansible.builtin.command:
+        cmd: "{{ yb_install_dir }}/bin/yb-admin --master_addresses=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100 get_universe_config"
+      register: yb_universe_config
+      changed_when: false
+
+    - name: Show cluster universe config
+      ansible.builtin.debug:
+        var: yb_universe_config.stdout_lines
+
+- name: Install ysqlsh on TPC-C client
+  hosts: tpcc_client
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    yb_version: "2025.2.2.2"
+    yb_build: "b11"
+    yb_archive: "yugabyte-{{ yb_version }}-{{ yb_build }}-linux-x86_64.tar.gz"
+    yb_url: "https://software.yugabyte.com/releases/{{ yb_version }}/{{ yb_archive }}"
+    yb_install_dir: /opt/yugabyte
+  tasks:
+    - name: Install ysqlsh prerequisites
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar gzip python3-setuptools python3-six postgresql; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          dnf install -y --setopt=keepcache=1 "$pkg"
+        done
+      args:
+        executable: /bin/bash
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: Create YugabyteDB client directory
+      ansible.builtin.file:
+        path: "{{ yb_install_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download YugabyteDB archive on client
+      ansible.builtin.get_url:
+        url: "{{ yb_url }}"
+        dest: "/tmp/{{ yb_archive }}"
+        mode: "0644"
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Extract YugabyteDB client tools
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ yb_archive }}"
+        dest: "{{ yb_install_dir }}"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+        creates: "{{ yb_install_dir }}/bin/ysqlsh"
+
+    - name: Link ysqlsh + yb-admin client binaries
+      ansible.builtin.file:
+        src: "{{ yb_install_dir }}/bin/{{ item }}"
+        dest: "/usr/local/bin/{{ item }}"
+        state: link
+        force: true
+      loop:
+        - ysqlsh
+        - yb-admin

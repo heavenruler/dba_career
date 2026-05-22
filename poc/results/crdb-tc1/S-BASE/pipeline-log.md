@@ -580,3 +580,158 @@ RR       3,788 tpmC  ← retry storm 浪費吞吐
 
 CockroachDB 設計層面**強烈鼓勵用 SERIALIZABLE**，硬體預算下也最划算。RR 是為 PostgreSQL 兼容性而存在的 preview feature，不應作為性能取捨選項。
 
+---
+
+## vm-3node 系列（4 sub-topology × RC，PoC-DESIGN §6.3.2）
+
+> 本段為 CockroachDB v26.2 在 vm-3node 拓樸 / `READ COMMITTED` 隔離級下的 4 個 sub-topology baseline 規劃。資料填寫前以 `dry-run` anchor 確認 cluster topology / RF / iso preset 與設計一致，再由人工放行 `EXECUTE=1` 進入 prepare/run/collect。
+
+### 共同元件分配（3 顆 VM）
+
+```
+            client (.31)
+              │  go-tpc → :26257 (cockroach SQL)
+              ▼
+   ┌──────────┴──────────┐
+   │     172.24.40.32    │  ← client 入口 / cockroach init node
+   │  cockroach :26257   │
+   │  + http :8080       │
+   └─────────┬───────────┘
+             │ KV multi-Raft (range / lease holder)
+   ┌─────────┴────────────────────────┐
+   │                                  │
+┌──┴──────────────┐         ┌─────────┴────────┐
+│  172.24.40.33   │         │   172.24.40.34   │
+│  cockroach      │         │   cockroach      │
+└─────────────────┘         └──────────────────┘
+```
+
+3 個 cockroach node 互為 peer（無 leader 概念，只有 per-range lease holder）；`cockroach init` 一次性 on .32；client 統一 .32:26257 進入。
+
+### vm-3node-1s1r-rc
+
+> 1 shard × 1 replica：3-node cluster + `num_replicas=1`、無 SPLIT。對照 vm-1node-rc 量化「cluster framework + remote coord」純成本。
+
+#### 拓樸示意
+
+```
+cockroach cluster (3 nodes, KV peer)
+.32 [tpcc ranges leader, RF=1]   .33 (no replicas)   .34 (no replicas)
+                ▲ all reads / writes 終究路由到 .32
+client .31:go-tpc → .32:26257  (gateway routes; lease holder on .32 for all ranges)
+```
+
+#### 關鍵 DB 設定
+
+| 維度 | 設定 | 來源 |
+|---|---|---|
+| `ALTER DATABASE tpcc CONFIGURE ZONE USING num_replicas` | `1` | prepare 階段（tpcc DB 建好後）|
+| `SET CLUSTER SETTING kv.range_split.by_load_enabled` | `false` | `cockroach-vm3.yml` |
+| `range_max_bytes` / `range_min_bytes` | `128 GB` / `64 MB` | 防 size split（§7.5.2）|
+| Range SPLIT policy | 無 SPLIT；natural 1 range/table |
+| `sql.txn.read_committed_isolation.enabled` | `true`（v26.2 預設）| §7.2 |
+| `sql.stats.automatic_collection.enabled` | `false` | benchmark control |
+| conn-params (RC) | `options=-c default_transaction_isolation=read committed` | §7.2 |
+
+#### Dry-run 預期
+
+- `cluster-topology.txt` ≥ 3 node Up（`cockroach node status`）
+- `replication-factor.txt`（default range zone）顯示 `num_replicas = N` — dry-run 階段 tpcc DB 尚未建，僅讀 default zone（系統預設 5），實際 num_replicas=1 由 prepare 階段 ALTER 設定。
+- `iso-preset.txt` = `read committed`
+- `cluster-health.txt` = `SELECT 1` 回 1
+
+> ⚠️ CRDB dry-run 的 `replication-factor.txt` 讀的是 `RANGE default`（系統預設），不是 tpcc DB 的實際 zone。tpcc DB zone 在 prepare 階段設定，hard gate 由 `crdb_internal.ranges` 計數驗。
+
+#### Execute 結果
+
+> 待 `make vm3-crdb-1s1r-rc EXECUTE=1 TPCC_TS=<ts>` 完成後回填 5-round mean tpmC / p50 / p95 / p99 / error rate，並與 vm-1node-rc 對照 scale-out ratio。
+
+### vm-3node-1s3r-rc
+
+> 1 shard × 3 replica：Raft 3-replica leader+2 follower 寫入成本。對照 1s1r 量化「KV Raft replication 成本」。
+
+#### 拓樸示意
+
+```
+cockroach cluster (3 nodes)
+.32 [tpcc range leaseholder, RF=3]
+.33 [tpcc range follower]      ←─┐ Raft majority commit
+.34 [tpcc range follower]      ←─┘
+client → .32:26257 (gateway 可能路由到任一 leaseholder)
+```
+
+#### 關鍵 DB 設定
+
+| 維度 | 設定 |
+|---|---|
+| `ALTER DATABASE tpcc CONFIGURE ZONE USING num_replicas` | `3` |
+| Range SPLIT policy | 無 SPLIT；natural 1 range/table |
+| 其餘 | 同 1s1r |
+
+#### Dry-run 預期
+
+- 同 1s1r（注意：dry-run 階段讀的是 default zone，實際 tpcc num_replicas=3 由 prepare 設定）。
+
+#### Execute 結果
+
+> 待回填；與 1s1r 比 → Raft 3-replica 寫入 amplification。
+
+### vm-3node-3s1r-rc
+
+> 3 shard × 1 replica：每 table 3 range 分散到 3 node。對照 1s1r 量化「sharding 對 OLTP 效應」。
+
+#### 拓樸示意
+
+```
+cockroach cluster (3 nodes, RF=1)
+.32 [t.range-A leaseholder]   .33 [t.range-B leaseholder]   .34 [t.range-C leaseholder]
+client → .32:26257 (gateway 路由 leaseholder)
+```
+
+#### 關鍵 DB 設定
+
+| 維度 | 設定 |
+|---|---|
+| `ALTER DATABASE tpcc CONFIGURE ZONE USING num_replicas` | `1` |
+| Range SPLIT policy | prepare 階段對 9 張表 `ALTER TABLE ... SPLIT AT VALUES (...)` |
+| Hard gate | `crdb_internal.ranges` 9 表 `index_name='primary'` 計數 = 3 |
+| 其餘 | 同 1s1r |
+
+#### Dry-run 預期
+
+- 同 1s1r（shard SPLIT 由 prepare 執行 + hard gate 驗）
+
+#### Execute 結果
+
+> 待回填；與 1s1r 比 → sharding 純效應；驗 range leaseholder 是否 evenly distributed。
+
+### vm-3node-3s3r-rc
+
+> 3 shard × 3 replica：完整 sharded + replicated cluster。對照 1s3r 量化「sharding 在 RF=3 下的攤平效益」；與 3s1r 比 → replication overhead in sharded cluster。
+
+#### 拓樸示意
+
+```
+cockroach cluster (3 nodes, RF=3)
+.32 [A-leaseholder / B-follower / C-follower]
+.33 [A-follower    / B-leaseholder / C-follower]
+.34 [A-follower    / B-follower    / C-leaseholder]
+client → .32:26257 (gateway 路由 leaseholder for each range)
+```
+
+#### 關鍵 DB 設定
+
+| 維度 | 設定 |
+|---|---|
+| `ALTER DATABASE tpcc CONFIGURE ZONE USING num_replicas` | `3` |
+| Range SPLIT policy | prepare 階段對 9 張表 `ALTER TABLE ... SPLIT AT VALUES (...)` |
+| 其餘 | 同 3s1r |
+
+#### Dry-run 預期
+
+- 同 1s1r。
+
+#### Execute 結果
+
+> 待回填；與 3s1r 比 → replication 成本 in sharded cluster；與 1s3r 比 → sharding 攤平效益。
+

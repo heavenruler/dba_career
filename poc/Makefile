@@ -106,6 +106,16 @@ help:
 	@echo "    make fetch-vm1-<db>-<iso>    - rsync .31 → MAC results/ + 清 .31"
 	@echo "    make clean-tpcc-artifacts    - 清 .31:/tmp/poc-tpcc/artifacts/*"
 	@echo "  變數: db=tidb|crdb|ybdb, iso=rc|rr|strict, TPCC_TS=<ISO-8601>"
+	@echo ""
+	@echo "=== TPC-C vm-3node Phase chain (PoC-DESIGN §6.3.2; 12 cells × RC) ==="
+	@echo "  make vm3-<db>-<sub>-rc                - deploy + dry-run anchor (預設停在 deploy 後)"
+	@echo "    EXECUTE=1: deploy → dry-run → gate → prepare → run → collect (fetch 手動)"
+	@echo "  make vm3-all-dry                      - 12 cells 全跑到 dry-run anchor"
+	@echo "  make deploy-vm3-<db>-<sub>            - 只跑 Ansible deploy"
+	@echo "  make dryrun-vm3-<db>-<sub>-rc         - 只跑 dry-run-confirm (deploy 完才能跑)"
+	@echo "  make status-vm3-<db>-<sub>-rc         - 看 dry-run 結果 + lock/marker"
+	@echo "  make fetch-vm3-<db>-<sub>-rc TPCC_TS=<ts>"
+	@echo "  變數: db=tidb|crdb|ybdb, sub=1s1r|1s3r|3s1r|3s3r"
 
 ## Build
 new-vms:
@@ -360,3 +370,168 @@ $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,status-vm1-$(db)-$(iso)))
 	$(eval ISO := $(word 4,$(subst -, ,$@)))
 	@ssh $(TPCC_CLIENT) "bash $(TPCC_SCRIPTS)/status-vm1.sh \
 	  --db $(DB) --topology vm-1node --iso $(ISO)"
+
+# ====================================================================
+# vm-3node — 12 cells (4 sub-topology × 3 DB), all RC iso
+# Per PoC-DESIGN §6.3.2 (vm-3node 元件分配與 dry-run gate)
+#
+# Naming:
+#   vm3-<db>-<sub>-rc         e2e (deploy → dry-run → [EXECUTE=1] → prepare→...→collect)
+#   deploy-vm3-<db>-<sub>     Ansible deploy only
+#   dryrun-vm3-<db>-<sub>-rc dry-run-confirm.sh (deploy 後 / prepare 前 anchor)
+#   prepare-vm3-<db>-<sub>-rc go-tpc prepare + shard SPLIT + hard gate
+#   gate-vm3-<db>-<sub>-rc    OS / chrony / disk gate
+#   run-vm3-<db>-<sub>-rc     cold-reset + warmup + 5 round × 4 threads
+#   collect-vm3-<db>-<sub>-rc artifacts collect
+#   fetch-vm3-<db>-<sub>-rc   rsync .31 → MAC
+#   status-vm3-<db>-<sub>-rc  read-only status
+#
+# <db> ∈ {tidb, crdb, ybdb}  <sub> ∈ {1s1r, 1s3r, 3s1r, 3s3r}
+# ====================================================================
+
+VM3_SUBS := 1s1r 1s3r 3s1r 3s3r
+
+.PHONY: $(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),\
+          deploy-vm3-$(db)-$(sub) \
+          dryrun-vm3-$(db)-$(sub)-rc \
+          prepare-vm3-$(db)-$(sub)-rc \
+          gate-vm3-$(db)-$(sub)-rc \
+          run-vm3-$(db)-$(sub)-rc \
+          collect-vm3-$(db)-$(sub)-rc \
+          fetch-vm3-$(db)-$(sub)-rc \
+          status-vm3-$(db)-$(sub)-rc \
+          vm3-$(db)-$(sub)-rc))
+
+# ---- deploy-vm3-<db>-<sub> : Ansible deploy with sub_topology var --
+deploy-vm3-tidb-1s1r deploy-vm3-tidb-1s3r deploy-vm3-tidb-3s1r deploy-vm3-tidb-3s3r:
+	$(eval SUB := $(word 4,$(subst -, ,$@)))
+	@echo "==> deploy-vm3-tidb-$(SUB) (sub_topology=$(SUB))"
+	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory/vm3.ini playbooks/tidb-vm3.yml \
+	  -e tidb_sub_topology=$(SUB)
+
+deploy-vm3-crdb-1s1r deploy-vm3-crdb-1s3r deploy-vm3-crdb-3s1r deploy-vm3-crdb-3s3r:
+	$(eval SUB := $(word 4,$(subst -, ,$@)))
+	@echo "==> deploy-vm3-crdb-$(SUB) (sub_topology=$(SUB))"
+	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory/vm3.ini playbooks/cockroach-vm3.yml \
+	  -e crdb_sub_topology=$(SUB)
+
+deploy-vm3-ybdb-1s1r deploy-vm3-ybdb-1s3r deploy-vm3-ybdb-3s1r deploy-vm3-ybdb-3s3r:
+	$(eval SUB := $(word 4,$(subst -, ,$@)))
+	@echo "==> deploy-vm3-ybdb-$(SUB) (sub_topology=$(SUB))"
+	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory/vm3.ini playbooks/yugabyte-vm3.yml \
+	  -e yb_sub_topology=$(SUB)
+
+# ---- dryrun-vm3-<db>-<sub>-rc : deploy 後 / prepare 前 anchor ---
+$(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),dryrun-vm3-$(db)-$(sub)-rc)):
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	$(eval SUB := $(word 4,$(subst -, ,$@)))
+	$(eval ISO := $(word 5,$(subst -, ,$@)))
+	$(eval HOST := $(strip $(call DB_HOST,$(DB))))
+	@echo "==> dryrun-vm3-$(DB)-$(SUB)-$(ISO) host=$(HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "$(TPCC_ENV) bash $(TPCC_SCRIPTS)/dry-run-confirm.sh \
+	  --db $(DB) --sub-topology $(SUB) --iso $(ISO) --db-host $(HOST) --ts $(TPCC_TS)"
+
+# ---- gate-vm3-<db>-<sub>-rc : OS / chrony / disk preflight (reuse gate.sh, topo=vm-3node-<sub>) ----
+$(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),gate-vm3-$(db)-$(sub)-rc)):
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	$(eval SUB := $(word 4,$(subst -, ,$@)))
+	$(eval ISO := $(word 5,$(subst -, ,$@)))
+	$(eval HOST := $(strip $(call DB_HOST,$(DB))))
+	@echo "==> gate-vm3-$(DB)-$(SUB)-$(ISO) host=$(HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "$(TPCC_ENV) bash $(TPCC_SCRIPTS)/gate.sh \
+	  --db $(DB) --iso $(ISO) --db-host $(HOST) --ts $(TPCC_TS)"
+
+# ---- prepare-vm3-<db>-<sub>-rc : DROP+CREATE + prepare + shard SPLIT + hard gate ----
+$(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),prepare-vm3-$(db)-$(sub)-rc)):
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	$(eval SUB := $(word 4,$(subst -, ,$@)))
+	$(eval ISO := $(word 5,$(subst -, ,$@)))
+	$(eval HOST := $(strip $(call DB_HOST,$(DB))))
+	@echo "==> prepare-vm3-$(DB)-$(SUB)-$(ISO) host=$(HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "$(TPCC_ENV) bash $(TPCC_SCRIPTS)/prepare.sh \
+	  --db $(DB) --iso $(ISO) --topology vm-3node-$(SUB) --db-host $(HOST) --ts $(TPCC_TS)"
+
+# ---- run-vm3-<db>-<sub>-rc : cold-reset + warmup + 5 round × 4 threads ----
+$(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),run-vm3-$(db)-$(sub)-rc)):
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	$(eval SUB := $(word 4,$(subst -, ,$@)))
+	$(eval ISO := $(word 5,$(subst -, ,$@)))
+	$(eval HOST := $(strip $(call DB_HOST,$(DB))))
+	@echo "==> run-vm3-$(DB)-$(SUB)-$(ISO) host=$(HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "$(TPCC_ENV) bash $(TPCC_SCRIPTS)/run.sh \
+	  --db $(DB) --iso $(ISO) --topology vm-3node-$(SUB) --db-host $(HOST) --ts $(TPCC_TS)"
+
+# ---- collect-vm3-<db>-<sub>-rc ----
+$(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),collect-vm3-$(db)-$(sub)-rc)):
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	$(eval SUB := $(word 4,$(subst -, ,$@)))
+	$(eval ISO := $(word 5,$(subst -, ,$@)))
+	$(eval HOST := $(strip $(call DB_HOST,$(DB))))
+	@echo "==> collect-vm3-$(DB)-$(SUB)-$(ISO) host=$(HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "$(TPCC_ENV) bash $(TPCC_SCRIPTS)/collect.sh \
+	  --db $(DB) --iso $(ISO) --topology vm-3node-$(SUB) --db-host $(HOST) --ts $(TPCC_TS)"
+
+# ---- fetch-vm3-<db>-<sub>-rc : rsync .31 → MAC ----
+$(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),fetch-vm3-$(db)-$(sub)-rc)):
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	$(eval SUB := $(word 4,$(subst -, ,$@)))
+	$(eval ISO := $(word 5,$(subst -, ,$@)))
+	$(eval RESULT_DIR := $(strip $(call DB_RESULT_DIR,$(DB))))
+	$(eval FETCH_SRC := $(if $(filter command line,$(origin TPCC_TS)),$(TPCC_ARTIFACTS)/$(DB)-vm-3node-$(SUB)-$(ISO)-$(TPCC_TS),$(TPCC_ARTIFACTS)/$(DB)-vm-3node-$(SUB)-$(ISO)-*))
+	@echo "==> fetch-vm3-$(DB)-$(SUB)-$(ISO) src=$(FETCH_SRC) dest=$(RESULT_DIR)/S-BASE/vm-3node-$(SUB)-$(ISO)/"
+	mkdir -p $(LOCAL_RESULTS)/$(RESULT_DIR)/S-BASE/vm-3node-$(SUB)-$(ISO)/
+	rsync -avz --remove-source-files \
+	  '$(TPCC_CLIENT):$(FETCH_SRC)' \
+	  $(LOCAL_RESULTS)/$(RESULT_DIR)/S-BASE/vm-3node-$(SUB)-$(ISO)/
+	ssh $(TPCC_CLIENT) 'find $(TPCC_ARTIFACTS) -depth -type d -empty -delete' || true
+
+# ---- status-vm3-<db>-<sub>-rc ----
+$(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),status-vm3-$(db)-$(sub)-rc)):
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	$(eval SUB := $(word 4,$(subst -, ,$@)))
+	$(eval ISO := $(word 5,$(subst -, ,$@)))
+	@ssh $(TPCC_CLIENT) "bash $(TPCC_SCRIPTS)/status-vm1.sh \
+	  --db $(DB) --topology vm-3node-$(SUB) --iso $(ISO)" || true
+	@echo "==> dry-run artifacts: $(TPCC_ARTIFACTS)/$(DB)-vm-3node-$(SUB)-$(ISO)-*/dry-run/"
+	@ssh $(TPCC_CLIENT) "ls -la $(TPCC_ARTIFACTS)/$(DB)-vm-3node-$(SUB)-$(ISO)-*/dry-run/ 2>/dev/null | tail -20" || true
+
+# ---- vm3-<db>-<sub>-rc : full chain with EXECUTE=1 safety gate -----
+# Default: deploy + dry-run-confirm; stop at anchor.
+# With EXECUTE=1: continue prepare → gate → run → collect (fetch is manual).
+$(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),vm3-$(db)-$(sub)-rc)):
+	$(eval DB := $(word 2,$(subst -, ,$@)))
+	$(eval SUB := $(word 3,$(subst -, ,$@)))
+	$(eval ISO := $(word 4,$(subst -, ,$@)))
+	$(eval HOST := $(strip $(call DB_HOST,$(DB))))
+	$(eval TS := $(TPCC_TS))
+	@echo "==================================================================="
+	@echo "  vm3-$(DB)-$(SUB)-$(ISO)  ts=$(TS)  execute=$(EXECUTE)"
+	@echo "==================================================================="
+	$(MAKE) bootstrap-tpcc-client
+	$(MAKE) deploy-vm3-$(DB)-$(SUB)
+	$(MAKE) dryrun-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS)
+	@if [ "$(EXECUTE)" = "1" ]; then \
+	  echo "==> EXECUTE=1 — continuing to gate/prepare/run/collect"; \
+	  $(MAKE) gate-vm3-$(DB)-$(SUB)-$(ISO)    TPCC_TS=$(TS); \
+	  $(MAKE) prepare-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS); \
+	  $(MAKE) run-vm3-$(DB)-$(SUB)-$(ISO)     TPCC_TS=$(TS); \
+	  $(MAKE) collect-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS); \
+	  echo "==> vm3-$(DB)-$(SUB)-$(ISO) complete; ts=$(TS)"; \
+	  echo "==> fetch later: make fetch-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS)"; \
+	else \
+	  echo "==================================================================="; \
+	  echo "  STOPPED AT DRY-RUN ANCHOR"; \
+	  echo "  TPCC_TS:        $(TS)"; \
+	  echo "  Review:         ssh $(TPCC_CLIENT) cat $(TPCC_ARTIFACTS)/$(DB)-vm-3node-$(SUB)-$(ISO)-$(TS)/dry-run/*.txt"; \
+	  echo "  Status:         make status-vm3-$(DB)-$(SUB)-$(ISO)"; \
+	  echo "  To execute:     make vm3-$(DB)-$(SUB)-$(ISO) EXECUTE=1 TPCC_TS=$(TS)"; \
+	  echo "==================================================================="; \
+	fi
+
+# Batch: deploy + dry-run for all 4 sub-topologies of one DB
+.PHONY: vm3-tidb-all-rc-dry vm3-crdb-all-rc-dry vm3-ybdb-all-rc-dry vm3-all-dry
+vm3-tidb-all-rc-dry: vm3-tidb-1s1r-rc vm3-tidb-1s3r-rc vm3-tidb-3s1r-rc vm3-tidb-3s3r-rc
+vm3-crdb-all-rc-dry: vm3-crdb-1s1r-rc vm3-crdb-1s3r-rc vm3-crdb-3s1r-rc vm3-crdb-3s3r-rc
+vm3-ybdb-all-rc-dry: vm3-ybdb-1s1r-rc vm3-ybdb-1s3r-rc vm3-ybdb-3s1r-rc vm3-ybdb-3s3r-rc
+vm3-all-dry: vm3-tidb-all-rc-dry vm3-crdb-all-rc-dry vm3-ybdb-all-rc-dry
+	@echo "==> all 12 vm-3node cells reached dry-run anchor"
