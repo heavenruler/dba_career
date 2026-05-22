@@ -1,6 +1,9 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync todo
+.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync todo filter_all_bg filter_status filter_stop filter_log
+
+TODO_PID := todo.pid
+TODO_OUT := todo.out
 
 # 預設 filter_test 對象（可覆寫：make filter_test DOC_ID=<md5>）
 FILTER_TEST_DOC_ID ?= 44862aef1f3e9f432840f303bb9da948
@@ -46,6 +49,12 @@ help:
 		'      force-rerun LLM filter on $(FILTER_TEST_DOC_ID) (test sample, 預設 5KB doc):' \
 		'      → 刪除 generated/filtered/<DOC_ID>/ 舊結果 → 重跑 filter → rebuild chunks' \
 		'      Override: make filter_test DOC_ID=<md5>' \
+		'' \
+		'  Batch (background) LLM filter — todo.sh 包裝:' \
+		'    make filter_all_bg     # nohup + caffeinate + PID 記錄，啟動完即返回' \
+		'    make filter_status     # 看是否在跑 + 完成數 + 最近 5 篇' \
+		'    make filter_log        # tail -f filter_progress.log' \
+		'    make filter_stop       # 停背景 todo.sh（process group + 5s fallback to SIGKILL）' \
 		'' \
 		'Notes:' \
 		'  - build_chunks prefers generated/filtered/<doc_id>/knowledge.json.' \
@@ -130,3 +139,64 @@ sync: reconcile_manifest extract_pdf ocr_pdf
 # 可單獨呼叫；make sync 也會自動跑
 todo:
 	@python3 scripts/regen_todo.py
+
+# 背景啟動 ./todo.sh：nohup + caffeinate（防 mac 睡）+ PID 記錄
+# 啟動完即返回；用 make filter_status / filter_log / filter_stop 管理
+filter_all_bg:
+	@if [ -f $(TODO_PID) ] && kill -0 $$(cat $(TODO_PID)) 2>/dev/null; then \
+		echo "⚠️  已有 todo.sh 在跑 (PID $$(cat $(TODO_PID)))；先 make filter_stop"; \
+		exit 1; \
+	fi
+	@if [ ! -x ./todo.sh ]; then echo "todo.sh 不存在或不可執行；先 make todo"; exit 1; fi
+	@nohup caffeinate -i ./todo.sh > $(TODO_OUT) 2>&1 & echo $$! > $(TODO_PID)
+	@sleep 1
+	@echo "[filter_all_bg] started PID $$(cat $(TODO_PID)) at $$(date '+%Y-%m-%d %H:%M:%S')"
+	@echo "  日誌    : tail -f filter_progress.log    (或 make filter_log)"
+	@echo "  進度    : wc -l .todo.state              (或 make filter_status)"
+	@echo "  中斷    : make filter_stop"
+	@echo "  失敗    : cat filter_failed.log"
+
+# 顯示 todo.sh 背景狀態 + 進度 + 最新完成項
+filter_status:
+	@if [ -f $(TODO_PID) ] && kill -0 $$(cat $(TODO_PID)) 2>/dev/null; then \
+		echo "🟢 RUNNING  PID $$(cat $(TODO_PID))"; \
+	else \
+		echo "⚫ STOPPED"; \
+	fi
+	@printf '完成: '; [ -f .todo.state ] && wc -l < .todo.state || echo 0
+	@printf '失敗: '; [ -f filter_failed.log ] && wc -l < filter_failed.log || echo 0
+	@printf '已 filter (knowledge.json): '; ls generated/filtered 2>/dev/null | wc -l
+	@echo '最近 5 篇完成:'
+	@[ -f .todo.state ] && tail -5 .todo.state || echo '  (尚無)'
+
+# 中斷背景 todo.sh + 所有子程序（make filter_doc / codex exec）
+# nohup&启动的 todo.sh 不一定是 process group leader，所以 PID kill + pattern pkill 雙保險
+filter_stop:
+	@PID=""; \
+	[ -f $(TODO_PID) ] && PID=$$(cat $(TODO_PID)); \
+	if [ -n "$$PID" ] && kill -0 $$PID 2>/dev/null; then \
+		echo "[filter_stop] SIGTERM → PID $$PID + descendants by name pattern"; \
+		kill -TERM $$PID 2>/dev/null; \
+	else \
+		echo "[filter_stop] no live todo.sh PID; clearing descendants only"; \
+	fi; \
+	pkill -TERM -f "scripts/filter_doc.py" 2>/dev/null || true; \
+	pkill -TERM -f "codex exec --cd.*KnowledgeBase" 2>/dev/null || true; \
+	for i in 1 2 3 4 5; do \
+		ALIVE=0; \
+		[ -n "$$PID" ] && kill -0 $$PID 2>/dev/null && ALIVE=1; \
+		pgrep -f "scripts/filter_doc.py" >/dev/null && ALIVE=1; \
+		pgrep -f "codex exec --cd.*KnowledgeBase" >/dev/null && ALIVE=1; \
+		[ "$$ALIVE" = "0" ] && { echo "  ✅ stopped gracefully"; rm -f $(TODO_PID); exit 0; }; \
+		sleep 1; \
+	done; \
+	echo "  ⚠️  still alive after 5s, SIGKILL"; \
+	[ -n "$$PID" ] && kill -9 $$PID 2>/dev/null; \
+	pkill -9 -f "scripts/filter_doc.py" 2>/dev/null || true; \
+	pkill -9 -f "codex exec --cd.*KnowledgeBase" 2>/dev/null || true; \
+	rm -f $(TODO_PID); \
+	echo "  killed"
+
+# tail -f filter_progress.log（Ctrl-C 退出不影響背景 todo.sh）
+filter_log:
+	@tail -f filter_progress.log

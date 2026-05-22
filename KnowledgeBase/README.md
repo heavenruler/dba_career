@@ -144,13 +144,25 @@ make todo             # 從 generated/extracted/ 重生 todo.sh（含跳過已 f
 
 **錯誤策略**：個別 fail 寫進 `filter_failed.log` 不中斷；codex 5h window 額度滿時整批會接連 fail，停掉等下個 window 再跑。
 
-**進度查看**：
+### 背景跑（45h 長跑首選）
+
+```bash
+make filter_all_bg     # nohup + caffeinate（防 mac 睡）+ PID 寫進 todo.pid
+make filter_status     # 看 RUNNING/STOPPED + 完成數 + 最近 5 篇
+make filter_log        # tail -f filter_progress.log（Ctrl-C 離開不影響背景跑）
+make filter_stop       # 中斷：SIGTERM PID + pkill 子程序 → 5s fallback 到 SIGKILL
+```
+
+`make filter_stop` 已驗證可在 0.1 秒清除 `todo.sh` 自身 + `caffeinate` + `make filter_doc` + `python filter_doc.py` + `codex exec`（pattern-based pkill，避開 nohup 不是 PG leader 的孤兒問題）。
+
+### 進度查看（前台/背景皆可用）
 
 ```bash
 wc -l .todo.state                            # 已完成幾篇
 tail -5 .todo.state                          # 最近 5 篇完成時間
 ls generated/filtered/ | wc -l               # 實際 knowledge.json 數
 tail -20 filter_progress.log                 # 完整 log
+cat filter_failed.log 2>/dev/null            # 失敗清單（quota 滿時暴增）
 ```
 
 ### Step 6. 重建 chunks
