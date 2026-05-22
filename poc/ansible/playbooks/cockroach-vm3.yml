@@ -193,6 +193,18 @@
         - "SET CLUSTER SETTING kv.range_split.by_load_enabled = false"
       changed_when: false
 
+    # PoC-DESIGN §6.3.2.3 dry-run gate 在 prepare 之前 probe RF；CRDB cluster
+    # default RF=3，必須在 deploy 階段就 ALTER RANGE 對齊 sub_topology 期望值，
+    # 否則 dry-run-confirm.sh 永遠看到 3 → 1s1r/3s1r 必 fail。
+    - name: Derive crdb_rf from sub_topology
+      ansible.builtin.set_fact:
+        crdb_rf: "{{ '3' if crdb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+
+    - name: Set cluster default num_replicas (sub_topology={{ crdb_sub_topology }} → RF={{ crdb_rf }})
+      ansible.builtin.command:
+        cmd: /usr/local/bin/cockroach sql --insecure --host={{ crdb_host_primary }}:26257 -e "ALTER RANGE default CONFIGURE ZONE USING num_replicas = {{ crdb_rf }}"
+      changed_when: false
+
     - name: Health check CockroachDB
       ansible.builtin.command:
         cmd: /usr/local/bin/cockroach sql --insecure --host={{ crdb_host_primary }}:26257 -e "SELECT 1"
