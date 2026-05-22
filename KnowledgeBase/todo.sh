@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # todo.sh — LLM filter execution queue (auto-generated)
-# Generated: 2026-05-22 16:11
+# Generated: 2026-05-22 16:28
 #
 # Inventory (snapshot at generation):
 #   Total extracted docs : 897
-#   Already filtered     : 76  (auto-skipped)
-#   Pending              : 821
-#   Total char (trunc to 60000): 8,173,501
-#   Est. tokens          : ~10.6M
+#   Already filtered     : 80  (auto-skipped)
+#   Pending              : 817
+#   Total char (trunc to 60000): 8,070,846
+#   Est. tokens          : ~10.5M
 #   Est. 5h windows      : 9  (~45h wall-clock)
 #
 # Ordering: char_count desc (longest docs first — most noise to remove = highest filter value)
@@ -53,6 +53,28 @@ cleanup() {
 }
 trap cleanup INT TERM
 
+# 5h window 額度檢查 — 啟動時 & 每篇開跑前都檢
+# 邏輯：取 filter_progress.log 最新 5h 行；若 resets_at 已過 → 視為新 window 放行；
+#       否則 remaining < 10% 即 exit 0（保護額度），用戶可等 window 重置後再跑
+check_5h_quota() {
+  local line remain resets_at resets_epoch now_epoch
+  line=$(grep -oE '5h window used=[0-9.]+% remaining=[0-9.]+% resets@[0-9-]+ [0-9:]+' "$LOG" 2>/dev/null | tail -1)
+  [[ -z "$line" ]] && return 0    # 沒紀錄 → 放行
+  remain=$(echo "$line" | sed -nE 's/.*remaining=([0-9.]+).*/\1/p')
+  resets_at=$(echo "$line" | sed -nE 's/.*resets@(.+)$/\1/p')
+  resets_epoch=$(date -j -f '%Y-%m-%d %H:%M' "$resets_at" '+%s' 2>/dev/null || echo 0)
+  now_epoch=$(date '+%s')
+  if [[ "$resets_epoch" -gt 0 ]] && [[ "$now_epoch" -ge "$resets_epoch" ]]; then
+    # log 是上一個 window 的，window 已重置 → 新一輪，放行
+    return 0
+  fi
+  if awk -v r="$remain" 'BEGIN{exit !(r+0 < 10)}'; then
+    echo "[todo.sh] 5h window remaining=${remain}% < 10% (resets@$resets_at) → 停止以保護額度" | tee -a "$LOG"
+    echo "  resume: make filter_all  (在 $resets_at 之後)" | tee -a "$LOG"
+    exit 0
+  fi
+}
+
 # Build "done" set from state file (key=doc_id, value=1)
 declare -A DONE_SET
 while IFS=' ' read -r doc rest; do
@@ -61,13 +83,10 @@ done < "$STATE_FILE"
 
 date '+%Y-%m-%d %H:%M:%S [todo.sh] start' | tee -a "$LOG"
 echo "[todo.sh] state file has ${#DONE_SET[@]} previously-marked docs" | tee -a "$LOG"
+check_5h_quota   # 啟動就先檢一次，剩餘 <10% 直接退出
 
 DOCS=(
-  # === window 1/9 (1-100, avg 21461 chars/doc) ===
-  08bdb13c0f6e56c65e34f257e2361501  #  25710c  developer.aliyun.com      MySQL性能监控全掌握，快来get关键指标及采集方法！-阿里云开发者社区
-  83bd3cfd4b71fc8fb1ebfbc9cc02eb91  #  25661c  zhuanlan.zhihu.com        (2 封私信) Redis LRU 算法和LFU算法 - 知乎
-  c7fe39393f4a540c8962e2a8d7ef3ebe  #  25661c  developer.aliyun.com      MySQL数据库审计采集技术调研之Packetbeat，eBPF-阿里云开发者社区
-  c5a76aae24d9e59bbb652f3cac0f0373  #  25623c  www.modb.pro              Oracle Database 23ai 体验 - 墨天轮
+  # === window 1/9 (1-100, avg 21146 chars/doc) ===
   195a316902e2c6ebcb72754be0fec3b2  #  25493c  mp.weixin.qq.com          图灵奖数据库大师Stonebraker师徒对数据库近20年发展与展望的2万字论文
   6a5506a915d6ff1834b919009678a30f  #  25486c  mp.weixin.qq.com          携程面试：100 亿分库分表 如何设计？ 核弹级 16字真经， 让面试官彻底 “沦陷”，当场发off
   afecd65684d2f2a9566d8d83211a72e9  #  25408c  github.com                dragonflydb/dragonfly: A modern replacement for Re
@@ -164,11 +183,11 @@ DOCS=(
   d7fe63bdf2283b3983577c28e356c225  #  17915c  mp.weixin.qq.com          美团面试： ‘异地多活’ 都不用 ， 你们 项目 怎么实现 高可用呢？
   5e700227287ae6f14ad8d3a305c804ab  #  17885c  blog.csdn.net             MySql优化（三）详细解读InnoDB存储引擎_my.cnf innodb-read-io-thr
   90b30a59a13f8100785328229e12c2f4  #  17879c  github.com                microsoft/garnet: Garnet is a remote cache-store f
-  # === window 2/9 (101-200, avg 15771 chars/doc) ===
   f7f8b48dba959823223bde33edbe760d  #  17841c  juejin.cn                 53 倍性能提升！TiDB 全局索引如何优化分区表查询？本文将详细介绍 TiDB 全局索引的工作原理
   0677cdea45b5e1bbdaf50d1c4afded76  #  17818c  mp.weixin.qq.com          35 张图带你了解 Oracle AI Database 26ai 技术架构(上)
   b7fb2cf132e9b86c3637ef3e3767376b  #  17804c  www.modb.pro              技术分享 | 数据库产品选型测试 集中式与分布式 - 墨天轮
   cf063b6e344bb94de337aa8099ec0765  #  17767c  mp.weixin.qq.com          MySQL内存问题分析利器--Jemalloc
+  # === window 2/9 (101-200, avg 15614 chars/doc) ===
   938ec8b854beade0cca15aaaba177790  #  17748c  mp.weixin.qq.com          京东面试：mysql深度分页 严重影响性能？根本原因是什么？如何优化？
   94fb63fc6db6864ca91e18cbbe282906  #  17709c  thenewstack.io            Database Scalability and the Giant Flea: A Lesson 
   8366ac8078d401444ca48174d32e1197  #  17670c  juejin.cn                 网易互娱的数据库选型和 TiDB 应用实践计费组是为网易互娱产品提供统一登录和支付高效解决方案的公共
@@ -265,11 +284,11 @@ DOCS=(
   b69f492e3b8214868eff4d6c09f68d8b  #  13926c  www.mydbops.com           Yulu's Data Breakthrough: 72% Storage Savings & Sc
   df1ae51824a2a79e5ce2a4ae746cc4c1  #  13919c  juejin.cn                 【建议收藏】数据库源码学习调试利器之 CGDBCGDB 是 GDB 的一个前端工具，通过提供更丰富的
   9406e0d6900611d537168e29f129a40e  #  13908c  mp.weixin.qq.com          一文搞懂腾讯云数据库都有啥？
-  # === window 3/9 (201-300, avg 12538 chars/doc) ===
   217028f183386f55576c92270b1185be  #  13908c  juejin.cn                 从MySQL索引下推看性能优化：减少回表，提升查询效率接着上篇索引优化全攻略：提升排序、GROUP 
   c6fa92e5ff944c2e247abef4b82d02a3  #  13904c  juejin.cn                 新闻 | MySQL 9.2.0 有哪些功能新增、弃用和删除？2025 年 1 月 21 日，MyS
   ccb59c456a3bd191d7826ccb513aa08c  #  13870c  juejin.cn                 DBCP一个配置，浪费了MySQL 50%的性能！1. 引言 研究背景 数据库性能的重要性 数据库性
   75274d56ff4ecbbf91b4faee75cac8cd  #  13852c  juejin.cn                 OLTP上云，哪种架构最划算？·VLDB'25
+  # === window 3/9 (201-300, avg 12428 chars/doc) ===
   5affc9038bdd2ecfa79730a7fcdcad38  #  13793c  juejin.cn                 不作死就不会死！Redis缩容导致线上大规模故障的惨痛经历唉，小趴菜我最近又犯事了，怎么会是捏？Re
   1feba66c0577ef67ed23beb17c43025f  #  13785c  www.modb.pro              权限管控，还可以再简单点 - 墨天轮
   0eba42bf7d02a3c3e3598a9722cbd847  #  13775c  www.modb.pro              从MySQL数据库的角度来看系统page fault（缺页异常）
@@ -366,11 +385,11 @@ DOCS=(
   fda87a7de4f9cc233b1d5413ae62fa22  #  11153c  www.modb.pro              MySQL 8.0 优化器迷思：索引误选是如何发生的？
   c05b559cdae28f2f430f663a7fcfd3e8  #  11134c  mp.weixin.qq.com          利用 MySQL 8.0 clone 插件远程克隆快速重建主从复制环境
   27e9099df9be2e5a232b1bb47113906b  #  11131c  juejin.cn                 SHOPLINE x TiDB丨集群成本降低 50%！跨境电商 SHOPLINE 交易、商品管理等核
-  # === window 4/9 (301-400, avg 10035 chars/doc) ===
   7de0d091d91c88f84dcf3593a6f7462d  #  11125c  mp.weixin.qq.com          单体架构和微服务架构到底哪个好？
   50c4dffbe1dc2f4c90bcb36f2fa1ff79  #  11113c  juejin.cn                 使用podman搭建MySQL 8.0主从避坑指北镜像准备和选择 由于mysql自带许多工具，比如m
   e1462e7727b76b3201c2f59f40b77572  #  11108c  juejin.cn                 拒绝全表扫描！3个提升MySQL深度分页技巧！分析MySQL深度分页性能问题，并介绍了3种优化方案：
   d19ed17ffb58920fe620e4bc1d1ab7b1  #  11108c  mp.weixin.qq.com          阿里面试：延迟双删有什么问题？大厂是如何优雅避开 延迟双删 的？
+  # === window 4/9 (301-400, avg 9955 chars/doc) ===
   4c5c7ea86f85576b90bde65b02e956c3  #  11089c  www.modb.pro              MySQL 运维高危操作 - 墨天轮
   216773d3642c67bdfcdcc050f50b9bdd  #  11072c  mp.weixin.qq.com          一篇为MySQL用户，分析版本核心差异的文章--8.028-8.4的差异
   539651cce16d117833dbb8af11c8046c  #  11062c  xie.infoq.cn              基于 Grafana LGTM 可观测性平台的快速构建_可观测性_Grafana 爱好者_InfoQ
@@ -467,11 +486,11 @@ DOCS=(
   792df6acaebabccdf938d861398e4a61  #   9249c  juejin.cn                 数据质量和数据治理的关系 | 京东云技术团队很多不太了解的人会认为：数据治理就是干数据清洗的。 近两
   02f7ce5680cb3c01e50450fddbe10d04  #   9183c  juejin.cn                 面试复盘：MySQL InnoDB 事务隔离级别与 MVCC 分析/为什么可重复读的死锁概率高？_ 
   23cf552d4947da4441ccb1acd5aa7079  #   9172c  mp.weixin.qq.com          掌握 SQL 子查询：让你成为查询优化高手
-  # === window 5/9 (401-500, avg 8102 chars/doc) ===
   44b0a9b336e6d445876bd777a34fb8b2  #   9138c  juejin.cn                 这些BUG，防不胜防常见时间case与防护分析 话不多说，上干货！笔者经过长年累月的积累，针对常见的
   2ab019b57c025f2f4972986577ee1f5c  #   9118c  mp.weixin.qq.com          TiDB 可观测性解读系列：索引与算子执行性能优化实践
   5bf9d1d0905f632298cf0a98cefd6aa9  #   9115c  cloud.tencent.com         囧...执行analyze table意外导致waiting for table flush-腾讯云
   e9e93bba19be3d44d59ca672e4ca49b2  #   9115c  www.modb.pro              数据库设计(MySQL)避坑指南 - 墨天轮
+  # === window 5/9 (401-500, avg 8021 chars/doc) ===
   f400595a754aef9c556f00d1fc68154a  #   9096c  juejin.cn                 如何设计一个秒杀系统大家好，我是田螺。 最近有位星球好友问我，如何从整体角度，去设计一个秒杀系统。秒
   71b2e5d43a3491634adaa66b8824b45f  #   9091c  testerhome.com            从工程师到技术 leader 的思维升级 · 测试之家
   f71e5577f6761159acd6f588bff82b1a  #   9061c  www.modb.pro              GBASE南大通用专家访谈：走进深水区，核心系统需要什么样的（OLTP）数据库？ - 墨天轮
@@ -568,11 +587,11 @@ DOCS=(
   63b60d9696e9cc24fcdaeb89c42fb825  #   7104c  mp.weixin.qq.com          PostgreSQL运维篇--日常运维集合①h
   3e6aea7a585dd2262279f6bf9853912a  #   7100c  mp.weixin.qq.com          MySQL 升级后查询性能跳水，排序竟成“罪魁祸首”？
   f30c184d6c036d4d3d20f77b75f37302  #   7100c  www.modb.pro              聊聊跨数据库迁移的数据比对那些事儿 - 墨天轮
-  # === window 6/9 (501-600, avg 6033 chars/doc) ===
   276062bf162565814aa4e70e14b7db0d  #   7097c  time.geekbang.org         23｜大型研发架构团队的AOM实践-技术领导力实战笔记 2022-极客时间
   63f9298623511a70589f45ada9401398  #   7085c  mp.weixin.qq.com          字节一面：20亿手机号存储选int还是string？varchar还是char？为什么？
   9a76ee763859f779a95930cd98f997d1  #   7059c  mp.weixin.qq.com          爱奇艺大数据多 AZ 统一调度架构
   0af9a91eb4e5ff6d75d3b951a1a9b6e2  #   7058c  tidb.net                  专栏 - TIDB数据库在某省妇幼业务系统应用 | TiDB 社区
+  # === window 6/9 (501-600, avg 5959 chars/doc) ===
   22b190fe2638409e2dde4bc5f7dd2ad9  #   7019c  mp.weixin.qq.com          不同数据库的存算分离有何不同
   7e890105f953a5640b5d254878d8d5a9  #   6995c  mp.weixin.qq.com          MySQL好玩新特性：离线模式
   3398a6ca1b1c193f45e75fbf1aef8266  #   6915c  mp.weixin.qq.com          架构设计的悖论，复用是美好的还是邪恶的
@@ -669,11 +688,11 @@ DOCS=(
   9c16734f4f56ad61ffa56829b66f32d1  #   5266c  mp.weixin.qq.com          MySQL的这个参数能让性能提升300%！你居然还不知道？
   49c909864f6e03166faa260b1a289797  #   5246c  mp.weixin.qq.com          PostgreSQL这个特性，害惨了搞数据恢复的兄弟们
   ce02df5a739df7820a4d3c2094ac4340  #   5245c  mp.weixin.qq.com          [MYSQL] mysql空间问题案例分享
-  # === window 7/9 (601-700, avg 4569 chars/doc) ===
   97dffaf7176f45379b87d01e34d47765  #   5244c  mp.weixin.qq.com          MemFree 辣么大，为啥报 out of memory？
   1800fe557ac5208c408f5d630bc6ae23  #   5229c  mp.weixin.qq.com          MySQL 性能优化：真正重要的变量
   4f288e377446e893136755b1f417aa89  #   5217c  mp.weixin.qq.com          什么是索引下推？什么是索引覆盖？什么是回表？
   605c8df3f7810b55f87fb6656e8e5e94  #   5216c  mp.weixin.qq.com          拼多多一面：说说缓存淘汰机制 LRU 和 LFU 的区别，秒杀场景下应该如何选择？
+  # === window 7/9 (601-700, avg 4514 chars/doc) ===
   35474ce24b41d8442b3ea28170c7f494  #   5211c  mp.weixin.qq.com          Redis 集群为什么只能用 0 号数据库？
   3165ecb82736644587556f12b95b1f7a  #   5198c  mp.weixin.qq.com          PostgreSQL 19 即将预发, 最值得期待的特性一览
   e8881308e198ef0269283514e5caa4b3  #   5174c  mp.weixin.qq.com          阿里订单系统演进史：从单体到多活架构全公开！
@@ -770,11 +789,11 @@ DOCS=(
   0504718023db4a726279fd687d4bcab0  #   3909c  mp.weixin.qq.com          SQL优化实战：从慢如蜗牛到快如闪电的必杀技
   97425cfd61349709f701d3e36551b7cf  #   3900c  www.modb.pro              mysql 内存使用率高问题排查 - 墨天轮
   55eb11785caa1e1fa9d78eede1117a41  #   3867c  mp.weixin.qq.com          SCALE | SQLFlash 在 SQL 优化维度上的表现评估
-  # === window 8/9 (701-800, avg 2891 chars/doc) ===
   69639d8704c7656d30176be0d63596f7  #   3852c  mp.weixin.qq.com          告别 MySQL 分库分表， 重庆富民银行通过 TiDB 实现批量场景降本提效
   82fd48ba9e85d03f78cb5a709b291ebe  #   3843c  mp.weixin.qq.com          常见分布式事务理论梳理，2pc,3pc,AT,Saga,Seata
   1d02b0538b388d871bc9b697c65cbafb  #   3828c  mp.weixin.qq.com          写了 5 年 SQL，才发现可以用 (a, b) > (x, y) 这种神仙写法！
   a6c10f51f8156600506205716e39208e  #   3821c  mp.weixin.qq.com          多租户架构设计
+  # === window 8/9 (701-800, avg 2815 chars/doc) ===
   928473265cdc10481ccbce541bba4a5b  #   3813c  mp.weixin.qq.com          '慢SQL'治理的几点思考
   750493433708d91ff8f306711bd3cca0  #   3732c  mp.weixin.qq.com          PostgreSQL 19 最值得关注的新特性
   53cdbc61c404deac009700776ed6cb31  #   3728c  mp.weixin.qq.com          面试官：MySQL 内存飙升，可能是什么原因？
@@ -871,11 +890,11 @@ DOCS=(
   6b53c975ffe7e5c0754c8fa7e7917a15  #   1961c  mp.weixin.qq.com          Redis 8.2 来了！性能暴涨 49%，单机破百万 QPS
   063654e866338a631e508899ea458555  #   1959c  mp.weixin.qq.com          别再让IT背锅了！数据质量的第一责任人是业务
   e5f93f1a236836228efea418a70ea536  #   1952c  mp.weixin.qq.com          「合集」MySQL 8.x 系列文章汇总
-  # === window 9/9 (801-821, avg 1570 chars/doc) ===
   138b23cffd575b9b0021fa7e1a840eaf  #   1943c  mp.weixin.qq.com          透明分布式是蜜糖还是毒药?
   f23997bda0e84488df8ab87e753bb69c  #   1910c  mp.weixin.qq.com          MySQL 8.0参数默认值变更，恐致性能下降3倍多
   c95827d768117332fbe12c185270d3c1  #   1905c  mp.weixin.qq.com          34.5K star！又来一款全能开源笔记神器，超好用！
   71c1040f6b60b7051883d1d25cb1daa7  #   1902c  mp.weixin.qq.com          Kubernetes SRE 技能树（运维进阶版 2026）
+  # === window 9/9 (801-817, avg 1489 chars/doc) ===
   1071aa59c60a8ef26436ef8fafd33b40  #   1869c  mp.weixin.qq.com          知识积累能力是DBA最为重要的能力
   a5f531ebc7c13d24d4641fd12a1093d0  #   1785c  mp.weixin.qq.com          MySQL 8.4 默认关闭了 AHI
   c412d8a69cf951e567b5711fd8c974ce  #   1772c  mp.weixin.qq.com          Redis集群模式在扩容情况下，如何处理客户端的读写请求
@@ -919,6 +938,7 @@ for DOC in "${DOCS[@]}"; do
     continue
   fi
 
+  check_5h_quota   # 每篇開跑前先檢，避免燒完 1 篇才發現額度爆
   DONE=$((DONE + 1))
   TS=$(date '+%H:%M:%S')
   echo "[$TS] [$IDX/$TOTAL] filter $DOC  (session#$DONE skipped=$SKIPPED)" | tee -a "$LOG"
@@ -931,15 +951,6 @@ for DOC in "${DOCS[@]}"; do
     FAILED_CNT=$((FAILED_CNT + 1))
     echo "$DOC" >> "$FAILED_LOG"
     echo "  ⚠️  FAIL $DOC (continuing). Reason in $LOG; if quota hit, re-run after 5h window resets."
-  fi
-
-  # 5h window 額度保護：剩餘 < 10% 即停（保留緩衝避免硬封）
-  # 來源：filter_doc.py 每篇印 `5h window used=X% remaining=Y%`，抓最新一筆
-  REMAIN=$(grep -oE '5h window used=[0-9.]+% remaining=[0-9.]+' "$LOG" 2>/dev/null | tail -1 | sed -E 's/.*remaining=//')
-  if [[ -n "$REMAIN" ]] && awk -v r="$REMAIN" 'BEGIN{exit !(r+0 < 10)}'; then
-    echo "[todo.sh] 5h window remaining=${REMAIN}% < 10% → 停止以保護額度" | tee -a "$LOG"
-    echo "  resume: make filter_all  (5h window 重置後再跑)" | tee -a "$LOG"
-    exit 0
   fi
 done
 
