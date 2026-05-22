@@ -81,7 +81,7 @@ write_phase_done "$ROOT" "db-config" "$(cat <<JSON
 {
   "phase": "db-config",
   "db": "$DB",
-  "topology": "vm-1node",
+  "topology": "$TOPO",
   "iso": "$ISO",
   "ts": "$TS",
   "db_host": "$DB_HOST"

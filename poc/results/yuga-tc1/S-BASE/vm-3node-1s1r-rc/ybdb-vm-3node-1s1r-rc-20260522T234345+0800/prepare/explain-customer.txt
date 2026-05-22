@@ -1,0 +1,6 @@
+                                   QUERY PLAN                                    
+---------------------------------------------------------------------------------
+ Index Scan using customer_pkey on customer  (cost=20.02..21.33 rows=1 width=12)
+   Index Cond: ((c_w_id = 1) AND (c_d_id = 1) AND (c_id = 1))
+(2 rows)
+
