@@ -180,7 +180,7 @@
       failed_when: false
       changed_when: false
 
-    - name: Start YugabyteDB primary (bootstrap, RF={{ yb_rf }})
+    - name: Start YugabyteDB primary (bootstrap)
       ansible.builtin.command:
         cmd: >-
           {{ yb_install_dir }}/bin/yugabyted start
@@ -251,14 +251,35 @@
   gather_facts: false
   vars:
     yb_install_dir: /opt/yugabyte
+    yb_base_dir: /var/yugabyte
     yb_host_primary: "172.24.40.32"
     yb_rf: "{{ '3' if yb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
   tasks:
-    - name: Configure data placement / RF via yb-admin
+    # yugabyted start 不接受 --rf；正確命令是 configure data_placement --rf=N。
+    # 必須在所有 worker join 之後跑，因為它要 enough tservers 才能 rebalance 到目標 RF。
+    - name: Configure data placement (RF={{ yb_rf }})
       ansible.builtin.command:
-        cmd: "{{ yb_install_dir }}/bin/yb-admin --master_addresses=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100 modify_universe_replication_info {{ yb_rf }}"
+        cmd: >-
+          {{ yb_install_dir }}/bin/yugabyted configure data_placement
+          --base_dir={{ yb_base_dir }}
+          --rf={{ yb_rf }}
+      become_user: yugabyte
       register: yb_rf_set
-      failed_when: false
+      failed_when: yb_rf_set.rc != 0
+      changed_when: "'success' in (yb_rf_set.stdout | default('') | lower) or yb_rf_set.rc == 0"
+
+    - name: Wait for RF to propagate (universe config converges)
+      ansible.builtin.shell: |
+        set -e
+        for i in $(seq 1 30); do
+          rf=$({{ yb_install_dir }}/bin/yb-admin --master_addresses=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100 get_universe_config 2>/dev/null \
+               | grep -oE '"numReplicas"\s*:\s*[0-9]+' | grep -oE '[0-9]+' | head -1)
+          if [ "$rf" = "{{ yb_rf }}" ]; then echo "RF converged to $rf"; exit 0; fi
+          sleep 2
+        done
+        echo "RF did not converge (last=$rf, expected={{ yb_rf }})"; exit 1
+      args:
+        executable: /bin/bash
       changed_when: false
 
     - name: Health check YugabyteDB
