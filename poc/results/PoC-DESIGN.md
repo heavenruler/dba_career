@@ -332,6 +332,18 @@ make vm3-tidb-1s1r-rc EXECUTE=1        # 跳過 deploy（cluster 已在），直
 
 > **fail-closed**：dry-run 任一項目對不上預期 → `.dry-run.done` 寫 `"all_pass": false` + 列出哪項對不上，不允許 `EXECUTE=1` 跳過（gate 內 hard check）。
 
+#### 6.3.2.4 切換 sub_topology / 換 DB：`destroy-vm3-all` 規範（2026-05-22 dispatch 實測加入）
+
+`make vm3-${db}-${sub}-rc` chain 自動先呼叫 `destroy-vm3-all`，best-effort 清三家殘留：
+
+| 家 | destroy 動作 | 為何需要這個 |
+|---|---|---|
+| TiDB | `tiup cluster destroy tpcc-tidb-vm3 --yes`（cluster 不存在就 skip） | TiUP-managed lifecycle |
+| CRDB | `systemctl stop cockroach.service` + **wait `pgrep -x cockroach` 為空** + `pkill -9` + `rm /etc/systemd/system/cockroach.service` + `rm /data/crdb` | `cockroach start --background` daemonize 後 systemctl loses track；不等 process 真死就 rm，下次 deploy 會帶舊 cluster ID join，出現 `client cluster ID "X" doesn't match server cluster ID "Y"` 死循環 |
+| YBDB | `pkill -KILL -x yb-master / yb-tserver / yugabyted-ui` + 對所有 `pgrep -x python3` 讀 `/proc/<pid>/cmdline` 過濾含 `bin/yugabyted` 的才 kill + `rm /var/yugabyte` | yugabyted 是 python3 wrapper；用 `pgrep -f yugabyted` 會自殺（pgrep 自己 cmdline 也含 "yugabyted"） |
+
+> **2026-05-22 dispatch 紀錄**：12 cells 全綠，過程踩 4 個 deploy-time 坑 + 1 個 destroy race，commit 連發後固化於 playbook + Makefile。完整 commit 列表見 git log；artifact 索引見 `results/<db>-tc1/S-BASE/vm-3node-*/`。
+
 ### 6.4 本輪實作範圍與 wall-clock 估算
 
 #### 6.4.1 Phase 切分

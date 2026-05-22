@@ -108,8 +108,9 @@ help:
 	@echo "  變數: db=tidb|crdb|ybdb, iso=rc|rr|strict, TPCC_TS=<ISO-8601>"
 	@echo ""
 	@echo "=== TPC-C vm-3node Phase chain (PoC-DESIGN §6.3.2; 12 cells × RC) ==="
-	@echo "  make vm3-<db>-<sub>-rc                - deploy + dry-run anchor (預設停在 deploy 後)"
-	@echo "    EXECUTE=1: deploy → dry-run → gate → prepare → run → collect (fetch 手動)"
+	@echo "  make vm3-<db>-<sub>-rc                - destroy-all + deploy + dry-run anchor (預設停在 deploy 後)"
+	@echo "    EXECUTE=1: + gate → prepare → run → collect (fetch 手動)"
+	@echo "  make destroy-vm3-all                  - 清三家殘留（換 sub_topology / 換 DB 前都會自動跑）"
 	@echo "  make vm3-all-dry                      - 12 cells 全跑到 dry-run anchor"
 	@echo "  make deploy-vm3-<db>-<sub>            - 只跑 Ansible deploy"
 	@echo "  make dryrun-vm3-<db>-<sub>-rc         - 只跑 dry-run-confirm (deploy 完才能跑)"
@@ -391,7 +392,7 @@ $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,status-vm1-$(db)-$(iso)))
 
 VM3_SUBS := 1s1r 1s3r 3s1r 3s3r
 
-.PHONY: $(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),\
+.PHONY: destroy-vm3-all $(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),\
           deploy-vm3-$(db)-$(sub) \
           dryrun-vm3-$(db)-$(sub)-rc \
           prepare-vm3-$(db)-$(sub)-rc \
@@ -401,6 +402,38 @@ VM3_SUBS := 1s1r 1s3r 3s1r 3s3r
           fetch-vm3-$(db)-$(sub)-rc \
           status-vm3-$(db)-$(sub)-rc \
           vm3-$(db)-$(sub)-rc))
+
+# ---- destroy-vm3-all : best-effort 清三家殘留（換 sub_topology / 換 DB 前都要跑）---
+# 設計理由（2026-05-22 dispatch 實測）：
+#   * TiDB:  tiup cluster destroy <name> --yes（cluster 不存在會 fail，故 guard）
+#   * CRDB:  systemctl stop --background daemonize → 必須等 process 真死才 rm /data/crdb，
+#            否則 .33/.34 帶舊 cluster ID join 出現 "client cluster ID doesn't match" 死循環
+#   * YBDB:  yugabyted 是 python3 wrapper，用 pgrep -x 抓子進程 yb-master/yb-tserver，
+#            wrapper 經 /proc/<pid>/cmdline 過濾 — 避免 pgrep -f 自殺
+destroy-vm3-all:
+	@echo "==> destroy-vm3-all (best-effort; switch sub_topology 或換 DB 前必跑)"
+	@echo "--- TiDB: tiup cluster destroy ---"
+	-cd $(ANSIBLE_DIR) && ansible -i inventory/vm3.ini vm3_primary -m shell -a \
+	  '[ -d /root/.tiup/storage/cluster/clusters/tpcc-tidb-vm3 ] && \
+	   /root/.tiup/bin/tiup cluster destroy tpcc-tidb-vm3 --yes 2>&1 | tail -3 || \
+	   echo "no tidb cluster"' -b -o 2>&1 | tail -5
+	@echo "--- CRDB: stop service + wait inactive + rm data ---"
+	cd $(ANSIBLE_DIR) && ansible -i inventory/vm3.ini vm3_db -m shell -a \
+	  'systemctl stop cockroach.service 2>/dev/null; \
+	   for i in $$(seq 1 15); do pgrep -x cockroach >/dev/null || break; sleep 1; done; \
+	   pkill -9 -x cockroach 2>/dev/null; sleep 2; \
+	   rm -f /etc/systemd/system/cockroach.service; systemctl daemon-reload; \
+	   rm -rf /data/crdb 2>/dev/null; echo crdb_clean' -b -o 2>&1 | tail -5
+	@echo "--- YBDB: kill yb procs (exact-name) + rm /var/yugabyte ---"
+	cd $(ANSIBLE_DIR) && ansible -i inventory/vm3.ini vm3_db -m shell -a \
+	  'pkill -KILL -x yb-master 2>/dev/null; \
+	   pkill -KILL -x yb-tserver 2>/dev/null; \
+	   pkill -KILL -x yugabyted-ui 2>/dev/null; \
+	   for pid in $$(pgrep -x python3 2>/dev/null); do \
+	     cmd=$$(tr "\0" " " < /proc/$$pid/cmdline 2>/dev/null); \
+	     case "$$cmd" in *bin/yugabyted*) kill -KILL $$pid 2>/dev/null ;; esac; \
+	   done; sleep 3; rm -rf /var/yugabyte 2>/dev/null; echo ybdb_clean' -b -o 2>&1 | tail -5
+	@echo "==> destroy-vm3-all complete"
 
 # ---- deploy-vm3-<db>-<sub> : Ansible deploy with sub_topology var --
 deploy-vm3-tidb-1s1r deploy-vm3-tidb-1s3r deploy-vm3-tidb-3s1r deploy-vm3-tidb-3s3r:
@@ -507,6 +540,7 @@ $(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),vm3-$(db)-$(sub)-rc)):
 	@echo "==================================================================="
 	@echo "  vm3-$(DB)-$(SUB)-$(ISO)  ts=$(TS)  execute=$(EXECUTE)"
 	@echo "==================================================================="
+	$(MAKE) destroy-vm3-all
 	$(MAKE) bootstrap-tpcc-client
 	$(MAKE) deploy-vm3-$(DB)-$(SUB)
 	$(MAKE) dryrun-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS)
