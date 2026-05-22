@@ -106,7 +106,9 @@ case "$DB" in
   ybdb)
     remote '/opt/yugabyte/bin/yb-admin --master_addresses=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100 get_universe_config 2>&1' \
       > "$DRY/replication-factor.txt" || true
-    ACTUAL_RF=$(grep -oE '"replication_factor"\s*:\s*[0-9]+|num_replicas\s*:\s*[0-9]+' "$DRY/replication-factor.txt" 2>/dev/null | grep -oE '[0-9]+' | head -1)
+    # YB universe config JSON 是 camelCase ("numReplicas":N)，不是 snake_case；
+    # grep 失敗時 set -euo pipefail 會炸 — 用 || echo 兜底避免提前 exit。
+    ACTUAL_RF=$(grep -oE '"numReplicas"\s*:\s*[0-9]+|"replication_factor"\s*:\s*[0-9]+' "$DRY/replication-factor.txt" 2>/dev/null | grep -oE '[0-9]+' | head -1 || echo "?")
     ACTUAL_RF=${ACTUAL_RF:-?}
     ;;
 esac
