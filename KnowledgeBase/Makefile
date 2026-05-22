@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync
+.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync todo
 
 # 預設 filter_test 對象（可覆寫：make filter_test DOC_ID=<md5>）
 FILTER_TEST_DOC_ID ?= 44862aef1f3e9f432840f303bb9da948
@@ -25,7 +25,8 @@ help:
 		'  make build_chunks DOC_ID=<md5>' \
 		'' \
 		'Batch / maintenance:' \
-		'  make sync                NEW: reconcile + extract + OCR + rebuild chunks + audit (one-shot, idempotent)' \
+		'  make sync                NEW: reconcile + extract + OCR + rebuild chunks + audit + regen todo.sh' \
+		'  make todo                regenerate todo.sh (LLM filter queue) from current generated/extracted/' \
 		'  make md5_fix             repair missing/incorrect MD5 values in output_with_md5.txt' \
 		'  make reconcile_manifest  append orphan PDF entries to output_with_md5.txt (from pdfinfo)' \
 		'  make extract_pdf         extract every collector PDF (strict mode: frontmatter+page markers+sha256)' \
@@ -116,10 +117,16 @@ clean_generated:
 	@rm -rf generated
 	@echo "已清除可重建產物"
 
-# 新增 PDF 後一鍵同步：reconcile manifest → extract → OCR → rebuild chunks → audit
+# 新增 PDF 後一鍵同步：reconcile manifest → extract → OCR → rebuild chunks → audit → regen todo.sh
 # 所有子步驟 idempotent；重跑無害。LLM filter 不含在 sync，要跑請另外 make filter_doc / filter_test。
 sync: reconcile_manifest extract_pdf ocr_pdf
 	@rm -rf generated/kb
 	@$(MAKE) build_chunks
 	@$(MAKE) audit_sources
-	@echo "[sync] 完成 — 新增的 PDF 已抽取、OCR、切塊、審核完畢"
+	@$(MAKE) todo
+	@echo "[sync] 完成 — 新增的 PDF 已抽取、OCR、切塊、審核、todo.sh 重生完畢"
+
+# 從 generated/extracted 重生 todo.sh（依現況排序 + 跳過已 filter 的）
+# 可單獨呼叫；make sync 也會自動跑
+todo:
+	@python3 scripts/regen_todo.py

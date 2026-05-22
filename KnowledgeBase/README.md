@@ -125,9 +125,10 @@ usage  tokens in=29752 (cached=2432) out=1796 reasoning=66 total=31548 |
 
 ### 全量批次跑：`./todo.sh`
 
-預先生成的執行清單（896 docs，按 char_count 大→小排序）：
+預生成的執行清單（按 char_count 大→小排序）。**新增 PDF 後 `make sync` 會自動 regen todo.sh**；亦可單獨：
 
 ```bash
+make todo             # 從 generated/extracted/ 重生 todo.sh（含跳過已 filter）
 ./todo.sh --dry-run   # 預覽會跑哪些 doc
 ./todo.sh             # 開跑（Ctrl-C 可隨時停，重跑接續）
 ```
