@@ -25,3 +25,6 @@ collector/imported/
 # 暫存檔案
 *.tmp
 *.temp
+
+# todo.sh runtime state（filter 進度紀錄；可重建：每次 filter 完成自動 append）
+.todo.state

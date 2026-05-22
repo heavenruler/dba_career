@@ -123,6 +123,35 @@ usage  tokens in=29752 (cached=2432) out=1796 reasoning=66 total=31548 |
 
 **5h window 預算**：900 doc 全跑一輪約 30M tokens，會跑滿 5h window，需分批。
 
+### 全量批次跑：`./todo.sh`
+
+預先生成的執行清單（896 docs，按 char_count 大→小排序）：
+
+```bash
+./todo.sh --dry-run   # 預覽會跑哪些 doc
+./todo.sh             # 開跑（Ctrl-C 可隨時停，重跑接續）
+```
+
+**完成標注 / 防重複機制**：
+
+| 機制 | 行為 |
+|---|---|
+| `.todo.state`（gitignored） | 每篇 filter 成功 → append `<doc_id> <UTC time> ok` |
+| Pre-check | 每篇開跑前查 state + `knowledge.json` 是否存在 → 任一為真就 SKIP |
+| Backfill | 若發現某 doc 已有 knowledge.json 但 state 沒記 → 自動補進 state（`backfilled` 標記） |
+| Recovery | 想強制重跑某篇：手動 `grep -v <doc_id> .todo.state > tmp && mv tmp .todo.state` + `rm -rf generated/filtered/<doc_id>` |
+
+**錯誤策略**：個別 fail 寫進 `filter_failed.log` 不中斷；codex 5h window 額度滿時整批會接連 fail，停掉等下個 window 再跑。
+
+**進度查看**：
+
+```bash
+wc -l .todo.state                            # 已完成幾篇
+tail -5 .todo.state                          # 最近 5 篇完成時間
+ls generated/filtered/ | wc -l               # 實際 knowledge.json 數
+tail -20 filter_progress.log                 # 完整 log
+```
+
 ### Step 6. 重建 chunks
 
 ```bash
