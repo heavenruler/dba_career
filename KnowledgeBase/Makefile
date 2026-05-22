@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync todo filter_all_bg filter_status filter_stop filter_log
+.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync todo filter_all filter_all_bg filter_status filter_stop filter_log
 
 TODO_PID := todo.pid
 TODO_OUT := todo.out
@@ -50,11 +50,12 @@ help:
 		'      → 刪除 generated/filtered/<DOC_ID>/ 舊結果 → 重跑 filter → rebuild chunks' \
 		'      Override: make filter_test DOC_ID=<md5>' \
 		'' \
-		'  Batch (background) LLM filter — todo.sh 包裝:' \
-		'    make filter_all_bg     # nohup + caffeinate + PID 記錄，啟動完即返回' \
+		'  Batch LLM filter — todo.sh 包裝:' \
+		'    make filter_all        # 前台跑，即時看 token 用量；Ctrl-C 自動殺子程序' \
+		'    make filter_all_bg     # 背景跑 (nohup + caffeinate)，啟動完即返回' \
 		'    make filter_status     # 看是否在跑 + 完成數 + 最近 5 篇' \
 		'    make filter_log        # tail -f filter_progress.log' \
-		'    make filter_stop       # 停背景 todo.sh（process group + 5s fallback to SIGKILL）' \
+		'    make filter_stop       # 停背景 todo.sh（PID + pkill 子程序 → 5s fallback SIGKILL）' \
 		'' \
 		'Notes:' \
 		'  - build_chunks prefers generated/filtered/<doc_id>/knowledge.json.' \
@@ -139,6 +140,12 @@ sync: reconcile_manifest extract_pdf ocr_pdf
 # 可單獨呼叫；make sync 也會自動跑
 todo:
 	@python3 scripts/regen_todo.py
+
+# 前台跑 todo.sh：即時看每篇 filter 的 token / 5h window 用量；Ctrl-C 自動 trap 殺子程序
+# 想長跑（45h）請用 make filter_all_bg
+filter_all:
+	@if [ ! -x ./todo.sh ]; then echo "todo.sh 不存在或不可執行；先 make todo"; exit 1; fi
+	@./todo.sh
 
 # 背景啟動 ./todo.sh：nohup + caffeinate（防 mac 睡）+ PID 記錄
 # 啟動完即返回；用 make filter_status / filter_log / filter_stop 管理
