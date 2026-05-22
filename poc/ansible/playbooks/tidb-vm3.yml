@@ -131,6 +131,30 @@
           * soft nofile 65536
           * hard nofile 65536
 
+    # IDC IT default 在 /etc/systemd/system.conf.d/proxy.conf 用 CIDR no_proxy；
+    # grpc-rust 不認 CIDR，跨 host TiKV→PD 走 sproxy → 403 fail（vm-3node 必踩坑）。
+    # 補 explicit cluster IPs 後 daemon-reload，service 重啟即繼承新 env。
+    - name: Stat IDC systemd proxy drop-in
+      ansible.builtin.stat:
+        path: /etc/systemd/system.conf.d/proxy.conf
+      register: tidb_systemd_proxy_stat
+
+    - name: Patch systemd no_proxy to include vm3_db cluster IPs (grpc-rust CIDR workaround)
+      ansible.builtin.shell: |
+        set -e
+        if ! grep -q '172.24.40.32,172.24.40.33,172.24.40.34' /etc/systemd/system.conf.d/proxy.conf; then
+          sed -i 's|\(no_proxy=[^"]*\)"|\1,172.24.40.32,172.24.40.33,172.24.40.34"|' /etc/systemd/system.conf.d/proxy.conf
+          systemctl daemon-reload
+          echo PATCHED
+        else
+          echo ALREADY_OK
+        fi
+      args:
+        executable: /bin/bash
+      register: tidb_no_proxy_patch
+      changed_when: "'PATCHED' in tidb_no_proxy_patch.stdout"
+      when: tidb_systemd_proxy_stat.stat.exists
+
     - name: Authorize .32 root key on this node for tiup SSH
       ansible.posix.authorized_key:
         user: root

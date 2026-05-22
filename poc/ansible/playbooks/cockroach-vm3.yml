@@ -54,6 +54,30 @@
         executable: /bin/bash
       changed_when: false
 
+    # IDC IT default 在 /etc/systemd/system.conf.d/proxy.conf 用 CIDR no_proxy；
+    # CRDB --join 走 gRPC，跨 host 連線會被 sproxy 攔 403 → cluster init 失敗。
+    # 補 explicit cluster IPs 後 daemon-reload，service 重啟即繼承新 env。
+    - name: Stat IDC systemd proxy drop-in
+      ansible.builtin.stat:
+        path: /etc/systemd/system.conf.d/proxy.conf
+      register: crdb_systemd_proxy_stat
+
+    - name: Patch systemd no_proxy to include vm3_db cluster IPs (gRPC CIDR workaround)
+      ansible.builtin.shell: |
+        set -e
+        if ! grep -q '172.24.40.32,172.24.40.33,172.24.40.34' /etc/systemd/system.conf.d/proxy.conf; then
+          sed -i 's|\(no_proxy=[^"]*\)"|\1,172.24.40.32,172.24.40.33,172.24.40.34"|' /etc/systemd/system.conf.d/proxy.conf
+          systemctl daemon-reload
+          echo PATCHED
+        else
+          echo ALREADY_OK
+        fi
+      args:
+        executable: /bin/bash
+      register: crdb_no_proxy_patch
+      changed_when: "'PATCHED' in crdb_no_proxy_patch.stdout"
+      when: crdb_systemd_proxy_stat.stat.exists
+
     - name: Create CockroachDB directories
       ansible.builtin.file:
         path: "{{ item }}"

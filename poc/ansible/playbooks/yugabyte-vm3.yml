@@ -69,6 +69,30 @@
         executable: /bin/bash
       changed_when: false
 
+    # IDC IT default 在 /etc/systemd/system.conf.d/proxy.conf 用 CIDR no_proxy；
+    # YBDB yb-master / yb-tserver 跨 host RPC 走 gRPC，會被 sproxy 攔 403 → bootstrap/join 失敗。
+    # 補 explicit cluster IPs 後 daemon-reload，service 重啟即繼承新 env。
+    - name: Stat IDC systemd proxy drop-in
+      ansible.builtin.stat:
+        path: /etc/systemd/system.conf.d/proxy.conf
+      register: yb_systemd_proxy_stat
+
+    - name: Patch systemd no_proxy to include vm3_db cluster IPs (gRPC CIDR workaround)
+      ansible.builtin.shell: |
+        set -e
+        if ! grep -q '172.24.40.32,172.24.40.33,172.24.40.34' /etc/systemd/system.conf.d/proxy.conf; then
+          sed -i 's|\(no_proxy=[^"]*\)"|\1,172.24.40.32,172.24.40.33,172.24.40.34"|' /etc/systemd/system.conf.d/proxy.conf
+          systemctl daemon-reload
+          echo PATCHED
+        else
+          echo ALREADY_OK
+        fi
+      args:
+        executable: /bin/bash
+      register: yb_no_proxy_patch
+      changed_when: "'PATCHED' in yb_no_proxy_patch.stdout"
+      when: yb_systemd_proxy_stat.stat.exists
+
     - name: Create yugabyte user
       ansible.builtin.user:
         name: yugabyte
