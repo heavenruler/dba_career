@@ -178,39 +178,65 @@ if [[ "${ACTUAL_ISO:-}" != "$EXPECTED_ISO" ]]; then
   FAILS+=("iso-mismatch:expected=$EXPECTED_ISO/actual=${ACTUAL_ISO:-N/A}")
 fi
 
-# --- 4b. (YBDB only) master_addrs consistency check ------------------------
-# yugabyted bootstrap 平行 join 會讓不同 tserver 各自 bake 進不完整的
-# tserver_master_addrs list（cell 4 ybdb-3s3r 2026-05-23 踩到：.33 缺 .34、
-# .34 缺 .33，跑 workload 時 leader rebalancer 觸發 GetLeaderMasterRpc 失敗）。
-# Gate: 3 個 host 的 tserver --tserver_master_addrs 必須都包含 3 個 master。
-YBDB_MASTERS_CONSISTENT=n/a
+# --- 4b. (YBDB only) cluster health: master raft + tserver heartbeat --------
+# yugabyted 對 RF=1 cell 只起 1 master raft（.32 LEADER），對 RF=3 cell 起 3 masters。
+# tserver 的靜態 --tserver_master_addrs 只需含至少 1 個現役 master 即可 bootstrap
+# heartbeat；後續 master quorum 由 heartbeat response 動態學到。
+# Gate：(1) master raft 數 == EXPECTED_RF，全 ALIVE；(2) 3 tservers 全 ALIVE
+# heartbeating；(3) 每個 tserver cmdline 至少含 1 個 raft 中 master。
+YBDB_CLUSTER_HEALTHY=n/a
 if [[ "$DB" == "ybdb" ]]; then
-  MASTERS_REPORT="$DRY/master-addrs-consistency.txt"
-  : > "$MASTERS_REPORT"
-  MASTERS_OK=true
+  CLUSTER_REPORT="$DRY/master-addrs-consistency.txt"
+  : > "$CLUSTER_REPORT"
+  YB_ADMIN="/opt/yugabyte/bin/yb-admin --master_addresses=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100"
+  HEALTHY=true
+
+  # (1) master raft membership — header line 跳過，count ALIVE 行
+  masters_raw=$(ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 \
+                root@172.24.40.32 "$YB_ADMIN list_all_masters" 2>/dev/null | tail -n +2)
+  masters_alive=$(echo "$masters_raw" | grep -c "ALIVE")
+  masters_endpoints=$(echo "$masters_raw" | awk '/ALIVE/ {print $2}' | tr '\n' ',' | sed 's/,$//')
+  echo "master_raft_alive=$masters_alive expected_rf=$EXPECTED_RF endpoints=$masters_endpoints" >> "$CLUSTER_REPORT"
+  if [[ "$masters_alive" != "$EXPECTED_RF" ]]; then
+    HEALTHY=false
+    FAILS+=("ybdb-master-raft-mismatch:alive=$masters_alive/expected=$EXPECTED_RF")
+  fi
+
+  # (2) tservers heartbeat health — 3 全 ALIVE
+  tservers_alive=$(ssh -o ConnectTimeout=10 root@172.24.40.32 \
+                   "$YB_ADMIN list_all_tablet_servers" 2>/dev/null | tail -n +2 | grep -c "ALIVE")
+  echo "tservers_alive=$tservers_alive expected=3" >> "$CLUSTER_REPORT"
+  if [[ "$tservers_alive" != "3" ]]; then
+    HEALTHY=false
+    FAILS+=("ybdb-tservers-not-all-alive:$tservers_alive/3")
+  fi
+
+  # (3) 每 tserver cmdline 至少含 1 個 raft master endpoint
   for h in 172.24.40.32 172.24.40.33 172.24.40.34; do
-    list=$(ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 \
-              "root@$h" 'tr "\0" " " < /proc/$(pgrep -x yb-tserver)/cmdline 2>/dev/null | grep -oE "tserver_master_addrs=[^ ]*"' 2>/dev/null \
-           | sed -E 's/.*=//')
-    miss=""
-    for ma in 172.24.40.32:7100 172.24.40.33:7100 172.24.40.34:7100; do
-      [[ "$list" == *"$ma"* ]] || miss+="$ma "
+    list=$(ssh -o ConnectTimeout=5 "root@$h" \
+              'tr "\0" " " < /proc/$(pgrep -x yb-tserver)/cmdline 2>/dev/null | grep -oE "tserver_master_addrs=[^ ]*"' \
+           2>/dev/null | sed -E 's/.*=//')
+    found=false
+    IFS=',' read -ra ep_arr <<< "$masters_endpoints"
+    for ep in "${ep_arr[@]}"; do
+      [[ -n "$ep" && "$list" == *"$ep"* ]] && { found=true; break; }
     done
-    if [[ -n "$miss" ]]; then
-      MASTERS_OK=false
-      echo "host=$h tserver_master_addrs=$list MISSING=[$miss] pass=false" >> "$MASTERS_REPORT"
+    if $found; then
+      echo "host=$h tserver_master_addrs=$list has_raft_master=true" >> "$CLUSTER_REPORT"
     else
-      echo "host=$h tserver_master_addrs=$list pass=true" >> "$MASTERS_REPORT"
+      HEALTHY=false
+      FAILS+=("ybdb-tserver-static-no-raft-master:$h")
+      echo "host=$h tserver_master_addrs=$list has_raft_master=FALSE" >> "$CLUSTER_REPORT"
     fi
   done
-  if $MASTERS_OK; then
-    YBDB_MASTERS_CONSISTENT=true
+
+  if $HEALTHY; then
+    YBDB_CLUSTER_HEALTHY=true
   else
-    YBDB_MASTERS_CONSISTENT=false
+    YBDB_CLUSTER_HEALTHY=false
     ALL_PASS=false
-    FAILS+=("ybdb-master-addrs-incomplete")
-    warn "YBDB master_addrs incomplete on some tserver — see $MASTERS_REPORT"
-    cat "$MASTERS_REPORT" >&2
+    warn "YBDB cluster health gate FAILED — see $CLUSTER_REPORT"
+    cat "$CLUSTER_REPORT" >&2
   fi
 fi
 
@@ -221,7 +247,7 @@ fi
   echo "expected-rf         = $EXPECTED_RF        actual = $ACTUAL_RF"
   echo "expected-iso        = $EXPECTED_ISO   actual = ${ACTUAL_ISO:-N/A}"
   echo "yb-effective-iso    = ${YB_EFFECTIVE:-n/a}"
-  echo "ybdb-master-addrs-consistent = ${YBDB_MASTERS_CONSISTENT:-n/a}"
+  echo "ybdb-cluster-healthy = ${YBDB_CLUSTER_HEALTHY:-n/a}"
   echo "all_pass            = $ALL_PASS"
   if [[ ${#FAILS[@]} -gt 0 ]]; then
     echo "fails               = ${FAILS[*]}"

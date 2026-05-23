@@ -304,49 +304,6 @@
       ansible.builtin.debug:
         var: yb_universe_config.stdout_lines
 
-# Stabilize workers (.33, .34): yugabyted join bakes tserver_master_addrs at join
-# 時 cluster 當下狀態。.33 先 join 時只看到 [.32, .33]，.34 後 join 看到全部。
-# 配合 .32 經 configure data_placement 已重啟有 full list — 但 .33 仍卡半套。
-# 修正：在 configure 完成 (raft 全 quorum 成立) 後 serial 重啟 workers，
-# 用 --join=.32 重新註冊，讓 yugabyted 從 .32 拉到 full master quorum 後 bake 入。
-- name: Stabilize workers (refresh tserver_master_addrs after configure)
-  hosts: vm3_workers
-  serial: 1
-  become: true
-  gather_facts: false
-  vars:
-    yb_install_dir: /opt/yugabyte
-    yb_base_dir: /var/yugabyte
-    yb_host_primary: "172.24.40.32"
-  tasks:
-    - name: Stop yugabyted on worker
-      ansible.builtin.command:
-        cmd: "{{ yb_install_dir }}/bin/yugabyted stop --base_dir={{ yb_base_dir }}"
-      become_user: yugabyte
-      register: yb_stop_result
-      failed_when: false
-      changed_when: "'YugabyteDB stopped' in (yb_stop_result.stdout | default(''))"
-
-    - name: Wait 5s for clean shutdown
-      ansible.builtin.pause:
-        seconds: 5
-
-    - name: Start yugabyted on worker (rejoin existing cluster)
-      ansible.builtin.command:
-        cmd: >-
-          {{ yb_install_dir }}/bin/yugabyted start
-          --base_dir={{ yb_base_dir }}
-          --advertise_address={{ inventory_hostname }}
-          --join={{ yb_host_primary }}
-      become_user: yugabyte
-      changed_when: true
-
-    - name: Wait for YSQL port back up on worker
-      ansible.builtin.wait_for:
-        host: "{{ inventory_hostname }}"
-        port: 5433
-        timeout: 240
-
 - name: Install ysqlsh on TPC-C client
   hosts: tpcc_client
   become: true
