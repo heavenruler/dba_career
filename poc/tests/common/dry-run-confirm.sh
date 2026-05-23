@@ -178,6 +178,42 @@ if [[ "${ACTUAL_ISO:-}" != "$EXPECTED_ISO" ]]; then
   FAILS+=("iso-mismatch:expected=$EXPECTED_ISO/actual=${ACTUAL_ISO:-N/A}")
 fi
 
+# --- 4b. (YBDB only) master_addrs consistency check ------------------------
+# yugabyted bootstrap 平行 join 會讓不同 tserver 各自 bake 進不完整的
+# tserver_master_addrs list（cell 4 ybdb-3s3r 2026-05-23 踩到：.33 缺 .34、
+# .34 缺 .33，跑 workload 時 leader rebalancer 觸發 GetLeaderMasterRpc 失敗）。
+# Gate: 3 個 host 的 tserver --tserver_master_addrs 必須都包含 3 個 master。
+YBDB_MASTERS_CONSISTENT=n/a
+if [[ "$DB" == "ybdb" ]]; then
+  MASTERS_REPORT="$DRY/master-addrs-consistency.txt"
+  : > "$MASTERS_REPORT"
+  MASTERS_OK=true
+  for h in 172.24.40.32 172.24.40.33 172.24.40.34; do
+    list=$(ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 \
+              "root@$h" 'tr "\0" " " < /proc/$(pgrep -x yb-tserver)/cmdline 2>/dev/null | grep -oE "tserver_master_addrs=[^ ]*"' 2>/dev/null \
+           | sed -E 's/.*=//')
+    miss=""
+    for ma in 172.24.40.32:7100 172.24.40.33:7100 172.24.40.34:7100; do
+      [[ "$list" == *"$ma"* ]] || miss+="$ma "
+    done
+    if [[ -n "$miss" ]]; then
+      MASTERS_OK=false
+      echo "host=$h tserver_master_addrs=$list MISSING=[$miss] pass=false" >> "$MASTERS_REPORT"
+    else
+      echo "host=$h tserver_master_addrs=$list pass=true" >> "$MASTERS_REPORT"
+    fi
+  done
+  if $MASTERS_OK; then
+    YBDB_MASTERS_CONSISTENT=true
+  else
+    YBDB_MASTERS_CONSISTENT=false
+    ALL_PASS=false
+    FAILS+=("ybdb-master-addrs-incomplete")
+    warn "YBDB master_addrs incomplete on some tserver — see $MASTERS_REPORT"
+    cat "$MASTERS_REPORT" >&2
+  fi
+fi
+
 # --- 5. write expected-vs-actual summary + .dry-run.done --------------------
 {
   echo "=== dry-run gate $TOPOLOGY / $DB / $ISO ==="
@@ -185,6 +221,7 @@ fi
   echo "expected-rf         = $EXPECTED_RF        actual = $ACTUAL_RF"
   echo "expected-iso        = $EXPECTED_ISO   actual = ${ACTUAL_ISO:-N/A}"
   echo "yb-effective-iso    = ${YB_EFFECTIVE:-n/a}"
+  echo "ybdb-master-addrs-consistent = ${YBDB_MASTERS_CONSISTENT:-n/a}"
   echo "all_pass            = $ALL_PASS"
   if [[ ${#FAILS[@]} -gt 0 ]]; then
     echo "fails               = ${FAILS[*]}"
