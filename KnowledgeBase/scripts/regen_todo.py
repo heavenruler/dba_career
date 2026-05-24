@@ -189,7 +189,12 @@ def build_script(docs: list[dict]) -> str:
     lines.append("")
     lines.append("date '+%Y-%m-%d %H:%M:%S [todo.sh] done' | tee -a \"$LOG\"")
     lines.append('echo "summary: done=$DONE skipped=$SKIPPED failed=$FAILED_CNT total=$TOTAL"')
-    lines.append('[ "$FAILED_CNT" -gt 0 ] && echo "failed doc_ids in: $FAILED_LOG"')
+    # 用 if 而非 && — 後者在 FAILED_CNT=0 會讓整個 script 以 exit 1 結束（test 失敗）
+    lines.append('if [ "$FAILED_CNT" -gt 0 ]; then')
+    lines.append('  echo "failed doc_ids in: $FAILED_LOG"')
+    lines.append("  exit 1")
+    lines.append("fi")
+    lines.append("exit 0")
     lines.append("")
     return "\n".join(lines)
 
