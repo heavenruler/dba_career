@@ -14,11 +14,18 @@ done
 
 YB_TSERVER_FLAGS="memory_limit_hard_bytes=11811160064,db_block_cache_size_percentage=50,durable_wal_write=true,require_durable_wal_write=true,yb_enable_read_committed_isolation=true,ysql_enable_auth=false,ysql_enable_auto_analyze=false"
 
+# HAProxy 等 proxy 拓樸：db-host 是 proxy（無 yugabyte user）；cold-reset 必須
+# 走實 cluster member。advertise_address 已硬寫 .32，因此 ssh 也跟著 .32。
+case "$DB_HOST" in
+  172.24.40.32|172.24.40.33|172.24.40.34) CLUSTER_HOST="$DB_HOST" ;;
+  *)                                       CLUSTER_HOST="172.24.40.32" ;;  # HAProxy → fallback .32
+esac
+
 remote() {
-  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 "root@$DB_HOST" "$@"
+  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 "root@$CLUSTER_HOST" "$@"
 }
 
-info "cold reset YugabyteDB on $DB_HOST"
+info "cold reset YugabyteDB on $CLUSTER_HOST (db-host=$DB_HOST)"
 remote "set -euo pipefail
   runuser -u yugabyte -- yugabyted stop --base_dir=/var/yugabyte || true
   sync
