@@ -28,7 +28,7 @@
 | 3s1r | 11,180 | **11,967** | 11,749 | 11,691 | t=32 |
 | 3s3r | 4,776 | 6,618 | 8,195 | **8,729** | t=128 |
 
-### tpmC 排行（best mean）
+### tpmC 排行（best mean across thread groups）
 
 | 排名 | cell | tpmC | @threads | 註 |
 |------|------|-----:|---------:|----|
@@ -36,6 +36,8 @@
 | 🥈 | 3s1r | 11,967 | t=32 | sharding +13% 協調成本 |
 | 🥉 | 1s3r | 10,228 | t=128 | RF=3 −25% replication 成本 |
 | 4 | 3s3r | 8,729 | t=128 | 全 sharded+replicated，−36% 對 1s1r |
+
+> **口徑說明**：`best mean` = 在該 cell 4 個 thread groups 中、5-round mean tpmC 最高的那組值。**與第 9 節「建議代表點」不一定相同** — 代表點採「throughput-latency 平衡」原則，可能挑較低 thread 群（例如 1s1r 代表點為 t=32 / 13,702，雖比 t=128 best mean 13,725 略低 23 tpmC，但 NO_p99 從 758 ms 降到 205 ms）。兩個口徑都有效，僅意義不同：best mean 看單純吞吐極限，代表點看可用 SLA 工作點。
 
 ---
 

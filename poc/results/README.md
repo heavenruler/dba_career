@@ -42,7 +42,7 @@
 | CockroachDB | Kubernetes,無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | CockroachDB | Kubernetes,有資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | YugabyteDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 完成（SERIALIZABLE）| 三 iso 全完整：rc 11,436 ＞ rr 1,879 ＞ strict 1,130（反 CockroachDB pattern；rc CPU-bound 故 SSI 無 IO headroom 可榨）[註4](#note-4) |
-| YugabyteDB | 三節點虛擬機，直連 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
+| YugabyteDB | 三節點虛擬機，直連 | ✅ 完成（4 sub_topology）| ⏳ 待執行 | ⏳ 待執行 | RC 4 cells（1s1r / 1s3r / 3s1r / 3s3r）2026-05-24 / 25 全完成；代表點 1s1r=13,702、1s3r=10,228、3s1r=11,967、3s3r=8,729 tpmC（5-round mean）；詳見 [流程紀錄 vm-3node 段](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-系列4-sub-topology--rcpoc-design-632) |
 | YugabyteDB | 三節點虛擬機，HAProxy | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | YugabyteDB | Kubernetes，無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程；pre-v4.7 單次 10min wrapper 僅作歷史參考 |
 | YugabyteDB | Kubernetes，有資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程；pre-v4.7 單次 10min wrapper 僅作歷史參考 |
@@ -71,7 +71,8 @@
 - **vm-1node-strict**：peak **1,130 tpmC @ t32**，比 rc **-90%**、比 rr **再砍 -40%**；errors ≈ N-1 但比 rr 略少 ~5%（SSI early-abort 救回部分衝突）；DB %idle 70% 為三 iso 最高、disk %util 70% 為三 iso 最高（SSI version metadata + read-refresh 小 IO 放大）。
 - **三 iso 排序：rc ＞＞ rr ＞ strict** — 與 CockroachDB「strict ＞ rc ＞ rr」**完全相反**；機制：CockroachDB rc 為 IO-bound 故 SSI 走 CPU 路徑可避瓶頸；YugabyteDB rc 已 CPU-bound 無 headroom 可榨。
 - 詳見 [yuga-tc1 pipeline-log TL;DR](./yuga-tc1/S-BASE/pipeline-log.md#tldr--vm-1node-三-isolation-矩陣完成2026-05-20--21)。
-- vm-1node pre-v4.7 single-run / vm-3node-direct / vm-3node-HAProxy / K8s（unlimit & limit）等歷史結果已備份於 [`yuga-tc1-old/`](./yuga-tc1-old/)；v4.7 vm-3node / Kubernetes 重跑尚未排程。
+- **vm-3node-direct (RC)**：4 sub_topology × RC 2026-05-24 / 25 完成（5-round mean）。代表點：1s1r 13,702 (t=32) ＞ 3s1r 11,967 (t=32) ＞ 1s3r 10,228 (t=128) ＞ 3s3r 8,729 (t=128)。**RF=3 一律 ~25% 寫吞吐損耗、shard=3 加 ~13% 協調成本，疊加 1s1r→3s3r 為 −36%**；3s3r 在 4 vCPU 上 tablet 協調瓶頸（CPU 24-42% idle 但 throughput drop）。詳見 [vm-3node TL;DR](./yuga-tc1/S-BASE/pipeline-log.md#tldr--vm-3node-4-cells2026-05-25) 與 [跨 cell 分析](./dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)。
+- vm-1node pre-v4.7 single-run / vm-3node-HAProxy / K8s（unlimit & limit）等歷史結果已備份於 [`yuga-tc1-old/`](./yuga-tc1-old/)；v4.7 vm-3node-HAProxy / Kubernetes 重跑尚未排程。
 
 ### 歷史檔案
 
