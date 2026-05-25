@@ -1,0 +1,17 @@
+{
+  "phase": "dry-run",
+  "db": "ybdb",
+  "topology": "vm-3node-1s3r",
+  "sub_topology": "1s3r",
+  "iso": "rc",
+  "ts": "20260523T050636+0800",
+  "db_host": "172.24.40.32",
+  "node_count": 4,
+  "rf_expected": "3",
+  "rf_actual": "3",
+  "iso_expected": "read committed",
+  "iso_actual": "read committed",
+  "yb_effective_iso": "read committed",
+  "all_pass": true,
+  "fails": ""
+}

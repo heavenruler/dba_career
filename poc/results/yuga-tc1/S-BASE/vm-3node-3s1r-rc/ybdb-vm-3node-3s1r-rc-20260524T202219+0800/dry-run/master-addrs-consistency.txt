@@ -1,0 +1,5 @@
+master_raft_alive=1 expected_rf=1 endpoints=172.24.40.32:7100
+tservers_alive=3 expected=3
+host=172.24.40.32 tserver_master_addrs=172.24.40.32:7100 has_raft_master=true
+host=172.24.40.33 tserver_master_addrs=172.24.40.32:7100,172.24.40.33:7100 has_raft_master=true
+host=172.24.40.34 tserver_master_addrs=172.24.40.33:7100,172.24.40.32:7100,172.24.40.34:7100 has_raft_master=true

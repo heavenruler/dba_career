@@ -675,11 +675,13 @@ YBDB tablet 數靠 **cluster flag `ysql_num_shards_per_tserver` × tserver 數**
 
 | 拓撲 | tservers | RF | ysql_num_shards_per_tserver | pre-create with SPLIT INTO？ | 預期 tablets/表 |
 |---|---:|---:|---:|---|---:|
-| vm-3node-1s1r | 3 | 1 | 1 | **需要**：`SPLIT INTO 1 TABLETS`（因 3 tservers × 1 = 3 預設） | 1 |
+| vm-3node-1s1r | 3 | 1 | 1 | **需要**：`SPLIT INTO 1 TABLETS` | 1 |
 | vm-3node-1s3r | 3 | 3 | 1 | **需要**：`SPLIT INTO 1 TABLETS` | 1 |
-| vm-3node-3s1r | 3 | 1 | 1 | 不需（3 tservers × 1 = 3 自然） | 3 |
-| vm-3node-3s3r | 3 | 3 | 1 | 不需 | 3 |
-| haproxy-3s3r | 3 | 3 | 1 | 不需 | 3 |
+| vm-3node-3s1r | 3 | 1 | 1 | **需要**：`SPLIT INTO 3 TABLETS` | 3 |
+| vm-3node-3s3r | 3 | 3 | 1 | **需要**：`SPLIT INTO 3 TABLETS` | 3 |
+| haproxy-3s3r | 3 | 3 | 1 | **需要**：`SPLIT INTO 3 TABLETS` | 3 |
+
+> ⚠️ **2026-05-23 修正（cell 3 ybdb-3s1r dispatch 實測）**：原本以為「3 tservers × ysql_num_shards_per_tserver=1 = 3 自然 tablets」，**錯**。實測 RF=1 場景 `yugabyted configure data_placement --rf=1` 之後 placement 只覆蓋 1 個 tserver，table 自動 split 數 = `ysql_num_shards_per_tserver × num_tservers_in_placement = 1 × 1 = 1`。所以 3s*r 也必須 pre-create 帶 `SPLIT INTO 3 TABLETS`。修法：prepare.sh `sed s|SPLIT INTO 1 TABLETS|SPLIT INTO ${EXPECTED_SHARDS} TABLETS|g` substitute 既有 schema file，不重複維護兩個檔。
 
 > ⚠️ **修正**：v4.6 把 vm-3node-1s1r 寫成 1 tserver 是錯。所有 vm-3node 都是 3 tservers；只是 RF 與 pre-create 策略不同。
 

@@ -82,15 +82,22 @@ case "$DB" in
 esac
 info "drop+create done"
 
-# ---- 2. (vm-3node-1s1r / 1s3r YBDB only) pre-create schema with SPLIT INTO 1 TABLETS
-# go-tpc 跑 CREATE TABLE IF NOT EXISTS，pre-create 後它會 skip CREATE；資料照常 INSERT。
-# PoC-DESIGN §7.5.3：YBDB default 3 tservers × ysql_num_shards_per_tserver=1 = 3 tablets，
-# 1s 拓樸要覆寫成 1 tablet 才符合「1 shard」設計。
-if [[ "$DB" == "ybdb" && ("$TOPO" == "vm-3node-1s1r" || "$TOPO" == "vm-3node-1s3r") ]]; then
-  info "YBDB pre-create 9 tables with SPLIT INTO 1 TABLETS"
+# ---- 2. (vm-3node YBDB) pre-create schema with SPLIT INTO $EXPECTED_SHARDS TABLETS
+# 為什麼 1s*r 和 3s*r 都要 pre-create：
+# yugabyted configure data_placement --rf=N 之後，placement 只覆蓋 N 個 tserver；
+# 新建 table 沒帶 SPLIT clause 時 initial tablets = ysql_num_shards_per_tserver
+# × num_tservers_in_placement = 1 × N = N（不是 PoC-DESIGN 原假設「3 自然」）。
+# RF=1 placement → 1 tablet；RF=3 placement → 3 tablet。所以 1s*r 要 SPLIT 1
+# （覆寫 RF=3 case 的 3 tablet 預設），3s*r 要 SPLIT 3（覆寫 RF=1 case 的 1
+# tablet 預設）。實作上一律 SPLIT INTO $EXPECTED_SHARDS TABLETS。
+# go-tpc 跑 CREATE TABLE IF NOT EXISTS，pre-create 後它會 skip CREATE；INSERT 照常。
+# Schema file 內寫 "SPLIT INTO 1 TABLETS"，由 sed substitute 為 EXPECTED_SHARDS。
+if [[ "$DB" == "ybdb" && "$TOPO" =~ ^vm-3node ]]; then
+  info "YBDB pre-create 9 tables with SPLIT INTO $EXPECTED_SHARDS TABLETS"
+  sed "s|SPLIT INTO [0-9]\+ TABLETS|SPLIT INTO $EXPECTED_SHARDS TABLETS|g" \
+    "$SELF/lib/ybdb-tpcc-schema-1tablet.sql" | \
   psql "postgres://${USER}@${DB_HOST}:${PORT}/${DBNAME}" -v ON_ERROR_STOP=1 \
-    -f "$SELF/lib/ybdb-tpcc-schema-1tablet.sql" \
-    2>&1 | tee "$PREP_DIR/pre-create-1tablet.log"
+    2>&1 | tee "$PREP_DIR/pre-create-${EXPECTED_SHARDS}tablets.log"
 fi
 
 # ---- 3. go-tpc prepare ---------------------------------------------

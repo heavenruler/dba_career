@@ -1,6 +1,6 @@
 # AI 協作準則 — PoC results 文件與執行校驗
 
-> 本文件定義 Codex / Claude Code session 在本 PoC 專案中的協作方式。目標不是讓 AI 取代判斷，而是讓 AI 協助整理 artifact、校驗流程、降低人工遺漏，並把技術分析與文件貢獻變成可追溯成果。
+> 本文件定義 Codex / Claude Code session 在本 PoC 專案中的協作方式。目標不是讓 AI 取代判斷，而是讓 AI 協助整理 artifact、校驗流程、降低人工遺漏，並把技術分析與文件貢獻變成可追溯成果，避免任何邏輯 / 數據 / 流程 或其他相關技術可見的瑕疵及錯誤發生。
 
 ## 使用定位
 

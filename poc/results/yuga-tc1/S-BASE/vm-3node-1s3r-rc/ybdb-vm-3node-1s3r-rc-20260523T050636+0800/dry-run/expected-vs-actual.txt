@@ -1,0 +1,6 @@
+=== dry-run gate vm-3node-1s3r / ybdb / rc ===
+expected-node-count = 3        actual = 4
+expected-rf         = 3        actual = 3
+expected-iso        = read committed   actual = read committed
+yb-effective-iso    = read committed
+all_pass            = true
