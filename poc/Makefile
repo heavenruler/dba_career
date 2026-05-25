@@ -528,6 +528,16 @@ $(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),status-vm3-$(db)-$(sub)-rc
 	@echo "==> dry-run artifacts: $(TPCC_ARTIFACTS)/$(DB)-vm-3node-$(SUB)-$(ISO)-*/dry-run/"
 	@ssh $(TPCC_CLIENT) "ls -la $(TPCC_ARTIFACTS)/$(DB)-vm-3node-$(SUB)-$(ISO)-*/dry-run/ 2>/dev/null | tail -20" || true
 
+# ---- status-vm3-<db>-haproxy-3s3r-rc (HAProxy variant；只支援 status，dispatch 手動) ----
+# haproxy-3s3r 含中槓會破壞 $(word N,$(subst -, ,$@)) 解析；故獨立 stanza 不走 foreach。
+.PHONY: status-vm3-ybdb-haproxy-3s3r-rc status-vm3-tidb-haproxy-3s3r-rc status-vm3-crdb-haproxy-3s3r-rc
+status-vm3-ybdb-haproxy-3s3r-rc status-vm3-tidb-haproxy-3s3r-rc status-vm3-crdb-haproxy-3s3r-rc:
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	@ssh $(TPCC_CLIENT) "bash $(TPCC_SCRIPTS)/status-vm1.sh \
+	  --db $(DB) --topology vm-3node-haproxy-3s3r --iso rc" || true
+	@echo "==> dry-run artifacts: $(TPCC_ARTIFACTS)/$(DB)-vm-3node-haproxy-3s3r-rc-*/dry-run/"
+	@ssh $(TPCC_CLIENT) "ls -la $(TPCC_ARTIFACTS)/$(DB)-vm-3node-haproxy-3s3r-rc-*/dry-run/ 2>/dev/null | tail -20" || true
+
 # ---- vm3-<db>-<sub>-rc : full chain with EXECUTE=1 safety gate -----
 # Default: destroy-all + deploy + dry-run-confirm; stop at anchor.
 # With EXECUTE=1: Mac 同步跑 deploy 部分，gate→prepare→run→collect 透過
