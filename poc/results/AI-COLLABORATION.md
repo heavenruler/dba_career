@@ -12,7 +12,7 @@
 
 ## 基本原則
 
-- **artifact-first**：所有數據必須能回到 `results/<db>-tc1/S-BASE/...` 下的執行目錄、marker、log、summary 或 pipeline log。
+- **artifact-first**：所有數據必須能回到 `results/<db>-tc1/S-BASE/...` 下的執行目錄、marker、log、summary 或 pipeline log，根據目錄時間戳章最新一筆紀錄為主，避免過多測試目錄的資訊混淆導致誤判。
 - **template-first**：README 與 pipeline log 必須依照 `README-template.md` / `pipeline-log-template.md` 維持一致格式。
 - **no invented numbers**：AI 不得自行推估或創造 tpmC、p99、error rate、CPU、IO、round 數據。
 - **distinguish fact from inference**：OS 指標直接支持的是觀察；DB 內部機制若缺 metrics / trace，只能標為推測。
