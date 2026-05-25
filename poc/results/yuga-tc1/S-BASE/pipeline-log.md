@@ -722,7 +722,18 @@ YugabyteDB v2025.2.2.2 vm-1node strict (SERIALIZABLE / SSI) 在 4 vCPU + single 
 
 ## vm-3node 系列（4 sub-topology × RC，PoC-DESIGN §6.3.2）
 
-> 本段為 YugabyteDB 2025.2 在 vm-3node 拓樸 / `READ COMMITTED` 隔離級下的 4 個 sub-topology baseline 規劃。資料填寫前以 `dry-run` anchor 確認 cluster topology / RF / iso preset 與設計一致，再由人工放行 `EXECUTE=1` 進入 prepare/run/collect。
+> 本段為 YugabyteDB 2025.2 在 vm-3node 拓樸 / `READ COMMITTED` 隔離級下的 4 個 sub-topology baseline。**2026-05-24/25 全 4 cells 完成**（post-patch，0 fatal）。詳細跨 cell 比較見 [results/dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md](../../dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)。
+
+### TL;DR — vm-3node 4 cells（2026-05-25）
+
+**核心結論**：RF=3 寫多副本固定 ~25% 損耗、shard=3 加 ~13% 協調成本；兩者疊加在 1s1r→3s3r 是 **−36.4% throughput / +47% NO_p99**。3s3r 在本 4 vCPU 硬體上 tablet 協調瓶頸（CPU 24-42% idle 但 throughput drop），生產配置需 vCPU ≥ 8。
+
+| cell | RF | shards | 代表 threads | 5-round mean tpmC | NO_p99 ms |
+|------|---:|------:|:------------:|------------------:|----------:|
+| 1s1r | 1 | 1 | t=32 | **13,702** | 205 |
+| 1s3r | 3 | 1 | t=128 | 10,228 | 1,034 |
+| 3s1r | 1 | 3 | t=32 | 11,967 | 203 |
+| 3s3r | 3 | 3 | t=128 | 8,729 | 1,114 |
 
 ### 共同元件分配（3 顆 VM）
 
@@ -781,9 +792,18 @@ client → .32:5433 (YSQL gateway 路由 to tablet leader)
 - `iso-preset.txt`：`transaction_isolation = read committed`、`yb_effective_transaction_isolation_level = read committed`（雙閘檢驗，避 silent SI fallback）
 - `cluster-health.txt` = `SELECT 1` 回 1
 
-#### Execute 結果
+#### Execute 結果（2026-05-24，TS=20260524T032814+0800）
 
-> 待 `make vm3-ybdb-1s1r-rc EXECUTE=1 TPCC_TS=<ts>` 完成後回填 5-round mean tpmC / p50 / p95 / p99 / error rate，並與 vm-1node-rc 對照 scale-out ratio。
+5-round mean tpmC（4 thread × 5 round = 20 取樣）：
+
+| threads | tpmC mean | tpmC range | NO_p99 mean (ms) | DEL_p99 mean (ms) | DB CPU idle% |
+|--------:|----------:|-----------:|-----------------:|------------------:|-------------:|
+| 16 | 11,491 | 11,360–11,595 | 90 | 117 | 23 |
+| 32 | **13,702** | 12,627–14,118 | 205 | 268 | 9（sweet spot）|
+| 64 | 13,200 | 12,337–14,233 | 396 | 507 | 6 |
+| 128 | 13,725 | 13,462–13,868 | 758 | 1,127 | 4 |
+
+代表點 = **t=32 / 13,702 tpmC / NO_p99 = 205 ms**。對照 vm-1node-rc 11,436 → +20% throughput（cluster framework 不僅無 overhead 反而吃糖，待跨日重採確認是否 host I/O 雜訊影響）。詳見 [results/dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md](../../dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)。
 
 ### vm-3node-1s3r-rc
 
@@ -814,9 +834,18 @@ client → .32:5433
 - `replication-factor.txt`：`num_replicas = 3`
 - 其餘同 1s1r。
 
-#### Execute 結果
+#### Execute 結果（2026-05-24，TS=20260524T074754+0800）
 
-> 待回填；與 1s1r 比 → Raft 3-replica 寫入 amplification。
+5-round mean tpmC：
+
+| threads | tpmC mean | tpmC range | NO_p99 mean (ms) | DEL_p99 mean (ms) | DB CPU idle% |
+|--------:|----------:|-----------:|-----------------:|------------------:|-------------:|
+| 16 | 6,970 | 4,355–7,697 | 144 | 186 | 13 |
+| 32 | 9,394 | 9,084–9,936 | 245 | 349 | 7 |
+| 64 | 10,068 | 9,996–10,196 | 477 | 705 | 5 |
+| 128 | **10,228** | 10,130–10,320 | 1,034 | 1,476 | 4 |
+
+代表點 = **t=128 / 10,228 tpmC / NO_p99 = 1,034 ms**。對照 vm-3node-1s1r（同 1-shard、RF=1）→ **−25.5% throughput / +36% NO_p99**，量化 Raft 3-replica 寫入成本。t=16 stddev=1463（warmup 過渡期），t=64-128 stddev≤86 極穩。詳見 analysis report。
 
 ### vm-3node-3s1r-rc
 
@@ -837,17 +866,28 @@ client → .32:5433
 | 維度 | 設定 |
 |---|---|
 | `yugabyted start --rf` | `1` |
-| Pre-create schema | **不需要**；3 tserver × `ysql_num_shards_per_tserver=1` = 3 tablets 自然 |
+| Pre-create schema | **需要** `SPLIT INTO 3 TABLETS` ★ |
 | Hard gate | `yb-admin list_tablets ysql.tpcc <table>` 9 表 = 3 tablets |
 | 其餘 | 同 1s1r |
 
+> ⚠️ **2026-05-23 實測修正**：原以為「RF=1 + 3 tservers × ysql_num_shards_per_tserver=1 = 3 tablets 自然」，**錯**。`yugabyted configure data_placement --rf=1` 之後 placement 只覆蓋 1 個 tserver，table 預設 tablets = 1 × 1 = **1**。修法在 prepare.sh 用 sed 把 schema file 的 `SPLIT INTO 1 TABLETS` 替換為 `SPLIT INTO 3 TABLETS`（covers 1s/3s 兩種 case），詳見 PoC-DESIGN §7.5.3。
+
 #### Dry-run 預期
 
-- 同 1s1r（shard gate 由 prepare 執行）。
+- 同 1s1r（shard hard gate 由 prepare 執行；不符即 fail-closed）。
 
-#### Execute 結果
+#### Execute 結果（2026-05-24，TS=20260524T202219+0800）
 
-> 待回填；與 1s1r 比 → sharding 純效應；驗 tablet leader 是否 evenly distributed。
+5-round mean tpmC：
+
+| threads | tpmC mean | tpmC range | NO_p99 mean (ms) | DEL_p99 mean (ms) | DB CPU idle% |
+|--------:|----------:|-----------:|-----------------:|------------------:|-------------:|
+| 16 | 11,180 | 11,024–11,322 | 94 | 123 | 13 |
+| 32 | **11,967** | 11,789–12,148 | 203 | 268 | 7（sweet spot）|
+| 64 | 11,749 | 11,724–11,770 | 436 | 624 | 5 |
+| 128 | 11,691 | 11,612–11,796 | 1,007 | 1,356 | 4 |
+
+代表點 = **t=32 / 11,967 tpmC / NO_p99 = 203 ms**。對照 1s1r（同 RF=1、1-shard）→ **−12.7% throughput**，量化 sharding 純成本（cross-tablet coordination）。stddev 在所有 thread 等級 ≤ 142，是 4 cells **最穩**。詳見 analysis report。
 
 ### vm-3node-3s3r-rc
 
@@ -869,17 +909,35 @@ client → .32:5433
 | 維度 | 設定 |
 |---|---|
 | `yugabyted start --rf` | `3` |
-| Pre-create schema | **不需要** |
+| Pre-create schema | **需要** `SPLIT INTO 3 TABLETS`（同 3s1r 修法）|
 | 其餘 | 同 3s1r |
 
 #### Dry-run 預期
 
 - `replication-factor.txt`：`num_replicas = 3`
+- master raft alive = 3（RF=3 cluster：.32 .33 .34 三 master 全 ALIVE）
 - 其餘同 1s1r。
 
-#### Execute 結果
+#### Execute 結果（2026-05-25，TS=20260525T031918+0800）
 
-> 待回填；與 3s1r 比 → replication 成本 in sharded cluster；與 1s3r 比 → sharding 攤平效益。
+> ⚠️ **2026-05-23 首次 dispatch 踩 LookupByIdRpc / kResponseSent timeout cascade**（root cause = parallel `yugabyted --join=primary` 造成 tserver_master_addrs 不一致 + cell 4 81-replicas 高負載觸發 leader rebalance）。
+>
+> 修法（已 commit `d654824` / `68189bc` / `29b5fc5`）：
+> - `ansible/playbooks/yugabyte-vm3.yml` 加 `serial: 1` on Join workers
+> - `tests/common/dry-run-confirm.sh` 改 RF-aware cluster health gate（master raft alive = expected_rf；3 tservers ALIVE heartbeating；每 tserver cmdline ≥1 raft master endpoint）
+
+5-round mean tpmC（**post-patch，0 fatal**）：
+
+| threads | tpmC mean | tpmC range | NO_p99 mean (ms) | DEL_p99 mean (ms) | DB CPU idle% |
+|--------:|----------:|-----------:|-----------------:|------------------:|-------------:|
+| 16 | 4,776 | 1,517–7,453 | 153 | 196 | 10 |
+| 32 | 6,618 | 5,152–8,666 | 272 | 369 | **42**(!) |
+| 64 | 8,195 | 5,703–9,097 | 567 | 785 | **24**(!) |
+| 128 | **8,729** | 4,409–9,852 | 1,114 | 1,517 | 4 |
+
+代表點 = **t=128 / 8,729 tpmC / NO_p99 = 1,114 ms**。對照 1s1r 疊加 RF + shard 雙成本 → **−36.4% throughput / +47% NO_p99**。
+
+**警示**：3s3r 在 t=32 / t=64 CPU idle 高達 24-42% 但 throughput 反而 drop，workload 卡 tablet/raft 協調而非 CPU；stddev 在所有 thread 等級 ≥ 1,400，t=16 round-to-round 振幅 4.9×（min=1517 / max=7453）。**本 hardware 4 vCPU 不適合 3s3r 生產配置**，要穩定需 vCPU ≥ 8 或降 tablet 數。詳見 analysis report。
 
 ---
 
