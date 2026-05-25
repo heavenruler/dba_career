@@ -41,9 +41,10 @@ DRIVER=$(get_driver "$DB")
 
 # PoC-DESIGN §7.5.4 — vm-3node 每張表預期 shard 數（hard gate 比對基準）
 case "$TOPO" in
-  vm-3node-1s1r|vm-3node-1s3r) EXPECTED_SHARDS=1 ;;
-  vm-3node-3s1r|vm-3node-3s3r) EXPECTED_SHARDS=3 ;;
-  *)                           EXPECTED_SHARDS=0 ;;   # vm-1node / 其他 → 不 enforce
+  vm-3node-1s1r|vm-3node-1s3r)        EXPECTED_SHARDS=1 ;;
+  vm-3node-3s1r|vm-3node-3s3r)        EXPECTED_SHARDS=3 ;;
+  vm-3node-haproxy-3s3r)              EXPECTED_SHARDS=3 ;;
+  *)                                  EXPECTED_SHARDS=0 ;;   # vm-1node / 其他 → 不 enforce
 esac
 
 info "prepare root: $ROOT  db=$DB iso=$ISO topo=$TOPO host=$DB_HOST expected_shards=$EXPECTED_SHARDS"
@@ -279,8 +280,13 @@ if [[ "$EXPECTED_SHARDS" != "0" ]]; then
     ybdb)
       : > "$PREP_DIR/.shard-raw.tsv"
       YB_MASTERS="172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100"
+      # HAProxy 等 proxy 拓樸：yb-admin 必須走實 cluster member（db-host 是 proxy）
+      case "$TOPO" in
+        *haproxy-*) YB_ADMIN_HOST="172.24.40.32" ;;
+        *)          YB_ADMIN_HOST="$DB_HOST"     ;;
+      esac
       for tbl in $TABLES; do
-        n=$(ssh -o StrictHostKeyChecking=accept-new "root@$DB_HOST" \
+        n=$(ssh -o StrictHostKeyChecking=accept-new "root@$YB_ADMIN_HOST" \
               "/opt/yugabyte/bin/yb-admin --master_addresses=$YB_MASTERS list_tablets ysql.$DBNAME $tbl 2>/dev/null | tail -n +2 | wc -l" \
               2>/dev/null || echo 0)
         printf "%s\t%s\n" "$tbl" "$n" >> "$PREP_DIR/.shard-raw.tsv"

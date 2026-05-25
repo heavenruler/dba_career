@@ -42,11 +42,17 @@ flock_phase "$ROOT" "gate"
 GATE_DIR="$ROOT/gate"
 ENV_DIR="$ROOT/env"
 
-info "gate root: $ROOT  (client=$(hostname), db-host=$DB_HOST)"
+# HAProxy 等 proxy 拓樸：db-host 是 proxy；OS gate 必須檢查實 cluster member。
+case "$TOPO" in
+  *haproxy-*) CLUSTER_HOST="172.24.40.32" ;;
+  *)          CLUSTER_HOST="$DB_HOST"     ;;
+esac
+
+info "gate root: $ROOT  (client=$(hostname), db-host=$DB_HOST, cluster-host=$CLUSTER_HOST)"
 
 # helper: run remote command, capture output
 remote() {
-  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 "root@$DB_HOST" "$@"
+  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 "root@$CLUSTER_HOST" "$@"
 }
 
 # ---- env snapshot (client + db-host) -------------------------------

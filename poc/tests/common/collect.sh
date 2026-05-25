@@ -44,11 +44,17 @@ if [[ -x "$SELF/db-config-dump.sh" ]]; then
     warn "db-config-dump.sh exited non-zero"
 fi
 
+# HAProxy 等 proxy 拓樸：db-host 是 proxy；env / log 必須抓實 cluster member。
+case "$TOPO" in
+  *haproxy-*) CLUSTER_HOST="172.24.40.32" ;;
+  *)          CLUSTER_HOST="$DB_HOST"     ;;
+esac
+
 # ---- 2. env snapshot of DB-host -----------------------------------
 # Optional metadata; failures here must not kill the suite (set -e bypass).
 {
-  echo "=== DB-host: $DB_HOST ==="
-  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 "root@$DB_HOST" '
+  echo "=== DB-host: $CLUSTER_HOST (db-host=$DB_HOST) ==="
+  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 "root@$CLUSTER_HOST" '
     uname -a
     cat /etc/os-release
     free -h
@@ -63,7 +69,7 @@ fi
 # Optional metadata; failures here must not kill the suite (set -e bypass).
 case "$DB" in
   tidb)
-    ssh -o ConnectTimeout=10 "root@$DB_HOST" '
+    ssh -o ConnectTimeout=10 "root@$CLUSTER_HOST" '
       for log in /tidb-deploy/tidb-*/log/tidb.log \
                  /tidb-deploy/tikv-*/log/tikv.log \
                  /tidb-deploy/pd-*/log/pd.log; do
@@ -73,14 +79,14 @@ case "$DB" in
     ' > "$ROOT/runs/db-log-tail.txt" 2>&1 || warn "tidb log tail failed (rc=$?)"
     ;;
   crdb)
-    ssh -o ConnectTimeout=10 "root@$DB_HOST" '
+    ssh -o ConnectTimeout=10 "root@$CLUSTER_HOST" '
       echo "=== cockroach.log tail ==="
       tail -1000 /data/crdb/logs/cockroach.log 2>/dev/null || \
       journalctl -u cockroach -n 1000 --no-pager
     ' > "$ROOT/runs/db-log-tail.txt" 2>&1 || warn "crdb log tail failed (rc=$?)"
     ;;
   ybdb)
-    ssh -o ConnectTimeout=10 "root@$DB_HOST" '
+    ssh -o ConnectTimeout=10 "root@$CLUSTER_HOST" '
       echo "=== yb-tserver log tail ==="
       tail -1000 /var/yugabyte/yb-data/tserver/logs/yb-tserver.INFO 2>/dev/null || echo "(not found)"
       echo "=== postgres log tail ==="

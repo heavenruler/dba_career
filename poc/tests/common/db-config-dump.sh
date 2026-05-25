@@ -24,8 +24,14 @@ flock_phase "$ROOT" "db-config"
 CONFIG_DIR="$ROOT/db-config"
 ISO_CONN_PARAMS=$(get_conn_params "$DB" "$ISO")
 
+# HAProxy 等 proxy 拓樸：db-host 是 proxy；db-config 取數要走實 cluster member。
+case "$TOPO" in
+  *haproxy-*) CLUSTER_HOST="172.24.40.32" ;;
+  *)          CLUSTER_HOST="$DB_HOST"     ;;
+esac
+
 remote() {
-  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 "root@$DB_HOST" "$@"
+  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 "root@$CLUSTER_HOST" "$@"
 }
 
 case "$DB" in

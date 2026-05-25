@@ -36,13 +36,13 @@ while [[ $# -gt 0 ]]; do
 done
 [[ -n "$DB" && -n "$SUB" && -n "$ISO" && -n "$DB_HOST" && -n "$TS" ]] || die "missing required args"
 
-case "$SUB" in 1s1r|1s3r|3s1r|3s3r) ;; *) die "invalid sub-topology: $SUB" ;; esac
+case "$SUB" in 1s1r|1s3r|3s1r|3s3r|haproxy-3s3r) ;; *) die "invalid sub-topology: $SUB" ;; esac
 case "$DB"  in tidb|crdb|ybdb)      ;; *) die "invalid db: $DB" ;; esac
 
 # Expected RF derived from sub-topology suffix:
 case "$SUB" in
   1s1r|3s1r) EXPECTED_RF=1 ;;
-  1s3r|3s3r) EXPECTED_RF=3 ;;
+  1s3r|3s3r|haproxy-3s3r) EXPECTED_RF=3 ;;
 esac
 
 TOPOLOGY="vm-3node-$SUB"
@@ -55,10 +55,16 @@ DRY="$ROOT/dry-run"
 ALL_PASS=true
 FAILS=()
 
-info "dry-run-confirm root: $ROOT  (sub=$SUB rf=$EXPECTED_RF iso=$ISO db-host=$DB_HOST)"
+# HAProxy 等 proxy 拓樸：db-host 是 proxy，沒 yb-admin；yb-admin 必須走實 cluster member。
+case "$SUB" in
+  haproxy-*) CLUSTER_HOST="172.24.40.32" ;;
+  *)         CLUSTER_HOST="$DB_HOST"     ;;
+esac
+
+info "dry-run-confirm root: $ROOT  (sub=$SUB rf=$EXPECTED_RF iso=$ISO db-host=$DB_HOST cluster-host=$CLUSTER_HOST)"
 
 remote() {
-  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 "root@$DB_HOST" "$@"
+  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 "root@$CLUSTER_HOST" "$@"
 }
 
 # --- 1. cluster topology dump ------------------------------------------------
