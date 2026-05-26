@@ -38,6 +38,14 @@
 | YugabyteDB | 單節點虛擬機 | REPEATABLE READ | [ybdb-vm-1node-rr-20260520T215216+0800](./yuga-tc1/S-BASE/vm-1node-rr/ybdb-vm-1node-rr-20260520T215216+0800/) | 32 | 1,879 | 174 | 0.149% | snapshot iso（非 PG 標準 RR）[註2](#note-2)；hot row retry storm，每 round = thread − 1 errors；DB %idle 67% — coordination bound 非 CPU/IO [註4](#note-4) |
 | YugabyteDB | 單節點虛擬機 | SERIALIZABLE | [ybdb-vm-1node-strict-20260521T091048+0800](./yuga-tc1/S-BASE/vm-1node-strict/ybdb-vm-1node-strict-20260521T091048+0800/) | 32 | 1,130 | 54 | 0.248% | SSI；YugabyteDB rc 為 CPU-bound 所以 SSI 反而比 rc / rr 都慢（與 CockroachDB SSI ＞ rc 相反）[註2](#note-2) [註4](#note-4)；p99 全 iso 最低但因 throughput -90% queue 短的副作用；DB %idle 70% |
 
+### 三節點補充結果
+
+> 本段列出已完成但仍需 caveat 的三節點結果；不併入上方主表，避免與單節點三 isolation baseline 混讀。
+
+| 資料庫 | 案例 | 隔離級 | 代表點 | tpmC / p99 | 狀態 | 追溯 |
+|---|---|---|---|---|---|---|
+| YugabyteDB | 三節點 direct 3s3r；三節點 HAProxy 3s3r | READ COMMITTED | direct: t=128；HAProxy: t=128 | direct: 8,729 / 1,114ms<br>HAProxy: **15,632** / 705ms | direct 完成；HAProxy 完成但為 N=1，`summary.json` missing，DB-host metrics 不可用 | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)；[HAProxy 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
+
 ## 執行矩陣
 
 > **三節點（直連 + HAProxy）拓樸範疇**：以 `READ COMMITTED` 為主，`REPEATABLE READ` 與最嚴格隔離級**不執行**（標 `⏸ 不執行（RC 為主）`）。vm-1node 已涵蓋三 iso 對標；vm-3node 重點驗 cluster framework / replication / sharding / 連線層效應，無需再跑 iso 矩陣。Kubernetes 拓樸保留全 iso 規劃但同樣以 RC 為先。
