@@ -1,9 +1,9 @@
-# ybdb vm-3node-haproxy-3s3r-rc dispatch 記錄
+# YugabyteDB vm-3node-haproxy-3s3r-rc dispatch 記錄
 
 **日期**：2026-05-25  
-**TPCC_TS**：`20260525T155542+0800`  
-**狀態**：⏳ suite running（detached on .31，預估 ~3.5h，~19:30 完成）  
-**Goal hook**：完成 ybdb vm-3node-3s3r-rc + haproxy 的 dry-run, prepare, run, fetch 程序
+**正式採用 TPCC_TS**：`20260525T193740+0800`  
+**狀態**：✅ suite done + fetched（`20260525T155542+0800` 首次 dispatch cold-reset failure，不採用）  
+**Goal hook**：完成 YugabyteDB vm-3node-3s3r-rc + haproxy 的 dry-run, prepare, run, fetch 程序
 
 ---
 
@@ -78,7 +78,7 @@ systemctl enable haproxy --now'
 
 ## Scripts 變更（commit 紀錄）
 
-**Commit `feat(vm-3node-haproxy): add haproxy-3s3r sub_topology support across 5 phase scripts`** — 5 個 phase scripts 加 `case "$TOPO" in *haproxy-*) CLUSTER_HOST=.32 ;; *) CLUSTER_HOST=$DB_HOST ;; esac` 模式：
+**Commit `feat(vm-3node-haproxy): add haproxy-3s3r sub-topology support across 5 phase scripts`** — 5 個 phase scripts 加 `case "$TOPO" in *haproxy-*) CLUSTER_HOST=.32 ;; *) CLUSTER_HOST=$DB_HOST ;; esac` 模式：
 
 | 檔案 | 影響 |
 |------|------|
@@ -143,9 +143,14 @@ rsync -av root@172.24.40.31:/tmp/poc-tpcc/artifacts/ybdb-vm-3node-haproxy-3s3r-r
 - ybdb-master-addrs-consistent = true
 - shard hard gate（prepare 階段執行）= 9 表 × 3 tablets
 
-## 待回填（suite done 後）
+## 完成狀態（suite done 後）
 
-- 4 thread × 5 round = 20 個 go-tpc-stdout.txt
-- tpmC mean / NO_p99 mean per thread group
-- DB-host 4 vCPU 飽和分析
-- **vs vm-3node-3s3r-rc direct（TS=20260525T031918+0800）對比**：HAProxy roundrobin 對 3s3r RF=3 throughput 的 delta（PoC-DESIGN §6.4 預期效益不顯著，YugabyteDB tserver 一體式設計）
+- 首次 dispatch：`20260525T155542+0800`，run phase cold-reset failure，不採用。
+- 正式採用：`20260525T193740+0800`，suite done + fetched。
+- 來源目錄：[`../yuga-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/`](../yuga-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/)
+- 4 thread × 5 round = 20 個 `go-tpc-stdout.txt` 已 fetch。
+- t=128 代表點：15,632 tpmC / NEW_ORDER p99 705ms。
+- 對 direct `vm-3node-3s3r-rc`（TS=`20260525T031918+0800`）：+79.1% tpmC / -36.7% NEW_ORDER p99。
+- DB-host metrics caveat：`mpstat-db.txt` / `iostat-1s-db.txt` 等檔案存在，但內容為 `command not found`，不可作 DB-host 飽和判讀。
+- summary.json missing；本輪分析由 raw stdout 取數。
+- 詳細分析：[2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md](./2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)

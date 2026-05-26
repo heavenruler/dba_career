@@ -41,7 +41,7 @@
 | rr | 20260520T215216+0800 | 1,879 @ t32 | t16=15 → t128=127（線性 N−1） | [§ vm-1node-rr](#vm-1node-rr--2026-05-21poc-v47-snapshot-isolation--retry-storm) |
 | strict | 20260521T091048+0800 | **1,130 @ t32** | t16=14.6 → t128=121.8（≈N−1，比 rr 少 ~5%）| [§ vm-1node-strict](#vm-1node-strict--2026-05-21poc-v47-serializable-isolation--ssi) |
 
-下一步：vm-3node-direct / vm-3node-haproxy（驗證 cross-zone Raft replication 對三家 iso 衝擊）+ K8s 系列。
+下一步：vm-3node-direct / vm-3node-haproxy（驗證 cross-zone Raft replication 對三家 iso 衝擊）+ Kubernetes 系列。
 
 ---
 
@@ -941,6 +941,44 @@ client → .32:5433
 
 ---
 
-## K8s 段 — 已存檔於 yuga-tc1-old
+## vm-3node-haproxy-3s3r-rc（3 shards × RF=3 + HAProxy）
 
-> 2026-05-13 的 k8s-3node-unlimit / k8s-3node-limit 為 pre-v4.7 單次 10min wrapper 結果，已隨主檔清空動作備份於 [`../../yuga-tc1-old/S-BASE/`](../../yuga-tc1-old/S-BASE/) ＋ [`pipeline-log_old.md`](../../yuga-tc1-old/S-BASE/pipeline-log_old.md)（pre-v4.7 narrative）。待 K8s 環境以 v4.7 detached suite 重跑後，將回填正式段落。
+> 本段為 YugabyteDB 2025.2 在 `vm-3node-3s3r-rc` 基準上加入 HAProxy 連線分散的 N=1 結果。HAProxy 位於 `.20:5433`，以 roundrobin 分散到 `.32/.33/.34:5433` 三個 tserver/YSQL entry point；cluster 本身仍為 RF=3、每表 3 tablets、`READ COMMITTED`。
+
+### Artifact 與取數口徑
+
+| 項目 | 值 |
+|---|---|
+| TPCC_TS | `20260525T193740+0800` |
+| 來源目錄 | [`./vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/`](./vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/) |
+| 完整 marker | 7 completed：gate / gate-isolation / prepare / run / collect / db-config / suite |
+| go-tpc stdout | 20 files（4 thread groups × 5 rounds） |
+| summary.json | summary.json missing；本段目前由 raw stdout 取數 |
+| DB-host metrics | 檔案存在但內容為 `command not found`（`mpstat` / `iostat`），不可作 DB-host 飽和判讀 |
+| 詳細分析 | [HAProxy vs direct 3s3r analysis](../../dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
+
+### Execute 結果（2026-05-25，TS=20260525T193740+0800）
+
+5-round mean tpmC：
+
+| threads | tpmC mean | tpmC range | NO_p99 mean (ms) |
+|--------:|----------:|-----------:|-----------------:|
+| 16 | 7,997 | 7,766.5–8,211.2 | 135 |
+| 32 | 10,664 | 10,308.7–11,221.2 | 220 |
+| 64 | 13,336 | 12,978.3–13,763.9 | 386 |
+| 128 | **15,632** | 15,018.5–16,122.5 | 705 |
+
+代表點 = **t=128 / 15,632 tpmC / NO_p99 = 705 ms**。對照 direct `vm-3node-3s3r-rc` 代表點 **8,729 tpmC / NO_p99 = 1,114 ms**，HAProxy 增加 **+79.1% tpmC**，NO_p99 降低約 **-36.7%**。
+
+### Caveat
+
+- 本組為 N=1；N=3 待後續時程空檔再確認。
+- direct 3s3r baseline 本身高變異，HAProxy delta 可能受 direct outlier 放大。
+- DB-host metrics missing：`mpstat-db.txt` / `iostat-1s-db.txt` 等檔案內容為 `command not found`，本輪 DB-side 飽和分析不可作直接量測結論。
+- 目前無 `summary.json`，README 主表若納入本組，需先補 summary 或標 raw stdout 口徑。
+
+---
+
+## Kubernetes 段 — 已存檔於 yuga-tc1-old
+
+> 2026-05-13 的 k8s-3node-unlimit / k8s-3node-limit 為 pre-v4.7 單次 10min wrapper 結果，已隨主檔清空動作備份於 [`../../yuga-tc1-old/S-BASE/`](../../yuga-tc1-old/S-BASE/) ＋ [`pipeline-log_old.md`](../../yuga-tc1-old/S-BASE/pipeline-log_old.md)（pre-v4.7 narrative）。待 Kubernetes 環境以 v4.7 detached suite 重跑後，將回填正式段落。

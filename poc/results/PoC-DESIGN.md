@@ -219,7 +219,7 @@ vm-3node-haproxy-3s3r-rc      3 + HAProxy 3         3           3s3r 加 HAProxy
 | vm-3node-1s1r-rc ↔ vm-3node-3s1r-rc | sharding 對 OLTP 的效應（分散 ↔ 競爭） | 前提：shard 數確實鎖到 1 vs 3；不應允許 size/load split |
 | vm-3node-3s3r-rc ↔ vm-3node-1s3r-rc | sharding 對 replication 集群的攤平效益 | 量化「橫向擴展」實際效益 |
 | vm-3node-3s3r-rc ↔ vm-3node-3s1r-rc | replication 成本 in sharded cluster | 應與 1s3r ↔ 1s1r 線性近似；若差異大代表 sharding 與 replication 有 interaction |
-| vm-3node-haproxy-3s3r-rc ↔ vm-3node-3s3r-rc | HAProxy 連線分散效益 | TiDB 預期最大（SQL 層 stateless 可水平分散），YBDB 預期最小（tserver 一體） |
+| vm-3node-haproxy-3s3r-rc ↔ vm-3node-3s3r-rc | HAProxy 連線分散效益 | 原假設：TiDB 預期最大（SQL 層 stateless 可水平分散），YugabyteDB 預期最小（tserver 一體）；2026-05-25 YugabyteDB 3s3r HAProxy N=1 實測已推翻此假設（+79.1% tpmC）。YugabyteDB 數字為 artifact fact，跨家排序仍 pending，需待 TiDB / CockroachDB HAProxy 3s3r 完成後重排。 |
 
 > ⚠️ 上述「純效應」皆假設 shard 數鎖定 hard gate 通過（§7.5）且 leader/leaseholder/tablet leader 分布在兩組對照之間相近。差異 > 20% 時須在報告標 placement-noisy 警語，不下「純 X 成本 = Y%」結論。
 

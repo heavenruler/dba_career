@@ -2,13 +2,22 @@
 
 > 原始 README 已備份至 [`README_old.md`](./README_old.md)。本頁作為結果索引，只放目前可用數據、執行狀態與追溯入口；細節分析請看各資料庫的流程紀錄。
 
+## 如何閱讀
+
+建議先看「目前總覽」與「執行矩陣」確認完成範圍，再看「已驗證結果」取得可引用數字；解讀表格前先讀文末註解，尤其是 isolation、v4.7 / pre-v4.7、N=1 / N=3 與 artifact marker 口徑。需要判斷數據可信度或機制原因時，回到各資料庫 `pipeline-log.md`、來源目錄與 dispatch analysis，不以本索引單獨作結論。
+
+1. 先確認目前總覽與執行矩陣，避免把待重跑或待執行 case 當成正式結果。
+2. 再看已驗證結果，並同步檢查來源目錄、TPCC_TS、`summary.json` / raw stdout 與 done markers。
+3. 單一資料庫細節回到 TiDB / CockroachDB / YugabyteDB 的流程紀錄。
+4. 三節點、HAProxy、Kubernetes 或異常差異，優先閱讀 dispatch analysis 與 `PoC-DESIGN.md` 的設計口徑。
+
 ## 目前總覽
 
 | 資料庫 | 已完成且可用的結果 | 目前最高 tpmC | 狀態 | 追溯入口 |
 |---|---|---:|---|---|
 | TiDB | 單節點虛擬機，READ COMMITTED / REPEATABLE READ | **13,874** | 單節點完成；三節點與 Kubernetes 待重跑 | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md) |
 | CockroachDB | 單節點虛擬機，READ COMMITTED / REPEATABLE READ / SERIALIZABLE | **10,830** | 單節點三 isolation 完成；三節點與 Kubernetes 待執行 | [流程紀錄](./crdb-tc1/S-BASE/pipeline-log.md) |
-| YugabyteDB | 單節點虛擬機，READ COMMITTED / REPEATABLE READ / SERIALIZABLE | **11,436** | vm-1node 三 iso v4.7 完成：rc 11,436 ＞ rr 1,879 ＞ strict 1,130（反 CockroachDB pattern，因 YugabyteDB rc 為 CPU-bound 已無 headroom [註4](#note-4)）；vm-3node / Kubernetes 待測；pre-v4.7 single-run 與 K8s 歷史已備份於 [yuga-tc1-old/](./yuga-tc1-old/)（不納入本表 [註3](#note-3)） | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md) |
+| YugabyteDB | 單節點三 isolation；三節點 direct RC / HAProxy 3s3r RC | **15,632** | vm-1node 三 iso v4.7 完成；vm-3node direct RC 與 HAProxy 3s3r RC 已完成；Kubernetes 待測；pre-v4.7 single-run 與 Kubernetes 歷史已備份於 [yuga-tc1-old/](./yuga-tc1-old/)（不納入本表 [註3](#note-3)） | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md) |
 
 > 同硬體 vm-1node 對照（4 vCPU / 15 GiB / single XFS, 5-round mean，9 組 (db × iso) [註3](#note-3)）：TiDB rr 13,874（t128）＞ TiDB rc 13,064（t128）＞ YugabyteDB rc 11,436（t32）＞ CockroachDB strict 10,830（t64）＞ CockroachDB rc 9,134（t64）＞ CockroachDB rr 3,788（t128）＞ YugabyteDB rr 1,879（t32）＞ **YugabyteDB strict 1,130（t32）**。同名 isolation 在三家底層機制不同（[註2](#note-2)）。
 
@@ -41,11 +50,11 @@
 | CockroachDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 完成 (SERIALIZABLE) | 三 isolation 全完整；strict t64 為 vm-1node 峰值 |
 | CockroachDB | 三節點虛擬機，直連 | ⏳ 待執行 | ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| 僅以 RC 為主執行；RR / strict 不執行 |
 | CockroachDB | 三節點虛擬機，HAProxy | ⏳ 待執行 | ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| 僅以 RC 為主執行；RR / strict 不執行 |
-| CockroachDB | Kubernetes,無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
-| CockroachDB | Kubernetes,有資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
+| CockroachDB | Kubernetes，無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
+| CockroachDB | Kubernetes，有資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | YugabyteDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 完成（SERIALIZABLE）| 三 iso 全完整：rc 11,436 ＞ rr 1,879 ＞ strict 1,130（反 CockroachDB pattern；rc CPU-bound 故 SSI 無 IO headroom 可榨）[註4](#note-4) |
-| YugabyteDB | 三節點虛擬機，直連 | ✅ 完成（4 sub_topology）| ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| RC 4 cells（1s1r / 1s3r / 3s1r / 3s3r）2026-05-24 / 25 全完成；代表點 1s1r=13,702、1s3r=10,228、3s1r=11,967、3s3r=8,729 tpmC（5-round mean）；RR / strict 不執行；詳見 [流程紀錄 vm-3node 段](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-系列4-sub-topology--rcpoc-design-632) |
-| YugabyteDB | 三節點虛擬機，HAProxy | ✅ 完成（N=3 待後續時程空檔再確認 [N9](#note-N9)）| ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| 3s3r 2026-05-25 完成；best mean **15,632 tpmC @ t=128**（**+79% vs direct 3s3r 8,729**、−37% NO_p99）；推翻 PoC-DESIGN §6.4「YBDB HAProxy delta 最小」假設；RR / strict 不執行；其他 sub_topology (1s1r/1s3r/3s1r-haproxy) 尚未排程；DB-host metrics 缺失已 patch run.sh，詳見 [haproxy-vs-direct 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
+| YugabyteDB | 三節點虛擬機，直連 | ✅ 完成（4 子拓撲）| ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| RC 4 cells（1s1r / 1s3r / 3s1r / 3s3r）2026-05-24 / 25 全完成；代表點 1s1r=13,702、1s3r=10,228、3s1r=11,967、3s3r=8,729 tpmC（5-round mean）；RR / strict 不執行；詳見 [流程紀錄 vm-3node 段](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-系列4-sub-topology--rcpoc-design-632) |
+| YugabyteDB | 三節點虛擬機，HAProxy | ✅ 完成（N=3 待後續時程空檔再確認 [N9](#note-N9)）| ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| 3s3r 2026-05-25 完成；best mean **15,632 tpmC @ t=128**（**+79% vs direct 3s3r 8,729**、−37% NO_p99）；推翻 PoC-DESIGN §6.4「YugabyteDB HAProxy delta 最小」假設；RR / strict 不執行；其他 sub-topology (1s1r/1s3r/3s1r-haproxy) 尚未排程；DB-host metrics 缺失已 patch run.sh，詳見 [haproxy-vs-direct 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
 | YugabyteDB | Kubernetes，無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程；pre-v4.7 單次 10min wrapper 僅作歷史參考 |
 | YugabyteDB | Kubernetes，有資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程；pre-v4.7 單次 10min wrapper 僅作歷史參考 |
 
@@ -73,9 +82,9 @@
 - **vm-1node-strict**：peak **1,130 tpmC @ t32**，比 rc **-90%**、比 rr **再砍 -40%**；errors ≈ N-1 但比 rr 略少 ~5%（SSI early-abort 救回部分衝突）；DB %idle 70% 為三 iso 最高、disk %util 70% 為三 iso 最高（SSI version metadata + read-refresh 小 IO 放大）。
 - **三 iso 排序：rc ＞＞ rr ＞ strict** — 與 CockroachDB「strict ＞ rc ＞ rr」**完全相反**；機制：CockroachDB rc 為 IO-bound 故 SSI 走 CPU 路徑可避瓶頸；YugabyteDB rc 已 CPU-bound 無 headroom 可榨。
 - 詳見 [yuga-tc1 pipeline-log TL;DR](./yuga-tc1/S-BASE/pipeline-log.md#tldr--vm-1node-三-isolation-矩陣完成2026-05-20--21)。
-- **vm-3node-direct (RC)**：4 sub_topology × RC 2026-05-24 / 25 完成（5-round mean）。代表點：1s1r 13,702 (t=32) ＞ 3s1r 11,967 (t=32) ＞ 1s3r 10,228 (t=128) ＞ 3s3r 8,729 (t=128)。**RF=3 一律 ~25% 寫吞吐損耗、shard=3 加 ~13% 協調成本，疊加 1s1r→3s3r 為 −36%**；3s3r 在 4 vCPU 上 tablet 協調瓶頸（CPU 24-42% idle 但 throughput drop）。詳見 [vm-3node TL;DR](./yuga-tc1/S-BASE/pipeline-log.md#tldr--vm-3node-4-cells2026-05-25) 與 [跨 cell 分析](./dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)。
-- **vm-3node-haproxy (RC, 3s3r only, N=1 [N9](#note-N9))**：2026-05-25 完成。HAProxy roundrobin 把 client 連線分散到 .32/.33/.34 三 tservers，best mean **15,632 tpmC @ t=128**（**+79% vs direct 3s3r 8,729 tpmC**、NO_p99 −37% / 1,114→705ms、stddev 縮 6×）。**反超 1s1r single-shard baseline +14%**，推翻 PoC-DESIGN §6.4「YBDB HAProxy delta 最小（tserver 一體）」假設。機制推論：direct 模式 client 全進入 .32 single YSQL postgres entry point 形成 serial backpressure；haproxy 把 128 connection 攤平到 3 tservers，coordination layer 平行化。N=3 待後續時程空檔再確認；詳見 [haproxy-vs-direct 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)。
-- vm-1node pre-v4.7 single-run / 早期 vm-3node-HAProxy / K8s（unlimit & limit）等歷史結果已備份於 [`yuga-tc1-old/`](./yuga-tc1-old/)；v4.7 vm-3node-haproxy 其他 sub_topology (1s1r/1s3r/3s1r) 與 Kubernetes 重跑尚未排程。
+- **vm-3node-direct (RC)**：4 子拓撲 × RC 2026-05-24 / 25 完成（5-round mean）。代表點：1s1r 13,702 (t=32) ＞ 3s1r 11,967 (t=32) ＞ 1s3r 10,228 (t=128) ＞ 3s3r 8,729 (t=128)。**RF=3 一律 ~25% 寫吞吐損耗、shard=3 加 ~13% 協調成本，疊加 1s1r→3s3r 為 −36%**；3s3r 在 4 vCPU 上 tablet 協調瓶頸（CPU 24-42% idle 但 throughput drop）。詳見 [vm-3node TL;DR](./yuga-tc1/S-BASE/pipeline-log.md#tldr--vm-3node-4-cells2026-05-25) 與 [跨 cell 分析](./dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)。
+- **vm-3node-haproxy (RC, 3s3r only, N=1 [N9](#note-N9))**：2026-05-25 完成。HAProxy roundrobin 把 client 連線分散到 .32/.33/.34 三 tservers，best mean **15,632 tpmC @ t=128**（**+79% vs direct 3s3r 8,729 tpmC**、NO_p99 −37% / 1,114→705ms、stddev 縮 6×）。**反超 1s1r single-shard baseline +14%**，推翻 PoC-DESIGN §6.4「YugabyteDB HAProxy delta 最小（tserver 一體）」假設。機制推論：direct 模式 client 全進入 .32 single YSQL postgres entry point 形成 serial backpressure；haproxy 把 128 connection 攤平到 3 tservers，coordination layer 平行化。N=3 待後續時程空檔再確認；詳見 [haproxy-vs-direct 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)。
+- vm-1node pre-v4.7 single-run / 早期 vm-3node-HAProxy / Kubernetes（unlimit & limit）等歷史結果已備份於 [`yuga-tc1-old/`](./yuga-tc1-old/)；v4.7 vm-3node-haproxy 其他 sub-topology (1s1r/1s3r/3s1r) 與 Kubernetes 重跑尚未排程。
 
 ### 歷史檔案
 
@@ -99,7 +108,7 @@
 | N1 | 本測試是 TPC-C-derived stress benchmark using go-tpc，非 audited TPC-C，不能與官方 TPC-C 排名直接比較。 |
 | N2 | go-tpc 本輪沒有 think time / keying time，執行緒完成一筆交易後會立即送下一筆，因此 efficiency 超過 100% 屬正常。 |
 | N3 | isolation 必須由 connection string 與 gate 記錄共同確認，避免 driver 或資料庫預設值造成測試口徑偏移（CockroachDB 採 isolation 雙閘 = `isolation-db.txt` + `isolation-driver-verify.txt`；YugabyteDB 加 `SHOW yb_effective_transaction_isolation_level` 三層驗證）。 |
-| N4 | v4.7 標準格式：20 分鐘 warmup、每個併發水位 5 round × 5 分鐘、4 thread groups（16/32/64/128）、DB-host 雙邊 OS 監控（mpstat/iostat/vmstat/sar）。TiDB / CockroachDB / YugabyteDB vm-1node 三家全 iso 已採此格式；YugabyteDB vm-3node / Kubernetes 重跑尚未排程；YugabyteDB pre-v4.7 single-run 已備份於 yuga-tc1-old/。 |
+| N4 | v4.7 標準格式：20 分鐘 warmup、每個併發水位 5 round × 5 分鐘、4 thread groups（16/32/64/128）、DB-host 雙邊 OS 監控（mpstat/iostat/vmstat/sar）。TiDB / CockroachDB / YugabyteDB vm-1node 三家全 iso 已採此格式；YugabyteDB vm-3node direct RC 4 cells 已採此格式；YugabyteDB HAProxy 3s3r RC 已完成但 DB-host metrics missing；Kubernetes 重跑尚未排程；YugabyteDB pre-v4.7 single-run 已備份於 yuga-tc1-old/。 |
 | N5 | suite marker `.gate.done` / `.prepare.done` / `.gate-isolation.done` / `.run.done` / `.collect.done` / `.suite.done` + `.db-config.done` 代表該案例流程鏈完整。 |
 | N6 | CockroachDB / TiDB / YugabyteDB 三家 vm-1node 全 iso 的 tpmC 與 latency p50/p95/p99 已全為 5-round mean，口徑一致；數據來源為 `runs/threads-*/round-*/go-tpc-stdout.txt` + `[tests/common/summary-from-stdout.py](../tests/common/summary-from-stdout.py)` 解析後落地的 `summary.json`。 |
 | N7 | TiDB 三節點與 Kubernetes 數據已刻意清空，等待 PoC v4.7 重跑後再回填。 |
