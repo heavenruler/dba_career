@@ -1,15 +1,16 @@
 # S-BASE 結果索引
 
-> 原始 README 已備份至 [`README_old.md`](./README_old.md)。本頁作為結果索引，只放目前可用數據、執行狀態與追溯入口；細節分析請看各資料庫的流程紀錄。
-
 ## 如何閱讀
 
-建議先看「目前總覽」與「執行矩陣」確認完成範圍，再看「已驗證結果」取得可引用數字；解讀表格前先讀文末註解，尤其是 isolation、v4.7 / pre-v4.7、N=1 / N=3 與 artifact marker 口徑。需要判斷數據可信度或機制原因時，回到各資料庫 `pipeline-log.md`、來源目錄與 dispatch analysis，不以本索引單獨作結論。
+本頁是結果索引，不單獨作最終結論。需要判斷數據可信度或機制原因時，請回到各資料庫 `pipeline-log.md`、來源目錄與 dispatch analysis。
 
-1. 先確認目前總覽與執行矩陣，避免把待重跑或待執行 case 當成正式結果。
-2. 再看已驗證結果，並同步檢查來源目錄、TPCC_TS、`summary.json` / raw stdout 與 done markers。
-3. 單一資料庫細節回到 TiDB / CockroachDB / YugabyteDB 的流程紀錄。
-4. 三節點、HAProxy、Kubernetes 或異常差異，優先閱讀 dispatch analysis 與 `PoC-DESIGN.md` 的設計口徑。
+| 順序 | 閱讀區塊 | 目的 | 重點確認 |
+|---:|---|---|---|
+| 1 | 目前總覽 | 快速掌握三家資料庫完成範圍 | 哪些案例已完成、待重跑、待執行 |
+| 2 | 執行矩陣 | 避免誤讀測試進度 | 不把 placeholder 或待執行 case 當正式結果 |
+| 3 | 已驗證結果 | 取得目前可引用數字 | 來源目錄、TPCC_TS、`summary.json` / raw stdout、done markers |
+| 4 | 文末註解 | 先校準判讀口徑 | isolation、v4.7 / pre-v4.7、N=1 / N=3、artifact marker |
+| 5 | 流程紀錄與分析 | 追查細節與機制原因 | TiDB / CockroachDB / YugabyteDB `pipeline-log.md`、dispatch analysis、`PoC-DESIGN.md` |
 
 ## 目前總覽
 
