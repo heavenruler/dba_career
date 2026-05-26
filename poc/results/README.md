@@ -17,9 +17,9 @@
 
 | 資料庫 | 已完成且可用的結果 | 目前最高 tpmC | 狀態 | 追溯入口 |
 |---|---|---:|---|---|
-| TiDB | 單節點虛擬機，READ COMMITTED / REPEATABLE READ | **13,874** | 單節點完成；三節點與 Kubernetes 待重跑 | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md) |
-| CockroachDB | 單節點虛擬機，READ COMMITTED / REPEATABLE READ / SERIALIZABLE | **10,830** | 單節點三 isolation 完成；三節點與 Kubernetes 待執行 | [流程紀錄](./crdb-tc1/S-BASE/pipeline-log.md) |
-| YugabyteDB | 單節點三 isolation；三節點 direct RC / HAProxy 3s3r RC | **15,632** | vm-1node 三 iso v4.7 完成；vm-3node direct RC 與 HAProxy 3s3r RC 已完成；Kubernetes 待測；pre-v4.7 single-run 與 Kubernetes 歷史已備份於 [yuga-tc1-old/](./yuga-tc1-old/)（不納入本表 [註3](#note-3)） | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md) |
+| TiDB | - 單節點虛擬機<br>- READ COMMITTED<br>- REPEATABLE READ | **13,874** | 單節點完成；三節點與 Kubernetes 待重跑 | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md) |
+| CockroachDB | - 單節點虛擬機<br>- READ COMMITTED<br>- REPEATABLE READ<br>- SERIALIZABLE | **10,830** | 單節點三 isolation 完成；三節點與 Kubernetes 待執行 | [流程紀錄](./crdb-tc1/S-BASE/pipeline-log.md) |
+| YugabyteDB | - 單節點虛擬機，三 isolation<br>- 三節點虛擬機，direct RC<br>- 三節點虛擬機，HAProxy 3s3r RC | **15,632** | vm-1node 三 iso v4.7 完成；vm-3node direct RC 與 HAProxy 3s3r RC 已完成；Kubernetes 待測；pre-v4.7 single-run 與 Kubernetes 歷史已備份於 [yuga-tc1-old/](./yuga-tc1-old/)（不納入本表 [註3](#note-3)） | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md) |
 
 > 同硬體 vm-1node 對照（4 vCPU / 15 GiB / single XFS, 5-round mean，9 組 (db × iso) [註3](#note-3)）：TiDB rr 13,874（t128）＞ TiDB rc 13,064（t128）＞ YugabyteDB rc 11,436（t32）＞ CockroachDB strict 10,830（t64）＞ CockroachDB rc 9,134（t64）＞ CockroachDB rr 3,788（t128）＞ YugabyteDB rr 1,879（t32）＞ **YugabyteDB strict 1,130（t32）**。同名 isolation 在三家底層機制不同（[註2](#note-2)）。
 
