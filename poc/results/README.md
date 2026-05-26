@@ -30,14 +30,14 @@
 
 | 資料庫 | 案例 | 隔離級 | 來源目錄 | 併發 | tpmC | p99 (ms) | error rate | 判讀 |
 |---|---|---|---|---:|---:|---:|---:|---|
-| TiDB | 單節點虛擬機 | READ COMMITTED | [tidb-vm-1node-rc-20260518T202009+0800](./tidb-tc1/S-BASE/vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/) | 128 | 13,064 | 597 | 0.000% | RC baseline；CPU-bound（%user 80.8%、%iowait 3.1%）[註4](#note-4) |
-| TiDB | 單節點虛擬機 | REPEATABLE READ | [tidb-vm-1node-rr-20260519T001949+0800](./tidb-tc1/S-BASE/vm-1node-rr/tidb-vm-1node-rr-20260519T001949+0800/) | 128 | **13,874** | 503 | 0.000% | **TiDB 最高 tpmC**；pessimistic 模式零 error（跨家 RR 同名不同實 [註2](#note-2)）|
-| CockroachDB | 單節點虛擬機 | READ COMMITTED | [crdb-vm-1node-rc-20260519T085346+0800](./crdb-tc1/S-BASE/vm-1node-rc/crdb-vm-1node-rc-20260519T085346+0800/) | 64 | 9,134 | 440 | 0.000% | RC 在 t16 起即被 fsync IO 卡死（%iowait 18%）[註4](#note-4) |
-| CockroachDB | 單節點虛擬機 | REPEATABLE READ | [crdb-vm-1node-rr-20260519T124506+0800](./crdb-tc1/S-BASE/vm-1node-rr/crdb-vm-1node-rr-20260519T124506+0800/) | 128 | 3,788 | 604 | 0.300% | preview RR；retry storm（DB %idle 46%、127 err/round）[註2](#note-2) [註4](#note-4) |
-| CockroachDB | 單節點虛擬機 | SERIALIZABLE | [crdb-vm-1node-strict-20260519T164057+0800](./crdb-tc1/S-BASE/vm-1node-strict/crdb-vm-1node-strict-20260519T164057+0800/) | 64 | **10,830** | 227 | 0.051% | **CockroachDB 最高 tpmC**；t32+ 超越 RC（反直覺，預設最快）[註4](#note-4)；t128 mean 仍 10,456 / p99 487ms，高併發保持領先 |
-| YugabyteDB | 單節點虛擬機 | READ COMMITTED | [ybdb-vm-1node-rc-20260520T134929+0800](./yuga-tc1/S-BASE/vm-1node-rc/ybdb-vm-1node-rc-20260520T134929+0800/) | 32 | **11,436** | 216 | 0.000% | **YugabyteDB v4.7 baseline**；5-round mean，零 error；t32 為 peak（t128 -4.8% 過飽和）|
-| YugabyteDB | 單節點虛擬機 | REPEATABLE READ | [ybdb-vm-1node-rr-20260520T215216+0800](./yuga-tc1/S-BASE/vm-1node-rr/ybdb-vm-1node-rr-20260520T215216+0800/) | 32 | 1,879 | 174 | 0.149% | snapshot iso（非 PG 標準 RR）[註2](#note-2)；hot row retry storm，每 round = thread − 1 errors；DB %idle 67% — coordination bound 非 CPU/IO [註4](#note-4) |
-| YugabyteDB | 單節點虛擬機 | SERIALIZABLE | [ybdb-vm-1node-strict-20260521T091048+0800](./yuga-tc1/S-BASE/vm-1node-strict/ybdb-vm-1node-strict-20260521T091048+0800/) | 32 | 1,130 | 54 | 0.248% | SSI；YugabyteDB rc 為 CPU-bound 所以 SSI 反而比 rc / rr 都慢（與 CockroachDB SSI ＞ rc 相反）[註2](#note-2) [註4](#note-4)；p99 全 iso 最低但因 throughput -90% queue 短的副作用；DB %idle 70% |
+| TiDB | 單節點虛擬機 | READ COMMITTED | [20260518T202009](./tidb-tc1/S-BASE/vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/) | 128 | 13,064 | 597 | 0.000% | RC baseline；CPU-bound（%user 80.8%、%iowait 3.1%）[註4](#note-4) |
+| TiDB | 單節點虛擬機 | REPEATABLE READ | [20260519T001949](./tidb-tc1/S-BASE/vm-1node-rr/tidb-vm-1node-rr-20260519T001949+0800/) | 128 | **13,874** | 503 | 0.000% | **TiDB 最高 tpmC**；pessimistic 模式零 error（跨家 RR 同名不同實 [註2](#note-2)）|
+| CockroachDB | 單節點虛擬機 | READ COMMITTED | [20260519T085346](./crdb-tc1/S-BASE/vm-1node-rc/crdb-vm-1node-rc-20260519T085346+0800/) | 64 | 9,134 | 440 | 0.000% | RC 在 t16 起即被 fsync IO 卡死（%iowait 18%）[註4](#note-4) |
+| CockroachDB | 單節點虛擬機 | REPEATABLE READ | [20260519T124506](./crdb-tc1/S-BASE/vm-1node-rr/crdb-vm-1node-rr-20260519T124506+0800/) | 128 | 3,788 | 604 | 0.300% | preview RR；retry storm（DB %idle 46%、127 err/round）[註2](#note-2) [註4](#note-4) |
+| CockroachDB | 單節點虛擬機 | SERIALIZABLE | [20260519T164057](./crdb-tc1/S-BASE/vm-1node-strict/crdb-vm-1node-strict-20260519T164057+0800/) | 64 | **10,830** | 227 | 0.051% | **CockroachDB 最高 tpmC**；t32+ 超越 RC（反直覺，預設最快）[註4](#note-4)；t128 mean 仍 10,456 / p99 487ms，高併發保持領先 |
+| YugabyteDB | 單節點虛擬機 | READ COMMITTED | [20260520T134929](./yuga-tc1/S-BASE/vm-1node-rc/ybdb-vm-1node-rc-20260520T134929+0800/) | 32 | **11,436** | 216 | 0.000% | **YugabyteDB v4.7 baseline**；5-round mean，零 error；t32 為 peak（t128 -4.8% 過飽和）|
+| YugabyteDB | 單節點虛擬機 | REPEATABLE READ | [20260520T215216](./yuga-tc1/S-BASE/vm-1node-rr/ybdb-vm-1node-rr-20260520T215216+0800/) | 32 | 1,879 | 174 | 0.149% | snapshot iso（非 PG 標準 RR）[註2](#note-2)；hot row retry storm，每 round = thread − 1 errors；DB %idle 67% — coordination bound 非 CPU/IO [註4](#note-4) |
+| YugabyteDB | 單節點虛擬機 | SERIALIZABLE | [20260521T091048](./yuga-tc1/S-BASE/vm-1node-strict/ybdb-vm-1node-strict-20260521T091048+0800/) | 32 | 1,130 | 54 | 0.248% | SSI；YugabyteDB rc 為 CPU-bound 所以 SSI 反而比 rc / rr 都慢（與 CockroachDB SSI ＞ rc 相反）[註2](#note-2) [註4](#note-4)；p99 全 iso 最低但因 throughput -90% queue 短的副作用；DB %idle 70% |
 
 ### 三節點補充結果
 
@@ -45,7 +45,7 @@
 
 | 資料庫 | 案例 | 隔離級 | 來源目錄 | 併發 | tpmC | p99 (ms) | error rate | 追溯 |
 |---|---|---|---|---|---:|---:|---|---|
-| YugabyteDB | - 直連 - 3s3r<br>- HAProxy - 3s3r | READ COMMITTED | - [ybdb-vm-3node-3s3r-rc-20260525T031918+0800](./yuga-tc1/S-BASE/vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260525T031918+0800/)<br>- [ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800](./yuga-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/) | - t=128<br>- t=128 | - 8,729<br>- **15,632** | - 1,114<br>- 705 | - 0.000%<br>- 0.000% | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)；[HAProxy 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
+| YugabyteDB | - 直連 - 3s3r<br>- HAProxy - 3s3r | READ COMMITTED | - [20260525T031918](./yuga-tc1/S-BASE/vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260525T031918+0800/)<br>- [20260525T193740](./yuga-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/) | - t=128<br>- t=128 | - 8,729<br>- **15,632** | - 1,114<br>- 705 | - 0.000%<br>- 0.000% | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)；[HAProxy 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
 
 ## 執行矩陣
 
