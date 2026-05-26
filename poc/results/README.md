@@ -43,9 +43,9 @@
 
 > 本段列出已完成但仍需 caveat 的三節點結果；不併入上方主表，避免與單節點三 isolation baseline 混讀。
 
-| 資料庫 | 案例 | 隔離級 | 代表點 | tpmC / p99 | error rate | 狀態 | 追溯 |
-|---|---|---|---|---|---|---|---|
-| YugabyteDB | - 三節點直連 3s3r<br>- 三節點 HAProxy 3s3r | READ COMMITTED | - 直連: t=128<br>- HAProxy: t=128 | - 直連: 8,729 / 1,114ms<br>- HAProxy: **15,632** / 705ms | - 直連: 待查 summary<br>- HAProxy: `summary.json` missing | - 直連完成<br>- HAProxy 完成 | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)；[HAProxy 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
+| 資料庫 | 案例 | 隔離級 | 來源目錄 | 併發 | tpmC / p99 | error rate | 狀態 | 追溯 |
+|---|---|---|---|---|---|---|---|---|
+| YugabyteDB | - 直連 - 3s3r<br>- HAProxy - 3s3r | READ COMMITTED | - [direct 3s3r](./yuga-tc1/S-BASE/vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260525T053231+0800/)<br>- [HAProxy 3s3r](./yuga-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/) | - t=128<br>- t=128 | - 8,729 / 1,114ms<br>- **15,632** / 705ms | - 待查 summary<br>- `summary.json` missing | - 完成<br>- 完成 | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)；[HAProxy 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
 
 ## 執行矩陣
 
