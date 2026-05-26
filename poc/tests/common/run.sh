@@ -57,7 +57,14 @@ case "$DB" in
   ybdb) PORT="${YBDB_PORT:-5433}"; USER="${YBDB_USER:-yugabyte}"; DBNAME="${YBDB_DB:-tpcc}" ;;
 esac
 
-info "run start  db=$DB iso=$ISO topo=$TOPO host=$DB_HOST"
+# HAProxy 等 proxy 拓樸：db-host 是 proxy（無 mpstat 等套件、無 DB process）；
+# DB-host OS 監控 ssh 必須走實 cluster member。
+case "$TOPO" in
+  *haproxy-*) CLUSTER_HOST="172.24.40.32" ;;
+  *)          CLUSTER_HOST="$DB_HOST"     ;;
+esac
+
+info "run start  db=$DB iso=$ISO topo=$TOPO host=$DB_HOST cluster-host=$CLUSTER_HOST"
 
 # ---- 1. cold-reset (per-DB script) ---------------------------------
 info "cold-reset"
@@ -92,11 +99,11 @@ for threads in $THREADS_LIST; do
     ( iostat -xz 1 "$DUR" > "$RD/iostat-1s.txt" 2>&1 ) &
     ( vmstat 1 "$DUR"  > "$RD/vmstat-1s.txt"  2>&1 ) &
     ( sar -n DEV 1 "$DUR" > "$RD/sar-net.txt" 2>&1 ) &
-    ( ssh root@"$DB_HOST" "mpstat 1 $DUR"      > "$RD/mpstat-db.txt"    2>&1 ) &
-    ( ssh root@"$DB_HOST" "iostat -xz 1 $DUR"  > "$RD/iostat-1s-db.txt" 2>&1 ) &
-    ( ssh root@"$DB_HOST" "vmstat 1 $DUR"      > "$RD/vmstat-1s-db.txt" 2>&1 ) &
-    ( ssh root@"$DB_HOST" "sar -n DEV 1 $DUR"  > "$RD/sar-net-db.txt"   2>&1 ) &
-    ( for ((i=0; i<RUN_SEC/60+1; i++)); do ssh root@"$DB_HOST" free -h >> "$RD/free-1m.txt"; sleep 60; done ) &
+    ( ssh root@"$CLUSTER_HOST" "mpstat 1 $DUR"      > "$RD/mpstat-db.txt"    2>&1 ) &
+    ( ssh root@"$CLUSTER_HOST" "iostat -xz 1 $DUR"  > "$RD/iostat-1s-db.txt" 2>&1 ) &
+    ( ssh root@"$CLUSTER_HOST" "vmstat 1 $DUR"      > "$RD/vmstat-1s-db.txt" 2>&1 ) &
+    ( ssh root@"$CLUSTER_HOST" "sar -n DEV 1 $DUR"  > "$RD/sar-net-db.txt"   2>&1 ) &
+    ( for ((i=0; i<RUN_SEC/60+1; i++)); do ssh root@"$CLUSTER_HOST" free -h >> "$RD/free-1m.txt"; sleep 60; done ) &
     MON_PIDS=$(jobs -p)
 
     # go-tpc run

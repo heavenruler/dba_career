@@ -1,0 +1,13 @@
+{
+  "phase": "run",
+  "db": "ybdb",
+  "iso": "rc",
+  "topology": "vm-3node-haproxy-3s3r",
+  "ts": "20260525T193740+0800",
+  "db_host": "172.24.47.20",
+  "warehouses": 128,
+  "threads_list": "16 32 64 128",
+  "rounds": 5,
+  "warmup_sec": 1200,
+  "run_sec": 300
+}

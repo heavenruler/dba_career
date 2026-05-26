@@ -1,0 +1,14 @@
+{
+  "phase": "gate-isolation",
+  "db": "ybdb",
+  "topology": "vm-3node-haproxy-3s3r",
+  "iso": "rc",
+  "ts": "20260525T193740+0800",
+  "db_host": "172.24.47.20",
+  "conn_params": "sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed",
+  "isolation_expected": "read committed",
+  "isolation_actual": "read committed",
+  "driver_actual": "read committed",
+  "yb_effective_db": "read committed",
+  "yb_effective_driver": "read committed"
+}
