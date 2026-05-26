@@ -29,21 +29,23 @@
 
 ## 執行矩陣
 
+> **三節點（直連 + HAProxy）拓樸範疇**：以 `READ COMMITTED` 為主，`REPEATABLE READ` 與最嚴格隔離級**不執行**（標 `⏸ 不執行（RC 為主）`）。vm-1node 已涵蓋三 iso 對標；vm-3node 重點驗 cluster framework / replication / sharding / 連線層效應，無需再跑 iso 矩陣。Kubernetes 拓樸保留全 iso 規劃但同樣以 RC 為先。
+
 | 資料庫 | 案例 | READ COMMITTED | REPEATABLE READ | 最嚴格隔離級 | 說明 |
 |---|---|---|---|---|---|
 | TiDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 以 REPEATABLE READ 代表 | TiDB 不支援原生 SERIALIZABLE，strict 等價於 RR [註2](#note-2) |
-| TiDB | 三節點虛擬機，直連 | 🔄 待重跑 | 🔄 待重跑 | 🔄 待重跑 | 舊數據已清空，等待 PoC v4.7 重跑 |
-| TiDB | 三節點虛擬機，HAProxy | 🔄 待重跑 | 🔄 待重跑 | 🔄 待重跑 | 舊數據已清空，等待 PoC v4.7 重跑 |
+| TiDB | 三節點虛擬機，直連 | 🔄 待重跑 | ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| 舊數據已清空，僅以 RC 為主重跑；RR / strict 不執行 |
+| TiDB | 三節點虛擬機，HAProxy | 🔄 待重跑 | ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| 舊數據已清空，僅以 RC 為主重跑；RR / strict 不執行 |
 | TiDB | Kubernetes，無資源限制 | 🔄 待重跑 | 🔄 待重跑 | 🔄 待重跑 | 舊數據已清空，等待 PoC v4.7 重跑 |
 | TiDB | Kubernetes，有資源限制 | 🔄 待重跑 | 🔄 待重跑 | 🔄 待重跑 | 舊數據已清空，等待 PoC v4.7 重跑 |
 | CockroachDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 完成 (SERIALIZABLE) | 三 isolation 全完整；strict t64 為 vm-1node 峰值 |
-| CockroachDB | 三節點虛擬機，直連 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
-| CockroachDB | 三節點虛擬機，HAProxy | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
+| CockroachDB | 三節點虛擬機，直連 | ⏳ 待執行 | ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| 僅以 RC 為主執行；RR / strict 不執行 |
+| CockroachDB | 三節點虛擬機，HAProxy | ⏳ 待執行 | ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| 僅以 RC 為主執行；RR / strict 不執行 |
 | CockroachDB | Kubernetes,無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | CockroachDB | Kubernetes,有資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程 |
 | YugabyteDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 完成（SERIALIZABLE）| 三 iso 全完整：rc 11,436 ＞ rr 1,879 ＞ strict 1,130（反 CockroachDB pattern；rc CPU-bound 故 SSI 無 IO headroom 可榨）[註4](#note-4) |
-| YugabyteDB | 三節點虛擬機，直連 | ✅ 完成（4 sub_topology）| ⏳ 待執行 | ⏳ 待執行 | RC 4 cells（1s1r / 1s3r / 3s1r / 3s3r）2026-05-24 / 25 全完成；代表點 1s1r=13,702、1s3r=10,228、3s1r=11,967、3s3r=8,729 tpmC（5-round mean）；詳見 [流程紀錄 vm-3node 段](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-系列4-sub-topology--rcpoc-design-632) |
-| YugabyteDB | 三節點虛擬機，HAProxy | ✅ 完成（N=3 待後續時程空檔再確認）| ⏳ 待執行 | ⏳ 待執行 | 3s3r 2026-05-25 完成；best mean **15,632 tpmC @ t=128**（**+79% vs direct 3s3r 8,729**、−37% NO_p99）；推翻 PoC-DESIGN §6.4「YBDB HAProxy delta 最小」假設；DB-host metrics 缺失已 patch run.sh，詳見 [haproxy-vs-direct 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)；其他 sub_topology (1s1r/1s3r/3s1r-haproxy) 尚未排程 |
+| YugabyteDB | 三節點虛擬機，直連 | ✅ 完成（4 sub_topology）| ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| RC 4 cells（1s1r / 1s3r / 3s1r / 3s3r）2026-05-24 / 25 全完成；代表點 1s1r=13,702、1s3r=10,228、3s1r=11,967、3s3r=8,729 tpmC（5-round mean）；RR / strict 不執行；詳見 [流程紀錄 vm-3node 段](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-系列4-sub-topology--rcpoc-design-632) |
+| YugabyteDB | 三節點虛擬機，HAProxy | ✅ 完成（N=3 待後續時程空檔再確認）| ⏸ 不執行（RC 為主）| ⏸ 不執行（RC 為主）| 3s3r 2026-05-25 完成；best mean **15,632 tpmC @ t=128**（**+79% vs direct 3s3r 8,729**、−37% NO_p99）；推翻 PoC-DESIGN §6.4「YBDB HAProxy delta 最小」假設；RR / strict 不執行；其他 sub_topology (1s1r/1s3r/3s1r-haproxy) 尚未排程；DB-host metrics 缺失已 patch run.sh，詳見 [haproxy-vs-direct 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
 | YugabyteDB | Kubernetes，無資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程；pre-v4.7 單次 10min wrapper 僅作歷史參考 |
 | YugabyteDB | Kubernetes，有資源限制 | ⏳ 待執行 | ⏳ 待執行 | ⏳ 待執行 | 等待同一套 PoC v4.7 流程；pre-v4.7 單次 10min wrapper 僅作歷史參考 |
 
