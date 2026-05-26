@@ -518,6 +518,19 @@ $(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),fetch-vm3-$(db)-$(sub)-rc)
 	  $(LOCAL_RESULTS)/$(RESULT_DIR)/S-BASE/vm-3node-$(SUB)-$(ISO)/
 	ssh $(TPCC_CLIENT) 'find $(TPCC_ARTIFACTS) -depth -type d -empty -delete' || true
 
+# ---- fetch-vm3-<db>-haproxy-3s3r-rc (HAProxy variant；sub_topology 字串含中槓需 hardcode) ----
+.PHONY: fetch-vm3-ybdb-haproxy-3s3r-rc fetch-vm3-tidb-haproxy-3s3r-rc fetch-vm3-crdb-haproxy-3s3r-rc
+fetch-vm3-ybdb-haproxy-3s3r-rc fetch-vm3-tidb-haproxy-3s3r-rc fetch-vm3-crdb-haproxy-3s3r-rc:
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	$(eval RESULT_DIR := $(strip $(call DB_RESULT_DIR,$(DB))))
+	$(eval FETCH_SRC := $(if $(filter command line,$(origin TPCC_TS)),$(TPCC_ARTIFACTS)/$(DB)-vm-3node-haproxy-3s3r-rc-$(TPCC_TS),$(TPCC_ARTIFACTS)/$(DB)-vm-3node-haproxy-3s3r-rc-*))
+	@echo "==> fetch-vm3-$(DB)-haproxy-3s3r-rc src=$(FETCH_SRC) dest=$(RESULT_DIR)/S-BASE/vm-3node-haproxy-3s3r-rc/"
+	mkdir -p $(LOCAL_RESULTS)/$(RESULT_DIR)/S-BASE/vm-3node-haproxy-3s3r-rc/
+	rsync -avz --remove-source-files \
+	  '$(TPCC_CLIENT):$(FETCH_SRC)' \
+	  $(LOCAL_RESULTS)/$(RESULT_DIR)/S-BASE/vm-3node-haproxy-3s3r-rc/
+	ssh $(TPCC_CLIENT) 'find $(TPCC_ARTIFACTS) -depth -type d -empty -delete' || true
+
 # ---- status-vm3-<db>-<sub>-rc ----
 $(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),status-vm3-$(db)-$(sub)-rc)):
 	$(eval DB := $(word 3,$(subst -, ,$@)))
