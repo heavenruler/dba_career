@@ -85,6 +85,10 @@
 
 ### TiDB
 
+[![TiDB Architecture](https://docs-download.pingcap.com/media/images/docs/tidb-architecture-v6.png)](https://docs.pingcap.com/tidb/stable/tidb-architecture/)
+
+來源：[TiDB Architecture — PingCAP Docs](https://docs.pingcap.com/tidb/stable/tidb-architecture/)
+
 - 單節點 RC 與 RR 已完成。pessimistic 模式下 RR 比 RC 快 +6.2% tpmC（t128: 13,874 vs 13,064）、p99 低（503 vs 597ms），整輪全 20 round 零 NEW_ORDER_ERR。
 - CPU-bound：%iowait < 5%、sda %util ≤ 51%、t128 %user mean 約 95.5%（瞬間接近 100%）。
 - TiDB 不支援原生 SERIALIZABLE，strict 在工具鏈上等價於 RR；跨家 strict 對標時須注意此點，不能直比 CockroachDB / YugabyteDB 的 SSI。
@@ -92,12 +96,20 @@
 
 ### CockroachDB
 
+[![CockroachDB Architecture](https://github.com/cockroachdb/cockroach/raw/master/docs/media/architecture.png)](https://github.com/cockroachdb/cockroach/blob/master/docs/design.md)
+
+來源：[cockroachdb/cockroach — docs/design.md](https://github.com/cockroachdb/cockroach/blob/master/docs/design.md)。CockroachDB 官方 docs 站 Architecture Overview 頁為純文字、無單一整體架構圖；此圖取自 CockroachDB GitHub 原始碼倉庫 `docs/media/architecture.png`，雖為早期設計文件版本，但仍是原廠維護中的官方資料。
+
 - 單節點三 isolation（RC / RR / SERIALIZABLE）全完整。**SERIALIZABLE 反而是最快**（t32+ 比 RC 高 +10~19% tpmC、p99 低一個量級）：RC 自 t16 起被 fsync IO 卡死（%idle 5% / %iowait 18%），strict 走 read-refresh 路徑 IO 更省、有 CPU headroom。
 - preview RR 是最慢選項（t128: 3,788 tpmC，比 RC -57% / 比 TiDB RR -72.7%）；雖然 RR 在 CockroachDB 與 TiDB 內部都 = SI，但 CockroachDB 採 first-committer-wins + client retry，無等效於 TiDB `tidb_txn_mode=pessimistic` 的全域開關。
 - starting-gun storm：RR/strict 兩者在每 round 起始爆 retry（per-txn snapshot ts 同步衝突）；RC 因 per-statement snapshot 完全免疫。
 - 詳細機制與比較見 [crdb-tc1 流程紀錄 TL;DR](./crdb-tc1/S-BASE/pipeline-log.md#tldr--vm-1node-三-isolation-矩陣完成2026-05-19)。
 
 ### YugabyteDB
+
+[![YugabyteDB Architecture](https://docs.yugabyte.com/images/architecture/layered-architecture.png)](https://docs.yugabyte.com/stable/architecture/)
+
+來源：[Architecture — YugabyteDB Docs](https://docs.yugabyte.com/stable/architecture/)
 
 - 2025.2.2 LTS + 有效 Read Committed（`yb_enable_read_committed_isolation=true` tserver gflag + session iso 雙閘）後 TPC-C 才有可比結果；三 iso 全部以 `SHOW transaction_isolation` + `SHOW yb_effective_transaction_isolation_level` 雙閘驗證生效，無 silent fallback。
 - **vm-1node-rc**：peak **11,436 tpmC @ t32**（5-round mean），零 NEW_ORDER_ERR / 20 round；CPU-bound 含異常高 %sys (19%) — YSQL postgres ↔ DocDB tserver 跨進程 RPC 拉走 1/5 CPU；對比 TiDB %sys 9% / CockroachDB %sys 5.5%。
@@ -145,6 +157,5 @@
 - CockroachDB 流程紀錄：[crdb-tc1/S-BASE/pipeline-log.md](./crdb-tc1/S-BASE/pipeline-log.md)
 - YugabyteDB 流程紀錄：[yuga-tc1/S-BASE/pipeline-log.md](./yuga-tc1/S-BASE/pipeline-log.md)
 - CockroachDB 歷史資料（已 deprecated）：[cockroach-tc1/S-BASE/pipeline-log.md](./cockroach-tc1/S-BASE/pipeline-log.md)
-- Summary parser（從 stdout 補產 summary.json）：[tests/common/summary-from-stdout.py](../tests/common/summary-from-stdout.py)
-- Codex 文件審計 prompt：[audit-prompt.md](./audit-prompt.md)
+- Codex 文件審計 prompt：[audit-watch-prompt.md](./audit-watch-prompt.md)
 - 歷史 README 備份：[README_old.md](./README_old.md)
