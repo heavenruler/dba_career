@@ -50,29 +50,25 @@
 
 ## 執行矩陣
 
-三節點矩陣只追蹤執行狀態，細節判讀請回「已驗證結果」、「三節點補充結果」與各資料庫流程紀錄。
-
-- 三節點（直連 + HAProxy）以 `READ COMMITTED` 為主。
-- 三節點 `REPEATABLE READ` 與最嚴格隔離級不執行，因 vm-1node 已涵蓋三 isolation 對標。
-- Kubernetes 保留三 isolation 規劃，但同樣以 `READ COMMITTED` 為先。
+> 三節點（直連 + HAProxy）及 Kubernetes 以 `READ COMMITTED` 為主。參考 vm-1node 三 isolation 對標說明。
 
 | 資料庫 | 案例 | READ COMMITTED | REPEATABLE READ | 最嚴格隔離級 |
 |---|---|---|---|---|
 | TiDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 以 REPEATABLE READ 代表 |
-| TiDB | 三節點虛擬機，直連 | 🔄 待重跑 | ❌ 不執行（RC 為主）| ❌ 不執行（RC 為主）|
-| TiDB | 三節點虛擬機，HAProxy | 🔄 待重跑 | ❌ 不執行（RC 為主）| ❌ 不執行（RC 為主）|
-| TiDB | Kubernetes，無資源限制 | 🔄 待重跑 | 🔄 待重跑 | 🔄 待重跑 |
-| TiDB | Kubernetes，有資源限制 | 🔄 待重跑 | 🔄 待重跑 | 🔄 待重跑 |
+| TiDB | 三節點虛擬機，直連 | 🔄 待重跑 | ➖ 不執行（RC 為主）| ➖ 不執行（RC 為主）|
+| TiDB | 三節點虛擬機，HAProxy | 🔄 待重跑 | ➖ 不執行（RC 為主）| ➖ 不執行（RC 為主）|
+| TiDB | Kubernetes，無資源限制 | 🔄 待重跑 | ➖ 不執行（RC 為主） | ➖ 不執行（RC 為主） |
+| TiDB | Kubernetes，有資源限制 | 🔄 待重跑 | ➖ 不執行（RC 為主） | ➖ 不執行（RC 為主） |
 | CockroachDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 完成（SERIALIZABLE）|
-| CockroachDB | 三節點虛擬機，直連 | 🔄 待重跑 | ❌ 不執行（RC 為主）| ❌ 不執行（RC 為主）|
-| CockroachDB | 三節點虛擬機，HAProxy | 🔄 待重跑 | ❌ 不執行（RC 為主）| ❌ 不執行（RC 為主）|
-| CockroachDB | Kubernetes，無資源限制 | 🔄 待重跑 | 🔄 待重跑 | 🔄 待重跑 |
-| CockroachDB | Kubernetes，有資源限制 | 🔄 待重跑 | 🔄 待重跑 | 🔄 待重跑 |
+| CockroachDB | 三節點虛擬機，直連 | 🔄 待重跑 | ➖ 不執行（RC 為主）| ➖ 不執行（RC 為主）|
+| CockroachDB | 三節點虛擬機，HAProxy | 🔄 待重跑 | ➖ 不執行（RC 為主）| ➖ 不執行（RC 為主）|
+| CockroachDB | Kubernetes，無資源限制 | 🔄 待重跑 | ➖ 不執行（RC 為主） | ➖ 不執行（RC 為主） |
+| CockroachDB | Kubernetes，有資源限制 | 🔄 待重跑 | ➖ 不執行（RC 為主） | ➖ 不執行（RC 為主） |
 | YugabyteDB | 單節點虛擬機 | ✅ 完成 | ✅ 完成 | ✅ 完成（SERIALIZABLE）|
-| YugabyteDB | 三節點虛擬機，直連 | ✅ 完成（4 子拓撲）| ❌ 不執行（RC 為主）| ❌ 不執行（RC 為主）|
-| YugabyteDB | 三節點虛擬機，HAProxy | ✅ 完成（3s3r）| ❌ 不執行（RC 為主）| ❌ 不執行（RC 為主）|
-| YugabyteDB | Kubernetes，無資源限制 | 🔄 待重跑 | 🔄 待重跑 | 🔄 待重跑 |
-| YugabyteDB | Kubernetes，有資源限制 | 🔄 待重跑 | 🔄 待重跑 | 🔄 待重跑 |
+| YugabyteDB | 三節點虛擬機，直連 | ✅ 完成（4 子拓撲）| ➖ 不執行（RC 為主）| ➖ 不執行（RC 為主）|
+| YugabyteDB | 三節點虛擬機，HAProxy | ✅ 完成（3s3r）| ➖ 不執行（RC 為主）| ➖ 不執行（RC 為主）|
+| YugabyteDB | Kubernetes，無資源限制 | 🔄 待重跑 | ➖ 不執行（RC 為主） | ➖ 不執行（RC 為主） |
+| YugabyteDB | Kubernetes，有資源限制 | 🔄 待重跑 | ➖ 不執行（RC 為主） | ➖ 不執行（RC 為主） |
 
 ## 資料庫說明
 
