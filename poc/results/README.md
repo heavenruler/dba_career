@@ -73,11 +73,11 @@
     <tr><td>CockroachDB</td><td>三節點虛擬機，HAProxy</td><td>🔄 待重跑</td><td>➖ 不執行（RC 為主）</td><td>➖ 不執行（RC 為主）</td></tr>
     <tr><td>CockroachDB</td><td>Kubernetes，無資源限制</td><td>🔄 待重跑</td><td>➖ 不執行（RC 為主）</td><td>➖ 不執行（RC 為主）</td></tr>
     <tr><td>CockroachDB</td><td>Kubernetes，有資源限制</td><td>🔄 待重跑</td><td>➖ 不執行（RC 為主）</td><td>➖ 不執行（RC 為主）</td></tr>
-    <tr><td>YugabyteDB</td><td>單節點虛擬機</td><td>✅ 完成</td><td>✅ 完成</td><td>✅ 完成（SERIALIZABLE）</td></tr>
-    <tr><td>YugabyteDB</td><td>三節點虛擬機，直連</td><td>✅ 完成（4 子拓撲）</td><td rowspan="4" colspan="2">➖ 不執行（RC 為主）</td></tr>
-    <tr><td>YugabyteDB</td><td>三節點虛擬機，HAProxy</td><td>✅ 完成（3s3r）</td></tr>
-    <tr><td>YugabyteDB</td><td>Kubernetes，無資源限制</td><td>🔄 待重跑</td></tr>
-    <tr><td>YugabyteDB</td><td>Kubernetes，有資源限制</td><td>🔄 待重跑</td></tr>
+    <tr><td rowspan="5">YugabyteDB</td><td>單節點虛擬機</td><td>✅ 完成</td><td>✅ 完成</td><td>✅ 完成（SERIALIZABLE）</td></tr>
+    <tr><td>三節點虛擬機，直連</td><td>✅ 完成（4 子拓撲）</td><td rowspan="4" colspan="2" align="center">➖ 不執行（RC 為主）</td></tr>
+    <tr><td>三節點虛擬機，HAProxy</td><td>✅ 完成（3s3r）</td></tr>
+    <tr><td>Kubernetes，無資源限制</td><td>🔄 待重跑</td></tr>
+    <tr><td>Kubernetes，有資源限制</td><td>🔄 待重跑</td></tr>
   </tbody>
 </table>
 
