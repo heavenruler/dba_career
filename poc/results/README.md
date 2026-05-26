@@ -89,10 +89,11 @@
 
 來源：[TiDB Architecture — PingCAP Docs](https://docs.pingcap.com/tidb/stable/tidb-architecture/)
 
-- 單節點 RC 與 RR 已完成。pessimistic 模式下 RR 比 RC 快 +6.2% tpmC（t128: 13,874 vs 13,064）、p99 低（503 vs 597ms），整輪全 20 round 零 NEW_ORDER_ERR。
-- CPU-bound：%iowait < 5%、sda %util ≤ 51%、t128 %user mean 約 95.5%（瞬間接近 100%）。
-- TiDB 不支援原生 SERIALIZABLE，strict 在工具鏈上等價於 RR；跨家 strict 對標時須注意此點，不能直比 CockroachDB / YugabyteDB 的 SSI。
-- 三節點與 Kubernetes 舊數據已清空，等待 PoC v4.7 重跑。
+- **TiDB server**：SQL 接收層，負責解析 SQL、產生執行計畫、處理 transaction coordination；本身不保存主要資料。
+- **TiKV**：分散式 row store，保存 OLTP 資料；資料以 Region 切分並透過 Raft 複寫，影響寫入延遲與多副本成本。
+- **PD (Placement Driver)**：叢集 metadata 與排程控制中心，負責 timestamp oracle、Region placement 與負載調度。
+- **TiFlash**：columnar replica，主要用於 HTAP / analytical query；本輪 TPC-C-derived OLTP 測試不以 TiFlash 為主要路徑。
+- **架構重點**：SQL 層與儲存層分離；增加 TiDB server 可擴充 SQL 接收與執行能力，增加 TiKV 則擴充資料儲存與 Raft 複寫能力。
 
 ### CockroachDB
 
