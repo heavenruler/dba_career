@@ -101,10 +101,11 @@
 
 來源：[cockroachdb/cockroach — docs/design.md](https://github.com/cockroachdb/cockroach/blob/master/docs/design.md)。CockroachDB 官方 docs 站 Architecture Overview 頁為純文字、無單一整體架構圖；此圖取自 CockroachDB GitHub 原始碼倉庫 `docs/media/architecture.png`，雖為早期設計文件版本，但仍是原廠維護中的官方資料。
 
-- 單節點三 isolation（RC / RR / SERIALIZABLE）全完整。**SERIALIZABLE 反而是最快**（t32+ 比 RC 高 +10~19% tpmC、p99 低一個量級）：RC 自 t16 起被 fsync IO 卡死（%idle 5% / %iowait 18%），strict 走 read-refresh 路徑 IO 更省、有 CPU headroom。
-- preview RR 是最慢選項（t128: 3,788 tpmC，比 RC -57% / 比 TiDB RR -72.7%）；雖然 RR 在 CockroachDB 與 TiDB 內部都 = SI，但 CockroachDB 採 first-committer-wins + client retry，無等效於 TiDB `tidb_txn_mode=pessimistic` 的全域開關。
-- starting-gun storm：RR/strict 兩者在每 round 起始爆 retry（per-txn snapshot ts 同步衝突）；RC 因 per-statement snapshot 完全免疫。
-- 詳細機制與比較見 [crdb-tc1 流程紀錄 TL;DR](./crdb-tc1/S-BASE/pipeline-log.md#tldr--vm-1node-三-isolation-矩陣完成2026-05-19)。
+- **SQL layer**：每個 CockroachDB 節點都能接 SQL request、產生 query plan、處理 transaction coordination。
+- **Transactional KV / Distribution**：SQL 會轉成 key-value operation，由 distribution layer 找到資料所在 range 並路由到正確節點。
+- **Replication / Raft**：資料以 range 為單位複寫，透過 Raft 維持一致性；replica 數會直接影響寫入 quorum 與 commit latency。
+- **Storage**：每個節點都同時保存資料並處理查詢，沒有獨立 SQL node / storage node 分層。
+- **架構重點**：對稱式架構；任一節點都同時具備 SQL、transaction、distribution、replication 與 storage 能力，HAProxy 可把連線分散到多個完整節點。
 
 ### YugabyteDB
 
@@ -112,15 +113,12 @@
 
 來源：[Architecture — YugabyteDB Docs](https://docs.yugabyte.com/stable/architecture/)
 
-- 2025.2.2 LTS + 有效 Read Committed（`yb_enable_read_committed_isolation=true` tserver gflag + session iso 雙閘）後 TPC-C 才有可比結果；三 iso 全部以 `SHOW transaction_isolation` + `SHOW yb_effective_transaction_isolation_level` 雙閘驗證生效，無 silent fallback。
-- **vm-1node-rc**：peak **11,436 tpmC @ t32**（5-round mean），零 NEW_ORDER_ERR / 20 round；CPU-bound 含異常高 %sys (19%) — YSQL postgres ↔ DocDB tserver 跨進程 RPC 拉走 1/5 CPU；對比 TiDB %sys 9% / CockroachDB %sys 5.5%。
-- **vm-1node-rr**：peak **1,879 tpmC @ t32**，比 rc **-84%**；YugabyteDB rr = snapshot isolation 撞 SI hot row → 每 round **線性 N − 1 errors**（與 CockroachDB rr 完全相同 pattern）；DB-host %idle 66-67% 全程，瓶頸在 transaction coordination layer。
-- **vm-1node-strict**：peak **1,130 tpmC @ t32**，比 rc **-90%**、比 rr **再砍 -40%**；errors ≈ N-1 但比 rr 略少 ~5%（SSI early-abort 救回部分衝突）；DB %idle 70% 為三 iso 最高、disk %util 70% 為三 iso 最高（SSI version metadata + read-refresh 小 IO 放大）。
-- **三 iso 排序：rc ＞＞ rr ＞ strict** — 與 CockroachDB「strict ＞ rc ＞ rr」**完全相反**；機制：CockroachDB rc 為 IO-bound 故 SSI 走 CPU 路徑可避瓶頸；YugabyteDB rc 已 CPU-bound 無 headroom 可榨。
-- 詳見 [yuga-tc1 pipeline-log TL;DR](./yuga-tc1/S-BASE/pipeline-log.md#tldr--vm-1node-三-isolation-矩陣完成2026-05-20--21)。
-- **vm-3node-direct (RC)**：4 子拓撲 × RC 2026-05-24 / 25 完成（5-round mean）。代表點：1s1r 13,702 (t=32) ＞ 3s1r 11,967 (t=32) ＞ 1s3r 10,228 (t=128) ＞ 3s3r 8,729 (t=128)。**RF=3 一律 ~25% 寫吞吐損耗、shard=3 加 ~13% 協調成本，疊加 1s1r→3s3r 為 −36%**；3s3r 在 4 vCPU 上 tablet 協調瓶頸（CPU 24-42% idle 但 throughput drop）。詳見 [vm-3node TL;DR](./yuga-tc1/S-BASE/pipeline-log.md#tldr--vm-3node-4-cells2026-05-25) 與 [跨 cell 分析](./dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)。
-- **vm-3node-haproxy (RC, 3s3r only, N=1 [N9](#note-N9))**：2026-05-25 完成。HAProxy roundrobin 把 client 連線分散到 .32/.33/.34 三 tservers，best mean **15,632 tpmC @ t=128**（**+79% vs direct 3s3r 8,729 tpmC**、NO_p99 −37% / 1,114→705ms、stddev 縮 6×）。**反超 1s1r single-shard baseline +14%**，推翻 PoC-DESIGN §6.4「YugabyteDB HAProxy delta 最小（tserver 一體）」假設。機制推論：direct 模式 client 全進入 .32 single YSQL postgres entry point 形成 serial backpressure；haproxy 把 128 connection 攤平到 3 tservers，coordination layer 平行化。詳見 [haproxy-vs-direct 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)。
-- vm-1node pre-v4.7 single-run / 早期 vm-3node-HAProxy / Kubernetes（unlimit & limit）等歷史結果已備份於 [`yuga-tc1-old/`](./yuga-tc1-old/)；v4.7 vm-3node-haproxy 其他 sub-topology (1s1r/1s3r/3s1r) 與 Kubernetes 重跑尚未排程。
+- **YSQL**：PostgreSQL-compatible SQL API，負責接收 SQL、處理 query planning 與 transaction request。
+- **YCQL**：Cassandra-compatible API，本輪 TPC-C-derived OLTP 測試不走此路徑。
+- **DocDB**：YugabyteDB 的 distributed document store，負責資料儲存、MVCC、tablet 管理與 Raft 複寫。
+- **YB-TServer**：資料服務節點，承載 YSQL/YCQL request path 與 DocDB tablet；SQL 與儲存同在 tserver 內，和 TiDB 的 SQL / storage 分離不同。
+- **YB-Master**：叢集 metadata 管理元件，負責 tablet placement、schema metadata 與 cluster coordination。
+- **架構重點**：tserver 一體式架構；加節點時 SQL 接收能力與資料 tablet capacity 一起增加，實際效能同時受 tablet 分布、複本數與 transaction coordination 影響。
 
 ### 歷史檔案
 
