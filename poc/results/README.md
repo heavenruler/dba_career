@@ -10,7 +10,7 @@
 | 2 | 已驗證結果 | 取得目前可引用數字 | 來源目錄、TPCC_TS、`summary.json` / 原始輸出、完成標記 |
 | 3 | 執行矩陣 | 避免誤讀測試進度 | 不把尚未回填的內容或待執行案例當正式結果 |
 | 4 | 資料庫說明 | 了解各資料庫目前觀察 | 吞吐、延遲、錯誤率、瓶頸與機制推論 |
-| 5 | 表格註解與數據品質註解 | 先校準判讀口徑 | 隔離級、v4.7 / v4.7 前資料、N=1 / N=3、結果檔案標記 |
+| 5 | 表格註解與數據品質註解 | 先校準判讀口徑 | 隔離級、[獨立重跑次數 N 的嚴謹性差異](#note-N9)、[分片 / 複本對吞吐與延遲的影響](#note-N10) |
 | 6 | 參考 | 追溯細節與設計口徑 | `pipeline-log.md`、調度分析、`PoC-DESIGN.md`、模板與協作規範 |
 
 ## 目前總覽
@@ -115,7 +115,8 @@
 | N6 | CockroachDB / TiDB / YugabyteDB 三家 vm-1node 全 iso 的 tpmC 與 latency p50/p95/p99 已全為 5-round mean，口徑一致；數據來源為 `runs/threads-*/round-*/go-tpc-stdout.txt` + `[tests/common/summary-from-stdout.py](../tests/common/summary-from-stdout.py)` 解析後落地的 `summary.json`。 |
 | N7 | TiDB 三節點與 Kubernetes 數據已刻意清空，等待 PoC v4.7 重跑後再回填。 |
 | N8 | CockroachDB 機制描述以 artifact 數據與[官方 v26.2 docs](https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer) 為主；server-internal retry 等未直接量測項以「推測」呈現，待 trace / statement diagnostics 補強。 |
-| <a id="note-N9"></a>N9 | **`N` = 獨立實驗次數（sample size）**。1 個 `N` = 1 次完整 `destroy → deploy → prepare → run → collect` 序列，內含 4 thread × 5 round = 20 個 5-min 取樣。**5-round mean 只能平 round-內雜訊**（RocksDB compaction、瞬時 GC、輕度排程競爭）；**平不掉**部署狀態變異、host I/O 時段競爭、VM 鄰居負載、kernel cache 狀態、時段差。**`N=1`** = 跑一次完整序列，結論強度 **medium**，足以提示方向但需 caveat。**`N=3`** = destroy + redeploy + redispatch 三次（不同時段），可量化 between-run vs within-run stddev ratio：若 < 0.5 → cluster 行為穩、結論可信；若 > 1.5 → 部署/時段雜訊主導、結論不穩。**白皮書 / 對外報告至少 N=3**。本表凡標 `N=1` 或 `N=3 待確認` 的 cell，結論為提示性質非定論。 |
+| <a id="note-N9"></a>N9 | **`N` = 獨立重跑次數**，不是 round 數。`N=1` 代表只做過 1 次完整流程（重建環境 → 部署 → prepare → run → collect），雖然裡面有 4 個併發水位 × 5 round，但只能降低單次執行內的隨機波動，無法證明不同時間、不同重建環境下仍穩定。`N=3` 代表完整流程獨立重跑 3 次，可觀察三次之間是否一致，嚴謹性明顯高於 N=1；若三次結果接近，才比較適合作為對外結論。本文凡標 `N=1` 或 `N=3 待確認` 的結果，都只能視為方向性觀察，不視為最終定論。 |
+| <a id="note-N10"></a>N10 | **分片（shard）/ 複本（replica）是三節點結果的核心變數**。分片數決定資料被切成幾份，會影響資料分散、tablet / range 協調與跨節點查找成本；複本數決定每筆資料同步保存幾份，會影響寫入時的同步複寫、quorum commit 與延遲。若分片數或複本數沒有固定，就無法分辨效能差異到底來自「資料切分」還是「複寫成本」，也不能把不同拓撲的 tpmC / p99 視為同口徑比較。 |
 
 ## 參考
 
