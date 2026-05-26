@@ -21,7 +21,8 @@
 | CockroachDB | - 單節點虛擬機，三 isolation | **10,830**<br>單節點 SERIALIZABLE，t=64 | - ✅ 單節點三 isolation 完成<br>- 🔄 三節點（多分片 / 副本 / HAProxy）待重跑<br>- 🔄 Kubernetes 待重跑 | [流程紀錄](./crdb-tc1/S-BASE/pipeline-log.md) |
 | YugabyteDB | - 單節點虛擬機，三 isolation<br>- 三節點虛擬機，direct RC<br>- 三節點虛擬機，HAProxy 3s3r RC | **15,632**<br>三節點 HAProxy 3s3r RC，t=128 | - ✅ 單節點三 isolation 完成<br>- ✅ 三節點（多分片 / 副本 / HAProxy）完成<br>- 🔄 Kubernetes 待重跑 | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md) |
 
-同硬體規格對照：4 vCPU / 16 GiB / single XFS，5-round mean，9 組（資料庫 × isolation）[註3](#note-3)。同名 isolation 在三家底層機制不同，請先參考 [註2](#note-2)。
+- 同硬體規格對照：4 vCPU / 16 GiB / single XFS，5-round mean，9 組（資料庫 × isolation）[註3](#note-3)。
+- 同名 isolation 在三家底層機制不同，請先參考 [註2](#note-2)。
 
 ## 已驗證結果
 
