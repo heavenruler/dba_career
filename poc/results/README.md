@@ -25,7 +25,7 @@
 
 ## 已驗證結果
 
-> `error rate` 口徑：`Σ *_ERR / Σ (* + *_ERR)` × 100%（5 個 TPC-C transaction type 全部加總）；取數來源 `runs/threads-X/round-Y/go-tpc-stdout.txt` 的 `[Summary]` 行，由 [`tests/common/summary-from-stdout.py`](../tests/common/summary-from-stdout.py) 解析後寫入各 suite 的 `summary.json`。
+> `error rate` = `Σ *_ERR / Σ (* + *_ERR)` × 100%（5 個 TPC-C transaction type 全部加總）；由 [summary parser](../tests/common/summary-from-stdout.py) 解析 stdout `[Summary]` 後寫入 `summary.json`。
 
 | 資料庫 | 案例 | 隔離級 | 來源目錄 | 併發 | tpmC | p99 (ms) | error rate | 判讀 |
 |---|---|---|---|---:|---:|---:|---:|---|
