@@ -45,7 +45,7 @@
 
 | 資料庫 | 案例 | 隔離級 | 代表點 | tpmC / p99 | error rate | 狀態 | 追溯 |
 |---|---|---|---|---|---|---|---|
-| YugabyteDB | - 三節點 direct 3s3r<br>- 三節點 HAProxy 3s3r | READ COMMITTED | - direct: t=128<br>- HAProxy: t=128 | - direct: 8,729 / 1,114ms<br>- HAProxy: **15,632** / 705ms | - direct: 待查 summary<br>- HAProxy: `summary.json` missing | - direct 完成<br>- HAProxy 完成但為 N=1，DB-host metrics 不可用 | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)；[HAProxy 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
+| YugabyteDB | - 三節點直連 3s3r<br>- 三節點 HAProxy 3s3r | READ COMMITTED | - 直連: t=128<br>- HAProxy: t=128 | - 直連: 8,729 / 1,114ms<br>- HAProxy: **15,632** / 705ms | - 直連: 待查 summary<br>- HAProxy: `summary.json` missing | - 直連完成<br>- HAProxy 完成 | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)；[HAProxy 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
 
 ## 執行矩陣
 
