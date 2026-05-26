@@ -953,7 +953,7 @@ client → .32:5433
 | 來源目錄 | [`./vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/`](./vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/) |
 | 完整 marker | 7 completed：gate / gate-isolation / prepare / run / collect / db-config / suite |
 | go-tpc stdout | 20 files（4 thread groups × 5 rounds） |
-| summary.json | summary.json missing；本段目前由 raw stdout 取數 |
+| summary.json | 已由 [`tests/common/summary-from-stdout.py`](../../../tests/common/summary-from-stdout.py) 從 raw stdout 補產 |
 | DB-host metrics | 檔案存在但內容為 `command not found`（`mpstat` / `iostat`），不可作 DB-host 飽和判讀 |
 | 詳細分析 | [HAProxy vs direct 3s3r analysis](../../dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
 
@@ -975,7 +975,7 @@ client → .32:5433
 - 本組為 N=1；N=3 待後續時程空檔再確認。
 - direct 3s3r baseline 本身高變異，HAProxy delta 可能受 direct outlier 放大。
 - DB-host metrics missing：`mpstat-db.txt` / `iostat-1s-db.txt` 等檔案內容為 `command not found`，本輪 DB-side 飽和分析不可作直接量測結論。
-- 目前無 `summary.json`，README 主表若納入本組，需先補 summary 或標 raw stdout 口徑。
+- `summary.json` 已於 2026-05-26 由 raw stdout 補產；DB-host metrics caveat 仍保留。
 
 ---
 

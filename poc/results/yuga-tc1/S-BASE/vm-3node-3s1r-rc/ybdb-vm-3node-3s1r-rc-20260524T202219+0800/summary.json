@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "db": "ybdb",
+  "topology": "vm-3node-3s1r",
+  "iso": "rc",
+  "ts": "20260524T202219+0800",
+  "warehouses": 128,
+  "rounds_per_thread_group": 5,
+  "threads_list": [
+    16,
+    32,
+    64,
+    128
+  ],
+  "thread_results": {
+    "16": {
+      "tpmC_mean": 11180.2,
+      "tpmC_per_round": [
+        11275.7,
+        11248.4,
+        11322.2,
+        11023.9,
+        11031.0
+      ],
+      "tpmC_range_mean_pct": 2.7,
+      "tpmTotal_mean": 24842.8,
+      "efficiency_mean_pct": 679.2,
+      "NEW_ORDER": {
+        "p50_mean_ms": 55.8,
+        "p95_mean_ms": 80.5,
+        "p99_mean_ms": 94.0,
+        "total_count": 279011,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 620018,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "32": {
+      "tpmC_mean": 11967.0,
+      "tpmC_per_round": [
+        11986.0,
+        11950.6,
+        11960.9,
+        12148.5,
+        11788.9
+      ],
+      "tpmC_range_mean_pct": 3.0,
+      "tpmTotal_mean": 26503.0,
+      "efficiency_mean_pct": 727.0,
+      "NEW_ORDER": {
+        "p50_mean_ms": 101.5,
+        "p95_mean_ms": 167.8,
+        "p99_mean_ms": 203.0,
+        "total_count": 298247,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 660699,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "64": {
+      "tpmC_mean": 11748.8,
+      "tpmC_per_round": [
+        11727.7,
+        11752.9,
+        11769.3,
+        11770.2,
+        11724.0
+      ],
+      "tpmC_range_mean_pct": 0.4,
+      "tpmTotal_mean": 26078.5,
+      "efficiency_mean_pct": 713.7,
+      "NEW_ORDER": {
+        "p50_mean_ms": 209.7,
+        "p95_mean_ms": 352.3,
+        "p99_mean_ms": 436.2,
+        "total_count": 291841,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 648098,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "128": {
+      "tpmC_mean": 11691.1,
+      "tpmC_per_round": [
+        11796.3,
+        11650.3,
+        11612.1,
+        11768.9,
+        11627.7
+      ],
+      "tpmC_range_mean_pct": 1.6,
+      "tpmTotal_mean": 25941.3,
+      "efficiency_mean_pct": 710.2,
+      "NEW_ORDER": {
+        "p50_mean_ms": 416.1,
+        "p95_mean_ms": 738.2,
+        "p99_mean_ms": 1006.6,
+        "total_count": 288790,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 641220,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    }
+  },
+  "generated_at": "2026-05-26T21:53:35.583239+08:00",
+  "generated_by": "tests/common/summary-from-stdout.py v1",
+  "source_files": "runs/threads-*/round-*/go-tpc-stdout.txt"
+}

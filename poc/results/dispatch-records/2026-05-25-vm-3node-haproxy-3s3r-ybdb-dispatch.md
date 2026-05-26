@@ -152,5 +152,5 @@ rsync -av root@172.24.40.31:/tmp/poc-tpcc/artifacts/ybdb-vm-3node-haproxy-3s3r-r
 - t=128 代表點：15,632 tpmC / NEW_ORDER p99 705ms。
 - 對 direct `vm-3node-3s3r-rc`（TS=`20260525T031918+0800`）：+79.1% tpmC / -36.7% NEW_ORDER p99。
 - DB-host metrics caveat：`mpstat-db.txt` / `iostat-1s-db.txt` 等檔案存在，但內容為 `command not found`，不可作 DB-host 飽和判讀。
-- summary.json missing；本輪分析由 raw stdout 取數。
+- summary.json 已於 2026-05-26 由 [`tests/common/summary-from-stdout.py`](../../tests/common/summary-from-stdout.py) 從 raw stdout 補產。
 - 詳細分析：[2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md](./2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)
