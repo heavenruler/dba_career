@@ -33,8 +33,7 @@ SUMMARY_RE = re.compile(
     r"\s+95th\(ms\):\s+([\d.]+),\s+99th\(ms\):\s+([\d.]+)"
 )
 SUITE_NAME_RE = re.compile(
-    r"(tidb|crdb|ybdb)-(vm-1node|vm-3node|vm-3node-direct|vm-3node-haproxy)-"
-    r"(rc|rr|strict)-(\d{8}T\d{6}\+\d{4})"
+    r"(tidb|crdb|ybdb)-(.+)-(rc|rr|strict)-(\d{8}T\d{6}\+\d{4})"
 )
 
 
