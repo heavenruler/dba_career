@@ -28,20 +28,14 @@ Shard（分片）+ Replica（複本 / RF）：先把資料切開，再把每個 
        └─ replica 3 ── IDC node-1
 ```
 
-本 PoC 用 4 組 cell 拆解成本：
+本 PoC 用 4 組 cell 拆解 shard / replica 成本：
 
 | cell | 觀察重點 |
 |---|---|
 | `1s1r` | 最小基準：1 shard、RF=1 |
 | `1s3r` | 固定 1 shard，只觀察 replica / RF 成本 |
 | `3s1r` | 固定 RF=1，只觀察 shard 成本 |
-| `3s3r` | shard + replica 疊加成本 |
-
-`3s3r` 是 production-like 代表點，不一定最快，但最接近正式三節點高可用部署。
-
-- `3 shards`：觀察資料與流量分散成本。
-- `RF=3`：觀察三副本同步與 quorum commit 成本。
-- `1s1r / 1s3r / 3s1r`：拆解 shard 與 replica 各自影響。
+| `3s3r` | production-like 代表點；同時觀察 3 shards 的資料 / 流量分散成本，以及 RF=3 的三副本同步與 quorum commit 成本 |
 
 ---
 
