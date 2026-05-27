@@ -11,21 +11,21 @@
 分散式資料庫通常同時用 **shard** 分散流量，用 **replica** 提供容錯。
 
 ```text
-Shard（分片）：把資料切開，分散到不同節點
+Shard（分片）+ Replica（複本 / RF）：先把資料切開，再把每個 shard 複製到多個節點
 
   data
-   ├─ shard 1 ── node A
-   ├─ shard 2 ── node B
-   └─ shard 3 ── node C
-```
-
-```text
-Replica（複本 / RF）：同一份 shard 複製多份，避免單點故障
-
-  shard 1
-   ├─ replica 1 ── node A
-   ├─ replica 2 ── node B
-   └─ replica 3 ── node C
+   ├─ shard 1
+   │   ├─ replica 1 ── node A
+   │   ├─ replica 2 ── node B
+   │   └─ replica 3 ── node C
+   ├─ shard 2
+   │   ├─ replica 1 ── node B
+   │   ├─ replica 2 ── node C
+   │   └─ replica 3 ── node A
+   └─ shard 3
+       ├─ replica 1 ── node C
+       ├─ replica 2 ── node A
+       └─ replica 3 ── node B
 ```
 
 本 PoC 用 4 組 cell 拆解成本：
