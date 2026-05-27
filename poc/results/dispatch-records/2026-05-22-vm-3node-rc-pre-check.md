@@ -10,20 +10,20 @@
 
 > cell 命名規則：`<db>-<shards>s<replicas>r`。例如 `ybdb-3s1r` 表示 YugabyteDB、3 shards、RF=1；`tidb-1s3r` 表示 TiDB、1 shard、RF=3。
 
-| cell | TPCC_TS (recommended) | RF expected/actual | ISO expected/actual | Checked |
-|---|---|---:|---|:---:|
-| `tidb-1s1r` | [20260522T095010](../tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260522T095010+0800/) | 1 / **1** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
-| `tidb-1s3r` | [20260522T132627](../tidb-tc1/S-BASE/vm-3node-1s3r-rc/tidb-vm-3node-1s3r-rc-20260522T132627+0800/) | 3 / **3** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
-| `tidb-3s1r` | [20260522T135613](../tidb-tc1/S-BASE/vm-3node-3s1r-rc/tidb-vm-3node-3s1r-rc-20260522T135613+0800/) | 1 / **1** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
-| `tidb-3s3r` | [20260522T135725](../tidb-tc1/S-BASE/vm-3node-3s3r-rc/tidb-vm-3node-3s3r-rc-20260522T135725+0800/) | 3 / **3** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
-| `crdb-1s1r` | [20260522T111834](../crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260522T111834+0800/) | 1 / **1** | read committed / **read committed** | ✅ |
-| `crdb-1s3r` | [20260522T132804](../crdb-tc1/S-BASE/vm-3node-1s3r-rc/crdb-vm-3node-1s3r-rc-20260522T132804+0800/) | 3 / **3** | read committed / **read committed** | ✅ |
-| `crdb-3s1r` | [20260522T135956](../crdb-tc1/S-BASE/vm-3node-3s1r-rc/crdb-vm-3node-3s1r-rc-20260522T135956+0800/) | 1 / **1** | read committed / **read committed** | ✅ |
-| `crdb-3s3r` | [20260522T141321](../crdb-tc1/S-BASE/vm-3node-3s3r-rc/crdb-vm-3node-3s3r-rc-20260522T141321+0800/) | 3 / **3** | read committed / **read committed** | ✅ |
-| `ybdb-1s1r` | [20260522T125647](../yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260522T125647+0800/) | 1 / **1** | read committed / **read committed** | ✅ |
-| `ybdb-1s3r` | [20260522T130930](../yuga-tc1/S-BASE/vm-3node-1s3r-rc/ybdb-vm-3node-1s3r-rc-20260522T130930+0800/) | 3 / **3** | read committed / **read committed** | ✅ |
-| `ybdb-3s1r` | [20260522T135840](../yuga-tc1/S-BASE/vm-3node-3s1r-rc/ybdb-vm-3node-3s1r-rc-20260522T135840+0800/) | 1 / **1** | read committed / **read committed** | ✅ |
-| `ybdb-3s3r` | [20260522T135921](../yuga-tc1/S-BASE/vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260522T135921+0800/) | 3 / **3** | read committed / **read committed** | ✅ |
+| cell | TPCC_TS (recommended) | Shard expected/actual | RF expected/actual | ISO expected/actual | Checked |
+|---|---|---:|---:|---|:---:|
+| `tidb-1s1r` | [20260522T095010](../tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260522T095010+0800/) | 1 / **1** | 1 / **1** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
+| `tidb-1s3r` | [20260522T132627](../tidb-tc1/S-BASE/vm-3node-1s3r-rc/tidb-vm-3node-1s3r-rc-20260522T132627+0800/) | 1 / **1** | 3 / **3** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
+| `tidb-3s1r` | [20260522T135613](../tidb-tc1/S-BASE/vm-3node-3s1r-rc/tidb-vm-3node-3s1r-rc-20260522T135613+0800/) | 3 / **3** | 1 / **1** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
+| `tidb-3s3r` | [20260522T135725](../tidb-tc1/S-BASE/vm-3node-3s3r-rc/tidb-vm-3node-3s3r-rc-20260522T135725+0800/) | 3 / **3** | 3 / **3** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
+| `crdb-1s1r` | [20260522T111834](../crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260522T111834+0800/) | 1 / **1** | 1 / **1** | read committed / **read committed** | ✅ |
+| `crdb-1s3r` | [20260522T132804](../crdb-tc1/S-BASE/vm-3node-1s3r-rc/crdb-vm-3node-1s3r-rc-20260522T132804+0800/) | 1 / **1** | 3 / **3** | read committed / **read committed** | ✅ |
+| `crdb-3s1r` | [20260522T135956](../crdb-tc1/S-BASE/vm-3node-3s1r-rc/crdb-vm-3node-3s1r-rc-20260522T135956+0800/) | 3 / **3** | 1 / **1** | read committed / **read committed** | ✅ |
+| `crdb-3s3r` | [20260522T141321](../crdb-tc1/S-BASE/vm-3node-3s3r-rc/crdb-vm-3node-3s3r-rc-20260522T141321+0800/) | 3 / **3** | 3 / **3** | read committed / **read committed** | ✅ |
+| `ybdb-1s1r` | [20260522T125647](../yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260522T125647+0800/) | 1 / **1** | 1 / **1** | read committed / **read committed** | ✅ |
+| `ybdb-1s3r` | [20260522T130930](../yuga-tc1/S-BASE/vm-3node-1s3r-rc/ybdb-vm-3node-1s3r-rc-20260522T130930+0800/) | 1 / **1** | 3 / **3** | read committed / **read committed** | ✅ |
+| `ybdb-3s1r` | [20260522T135840](../yuga-tc1/S-BASE/vm-3node-3s1r-rc/ybdb-vm-3node-3s1r-rc-20260522T135840+0800/) | 3 / **3** | 1 / **1** | read committed / **read committed** | ✅ |
+| `ybdb-3s3r` | [20260522T135921](../yuga-tc1/S-BASE/vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260522T135921+0800/) | 3 / **3** | 3 / **3** | read committed / **read committed** | ✅ |
 
 > **YB triple gate**：`transaction_isolation`、`yb_effective_transaction_isolation_level` 兩者皆 RC — 表示 tserver gflag `yb_enable_read_committed_isolation=true` 真的生效，沒有 silent SI fallback。
 
