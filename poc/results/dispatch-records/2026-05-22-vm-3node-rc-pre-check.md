@@ -6,7 +6,18 @@
 
 ---
 
-## 1. 12 cells 結果矩陣
+## 1. Shard / Replica 概念說明
+
+分散式資料庫會把資料拆到多台機器上，核心設計通常同時包含 **shard** 與 **replica** 兩件事：
+
+- **Shard（分片）**：把資料水平切成多份，讓不同節點可以分攤資料量與請求壓力。分片越多，理論上越能平行處理，但也會增加跨 shard 查找、transaction coordination 與 metadata 管理成本。
+- **Replica（複本 / RF）**：把同一份 shard 複製到多個節點，避免單一節點故障造成資料不可用。RF=3 通常代表每份資料有 3 份複本，寫入時需要等待 quorum，因此可靠性提高，但寫入延遲與同步成本也會增加。
+- **為什麼需要兩者**：shard 解決「資料與流量如何分散」，replica 解決「節點故障時資料如何維持可用與一致」。兩者同時存在，才能兼顧擴充性、容錯與一致性。
+- **為什麼本 PoC 要拆 1s1r / 1s3r / 3s1r / 3s3r**：這 4 組可以把「分片成本」與「複寫成本」拆開觀察。`1s1r → 1s3r` 主要看 replica 成本；`1s1r → 3s1r` 主要看 shard 成本；`1s1r → 3s3r` 則看兩者疊加後的影響。
+
+---
+
+## 2. 12 cells 結果矩陣
 
 > cell 命名規則：`<db>-<shards>s<replicas>r`。例如 `ybdb-3s1r` 表示 YugabyteDB、3 shards、RF=1；`tidb-1s3r` 表示 TiDB、1 shard、RF=3。
 
@@ -29,7 +40,7 @@
 
 ---
 
-## 2. Artifact 位置（Mac 上落地）
+## 3. Artifact 位置（Mac 上落地）
 
 每 cell 的 artifact 路徑（含 `.dry-run.done` + 5 個 dump txt）：
 
@@ -68,7 +79,7 @@ find results -name "expected-vs-actual.txt" -path "*/vm-3node-*-rc/*" \
 
 ---
 
-## 3. 過程踩到 4 個 deploy-time 坑 + 1 個 destroy race（commit 連發）
+## 4. 過程踩到 4 個 deploy-time 坑 + 1 個 destroy race（commit 連發）
 
 | commit | 修了什麼 | 觸發 cell |
 |---|---|---|
@@ -87,7 +98,7 @@ git log --oneline poc/ -- ansible/ tests/ Makefile results/PoC-DESIGN.md | \
 
 ---
 
-## 4. 重跑單一 cell 的 reproducer
+## 5. 重跑單一 cell 的 reproducer
 
 ### 4.1 標準流程（destroy-all → deploy → dry-run anchor）
 
@@ -119,7 +130,7 @@ ssh root@172.24.40.31 'rm -rf /tmp/poc-tpcc/artifacts/{crdb-vm-3node-3s1r-rc-202
 
 ---
 
-## 5. dispatch log（過程留底）
+## 6. dispatch log（過程留底）
 
 | 來源 | 路徑 | 用途 |
 |---|---|---|
@@ -134,7 +145,7 @@ ssh root@172.24.40.31 'rm -rf /tmp/poc-tpcc/artifacts/{crdb-vm-3node-3s1r-rc-202
 
 ---
 
-## 6. 還未做但已 spec 的後續
+## 7. 還未做但已 spec 的後續
 
 | 項目 | 卡在哪 | PoC-DESIGN 對應節 |
 |---|---|---|
