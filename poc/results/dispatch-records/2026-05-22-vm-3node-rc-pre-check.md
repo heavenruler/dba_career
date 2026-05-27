@@ -8,20 +8,20 @@
 
 ## 1. 12 cells 結果矩陣
 
-| cell | TPCC_TS (recommended) | RF expected/actual | ISO expected/actual | YB effective iso | all_pass |
-|---|---|---:|---|---|:---:|
-| `tidb-1s1r` | `20260522T095010+0800` | 1 / **1** | READ-COMMITTED / **READ-COMMITTED** | n/a | ✅ |
-| `tidb-1s3r` | `20260522T132627+0800` | 3 / **3** | READ-COMMITTED / **READ-COMMITTED** | n/a | ✅ |
-| `tidb-3s1r` | `20260522T135613+0800` | 1 / **1** | READ-COMMITTED / **READ-COMMITTED** | n/a | ✅ |
-| `tidb-3s3r` | `20260522T135725+0800` | 3 / **3** | READ-COMMITTED / **READ-COMMITTED** | n/a | ✅ |
-| `crdb-1s1r` | `20260522T111834+0800` | 1 / **1** | read committed / **read committed** | n/a | ✅ |
-| `crdb-1s3r` | `20260522T132804+0800` | 3 / **3** | read committed / **read committed** | n/a | ✅ |
-| `crdb-3s1r` | `20260522T135956+0800` | 1 / **1** | read committed / **read committed** | n/a | ✅ |
-| `crdb-3s3r` | `20260522T141321+0800` | 3 / **3** | read committed / **read committed** | n/a | ✅ |
-| `ybdb-1s1r` | `20260522T125647+0800` | 1 / **1** | read committed / **read committed** | **read committed** | ✅ |
-| `ybdb-1s3r` | `20260522T130930+0800` | 3 / **3** | read committed / **read committed** | **read committed** | ✅ |
-| `ybdb-3s1r` | `20260522T135840+0800` | 1 / **1** | read committed / **read committed** | **read committed** | ✅ |
-| `ybdb-3s3r` | `20260522T135921+0800` | 3 / **3** | read committed / **read committed** | **read committed** | ✅ |
+| cell | TPCC_TS (recommended) | RF expected/actual | ISO expected/actual | Checked |
+|---|---|---:|---|:---:|
+| `tidb-1s1r` | `20260522T095010+0800` | 1 / **1** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
+| `tidb-1s3r` | `20260522T132627+0800` | 3 / **3** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
+| `tidb-3s1r` | `20260522T135613+0800` | 1 / **1** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
+| `tidb-3s3r` | `20260522T135725+0800` | 3 / **3** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
+| `crdb-1s1r` | `20260522T111834+0800` | 1 / **1** | read committed / **read committed** | ✅ |
+| `crdb-1s3r` | `20260522T132804+0800` | 3 / **3** | read committed / **read committed** | ✅ |
+| `crdb-3s1r` | `20260522T135956+0800` | 1 / **1** | read committed / **read committed** | ✅ |
+| `crdb-3s3r` | `20260522T141321+0800` | 3 / **3** | read committed / **read committed** | ✅ |
+| `ybdb-1s1r` | `20260522T125647+0800` | 1 / **1** | read committed / **read committed** | ✅ |
+| `ybdb-1s3r` | `20260522T130930+0800` | 3 / **3** | read committed / **read committed** | ✅ |
+| `ybdb-3s1r` | `20260522T135840+0800` | 1 / **1** | read committed / **read committed** | ✅ |
+| `ybdb-3s3r` | `20260522T135921+0800` | 3 / **3** | read committed / **read committed** | ✅ |
 
 > **YB triple gate**：`transaction_isolation`、`yb_effective_transaction_isolation_level` 兩者皆 RC — 表示 tserver gflag `yb_enable_read_committed_isolation=true` 真的生效，沒有 silent SI fallback。
 
