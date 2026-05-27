@@ -37,6 +37,16 @@ Shard（分片）+ Replica（複本 / RF）：先把資料切開，再把每個 
 | `3s1r` | 固定 RF=1，只觀察 shard 成本 |
 | `3s3r` | production-like 代表點；同時觀察 3 shards 的資料 / 流量分散成本，以及 RF=3 的三副本同步與 quorum commit 成本 |
 
+### 各 DB 如何體現 shard / replica
+
+| DB | Shard 體現方式 | Replica / RF 體現方式 | 本文件驗證範圍 |
+|---|---|---|---|
+| TiDB | 以 table Region 數體現；prepare 後透過 `SPLIT TABLE ... REGIONS` 鎖定 1 或 3 shards/table | PD `replication.max-replicas=N` | dry-run 只驗 RF；shard actual 需在 prepare hard gate 驗 `prepare/shard-count.txt` |
+| CockroachDB | 以 Range 數體現；prepare 後透過 `ALTER TABLE ... SPLIT AT` 鎖定 1 或 3 ranges/table | zone config `num_replicas=N` | dry-run 只驗 RF；shard actual 需在 prepare hard gate 驗 `prepare/shard-count.txt` |
+| YugabyteDB | 以 Tablet 數體現；`ysql_num_shards_per_tserver` 與 `CREATE TABLE ... SPLIT INTO N TABLETS` 控制 tablets/table | `yugabyted configure data_placement --rf=N`，universe config 反映為 `numReplicas=N` | dry-run 驗 RF；shard planned 來自 cell 名稱，actual 需在 prepare hard gate 驗 `prepare/shard-count.txt` |
+
+> 本 pre-check 是 deploy-time gate：確認 cluster、RF、isolation 已對齊。Shard actual 不在 dry-run artifact 內，不能把 `Shard planned` 解讀成已驗證結果。
+
 ---
 
 ## 2. 12 cells 結果矩陣
