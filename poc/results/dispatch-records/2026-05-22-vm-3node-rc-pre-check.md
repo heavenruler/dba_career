@@ -8,12 +8,34 @@
 
 ## 1. Shard / Replica 概念說明
 
-分散式資料庫會把資料拆到多台機器上，核心設計通常同時包含 **shard** 與 **replica** 兩件事：
+分散式資料庫通常同時用 **shard** 分散流量，用 **replica** 提供容錯。
 
-- **Shard（分片）**：把資料水平切成多份，讓不同節點可以分攤資料量與請求壓力。分片越多，理論上越能平行處理，但也會增加跨 shard 查找、transaction coordination 與 metadata 管理成本。
-- **Replica（複本 / RF）**：把同一份 shard 複製到多個節點，避免單一節點故障造成資料不可用。RF=3 通常代表每份資料有 3 份複本，寫入時需要等待 quorum，因此可靠性提高，但寫入延遲與同步成本也會增加。
-- **為什麼需要兩者**：shard 解決「資料與流量如何分散」，replica 解決「節點故障時資料如何維持可用與一致」。兩者同時存在，才能兼顧擴充性、容錯與一致性。
-- **為什麼本 PoC 要拆 1s1r / 1s3r / 3s1r / 3s3r**：這 4 組可以把「分片成本」與「複寫成本」拆開觀察。`1s1r → 1s3r` 主要看 replica 成本；`1s1r → 3s1r` 主要看 shard 成本；`1s1r → 3s3r` 則看兩者疊加後的影響。
+```text
+Shard（分片）：把資料切開，分散到不同節點
+
+  data
+   ├─ shard 1 ── node A
+   ├─ shard 2 ── node B
+   └─ shard 3 ── node C
+```
+
+```text
+Replica（複本 / RF）：同一份 shard 複製多份，避免單點故障
+
+  shard 1
+   ├─ replica 1 ── node A
+   ├─ replica 2 ── node B
+   └─ replica 3 ── node C
+```
+
+本 PoC 用 4 組 cell 拆解成本：
+
+| cell | 觀察重點 |
+|---|---|
+| `1s1r` | 最小基準：1 shard、RF=1 |
+| `1s3r` | 固定 1 shard，只觀察 replica / RF 成本 |
+| `3s1r` | 固定 RF=1，只觀察 shard 成本 |
+| `3s3r` | shard + replica 疊加成本 |
 
 ---
 
