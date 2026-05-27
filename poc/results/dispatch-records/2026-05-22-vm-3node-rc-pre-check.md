@@ -37,7 +37,11 @@ Shard（分片）+ Replica（複本 / RF）：先把資料切開，再把每個 
 | `3s1r` | 固定 RF=1，只觀察 shard 成本 |
 | `3s3r` | shard + replica 疊加成本 |
 
-`3s3r` 是本輪三節點測項的 production-like 代表點：3 shards 讓資料與流量有機會分散到 3 個節點，RF=3 則是三節點高可用的常見最小配置，可容忍 1 個節點故障並透過 quorum commit 維持一致性。它不一定最快，但最能代表「分片 + 複寫」同時存在時的真實成本；`1s1r / 1s3r / 3s1r` 則用來拆解成本來源，避免只看 `3s3r` 時無法分辨瓶頸來自 shard 還是 replica。
+`3s3r` 是 production-like 代表點，不一定最快，但最接近正式三節點高可用部署。
+
+- `3 shards`：觀察資料與流量分散成本。
+- `RF=3`：觀察三副本同步與 quorum commit 成本。
+- `1s1r / 1s3r / 3s1r`：拆解 shard 與 replica 各自影響。
 
 ---
 
