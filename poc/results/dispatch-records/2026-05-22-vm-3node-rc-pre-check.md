@@ -8,6 +8,8 @@
 
 ## 1. 12 cells 結果矩陣
 
+> cell 命名規則：`<db>-<shards>s<replicas>r`。例如 `ybdb-3s1r` 表示 YugabyteDB、3 shards、RF=1；`tidb-1s3r` 表示 TiDB、1 shard、RF=3。
+
 | cell | TPCC_TS (recommended) | RF expected/actual | ISO expected/actual | Checked |
 |---|---|---:|---|:---:|
 | `tidb-1s1r` | [20260522T095010](../tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260522T095010+0800/) | 1 / **1** | READ-COMMITTED / **READ-COMMITTED** | ✅ |
