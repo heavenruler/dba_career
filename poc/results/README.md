@@ -120,10 +120,6 @@
 - **YB-Master**：叢集 metadata 管理元件，負責 tablet placement、schema metadata 與 cluster coordination。
 - **架構重點**：tserver 一體式架構；加節點時 SQL 接收能力與資料 tablet capacity 一起增加，實際效能同時受 tablet 分布、複本數與 transaction coordination 影響。
 
-### 歷史檔案
-
-- `cockroach-tc1/` 為 PoC v4.7 前的 CockroachDB 舊資料（單次 10min、手動部署、無雙邊監控）。已加 deprecated banner，**不納入 PoC v4.7 baseline 與跨家對比**。
-
 ## 表格註解（標準四項）
 
 > 本段定義 README 內數字與判讀用語的共通口徑；正文若出現 [註2] / [註3] / [註4] 會連回本段，註1 作為全文件計算口徑。下方 N1-N10 為**額外方法論補充**。
@@ -157,4 +153,4 @@
 - YugabyteDB 流程紀錄：[yuga-tc1/S-BASE/pipeline-log.md](./yuga-tc1/S-BASE/pipeline-log.md)
 - CockroachDB 歷史資料（已 deprecated）：[cockroach-tc1/S-BASE/pipeline-log.md](./cockroach-tc1/S-BASE/pipeline-log.md)
 - Codex 文件審計 prompt：[audit-watch-prompt.md](./audit-watch-prompt.md)
-- 歷史 README 備份：[README_old.md](./README_old.md)
+- 歷史 README 備份（已 deprecated）：[README_old.md](./README_old.md)
