@@ -1,8 +1,8 @@
 # 2026-05-22 vm-3node-rc pre-check dispatch record
 
-**Scope**: 12 cells × dry-run anchor（依 PoC-DESIGN §6.3.2.3 / §6.3.2.4）
-**Status**: ✅ 全綠 — 全部 12 cells `.dry-run.done` `all_pass=true`
-**對應 commits**: `242d9df` → `0409b76`（git log 摘要見下方 §3）
+- **Scope**: 12 cells × dry-run anchor（依 PoC-DESIGN §6.3.2.3 / §6.3.2.4）
+- **Status**: ✅ 全綠 — 全部 12 cells `.dry-run.done` `all_pass=true`
+- **對應 commits**: `242d9df` → `0409b76`（git log 摘要見下方 §3）
 
 ---
 
