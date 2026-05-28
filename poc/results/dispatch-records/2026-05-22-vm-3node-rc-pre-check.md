@@ -69,7 +69,7 @@ YB triple gate 需同時通過：
 2. 啟用層：`--yb_enable_read_committed_isolation=true`
 3. 實際層：`yb_get_effective_transaction_isolation_level()` 回報 `read committed`
 
-> 注意：2026-05-22 dry-run artifact 仍使用 `SHOW yb_effective_transaction_isolation_level` 與 `.dry-run.done` 的 `yb_effective_iso`；該 variable 已 deprecated。後續 dry-run script 應改用 `SELECT yb_get_effective_transaction_isolation_level()`。
+> 注意：2026-05-22 dry-run artifact 仍使用 `SHOW yb_effective_transaction_isolation_level` 與 `.dry-run.done` 的 `yb_effective_iso`；[該 variable 已 deprecated](https://yugabytedb.tips/view-yb-run-time-parameters-values-and-descriptions/)。後續 dry-run script 應改用 `SELECT yb_get_effective_transaction_isolation_level()`。
 
 ---
 
