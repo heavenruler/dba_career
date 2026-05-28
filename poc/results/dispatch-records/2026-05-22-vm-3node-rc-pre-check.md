@@ -47,6 +47,28 @@ Shard（分片）+ Replica（複本 / RF）：先把資料切開，再把每個 
 
 > 本 pre-check 是 deploy-time gate：確認 cluster、RF、isolation 已對齊。Shard actual 不在 dry-run artifact 內，不能把 `Shard planned` 解讀成已驗證結果。
 
+### 各 DB 如何體現 isolation
+
+三家資料庫的 READ COMMITTED 不是同一組內部機制，所以 gate 不能只看 benchmark 參數。
+
+| DB | 需要看的 variable / status | artifact 對照 |
+|---|---|---|
+| TiDB | `@@transaction_isolation`、`@@tidb_txn_mode` | [`iso-preset.txt`](../tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260522T095010+0800/dry-run/iso-preset.txt)、[`expected-vs-actual.txt`](../tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260522T095010+0800/dry-run/expected-vs-actual.txt) |
+| CockroachDB | `SHOW transaction_isolation` | [`iso-preset.txt`](../crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260522T111834+0800/dry-run/iso-preset.txt)、[`expected-vs-actual.txt`](../crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260522T111834+0800/dry-run/expected-vs-actual.txt) |
+| YugabyteDB | `SHOW transaction_isolation`、`SHOW yb_effective_transaction_isolation_level`、`.dry-run.done` 內 `yb_effective_iso` | [`iso-preset.txt`](../yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260522T125647+0800/dry-run/iso-preset.txt)、[`expected-vs-actual.txt`](../yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260522T125647+0800/dry-run/expected-vs-actual.txt) |
+
+判讀重點：
+
+- TiDB：`READ-COMMITTED` 與 `pessimistic` 同時成立，才視為 RC gate 通過。
+- CockroachDB：session active isolation 顯示 `read committed`，才視為 RC gate 通過。
+- YugabyteDB：採 **YB triple gate**，避免看似 RC、實際落回 snapshot isolation。
+
+YB triple gate 需同時通過：
+
+1. connection string 要求 `default_transaction_isolation=read committed`
+2. session active isolation 回報 `transaction_isolation=read committed`
+3. effective isolation 回報 `yb_effective_transaction_isolation_level=read committed`
+
 ---
 
 ## 2. 12 cells 結果矩陣
@@ -67,8 +89,6 @@ Shard（分片）+ Replica（複本 / RF）：先把資料切開，再把每個 
 | `ybdb-1s3r` | [20260522T130930](../yuga-tc1/S-BASE/vm-3node-1s3r-rc/ybdb-vm-3node-1s3r-rc-20260522T130930+0800/) | 1 | [3 / **3**](../yuga-tc1/S-BASE/vm-3node-1s3r-rc/ybdb-vm-3node-1s3r-rc-20260522T130930+0800/dry-run/expected-vs-actual.txt) | read committed / **read committed** | ✅ |
 | `ybdb-3s1r` | [20260522T135840](../yuga-tc1/S-BASE/vm-3node-3s1r-rc/ybdb-vm-3node-3s1r-rc-20260522T135840+0800/) | 3 | [1 / **1**](../yuga-tc1/S-BASE/vm-3node-3s1r-rc/ybdb-vm-3node-3s1r-rc-20260522T135840+0800/dry-run/expected-vs-actual.txt) | read committed / **read committed** | ✅ |
 | `ybdb-3s3r` | [20260522T135921](../yuga-tc1/S-BASE/vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260522T135921+0800/) | 3 | [3 / **3**](../yuga-tc1/S-BASE/vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260522T135921+0800/dry-run/expected-vs-actual.txt) | read committed / **read committed** | ✅ |
-
-> **YB triple gate**：`transaction_isolation`、`yb_effective_transaction_isolation_level` 兩者皆 RC — 表示 tserver gflag `yb_enable_read_committed_isolation=true` 真的生效，沒有 silent SI fallback。
 
 ---
 
