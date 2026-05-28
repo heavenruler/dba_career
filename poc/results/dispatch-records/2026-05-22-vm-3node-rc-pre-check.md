@@ -56,7 +56,7 @@ Shard 控制點補充：
 
 - YugabyteDB
   - deploy 參數只是 guardrail
-  - 正式 shard 數在 prepare 前靠 schema pre-create 的 `SPLIT INTO N TABLETS` 鎖定
+  - 正式 shard 數在 prepare 前靠 schema pre-create 的 `SPLIT INTO N TABLETS` 鎖定；YugabyteDB 官方對資料分布與 tablet splitting 的說明見 [Data distribution](https://docs.yugabyte.com/stable/explore/linear-scalability/data-distribution/)
   - `--ysql_num_shards_per_tserver` 只定義預設 tablet 行為
   - `--enable_automatic_tablet_splitting` 只負責關掉背景 split
   - 因 go-tpc schema 使用 `CREATE TABLE IF NOT EXISTS`，後續 prepare 不會覆寫已 pre-create 的 tables
