@@ -18,6 +18,9 @@
 - **distinguish fact from inference**：OS 指標直接支持的是觀察；DB 內部機制若缺 metrics / trace，只能標為推測。
 - **short table, long note**：主表只放數字、狀態、來源與短判讀；踩坑、限制、技術細節放到文末註解或 dedicated caveat。
 - **one source per result**：每個已驗證結果必須有來源目錄 link，不可只寫口頭結論。
+- **sample size aware**：`N` 是獨立重跑次數（不是 round）。`N=1` 僅作為方向性觀察、不作為對外定論；對外結論需 `N=3`。在表格 / 判讀中明示 N，並引用 README [N9](./README.md#note-N9)。
+- **YugabyteDB triple gate**：YugabyteDB 的 isolation gate 須三層同時通過（default flag + enable flag + active/effective）；active 層改用 `SELECT yb_get_effective_transaction_isolation_level()`，舊 `SHOW yb_effective_transaction_isolation_level` 已 deprecated，文件 / 範例不再使用。
+- **dispatch-records as source-of-truth for跨 cell 分析**：vm-3node 4 cells、HAProxy vs direct、首次 dispatch 中斷處置等跨 cell 觀察落地於 `results/dispatch-records/<日期>-<scope>-analysis.md`；pipeline-log.md / README.md 應在對應段落 inline link 過去，不重複貼數字。
 - **protect dirty worktree**：修改前先看 `git status --short`，只 stage/commit 本次要求範圍。
 
 ## 文件重構流程
@@ -60,12 +63,15 @@
 |---|---|
 | 數字來源 | 每個 tpmC / p99 / error rate 都要能追到 log、summary 或 pipeline log |
 | 執行口徑 | v4.7 5-round mean 與 pre-v4.7 single-run 不可混用 |
-| 隔離級 | READ COMMITTED / REPEATABLE READ / SERIALIZABLE 必須有 gate 或設定證據 |
+| 隔離級 | READ COMMITTED / REPEATABLE READ / SERIALIZABLE 必須有 gate 或設定證據；YugabyteDB 須通過 triple gate（default + enable + active/effective）|
+| 隔離級 SQL 例 | YugabyteDB 範例改用 `SELECT yb_get_effective_transaction_isolation_level()`，不再使用 deprecated 的 `SHOW yb_effective_transaction_isolation_level` |
+| 樣本數 | 每組結果明示 `N`（獨立重跑次數），`N=1` 必須有 caveat |
 | error rate | 不只看 tpmC；高吞吐若伴隨 retry / abort，必須註記 |
 | 機制解釋 | WAL / Raft / Pebble / MVCC / retry 等機制需區分「量測」與「推論」 |
 | 來源連結 | README 的 `來源目錄` 必須是 Markdown link 且目錄存在 |
 | 表格語言 | 表格中不放長段 caveat，改用註記欄 |
 | 命名語言 | 正文使用 CockroachDB / YugabyteDB，不使用 CRDB / YBDB |
+| 跨 cell 分析 | vm-3node 4 cells、HAProxy vs direct 等跨 cell 觀察必須引用 `dispatch-records/<日期>-<scope>-analysis.md`，不在 README 內塞長段機制推論 |
 
 ## 互相校驗模式
 
@@ -82,6 +88,9 @@ Codex 完成初版修改後，交給 Claude Code 做第二視角審閱：
 4. 是否有機制推論被寫成事實。
 5. 是否有 README 與 pipeline-log.md 對同一數據說法不一致。
 6. 是否仍出現 CRDB / YBDB / 產物 等不符合文件規則的文字。
+7. YugabyteDB 範例是否仍用 deprecated 的 `SHOW yb_effective_transaction_isolation_level`，應改 `SELECT yb_get_effective_transaction_isolation_level()`。
+8. 結果是否標 `N`（獨立重跑次數）；`N=1` 是否有 caveat。
+9. 跨 cell 結論是否引用 `dispatch-records/<日期>-<scope>-analysis.md`，未直接塞長段機制推論於 README。
 
 請輸出：
 - findings，按嚴重度排序
@@ -241,6 +250,9 @@ Claude Code 提出建議後，交給 Codex 落地修改與驗證：
 - 差異分析是否有註記並連到文末註解。
 - 機制推論是否標示為推測或待補證據。
 - 是否還有 CRDB / YBDB / 產物 等不合規文字。
+- YugabyteDB 範例是否仍用 deprecated `SHOW yb_effective_transaction_isolation_level`，應改 `SELECT yb_get_effective_transaction_isolation_level()`。
+- vm-3node / HAProxy 結果是否標 `N`（獨立重跑次數）；`N=1` 是否有 caveat。
+- 跨 cell 結論是否引用 `dispatch-records/<日期>-<scope>-analysis.md`，未直接塞長段機制推論於 README。
 
 輸出：
 - Blocker：會導致結論錯誤，必須修

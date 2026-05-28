@@ -15,18 +15,19 @@
 - 表格外段落需要補充說明時，也在句尾使用同一組註解連結。
 - `註1` 到 `註4` 為全文件共用，不針對單一表格重新編號。
 - 文末固定使用 `<a id="note-1"></a>` anchor，避免 Markdown renderer 對中文 heading anchor 產生差異。
+- `N` 表示獨立重跑次數（不是 round）；`N=1` 為方向性觀察，需 `N=3` 才可作為對外結論基準（同 README N9）。
 
 ## TL;DR — <scope>（<date>）
 
-> 本段只放目前最重要結論，避免塞完整分析。完整數據放各 isolation 段。
+> 本段只放目前最重要結論，避免塞完整分析。完整數據放各 isolation / 各 vm-3node 子拓撲段。
 
 ### tpmC 排行
 
-| 排名 | 隔離級 | tpmC | 併發 | DB-host 瓶頸 | error count | error rate |
-|---|---|---:|---:|---|---:|---:|
-| 🥇 | `<隔離級>` | `<tpmC>` | `<threads>` | `<CPU-bound / IO-bound / retry-bound / 待確認>` | `<count>` | `<errors / total 或 %>` |
-| 🥈 | `<隔離級>` | `<tpmC>` | `<threads>` | `<瓶頸>` | `<count>` | `<errors / total 或 %>` |
-| 🥉 | `<隔離級>` | `<tpmC>` | `<threads>` | `<瓶頸>` | `<count>` | `<errors / total 或 %>` |
+| 排名 | 案例 / 隔離級 | tpmC | 併發 | DB-host 瓶頸 | error count | error rate | N |
+|---|---|---:|---:|---|---:|---:|---:|
+| 🥇 | `<隔離級 / 子拓撲>` | `<tpmC>` | `<threads>` | `<CPU-bound / IO-bound / retry-bound / coordination-bound / 待確認>` | `<count>` | `<errors / total 或 %>` | `<1 或 3>` |
+| 🥈 | `<隔離級 / 子拓撲>` | `<tpmC>` | `<threads>` | `<瓶頸>` | `<count>` | `<errors / total 或 %>` | `<1 或 3>` |
+| 🥉 | `<隔離級 / 子拓撲>` | `<tpmC>` | `<threads>` | `<瓶頸>` | `<count>` | `<errors / total 或 %>` | `<1 或 3>` |
 
 ### 三大發現
 
@@ -41,11 +42,16 @@
 
 ### 完整資料目錄
 
-| 隔離級 | TPCC_TS | 主要結果 | 結果目錄 | 詳細段落 |
+| 案例 / 隔離級 | TPCC_TS | 主要結果 | 結果目錄 | 詳細段落 |
 |---|---|---:|---|---|
-| READ COMMITTED | `<yyyyMMddTHHmmss+0800>` | `<tpmC>` | [`<result-dir>`](./vm-1node-rc/<result-dir>/) | [§ vm-1node-rc](#vm-1node-rc) |
-| REPEATABLE READ | `<yyyyMMddTHHmmss+0800>` | `<tpmC>` | [`<result-dir>`](./vm-1node-rr/<result-dir>/) | [§ vm-1node-rr](#vm-1node-rr) |
-| 最嚴格隔離級 | `<yyyyMMddTHHmmss+0800 或 alias>` | `<tpmC 或 —>` | [`<result-dir>`](./vm-1node-strict/<result-dir>/) | [§ vm-1node-strict](#vm-1node-strict) |
+| vm-1node / READ COMMITTED | `<yyyyMMddTHHmmss+0800>` | `<tpmC>` | [`<result-dir>`](./vm-1node-rc/<result-dir>/) | [§ vm-1node-rc](#vm-1node-rc) |
+| vm-1node / REPEATABLE READ | `<yyyyMMddTHHmmss+0800>` | `<tpmC>` | [`<result-dir>`](./vm-1node-rr/<result-dir>/) | [§ vm-1node-rr](#vm-1node-rr) |
+| vm-1node / 最嚴格隔離級 | `<yyyyMMddTHHmmss+0800 或 alias>` | `<tpmC 或 —>` | [`<result-dir>`](./vm-1node-strict/<result-dir>/) | [§ vm-1node-strict](#vm-1node-strict) |
+| vm-3node-1s1r / RC | `<yyyyMMddTHHmmss+0800>` | `<tpmC 或 —>` | [`<result-dir>`](./vm-3node-1s1r-rc/<result-dir>/) | [§ vm-3node 系列](#vm-3node-系列4-sub-topology--rcpoc-design-632) |
+| vm-3node-1s3r / RC | `<yyyyMMddTHHmmss+0800>` | `<tpmC 或 —>` | [`<result-dir>`](./vm-3node-1s3r-rc/<result-dir>/) | [§ vm-3node 系列](#vm-3node-系列4-sub-topology--rcpoc-design-632) |
+| vm-3node-3s1r / RC | `<yyyyMMddTHHmmss+0800>` | `<tpmC 或 —>` | [`<result-dir>`](./vm-3node-3s1r-rc/<result-dir>/) | [§ vm-3node 系列](#vm-3node-系列4-sub-topology--rcpoc-design-632) |
+| vm-3node-3s3r / RC | `<yyyyMMddTHHmmss+0800>` | `<tpmC 或 —>` | [`<result-dir>`](./vm-3node-3s3r-rc/<result-dir>/) | [§ vm-3node 系列](#vm-3node-系列4-sub-topology--rcpoc-design-632) |
+| vm-3node-haproxy-3s3r / RC | `<yyyyMMddTHHmmss+0800>` | `<tpmC 或 —>` | [`<result-dir>`](./vm-3node-haproxy-3s3r-rc/<result-dir>/) | [§ vm-3node-haproxy-3s3r-rc](#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy) |
 
 ## vm-1node-rc
 
@@ -82,6 +88,11 @@
 ### Gate 結果
 
 - isolation gate：`<expected>` / `<actual>`，來源：`gate/isolation-db.txt`、`gate/isolation-driver-verify.txt`
+- YugabyteDB triple gate（僅 YugabyteDB；其他資料庫忽略本欄）：
+  1. default gate：`--ysql_default_transaction_isolation='read committed'`
+  2. enable gate：`--yb_enable_read_committed_isolation=true`
+  3. active / effective gate：`SHOW TRANSACTION ISOLATION LEVEL` 與 `SELECT yb_get_effective_transaction_isolation_level()`
+  > 舊 `SHOW yb_effective_transaction_isolation_level` 已 [deprecated](https://yugabytedb.tips/view-yb-run-time-parameters-values-and-descriptions/)，改用 `yb_get_effective_transaction_isolation_level()` 函式。
 - OS gate：`<THP / swappiness / ulimit>`
 - Time sync：`<chrony / drift>`
 - Disk gate：`<filesystem / mount / free space>`
@@ -157,7 +168,7 @@
 - 產出欄位：`%usr / %sys / %iowait / %idle / %idle min / r/s / w/s / %util`
 
 > **核心問題**：單節點在固定硬體下，吞吐天花板的成因是什麼？  
-> **回答**：`<CPU-bound / IO wait-bound / retry-bound / network-bound / 待確認>`。
+> **回答**：`<CPU-bound / IO wait-bound / retry-bound / network-bound / coordination-bound / 待確認>`。
 
 #### mpstat-db.txt
 
@@ -245,9 +256,65 @@
 
 > 若有實跑，複製 `vm-1node-rc` 的 Execute / Round-by-round / DB-host 飽和分析 / 對標分析結構。
 
+## vm-3node 系列（4 sub-topology × RC，PoC-DESIGN §6.3.2）
+
+> 本段聚合 4 個 vm-3node 子拓撲（1s1r / 1s3r / 3s1r / 3s3r）在 RC 下的執行紀錄與對標分析；HAProxy 變體獨立於 [§ vm-3node-haproxy-3s3r-rc](#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)。子拓撲命名規則：`<shards>s<replicas>r`（例：`3s3r` = 3 shards × RF=3）。`N=1` / `N=3` 嚴謹性定義見 README [N9](./README.md#note-N9)；shard / replica 變數說明見 [N10](./README.md#note-N10)。
+
+### Dry-run anchor 矩陣
+
+| sub-topo | TPCC_TS | Shard planned | RF expected/actual | ISO expected/actual | dry-run.done |
+|---|---|---:|---:|---|:---:|
+| `1s1r` | `<yyyyMMddTHHmmss+0800>` | 1 | `1 / <actual>` | `READ COMMITTED / <actual>` | `<✅/❌>` |
+| `1s3r` | `<yyyyMMddTHHmmss+0800>` | 1 | `3 / <actual>` | `READ COMMITTED / <actual>` | `<✅/❌>` |
+| `3s1r` | `<yyyyMMddTHHmmss+0800>` | 3 | `1 / <actual>` | `READ COMMITTED / <actual>` | `<✅/❌>` |
+| `3s3r` | `<yyyyMMddTHHmmss+0800>` | 3 | `3 / <actual>` | `READ COMMITTED / <actual>` | `<✅/❌>` |
+
+### Execute 結果（t=128 best-of-4 thread groups 代表點；完整 4 thread groups 數據見各結果目錄 `summary.json`）
+
+| sub-topo | tpmC (t=128) | NO p99 (ms) | error rate | DB-host 瓶頸 | 結果目錄 | N |
+|---|---:|---:|---:|---|---|---:|
+| `1s1r` | `<tpmC>` | `<p99>` | `<rate>` | `<bottleneck>` | [`<result-dir>`](./vm-3node-1s1r-rc/<result-dir>/) | `<1 或 3>` |
+| `1s3r` | `<tpmC>` | `<p99>` | `<rate>` | `<bottleneck>` | [`<result-dir>`](./vm-3node-1s3r-rc/<result-dir>/) | `<1 或 3>` |
+| `3s1r` | `<tpmC>` | `<p99>` | `<rate>` | `<bottleneck>` | [`<result-dir>`](./vm-3node-3s1r-rc/<result-dir>/) | `<1 或 3>` |
+| `3s3r` | `<tpmC>` | `<p99>` | `<rate>` | `<bottleneck>` | [`<result-dir>`](./vm-3node-3s3r-rc/<result-dir>/) | `<1 或 3>` |
+
+### 跨 cell 分析
+
+- `<例如「3s3r 極不穩，stddev 1,400–2,600」這類跨子拓撲機制觀察。>`
+- 完整跨 cell 分析請見 [`dispatch-records/<日期>-vm-3node-<all4|haproxy>-rc-<db>-analysis.md`](./dispatch-records/)。
+
+## vm-3node-haproxy-3s3r-rc（3 shards × RF=3 + HAProxy）
+
+> 本段記錄 `vm-3node-3s3r-rc` 拓撲在 HAProxy 連線分散下的執行紀錄；比對 direct 連線（`vm-3node-3s3r-rc`）的差異是本段重點。`N=1` 結果視為方向性觀察，需 `N=3` 才能作為跨家 HAProxy delta 排序依據（[N9](./README.md#note-N9)）。
+
+### 部署差異
+
+- HAProxy 主機：`<host:port>`，TCP roundrobin
+- backend：`.32:<port> / .33:<port> / .34:<port>`
+- 關鍵設定：`timeout client/server 1h`、`option clitcpka` / `option srvtcpka`（防 prepare 階段連線斷線）
+- 客戶端連線：`.31 → <HAProxy host>:<port>`，不再直連 DB
+
+### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
+
+> 複製 `vm-1node-rc` 的 Execute / Round-by-round / DB-host 飽和分析結構填入。
+
+### 對 direct 連線的差異
+
+| threads | direct tpmC | haproxy tpmC | Δ tpmC | direct p99 | haproxy p99 | Δ p99 | 註記 |
+|---:|---:|---:|---:|---:|---:|---:|---|
+| 16 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `[註1](#note-1)` |
+| 32 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `[註1](#note-1)` |
+| 64 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `[註2](#note-2)` |
+| 128 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `[註2](#note-2)` |
+
+### Caveats
+
+- `<例如 DB-host metrics 缺失 / 首次 dispatch 中斷 / N=1 / direct baseline 本身不穩等。>`
+- 完整 HAProxy vs direct 對比分析請見 [`dispatch-records/<日期>-vm-3node-haproxy-vs-direct-3s3r-<db>-analysis.md`](./dispatch-records/)。
+
 ## Kubernetes / scale-out 段
 
-> 三節點虛擬機、HAProxy、Kubernetes 無資源限制、Kubernetes 有資源限制等 scale-out case 請獨立成段。未重跑前不可保留舊數字在主段。
+> Kubernetes 無資源限制、Kubernetes 有資源限制等 scale-out case 請獨立成段。未重跑前不可保留舊數字在主段。
 
 ### <case-name>
 
@@ -266,7 +333,7 @@
 |---|---|
 | <a id="note-1"></a>註1 | `<差異計算口徑，例如 Δ tpmC = (本組 - 對照組) / 對照組；p99 差異同理。>` |
 | <a id="note-2"></a>註2 | `<比較限制，例如不同 isolation、不同 retry 行為、不同 run 方法時不可直接視為引擎優劣。>` |
-| <a id="note-3"></a>註3 | `<資料品質限制，例如單次 10min wrapper、5-round mean、manual resume、欄位待修。>` |
+| <a id="note-3"></a>註3 | `<資料品質限制，例如單次 10min wrapper、5-round mean、manual resume、欄位待修、DB-host metrics 缺失。>` |
 | <a id="note-4"></a>註4 | `<機制歸因限制，例如 OS 指標支持瓶頸，但缺少 DB metrics / trace 直接佐證。>` |
 
 ## 取數指令索引
@@ -277,9 +344,11 @@
 | round-by-round tpmC | `<result-dir>` | `runs/threads-*/round-*/go-tpc-stdout.txt` | `<command>` | `r1-r5 tpmC` |
 | marker chain | `<result-dir>` | `.*.done` | `ls -al .*.done` | `phase complete` |
 | isolation gate | `<result-dir>` | `gate/isolation*.txt` | `cat gate/isolation-db.txt gate/isolation-driver-verify.txt` | `isolation actual` |
+| YB triple gate（僅 YugabyteDB）| `<result-dir>` | `dry-run/iso-preset.txt`、`dry-run/expected-vs-actual.txt`、`gate/isolation-db.txt` | `cat dry-run/iso-preset.txt; cat gate/isolation-db.txt` | `default / enable / effective 三層 isolation` |
 | DB-host CPU | `<result-dir>` | `runs/threads-*/round-*/mpstat-db.txt` | `<command>` | `%usr / %iowait / %idle` |
 | DB-host IO | `<result-dir>` | `runs/threads-*/round-*/iostat-1s-db.txt` | `<command>` | `r/s / w/s / %util` |
 | DB config | `<result-dir>` | `db-config/*` | `<command>` | `cluster setting / effective config` |
+| dry-run anchor（vm-3node）| `<result-dir>` | `dry-run/*.txt`、`.dry-run.done` | `jq . .dry-run.done; cat dry-run/expected-vs-actual.txt` | `topology / rf / iso actual` |
 
 ## v4.7 檢核項
 
@@ -289,7 +358,10 @@
 | Round artifact 格式 | `runs/threads-X/round-Y/go-tpc-stdout.txt` |
 | DB-host 監控 | mpstat / iostat / vmstat / sar 1s 取樣，client (`*.txt`) + DB-host (`*-db.txt`) 雙邊 |
 | Gate 雙閘 | `isolation-db.txt` + `isolation-driver-verify.txt`，兩者一致才放行 |
-| Suite marker | `.gate.done` / `.prepare.done` / `.gate-isolation.done` / `.run.done` / `.collect.done` / `.suite.done` |
+| YugabyteDB triple gate | default + enable + active/effective 三層皆通過才放行；active 改用 `SELECT yb_get_effective_transaction_isolation_level()` |
+| Suite marker | `.gate.done` / `.prepare.done` / `.gate-isolation.done` / `.run.done` / `.collect.done` / `.suite.done` + `.db-config.done` |
+| vm-3node dry-run anchor | `.dry-run.done` JSON `all_pass=true` + 4 dump txt（cluster-topology / replication-factor / cluster-health / iso-preset / expected-vs-actual）|
 | TPCC_TS | `yyyyMMddTHHmmss+0800` 共用整 suite |
 | 平均口徑 | tpmC / p50 / p95 / p99 全為 5-round mean，range/mean 看穩定性 |
-| 三 isolation 矩陣 | READ COMMITTED + REPEATABLE READ + 最嚴格隔離級 |
+| 三 isolation 矩陣 | READ COMMITTED + REPEATABLE READ + 最嚴格隔離級（僅 vm-1node；vm-3node 全部以 RC 為主）|
+| 重跑次數 N | 對外結論需 `N=3`；`N=1` 僅作為方向性觀察 |

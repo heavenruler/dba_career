@@ -137,7 +137,7 @@
 |---|---|
 | N1 | 本測試是 TPC-C-derived stress benchmark using go-tpc，非 audited TPC-C，不能與官方 TPC-C 排名直接比較。 |
 | N2 | go-tpc 本輪沒有 think time / keying time，執行緒完成一筆交易後會立即送下一筆，因此 efficiency 超過 100% 屬正常。 |
-| N3 | isolation 必須由 connection string 與 gate 記錄共同確認，避免 driver 或資料庫預設值造成測試口徑偏移（CockroachDB 採 isolation 雙閘 = `isolation-db.txt` + `isolation-driver-verify.txt`；YugabyteDB 加 `SHOW yb_effective_transaction_isolation_level` 三層驗證）。 |
+| N3 | isolation 必須由 connection string 與 gate 記錄共同確認，避免 driver 或資料庫預設值造成測試口徑偏移（CockroachDB 採 isolation 雙閘 = `isolation-db.txt` + `isolation-driver-verify.txt`；YugabyteDB 採 **triple gate**：① `--ysql_default_transaction_isolation` ② `--yb_enable_read_committed_isolation` ③ active gate `SHOW TRANSACTION ISOLATION LEVEL` + `SELECT yb_get_effective_transaction_isolation_level()`；舊 `SHOW yb_effective_transaction_isolation_level` 已 [deprecated](https://yugabytedb.tips/view-yb-run-time-parameters-values-and-descriptions/)）。 |
 | N4 | v4.7 標準格式：20 分鐘 warmup、每個併發水位 5 round × 5 分鐘、4 thread groups（16/32/64/128）、DB-host 雙邊 OS 監控（mpstat/iostat/vmstat/sar）。TiDB / CockroachDB / YugabyteDB vm-1node 三家全 iso 已採此格式；YugabyteDB vm-3node direct RC 4 cells 已採此格式；YugabyteDB HAProxy 3s3r RC 已完成但 DB-host metrics missing；Kubernetes 重跑尚未排程；YugabyteDB pre-v4.7 single-run 已備份於 yuga-tc1-old/。 |
 | N5 | suite marker `.gate.done` / `.prepare.done` / `.gate-isolation.done` / `.run.done` / `.collect.done` / `.suite.done` + `.db-config.done` 代表該案例流程鏈完整。 |
 | N6 | CockroachDB / TiDB / YugabyteDB 三家 vm-1node 全 iso 的 tpmC 與 latency p50/p95/p99 已全為 5-round mean，口徑一致；數據來源為 `runs/threads-*/round-*/go-tpc-stdout.txt` + `[tests/common/summary-from-stdout.py](../tests/common/summary-from-stdout.py)` 解析後落地的 `summary.json`。 |

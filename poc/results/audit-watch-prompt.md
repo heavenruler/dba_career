@@ -32,12 +32,13 @@
 - `results/yuga-tc1-old/S-BASE/pipeline-log.md` + `pipeline-log_old.md`（pre-v4.7 archive，只確認 active log 是否有 pointer）
 - `results/crdb-tc1/S-BASE/pipeline-log.md`
 - `results/cockroach-tc1/S-BASE/pipeline-log.md`（舊版資料，只確認 deprecated / migrated 標示是否清楚）
+- `results/dispatch-records/`（vm-3node 4 cells 跨 cell 分析、HAProxy vs direct 分析、首次 dispatch 中斷處置等紀錄）
 
 ## 核心任務
 
-1. 根據 `results/audit-prompt.md` 的審計精神，檢查 results 文件是否符合目前 PoC 文件規範。
+1. 根據 `results/AI-COLLABORATION.md` 的審計精神，檢查 results 文件是否符合目前 PoC 文件規範。
 2. 同時承擔長期監督職責：監督、協作、複查、檢驗、校驗、建議、進度確認及規格對齊。
-3. 直到 TiDB / CockroachDB / YugabyteDB 三個資料庫目前 `vm-1node` 進度完成前，每次執行都要確認目前狀態、缺口與是否需要更新文件。
+3. 進度監督涵蓋全測試矩陣（vm-1node 三 isolation + vm-3node 4 sub-topology + vm-3node-haproxy-3s3r + Kubernetes 兩變體）；每次執行都要確認目前狀態、缺口與是否需要更新文件。
 4. 自動確認相關更新是否已 commit；若有未 commit 變更，需明確列出。
 5. 本次以 audit / watch / report 為主，不要修改檔案。
 
@@ -45,23 +46,27 @@
 
 - **artifact-first**：所有數字必須能追溯到 `results/` 下的結果目錄、marker、go-tpc stdout、summary、DB-host OS 監控或 pipeline log。
 - **no invented numbers**：不得創造或推估數據；找不到來源就標 `missing source`。
-- **README as index**：`README.md` 只作結果索引；`pipeline-log.md` 承載流程、分析、踩坑、技術細節與 caveat。
+- **README as index**：`README.md` 只作結果索引；`pipeline-log.md` 承載流程、分析、踩坑、技術細節與 caveat；跨 cell 觀察落地於 `dispatch-records/<日期>-<scope>-analysis.md`。
 - **clean tables**：表格保持乾淨；長解釋放到文末註解或 dedicated caveat。
-- **linked notes**：差異說明使用 `[註1](#note-1)` 到 `[註4](#note-4)`，文末集中解釋。
-- **required fields**：已驗證結果需包含來源目錄 link、tpmC、p99、error rate。
+- **linked notes**：差異說明使用 `[註1](#note-1)` 到 `[註4](#note-4)`，並可引用補充 `[N1]`–`[N10]`；文末集中解釋。
+- **required fields**：已驗證結果需包含來源目錄 link、tpmC、p99、error rate；vm-3node / HAProxy 結果額外需標 `N`（獨立重跑次數）。
 - **method separation**：v4.7 5-round mean 與 pre-v4.7 single-run wrapper 不可混用。
 - **fact vs inference**：機制歸因要區分直接量測、合理推論、未知；缺 DB metrics / trace 時必須標示推測。
 - **language rule**：正文使用 `TiDB` / `CockroachDB` / `YugabyteDB`，不使用 `CRDB` / `YBDB`；不使用「產物」一詞。
+- **YugabyteDB triple gate**：isolation 須三層通過（default flag + enable flag + active/effective）；範例 SQL 改用 `SELECT yb_get_effective_transaction_isolation_level()`，舊 `SHOW yb_effective_transaction_isolation_level` 已 deprecated。
+- **sample size aware**：`N` = 獨立重跑次數（不是 round）。`N=1` 僅作為方向性觀察、不作為對外定論；對外結論需 `N=3`。引用 README [N9](./README.md#note-N9)。
 - **data extraction traceability**：主要數據表應記錄工作目錄、使用檔案、取數指令、計算口徑；若缺失需列為 finding。
 
 ## 執行進度檢查
 
-請檢查三 DB `vm-1node` 的目前狀態：
+請檢查全測試矩陣的目前狀態：
 
-- gate / prepare / gate-isolation / run / collect / suite marker 是否完整。
+- vm-1node：gate / prepare / gate-isolation / run / collect / suite marker 是否完整（三 DB × 三 isolation = 9 組）。
+- vm-3node：4 sub-topology（1s1r / 1s3r / 3s1r / 3s3r）× 3 DB = 12 cells；dry-run anchor `.dry-run.done` 是否 `all_pass=true`；EXECUTE=1 後是否有完整 suite marker。
+- vm-3node-haproxy-3s3r：HAProxy 變體 3 cells 是否完成；DB-host metrics 是否齊全；HAProxy timeout 與 keepalive 設定是否生效。
 - 是否有新的結果目錄、summary、go-tpc stdout、DB-host OS 監控。
-- isolation gate 是否符合目標隔離級。
-- README.md 與各 pipeline-log.md 是否同步。
+- isolation gate 是否符合目標隔離級（YugabyteDB 須通過 triple gate）。
+- README.md 與各 pipeline-log.md、`dispatch-records/` 是否同步。
 - 相關更新是否已 commit。
 - 沒有新異動時回報 `standby`，但仍需列出 git status 與最近 HEAD。
 - 發現異常時列出具體路徑、問題、風險與建議下一步。
@@ -72,21 +77,26 @@
 git status --short
 git log --oneline -5
 rg -n "CRDB|YBDB|產物|TODO|待補|推測|註[1-4]" results/README.md results/*-tc1/S-BASE/pipeline-log.md
+rg -n "SHOW yb_effective_transaction_isolation_level" results/ tests/ ansible/   # deprecated，期望僅出現於 yuga-tc1-old/ 或歷史 dispatch-records
 find results -path "*vm-1node*" \( -name ".gate.done" -o -name ".prepare.done" -o -name ".gate-isolation.done" -o -name ".run.done" -o -name ".collect.done" -o -name ".suite.done" \)
+find results -path "*vm-3node*" \( -name ".dry-run.done" -o -name ".suite.done" \)
+find results -path "*vm-3node*haproxy*" -name "summary.json"
 find results -path "*vm-1node*" \( -name "summary.json" -o -name "go-tpc-stdout.txt" \)
-rg -n "取數來源|取數指令索引|error rate|來源目錄" results/README.md results/*-tc1/S-BASE/pipeline-log.md
+rg -n "取數來源|取數指令索引|error rate|來源目錄|N=1|N=3" results/README.md results/*-tc1/S-BASE/pipeline-log.md results/dispatch-records/
 ```
 
 ## 審計維度
 
 | 代號 | 維度 | 檢查重點 |
 |---|---|---|
-| D1 | 錯誤登錄數據 | tpmC / latency / error rate / CPU / IO 表格數字是否內部一致；round-by-round 與 5-round mean 是否能對齊 |
+| D1 | 錯誤登錄數據 | tpmC / latency / error rate / CPU / IO 表格數字是否內部一致；round-by-round 與 5-round mean 是否能對齊；HAProxy vs direct 差異計算口徑是否註明 |
 | D2 | 語意正確性 | isolation / retry / WAL / Raft / MVCC 等機制描述是否有 artifact 或官方文件支持 |
 | D3 | 文件可讀性 | 標題層級、表格欄位、註解連結、用詞是否符合 template |
-| D4 | 完整性 | 是否每個 `(db, iso)` 有環境、結果、DB-host 飽和分析、對比、結論、取數來源 |
-| D5 | 跨檔一致性 | README 與 pipeline log 對同一數字、狀態、來源目錄是否一致 |
+| D4 | 完整性 | 是否每個 `(db, iso)` 或 `(db, sub-topology)` 有環境、結果、DB-host 飽和分析、對比、結論、取數來源 |
+| D5 | 跨檔一致性 | README、pipeline log、`dispatch-records/` 對同一數字、狀態、來源目錄是否一致 |
 | D6 | 進度與 commit 狀態 | 新 artifact 是否已反映到文件；文件更新是否已 commit |
+| D7 | YB triple gate / deprecated SQL | YugabyteDB 範例與 gate 流程是否仍引用 deprecated `SHOW yb_effective_transaction_isolation_level`；應改 `SELECT yb_get_effective_transaction_isolation_level()`，並確認三層 gate 皆有 artifact |
+| D8 | 樣本數 `N` | vm-3node / HAProxy 結果是否標 `N`；`N=1` 是否有 caveat；對外結論是否避免 `N=1` 單獨支持 |
 
 ## 輸出格式
 
@@ -98,12 +108,20 @@ rg -n "取數來源|取數指令索引|error rate|來源目錄" results/README.m
 - git status：<clean / dirty + files>
 - 本次是否 standby：<yes/no>
 
-## 2. 三 DB vm-1node 進度
+## 2. 全測試矩陣進度
+### 2.1 vm-1node（三 isolation）
 | Database | READ COMMITTED | REPEATABLE READ | 最嚴格隔離級 | 缺口 |
 |---|---|---|---|---|
 | TiDB | ... | ... | ... | ... |
 | CockroachDB | ... | ... | ... | ... |
 | YugabyteDB | ... | ... | ... | ... |
+
+### 2.2 vm-3node（4 sub-topology × RC）
+| Database | 1s1r | 1s3r | 3s1r | 3s3r | haproxy-3s3r | 缺口 |
+|---|---|---|---|---|---|---|
+| TiDB | ... | ... | ... | ... | ... | ... |
+| CockroachDB | ... | ... | ... | ... | ... | ... |
+| YugabyteDB | ... | ... | ... | ... | ... | ... |
 
 ## 3. Critical Findings
 ### F-001 [D?] <短描述>
