@@ -55,7 +55,7 @@ Shard（分片）+ Replica（複本 / RF）：先把資料切開，再把每個 
 |---|---|---|
 | TiDB | [`@@transaction_isolation`](https://docs.pingcap.com/tidb/stable/system-variables/#transaction_isolation)、[`@@tidb_txn_mode`](https://docs.pingcap.com/tidb/stable/system-variables/#tidb_txn_mode) | [`iso-preset.txt`](../tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260522T095010+0800/dry-run/iso-preset.txt)、[`expected-vs-actual.txt`](../tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260522T095010+0800/dry-run/expected-vs-actual.txt) |
 | CockroachDB | [`SHOW transaction_isolation`](https://www.cockroachlabs.com/docs/v26.2/session-variables.html)、[`SHOW default_transaction_isolation`](https://www.cockroachlabs.com/docs/v26.2/session-variables.html) | [`iso-preset.txt`](../crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260522T111834+0800/dry-run/iso-preset.txt)、[`expected-vs-actual.txt`](../crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260522T111834+0800/dry-run/expected-vs-actual.txt) |
-| YugabyteDB | [`--ysql_default_transaction_isolation`](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#ysql-default-transaction-isolation)、[`--yb_enable_read_committed_isolation`](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#yb-enable-read-committed-isolation)、`SHOW transaction_isolation`、`SELECT yb_get_effective_transaction_isolation_level()` | [`iso-preset.txt`](../yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260522T125647+0800/dry-run/iso-preset.txt)、[`expected-vs-actual.txt`](../yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260522T125647+0800/dry-run/expected-vs-actual.txt) |
+| YugabyteDB | [`--ysql_default_transaction_isolation`](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#ysql-default-transaction-isolation)、[`--yb_enable_read_committed_isolation`](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#yb-enable-read-committed-isolation)、[`SHOW TRANSACTION ISOLATION LEVEL`](https://docs.yugabyte.com/stable/api/ysql/the-sql-language/statements/txn_show/)、`SELECT yb_get_effective_transaction_isolation_level()` | [`iso-preset.txt`](../yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260522T125647+0800/dry-run/iso-preset.txt)、[`expected-vs-actual.txt`](../yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260522T125647+0800/dry-run/expected-vs-actual.txt) |
 
 判讀重點：
 
@@ -65,9 +65,9 @@ Shard（分片）+ Replica（複本 / RF）：先把資料切開，再把每個 
 
 YB triple gate 需同時通過：
 
-1. 設定層：`--ysql_default_transaction_isolation='read committed'`
-2. 啟用層：`--yb_enable_read_committed_isolation=true`
-3. 實際層：`yb_get_effective_transaction_isolation_level()` 回報 `read committed`
+1. default gate：`--ysql_default_transaction_isolation='read committed'`
+2. enable gate：`--yb_enable_read_committed_isolation=true`
+3. active / effective gate：`SHOW TRANSACTION ISOLATION LEVEL` 與 `yb_get_effective_transaction_isolation_level()` 都回報 `read committed`
 
 > 注意：2026-05-22 dry-run artifact 仍使用 `SHOW yb_effective_transaction_isolation_level` 與 `.dry-run.done` 的 `yb_effective_iso`；[該 variable 已 deprecated](https://yugabytedb.tips/view-yb-run-time-parameters-values-and-descriptions/)。後續 dry-run script 應改用 `SELECT yb_get_effective_transaction_isolation_level()`。
 
