@@ -54,7 +54,7 @@ Shard（分片）+ Replica（複本 / RF）：先把資料切開，再把每個 
 | DB | 需要看的 variable / status | artifact 對照 |
 |---|---|---|
 | TiDB | [`@@transaction_isolation`](https://docs.pingcap.com/tidb/stable/system-variables/#transaction_isolation)、[`@@tidb_txn_mode`](https://docs.pingcap.com/tidb/stable/system-variables/#tidb_txn_mode) | [`iso-preset.txt`](../tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260522T095010+0800/dry-run/iso-preset.txt)、[`expected-vs-actual.txt`](../tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260522T095010+0800/dry-run/expected-vs-actual.txt) |
-| CockroachDB | `SHOW transaction_isolation` | [`iso-preset.txt`](../crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260522T111834+0800/dry-run/iso-preset.txt)、[`expected-vs-actual.txt`](../crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260522T111834+0800/dry-run/expected-vs-actual.txt) |
+| CockroachDB | [`SHOW transaction_isolation`](https://www.cockroachlabs.com/docs/v26.2/session-variables.html)、[`SHOW default_transaction_isolation`](https://www.cockroachlabs.com/docs/v26.2/session-variables.html) | [`iso-preset.txt`](../crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260522T111834+0800/dry-run/iso-preset.txt)、[`expected-vs-actual.txt`](../crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260522T111834+0800/dry-run/expected-vs-actual.txt) |
 | YugabyteDB | `SHOW transaction_isolation`、`SHOW yb_effective_transaction_isolation_level`、`.dry-run.done` 內 `yb_effective_iso` | [`iso-preset.txt`](../yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260522T125647+0800/dry-run/iso-preset.txt)、[`expected-vs-actual.txt`](../yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260522T125647+0800/dry-run/expected-vs-actual.txt) |
 
 判讀重點：
