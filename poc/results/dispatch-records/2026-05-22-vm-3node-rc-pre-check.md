@@ -39,13 +39,20 @@ Shard（分片）+ Replica（複本 / RF）：先把資料切開，再把每個 
 
 ### 各 DB 如何體現 shard / replica
 
-| DB | Shard 體現方式 | Replica / RF 體現方式 | 本文件驗證範圍 |
-|---|---|---|---|
-| TiDB | 以 table Region 數體現；prepare 後透過 `SPLIT TABLE ... REGIONS` 鎖定 1 或 3 shards/table | PD `replication.max-replicas=N` | dry-run 只驗 RF；shard actual 需在 prepare hard gate 驗 `prepare/shard-count.txt` |
-| CockroachDB | 以 Range 數體現；prepare 後透過 `ALTER TABLE ... SPLIT AT` 鎖定 1 或 3 ranges/table | zone config `num_replicas=N` | dry-run 只驗 RF；shard actual 需在 prepare hard gate 驗 `prepare/shard-count.txt` |
-| YugabyteDB | 以 Tablet 數體現；`ysql_num_shards_per_tserver` 與 `CREATE TABLE ... SPLIT INTO N TABLETS` 控制 tablets/table | `yugabyted configure data_placement --rf=N`，universe config 反映為 `numReplicas=N` | dry-run 驗 RF；shard planned 來自 cell 名稱，actual 需在 prepare hard gate 驗 `prepare/shard-count.txt` |
+| DB | deploy guardrail | prepare shard 控制點 | Replica / RF 體現方式 | 驗證點 |
+|---|---|---|---|---|
+| TiDB | 設大 `coprocessor.region-split-size`，避免 size split 干擾 | 1 shard 不手動 split；3 shards 在 go-tpc prepare 後用 `SPLIT TABLE ... REGIONS 3` 鎖定 9 張表 Region 數 | PD `replication.max-replicas=N` | dry-run 驗 RF；shard actual 驗 `prepare/shard-count.txt` |
+| CockroachDB | 關 `kv.range_split.by_load_enabled`，避免 load-based split 干擾 | 1 shard 不手動 split；3 shards 在 go-tpc prepare 後用 `ALTER TABLE ... SPLIT AT` 鎖定 9 張表 Range 數 | zone config `num_replicas=N` | dry-run 驗 RF；shard actual 驗 `prepare/shard-count.txt` |
+| YugabyteDB | 設 [`--ysql_num_shards_per_tserver`](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#ysql-num-shards-per-tserver)=1 與 [`--enable_automatic_tablet_splitting`](https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/#enable-automatic-tablet-splitting)=false，避免預設 tablet / 自動 split 干擾 | go-tpc prepare 前 pre-create 9 張 TPC-C tables，依 cell 套 `SPLIT INTO 1 TABLETS` 或 `SPLIT INTO 3 TABLETS` | `yugabyted configure data_placement --rf=N`，universe config 反映為 `numReplicas=N` | dry-run 驗 RF；shard actual 驗 `prepare/shard-count.txt` |
 
 > 本 pre-check 是 deploy-time gate：確認 cluster、RF、isolation 已對齊。Shard actual 不在 dry-run artifact 內，不能把 `Shard planned` 解讀成已驗證結果。
+
+Shard 控制點補充：
+
+- TiDB / CockroachDB：deploy 階段先關掉自動分裂干擾；正式 shard 數在 prepare 後對既有 TPC-C tables 手動 split，最後用 `prepare/shard-count.txt` 驗 actual。
+- YugabyteDB：deploy 參數只是 guardrail；正式 shard 數在 prepare 前靠 schema pre-create 的 `SPLIT INTO N TABLETS` 鎖定。`--ysql_num_shards_per_tserver` 只定義預設 tablet 行為，`--enable_automatic_tablet_splitting` 只負責關掉背景 split。因 go-tpc schema 使用 `CREATE TABLE IF NOT EXISTS`，後續 prepare 不會覆寫已 pre-create 的 tables。
+- YugabyteDB 不能只用 `ysql_num_shards_per_tserver × tserver 數` 推論 shard 數；2026-05-23 曾確認 RF=1 placement 會讓 3 tservers 推論失效，所以 3s*r 也必須明確 `SPLIT INTO 3 TABLETS`。
+- YugabyteDB 理論上可改用 cluster default、自動 tablet splitting 或 prepare 後 split，但會讓 tablet 數變成背景行為或額外流程推論；本 PoC 不採用。`SPLIT INTO N TABLETS` 是本輪唯一正式 shard 控制點。
 
 ### 各 DB 如何體現 isolation
 
