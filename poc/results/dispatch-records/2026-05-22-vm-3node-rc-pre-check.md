@@ -49,10 +49,25 @@ Shard（分片）+ Replica（複本 / RF）：先把資料切開，再把每個 
 
 Shard 控制點補充：
 
-- TiDB / CockroachDB：deploy 階段先關掉自動分裂干擾；正式 shard 數在 prepare 後對既有 TPC-C tables 手動 split，最後用 `prepare/shard-count.txt` 驗 actual。
-- YugabyteDB：deploy 參數只是 guardrail；正式 shard 數在 prepare 前靠 schema pre-create 的 `SPLIT INTO N TABLETS` 鎖定。`--ysql_num_shards_per_tserver` 只定義預設 tablet 行為，`--enable_automatic_tablet_splitting` 只負責關掉背景 split。因 go-tpc schema 使用 `CREATE TABLE IF NOT EXISTS`，後續 prepare 不會覆寫已 pre-create 的 tables。
-- YugabyteDB 不能只用 `ysql_num_shards_per_tserver × tserver 數` 推論 shard 數；2026-05-23 曾確認 RF=1 placement 會讓 3 tservers 推論失效，所以 3s*r 也必須明確 `SPLIT INTO 3 TABLETS`。
-- YugabyteDB 理論上可改用 cluster default、自動 tablet splitting 或 prepare 後 split，但會讓 tablet 數變成背景行為或額外流程推論；本 PoC 不採用。`SPLIT INTO N TABLETS` 是本輪唯一正式 shard 控制點。
+- TiDB / CockroachDB
+  - deploy 階段先關掉自動分裂干擾
+  - prepare 後對既有 TPC-C tables 手動 split
+  - 最後用 `prepare/shard-count.txt` 驗 actual
+
+- YugabyteDB
+  - deploy 參數只是 guardrail
+  - 正式 shard 數在 prepare 前靠 schema pre-create 的 `SPLIT INTO N TABLETS` 鎖定
+  - `--ysql_num_shards_per_tserver` 只定義預設 tablet 行為
+  - `--enable_automatic_tablet_splitting` 只負責關掉背景 split
+  - 因 go-tpc schema 使用 `CREATE TABLE IF NOT EXISTS`，後續 prepare 不會覆寫已 pre-create 的 tables
+
+- 補充判讀
+  - 不能只用 `ysql_num_shards_per_tserver × tserver 數` 推論 shard 數
+  - 2026-05-23 已確認 RF=1 placement 會讓 3 tservers 推論失效
+  - 所以 3s*r 也必須明確 `SPLIT INTO 3 TABLETS`
+  - 理論上可改用 cluster default、自動 tablet splitting 或 prepare 後 split
+  - 但這些作法會讓 tablet 數變成背景行為或額外流程推論
+  - 本 PoC 不採用；`SPLIT INTO N TABLETS` 是本輪唯一正式 shard 控制點
 
 ### 各 DB 如何體現 isolation
 
