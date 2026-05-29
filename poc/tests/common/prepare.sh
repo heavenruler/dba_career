@@ -121,16 +121,22 @@ if [[ "$EXPECTED_SHARDS" == "3" ]]; then
   info "post-prepare SPLIT 9 tables → 3 shards each ($DB)"
   case "$DB" in
     tidb)
+      # go-tpc 建 TPC-C tables 在 TiDB v5.0+ 預設 CLUSTERED primary key (PK 即 row 排序);
+      # CLUSTERED 表不能用 INDEX `PRIMARY` 分裂，TiDB 直接報「unable to split clustered
+      # index, please split table instead」(2026-05-29 Cell 3 dispatch 實測踩到)。
+      # 改用 SPLIT TABLE ... BETWEEN ... (去 INDEX clause)，依 PK column 順序直接分裂。
+      # history 表 go-tpc 建沒 PK，TiDB 自動添加 _tidb_rowid (BIGINT auto-inc) 為 clustering key;
+      # 用 (1) AND (3840000) 仍生效 (rowid 範圍切 3 等分)。
       mysql -h "$DB_HOST" -P "$PORT" -u "$USER" "$DBNAME" -e "
-        SPLIT TABLE warehouse  INDEX \`PRIMARY\` BETWEEN (1)         AND (128)              REGIONS 3;
-        SPLIT TABLE district   INDEX \`PRIMARY\` BETWEEN (1,1)       AND (128,10)           REGIONS 3;
-        SPLIT TABLE customer   INDEX \`PRIMARY\` BETWEEN (1,1,1)     AND (128,10,3000)      REGIONS 3;
-        SPLIT TABLE new_order  INDEX \`PRIMARY\` BETWEEN (1,1,2101)  AND (128,10,3000)      REGIONS 3;
-        SPLIT TABLE orders     INDEX \`PRIMARY\` BETWEEN (1,1,1)     AND (128,10,3000)      REGIONS 3;
-        SPLIT TABLE order_line INDEX \`PRIMARY\` BETWEEN (1,1,1,1)   AND (128,10,3000,15)   REGIONS 3;
-        SPLIT TABLE stock      INDEX \`PRIMARY\` BETWEEN (1,1)       AND (128,100000)       REGIONS 3;
-        SPLIT TABLE item       INDEX \`PRIMARY\` BETWEEN (1)         AND (100000)           REGIONS 3;
-        SPLIT TABLE history    INDEX \`PRIMARY\` BETWEEN (1)         AND (3840000)          REGIONS 3;
+        SPLIT TABLE warehouse  BETWEEN (1)         AND (128)              REGIONS 3;
+        SPLIT TABLE district   BETWEEN (1,1)       AND (128,10)           REGIONS 3;
+        SPLIT TABLE customer   BETWEEN (1,1,1)     AND (128,10,3000)      REGIONS 3;
+        SPLIT TABLE new_order  BETWEEN (1,1,2101)  AND (128,10,3000)      REGIONS 3;
+        SPLIT TABLE orders     BETWEEN (1,1,1)     AND (128,10,3000)      REGIONS 3;
+        SPLIT TABLE order_line BETWEEN (1,1,1,1)   AND (128,10,3000,15)   REGIONS 3;
+        SPLIT TABLE stock      BETWEEN (1,1)       AND (128,100000)       REGIONS 3;
+        SPLIT TABLE item       BETWEEN (1)         AND (100000)           REGIONS 3;
+        SPLIT TABLE history    BETWEEN (1)         AND (3840000)          REGIONS 3;
       " 2>&1 | tee "$PREP_DIR/shard-split.log"
       ;;
     crdb)
