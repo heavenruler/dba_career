@@ -158,22 +158,6 @@
 | 驗收 | `.gate.done` / `.prepare.done` / `.run.done` / `.collect.done` / `summary.json` / 來源目錄 / TPCC_TS | 檢查每組數據是否具備可追溯性，以及是否能進入對外引用 |
 | 變更 | 調度分析、pipeline-log 修訂、模板調整、deprecated 資料封存 | 保留版本差異，讓結果與規格變更可回頭追蹤 |
 
-### 風險管制欄位
-
-- `scope drift`：案例範圍是否超出原本定義，或把待執行案例提前當成完成。
-- `data completeness`：`summary.json`、原始輸出、完成標記、來源目錄是否齊全。
-- `topology drift`：shard / replica / HAProxy / Kubernetes 拓樸是否與設計口徑一致。
-- `isolation drift`：connection string、session setting、effective isolation 是否一致。
-- `operational drift`：執行是否被中斷、重跑是否有遺留資料、結果是否混入 retry artifact。
-- `analysis drift`：分析是否使用了未驗證推論，或把 caveat 省略成結論。
-
-### PMP 會看的摘要
-
-- 進度：哪些 case 完成，哪些待重跑，哪些只到設計或 pre-check。
-- 風險：哪一類缺口會影響數據可用性，哪一類只是時間延後。
-- 驗收：哪些結果已可引用，哪些仍需補 marker / summary / metrics。
-- 變更：文件或模板有沒有改口徑，是否影響既有結果解讀。
-
 ## 專案時程表
 
 > 週次基準：以本頁第一個 commit（`2026-05-06`）作為 Week 1 起點。
