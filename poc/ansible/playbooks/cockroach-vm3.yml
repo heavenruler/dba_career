@@ -271,7 +271,9 @@
 - name: Deploy HAProxy for CockroachDB (sub_topology=haproxy-3s3r only)
   hosts: haproxy
   become: true
-  gather_facts: true
+  # gather_facts: false — .20 Python 3.6 不相容 ansible setup module；sub !=
+  # haproxy-3s3r 時整個 play 不會碰 .20，避免每 cell deploy 都炸。
+  gather_facts: false
   vars:
     haproxy_backends: "172.24.40.32:26257,172.24.40.33:26257,172.24.40.34:26257"
     haproxy_port: 26257

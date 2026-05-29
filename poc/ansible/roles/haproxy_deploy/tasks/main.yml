@@ -19,4 +19,4 @@
 
 - name: Show haproxy listen address
   ansible.builtin.debug:
-    msg: "HAProxy ready: {{ ansible_default_ipv4.address }}:4000 → {{ haproxy_backends }}"
+    msg: "HAProxy ready: {{ inventory_hostname }}:{{ haproxy_port | default(4000) }} → {{ haproxy_backends }}"

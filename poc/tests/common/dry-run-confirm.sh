@@ -93,6 +93,21 @@ if [[ "${NODE_COUNT:-0}" -lt 3 ]]; then
   FAILS+=("topology-nodes<3")
 fi
 
+# --- 1b. (TiDB) TiKV storage layer hard gate (2026-05-29 race fix) ----------
+# 原 NODE_COUNT 只計符合 IP 的行數，TiKV Down 也會被當成 1 個 node 算進去 → gate 過鬆。
+# 改在這裡顯式驗 TiKV up count == 3，否則 fail-closed（playbook 雖已加 wait task，
+# 但 dry-run gate 也要二次防護，未來 cluster 漂走也能抓住）。
+# tiup cluster display 欄位順序：$1=ID $2=Role $3=Host $4=Ports $5=OS/Arch $6=Status $7=Data Dir $8=Deploy Dir
+TIKV_UP_COUNT=n/a
+if [[ "$DB" == "tidb" ]]; then
+  TIKV_UP_COUNT=$(awk '$2=="tikv" && $6=="Up"' "$DRY/cluster-topology.txt" 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "${TIKV_UP_COUNT:-0}" -lt 3 ]]; then
+    warn "TiKV stores not all Up (count=$TIKV_UP_COUNT, expected 3)"
+    ALL_PASS=false
+    FAILS+=("tikv-stores-not-all-up:$TIKV_UP_COUNT/3")
+  fi
+fi
+
 # --- 2. replication-factor dump ---------------------------------------------
 case "$DB" in
   tidb)

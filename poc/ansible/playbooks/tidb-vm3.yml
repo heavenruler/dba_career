@@ -336,6 +336,26 @@
         port: 4000
         timeout: 180
 
+    # `tiup cluster start` 與 :4000 開啟皆早於 TiKV 向 PD 註冊；不等就讓 dry-run /
+    # prepare 撞到 "TiKV Down" race（2026-05-29 cell 1/2/3 dry-run 實測）。
+    - name: Wait for all 3 TiKV stores to register Up with PD
+      ansible.builtin.shell: |
+        set -e
+        # tiup cluster display 欄位順序：$1=ID $2=Role $3=Host $4=Ports $5=OS/Arch $6=Status $7=Data Dir $8=Deploy Dir
+        up=0
+        for i in $(seq 1 60); do
+          up=$(/root/.tiup/bin/tiup cluster display tpcc-tidb-vm3 2>/dev/null \
+                | awk '$2=="tikv" && $6=="Up"' | wc -l)
+          if [ "$up" -ge 3 ]; then echo "tikv_up=$up/3"; exit 0; fi
+          sleep 5
+        done
+        echo "timeout: only $up/3 TiKV stores Up after 300s"
+        /root/.tiup/bin/tiup cluster display tpcc-tidb-vm3 2>&1 | tail -20
+        exit 1
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      changed_when: false
+
     - name: Apply TiDB benchmark settings (auto-analyze + pessimistic)
       ansible.builtin.command:
         cmd: mysql -h {{ tidb_host_primary }} -P 4000 -uroot -e "SET GLOBAL tidb_enable_auto_analyze=OFF; SET GLOBAL tidb_txn_mode='pessimistic';"
@@ -356,7 +376,10 @@
 - name: Deploy HAProxy for TiDB (sub_topology=haproxy-3s3r only)
   hosts: haproxy
   become: true
-  gather_facts: true
+  # gather_facts: false — .20 (l-monitor-labroom-1) 只有 Python 3.6，ansible setup
+  # module 需要 Python 3.7+ (from __future__ import annotations)；sub != haproxy-3s3r
+  # 時整個 play 不會碰 .20（include_role when=false 不會 remote 連線），避免 setup 炸。
+  gather_facts: false
   vars:
     haproxy_backends: "172.24.40.32:4000,172.24.40.33:4000,172.24.40.34:4000"
     haproxy_port: 4000
