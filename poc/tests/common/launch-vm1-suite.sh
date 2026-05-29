@@ -35,6 +35,7 @@ LOCK="$TPCC_BASE/runlocks/${DB}-${TOPO}-${ISO}.lock"
 LOG="$TPCC_BASE/logs/${DB}-${TOPO}-${ISO}-${TS}.log"
 
 # Fail-fast on existing lock (suite.sh re-checks, but we want clear MAC feedback)
+# stale lock auto-removed here so N=2/N=3 批次重跑不會卡死；suite.sh 內部還有 ln() race check。
 if [[ -e "$LOCK" ]]; then
   prev_pid=$(awk -F= '/^pid=/{print $2}' "$LOCK" 2>/dev/null || true)
   if [[ -n "$prev_pid" ]] && kill -0 "$prev_pid" 2>/dev/null; then
@@ -42,9 +43,9 @@ if [[ -e "$LOCK" ]]; then
     cat "$LOCK" >&2 || true
     exit 2
   fi
-  echo "ERROR: stale lock (pid=$prev_pid not running). Inspect & rm: $LOCK" >&2
+  echo "WARN: stale lock (pid=$prev_pid not running); auto-removing $LOCK" >&2
   cat "$LOCK" >&2 || true
-  exit 3
+  rm -f "$LOCK"
 fi
 
 # Detach: setsid + nohup + redirect all stdio + disown

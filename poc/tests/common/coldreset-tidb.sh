@@ -12,17 +12,35 @@ while [[ $# -gt 0 ]]; do
 done
 [[ -n "$DB_HOST" ]] || die "missing --db-host"
 
+# HAProxy 等 proxy 拓樸：db-host 是 proxy（無 tiup / TiDB process）；cold-reset 必須
+# 走實 cluster member。tiup cluster 是中心化管理在 .32 上，所以 fallback 一律 .32。
+case "$DB_HOST" in
+  172.24.40.32|172.24.40.33|172.24.40.34) CLUSTER_HOST="$DB_HOST" ;;
+  *)                                       CLUSTER_HOST="172.24.40.32" ;;  # HAProxy → fallback .32
+esac
+
 remote() {
-  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 "root@$DB_HOST" "$@"
+  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 "root@$CLUSTER_HOST" "$@"
 }
 
-info "cold reset TiDB on $DB_HOST"
+info "cold reset TiDB on $CLUSTER_HOST (db-host=$DB_HOST)"
 remote 'set -euo pipefail
   export PATH=/root/.tiup/bin:$PATH
-  tiup cluster stop tpcc-tidb --yes
+  # vm-1node 用 tpcc-tidb；vm-3node / haproxy 用 tpcc-tidb-vm3；自動偵測。
+  CLUSTER_NAME=""
+  if tiup cluster list 2>/dev/null | awk "{print \$1}" | grep -qx tpcc-tidb-vm3; then
+    CLUSTER_NAME=tpcc-tidb-vm3
+  elif tiup cluster list 2>/dev/null | awk "{print \$1}" | grep -qx tpcc-tidb; then
+    CLUSTER_NAME=tpcc-tidb
+  else
+    echo "ERROR: no tiup cluster found (expected tpcc-tidb or tpcc-tidb-vm3)" >&2
+    exit 1
+  fi
+  echo "cold-resetting tiup cluster=$CLUSTER_NAME"
+  tiup cluster stop "$CLUSTER_NAME" --yes
   sync
   echo 3 > /proc/sys/vm/drop_caches
-  tiup cluster start tpcc-tidb --yes
+  tiup cluster start "$CLUSTER_NAME" --yes
   for i in $(seq 1 60); do
     if mysql -h 172.24.40.32 -P 4000 -uroot -e "SELECT 1" >/dev/null 2>&1; then
       exit 0

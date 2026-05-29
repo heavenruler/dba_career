@@ -26,8 +26,8 @@
     - name: Sanity check crdb_sub_topology
       ansible.builtin.assert:
         that:
-          - crdb_sub_topology in ['1s1r', '1s3r', '3s1r', '3s3r']
-        fail_msg: "crdb_sub_topology must be one of 1s1r/1s3r/3s1r/3s3r (got '{{ crdb_sub_topology | default('UNSET') }}')"
+          - crdb_sub_topology in ['1s1r', '1s3r', '3s1r', '3s3r', 'haproxy-3s3r']
+        fail_msg: "crdb_sub_topology must be one of 1s1r/1s3r/3s1r/3s3r/haproxy-3s3r (got '{{ crdb_sub_topology | default('UNSET') }}')"
 
     - name: Install CockroachDB prerequisites
       ansible.builtin.shell: |
@@ -198,7 +198,7 @@
     # 否則 dry-run-confirm.sh 永遠看到 3 → 1s1r/3s1r 必 fail。
     - name: Derive crdb_rf from sub_topology
       ansible.builtin.set_fact:
-        crdb_rf: "{{ '3' if crdb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+        crdb_rf: "{{ '3' if crdb_sub_topology in ['1s3r', '3s3r', 'haproxy-3s3r'] else '1' }}"
 
     - name: Set cluster default num_replicas (sub_topology={{ crdb_sub_topology }} → RF={{ crdb_rf }})
       ansible.builtin.command:
@@ -265,3 +265,19 @@
         dest: /usr/local/bin/cockroach
         state: link
         force: true
+
+# HAProxy variant (only when crdb_sub_topology=haproxy-3s3r)
+# Backends are the 3 cockroach nodes (.32/.33/.34:26257); HAProxy listens on .20:26257.
+- name: Deploy HAProxy for CockroachDB (sub_topology=haproxy-3s3r only)
+  hosts: haproxy
+  become: true
+  gather_facts: true
+  vars:
+    haproxy_backends: "172.24.40.32:26257,172.24.40.33:26257,172.24.40.34:26257"
+    haproxy_port: 26257
+    haproxy_frontend: crdb
+  tasks:
+    - name: Include haproxy_deploy role when sub_topology=haproxy-3s3r
+      ansible.builtin.include_role:
+        name: haproxy_deploy
+      when: crdb_sub_topology == 'haproxy-3s3r'

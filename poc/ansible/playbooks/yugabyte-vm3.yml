@@ -24,7 +24,7 @@
     yb_url: "https://software.yugabyte.com/releases/{{ yb_version }}/{{ yb_archive }}"
     yb_install_dir: /opt/yugabyte
     yb_base_dir: /var/yugabyte
-    yb_rf: "{{ '3' if yb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+    yb_rf: "{{ '3' if yb_sub_topology in ['1s3r', '3s3r', 'haproxy-3s3r'] else '1' }}"
     yb_master_flags: >-
       enable_automatic_tablet_splitting=false
     yb_tserver_flags: >-
@@ -41,8 +41,8 @@
     - name: Sanity check yb_sub_topology
       ansible.builtin.assert:
         that:
-          - yb_sub_topology in ['1s1r', '1s3r', '3s1r', '3s3r']
-        fail_msg: "yb_sub_topology must be one of 1s1r/1s3r/3s1r/3s3r (got '{{ yb_sub_topology | default('UNSET') }}')"
+          - yb_sub_topology in ['1s1r', '1s3r', '3s1r', '3s3r', 'haproxy-3s3r']
+        fail_msg: "yb_sub_topology must be one of 1s1r/1s3r/3s1r/3s3r/haproxy-3s3r (got '{{ yb_sub_topology | default('UNSET') }}')"
 
     - name: Install YugabyteDB prerequisites
       ansible.builtin.shell: |
@@ -159,7 +159,7 @@
     yb_install_dir: /opt/yugabyte
     yb_base_dir: /var/yugabyte
     yb_host_primary: "172.24.40.32"
-    yb_rf: "{{ '3' if yb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+    yb_rf: "{{ '3' if yb_sub_topology in ['1s3r', '3s3r', 'haproxy-3s3r'] else '1' }}"
     yb_master_flags: >-
       enable_automatic_tablet_splitting=false
     yb_tserver_flags: >-
@@ -259,7 +259,7 @@
     yb_install_dir: /opt/yugabyte
     yb_base_dir: /var/yugabyte
     yb_host_primary: "172.24.40.32"
-    yb_rf: "{{ '3' if yb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+    yb_rf: "{{ '3' if yb_sub_topology in ['1s3r', '3s3r', 'haproxy-3s3r'] else '1' }}"
   tasks:
     # yugabyted start 不接受 --rf；正確命令是 configure data_placement --rf=N。
     # 必須在所有 worker join 之後跑，因為它要 enough tservers 才能 rebalance 到目標 RF。
@@ -363,3 +363,19 @@
       loop:
         - ysqlsh
         - yb-admin
+
+# HAProxy variant (only when yb_sub_topology=haproxy-3s3r)
+# Backends are the 3 tservers (.32/.33/.34:5433); HAProxy listens on .20:5433.
+- name: Deploy HAProxy for YugabyteDB (sub_topology=haproxy-3s3r only)
+  hosts: haproxy
+  become: true
+  gather_facts: true
+  vars:
+    haproxy_backends: "172.24.40.32:5433,172.24.40.33:5433,172.24.40.34:5433"
+    haproxy_port: 5433
+    haproxy_frontend: ybdb
+  tasks:
+    - name: Include haproxy_deploy role when sub_topology=haproxy-3s3r
+      ansible.builtin.include_role:
+        name: haproxy_deploy
+      when: yb_sub_topology == 'haproxy-3s3r'

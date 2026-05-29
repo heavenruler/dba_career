@@ -424,7 +424,7 @@ destroy-vm3-all:
 	   pkill -9 -x cockroach 2>/dev/null; sleep 2; \
 	   rm -f /etc/systemd/system/cockroach.service; systemctl daemon-reload; \
 	   rm -rf /data/crdb 2>/dev/null; echo crdb_clean' -b -o 2>&1 | tail -5
-	@echo "--- YBDB: kill yb procs (exact-name) + rm /var/yugabyte ---"
+	@echo "--- YugabyteDB: kill yb procs (exact-name) + rm /var/yugabyte ---"
 	cd $(ANSIBLE_DIR) && ansible -i inventory/vm3.ini vm3_db -m shell -a \
 	  'pkill -KILL -x yb-master 2>/dev/null; \
 	   pkill -KILL -x yb-tserver 2>/dev/null; \
@@ -433,6 +433,12 @@ destroy-vm3-all:
 	     cmd=$$(tr "\0" " " < /proc/$$pid/cmdline 2>/dev/null); \
 	     case "$$cmd" in *bin/yugabyted*) kill -KILL $$pid 2>/dev/null ;; esac; \
 	   done; sleep 3; rm -rf /var/yugabyte 2>/dev/null; echo ybdb_clean' -b -o 2>&1 | tail -5
+	@echo "--- HAProxy (.20): stop + remove config (N=2/N=3 重跑前清殘留) ---"
+	-cd $(ANSIBLE_DIR) && ansible -i inventory/vm3.ini haproxy -m shell -a \
+	  'systemctl stop haproxy 2>/dev/null; \
+	   systemctl disable haproxy 2>/dev/null; \
+	   rm -f /etc/haproxy/haproxy.cfg 2>/dev/null; \
+	   echo haproxy_clean' -b -o 2>&1 | tail -5
 	@echo "==> destroy-vm3-all complete"
 
 # ---- deploy-vm3-<db>-<sub> : Ansible deploy with sub_topology var --
@@ -598,3 +604,117 @@ vm3-crdb-all-rc-dry: vm3-crdb-1s1r-rc vm3-crdb-1s3r-rc vm3-crdb-3s1r-rc vm3-crdb
 vm3-ybdb-all-rc-dry: vm3-ybdb-1s1r-rc vm3-ybdb-1s3r-rc vm3-ybdb-3s1r-rc vm3-ybdb-3s3r-rc
 vm3-all-dry: vm3-tidb-all-rc-dry vm3-crdb-all-rc-dry vm3-ybdb-all-rc-dry
 	@echo "==> all 12 vm-3node cells reached dry-run anchor"
+
+# ====================================================================
+# vm-3node-haproxy-3s3r (Phase F) — hardcoded targets, since 'haproxy-3s3r'
+# 含中槓會破壞 $(word N,$(subst -, ,$@)) 解析；不走 foreach。
+# Client connects to HAProxy on 172.24.47.20；scripts 內部以 CLUSTER_HOST
+# case 處理 (coldreset-{tidb,crdb,ybdb}.sh / run.sh / collect.sh / db-config-dump.sh / prepare.sh)。
+# DB-specific HAProxy frontend port (與 backend 相同):
+#   TiDB:        4000   (.32/.33/.34:4000 — 需 3 tidb_servers, tidb-vm3.yml 條件渲染)
+#   CockroachDB: 26257  (.32/.33/.34:26257)
+#   YugabyteDB:  5433   (.32/.33/.34:5433)
+# 部署：各 vm-3node playbook 末段 conditional include haproxy_deploy role
+# (when *_sub_topology == 'haproxy-3s3r')，無需另跑 haproxy.yml。
+# ====================================================================
+
+HAPROXY_HOST := 172.24.47.20
+
+# Per-DB HAProxy frontend port (與 deploy 時 ansible playbook 內 haproxy_backends 對齊)
+define HAPROXY_PORT
+$(if $(filter tidb,$(1)),4000,\
+$(if $(filter crdb,$(1)),26257,\
+$(if $(filter ybdb,$(1)),5433,)))
+endef
+
+.PHONY: deploy-vm3-tidb-haproxy-3s3r deploy-vm3-crdb-haproxy-3s3r deploy-vm3-ybdb-haproxy-3s3r
+deploy-vm3-tidb-haproxy-3s3r:
+	@echo "==> deploy-vm3-tidb-haproxy-3s3r (sub_topology=haproxy-3s3r; 3 tidb_servers + HAProxy on .20)"
+	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory/vm3.ini playbooks/tidb-vm3.yml \
+	  -e tidb_sub_topology=haproxy-3s3r
+
+deploy-vm3-crdb-haproxy-3s3r:
+	@echo "==> deploy-vm3-crdb-haproxy-3s3r (sub_topology=haproxy-3s3r; cockroach × 3 + HAProxy on .20)"
+	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory/vm3.ini playbooks/cockroach-vm3.yml \
+	  -e crdb_sub_topology=haproxy-3s3r
+
+deploy-vm3-ybdb-haproxy-3s3r:
+	@echo "==> deploy-vm3-ybdb-haproxy-3s3r (sub_topology=haproxy-3s3r; yugabyted × 3 + HAProxy on .20)"
+	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory/vm3.ini playbooks/yugabyte-vm3.yml \
+	  -e yb_sub_topology=haproxy-3s3r
+
+.PHONY: dryrun-vm3-tidb-haproxy-3s3r-rc dryrun-vm3-crdb-haproxy-3s3r-rc dryrun-vm3-ybdb-haproxy-3s3r-rc
+dryrun-vm3-tidb-haproxy-3s3r-rc dryrun-vm3-crdb-haproxy-3s3r-rc dryrun-vm3-ybdb-haproxy-3s3r-rc:
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	$(eval PORT := $(strip $(call HAPROXY_PORT,$(DB))))
+	@echo "==> dryrun-vm3-$(DB)-haproxy-3s3r-rc db-host=$(HAPROXY_HOST):$(PORT) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "$(TPCC_ENV) bash $(TPCC_SCRIPTS)/dry-run-confirm.sh \
+	  --db $(DB) --sub-topology haproxy-3s3r --iso rc --db-host $(HAPROXY_HOST) --ts $(TPCC_TS)"
+
+.PHONY: gate-vm3-tidb-haproxy-3s3r-rc gate-vm3-crdb-haproxy-3s3r-rc gate-vm3-ybdb-haproxy-3s3r-rc
+gate-vm3-tidb-haproxy-3s3r-rc gate-vm3-crdb-haproxy-3s3r-rc gate-vm3-ybdb-haproxy-3s3r-rc:
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	@echo "==> gate-vm3-$(DB)-haproxy-3s3r-rc ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "$(TPCC_ENV) bash $(TPCC_SCRIPTS)/gate.sh \
+	  --db $(DB) --iso rc --db-host $(HAPROXY_HOST) --ts $(TPCC_TS)"
+
+.PHONY: prepare-vm3-tidb-haproxy-3s3r-rc prepare-vm3-crdb-haproxy-3s3r-rc prepare-vm3-ybdb-haproxy-3s3r-rc
+prepare-vm3-tidb-haproxy-3s3r-rc prepare-vm3-crdb-haproxy-3s3r-rc prepare-vm3-ybdb-haproxy-3s3r-rc:
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	@echo "==> prepare-vm3-$(DB)-haproxy-3s3r-rc db-host=$(HAPROXY_HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "$(TPCC_ENV) bash $(TPCC_SCRIPTS)/prepare.sh \
+	  --db $(DB) --iso rc --topology vm-3node-haproxy-3s3r --db-host $(HAPROXY_HOST) --ts $(TPCC_TS)"
+
+.PHONY: run-vm3-tidb-haproxy-3s3r-rc run-vm3-crdb-haproxy-3s3r-rc run-vm3-ybdb-haproxy-3s3r-rc
+run-vm3-tidb-haproxy-3s3r-rc run-vm3-crdb-haproxy-3s3r-rc run-vm3-ybdb-haproxy-3s3r-rc:
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	@echo "==> run-vm3-$(DB)-haproxy-3s3r-rc db-host=$(HAPROXY_HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "$(TPCC_ENV) bash $(TPCC_SCRIPTS)/run.sh \
+	  --db $(DB) --iso rc --topology vm-3node-haproxy-3s3r --db-host $(HAPROXY_HOST) --ts $(TPCC_TS)"
+
+.PHONY: collect-vm3-tidb-haproxy-3s3r-rc collect-vm3-crdb-haproxy-3s3r-rc collect-vm3-ybdb-haproxy-3s3r-rc
+collect-vm3-tidb-haproxy-3s3r-rc collect-vm3-crdb-haproxy-3s3r-rc collect-vm3-ybdb-haproxy-3s3r-rc:
+	$(eval DB := $(word 3,$(subst -, ,$@)))
+	@echo "==> collect-vm3-$(DB)-haproxy-3s3r-rc db-host=$(HAPROXY_HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "$(TPCC_ENV) bash $(TPCC_SCRIPTS)/collect.sh \
+	  --db $(DB) --iso rc --topology vm-3node-haproxy-3s3r --db-host $(HAPROXY_HOST) --ts $(TPCC_TS)"
+
+# Full chain (mirror vm3-<db>-<sub>-rc), gate→prepare→run→collect 走 detached suite。
+.PHONY: vm3-tidb-haproxy-3s3r-rc vm3-crdb-haproxy-3s3r-rc vm3-ybdb-haproxy-3s3r-rc
+vm3-tidb-haproxy-3s3r-rc vm3-crdb-haproxy-3s3r-rc vm3-ybdb-haproxy-3s3r-rc:
+	$(eval DB := $(word 2,$(subst -, ,$@)))
+	$(eval TS := $(TPCC_TS))
+	@echo "==================================================================="
+	@echo "  vm3-$(DB)-haproxy-3s3r-rc  ts=$(TS)  execute=$(EXECUTE)"
+	@echo "==================================================================="
+	$(MAKE) destroy-vm3-all
+	$(MAKE) bootstrap-tpcc-client
+	$(MAKE) deploy-vm3-$(DB)-haproxy-3s3r
+	$(MAKE) dryrun-vm3-$(DB)-haproxy-3s3r-rc TPCC_TS=$(TS)
+	@if [ "$(EXECUTE)" = "1" ]; then \
+	  echo "==> EXECUTE=1 — launching detached suite on $(TPCC_CLIENT)"; \
+	  ssh $(TPCC_CLIENT) "env $(TPCC_ENV) bash $(TPCC_SCRIPTS)/launch-vm1-suite.sh \
+	    --db $(DB) --iso rc --topology vm-3node-haproxy-3s3r \
+	    --db-host $(HAPROXY_HOST) --ts $(TS)"; \
+	  echo "==================================================================="; \
+	  echo "  Suite launched detached on $(TPCC_CLIENT) — Mac safe to disconnect."; \
+	  echo "  TPCC_TS:       $(TS)"; \
+	  echo "  Status check:  make status-vm3-$(DB)-haproxy-3s3r-rc"; \
+	  echo "  Tail log:      ssh $(TPCC_CLIENT) tail -f $(TPCC_BASE)/logs/$(DB)-vm-3node-haproxy-3s3r-rc-$(TS).log"; \
+	  echo "  Fetch later:   make fetch-vm3-$(DB)-haproxy-3s3r-rc TPCC_TS=$(TS)"; \
+	  echo "==================================================================="; \
+	else \
+	  echo "==================================================================="; \
+	  echo "  STOPPED AT DRY-RUN ANCHOR"; \
+	  echo "  TPCC_TS:        $(TS)"; \
+	  echo "  Review:         ssh $(TPCC_CLIENT) cat $(TPCC_ARTIFACTS)/$(DB)-vm-3node-haproxy-3s3r-rc-$(TS)/dry-run/*.txt"; \
+	  echo "  Status:         make status-vm3-$(DB)-haproxy-3s3r-rc"; \
+	  echo "  To execute:     make vm3-$(DB)-haproxy-3s3r-rc EXECUTE=1 TPCC_TS=$(TS)"; \
+	  echo "==================================================================="; \
+	fi
+
+# Batch: 1 DB × 5 sub-topology dry-run (4 direct + 1 haproxy)
+.PHONY: vm3-tidb-haproxy-3s3r-rc-dry vm3-crdb-haproxy-3s3r-rc-dry vm3-ybdb-haproxy-3s3r-rc-dry
+vm3-tidb-all5-rc-dry: vm3-tidb-all-rc-dry vm3-tidb-haproxy-3s3r-rc
+vm3-crdb-all5-rc-dry: vm3-crdb-all-rc-dry vm3-crdb-haproxy-3s3r-rc
+vm3-ybdb-all5-rc-dry: vm3-ybdb-all-rc-dry vm3-ybdb-haproxy-3s3r-rc

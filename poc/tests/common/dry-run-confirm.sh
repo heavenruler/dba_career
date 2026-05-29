@@ -163,10 +163,12 @@ case "$DB" in
     ACTUAL_ISO=$(grep -E '^(read committed|repeatable read|serializable)$' "$DRY/iso-preset.txt" | tail -1)
     ;;
   ybdb)
+    # YB triple gate active layer: SHOW transaction_isolation + yb_get_effective_transaction_isolation_level()
+    # 舊 SHOW yb_effective_transaction_isolation_level 已 deprecated。
     psql "postgres://${YBDB_USER:-yugabyte}@${DB_HOST}:${YBDB_PORT:-5433}/yugabyte?${ISO_CONN_PARAMS}" \
       -v ON_ERROR_STOP=1 -At \
       -c "SHOW transaction_isolation" \
-      -c "SHOW yb_effective_transaction_isolation_level" \
+      -c "SELECT yb_get_effective_transaction_isolation_level()" \
       > "$DRY/iso-preset.txt" 2>&1 || true
     ACTUAL_ISO=$(sed -n '1p' "$DRY/iso-preset.txt")
     YB_EFFECTIVE=$(sed -n '2p' "$DRY/iso-preset.txt")

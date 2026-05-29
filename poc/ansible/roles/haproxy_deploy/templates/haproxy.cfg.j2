@@ -3,9 +3,13 @@ global
 
 defaults
   mode tcp
+  # warmup 1200s + run 300s + buffer；避免 prepare / warmup / run 跑超過 30s 被 cut（2026-05-25 ybdb-haproxy-3s3r 實測）
   timeout connect 5s
-  timeout client  30s
-  timeout server  30s
+  timeout client  {{ haproxy_timeout_client | default('1800s') }}
+  timeout server  {{ haproxy_timeout_server | default('1800s') }}
+  # keepalive：避免長 idle 期間 NAT / firewall 把 connection 丟掉
+  option clitcpka
+  option srvtcpka
 
 frontend {{ haproxy_frontend | default('db') }}
   bind *:{{ haproxy_port | default(4000) }}

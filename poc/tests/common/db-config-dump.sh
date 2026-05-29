@@ -74,10 +74,12 @@ case "$DB" in
     grep -E 'memory_limit_hard_bytes|db_block_cache_size_percentage|durable_wal_write|require_durable_wal_write|yb_enable_read_committed_isolation|ysql_enable_auth|ysql_enable_auto_analyze|ysql_default_transaction_isolation' \
       "$VARZ_TMP" > "$CONFIG_DIR/cluster-settings.txt" || true
     rm -f "$VARZ_TMP"
+    # YB triple gate active layer：SELECT yb_get_effective_transaction_isolation_level()
+    # 取代 deprecated SHOW yb_effective_transaction_isolation_level。
     psql "postgres://${YBDB_USER:-yugabyte}@${DB_HOST}:${YBDB_PORT:-5433}/${YBDB_DB:-tpcc}?${ISO_CONN_PARAMS}" \
       -v ON_ERROR_STOP=1 \
       -c "BEGIN; SHOW transaction_isolation; COMMIT;" \
-      -c "SHOW yb_effective_transaction_isolation_level" \
+      -c "SELECT yb_get_effective_transaction_isolation_level()" \
       > "$CONFIG_DIR/isolation.txt" 2>&1 || warn "psql isolation dump failed"
     ;;
   *) die "unknown db: $DB" ;;

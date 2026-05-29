@@ -48,12 +48,19 @@ start_time=$(date '+%Y-%m-%dT%H:%M:%S%z')
 log_path=$LOG_FILE
 EOF
 if ! ln "$LOCK_TMP" "$LOCK_FILE" 2>/dev/null; then
-  rm -f "$LOCK_TMP"
   prev_pid=$(awk -F= '/^pid=/{print $2}' "$LOCK_FILE" 2>/dev/null || true)
   if [[ -n "$prev_pid" ]] && kill -0 "$prev_pid" 2>/dev/null; then
+    rm -f "$LOCK_TMP"
     die "suite already running: pid=$prev_pid lock=$LOCK_FILE"
   fi
-  die "stale lock present (pid=$prev_pid not running). Inspect & remove manually: $LOCK_FILE"
+  # Stale lock — previous suite died without cleaning up. Auto-rm + retry once.
+  # 動機：N=2/N=3 批次或中斷恢復下，鎖殘留會阻塞重跑；只要 pid 已不在就視為 stale 並回收。
+  warn "stale lock (pid=$prev_pid not running); auto-removing $LOCK_FILE"
+  rm -f "$LOCK_FILE"
+  if ! ln "$LOCK_TMP" "$LOCK_FILE" 2>/dev/null; then
+    rm -f "$LOCK_TMP"
+    die "race after stale-lock cleanup; another process took the lock concurrently: $LOCK_FILE"
+  fi
 fi
 rm -f "$LOCK_TMP"
 

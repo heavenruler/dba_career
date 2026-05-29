@@ -22,7 +22,7 @@
     tidb_cluster_name: tpcc-tidb-vm3
     tidb_version: v8.5.2
     tidb_topology_path: /root/tidb-vm3-topology.yaml
-    tidb_replicas: "{{ '3' if tidb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+    tidb_replicas: "{{ '3' if tidb_sub_topology in ['1s3r', '3s3r', 'haproxy-3s3r'] else '1' }}"
     tidb_host_primary: "172.24.40.32"
     tidb_host_w1: "172.24.40.33"
     tidb_host_w2: "172.24.40.34"
@@ -30,8 +30,8 @@
     - name: Sanity check tidb_sub_topology
       ansible.builtin.assert:
         that:
-          - tidb_sub_topology in ['1s1r', '1s3r', '3s1r', '3s3r']
-        fail_msg: "tidb_sub_topology must be one of 1s1r/1s3r/3s1r/3s3r (got '{{ tidb_sub_topology | default('UNSET') }}')"
+          - tidb_sub_topology in ['1s1r', '1s3r', '3s1r', '3s3r', 'haproxy-3s3r']
+        fail_msg: "tidb_sub_topology must be one of 1s1r/1s3r/3s1r/3s3r/haproxy-3s3r (got '{{ tidb_sub_topology | default('UNSET') }}')"
 
     - name: Install TiDB prerequisites on .32 (control + worker tooling)
       ansible.builtin.shell: |
@@ -171,7 +171,7 @@
     tidb_cluster_name: tpcc-tidb-vm3
     tidb_version: v8.5.2
     tidb_topology_path: /root/tidb-vm3-topology.yaml
-    tidb_replicas: "{{ '3' if tidb_sub_topology in ['1s3r', '3s3r'] else '1' }}"
+    tidb_replicas: "{{ '3' if tidb_sub_topology in ['1s3r', '3s3r', 'haproxy-3s3r'] else '1' }}"
     tidb_host_primary: "172.24.40.32"
     tidb_host_w1: "172.24.40.33"
     tidb_host_w2: "172.24.40.34"
@@ -229,6 +229,19 @@
               status_port: 10080
               deploy_dir: "/tidb-deploy/tidb-4000"
               log_dir: "/tidb-deploy/tidb-4000/log"
+          {% if tidb_sub_topology == 'haproxy-3s3r' %}
+            # haproxy-3s3r：3 顆 TiDB stateless 入口才能 HAProxy 真正攤平 (PoC-DESIGN §6.3.2.1)
+            - host: {{ tidb_host_w1 }}
+              port: 4000
+              status_port: 10080
+              deploy_dir: "/tidb-deploy/tidb-4000"
+              log_dir: "/tidb-deploy/tidb-4000/log"
+            - host: {{ tidb_host_w2 }}
+              port: 4000
+              status_port: 10080
+              deploy_dir: "/tidb-deploy/tidb-4000"
+              log_dir: "/tidb-deploy/tidb-4000/log"
+          {% endif %}
 
           tikv_servers:
             - host: {{ tidb_host_primary }}
@@ -335,3 +348,21 @@
       changed_when: false
       failed_when:
         - tidb_max_replicas.rc != 0 or (tidb_max_replicas.stdout | trim) != tidb_replicas
+
+# HAProxy variant (only when tidb_sub_topology=haproxy-3s3r)
+# Backends are the 3 tidb_servers (.32/.33/.34:4000) — topology section above
+# conditionally renders extra tidb_servers when sub == haproxy-3s3r.
+# HAProxy listens on .20:4000.
+- name: Deploy HAProxy for TiDB (sub_topology=haproxy-3s3r only)
+  hosts: haproxy
+  become: true
+  gather_facts: true
+  vars:
+    haproxy_backends: "172.24.40.32:4000,172.24.40.33:4000,172.24.40.34:4000"
+    haproxy_port: 4000
+    haproxy_frontend: tidb
+  tasks:
+    - name: Include haproxy_deploy role when sub_topology=haproxy-3s3r
+      ansible.builtin.include_role:
+        name: haproxy_deploy
+      when: tidb_sub_topology == 'haproxy-3s3r'

@@ -58,15 +58,17 @@ case "$DB" in
     PORT="${YBDB_PORT:-5433}"
     USER="${YBDB_USER:-yugabyte}"
     DB_NAME="${YBDB_DB:-tpcc}"
-    # Dual gate: YugabyteDB only honors RC when the tserver gflag
+    # Triple gate: YugabyteDB only honors RC when the tserver gflag
     # yb_enable_read_committed_isolation=true is set; otherwise
     # SHOW transaction_isolation reports the requested value while
-    # yb_effective_transaction_isolation_level falls back to
-    # 'repeatable read' (snapshot). Verify both.
+    # the effective isolation falls back to 'repeatable read' (snapshot).
+    # Note: SHOW yb_effective_transaction_isolation_level (runtime parameter view)
+    # was DEPRECATED upstream; use SELECT yb_get_effective_transaction_isolation_level()
+    # (function call) — same psql -At output format.
     psql "postgres://${USER}@${DB_HOST}:${PORT}/${DB_NAME}?${ISO_CONN_PARAMS}" \
       -v ON_ERROR_STOP=1 -At \
       -c "SHOW transaction_isolation" \
-      -c "SHOW yb_effective_transaction_isolation_level" \
+      -c "SELECT yb_get_effective_transaction_isolation_level()" \
       > "$GATE_DIR/isolation-db.txt" 2>&1
     ACTUAL=$(sed -n '1p' "$GATE_DIR/isolation-db.txt")
     YB_EFFECTIVE_DB=$(sed -n '2p' "$GATE_DIR/isolation-db.txt")
@@ -102,11 +104,11 @@ case "$DB" in
     go-tpc tpcc run -d "$DRIVER" -H "$DB_HOST" -P "${YBDB_PORT:-5433}" -U "${YBDB_USER:-yugabyte}" -D "${YBDB_DB:-tpcc}" \
       --conn-params "$ISO_CONN_PARAMS" --warehouses=1 --time=2s --threads=1 --output=plain \
       2>&1 | tee "$GATE_DIR/isolation-driver.txt"
-    # Same dual gate via the driver-side connection (matches DB gate path).
+    # Same triple gate via the driver-side connection (matches DB gate path).
     psql "postgres://${YBDB_USER:-yugabyte}@${DB_HOST}:${YBDB_PORT:-5433}/${YBDB_DB:-tpcc}?${ISO_CONN_PARAMS}" \
       -v ON_ERROR_STOP=1 -At \
       -c "SHOW transaction_isolation" \
-      -c "SHOW yb_effective_transaction_isolation_level" \
+      -c "SELECT yb_get_effective_transaction_isolation_level()" \
       > "$GATE_DIR/isolation-driver-verify.txt" 2>&1
     DRIVER_ACTUAL=$(sed -n '1p' "$GATE_DIR/isolation-driver-verify.txt")
     YB_EFFECTIVE_DRIVER=$(sed -n '2p' "$GATE_DIR/isolation-driver-verify.txt")
