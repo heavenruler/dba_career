@@ -55,6 +55,7 @@
 - **language rule**：正文使用 `TiDB` / `CockroachDB` / `YugabyteDB`，不使用 `CRDB` / `YBDB`；不使用「產物」一詞。
 - **YugabyteDB triple gate**：isolation 須三層通過（default flag + enable flag + active/effective）；範例 SQL 改用 `SELECT yb_get_effective_transaction_isolation_level()`，舊 `SHOW yb_effective_transaction_isolation_level` 已 deprecated。
 - **sample size aware**：`N` = 獨立重跑次數（不是 round）。`N=1` 僅作為方向性觀察、不作為對外定論；對外結論需 `N=3`。引用 README [N9](./README.md#note-N9)。
+- **batch-readiness preflight**：把 batch 由 Mac 搬到 `.31`（或任何新 controller）前，必須先在新 controller 上跑 `ansible-playbook --syntax-check` + `ansible-galaxy collection list` 比對 Mac 一致（曾踩過 `ansible.posix` collection 缺失導致 batch 跑 30s 即 fail，浪費 1 cell TPCC_TS）。新 controller 同時要驗 `ssh root@<DB-host>` 通、`/usr/bin/python3.x` 版本可跑 ansible setup module、磁碟空間 ≥ 預計 artifact 量。
 - **data extraction traceability**：主要數據表應記錄工作目錄、使用檔案、取數指令、計算口徑；若缺失需列為 finding。
 
 ## 執行進度檢查
@@ -85,6 +86,26 @@ find results -path "*vm-1node*" \( -name "summary.json" -o -name "go-tpc-stdout.
 rg -n "取數來源|取數指令索引|error rate|來源目錄|N=1|N=3" results/README.md results/*-tc1/S-BASE/pipeline-log.md results/dispatch-records/
 ```
 
+### Batch-readiness preflight（搬 batch 到新 controller 前必跑）
+
+```bash
+# 1. ansible syntax-check：playbook 在新 controller 解析得了？
+ssh root@<新-controller> 'cd <poc-batch-dir>/ansible && ansible-playbook --syntax-check playbooks/<db>-vm3.yml -e <db>_sub_topology=1s1r'
+
+# 2. collection 對齊：對照 Mac 已用 collection（避免 ansible.posix 等缺漏，曾踩過）
+ssh root@<新-controller> 'ansible-galaxy collection list 2>&1 | grep -E "ansible.(posix|builtin)"'
+ansible-galaxy collection list 2>&1 | grep -E "ansible.(posix|builtin)"   # Mac 對照
+
+# 3. ssh 連線：新 controller 對 vm3_db (.32/.33/.34) + haproxy (.20) 是否可 ssh root
+ssh root@<新-controller> 'for h in 172.24.40.32 172.24.40.33 172.24.40.34 172.24.47.20; do ssh -o ConnectTimeout=3 -o BatchMode=yes "root@$h" "hostname" 2>&1 | head -1; done'
+
+# 4. Python 版本（ansible setup module 需 3.7+；.20 monitor host 是 3.6 已知問題）
+ssh root@<新-controller> '/usr/bin/python3 --version; /usr/bin/python3.12 --version 2>/dev/null'
+
+# 5. 磁碟：artifact 估算（vm-3node 4 cells × ~50 MB = ~200 MB；haproxy 同量）
+ssh root@<新-controller> 'df -h /tmp /root 2>/dev/null | tail -3'
+```
+
 ## 審計維度
 
 | 代號 | 維度 | 檢查重點 |
@@ -97,6 +118,7 @@ rg -n "取數來源|取數指令索引|error rate|來源目錄|N=1|N=3" results/
 | D6 | 進度與 commit 狀態 | 新 artifact 是否已反映到文件；文件更新是否已 commit |
 | D7 | YB triple gate / deprecated SQL | YugabyteDB 範例與 gate 流程是否仍引用 deprecated `SHOW yb_effective_transaction_isolation_level`；應改 `SELECT yb_get_effective_transaction_isolation_level()`，並確認三層 gate 皆有 artifact |
 | D8 | 樣本數 `N` | vm-3node / HAProxy 結果是否標 `N`；`N=1` 是否有 caveat；對外結論是否避免 `N=1` 單獨支持 |
+| D9 | Batch-readiness 移植驗證 | 把 batch（dispatch loop）搬到新 controller 前，是否跑過 `ansible-playbook --syntax-check`、`ansible-galaxy collection list` 對齊、ssh / Python 版本 / 磁碟 preflight；缺一就視為 batch 未準備好（曾踩 ansible.posix 缺失 → 1 cell TPCC_TS 作廢）|
 
 ## 輸出格式
 
