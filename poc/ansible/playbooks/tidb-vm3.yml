@@ -199,7 +199,12 @@
               coprocessor.region-max-size: "128GB"
             pd:
               replication.max-replicas: {{ tidb_replicas }}
-              schedule.leader-schedule-limit: 0
+              # leader-schedule-limit > 0 才能讓 PD rebalance leader 跨 stores。
+              # 2026-05-30 Cell 4 (3s3r) 實測：原 =0 → 27/27 leaders 全集中於單 store，
+              # 3s3r 退化為「single-store-leader + 多 follower」(audit-watch-prompt D10)。
+              # 4 是 TiDB 預設值；region/replica 仍鎖 0（PoC controlled experiment 不
+              # 允許 region split/merge 或 replica add/remove，只開 leader rebalance）。
+              schedule.leader-schedule-limit: 4
               schedule.region-schedule-limit: 0
               schedule.replica-schedule-limit: 0
 
