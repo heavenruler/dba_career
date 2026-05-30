@@ -199,14 +199,15 @@
               coprocessor.region-max-size: "128GB"
             pd:
               replication.max-replicas: {{ tidb_replicas }}
-              # leader-schedule-limit > 0 才能讓 PD rebalance leader 跨 stores。
-              # 2026-05-30 Cell 4 (3s3r) 實測：原 =0 → 27/27 leaders 全集中於單 store，
-              # 3s3r 退化為「single-store-leader + 多 follower」(audit-watch-prompt D10)。
-              # 4 是 TiDB 預設值；region/replica 仍鎖 0（PoC controlled experiment 不
-              # 允許 region split/merge 或 replica add/remove，只開 leader rebalance）。
+              # 2026-05-30 Fix #11 — replica-schedule-limit=0 阻擋 PD make-up-replica，
+              # 結果 max-replicas=3 設了但每 region 實際只有 1 個 replica（全在某 store）。
+              # 必須開放 leader + replica scheduler 才能落實 RF > 1：
+              #   leader-schedule-limit  > 0 → PD rebalance leader 跨 stores（fix D10）
+              #   replica-schedule-limit > 0 → PD 補滿 RF（fix #11）
+              #   region-schedule-limit  = 0 → 仍鎖 region 數，不允許 region 移動 / merge（PoC shard 鎖定原則保留）
               schedule.leader-schedule-limit: 4
               schedule.region-schedule-limit: 0
-              schedule.replica-schedule-limit: 0
+              schedule.replica-schedule-limit: 4
 
           pd_servers:
             - host: {{ tidb_host_primary }}
@@ -359,6 +360,29 @@
         exit 1
       environment:
         PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      changed_when: false
+
+    # Fix #11 — RF actual convergence wait. PD make-up-replica is async; for
+    # RF > 1 we must wait until every region has peer_count == max-replicas
+    # before dry-run, otherwise we'd freeze a cluster where regions are still
+    # under-replicated. RF=1 is trivially satisfied at create time so skip.
+    - name: Wait for region replicas to converge to RF={{ tidb_replicas }}
+      ansible.builtin.shell: |
+        set -e
+        for i in $(seq 1 60); do
+          read -r rfmin rfmax cnt < <(mysql -h {{ tidb_host_primary }} -P 4000 -uroot -B -N -e \
+            "SELECT IFNULL(MIN(pc),0), IFNULL(MAX(pc),0), COUNT(*) FROM (
+               SELECT COUNT(*) AS pc FROM information_schema.tikv_region_peers GROUP BY REGION_ID
+             ) p" 2>/dev/null || echo "0 0 0")
+          if [ "$rfmin" = "{{ tidb_replicas }}" ] && [ "$rfmax" = "{{ tidb_replicas }}" ]; then
+            echo "rf_converged: min=$rfmin max=$rfmax regions=$cnt"
+            exit 0
+          fi
+          sleep 5
+        done
+        echo "timeout: RF not converged (min=$rfmin max=$rfmax expected={{ tidb_replicas }} regions=$cnt)"
+        exit 1
+      when: tidb_replicas | int > 1
       changed_when: false
 
     - name: Apply TiDB benchmark settings (auto-analyze + pessimistic)

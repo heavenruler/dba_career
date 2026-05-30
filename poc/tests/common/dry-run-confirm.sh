@@ -108,6 +108,40 @@ if [[ "$DB" == "tidb" ]]; then
   fi
 fi
 
+# --- 1c. (TiDB) actual peer count per region == RF expected (Fix #11) -------
+# 原 §2 只驗 PD config max-replicas（reports what was SET），沒驗 actual placement
+# （what PD did）。2026-05-30 實測：max-replicas=3 但 replica-schedule-limit=0 →
+# PD 不補 replica → 每 region peer_count=1，cluster 實效 RF=1 偽裝 RF=3。
+# 此 gate 直接查每 region 的 peer count，min/max 都要 == EXPECTED_RF。
+# region 取樣含 cluster 內所有（包含 mysql.* / information_schema 等 system table）；
+# tpcc DB 尚未 prepare，因此這是 system regions 的 placement 驗證。
+ACTUAL_RF_MIN=n/a
+ACTUAL_RF_MAX=n/a
+ACTUAL_RF_REGIONS=n/a
+if [[ "$DB" == "tidb" ]]; then
+  for i in $(seq 1 12); do
+    read -r rfmin rfmax cnt < <(
+      mysql -h "$DB_HOST" -P "${TIDB_PORT:-4000}" -u "${TIDB_USER:-root}" -B -N -e \
+        "SELECT IFNULL(MIN(pc),0), IFNULL(MAX(pc),0), COUNT(*) FROM (
+           SELECT COUNT(*) AS pc FROM information_schema.tikv_region_peers GROUP BY REGION_ID
+         ) p" 2>/dev/null || echo "0 0 0"
+    )
+    if [[ "$rfmin" == "$EXPECTED_RF" && "$rfmax" == "$EXPECTED_RF" ]]; then break; fi
+    sleep 5
+  done
+  ACTUAL_RF_MIN="${rfmin:-n/a}"
+  ACTUAL_RF_MAX="${rfmax:-n/a}"
+  ACTUAL_RF_REGIONS="${cnt:-n/a}"
+  if [[ "$ACTUAL_RF_MIN" != "$EXPECTED_RF" || "$ACTUAL_RF_MAX" != "$EXPECTED_RF" ]]; then
+    warn "RF actual peer count mismatch: expected=$EXPECTED_RF min=$ACTUAL_RF_MIN max=$ACTUAL_RF_MAX regions=$ACTUAL_RF_REGIONS (PD replica-schedule-limit may be 0)"
+    ALL_PASS=false
+    FAILS+=("rf-actual-mismatch:min=$ACTUAL_RF_MIN/max=$ACTUAL_RF_MAX/expected=$EXPECTED_RF")
+  fi
+  echo "actual-rf-min       = $ACTUAL_RF_MIN" >> "$DRY/replication-factor.txt"
+  echo "actual-rf-max       = $ACTUAL_RF_MAX" >> "$DRY/replication-factor.txt"
+  echo "actual-rf-regions   = $ACTUAL_RF_REGIONS" >> "$DRY/replication-factor.txt"
+fi
+
 # --- 2. replication-factor dump ---------------------------------------------
 case "$DB" in
   tidb)
@@ -267,7 +301,10 @@ fi
 {
   echo "=== dry-run gate $TOPOLOGY / $DB / $ISO ==="
   echo "expected-node-count = 3        actual = $NODE_COUNT"
-  echo "expected-rf         = $EXPECTED_RF        actual = $ACTUAL_RF"
+  echo "expected-rf (config) = $EXPECTED_RF        actual = $ACTUAL_RF"
+  echo "actual-rf-peer-min  = $ACTUAL_RF_MIN  (TiDB-only; per-region peer count)"
+  echo "actual-rf-peer-max  = $ACTUAL_RF_MAX  (TiDB-only)"
+  echo "actual-rf-regions   = $ACTUAL_RF_REGIONS  (TiDB-only; total regions sampled)"
   echo "expected-iso        = $EXPECTED_ISO   actual = ${ACTUAL_ISO:-N/A}"
   echo "yb-effective-iso    = ${YB_EFFECTIVE:-n/a}"
   echo "ybdb-cluster-healthy = ${YBDB_CLUSTER_HEALTHY:-n/a}"
@@ -289,6 +326,9 @@ write_phase_done "$ROOT" "dry-run" "$(cat <<JSON
   "node_count": ${NODE_COUNT:-0},
   "rf_expected": "$EXPECTED_RF",
   "rf_actual": "${ACTUAL_RF:-?}",
+  "rf_actual_peer_min": "${ACTUAL_RF_MIN:-n/a}",
+  "rf_actual_peer_max": "${ACTUAL_RF_MAX:-n/a}",
+  "rf_actual_regions": "${ACTUAL_RF_REGIONS:-n/a}",
   "iso_expected": "$EXPECTED_ISO",
   "iso_actual": "${ACTUAL_ISO:-N/A}",
   "yb_effective_iso": "${YB_EFFECTIVE:-n/a}",
