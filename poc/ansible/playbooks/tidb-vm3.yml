@@ -369,11 +369,15 @@
     - name: Wait for region replicas to converge to RF={{ tidb_replicas }}
       ansible.builtin.shell: |
         set -e
+        rfmin=0 rfmax=0 cnt=0
         for i in $(seq 1 60); do
-          read -r rfmin rfmax cnt < <(mysql -h {{ tidb_host_primary }} -P 4000 -uroot -B -N -e \
+          row=$(mysql -h {{ tidb_host_primary }} -P 4000 -uroot -B -N -e \
             "SELECT IFNULL(MIN(pc),0), IFNULL(MAX(pc),0), COUNT(*) FROM (
                SELECT COUNT(*) AS pc FROM information_schema.tikv_region_peers GROUP BY REGION_ID
              ) p" 2>/dev/null || echo "0 0 0")
+          rfmin=$(echo "$row" | awk '{print $1}')
+          rfmax=$(echo "$row" | awk '{print $2}')
+          cnt=$(echo "$row" | awk '{print $3}')
           if [ "$rfmin" = "{{ tidb_replicas }}" ] && [ "$rfmax" = "{{ tidb_replicas }}" ]; then
             echo "rf_converged: min=$rfmin max=$rfmax regions=$cnt"
             exit 0
@@ -382,6 +386,8 @@
         done
         echo "timeout: RF not converged (min=$rfmin max=$rfmax expected={{ tidb_replicas }} regions=$cnt)"
         exit 1
+      args:
+        executable: /bin/bash
       when: tidb_replicas | int > 1
       changed_when: false
 
