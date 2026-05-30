@@ -1,0 +1,855 @@
+=== SHOW GLOBAL VARIABLES ===
+Variable_name	Value
+allow_auto_random_explicit_insert	OFF
+authentication_ldap_sasl_auth_method_name	SCRAM-SHA-1
+authentication_ldap_sasl_bind_base_dn	
+authentication_ldap_sasl_bind_root_dn	
+authentication_ldap_sasl_bind_root_pwd	
+authentication_ldap_sasl_ca_path	
+authentication_ldap_sasl_init_pool_size	10
+authentication_ldap_sasl_max_pool_size	1000
+authentication_ldap_sasl_server_host	
+authentication_ldap_sasl_server_port	389
+authentication_ldap_sasl_tls	OFF
+authentication_ldap_sasl_user_search_attr	uid
+authentication_ldap_simple_auth_method_name	SIMPLE
+authentication_ldap_simple_bind_base_dn	
+authentication_ldap_simple_bind_root_dn	
+authentication_ldap_simple_bind_root_pwd	
+authentication_ldap_simple_ca_path	
+authentication_ldap_simple_init_pool_size	10
+authentication_ldap_simple_max_pool_size	1000
+authentication_ldap_simple_server_host	
+authentication_ldap_simple_server_port	389
+authentication_ldap_simple_tls	OFF
+authentication_ldap_simple_user_search_attr	uid
+auto_increment_increment	1
+auto_increment_offset	1
+autocommit	ON
+automatic_sp_privileges	1
+avoid_temporal_upgrade	OFF
+back_log	80
+basedir	/usr/local/mysql
+big_tables	OFF
+bind_address	*
+binlog_cache_size	32768
+binlog_checksum	CRC32
+binlog_direct_non_transactional_updates	OFF
+binlog_error_action	IGNORE_ERROR
+binlog_format	STATEMENT
+binlog_group_commit_sync_delay	
+binlog_group_commit_sync_no_delay_count	
+binlog_gtid_simple_recovery	1
+binlog_max_flush_queue_time	0
+binlog_order_commits	ON
+binlog_row_image	FULL
+binlog_rows_query_log_events	OFF
+binlog_stmt_cache_size	32768
+binlogging_impossible_mode	IGNORE_ERROR
+block_encryption_mode	aes-128-ecb
+bulk_insert_buffer_size	8388608
+character_set_client	utf8mb4
+character_set_connection	utf8mb4
+character_set_database	utf8mb4
+character_set_filesystem	binary
+character_set_results	utf8mb4
+character_set_server	utf8mb4
+character_set_system	utf8
+character_sets_dir	/usr/local/mysql-5.6.25-osx10.8-x86_64/share/charsets/
+check_proxy_users	OFF
+collation_connection	utf8mb4_bin
+collation_database	utf8mb4_bin
+collation_server	utf8mb4_bin
+completion_type	NO_CHAIN
+concurrent_insert	AUTO
+connect_timeout	10
+core_file	OFF
+cte_max_recursion_depth	1000
+datadir	172.24.40.32:2379,172.24.40.33:2379,172.24.40.34:2379
+date_format	%Y-%m-%d
+datetime_format	%Y-%m-%d %H:%i:%s
+ddl_slow_threshold	300
+debug	
+default_authentication_plugin	mysql_native_password
+default_collation_for_utf8mb4	utf8mb4_bin
+default_password_lifetime	0
+default_storage_engine	InnoDB
+default_tmp_storage_engine	InnoDB
+default_week_format	0
+delay_key_write	ON
+delayed_insert_limit	100
+delayed_insert_timeout	300
+delayed_queue_size	1000
+disconnect_on_expired_password	ON
+div_precision_increment	4
+end_markers_in_json	OFF
+enforce_gtid_consistency	OFF
+eq_range_index_dive_limit	200
+event_scheduler	OFF
+executed_gtids_compression_period	
+expire_logs_days	0
+explicit_defaults_for_timestamp	ON
+flush	OFF
+flush_time	0
+foreign_key_checks	ON
+ft_boolean_syntax	+ -><()~*:""&|
+ft_max_word_len	84
+ft_min_word_len	4
+ft_query_expansion_limit	20
+ft_stopword_file	(built-in)
+general_log	OFF
+general_log_file	/usr/local/mysql/data/localhost.log
+group_concat_max_len	1024
+gtid_executed_compression_period	
+gtid_mode	OFF
+gtid_purged	
+have_compress	YES
+have_crypt	YES
+have_dynamic_loading	YES
+have_geometry	YES
+have_openssl	DISABLED
+have_profiling	NO
+have_query_cache	YES
+have_rtree_keys	YES
+have_ssl	DISABLED
+have_symlink	YES
+host_cache_size	279
+hostname	l-test-poc-1
+ignore_builtin_innodb	0
+information_schema_stats_expiry	86400
+init_connect	
+init_slave	
+innodb_adaptive_flushing	ON
+innodb_adaptive_flushing_lwm	10
+innodb_adaptive_hash_index	ON
+innodb_adaptive_max_sleep_delay	150000
+innodb_additional_mem_pool_size	8388608
+innodb_api_bk_commit_interval	5
+innodb_api_disable_rowlock	0
+innodb_api_enable_binlog	0
+innodb_api_enable_mdl	0
+innodb_api_trx_level	0
+innodb_autoextend_increment	64
+innodb_autoinc_lock_mode	1
+innodb_buffer_pool_dump_at_shutdown	0
+innodb_buffer_pool_dump_now	OFF
+innodb_buffer_pool_dump_pct	
+innodb_buffer_pool_filename	ib_buffer_pool
+innodb_buffer_pool_instances	8
+innodb_buffer_pool_load_abort	OFF
+innodb_buffer_pool_load_at_startup	1
+innodb_buffer_pool_load_now	OFF
+innodb_buffer_pool_size	134217728
+innodb_change_buffer_max_size	25
+innodb_change_buffering	all
+innodb_checksum_algorithm	innodb
+innodb_checksums	ON
+innodb_cmp_per_index_enabled	OFF
+innodb_commit_concurrency	0
+innodb_compression_failure_threshold_pct	5
+innodb_compression_level	6
+innodb_compression_pad_pct_max	50
+innodb_concurrency_tickets	5000
+innodb_data_file_path	ibdata1:12M:autoextend
+innodb_default_row_format	dynamic
+innodb_disable_sort_file_cache	0
+innodb_doublewrite	1
+innodb_fast_shutdown	1
+innodb_file_format	Barracuda
+innodb_file_format_check	1
+innodb_file_format_max	Antelope
+innodb_file_per_table	ON
+innodb_fill_factor	
+innodb_flush_log_at_timeout	1
+innodb_flush_log_at_trx_commit	1
+innodb_flush_neighbors	1
+innodb_flush_sync	
+innodb_flushing_avg_loops	30
+innodb_force_load_corrupted	0
+innodb_force_recovery	0
+innodb_ft_aux_table	
+innodb_ft_cache_size	8000000
+innodb_ft_enable_diag_print	OFF
+innodb_ft_enable_stopword	ON
+innodb_ft_max_token_size	84
+innodb_ft_min_token_size	3
+innodb_ft_num_word_optimize	2000
+innodb_ft_result_cache_limit	2000000000
+innodb_ft_server_stopword_table	
+innodb_ft_sort_pll_degree	2
+innodb_ft_total_cache_size	640000000
+innodb_ft_user_stopword_table	
+innodb_io_capacity	200
+innodb_io_capacity_max	2000
+innodb_large_prefix	ON
+innodb_lock_wait_timeout	50
+innodb_locks_unsafe_for_binlog	0
+innodb_log_buffer_size	8388608
+innodb_log_checksum_algorithm	
+innodb_log_compressed_pages	1
+innodb_log_file_size	50331648
+innodb_log_files_in_group	2
+innodb_log_group_home_dir	./
+innodb_log_write_ahead_size	
+innodb_lru_scan_depth	1024
+innodb_max_dirty_pages_pct	75
+innodb_max_dirty_pages_pct_lwm	0
+innodb_max_purge_lag	0
+innodb_max_purge_lag_delay	0
+innodb_max_undo_log_size	
+innodb_mirrored_log_groups	1
+innodb_monitor_disable	
+innodb_monitor_enable	
+innodb_monitor_reset	
+innodb_monitor_reset_all	
+innodb_old_blocks_pct	37
+innodb_old_blocks_time	1000
+innodb_online_alter_log_max_size	134217728
+innodb_open_files	2000
+innodb_optimize_fulltext_only	0
+innodb_page_size	16384
+innodb_print_all_deadlocks	OFF
+innodb_purge_batch_size	300
+innodb_purge_rseg_truncate_frequency	
+innodb_purge_threads	1
+innodb_random_read_ahead	OFF
+innodb_read_ahead_threshold	56
+innodb_read_io_threads	4
+innodb_read_only	0
+innodb_replication_delay	0
+innodb_rollback_on_timeout	0
+innodb_rollback_segments	128
+innodb_sort_buffer_size	1048576
+innodb_spin_wait_delay	6
+innodb_stats_auto_recalc	1
+innodb_stats_method	nulls_equal
+innodb_stats_on_metadata	0
+innodb_stats_persistent	ON
+innodb_stats_persistent_sample_pages	20
+innodb_stats_sample_pages	8
+innodb_stats_transient_sample_pages	8
+innodb_status_output	OFF
+innodb_status_output_locks	OFF
+innodb_strict_mode	ON
+innodb_support_xa	1
+innodb_sync_array_size	1
+innodb_sync_spin_loops	30
+innodb_table_locks	ON
+innodb_thread_concurrency	0
+innodb_thread_sleep_delay	10000
+innodb_undo_directory	.
+innodb_undo_log_truncate	
+innodb_undo_logs	128
+innodb_undo_tablespaces	0
+innodb_use_native_aio	0
+innodb_use_sys_malloc	1
+innodb_version	5.6.25
+innodb_write_io_threads	4
+interactive_timeout	28800
+internal_tmp_disk_storage_engine	
+join_buffer_size	262144
+keep_files_on_create	OFF
+key_buffer_size	8388608
+key_cache_age_threshold	300
+key_cache_block_size	1024
+key_cache_division_limit	100
+large_files_support	1
+large_page_size	0
+large_pages	OFF
+lc_messages	en_US
+lc_messages_dir	/usr/local/mysql-5.6.25-osx10.8-x86_64/share/
+lc_time_names	en_US
+license	Apache License 2.0
+local_infile	ON
+lock_wait_timeout	31536000
+locked_in_memory	0
+log_backward_compatible_user_definitions	
+log_bin_trust_function_creators	OFF
+log_bin_use_v1_row_events	0
+log_error	/usr/local/mysql/data/localhost.err
+log_error_verbosity	
+log_output	FILE
+log_queries_not_using_indexes	OFF
+log_slave_updates	OFF
+log_slow_admin_statements	OFF
+log_slow_slave_statements	OFF
+log_syslog	
+log_syslog_facility	
+log_syslog_include_pid	
+log_syslog_tag	
+log_throttle_queries_not_using_indexes	0
+log_timestamps	
+log_warnings	1
+long_query_time	10.000000
+low_priority_updates	OFF
+lower_case_file_system	1
+lower_case_table_names	2
+master_info_repository	FILE
+master_verify_checksum	OFF
+max_allowed_packet	67108864
+max_binlog_cache_size	18446744073709547520
+max_binlog_size	1073741824
+max_binlog_stmt_cache_size	18446744073709547520
+max_connect_errors	100
+max_connections	0
+max_delayed_threads	20
+max_digest_length	1024
+max_error_count	64
+max_execution_time	0
+max_heap_table_size	16777216
+max_insert_delayed_threads	20
+max_join_size	18446744073709551615
+max_length_for_sort_data	1024
+max_points_in_geometry	65536
+max_prepared_stmt_count	-1
+max_relay_log_size	0
+max_seeks_for_key	18446744073709551615
+max_sort_length	1024
+max_sp_recursion_depth	0
+max_statement_time	
+max_tmp_tables	32
+max_user_connections	0
+max_write_lock_count	18446744073709551615
+metadata_locks_cache_size	1024
+metadata_locks_hash_instances	8
+min_examined_row_limit	0
+mpp_exchange_compression_mode	UNSPECIFIED
+mpp_version	UNSPECIFIED
+multi_range_count	256
+myisam_data_pointer_size	6
+myisam_max_sort_file_size	9223372036853727232
+myisam_mmap_size	18446744073709551615
+myisam_recover_options	OFF
+myisam_repair_threads	1
+myisam_sort_buffer_size	8388608
+myisam_stats_method	nulls_unequal
+myisam_use_mmap	OFF
+mysql_native_password_proxy_users	
+ndb_blob_write_batch_bytes	
+ndb_deferred_constraints	
+ndb_distribution	
+ndb_eventbuffer_free_percent	
+ndb_eventbuffer_max_alloc	
+ndb_force_send	
+ndb_index_stat_enable	
+ndb_index_stat_option	
+ndb_join_pushdown	
+ndb_log_binlog_index	
+ndb_log_empty_epochs	
+ndb_log_updated_only	
+ndb_optimization_delay	
+ndb_recv_thread_cpu_mask	
+ndb_show_foreign_key_mock_tables	
+ndb_use_transactions	
+ndbinfo_max_rows	
+ndbinfo_show_hidden	
+net_buffer_length	16384
+net_read_timeout	30
+net_retry_count	10
+net_write_timeout	60
+new	OFF
+offline_mode	OFF
+old	0
+old_alter_table	OFF
+old_passwords	0
+open_files_limit	5000
+optimizer_prune_level	1
+optimizer_search_depth	62
+optimizer_switch	index_merge=on,index_merge_union=on,index_merge_sort_union=on,index_merge_intersection=on,engine_condition_pushdown=on,index_condition_pushdown=on,mrr=on,mrr_cost_based=on,block_nested_loop=on,batched_key_access=off,materialization=on,semijoin=on,loosescan=on,firstmatch=on,subquery_materialization_cost_based=on,use_index_extensions=on
+optimizer_trace	enabled=off,one_line=off
+optimizer_trace_features	greedy_search=on,range_optimizer=on,dynamic_range=on,repeated_subselect=on
+optimizer_trace_limit	1
+optimizer_trace_max_mem_size	16384
+optimizer_trace_offset	-1
+password_history	0
+password_reuse_interval	0
+pd_enable_follower_handle_region	OFF
+performance_schema	OFF
+performance_schema_accounts_size	100
+performance_schema_digests_size	10000
+performance_schema_events_stages_history_long_size	10000
+performance_schema_events_stages_history_size	10
+performance_schema_events_statements_history_long_size	10000
+performance_schema_events_statements_history_size	10
+performance_schema_events_waits_history_long_size	10000
+performance_schema_events_waits_history_size	10
+performance_schema_hosts_size	100
+performance_schema_max_cond_classes	80
+performance_schema_max_cond_instances	3504
+performance_schema_max_file_classes	50
+performance_schema_max_file_handles	32768
+performance_schema_max_file_instances	7693
+performance_schema_max_mutex_classes	200
+performance_schema_max_mutex_instances	15906
+performance_schema_max_rwlock_classes	40
+performance_schema_max_rwlock_instances	9102
+performance_schema_max_socket_classes	10
+performance_schema_max_socket_instances	322
+performance_schema_max_stage_classes	150
+performance_schema_max_statement_classes	168
+performance_schema_max_table_handles	4000
+performance_schema_max_table_instances	12500
+performance_schema_max_thread_classes	50
+performance_schema_max_thread_instances	402
+performance_schema_session_connect_attrs_size	512
+performance_schema_setup_actors_size	100
+performance_schema_setup_objects_size	100
+performance_schema_users_size	100
+pid_file	/usr/local/mysql/data/localhost.pid
+plugin_dir	/data/deploy/plugin
+plugin_load	
+port	4000
+preload_buffer_size	32768
+profiling	OFF
+profiling_history_size	15
+protocol_version	10
+query_alloc_block_size	8192
+query_cache_limit	1048576
+query_cache_min_res_unit	4096
+query_cache_size	1048576
+query_cache_type	OFF
+query_cache_wlock_invalidate	OFF
+query_prealloc_size	8192
+range_alloc_block_size	4096
+read_buffer_size	131072
+read_only	OFF
+read_rnd_buffer_size	262144
+relay_log_info_file	relay-log.info
+relay_log_info_repository	FILE
+relay_log_purge	ON
+relay_log_recovery	0
+relay_log_space_limit	0
+report_port	3306
+require_secure_transport	OFF
+rewriter_enabled	
+rewriter_verbose	
+rpl_semi_sync_master_enabled	OFF
+rpl_semi_sync_master_timeout	10000
+rpl_semi_sync_master_trace_level	
+rpl_semi_sync_master_wait_for_slave_count	1
+rpl_semi_sync_master_wait_no_slave	ON
+rpl_semi_sync_master_wait_point	AFTER_SYNC
+rpl_semi_sync_slave_enabled	OFF
+rpl_semi_sync_slave_trace_level	
+rpl_stop_slave_timeout	31536000
+secure_auth	ON
+server_id	0
+server_id_bits	32
+server_uuid	00000000-0000-0000-0000-000000000000
+session_track_gtids	OFF
+session_track_schema	
+session_track_state_change	
+session_track_system_variables	
+sha256_password_proxy_users	
+show_compatibility_56	
+show_old_temporals	OFF
+skip_external_locking	1
+skip_name_resolve	OFF
+skip_networking	0
+skip_show_database	0
+slave_allow_batching	OFF
+slave_checkpoint_group	512
+slave_checkpoint_period	300
+slave_compressed_protocol	OFF
+slave_exec_mode	STRICT
+slave_load_tmpdir	/var/tmp/
+slave_max_allowed_packet	1073741824
+slave_net_timeout	3600
+slave_parallel_type	
+slave_parallel_workers	0
+slave_pending_jobs_size_max	16777216
+slave_preserve_commit_order	OFF
+slave_rows_search_algorithms	TABLE_SCAN,INDEX_SCAN
+slave_skip_errors	OFF
+slave_sql_verify_checksum	ON
+slave_transaction_retries	10
+slow_launch_time	2
+slow_query_log	0
+slow_query_log_file	/usr/local/mysql/data/localhost-slow.log
+socket	/tmp/tidb-4000.sock
+sort_buffer_size	262144
+sql_auto_is_null	OFF
+sql_big_selects	ON
+sql_buffer_result	OFF
+sql_log_off	0
+sql_mode	ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+sql_notes	1
+sql_quote_show_create	ON
+sql_require_primary_key	OFF
+sql_safe_updates	OFF
+sql_select_limit	18446744073709551615
+sql_slave_skip_counter	0
+sql_warnings	OFF
+ssl_ca	
+ssl_cert	
+ssl_cipher	
+ssl_key	
+storage_engine	InnoDB
+stored_program_cache	256
+super_read_only	OFF
+sync_binlog	0
+sync_frm	ON
+sync_master_info	10000
+sync_relay_log	10000
+sync_relay_log_info	10000
+system_time_zone	Asia/Taipei
+table_definition_cache	2000
+table_open_cache	2000
+table_open_cache_instances	1
+thread_cache_size	9
+thread_concurrency	10
+thread_handling	one-thread-per-connection
+thread_pool_size	16
+thread_stack	262144
+tidb_adaptive_closest_read_threshold	4096
+tidb_allow_batch_cop	1
+tidb_allow_fallback_to_tikv	
+tidb_allow_function_for_expression_index	json_array, json_array_append, json_array_insert, json_contains, json_contains_path, json_depth, json_extract, json_insert, json_keys, json_length, json_merge_patch, json_merge_preserve, json_object, json_pretty, json_quote, json_remove, json_replace, json_schema_valid, json_search, json_set, json_storage_size, json_type, json_unquote, json_valid, lower, md5, reverse, tidb_shard, upper, vitess_hash
+tidb_allow_mpp	ON
+tidb_allow_tiflash_cop	OFF
+tidb_analyze_column_options	PREDICATE
+tidb_analyze_distsql_scan_concurrency	4
+tidb_analyze_partition_concurrency	2
+tidb_analyze_skip_column_types	json,blob,mediumblob,longblob,mediumtext,longtext
+tidb_analyze_version	2
+tidb_auto_analyze_concurrency	1
+tidb_auto_analyze_end_time	23:59 +0000
+tidb_auto_analyze_partition_batch_size	8192
+tidb_auto_analyze_ratio	0.5
+tidb_auto_analyze_start_time	00:00 +0000
+tidb_auto_build_stats_concurrency	1
+tidb_backoff_lock_fast	10
+tidb_backoff_weight	2
+tidb_batch_pending_tiflash_count	4000
+tidb_broadcast_join_threshold_count	10240
+tidb_broadcast_join_threshold_size	104857600
+tidb_build_sampling_stats_concurrency	2
+tidb_build_stats_concurrency	2
+tidb_capture_plan_baselines	OFF
+tidb_check_mb4_value_in_utf8	ON
+tidb_cloud_storage_uri	
+tidb_committer_concurrency	128
+tidb_config	{\n\t"advertise-address": "172.24.40.32",\n\t"alter-primary-key": false,\n\t"autoscaler-addr": "tiflash-autoscale-lb.tiflash-autoscale.svc.cluster.local:8081",\n\t"autoscaler-cluster-id": "",\n\t"autoscaler-type": "aws",\n\t"ballast-object-size": 0,\n\t"compatible-kill-query": false,\n\t"cors": "",\n\t"delay-clean-table-lock": 0,\n\t"deprecate-integer-display-length": true,\n\t"disaggregated-tiflash": false,\n\t"enable-32bits-connection-id": true,\n\t"enable-enum-length-limit": true,\n\t"enable-forwarding": false,\n\t"enable-global-kill": true,\n\t"enable-table-lock": false,\n\t"enable-tcp4-only": false,\n\t"enable-telemetry": false,\n\t"experimental": {\n\t\t"allow-expression-index": false\n\t},\n\t"graceful-wait-before-shutdown": 0,\n\t"host": "0.0.0.0",\n\t"in-mem-slow-query-recent-num": 500,\n\t"in-mem-slow-query-topn-num": 30,\n\t"index-limit": 64,\n\t"initialize-sql-file": "",\n\t"instance": {\n\t\t"ddl_slow_threshold": 300,\n\t\t"max_connections": 0,\n\t\t"plugin_dir": "/data/deploy/plugin",\n\t\t"plugin_load": "",\n\t\t"tidb_check_mb4_value_in_utf8": true,\n\t\t"tidb_enable_collect_execution_info": true,\n\t\t"tidb_enable_ddl": true,\n\t\t"tidb_enable_slow_log": true,\n\t\t"tidb_enable_stats_owner": true,\n\t\t"tidb_expensive_query_time_threshold": 60,\n\t\t"tidb_expensive_txn_time_threshold": 600,\n\t\t"tidb_force_priority": "NO_PRIORITY",\n\t\t"tidb_general_log": false,\n\t\t"tidb_pprof_sql_cpu": false,\n\t\t"tidb_rc_read_check_ts": false,\n\t\t"tidb_record_plan_in_slow_log": 1,\n\t\t"tidb_service_scope": "",\n\t\t"tidb_slow_log_threshold": 300,\n\t\t"tidb_stmt_summary_enable_persistent": false,\n\t\t"tidb_stmt_summary_file_max_backups": 0,\n\t\t"tidb_stmt_summary_file_max_days": 3,\n\t\t"tidb_stmt_summary_file_max_size": 64,\n\t\t"tidb_stmt_summary_filename": "tidb-statements.log"\n\t},\n\t"is-tiflashcompute-fixed-pool": false,\n\t"isolation-read": {\n\t\t"engines": [\n\t\t\t"tikv",\n\t\t\t"tiflash",\n\t\t\t"tidb"\n\t\t]\n\t},\n\t"keyspace-name": "",\n\t"labels": {},\n\t"lease": "45s",\n\t"log": {\n\t\t"disable-error-stack": null,\n\t\t"disable-timestamp": null,\n\t\t"enable-error-stack": null,\n\t\t"enable-timestamp": null,\n\t\t"file": {\n\t\t\t"compression": "",\n\t\t\t"filename": "/tidb-deploy/tidb-4000/log/tidb.log",\n\t\t\t"max-backups": 0,\n\t\t\t"max-days": 0,\n\t\t\t"max-size": 300\n\t\t},\n\t\t"format": "text",\n\t\t"general-log-file": "",\n\t\t"level": "info",\n\t\t"slow-query-file": "/tidb-deploy/tidb-4000/log/tidb_slow_query.log",\n\t\t"timeout": 0\n\t},\n\t"max-ballast-object-size": 0,\n\t"max-index-length": 3072,\n\t"new_collations_enabled_on_first_bootstrap": true,\n\t"opentracing": {\n\t\t"enable": false,\n\t\t"reporter": {\n\t\t\t"buffer-flush-interval": 0,\n\t\t\t"local-agent-host-port": "",\n\t\t\t"log-spans": false,\n\t\t\t"queue-size": 0\n\t\t},\n\t\t"rpc-metrics": false,\n\t\t"sampler": {\n\t\t\t"max-operations": 0,\n\t\t\t"param": 1,\n\t\t\t"sampling-refresh-interval": 0,\n\t\t\t"sampling-server-url": "",\n\t\t\t"type": "const"\n\t\t}\n\t},\n\t"path": "172.24.40.32:2379,172.24.40.33:2379,172.24.40.34:2379",\n\t"pd-client": {\n\t\t"pd-server-timeout": 3\n\t},\n\t"performance": {\n\t\t"analyze-partition-concurrency-quota": 16,\n\t\t"bind-info-lease": "3s",\n\t\t"concurrently-init-stats": true,\n\t\t"cross-join": true,\n\t\t"distinct-agg-push-down": false,\n\t\t"enable-load-fmsketch": false,\n\t\t"enable-stats-cache-mem-quota": true,\n\t\t"enforce-mpp": false,\n\t\t"force-init-stats": true,\n\t\t"gogc": 100,\n\t\t"lite-init-stats": true,\n\t\t"max-procs": 0,\n\t\t"max-txn-ttl": 3600000,\n\t\t"plan-replayer-dump-worker-concurrency": 1,\n\t\t"plan-replayer-gc-lease": "10m",\n\t\t"projection-push-down": true,\n\t\t"pseudo-estimate-ratio": 0.8,\n\t\t"server-memory-quota": 0,\n\t\t"stats-lease": "3s",\n\t\t"stats-load-concurrency": 0,\n\t\t"stats-load-queue-size": 1000,\n\t\t"stmt-count-limit": 5000,\n\t\t"tcp-keep-alive": true,\n\t\t"tcp-no-delay": true,\n\t\t"txn-entry-size-limit": 6291456,\n\t\t"txn-total-size-limit": 104857600\n\t},\n\t"pessimistic-txn": {\n\t\t"constraint-check-in-place-pessimistic": true,\n\t\t"deadlock-history-capacity": 10,\n\t\t"deadlock-history-collect-retryable": false,\n\t\t"max-retry-count": 256,\n\t\t"pessimistic-auto-commit": false\n\t},\n\t"plugin": {},\n\t"port": 4000,\n\t"prepared-plan-cache": {},\n\t"proxy-protocol": {\n\t\t"fallbackable": false,\n\t\t"header-timeout": 5,\n\t\t"networks": ""\n\t},\n\t"repair-mode": false,\n\t"repair-table-list": [],\n\t"security": {\n\t\t"auth-token-jwks": "",\n\t\t"auth-token-refresh-interval": "1h0m0s",\n\t\t"auto-tls": false,\n\t\t"cluster-ssl-ca": "",\n\t\t"cluster-ssl-cert": "",\n\t\t"cluster-ssl-key": "",\n\t\t"cluster-verify-cn": null,\n\t\t"disconnect-on-expired-password": true,\n\t\t"enable-sem": false,\n\t\t"rsa-key-size": 4096,\n\t\t"secure-bootstrap": false,\n\t\t"session-token-signing-cert": "",\n\t\t"session-token-signing-key": "",\n\t\t"skip-grant-table": false,\n\t\t"spilled-file-encryption-method": "plaintext",\n\t\t"ssl-ca": "",\n\t\t"ssl-cert": "",\n\t\t"ssl-key": "",\n\t\t"tls-version": ""\n\t},\n\t"server-version": "",\n\t"skip-register-to-dashboard": false,\n\t"socket": "/tmp/tidb-4000.sock",\n\t"split-region-max-num": 1000,\n\t"split-table": true,\n\t"status": {\n\t\t"grpc-concurrent-streams": 1024,\n\t\t"grpc-initial-window-size": 2097152,\n\t\t"grpc-keepalive-time": 10,\n\t\t"grpc-keepalive-timeout": 3,\n\t\t"grpc-max-send-msg-size": 2147483647,\n\t\t"metrics-addr": "",\n\t\t"metrics-interval": 15,\n\t\t"record-db-label": false,\n\t\t"record-db-qps": false,\n\t\t"report-status": true,\n\t\t"status-host": "0.0.0.0",\n\t\t"status-port": 10080\n\t},\n\t"store": "tikv",\n\t"stores-refresh-interval": 60,\n\t"table-column-count-limit": 1017,\n\t"temp-dir": "/tmp/tidb",\n\t"tidb-edition": "",\n\t"tidb-enable-exit-check": false,\n\t"tidb-max-reuse-chunk": 64,\n\t"tidb-max-reuse-column": 256,\n\t"tidb-release-version": "",\n\t"tikv-client": {\n\t\t"async-commit": {\n\t\t\t"allowed-clock-drift": 500000000,\n\t\t\t"keys-limit": 256,\n\t\t\t"safe-window": 2000000000,\n\t\t\t"total-key-size-limit": 4096\n\t\t},\n\t\t"batch-policy": "standard",\n\t\t"batch-wait-size": 8,\n\t\t"commit-timeout": "41s",\n\t\t"copr-cache": {\n\t\t\t"capacity-mb": 1000\n\t\t},\n\t\t"copr-req-timeout": 60000000000,\n\t\t"enable-chunk-rpc": true,\n\t\t"enable-replica-selector-v2": true,\n\t\t"grpc-compression-type": "none",\n\t\t"grpc-connection-count": 4,\n\t\t"grpc-initial-conn-window-size": 134217728,\n\t\t"grpc-initial-window-size": 134217728,\n\t\t"grpc-keepalive-time": 10,\n\t\t"grpc-keepalive-timeout": 3,\n\t\t"grpc-shared-buffer-pool": false,\n\t\t"max-batch-size": 128,\n\t\t"max-batch-wait-time": 0,\n\t\t"max-concurrency-request-limit": 9223372036854776000,\n\t\t"overload-threshold": 200,\n\t\t"region-cache-ttl": 600,\n\t\t"resolve-lock-lite-threshold": 16,\n\t\t"store-limit": 0,\n\t\t"store-liveness-timeout": "1s",\n\t\t"ttl-refreshed-txn-size": 33554432\n\t},\n\t"tmp-storage-path": "/tmp/1000_tidb/MC4wLjAuMDo0MDAwLzAuMC4wLjA6MTAwODA=/tmp-storage",\n\t"tmp-storage-quota": -1,\n\t"token-limit": 1000,\n\t"top-sql": {\n\t\t"receiver-address": ""\n\t},\n\t"transaction-summary": {\n\t\t"transaction-id-digest-min-duration": 2147483647,\n\t\t"transaction-summary-capacity": 500\n\t},\n\t"treat-old-version-utf8-as-utf8mb4": true,\n\t"use-autoscaler": false,\n\t"version-comment": ""\n}
+tidb_constraint_check_in_place	OFF
+tidb_cost_model_version	2
+tidb_ddl_disk_quota	107374182400
+tidb_ddl_enable_fast_reorg	ON
+tidb_ddl_error_count_limit	512
+tidb_ddl_flashback_concurrency	64
+tidb_ddl_reorg_batch_size	256
+tidb_ddl_reorg_max_write_speed	0
+tidb_ddl_reorg_worker_cnt	4
+tidb_default_string_match_selectivity	0.8
+tidb_disable_txn_auto_retry	ON
+tidb_distsql_scan_concurrency	15
+tidb_dml_batch_size	0
+tidb_enable_1pc	ON
+tidb_enable_analyze_snapshot	OFF
+tidb_enable_async_commit	ON
+tidb_enable_async_merge_global_stats	ON
+tidb_enable_auto_analyze	OFF
+tidb_enable_auto_analyze_priority_queue	ON
+tidb_enable_auto_increment_in_generated	OFF
+tidb_enable_batch_dml	OFF
+tidb_enable_cascades_planner	OFF
+tidb_enable_check_constraint	OFF
+tidb_enable_clustered_index	ON
+tidb_enable_collect_execution_info	ON
+tidb_enable_column_tracking	ON
+tidb_enable_ddl	ON
+tidb_enable_dist_task	ON
+tidb_enable_enhanced_security	OFF
+tidb_enable_exchange_partition	ON
+tidb_enable_extended_stats	OFF
+tidb_enable_external_ts_read	OFF
+tidb_enable_fast_analyze	OFF
+tidb_enable_fast_create_table	ON
+tidb_enable_fast_table_check	ON
+tidb_enable_foreign_key	ON
+tidb_enable_gc_aware_memory_track	OFF
+tidb_enable_global_index	ON
+tidb_enable_gogc_tuner	ON
+tidb_enable_historical_stats	OFF
+tidb_enable_historical_stats_for_capture	OFF
+tidb_enable_index_merge	ON
+tidb_enable_index_merge_join	OFF
+tidb_enable_inl_join_inner_multi_pattern	ON
+tidb_enable_instance_plan_cache	OFF
+tidb_enable_lazy_cursor_fetch	OFF
+tidb_enable_legacy_instance_scope	ON
+tidb_enable_list_partition	ON
+tidb_enable_local_txn	OFF
+tidb_enable_metadata_lock	ON
+tidb_enable_mutation_checker	ON
+tidb_enable_new_cost_interface	ON
+tidb_enable_new_only_full_group_by_check	OFF
+tidb_enable_non_prepared_plan_cache	OFF
+tidb_enable_non_prepared_plan_cache_for_dml	OFF
+tidb_enable_noop_functions	OFF
+tidb_enable_noop_variables	ON
+tidb_enable_null_aware_anti_join	ON
+tidb_enable_ordered_result_mode	OFF
+tidb_enable_outer_join_reorder	ON
+tidb_enable_paging	ON
+tidb_enable_parallel_apply	OFF
+tidb_enable_parallel_hashagg_spill	ON
+tidb_enable_pipelined_window_function	ON
+tidb_enable_plan_cache_for_param_limit	ON
+tidb_enable_plan_cache_for_subquery	ON
+tidb_enable_plan_replayer_capture	ON
+tidb_enable_plan_replayer_continuous_capture	OFF
+tidb_enable_prepared_plan_cache	ON
+tidb_enable_prepared_plan_cache_memory_monitor	ON
+tidb_enable_pseudo_for_outdated_stats	OFF
+tidb_enable_rate_limit_action	OFF
+tidb_enable_resource_control	ON
+tidb_enable_reuse_chunk	ON
+tidb_enable_row_level_checksum	OFF
+tidb_enable_shared_lock_promotion	OFF
+tidb_enable_slow_log	ON
+tidb_enable_stats_owner	ON
+tidb_enable_stmt_summary	ON
+tidb_enable_strict_double_type_check	ON
+tidb_enable_table_partition	ON
+tidb_enable_telemetry	OFF
+tidb_enable_tiflash_pipeline_model	ON
+tidb_enable_tiflash_read_for_write_stmt	ON
+tidb_enable_tmp_storage_on_oom	ON
+tidb_enable_top_sql	OFF
+tidb_enable_tso_follower_proxy	OFF
+tidb_enable_unsafe_substitute	OFF
+tidb_enable_vectorized_expression	ON
+tidb_enable_window_function	ON
+tidb_evolve_plan_baselines	OFF
+tidb_evolve_plan_task_end_time	23:59 +0000
+tidb_evolve_plan_task_max_time	600
+tidb_evolve_plan_task_start_time	00:00 +0000
+tidb_executor_concurrency	5
+tidb_expensive_query_time_threshold	60
+tidb_expensive_txn_time_threshold	600
+tidb_external_ts	0
+tidb_force_priority	NO_PRIORITY
+tidb_gc_concurrency	-1
+tidb_gc_enable	ON
+tidb_gc_life_time	10m0s
+tidb_gc_max_wait_time	86400
+tidb_gc_run_interval	10m0s
+tidb_gc_scan_lock_mode	LEGACY
+tidb_general_log	OFF
+tidb_generate_binary_plan	ON
+tidb_gogc_tuner_max_value	500
+tidb_gogc_tuner_min_value	100
+tidb_gogc_tuner_threshold	0.6
+tidb_guarantee_linearizability	ON
+tidb_hash_exchange_with_new_collation	ON
+tidb_hash_join_concurrency	-1
+tidb_hash_join_version	legacy
+tidb_hashagg_final_concurrency	-1
+tidb_hashagg_partial_concurrency	-1
+tidb_historical_stats_duration	168h0m0s
+tidb_idle_transaction_timeout	0
+tidb_ignore_inlist_plan_digest	OFF
+tidb_ignore_prepared_cache_close_stmt	OFF
+tidb_index_join_batch_size	25000
+tidb_index_join_double_read_penalty_cost_rate	0
+tidb_index_lookup_concurrency	-1
+tidb_index_lookup_join_concurrency	-1
+tidb_index_lookup_size	20000
+tidb_index_merge_intersection_concurrency	-1
+tidb_index_serial_scan_concurrency	1
+tidb_init_chunk_size	32
+tidb_instance_plan_cache_max_size	104857600
+tidb_instance_plan_cache_reserved_percentage	0.1
+tidb_load_based_replica_read_threshold	1s
+tidb_load_binding_timeout	200
+tidb_lock_unchanged_keys	ON
+tidb_log_file_max_days	0
+tidb_low_resolution_tso	OFF
+tidb_low_resolution_tso_update_interval	2000
+tidb_max_auto_analyze_time	43200
+tidb_max_bytes_before_tiflash_external_group_by	-1
+tidb_max_bytes_before_tiflash_external_join	-1
+tidb_max_bytes_before_tiflash_external_sort	-1
+tidb_max_chunk_size	1024
+tidb_max_delta_schema_count	1024
+tidb_max_paging_size	50000
+tidb_max_tiflash_threads	-1
+tidb_mem_oom_action	CANCEL
+tidb_mem_quota_analyze	-1
+tidb_mem_quota_apply_cache	33554432
+tidb_mem_quota_binding_cache	67108864
+tidb_mem_quota_query	1073741824
+tidb_memory_usage_alarm_keep_record_num	5
+tidb_memory_usage_alarm_ratio	0.7
+tidb_merge_join_concurrency	1
+tidb_merge_partition_stats_concurrency	1
+tidb_min_paging_size	128
+tidb_mpp_store_fail_ttl	60s
+tidb_multi_statement_mode	OFF
+tidb_non_prepared_plan_cache_size	100
+tidb_nontransactional_ignore_error	OFF
+tidb_opt_advanced_join_hint	ON
+tidb_opt_agg_push_down	OFF
+tidb_opt_broadcast_cartesian_join	1
+tidb_opt_concurrency_factor	3
+tidb_opt_copcpu_factor	3
+tidb_opt_correlation_exp_factor	1
+tidb_opt_correlation_threshold	0.9
+tidb_opt_cpu_factor	3
+tidb_opt_derive_topn	OFF
+tidb_opt_desc_factor	3
+tidb_opt_disk_factor	1.5
+tidb_opt_enable_correlation_adjustment	ON
+tidb_opt_enable_fuzzy_binding	OFF
+tidb_opt_enable_hash_join	ON
+tidb_opt_enable_late_materialization	ON
+tidb_opt_enable_mpp_shared_cte_execution	OFF
+tidb_opt_enable_non_eval_scalar_subquery	OFF
+tidb_opt_enable_three_stage_multi_distinct_agg	OFF
+tidb_opt_fix_control	
+tidb_opt_force_inline_cte	OFF
+tidb_opt_insubq_to_join_and_agg	ON
+tidb_opt_join_reorder_threshold	0
+tidb_opt_limit_push_down_threshold	100
+tidb_opt_memory_factor	0.001
+tidb_opt_mpp_outer_join_fixed_build_side	OFF
+tidb_opt_network_factor	1
+tidb_opt_objective	moderate
+tidb_opt_ordering_index_selectivity_ratio	-1
+tidb_opt_ordering_index_selectivity_threshold	0
+tidb_opt_prefer_range_scan	ON
+tidb_opt_prefix_index_single_scan	ON
+tidb_opt_projection_push_down	ON
+tidb_opt_range_max_size	67108864
+tidb_opt_scan_factor	1.5
+tidb_opt_seek_factor	20
+tidb_opt_skew_distinct_agg	OFF
+tidb_opt_three_stage_distinct_agg	ON
+tidb_opt_tiflash_concurrency_factor	24
+tidb_partition_prune_mode	dynamic
+tidb_persist_analyze_options	ON
+tidb_pessimistic_txn_fair_locking	ON
+tidb_placement_mode	STRICT
+tidb_plan_cache_invalidation_on_fresh_stats	ON
+tidb_plan_cache_max_plan_size	2097152
+tidb_pprof_sql_cpu	0
+tidb_pre_split_regions	0
+tidb_prefer_broadcast_join_by_exchange_data_size	OFF
+tidb_prepared_plan_cache_memory_guard_ratio	0.1
+tidb_prepared_plan_cache_size	100
+tidb_projection_concurrency	-1
+tidb_query_log_max_len	4096
+tidb_rc_read_check_ts	OFF
+tidb_rc_write_check_ts	OFF
+tidb_record_plan_in_slow_log	ON
+tidb_redact_log	OFF
+tidb_regard_null_as_point	ON
+tidb_remove_orderby_in_subquery	ON
+tidb_replica_read	leader
+tidb_resource_control_strict_mode	ON
+tidb_restricted_read_only	OFF
+tidb_retry_limit	10
+tidb_row_format_version	2
+tidb_runtime_filter_mode	OFF
+tidb_runtime_filter_type	IN
+tidb_scatter_region	
+tidb_schema_cache_size	536870912
+tidb_schema_version_cache_limit	16
+tidb_server_memory_limit	80%
+tidb_server_memory_limit_gc_trigger	0.7
+tidb_server_memory_limit_sess_min_size	134217728
+tidb_service_scope	
+tidb_session_plan_cache_size	100
+tidb_shard_allocate_step	9223372036854775807
+tidb_shard_row_id_bits	0
+tidb_simplified_metrics	OFF
+tidb_skip_ascii_check	OFF
+tidb_skip_isolation_level_check	OFF
+tidb_skip_missing_partition_stats	ON
+tidb_skip_utf8_check	OFF
+tidb_slow_log_threshold	300
+tidb_source_id	1
+tidb_stats_cache_mem_quota	0
+tidb_stats_load_pseudo_timeout	ON
+tidb_stats_load_sync_wait	100
+tidb_stmt_summary_enable_persistent	OFF
+tidb_stmt_summary_file_max_backups	0
+tidb_stmt_summary_file_max_days	3
+tidb_stmt_summary_file_max_size	64
+tidb_stmt_summary_filename	tidb-statements.log
+tidb_stmt_summary_history_size	24
+tidb_stmt_summary_internal_query	OFF
+tidb_stmt_summary_max_sql_length	4096
+tidb_stmt_summary_max_stmt_count	3000
+tidb_stmt_summary_refresh_interval	1800
+tidb_store_batch_size	4
+tidb_store_limit	0
+tidb_streamagg_concurrency	1
+tidb_super_read_only	OFF
+tidb_sysdate_is_now	OFF
+tidb_sysproc_scan_concurrency	1
+tidb_table_cache_lease	3
+tidb_tmp_table_max_size	67108864
+tidb_top_sql_max_meta_count	5000
+tidb_top_sql_max_time_series_count	100
+tidb_track_aggregate_memory_usage	ON
+tidb_tso_client_batch_max_wait_time	0
+tidb_tso_client_rpc_mode	DEFAULT
+tidb_ttl_delete_batch_size	100
+tidb_ttl_delete_rate_limit	0
+tidb_ttl_delete_worker_count	4
+tidb_ttl_job_enable	ON
+tidb_ttl_job_schedule_window_end_time	23:59 +0000
+tidb_ttl_job_schedule_window_start_time	00:00 +0000
+tidb_ttl_running_tasks	-1
+tidb_ttl_scan_batch_size	500
+tidb_ttl_scan_worker_count	4
+tidb_txn_assertion_level	FAST
+tidb_txn_commit_batch_size	16384
+tidb_txn_entry_size_limit	0
+tidb_txn_mode	pessimistic
+tidb_use_plan_baselines	ON
+tidb_window_concurrency	-1
+tiflash_compute_dispatch_policy	consistent_hash
+tiflash_fastscan	OFF
+tiflash_fine_grained_shuffle_batch_size	8192
+tiflash_fine_grained_shuffle_stream_count	0
+tiflash_hashagg_preaggregation_mode	force_preagg
+tiflash_mem_quota_query_per_node	0
+tiflash_query_spill_ratio	0.7
+tiflash_replica_read	all_replicas
+tikv_client_read_timeout	0
+time_format	%H:%i:%s
+time_zone	SYSTEM
+tls_version	TLSv1,TLSv1.1,TLSv1.2
+tmp_table_size	16777216
+tmpdir	/var/tmp/
+transaction_alloc_block_size	8192
+transaction_isolation	REPEATABLE-READ
+transaction_prealloc_size	4096
+transaction_read_only	OFF
+transaction_write_set_extraction	
+tx_isolation	REPEATABLE-READ
+tx_read_only	OFF
+unique_checks	ON
+updatable_views_with_limit	YES
+validate_password.check_user_name	ON
+validate_password.dictionary	
+validate_password.enable	OFF
+validate_password.length	8
+validate_password.mixed_case_count	1
+validate_password.number_count	1
+validate_password.policy	MEDIUM
+validate_password.special_char_count	1
+version	8.0.11-TiDB-v8.5.2
+version_comment	TiDB Server (Apache License 2.0) Community Edition, MySQL 8.0 compatible
+version_compile_machine	amd64
+version_compile_os	linux
+wait_timeout	28800
+windowing_use_high_precision	ON
+
+=== tiup cluster show-config tpcc-tidb ===
+
+Error: tidb cluster `tpcc-tidb` not exists
+
+Verbose debug logs has been written to /root/.tiup/logs/tiup-cluster-debug-2026-05-30-09-53-16.log.
