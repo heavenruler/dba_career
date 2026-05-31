@@ -304,13 +304,19 @@ if [[ "$EXPECTED_SHARDS" != "0" ]]; then
       ;;
   esac
 
+  # Gate 語意: actual >= expected → pass
+  # 理由: SPLIT TABLE 設計值是「保底」shard 數；TiKV/PD auto-split (region 超過
+  # region-max-size/keys) 只會「加」region、不會「減」。actual < expected 才代表
+  # SPLIT 沒生效 (真正的設計失敗); actual > expected 是系統判斷需要更高並行度，
+  # 符合 sharding 精神，不應 fail。strict == 會被 RF=3 active rebalance + 大表
+  # (order_line) auto-split 誤判 (Fix #12, PoC-DESIGN §7.5.4)。
   for tbl in $TABLES; do
     actual=$(awk -v t="$tbl" '$1==t {print $2}' "$PREP_DIR/.shard-raw.tsv" 2>/dev/null || echo 0)
     actual=${actual:-0}
-    if [[ "$actual" == "$EXPECTED_SHARDS" ]]; then
-      echo "table=$tbl expected=$EXPECTED_SHARDS actual=$actual pass=true"  >> "$SHARD_REPORT"
+    if [[ "$actual" =~ ^[0-9]+$ ]] && (( actual >= EXPECTED_SHARDS )); then
+      echo "table=$tbl expected>=$EXPECTED_SHARDS actual=$actual pass=true"  >> "$SHARD_REPORT"
     else
-      echo "table=$tbl expected=$EXPECTED_SHARDS actual=$actual pass=false" >> "$SHARD_REPORT"
+      echo "table=$tbl expected>=$EXPECTED_SHARDS actual=$actual pass=false" >> "$SHARD_REPORT"
       ALL_PASS=false
     fi
   done
