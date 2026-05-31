@@ -46,6 +46,8 @@
 
 | 資料庫 | 案例 | 隔離級 | 來源目錄 | 併發 | tpmC | p99 (ms) | error rate | 判讀 |
 |---|---|---|---|---|---:|---:|---|---|
+| TiDB | 直連 - 1s3r（PD `l4r4`） | READ COMMITTED | [20260530T162428](./tidb-tc1/S-BASE/vm-3node-1s3r-rc-pd-sched-l4r4/tidb-vm-3node-1s3r-rc-20260530T162428+0800/) | t=128 | 16,336 | 527 | 0.000% | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md#vm-3node-1s3r-rc)；[schedule-limit 0→4 分析](./dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md)；N=1，RF=3 actual |
+| TiDB | 直連 - 3s3r（PD `l4r4`） | READ COMMITTED | [20260531T085812](./tidb-tc1/S-BASE/vm-3node-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-3s3r-rc-20260531T085812+0800/) | t=128 | 15,082 | 591 | 0.000% | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md#vm-3node-3s3r-rc)；[schedule-limit 0→4 分析](./dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md)；N=1，leader 仍偏（4/15/10），對應 l0r0 baseline RF=1 退化拓樸 |
 | YugabyteDB | 直連 - 3s3r | READ COMMITTED | [20260525T031918](./yuga-tc1/S-BASE/vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260525T031918+0800/) | t=128 | 8,729 | 1,114 | 0.000% | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-系列4-sub-topology--rcpoc-design-632)；[跨 cell 分析](./dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md) |
 | YugabyteDB | HAProxy - 3s3r | READ COMMITTED | [20260525T193740](./yuga-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/) | t=128 | **15,632** | 705 | 0.000% | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)；[HAProxy 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
 

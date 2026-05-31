@@ -466,9 +466,30 @@ TiKV stores
 - `replication-factor.txt` = `3`
 - 其餘同 1s1r。
 
-#### Execute 結果
+#### Execute 結果（兩 variant：PD schedule-limit 0→4）
 
-> 待回填；與 1s1r 比 → Raft 3-replica 寫入 amplification。
+> 本 sub-topology 因 vm-3node playbook 沿用 vm-1node 的 PD config（`replica-schedule-limit=0` + `leader-schedule-limit=0`），baseline 跑出來實際 RF=1（假 RF=3）；2026-05-30 Fix #11 + D10 修正後重跑。兩組均 N=1。
+
+##### vm-3node-1s3r-rc-pd-sched-l0r0/（baseline，broken — `replica=0, leader=0`）
+
+| TS | 來源 |
+|---|---|
+| `20260529T170933+0800` | `vm-3node-1s3r-rc-pd-sched-l0r0/tidb-vm-3node-1s3r-rc-20260529T170933+0800/` |
+
+tpmC 5-round mean：t=16 = 10,856 ／ t=32 = 12,532 ／ t=64 = 13,823 ／ t=128 = **14,130**。
+NEW_ORDER p99 mean：t=128 = 567 ms。
+實際 region peer count = 1（dry-run 階段 actual peer gate 未啟用，未捕捉）。
+
+##### vm-3node-1s3r-rc-pd-sched-l4r4/（fixed — `replica=4, leader=4`，Fix #11 + D10）
+
+| TS | 來源 |
+|---|---|
+| `20260530T162428+0800` | `vm-3node-1s3r-rc-pd-sched-l4r4/tidb-vm-3node-1s3r-rc-20260530T162428+0800/` |
+
+tpmC 5-round mean：t=16 = 11,199 ／ t=32 = 14,765 ／ t=64 = 15,309 ／ t=128 = **16,336**。
+NEW_ORDER p99 mean：t=128 = 527 ms。
+實際 region peer count = 3（dry-run `actual-rf-peer-min/-max=3`，9 region 全 RF=3）。
+跨 cell 對照 → `dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md`。
 
 ### vm-3node-3s1r-rc
 
@@ -532,9 +553,33 @@ TiKV stores（每節點持有所有 region 的某 replica）
 - `replication-factor.txt` = `3`
 - 其餘同 1s1r。
 
-#### Execute 結果
+#### Execute 結果（兩 variant：PD schedule-limit 0→4）
 
-> 待回填；與 3s1r 比 → replication 成本 in sharded cluster；與 1s3r 比 → sharding 攤平效益。
+> 同 1s3r 議題：baseline 因 `replica-schedule-limit=0` 退化為實際 RF=1；2026-05-30/31 Fix #11 + D10 修正後重跑。兩組均 N=1。
+
+##### vm-3node-3s3r-rc-pd-sched-l0r0/（baseline，broken — `replica=0, leader=0`）
+
+| TS | 來源 |
+|---|---|
+| `20260530T061352+0800` | `vm-3node-3s3r-rc-pd-sched-l0r0/tidb-vm-3node-3s3r-rc-20260530T061352+0800/` |
+
+tpmC 5-round mean：t=16 = 14,041 ／ t=32 = 18,130 ／ t=64 = 19,997 ／ t=128 = **20,455**。
+NEW_ORDER p99 mean：t=128 = 423 ms。
+最終 leader 分佈：**27 / 0 / 0**（單 store 集中）；實際 region peer count = 1（假 RF=3）。
+
+> ⚠️ **本 cell 的 tpmC 不可作為 TiDB 3 節點 RF=3 真實表現參考**。所有 raft work 與 region leader 都集中於單一 store，本質上是「3 stores 中只有 1 個在工作」的退化拓樸；高 tpmC 反映「無 raft replication overhead + 單 store local I/O」的人工捷徑，不是真 RF=3 throughput。
+
+##### vm-3node-3s3r-rc-pd-sched-l4r4/（fixed — `replica=4, leader=4`，Fix #11 + D10）
+
+| TS | 來源 |
+|---|---|
+| `20260531T085812+0800` | `vm-3node-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-3s3r-rc-20260531T085812+0800/` |
+
+tpmC 5-round mean：t=16 = 11,034 ／ t=32 = 13,111 ／ t=64 = 14,733 ／ t=128 = **15,082**。
+NEW_ORDER p99 mean：t=128 = 590 ms。
+最終 leader 分佈：**4 / 15 / 10**（雖未達 ±20% 容差，但已從 27/0/0 顯著收斂）；實際 region peer count = 3。
+
+跨 cell 對照（含 disk I/O 證據 RF=3 真生效）→ `dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md`。
 
 ---
 
