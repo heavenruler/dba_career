@@ -581,6 +581,71 @@ NEW_ORDER p99 mean：t=128 = 590 ms。
 
 跨 cell 對照（含 disk I/O 證據 RF=3 真生效）→ `dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md`。
 
+### vm-3node-haproxy-3s3r-rc
+
+> 3 shard × 3 replica + 3 tidb_servers + HAProxy frontend：在 3s3r l4r4 基礎上把 client 入口從單 .32 改成 HAProxy 在 .20:4000 round-robin 分流到 .32/.33/.34:4000。量化「分散 SQL 入口」紅利。
+
+#### 拓樸示意
+
+```
+                     client (.31)
+                       │  go-tpc → 172.24.47.20:4000
+                       ▼
+            ┌──────────────────────┐
+            │  HAProxy on .20:4000  │
+            │  balance roundrobin   │
+            │  mode tcp             │
+            └─────┬────┬────┬───────┘
+                  │    │    │
+        .32:4000  │    │    │  .34:4000
+         tidb     │    │    │   tidb
+         server   │    │    │   server
+                  │ .33:4000│
+                  │   tidb  │
+                  │  server │
+   下面是儲存層（與 3s3r 同）：
+   3× PD + 3× TiKV，RF=3（PD `l4r4` 套餐）
+```
+
+#### 關鍵 DB 設定（與 3s3r l4r4 完全相同；唯一變因是 SQL frontend）
+
+| 維度 | 設定 |
+|---|---|
+| `pd: replication.max-replicas` | `3` |
+| `pd.schedule.replica-schedule-limit` | `4`（Fix #11） |
+| `pd.schedule.leader-schedule-limit` | `4`（D10） |
+| tidb_servers 數 | **3**（playbook conditional render 在 sub_topology=haproxy-3s3r 時） |
+| HAProxy timeout | client/server 各 1800s |
+| HAProxy balance | `roundrobin` `mode tcp` |
+| client `--db-host` | `172.24.47.20:4000`（HAProxy frontend） |
+
+#### Dry-run 預期
+
+- `actual-rf-peer-min/-max` 同 3s3r l4r4 = 3
+- `replication-factor.txt` = 3
+- HAProxy backend health：3 個 server check OK（cfg 中 `check inter 2s`）
+
+#### Execute 結果
+
+| TS | 來源 |
+|---|---|
+| `20260601T003316+0800` | `vm-3node-haproxy-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-haproxy-3s3r-rc-20260601T003316+0800/` |
+
+tpmC 5-round mean：t=16 = 11,816 ／ t=32 = 17,986 ／ t=64 = 23,034 ／ t=128 = **26,947**。
+NEW_ORDER p99 mean：t=128 = **309 ms**。
+最終 leader 分佈：**7 / 14 / 8**（vs direct l4r4 的 4/15/10，最差偏差從 +55% 縮到 +45%）；實際 region peer count = 3。
+Stability：t=128 range/mean = 7.4%（vs direct l4r4 的 11.6%）。
+
+跨 cell 對照（vs direct l4r4，含 .32 disk/CPU shift 證據）→ `dispatch-records/2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md`。
+
+| metric | direct l4r4 t=128 | haproxy l4r4 t=128 | Δ |
+|---|---|---|---|
+| tpmC mean | 15,082 | 26,947 | **+78.7%** |
+| NEW_ORDER p99 mean | 590 ms | 309 ms | **−47.6%** |
+| Stability (range/mean) | 11.6% | 7.4% | 更穩 |
+| .32 CPU %us | 80.3% | 72.4% | −7.9 pts（負載往 .33/.34 + storage I/O 分散） |
+| .32 disk wkB/s | 22,052 | 32,641 | +48%（throughput 拉升、storage 變主瓶頸） |
+
 ---
 
 ## K8s (k8s-3node-unlimit / k8s-3node-limit) — 已移轉至 pipeline-log-old.md
