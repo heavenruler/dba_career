@@ -1,0 +1,38 @@
+[2026-05-31T23:38:59+08:00] === ybdb leader-balance live check START TS=20260531T233859+0800 PID=698633
+[2026-05-31T23:39:00+08:00] destroy-vm3-all (defensive)
+172.24.40.32 | CHANGED | rc=0 | (stdout) Delete public key 172.24.40.34\nDelete public key 172.24.40.34 success\nDestroyed cluster `tpcc-tidb-vm3` successfully
+172.24.40.32 | CHANGED | rc=0 | (stdout) ybdb_clean
+172.24.40.34 | CHANGED | rc=0 | (stdout) ybdb_clean
+172.24.40.33 | CHANGED | rc=0 | (stdout) ybdb_clean
+[2026-05-31T23:39:26+08:00] deploy ybdb 3s3r (RF=3, default load_balancer_enabled=true)
+TASK [Configure data placement (RF=3)] *****************************************
+changed: [172.24.40.32]
+
+TASK [Wait for RF to propagate (universe config converges)] ********************
+ok: [172.24.40.32]
+
+TASK [Health check YugabyteDB] *************************************************
+ok: [172.24.40.32]
+
+TASK [Get cluster info for log] ************************************************
+ok: [172.24.40.32]
+
+TASK [Show cluster universe config] ********************************************
+ok: [172.24.40.32] => {
+    "yb_universe_config.stdout_lines": [
+        "{\"version\":3,\"replicationInfo\":{\"liveReplicas\":{\"numReplicas\":3,\"placementBlocks\":[{\"cloudInfo\":{\"placementCloud\":\"cloud1\",\"placementRegion\":\"datacenter1\",\"placementZone\":\"rack1\"},\"minNumReplicas\":3}],\"placementUuid\":\"MTY3NTVmNDYtZDA1MS00NWRhLWJhZmMtOGRhOWY2ZjEyMTZm\"}},\"clusterUuid\":\"cf9d25bc-92e5-4865-87c1-ee4f452d452d\",\"universeUuid\":\"3a593032-537e-46fe-abac-35a79dba0fb2\"}"
+    ]
+}
+
+PLAY [Install ysqlsh on TPC-C client] ******************************************
+
+TASK [Gathering Facts] *********************************************************
+fatal: [172.24.40.31]: UNREACHABLE! => {"changed": false, "msg": "Data could not be sent to remote host \"172.24.40.31\". Make sure this host can be reached over ssh: root@172.24.40.31: Permission denied (publickey,gssapi-keyex,gssapi-with-mic,password).\r\n", "unreachable": true}
+
+PLAY RECAP *********************************************************************
+172.24.40.31               : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   
+172.24.40.32               : ok=21   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+172.24.40.33               : ok=16   changed=7    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+172.24.40.34               : ok=16   changed=7    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+[2026-05-31T23:41:09+08:00] DEPLOY FAIL rc=4

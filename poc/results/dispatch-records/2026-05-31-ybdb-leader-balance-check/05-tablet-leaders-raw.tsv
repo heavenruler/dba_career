@@ -1,0 +1,45 @@
+===TABLE=warehouse===
+Tablet-UUID                      	Range                                                    	Leader-IP       	Leader-UUID
+7343d8fece2240fe87f0b23113f633fb 	hash_split: [0x0000, 0x5554]                             	172.24.40.34:9100 	4575e9bb0182462aa8e3eddd193fe513
+31c4540e03de4ba39c81e248d99ea2d1 	hash_split: [0x5555, 0xAAA9]                             	172.24.40.33:9100 	3de5490b890e4f2a8b1b18e0d4f13540
+743d015dcdff4314a246a1e577e8cef7 	hash_split: [0xAAAA, 0xFFFF]                             	172.24.40.32:9100 	5e439a0c62f84b838450395c2c00a993
+===TABLE=district===
+Tablet-UUID                      	Range                                                    	Leader-IP       	Leader-UUID
+615851e0daa44413944bdbd7558856af 	hash_split: [0x0000, 0x5554]                             	172.24.40.34:9100 	4575e9bb0182462aa8e3eddd193fe513
+0e7b7fd7465f4f0fbb31c53ea079cdab 	hash_split: [0x5555, 0xAAA9]                             	172.24.40.33:9100 	3de5490b890e4f2a8b1b18e0d4f13540
+ea8879d5058040cca294835e625f6916 	hash_split: [0xAAAA, 0xFFFF]                             	172.24.40.32:9100 	5e439a0c62f84b838450395c2c00a993
+===TABLE=customer===
+Tablet-UUID                      	Range                                                    	Leader-IP       	Leader-UUID
+afeac6f016a8465c9c235417e17dff68 	hash_split: [0x0000, 0x5554]                             	172.24.40.32:9100 	5e439a0c62f84b838450395c2c00a993
+1cf979b0c2824cb1a21121bfacca0295 	hash_split: [0x5555, 0xAAA9]                             	172.24.40.33:9100 	3de5490b890e4f2a8b1b18e0d4f13540
+27d400b4e1aa427db3b093d191b9f4f0 	hash_split: [0xAAAA, 0xFFFF]                             	172.24.40.34:9100 	4575e9bb0182462aa8e3eddd193fe513
+===TABLE=new_order===
+Tablet-UUID                      	Range                                                    	Leader-IP       	Leader-UUID
+e8762fda98b746f7892ae766ba2c2ea0 	hash_split: [0x0000, 0x5554]                             	172.24.40.34:9100 	4575e9bb0182462aa8e3eddd193fe513
+85917dbdc64e4965bbe67796a1f8815e 	hash_split: [0x5555, 0xAAA9]                             	172.24.40.33:9100 	3de5490b890e4f2a8b1b18e0d4f13540
+fa48c818ba4244d1bc12a4a4091e8a4c 	hash_split: [0xAAAA, 0xFFFF]                             	172.24.40.32:9100 	5e439a0c62f84b838450395c2c00a993
+===TABLE=orders===
+Tablet-UUID                      	Range                                                    	Leader-IP       	Leader-UUID
+d53d1ef41e6349659618ecd8b419dddd 	hash_split: [0x0000, 0x5554]                             	172.24.40.34:9100 	4575e9bb0182462aa8e3eddd193fe513
+682e905014824b06818a763fc6cc2254 	hash_split: [0x5555, 0xAAA9]                             	172.24.40.33:9100 	3de5490b890e4f2a8b1b18e0d4f13540
+e13ed28babc94b858b1fc7ceb979cf9b 	hash_split: [0xAAAA, 0xFFFF]                             	172.24.40.32:9100 	5e439a0c62f84b838450395c2c00a993
+===TABLE=order_line===
+Tablet-UUID                      	Range                                                    	Leader-IP       	Leader-UUID
+1dfeea8d1dcb43739308500391507da1 	hash_split: [0x0000, 0x5554]                             	172.24.40.33:9100 	3de5490b890e4f2a8b1b18e0d4f13540
+44f647dadc734e6cab2138bea6cb3abb 	hash_split: [0x5555, 0xAAA9]                             	172.24.40.34:9100 	4575e9bb0182462aa8e3eddd193fe513
+a223bfdc1ecd4561a8dfb7482ac37819 	hash_split: [0xAAAA, 0xFFFF]                             	172.24.40.32:9100 	5e439a0c62f84b838450395c2c00a993
+===TABLE=stock===
+Tablet-UUID                      	Range                                                    	Leader-IP       	Leader-UUID
+d6210ece1e754e1680bb7a27bc0d21b8 	hash_split: [0x0000, 0x5554]                             	172.24.40.32:9100 	5e439a0c62f84b838450395c2c00a993
+d2d3dfae781a46b9b783a28d8e122846 	hash_split: [0x5555, 0xAAA9]                             	172.24.40.34:9100 	4575e9bb0182462aa8e3eddd193fe513
+886ab208013344349913c930bca01985 	hash_split: [0xAAAA, 0xFFFF]                             	172.24.40.33:9100 	3de5490b890e4f2a8b1b18e0d4f13540
+===TABLE=item===
+Tablet-UUID                      	Range                                                    	Leader-IP       	Leader-UUID
+0dab783b37bb44f8bda155c8c08c342e 	hash_split: [0x0000, 0x5554]                             	172.24.40.33:9100 	3de5490b890e4f2a8b1b18e0d4f13540
+8e45bd22d677446f93bd9632ebd2d315 	hash_split: [0x5555, 0xAAA9]                             	172.24.40.32:9100 	5e439a0c62f84b838450395c2c00a993
+26d91bf62d624650babc2be93d4a6bd0 	hash_split: [0xAAAA, 0xFFFF]                             	172.24.40.34:9100 	4575e9bb0182462aa8e3eddd193fe513
+===TABLE=history===
+Tablet-UUID                      	Range                                                    	Leader-IP       	Leader-UUID
+49185e99a12c438ead18708f71497cf8 	hash_split: [0x0000, 0x5554]                             	172.24.40.34:9100 	4575e9bb0182462aa8e3eddd193fe513
+b7747c226bbb495bbc174287ea6cd86d 	hash_split: [0x5555, 0xAAA9]                             	172.24.40.32:9100 	5e439a0c62f84b838450395c2c00a993
+1c53b6568c87447287cb34bd20d02476 	hash_split: [0xAAAA, 0xFFFF]                             	172.24.40.33:9100 	3de5490b890e4f2a8b1b18e0d4f13540
