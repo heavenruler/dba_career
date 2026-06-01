@@ -1,0 +1,165 @@
+# 2026-06-02 PoC 定期會議討論事項
+
+> 對應文件：`poc/1_MeetingMinutes/0602.md`（含 Track A–E 完整規劃）
+
+---
+
+## §1. 第一階段 測試結論彙整（TiDB / YBDB）
+
+1. **TiDB 結果呈現方式（l4r4 leader balance 已知 caveat）**
+   - 選項 A：l4r4 直接跑、README 主表加 caveat 註腳 — 成本最低；對外解讀可能模糊
+   - 選項 B：l0r0 重跑 5 cell — 消滅 caveat；成本 +15h
+   - 選項 C：l4r4 主跑 + l0r0 補 1 cell 對照 — 折衷量化影響；成本 +3h
+
+2. **YBDB 結論固化**
+   - 現況：vm-3node 5 cell 全綠 N=1 已完
+   - 待決：N=1 是否足以入主表
+
+3. **N=3 補測範圍**
+   - 選項 A：三家 3s3r 各補 N=3（最有代表性對照組；~9h）
+   - 選項 B：只補 haproxy-3s3r 一個 cell（~3h）
+   - 選項 C：全 cell N=3（~45h，過大）
+
+4. **Batch script 入庫**
+   - 現況：`/tmp/batch-crdb-5cell-suite.sh` + `/tmp/batch-tidb-5cell-suite.sh` 為 transient
+   - 待決：是否搬至 `poc/tests/batch/` commit（保留可重現）
+
+---
+
+## §2. 第一階段 分散式資料庫架構重點關注
+
+1. **Shard 鎖定（manual SPLIT）作 baseline 的必要性**
+   - 三家自然 shard 數皆不可控（TiDB `region-split-size`、CRDB `range_max_bytes`、YBDB tserver gflag）
+   - 跨 cell 對照需強鎖；exploratory 路徑獨立成 caveat 段
+
+2. **Auto rebalance / split 對 TPC-C 的衝擊**
+   - run 期間任一 trigger 都汙染結果（split → p99 飆；leader move → tpmC 跌 5–15%）
+   - TiDB l4r4 是已知例外（leader/replica 允許搬、region 凍結）
+
+3. **CRDB v26.2.0 內部 API 變動風險**
+   - `crdb_internal.*` 多數受限（SQLSTATE 42501）
+   - 已知影響：F-A、F-D；其他散落呼叫尚未 audit（silent fail 風險）
+
+4. **DB-host metrics 採集範圍**
+   - 現況：只採 CLUSTER_HOST 單台（.32）
+   - 影響：跨節點負載 / placement skew 看不見
+   - 跨區（§3）必須補 fan-out
+
+5. **Exploratory tracks 取捨（Track B/C/D）**
+   - B = default-shard / C = auto-split ON / D = scale-out
+   - 待決：哪些落地（成本 vs ROI）；建議：P3+P6 落地、P4 緩、P5 整合進 Track E
+
+6. **建議新增 hard gate**
+   - rebalance complete（`under_replicated==0` 連續 N 秒）
+   - leader/leaseholder settle（stddev 收斂）
+   - placement leader-affinity（Track E 用）
+   - TiDB schedule-limit verify（驗 `pd-ctl config show schedule` 實際生效）
+
+---
+
+## §3. 第二階段 跨專線測試固定條件
+
+1. **拓樸（10 nodes）**
+   - IDC：172.24.40.31 (client) / 172.24.47.20 (HAProxy) / 172.24.40.32–34 (cluster ×3)
+   - GCP：10.162.0.11 (client) / 10.162.0.12 (HAProxy) / 10.162.0.13–15 (cluster ×3)
+   - 應用層守不跨區；DB raft 跨 WAN 是測量對象
+
+2. **鎖定變數**
+   - iso = rc / HAProxy = 每區 1 / 3 shard × 3 replica / W = 128
+
+3. **Cluster 拓樸**
+   - 選項 A：single 6-node cluster — 測 raft 跨 WAN（PoC 重點）
+   - 選項 B：two 3-node + 邏輯複製 (CDC) — 物理隔離、無 raft 跨區、測場景不同
+
+4. **Placement 策略**
+   - P-A：2-IDC + 1-GCP（majority IDC，GCP 純 follower）— 適 Test 1
+   - P-B：1-IDC + 1-GCP + 1-arbiter / leader 各區散 — 適 Test 2
+   - 建議：兩拓樸都測
+
+5. **DB 範圍**
+   - 選項 A：三家全測；選項 B：先 CRDB（跨區語義最完整）；選項 C：先 TiDB（既有最熟）
+
+6. **N 數**
+   - 建議：N=1 先 → 確認趨勢後挑代表 cell 補 N=3
+
+---
+
+## §4. 第二階段 跨專線測試方法論
+
+1. **Test 1 — IDC 獨立 TPCC**
+   - 目的:量化 raft 跨 WAN 對單側寫的損耗
+   - 拓樸：6-node + P-A placement / 只 IDC client → IDC haproxy → IDC nodes
+   - 預期：tpmC ↓ 10–30%（依 RTT）
+
+2. **Test 2 — 兩區並發 TPCC**
+   - 目的：量化 WAN 競爭 + 跨區 conflict
+   - 拓樸：6-node + P-B placement / IDC + GCP 並行
+   - W 分配選擇：
+     - 選項 A：兩側都 W=1–128（測極端 contention）
+     - 選項 B：IDC W=1–64, GCP W=65–128（隔離 key conflict 與 WAN 互擾）
+
+3. **Test 3 — Chaos / Failover 7 場景**
+   - C1：IDC node 1 down / C2：IDC haproxy down
+   - C3：WAN 全斷 / C4：WAN +200ms 延遲 / C5：WAN packet loss 5%
+   - C6：慢 disk / C7：IDC 全 3 node down
+   - C8（可選）：clock skew injection
+   - 範圍取捨：
+     - 選項 A：7 場景全跑（~21h）
+     - 選項 B：挑關鍵 C1/C3/C4/C7（~12h）
+
+4. **Baseline 對照來源**
+   - 選項 A：現行 vm-3node-haproxy-3s3r 主表（直接 delta，拓樸非全同）
+   - 選項 B：另跑純 IDC 6-node 同規格（拓樸對齊，+12h）
+
+5. **WAN baseline 量測**
+   - 必跑 iperf3 + ping p50/p99（起前 60s + 起末 60s）
+
+6. **Chaos C3 / C7 風險**
+   - C3：GCP minority 期間 read-only；C7：全 cluster 寫拒
+   - 待決：production-like 或 lab 模式
+
+7. **新增 artifact**
+   - `wan/baseline-rtt.txt`、`wan/baseline-bw.txt`、`wan/runtime-bytes.txt`
+   - `placement/leader-region.txt`、`placement/voter-region.txt`
+   - `chaos/<C-id>/timeline.json` 等
+   - **DB-host metrics fan-out 6 node 全採（Track E 必補）**
+
+---
+
+## §5. 專案進度時程表
+
+### 第一階段（單區 vm-3node）
+
+| # | 項目 | 狀態 / 預估 |
+|---|---|---|
+| 1 | CRDB 5-cell suite | 進行中（cell 1/5 threads-128 round-3）；預估 2026-06-02 04:00 完 |
+| 2 | TiDB 5-cell suite | 腳本 ready（.31:/tmp/）；等 CRDB 完 dispatch；預估 2026-06-02 18:00 完 |
+| 3 | YBDB vm-3node | 已完 N=1 |
+| 4 | TiDB dispatch 前 strict patch | 待決：是否加 settle gate (P-1) + schedule-limit verify (P-2) |
+| 5 | TiDB dispatch 觸發方式 | 選項 A 自動 / 選項 B 手動 review summary |
+| 6 | N=3 補測 | Track A 全完後啟動，範圍見 §1 |
+| 7 | 0602.md §13/§14 數據結論 + 決策結果 | Phase 1 完後補 |
+
+### 第二階段（跨專線 vm-6node）
+
+| # | 項目 | 預估 | 阻塞 |
+|---|---|---|---|
+| 1 | Pre-P0：iperf3 baseline + GCP 環境 + ansible 6-node playbook | 2–3 天 | §3 全部決策 |
+| 2 | P0：placement deploy + dry-run smoke | 1 天 | Pre-P0 完 |
+| 3 | P1 Test 1：IDC 獨立 | ~12h | P0 完 |
+| 4 | P2 Test 2：兩區並發 | ~12h | P1 完 |
+| 5 | P3 Test 3：chaos | ~12–21h（依範圍） | P2 完 |
+| 6 | 結果分析 + 0602.md §13/§14 補入 | 1 天 | P3 完 |
+
+### 阻塞點
+
+- GCP IP 10.162.0.x 路由是否開通（決定 Pre-P0 起點）
+- iac/ansible 全未支援 6-node 跨區（playbook 重寫 2–3 天）
+- Pre-P0 是否接受 / GCP 端是否 manual deploy 先測
+
+### 文件 / Doc 待辦
+
+- Batch script 入庫（§1 第 4 項）
+- PoC-DESIGN §6.5「Track 分類」章節
+- pipeline-log-template 加 settle 欄位
+- 0602.md 補 §13 數據結論 + §14 決策結果
