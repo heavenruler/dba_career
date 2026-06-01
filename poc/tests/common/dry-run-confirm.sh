@@ -142,36 +142,15 @@ if [[ "$DB" == "tidb" ]]; then
   echo "actual-rf-regions   = $ACTUAL_RF_REGIONS" >> "$DRY/replication-factor.txt"
 fi
 
-# CRDB parity (Fix #11 對應): zone config 報的是 SET，allocator 收斂後實際 placement 才是真相
-# 查每 range 的 replica array length，min/max 都要 == EXPECTED_RF。
-# crdb_internal.ranges_no_leases.replicas 是 array of store IDs；ARRAY_LENGTH 即 RF。
-# 大 cluster 取所有 ranges 可能上萬 row，這裡限縮 system ranges only（sub_topology
-# deploy 完還沒 prepare 過 tpcc，與 TiDB 同步邏輯：驗 system placement）。
-if [[ "$DB" == "crdb" ]]; then
-  for i in $(seq 1 12); do
-    out=$(/usr/local/bin/cockroach sql --insecure --host="$DB_HOST":"${CRDB_PORT:-26257}" --format=tsv -e \
-      "SELECT IFNULL(MIN(ARRAY_LENGTH(replicas, 1)), 0) AS rfmin,
-              IFNULL(MAX(ARRAY_LENGTH(replicas, 1)), 0) AS rfmax,
-              COUNT(*) AS cnt
-       FROM crdb_internal.ranges_no_leases" 2>/dev/null | tail -1 || echo "0	0	0")
-    rfmin=$(echo "$out" | awk -F'\t' '{print $1}')
-    rfmax=$(echo "$out" | awk -F'\t' '{print $2}')
-    cnt=$(echo "$out"   | awk -F'\t' '{print $3}')
-    if [[ "$rfmin" == "$EXPECTED_RF" && "$rfmax" == "$EXPECTED_RF" ]]; then break; fi
-    sleep 5
-  done
-  ACTUAL_RF_MIN="${rfmin:-n/a}"
-  ACTUAL_RF_MAX="${rfmax:-n/a}"
-  ACTUAL_RF_REGIONS="${cnt:-n/a}"
-  if [[ "$ACTUAL_RF_MIN" != "$EXPECTED_RF" || "$ACTUAL_RF_MAX" != "$EXPECTED_RF" ]]; then
-    warn "RF actual replica count mismatch: expected=$EXPECTED_RF min=$ACTUAL_RF_MIN max=$ACTUAL_RF_MAX ranges=$ACTUAL_RF_REGIONS (CRDB allocator 未收斂或 zone config 未生效)"
-    ALL_PASS=false
-    FAILS+=("rf-actual-mismatch:min=$ACTUAL_RF_MIN/max=$ACTUAL_RF_MAX/expected=$EXPECTED_RF")
-  fi
-  echo "actual-rf-min       = $ACTUAL_RF_MIN" >> "$DRY/replication-factor.txt"
-  echo "actual-rf-max       = $ACTUAL_RF_MAX" >> "$DRY/replication-factor.txt"
-  echo "actual-rf-ranges    = $ACTUAL_RF_REGIONS" >> "$DRY/replication-factor.txt"
-fi
+# CRDB §1c: 不對等於 TiDB §1c。原因：
+# (1) v26.2.0 起 crdb_internal.* 需 SET allow_unsafe_internals=true（CRDB 官方標示
+#     unsafe）；
+# (2) CRDB 有 per-range zone config，system ranges (system.public.*, liveness, meta)
+#     的 num_replicas 與 user data 的 default 互相獨立 — 1s1r/3s1r 下 system ranges
+#     仍 RF=5，rfmin/rfmax 永遠不會 == EXPECTED_RF；
+# (3) dry-run preflight 階段 user table 尚未 prepare，沒有可驗的 user-data range。
+# → 此處改為 no-op；§2 SHOW ZONE CONFIGURATION FROM RANGE default 已驗目標 RF。
+# 實際 allocator placement 的驗證留到 suite 跑完後（user-table ranges 已生成）再做。
 
 # --- 2. replication-factor dump ---------------------------------------------
 case "$DB" in
@@ -210,14 +189,20 @@ fi
 # svname、第 18 欄 status。filter pxname=db_nodes 且 svname=node1/node2/node3，
 # count status==UP 必須 == 3，否則 fail-closed（HAProxy round-robin 沒法輪到 down
 # 的 backend，跑 suite 等於浪費）。
+# F-B-v2 (2026-06-01)：retry 必須等到 UP=3，不可只看 curl 成功。
+# 原因：HAProxy `check inter 2s rise 3 = 6s` 在 deploy 結束時 node 可能還在
+# transition (status="UP 1/3" check=INI)。第一次 curl 成功就 break 會抓到
+# 偽 down，導致 haproxy-3s3r false-fail。實測 09:26:58 node3="UP 1/3" → 60s
+# 後純 UP。預算 12×5s=60s 足以涵蓋 deploy 後 backend 收斂時間。
 HAPROXY_BACKENDS_UP=n/a
 if [[ "$SUB" =~ ^haproxy- ]]; then
   HAPROXY_HOST=${HAPROXY_HOST:-172.24.47.20}
   HAPROXY_STATS_URL="http://${HAPROXY_HOST}:8404/stats;csv"
   HAPROXY_STAT_FILE="$DRY/haproxy-backends.csv"
-  for i in $(seq 1 6); do
+  for i in $(seq 1 12); do
     if curl -fs --max-time 5 "$HAPROXY_STATS_URL" > "$HAPROXY_STAT_FILE" 2>/dev/null; then
-      break
+      cnt=$(awk -F',' 'NR>1 && $1=="db_nodes" && $2 ~ /^node[0-9]+$/ && $18=="UP" {n++} END {print n+0}' "$HAPROXY_STAT_FILE")
+      if [[ "$cnt" == "3" ]]; then break; fi
     fi
     sleep 5
   done
