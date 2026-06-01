@@ -142,6 +142,37 @@ if [[ "$DB" == "tidb" ]]; then
   echo "actual-rf-regions   = $ACTUAL_RF_REGIONS" >> "$DRY/replication-factor.txt"
 fi
 
+# CRDB parity (Fix #11 對應): zone config 報的是 SET，allocator 收斂後實際 placement 才是真相
+# 查每 range 的 replica array length，min/max 都要 == EXPECTED_RF。
+# crdb_internal.ranges_no_leases.replicas 是 array of store IDs；ARRAY_LENGTH 即 RF。
+# 大 cluster 取所有 ranges 可能上萬 row，這裡限縮 system ranges only（sub_topology
+# deploy 完還沒 prepare 過 tpcc，與 TiDB 同步邏輯：驗 system placement）。
+if [[ "$DB" == "crdb" ]]; then
+  for i in $(seq 1 12); do
+    out=$(/usr/local/bin/cockroach sql --insecure --host="$DB_HOST":"${CRDB_PORT:-26257}" --format=tsv -e \
+      "SELECT IFNULL(MIN(ARRAY_LENGTH(replicas, 1)), 0) AS rfmin,
+              IFNULL(MAX(ARRAY_LENGTH(replicas, 1)), 0) AS rfmax,
+              COUNT(*) AS cnt
+       FROM crdb_internal.ranges_no_leases" 2>/dev/null | tail -1 || echo "0	0	0")
+    rfmin=$(echo "$out" | awk -F'\t' '{print $1}')
+    rfmax=$(echo "$out" | awk -F'\t' '{print $2}')
+    cnt=$(echo "$out"   | awk -F'\t' '{print $3}')
+    if [[ "$rfmin" == "$EXPECTED_RF" && "$rfmax" == "$EXPECTED_RF" ]]; then break; fi
+    sleep 5
+  done
+  ACTUAL_RF_MIN="${rfmin:-n/a}"
+  ACTUAL_RF_MAX="${rfmax:-n/a}"
+  ACTUAL_RF_REGIONS="${cnt:-n/a}"
+  if [[ "$ACTUAL_RF_MIN" != "$EXPECTED_RF" || "$ACTUAL_RF_MAX" != "$EXPECTED_RF" ]]; then
+    warn "RF actual replica count mismatch: expected=$EXPECTED_RF min=$ACTUAL_RF_MIN max=$ACTUAL_RF_MAX ranges=$ACTUAL_RF_REGIONS (CRDB allocator 未收斂或 zone config 未生效)"
+    ALL_PASS=false
+    FAILS+=("rf-actual-mismatch:min=$ACTUAL_RF_MIN/max=$ACTUAL_RF_MAX/expected=$EXPECTED_RF")
+  fi
+  echo "actual-rf-min       = $ACTUAL_RF_MIN" >> "$DRY/replication-factor.txt"
+  echo "actual-rf-max       = $ACTUAL_RF_MAX" >> "$DRY/replication-factor.txt"
+  echo "actual-rf-ranges    = $ACTUAL_RF_REGIONS" >> "$DRY/replication-factor.txt"
+fi
+
 # --- 2. replication-factor dump ---------------------------------------------
 case "$DB" in
   tidb)
@@ -172,6 +203,37 @@ if [[ "$ACTUAL_RF" != "$EXPECTED_RF" ]]; then
   warn "RF mismatch (expected=$EXPECTED_RF actual=$ACTUAL_RF)"
   ALL_PASS=false
   FAILS+=("rf-mismatch:expected=$EXPECTED_RF/actual=$ACTUAL_RF")
+fi
+
+# --- 2b. (HAProxy variants) backend health gate (F-B) -----------------------
+# 取自 haproxy.cfg.j2 加的 :8404/stats;csv endpoint。CSV 第 1 欄 pxname、第 2 欄
+# svname、第 18 欄 status。filter pxname=db_nodes 且 svname=node1/node2/node3，
+# count status==UP 必須 == 3，否則 fail-closed（HAProxy round-robin 沒法輪到 down
+# 的 backend，跑 suite 等於浪費）。
+HAPROXY_BACKENDS_UP=n/a
+if [[ "$SUB" =~ ^haproxy- ]]; then
+  HAPROXY_HOST=${HAPROXY_HOST:-172.24.47.20}
+  HAPROXY_STATS_URL="http://${HAPROXY_HOST}:8404/stats;csv"
+  HAPROXY_STAT_FILE="$DRY/haproxy-backends.csv"
+  for i in $(seq 1 6); do
+    if curl -fs --max-time 5 "$HAPROXY_STATS_URL" > "$HAPROXY_STAT_FILE" 2>/dev/null; then
+      break
+    fi
+    sleep 5
+  done
+  if [[ ! -s "$HAPROXY_STAT_FILE" ]]; then
+    warn "HAProxy stats endpoint unreachable at $HAPROXY_STATS_URL (deploy may have failed to render F-B stats frontend)"
+    ALL_PASS=false
+    FAILS+=("haproxy-stats-unreachable")
+  else
+    HAPROXY_BACKENDS_UP=$(awk -F',' 'NR>1 && $1=="db_nodes" && $2 ~ /^node[0-9]+$/ && $18=="UP" {n++} END {print n+0}' "$HAPROXY_STAT_FILE")
+    HAPROXY_BACKENDS_TOTAL=$(awk -F',' 'NR>1 && $1=="db_nodes" && $2 ~ /^node[0-9]+$/ {n++} END {print n+0}' "$HAPROXY_STAT_FILE")
+    if [[ "$HAPROXY_BACKENDS_UP" != "3" ]]; then
+      warn "HAProxy backends not all UP: up=$HAPROXY_BACKENDS_UP/total=$HAPROXY_BACKENDS_TOTAL (expected up=3)"
+      ALL_PASS=false
+      FAILS+=("haproxy-backends-not-all-up:$HAPROXY_BACKENDS_UP/3")
+    fi
+  fi
 fi
 
 # --- 3. cluster-health probe -------------------------------------------------
@@ -302,9 +364,10 @@ fi
   echo "=== dry-run gate $TOPOLOGY / $DB / $ISO ==="
   echo "expected-node-count = 3        actual = $NODE_COUNT"
   echo "expected-rf (config) = $EXPECTED_RF        actual = $ACTUAL_RF"
-  echo "actual-rf-peer-min  = $ACTUAL_RF_MIN  (TiDB-only; per-region peer count)"
-  echo "actual-rf-peer-max  = $ACTUAL_RF_MAX  (TiDB-only)"
-  echo "actual-rf-regions   = $ACTUAL_RF_REGIONS  (TiDB-only; total regions sampled)"
+  echo "actual-rf-peer-min  = $ACTUAL_RF_MIN  (TiDB/CRDB; per-region/range replica count)"
+  echo "actual-rf-peer-max  = $ACTUAL_RF_MAX  (TiDB/CRDB)"
+  echo "actual-rf-regions   = $ACTUAL_RF_REGIONS  (TiDB/CRDB; total regions/ranges sampled)"
+  echo "haproxy-backends-up = $HAPROXY_BACKENDS_UP  (haproxy-* sub only; F-B)"
   echo "expected-iso        = $EXPECTED_ISO   actual = ${ACTUAL_ISO:-N/A}"
   echo "yb-effective-iso    = ${YB_EFFECTIVE:-n/a}"
   echo "ybdb-cluster-healthy = ${YBDB_CLUSTER_HEALTHY:-n/a}"
@@ -329,6 +392,7 @@ write_phase_done "$ROOT" "dry-run" "$(cat <<JSON
   "rf_actual_peer_min": "${ACTUAL_RF_MIN:-n/a}",
   "rf_actual_peer_max": "${ACTUAL_RF_MAX:-n/a}",
   "rf_actual_regions": "${ACTUAL_RF_REGIONS:-n/a}",
+  "haproxy_backends_up": "${HAPROXY_BACKENDS_UP:-n/a}",
   "iso_expected": "$EXPECTED_ISO",
   "iso_actual": "${ACTUAL_ISO:-N/A}",
   "yb_effective_iso": "${YB_EFFECTIVE:-n/a}",

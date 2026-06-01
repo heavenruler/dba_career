@@ -20,3 +20,13 @@ backend db_nodes
 {% for backend in haproxy_backends.split(',') %}
   server node{{ loop.index }} {{ backend }} check inter 2s
 {% endfor %}
+
+# F-B: HTTP stats endpoint for backend health / round-robin verification.
+# Separate frontend on :8404 (mode http) — TCP frontend on :{{ haproxy_port }} 不變。
+# `curl -s http://<haproxy-host>:8404/stats;csv` 從 .31 直接撈 CSV，無需在 .20 裝 socat。
+frontend stats
+  mode http
+  bind *:8404
+  stats enable
+  stats uri /stats
+  stats refresh 10s
