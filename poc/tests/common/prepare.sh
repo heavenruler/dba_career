@@ -280,12 +280,18 @@ if [[ "$EXPECTED_SHARDS" != "0" ]]; then
       " > "$PREP_DIR/.shard-raw.tsv" 2>&1 || true
       ;;
     crdb)
-      cockroach sql --insecure --host="$DB_HOST:$PORT" -d "$DBNAME" --format=tsv -e "
-        SELECT table_name, count(*) AS range_count
-          FROM crdb_internal.ranges
-          WHERE database_name='$DBNAME' AND index_name='primary'
-          GROUP BY table_name;
-      " 2>/dev/null | tail -n +2 > "$PREP_DIR/.shard-raw.tsv" || true
+      # F-D (2026-06-01): v26.2.0 起 crdb_internal.* 受限 (SQLSTATE 42501),
+      # 2>/dev/null 把 ERROR 吃掉 → .shard-raw.tsv 空 → 每張表 actual=0 →
+      # 全 9 表 fail-closed (1s1r 實測 prepare 2620s 後 die)。
+      # 改成 v26.2.0 supported API: `SHOW RANGES FROM TABLE <db>.<tbl>`,
+      # 每張表獨立 count(*)。1s1r → 1 range/table, 3s*r → ≥3 range/table.
+      : > "$PREP_DIR/.shard-raw.tsv"
+      for tbl in $TABLES; do
+        n=$(/usr/local/bin/cockroach sql --insecure --host="$DB_HOST:$PORT" -d "$DBNAME" --format=tsv \
+              -e "SELECT count(*) FROM [SHOW RANGES FROM TABLE $tbl]" 2>/dev/null | tail -1 | tr -d ' ')
+        n=${n:-0}
+        printf "%s\t%s\n" "$tbl" "$n" >> "$PREP_DIR/.shard-raw.tsv"
+      done
       ;;
     ybdb)
       : > "$PREP_DIR/.shard-raw.tsv"
