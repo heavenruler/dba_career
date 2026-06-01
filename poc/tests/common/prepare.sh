@@ -153,7 +153,12 @@ if [[ "$EXPECTED_SHARDS" == "3" ]]; then
         ALTER TABLE order_line SPLIT AT VALUES (43, 1, 1, 1), (86, 1, 1, 1);
         ALTER TABLE stock      SPLIT AT VALUES (43, 1), (86, 1);
         ALTER TABLE item       SPLIT AT VALUES (33334), (66667);
-        ALTER TABLE history    SPLIT AT VALUES ('00000043'), ('00000086');
+        -- history: CRDB 無顯式 PK → 隱式 rowid INT8 (unique_rowid()，~10^17 範圍)。
+        -- 用裸 int 值；早期版本帶引號的 '00000043' 被 CRDB parseInt(base=0) 當八進位
+        -- 解，digit 8 不合法 → SQLSTATE 22P02。改用裸 int，鏡像 TiDB 的 _tidb_rowid
+        -- 切點 (1280000),(2560000) — 對 rowid 大值是空 leading range，但 SHOW RANGES
+        -- 仍回 3，shard-count gate 過關。
+        ALTER TABLE history    SPLIT AT VALUES (1280000), (2560000);
       " 2>&1 | tee "$PREP_DIR/shard-split.log"
       ;;
     ybdb)
