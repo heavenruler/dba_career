@@ -56,21 +56,25 @@
 | 1s1r → 3s3r-direct（RF=3 + shard 疊加） | **−23.3%**（19,654→15,082） | **−36.4%**（13,725→8,729） | YBDB tablet 協調成本 +13 pp 高於 TiDB（81 replicas / 4 vCPU 過載） |
 | 3s3r-direct → 3s3r-haproxy（multi-tidb / multi-tserver 分散 SQL 層） | **+78.7%**（15,082→26,947） | **+79.1%**（8,729→15,632） | **同向 ~78%** — 共同根因：3 個 DB-server 分擔 client/parser/coord 排隊 |
 
-### 1-A.4 差異分析（5 點）
+### 1-A.4 差異分析
 
-1. **TiDB scale-out 收益大於 YBDB**：vm-1node → vm-3node-1s1r，TiDB +50%、YBDB 僅 +20%。YBDB 在 4 vCPU 受 YSQL+DocDB 雙進程 + RocksDB compaction 壓縮預算。
-2. **HAProxy 同向收益 ~78%**：兩家 direct → haproxy 都 +78–79%。三家共同瓶頸是「單一 entry node 的 client/parser/coord 排隊」，分散後立刻拉開。
-3. **p99 全程 YBDB 1.6–2.3× TiDB**：YBDB tablet leader 不平衡 + RocksDB tail latency 主導；TiDB pessimistic + region cache 較穩。
-4. **3s3r 退化幅度 YBDB > TiDB**：1s1r → 3s3r-direct，YBDB −36%、TiDB −23%。YBDB 在 9 tables × 3 tablets × 3 replicas = 81 replicas on 4 vCPU，協調瓶頸先撞牆（mpstat-db 顯示 t=32/t=64 CPU 24–42% idle 但 throughput 反而 drop）。
-5. **代表點選擇分歧**：YBDB 1s1r/3s1r 在 t=32 飽和（CPU 9% idle），其他 cell 推到 t=128；TiDB 1node 甜點 t=64（12,744 tpmC / p99 305ms），3node 全推到 t=128。對外結論需明標代表點口徑。
+| # | 觀察 | 數據 | 根因 | 對結論影響 |
+|:---:|---|---|---|---|
+| **1** | TiDB scale-out 收益遠大於 YBDB | vm-1node → vm-3node-1s1r：<br/>TiDB **+50.4%**（13,064→19,654）<br/>YBDB **+20.1%**（11,436→13,725） | YBDB YSQL+DocDB 雙進程 + RocksDB compaction 競爭 4 vCPU 預算 | YBDB 在小 vCPU 機型 scale-out ROI 低；建議 vCPU ≥ 8 |
+| **2** | HAProxy 同向收益 ~+78% | direct → haproxy（t=128）：<br/>TiDB **+78.7%**（15,082→26,947）<br/>YBDB **+79.1%**（8,729→15,632） | 共同瓶頸 = 單一 entry node 的 client / parser / coord 排隊；3 個 DB-server 分擔後立刻拉開 | production 必上 HAProxy；single-entry 拓樸已飽和 |
+| **3** | p99 全程 YBDB 為 TiDB 1.6–2.3× | t=128：<br/>1node 1,000 vs 597（1.67×）<br/>haproxy 705 vs 309（**2.28×**） | YBDB tablet leader 不平衡 + RocksDB tail latency；TiDB pessimistic + region cache 較穩 | tail-sensitive 應用（金融、即時報表）選 TiDB 較保險 |
+| **4** | 3s3r 退化幅度 YBDB > TiDB | 1s1r → 3s3r-direct：<br/>TiDB **−23.3%**（19,654→15,082）<br/>YBDB **−36.4%**（13,725→8,729） | YBDB 9 表 × 3 tablets × 3 replicas = **81 replicas** on 4 vCPU；mpstat 顯示 t=32/64 CPU 24–42% idle 但 throughput drop（協調瓶頸非 CPU） | 3s3r 是 YBDB 真實災難場景；TiDB 較可接受 |
+| **5** | 代表點選擇分歧 | YBDB：1s1r/3s1r @ t=32 飽和（CPU 9% idle）；其他 cell @ t=128<br/>TiDB：1node 甜點 @ t=64（12,744 / p99 305ms）；3node 全 @ t=128 | 兩家 saturation 拐點不同 — YBDB CPU 限制較緊；TiDB raft batching 推到更高 thread | 跨家對標報數**必須**明標 thread 點口徑，否則歧義 |
 
 ### 1-A.5 已知 caveat
 
-- **N=1**：四 cell × 二 DB 皆 N=1；對外結論需 N=3 重做
-- **TiDB l4r4 mixed-state**：3s3r 與 haproxy-3s3r 屬「leader/replica rebalance ON、region 凍結」半受控狀態；leader 分佈最終 7/14/8 仍超 ±20% 容差
-- **DB-host metrics 缺失**：3-node 採集只覆 CLUSTER_HOST（.32），跨節點負載分布看不見（`run.sh:63-65`）；TiDB haproxy 對照 .33/.34 metrics 缺
-- **HAProxy 機制未直接驗**：suite 跑期間 HAProxy stats socket 未開，roundrobin 生效以 tpmC +78% 反推；未 dump `show stat`
-- **YBDB 3s3r-direct 極不穩**：5-round stddev 1,400–2,615（t=16 min/max 4.9×）；haproxy 模式降至 178–401（14.7× 改善）
+| # | Caveat | 證據 / 數值 | 影響 | 緩解 |
+|:---:|---|---|:---:|---|
+| **C1** | N=1 | 4 cell × 2 DB 全部 N=1 | **高** | 對外白皮書前須 N=3 重做（建議三家 3s3r 各補；~9h） |
+| **C2** | TiDB l4r4 mixed-state | 3s3r / haproxy-3s3r 為「leader/replica rebalance ON、region 凍結」半受控；leader 最終 7/14/8 超 ±20% 容差 | 中 | README 主表標 caveat 註腳 / 或改 l0r0 重跑（~15h） |
+| **C3** | DB-host metrics 只採單台 | `run.sh:63-65` CLUSTER_HOST 寫死；.33/.34 metrics 全無 | 中 | 跨節點負載 / placement skew 看不見；跨區 Track E 必補 fan-out |
+| **C4** | HAProxy 機制未直接驗 | suite 跑期間 stats socket 未開；roundrobin 生效以 tpmC +78% 反推 | 低 | 補開 stats socket dump `show stat`（5 min patch） |
+| **C5** | YBDB 3s3r-direct 極不穩 | 5-round stddev 1,400–2,615；t=16 min/max 4.9×；haproxy 改善至 178–401（**14.7× 改善**） | 中 | 已用 haproxy 緩解；若 direct 仍需用，需 vCPU ≥ 8 |
 
 ### 1-A.6 來源 / 對應 dispatch 文件
 
