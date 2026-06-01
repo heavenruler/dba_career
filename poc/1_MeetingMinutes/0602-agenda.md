@@ -26,6 +26,68 @@
 
 ---
 
+## §1-A. 第一階段 測試數據彙整參考（TiDB / YBDB，N=1，5-round mean）
+
+> 條件：iso=rc / W=128 / threads=[16,32,64,128] × 5 rounds；TiDB 3s3r 取 l4r4 production-mode。CRDB 進行中（cell 1s1r PASS / 4 cells 跑中）暫不入此表。
+
+### 1-A.1 tpmC（5-round mean，best @ t）
+
+| 拓樸 | TiDB tpmC | @ t | YBDB tpmC | @ t | TiDB vs YBDB |
+|---|---:|:---:|---:|:---:|---:|
+| vm-1node-rc | 13,064 | 128 | 11,436 | 32 | +14.2% |
+| vm-3node-1s1r-rc | **19,654** | 128 | 13,725 | 128 | **+43.2%** |
+| vm-3node-3s3r-rc-direct | 15,082 | 128 | 8,729 | 128 | **+72.8%** |
+| vm-3node-3s3r-rc-haproxy | **26,947** | 128 | 15,632 | 128 | **+72.4%** |
+
+### 1-A.2 NEW_ORDER p99 latency（5-round mean，best 點 @t=128，ms）
+
+| 拓樸 | TiDB p99 | YBDB p99 | YBDB / TiDB |
+|---|---:|---:|---:|
+| vm-1node-rc | 597 | 1,000 | 1.67× |
+| vm-3node-1s1r-rc | 456 | 758 | 1.66× |
+| vm-3node-3s3r-rc-direct | 590 | 1,114 | 1.89× |
+| vm-3node-3s3r-rc-haproxy | 309 | 705 | 2.28× |
+
+### 1-A.3 變數獨立成本拆解（best mean tpmC，1s1r 作 baseline）
+
+| 變數 | TiDB Δ tpmC | YBDB Δ tpmC | 觀察 |
+|---|---:|---:|---|
+| 1node → vm-3node-1s1r（cluster overhead + 多 store） | **+50.4%**（13,064→19,654） | **+20.1%**（11,436→13,725） | TiDB scale-out 收益遠大於 YBDB；YBDB tserver 雙進程在 4 vCPU 共用 CPU 是瓶頸 |
+| 1s1r → 3s3r-direct（RF=3 + shard 疊加） | **−23.3%**（19,654→15,082） | **−36.4%**（13,725→8,729） | YBDB tablet 協調成本 +13 pp 高於 TiDB（81 replicas / 4 vCPU 過載） |
+| 3s3r-direct → 3s3r-haproxy（multi-tidb / multi-tserver 分散 SQL 層） | **+78.7%**（15,082→26,947） | **+79.1%**（8,729→15,632） | **同向 ~78%** — 共同根因：3 個 DB-server 分擔 client/parser/coord 排隊 |
+
+### 1-A.4 差異分析（5 點）
+
+1. **TiDB scale-out 收益大於 YBDB**：vm-1node → vm-3node-1s1r，TiDB +50%、YBDB 僅 +20%。YBDB 在 4 vCPU 受 YSQL+DocDB 雙進程 + RocksDB compaction 壓縮預算。
+2. **HAProxy 同向收益 ~78%**：兩家 direct → haproxy 都 +78–79%。三家共同瓶頸是「單一 entry node 的 client/parser/coord 排隊」，分散後立刻拉開。
+3. **p99 全程 YBDB 1.6–2.3× TiDB**：YBDB tablet leader 不平衡 + RocksDB tail latency 主導；TiDB pessimistic + region cache 較穩。
+4. **3s3r 退化幅度 YBDB > TiDB**：1s1r → 3s3r-direct，YBDB −36%、TiDB −23%。YBDB 在 9 tables × 3 tablets × 3 replicas = 81 replicas on 4 vCPU，協調瓶頸先撞牆（mpstat-db 顯示 t=32/t=64 CPU 24–42% idle 但 throughput 反而 drop）。
+5. **代表點選擇分歧**：YBDB 1s1r/3s1r 在 t=32 飽和（CPU 9% idle），其他 cell 推到 t=128；TiDB 1node 甜點 t=64（12,744 tpmC / p99 305ms），3node 全推到 t=128。對外結論需明標代表點口徑。
+
+### 1-A.5 已知 caveat
+
+- **N=1**：四 cell × 二 DB 皆 N=1；對外結論需 N=3 重做
+- **TiDB l4r4 mixed-state**：3s3r 與 haproxy-3s3r 屬「leader/replica rebalance ON、region 凍結」半受控狀態；leader 分佈最終 7/14/8 仍超 ±20% 容差
+- **DB-host metrics 缺失**：3-node 採集只覆 CLUSTER_HOST（.32），跨節點負載分布看不見（`run.sh:63-65`）；TiDB haproxy 對照 .33/.34 metrics 缺
+- **HAProxy 機制未直接驗**：suite 跑期間 HAProxy stats socket 未開，roundrobin 生效以 tpmC +78% 反推；未 dump `show stat`
+- **YBDB 3s3r-direct 極不穩**：5-round stddev 1,400–2,615（t=16 min/max 4.9×）；haproxy 模式降至 178–401（14.7× 改善）
+
+### 1-A.6 來源 / 對應 dispatch 文件
+
+| 區段 | 文件 |
+|---|---|
+| YBDB 4 cell（1s1r/1s3r/3s1r/3s3r）| [`results/dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md`](../results/dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md) |
+| YBDB haproxy vs direct | [`results/dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md`](../results/dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
+| TiDB schedule-limit l0r0 vs l4r4 | [`results/dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md`](../results/dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md) |
+| TiDB haproxy vs direct | [`results/dispatch-records/2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md`](../results/dispatch-records/2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md) |
+| TiDB vm-1node-rc summary | [`results/tidb-tc1/S-BASE/vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/summary.json`](../results/tidb-tc1/S-BASE/vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/summary.json) |
+| YBDB vm-1node-rc pipeline | [`results/yuga-tc1/S-BASE/pipeline-log.md`](../results/yuga-tc1/S-BASE/pipeline-log.md) §vm-1node-rc |
+| TiDB vm-3node-1s1r-rc artifact | [`results/tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260529T132940+0800/`](../results/tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260529T132940+0800/) |
+| YBDB vm-3node 四 cell artifact | `results/yuga-tc1/S-BASE/vm-3node-{1s1r,1s3r,3s1r,3s3r}-rc/` |
+| 跨家 README 主表（含 vm-1node baseline） | [`results/README.md`](../results/README.md) |
+
+---
+
 ## §2. 第一階段 分散式資料庫架構重點關注
 
 1. **Shard 鎖定（manual SPLIT）作 baseline 的必要性**
