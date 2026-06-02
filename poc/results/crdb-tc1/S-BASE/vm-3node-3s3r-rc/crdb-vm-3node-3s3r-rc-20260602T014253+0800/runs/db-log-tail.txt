@@ -1,0 +1,226 @@
+=== cockroach.log tail ===
+I260601 18:33:50.121920 1 util/log/file_sync_buffer.go:237 ⋮ [config]   file created at: 2026/06/01 18:33:50
+I260601 18:33:50.121928 1 util/log/file_sync_buffer.go:237 ⋮ [config]   running on machine: ‹l-test-poc-1›
+I260601 18:33:50.121935 1 util/log/file_sync_buffer.go:237 ⋮ [config]   binary: CockroachDB CCL v26.2.0 (x86_64-pc-linux-gnu, built 2026/04/21 18:36:57, go1.25.5)
+I260601 18:33:50.121939 1 util/log/file_sync_buffer.go:237 ⋮ [config]   arguments: [‹/usr/local/bin/cockroach› ‹start› ‹--insecure› ‹--cache=5GiB› ‹--max-sql-memory=3GiB› ‹--store=/data/crdb› ‹--listen-addr=0.0.0.0:26257› ‹--http-addr=0.0.0.0:8080› ‹--advertise-addr=172.24.40.32:26257› ‹--join=172.24.40.32:26257,172.24.40.33:26257,172.24.40.34:26257›]
+I260601 18:33:50.121950 1 util/log/file_sync_buffer.go:237 ⋮ [config]   log format (utf8=✓): crdb-v2
+I260601 18:33:50.121953 1 util/log/file_sync_buffer.go:237 ⋮ [config]   line format: [IWEF]yymmdd hh:mm:ss.uuuuuu goid [chan@]file:line redactionmark \[tags\] [counter] msg
+W260601 18:33:50.121826 1 1@cli/start.go:1479 ⋮ [n?] 1  ALL SECURITY CONTROLS HAVE BEEN DISABLED!
+W260601 18:33:50.121826 1 1@cli/start.go:1479 ⋮ [n?] 1 +
+W260601 18:33:50.121826 1 1@cli/start.go:1479 ⋮ [n?] 1 +This mode is intended for non-production testing only.
+W260601 18:33:50.121826 1 1@cli/start.go:1479 ⋮ [n?] 1 +
+W260601 18:33:50.121826 1 1@cli/start.go:1479 ⋮ [n?] 1 +In this mode:
+W260601 18:33:50.121826 1 1@cli/start.go:1479 ⋮ [n?] 1 +- Your cluster is open to any client that can access ‹0.0.0.0›.
+W260601 18:33:50.121826 1 1@cli/start.go:1479 ⋮ [n?] 1 +- Intruders with access to your machine or network can observe client-server traffic.
+W260601 18:33:50.121826 1 1@cli/start.go:1479 ⋮ [n?] 1 +- Intruders can log in without password and read or write any data in the cluster.
+W260601 18:33:50.121826 1 1@cli/start.go:1479 ⋮ [n?] 1 +- Intruders can consume all your server's resources and cause unavailability.
+I260601 18:33:50.122001 1 1@cli/start.go:1489 ⋮ [n?] 2  To start a secure server without mandating TLS for clients,
+I260601 18:33:50.122001 1 1@cli/start.go:1489 ⋮ [n?] 2 +consider --accept-sql-without-tls instead. For other options, see:
+I260601 18:33:50.122001 1 1@cli/start.go:1489 ⋮ [n?] 2 +
+I260601 18:33:50.122001 1 1@cli/start.go:1489 ⋮ [n?] 2 +- https://go.crdb.dev/issue-v/53404/v26.2
+I260601 18:33:50.122001 1 1@cli/start.go:1489 ⋮ [n?] 2 +- https://www.cockroachlabs.com/docs/v26.2/secure-a-cluster.html
+I260601 18:33:50.122246 1 server/status/recorder.go:1346 ⋮ [n?] 3  ‹available memory from cgroups (8.0 EiB) is unlimited ('systemd' without MemoryMax?), using system memory 15 GiB instead: ›
+I260601 18:33:50.122265 1 1@cli/start.go:1518 ⋮ [n?] 4  CockroachDB CCL v26.2.0 (x86_64-pc-linux-gnu, built 2026/04/21 18:36:57, go1.25.5)
+I260601 18:33:50.122671 1 server/status/recorder.go:1346 ⋮ [n?] 5  ‹available memory from cgroups (8.0 EiB) is unlimited ('systemd' without MemoryMax?), using system memory 15 GiB instead: ›
+I260601 18:33:50.122682 1 1@cli/start.go:572 ⋮ [n?] 6  soft memory limit of Go runtime is set to 6.8 GiB
+I260601 18:33:50.122694 1 1@cli/start.go:609 ⋮ [n?] 7  GC target percentage of Go runtime is set to 300%
+I260601 18:33:50.124860 1 server/status/recorder.go:1346 ⋮ [T1,Vsystem,n?] 8  ‹available memory from cgroups (8.0 EiB) is unlimited ('systemd' without MemoryMax?), using system memory 15 GiB instead: ›
+I260601 18:33:50.124880 1 server/config.go:690 ⋮ [T1,Vsystem,n?] 9  system total memory: 15 GiB
+I260601 18:33:50.124888 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10  server configuration:
+I260601 18:33:50.124888 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +max offset             500000000
+I260601 18:33:50.124888 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +cache size             5.0 GiB
+I260601 18:33:50.124888 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +SQL memory pool size   3.0 GiB
+I260601 18:33:50.124888 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +scan interval          10m0s
+I260601 18:33:50.124888 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +scan min idle time     10ms
+I260601 18:33:50.124888 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +scan max idle time     1s
+I260601 18:33:50.124888 1 server/config.go:692 ⋮ [T1,Vsystem,n?] 10 +event log enabled      true
+I260601 18:33:50.124930 1 1@cli/start.go:1356 ⋮ [T1,Vsystem,n?] 11  using local environment variables:
+I260601 18:33:50.124930 1 1@cli/start.go:1356 ⋮ [T1,Vsystem,n?] 11 +COCKROACH_BACKGROUND_RESTART=1
+I260601 18:33:50.124930 1 1@cli/start.go:1356 ⋮ [T1,Vsystem,n?] 11 +LANG=en_GB.UTF-8
+I260601 18:33:50.124945 1 1@cli/start.go:1363 ⋮ [T1,Vsystem,n?] 12  process identity: uid 0 euid 0 gid 0 egid 0
+W260601 18:33:50.125700 1 1@cli/start.go:1543 ⋮ [T1,Vsystem,n?] 13  could not initialize GEOS - spatial functions may not be available: geos: error during GEOS init: geos: cannot load GEOS from dir ‹"/usr/local/lib/cockroach"›: ‹geos error: /usr/local/lib/cockroach/libgeos.so: cannot open shared object file: No such file or directory›
+W260601 18:33:50.125700 1 1@cli/start.go:1543 ⋮ [T1,Vsystem,n?] 13 +HINT: ‹Ensure you have the spatial libraries installed as per the instructions in https://www.cockroachlabs.com/docs/v26.2/install-cockroachdb-linux›
+I260601 18:33:50.125760 1 1@cli/start.go:795 ⋮ [T1,Vsystem,n?] 14  starting cockroach node
+I260601 18:33:50.125966 75 1@storage/disk/platform_linux.go:174 ⋮ [-] 15  mapping ‹"/data/crdb"› to diskstats SCSI device 8:3
+I260601 18:33:50.128682 75 1@storage/disk/platform_linux.go:174 ⋮ [-] 16  mapping ‹"/data/crdb"› to diskstats SCSI device 8:3
+I260601 18:33:50.128756 75 1@storage/disk/platform_linux.go:174 ⋮ [-] 17  mapping ‹"/data/crdb"› to diskstats SCSI device 8:3
+I260601 18:33:50.340691 75 server/config.go:924 ⋮ [T1,Vsystem,n?] 18  1 storage engine initialized
+I260601 18:33:50.340718 75 server/config.go:927 ⋮ [T1,Vsystem,n?] 19  Pebble cache size: 5.0 GiB
+I260601 18:33:50.340733 75 server/config.go:927 ⋮ [T1,Vsystem,n?] 20  store 0: disk deviceID: 8:3
+I260601 18:33:50.340740 75 server/config.go:927 ⋮ [T1,Vsystem,n?] 21  store 0: max size 0 B, max open file limit 1043576
+I260601 18:33:50.340743 75 server/config.go:927 ⋮ [T1,Vsystem,n?] 22  store 0: /data/crdb: rw encrypted=false fs:{bdev=/dev/sda3 fstype=xfs mountpoint=/ mountopts=rw,relatime,attr2,inode64,logbufs=8,logbsize=32k,noquota}
+I260601 18:33:50.343035 75 server/goroutinedumper/goroutinedumper.go:162 ⋮ [T1,Vsystem,n?] 23  writing goroutine dumps to ‹/data/crdb/logs/goroutine_dump›
+I260601 18:33:50.349630 123 util/cidr/cidr.go:299 ⋮ [T1,Vsystem,n?] 24  CIDR lookup updated with 0 destinations
+I260601 18:33:50.352138 75 1@storage/disk/platform_linux.go:174 ⋮ [-] 25  mapping ‹"/data/crdb/cockroach-temp3291313772"› to diskstats SCSI device 8:3
+I260601 18:33:50.352229 75 1@storage/disk/platform_linux.go:174 ⋮ [-] 26  mapping ‹"/data/crdb/cockroach-temp3291313772"› to diskstats SCSI device 8:3
+I260601 18:33:50.424200 75 1@server/clock_monotonicity.go:61 ⋮ [T1,Vsystem,n?] 27  monitoring forward clock jumps based on server.clock.forward_jump_check.enabled
+I260601 18:33:50.426278 75 1@obs/ash/sampler.go:212 ⋮ [T1,Vsystem,n1] 28  starting ASH sampler
+I260601 18:33:50.427015 75 1@server/clock_monotonicity.go:136 ⋮ [T1,Vsystem,n1] 29  Sleeping till wall time 1780338830427012702 to catches up to 1780338830924184004 to ensure monotonicity. Sub: 497.171302ms
+I260601 18:33:50.427118 536 1@server/server.go:1971 ⋮ [T1,Vsystem,n1] 30  connecting to gossip network to verify cluster ID "3e2492ca-6129-4add-972c-163719974c02"
+W260601 18:33:50.924371 75 1@cli/start.go:1317 ⋮ [T1,Vsystem,n1] 31  Running a server without --sql-addr, with a combined RPC/SQL listener, is deprecated.
+W260601 18:33:50.924371 75 1@cli/start.go:1317 ⋮ [T1,Vsystem,n1] 31 +This feature will be removed in a later version of CockroachDB.
+W260601 18:33:50.928996 75 2@gossip/gossip.go:1493 ⋮ [T1,Vsystem,n1] 32  no incoming or outgoing connections
+I260601 18:33:50.929213 567 gossip/client.go:412 ⋮ [T1,Vsystem,n1] 33  unvalidated bootstrap gossip dial to ‹172.24.40.33:26257›
+I260601 18:33:50.937029 567 gossip/client.go:127 ⋮ [T1,Vsystem,n1] 34  started gossip client to n0 (‹172.24.40.33:26257›)
+I260601 18:33:50.937567 536 1@server/server.go:1974 ⋮ [T1,Vsystem,n1] 35  node connected via gossip
+I260601 18:33:50.953658 561 server/node.go:697 ⋮ [T1,Vsystem,n1] 36  initialized store s1 in 24ms (111 replicas)
+I260601 18:33:50.955168 75 server/node.go:808 ⋮ [T1,Vsystem,n1] 37  started with attributes []
+I260601 18:33:50.955237 75 server/profiler/heapprofiler.go:74 ⋮ [T1,Vsystem,n1] 38  writing go heap profiles to ‹/data/crdb/logs/heap_profiler› at least every 1h0m0s
+I260601 18:33:50.955256 75 server/profiler/memory_monitoring_profiler.go:66 ⋮ [T1,Vsystem,n1] 39  writing memory monitoring dumps to ‹/data/crdb/logs/heap_profiler› at least every 1h0m0s
+I260601 18:33:50.955264 75 server/profiler/cgoprofiler.go:66 ⋮ [T1,Vsystem,n1] 40  to enable jmalloc profiling: "export MALLOC_CONF=prof:true" or "ln -s prof:true /etc/malloc.conf"
+I260601 18:33:50.955274 75 server/profiler/statsprofiler.go:68 ⋮ [T1,Vsystem,n1] 41  writing memory stats to ‹/data/crdb/logs/heap_profiler› at last every 1h0m0s
+I260601 18:33:50.955473 75 server/profiler/activequeryprofiler.go:88 ⋮ [T1,Vsystem,n1] 42  writing go query profiles to ‹/data/crdb/logs/heap_profiler›
+I260601 18:33:50.955489 75 server/profiler/cpuprofiler.go:87 ⋮ [T1,Vsystem,n1] 43  writing cpu profile dumps to ‹/data/crdb/logs/pprof_dump›
+I260601 18:33:50.955498 75 server/profiler/ashreportprofiler.go:67 ⋮ [T1,Vsystem,n1] 44  writing ASH reports to ‹/data/crdb/logs/heap_profiler›
+I260601 18:33:50.955555 75 1@storage/disk/platform_linux.go:174 ⋮ [-] 45  mapping ‹"/data/crdb"› to diskstats SCSI device 8:3
+I260601 18:33:50.956984 75 1@server/server.go:2173 ⋮ [T1,Vsystem,n1] 46  starting http server at ‹[::]:8080› (use: ‹172.24.40.32:8080›)
+I260601 18:33:50.957012 75 1@server/server.go:2181 ⋮ [T1,Vsystem,n1] 47  starting grpc/postgres server at ‹[::]:26257›
+I260601 18:33:50.957029 75 1@server/server.go:2182 ⋮ [T1,Vsystem,n1] 48  advertising CockroachDB node at ‹172.24.40.32:26257›
+I260601 18:33:50.969362 75 1@util/log/event_log.go:90 ⋮ [T1,Vsystem,n1] 49 ={"Timestamp":1780338830969358182,"EventType":"node_restart","NodeID":1,"StartedAt":1780338830929063289,"LastUp":1780338826338713622}
+I260601 18:33:50.969494 773 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 50  spanconfig-subscriber: established range feed cache
+I260601 18:33:50.969542 775 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 51  settings-watcher: established range feed cache
+I260601 18:33:50.972881 75 sql/sqlliveness/slinstance/slinstance.go:446 ⋮ [T1,Vsystem,n1] 52  starting SQL liveness instance
+I260601 18:33:50.975436 1011 sql/sqlliveness/slstorage/slstorage.go:540 ⋮ [T1,Vsystem,n1] 53  inserted sqlliveness session 010180a86f639ea57449ff87280f3408aa1e17 with expiry 1780338870.972912354,0
+I260601 18:33:50.975464 1011 sql/sqlliveness/slinstance/slinstance.go:248 ⋮ [T1,Vsystem,n1] 54  created new SQL liveness session 010180a86f639ea57449ff87280f3408aa1e17
+I260601 18:33:50.975491 75 sql/sqlinstance/instancestorage/instancestorage.go:338 ⋮ [T1,Vsystem,n1] 55  assigning instance id to rpc addr ‹172.24.40.32:26257› and sql addr ‹172.24.40.32:26257›
+I260601 18:33:50.977680 75 server/server_sql.go:1658 ⋮ [T1,Vsystem,n1] 56  bound sqlinstance: Instance{RegionPrefix: gA==, InstanceID: 1, SQLAddr: ‹172.24.40.32:26257›, RPCAddr: ‹172.24.40.32:26257›, SessionID: 010180a86f639ea57449ff87280f3408aa1e17, Locality: , BinaryVersion: 26.2}
+I260601 18:33:50.977768 75 sql/catalog/lease/lease.go:3131 ⋮ [T1,Vsystem,n1] 57  starting lease manager rangefeed at timestamp 1780338830.977767912,0
+I260601 18:33:50.977906 1031 sql/temporary_schema.go:503 ⋮ [T1,Vsystem,n1] 58  skipping temporary object cleanup run as it is not the leaseholder
+I260601 18:33:50.977923 1031 sql/temporary_schema.go:504 ⋮ [T1,Vsystem,n1] 59  completed temporary object cleanup job
+I260601 18:33:50.977930 1031 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 60  temporary object cleaner next scheduled to run at 2026-06-01 19:03:50.977900371 +0000 UTC m=+1801.134036270
+I260601 18:33:50.978017 1035 sql/sqlstats/persistedsqlstats/provider.go:157 ⋮ [T1,Vsystem,n1] 61  starting sql-stats-worker with initial delay: 8m44.638729198s
+I260601 18:33:50.978298 75 upgrade/upgrademanager/manager.go:178 ⋮ [T1,Vsystem,n1] 62  running permanent upgrades up to version: 26.2
+I260601 18:33:50.978701 1004 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 63  system-config-cache: established range feed cache
+I260601 18:33:51.307429 75 upgrade/upgrademanager/manager.go:238 ⋮ [T1,Vsystem,n1] 64  detected the last permanent upgrade (v0.0-upgrading-step-004) to have already completed; no permanent upgrades will run
+I260601 18:33:51.307469 75 server/server_sql.go:1761 ⋮ [T1,Vsystem,n1] 65  done ensuring all necessary startup migrations have run
+I260601 18:33:51.310657 1341 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 66  statement-hints-watcher: established range feed cache
+I260601 18:33:51.311299 75 server/license/enforcer.go:257 ⋮ [T1,Vsystem,n1] 67  trial license expiry initialized to 1970-01-01 00:00:00 +0000 UTC
+I260601 18:33:51.311967 75 server/license/enforcer.go:293 ⋮ [T1,Vsystem,n1] 68  fetched existing cluster init grace period end time: 2026-06-08 17:45:06 +0000 UTC
+I260601 18:33:51.312050 75 server/license/enforcer.go:493 ⋮ [T1,Vsystem,n1] 69  enforcer license updated: type is none, grace period ends at "2026-06-08 17:45:06 +0000 UTC", telemetry required: false
+I260601 18:33:51.312066 75 server/license/enforcer.go:493 ⋮ [T1,Vsystem,n1] 70  enforcer license updated: type is none, grace period ends at "2026-06-08 17:45:06 +0000 UTC", telemetry required: false
+I260601 18:33:51.312560 1341 sql/hints/hint_cache.go:224 ⋮ [T1,Vsystem,n1] 71  statement_hints rangefeed completed initial scan
+I260601 18:33:51.319945 1343 sql/syntheticprivilegecache/cache.go:204 ⋮ [T1,Vsystem,n1] 72  warmed privileges for virtual tables in 7.759639ms
+I260601 18:33:51.328973 1405 sql/catalog/lease/lease.go:3743 ⋮ [T1,Vsystem,n1] 73  starting orphaned lease cleanup from stale sessions in default region (0x80)
+I260601 18:33:51.344460 1431 jobs/job_scheduler.go:407 ⋮ [T1,Vsystem,n1] 74  waiting 2m0s before scheduled jobs daemon start
+I260601 18:33:51.344669 1405 sql/catalog/lease/lease.go:3803 ⋮ [T1,Vsystem,n1] 75  completed orphaned lease cleanup for default region (0x80): 0 sessions processed, 0 leases deleted
+I260601 18:33:51.346192 1552 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 76  tenant-settings-watcher: established range feed cache
+I260601 18:33:51.346819 1555 kv/kvclient/rangefeed/rangefeedcache/watcher.go:341 ⋮ [T1,Vsystem,n1] 77  tenant-entry-watcher: established range feed cache
+I260601 18:33:51.347807 1405 sql/catalog/lease/lease.go:3900 ⋮ [T1,Vsystem,n1] 78  found 0 orphaned leases to clean up for instance ID 1
+I260601 18:33:51.348123 1555 multitenant/tenantcapabilities/tenantcapabilitieswatcher/watcher.go:285 ⋮ [T1,Vsystem,n1] 79  received results of a full table scan for tenant capabilities
+I260601 18:33:51.359586 75 1@server/server_sql.go:2027 ⋮ [T1,Vsystem,n1] 80  serving sql connections
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81  node startup completed:
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +CockroachDB node starting at 2026-06-01 18:33:51.359616869 +0000 UTC m=+1.515752779 (took 1.2s)
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +build:               CCL v26.2.0 @ 2026/04/21 18:36:57 (go1.25.5)
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +malloc_conf:         prof:false,prof_active:true,background_thread:true,thp:never,metadata_thp:disabled,narenas:16,dirty_decay_ms:2000,muzzy_decay_ms:0
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +webui:               ‹http://172.24.40.32:8080›
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +sql:                 ‹postgresql://root@172.24.40.32:26257/defaultdb?sslmode=disable›
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +sql (JDBC):          ‹jdbc:postgresql://172.24.40.32:26257/defaultdb?sslmode=disable&user=root›
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +RPC client flags:    ‹/usr/local/bin/cockroach <client cmd> --host=172.24.40.32:26257 --insecure›
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +logs:                ‹/data/crdb/logs›
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +temp dir:            ‹/data/crdb/cockroach-temp3291313772›
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +external I/O path:   ‹/data/crdb/extern›
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +store[0]:            ‹path=/data/crdb›
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +clusterID:           3e2492ca-6129-4add-972c-163719974c02
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +status:              restarted pre-existing node
+I260601 18:33:51.359684 75 1@cli/start.go:1304 ⋮ [T1,Vsystem,n1] 81 +nodeID:              1
+I260601 18:33:51.362297 1438 server/auto_upgrade.go:81 ⋮ [T1,Vsystem,n1] 82  no need to upgrade, cluster already at the newest version
+W260601 18:33:51.464938 1687 sql/pgwire/last_login_updater.go:139 ⋮ [T1,Vsystem,n1,client=172.24.40.32:39942,hostnossl,user=root] 83  could not update last login times: interrupted during singleflight ‹update last login time:UpdateLastLoginTime›: context canceled
+I260601 18:33:52.179173 560 1@gossip/gossip.go:1507 ⋮ [T1,Vsystem,n1] 84  node has connected to cluster via gossip
+I260601 18:33:52.681773 1432 server/diagnostics/update_checker.go:145 ⋮ [T1,Vsystem,n1] 85  a new version is available: ‹26.2.1›, details: ‹https://www.cockroachlabs.com/docs/releases/v26.2#v26-2-1›
+I260601 18:34:53.659640 4207 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:41292,hostnossl,user=root] 86  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 18:35:10.968641 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 87  taking CPU profile for 10.00s
+I260601 18:35:31.241379 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 88  taking CPU profile for 10.00s
+I260601 18:35:41.449648 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 89  taking CPU profile for 10.00s
+W260601 18:35:51.781422 2021 2@rpc/clock_offset.go:392 ⋮ [T1,Vsystem,n1,rnode=3,raddr=‹172.24.40.34:26257›,class=raft,rpc] 90  latency jump (prev avg 6.41ms, current 53.59ms)
+I260601 18:36:01.681772 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 91  taking CPU profile for 10.00s
+I260601 18:36:31.981923 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 92  taking CPU profile for 10.00s
+I260601 18:37:02.209074 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 93  taking CPU profile for 10.00s
+I260601 18:37:22.438297 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 94  taking CPU profile for 10.00s
+I260601 18:38:12.672944 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 95  taking CPU profile for 10.00s
+I260601 18:39:53.659669 4365 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:41476,hostnossl,user=root] 96  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 18:40:22.855723 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 97  taking CPU profile for 10.00s
+I260601 18:44:53.659825 4414 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:41558,hostnossl,user=root] 98  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 18:47:43.181422 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 99  taking CPU profile for 10.00s
+I260601 18:49:53.659954 4222 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:41390,hostnossl,user=root] 100  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 18:54:53.724498 4298882 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:44376,hostnossl,user=root] 101  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 18:59:53.724885 4298846 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:44354,hostnossl,user=root] 102  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 19:03:50.977928 1031 sql/temporary_schema.go:521 ⋮ [T1,Vsystem,n1] 103  running temporary object cleanup background job
+I260601 19:03:50.996869 1031 sql/temporary_schema.go:580 ⋮ [T1,Vsystem,n1] 104  found 0 temporary schemas
+I260601 19:03:50.996896 1031 sql/temporary_schema.go:583 ⋮ [T1,Vsystem,n1] 105  early exiting temporary schema cleaner as no temporary schemas were found
+I260601 19:03:50.996904 1031 sql/temporary_schema.go:584 ⋮ [T1,Vsystem,n1] 106  completed temporary object cleanup job
+I260601 19:03:50.996911 1031 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 107  temporary object cleaner next scheduled to run at 2026-06-01 19:33:50.977900371 +0000 UTC m=+3601.134036270
+I260601 19:04:53.724934 5223868 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:47762,hostnossl,user=root] 108  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 19:09:13.519976 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 109  taking CPU profile for 10.00s
+I260601 19:09:43.748470 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 110  taking CPU profile for 10.00s
+I260601 19:09:53.725338 6122784 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:44654,hostnossl,user=root] 111  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 19:10:03.952170 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 112  taking CPU profile for 10.00s
+I260601 19:15:58.181012 7044166 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:45296,hostnossl,user=root] 113  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 19:16:14.211102 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 114  taking CPU profile for 10.00s
+I260601 19:22:59.718564 7840738 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:43342,hostnossl,user=root] 115  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 19:26:09.334920 1430 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 116  garbage collected 0 rows from ‹rangelog›.‹timestamp›
+I260601 19:26:09.336839 1430 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 117  garbage collected 0 rows from ‹eventlog›.‹timestamp›
+I260601 19:26:09.349927 1430 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 118  garbage collected 0 rows from ‹web_sessions›.‹expiresAt›
+I260601 19:26:09.352438 1430 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 119  garbage collected 0 rows from ‹web_sessions›.‹revokedAt›
+I260601 19:30:01.260169 8729428 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:41820,hostnossl,user=root] 120  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 19:30:14.488754 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 121  taking CPU profile for 10.00s
+I260601 19:30:44.681235 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 122  taking CPU profile for 10.00s
+I260601 19:33:50.977973 1031 sql/temporary_schema.go:521 ⋮ [T1,Vsystem,n1] 123  running temporary object cleanup background job
+I260601 19:33:50.999996 1031 sql/temporary_schema.go:580 ⋮ [T1,Vsystem,n1] 124  found 0 temporary schemas
+I260601 19:33:51.000028 1031 sql/temporary_schema.go:583 ⋮ [T1,Vsystem,n1] 125  early exiting temporary schema cleaner as no temporary schemas were found
+I260601 19:33:51.000038 1031 sql/temporary_schema.go:584 ⋮ [T1,Vsystem,n1] 126  completed temporary object cleanup job
+I260601 19:33:51.000047 1031 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 127  temporary object cleaner next scheduled to run at 2026-06-01 20:03:50.977900371 +0000 UTC m=+5401.134036270
+I260601 19:33:59.665894 1432 server/diagnostics/update_checker.go:145 ⋮ [T1,Vsystem,n1] 128  a new version is available: ‹26.2.1›, details: ‹https://www.cockroachlabs.com/docs/releases/v26.2#v26-2-1›
+I260601 19:37:03.086923 9771889 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:43474,hostnossl,user=root] 129  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 19:42:03.087287 9771908 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:43512,hostnossl,user=root] 130  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 19:47:03.087580 10817559 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:50736,hostnossl,user=root] 131  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 19:51:14.934192 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 132  taking CPU profile for 10.00s
+I260601 19:51:25.109121 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 133  taking CPU profile for 10.00s
+I260601 19:51:35.333404 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 134  taking CPU profile for 10.00s
+I260601 19:52:03.088108 11886583 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:59932,hostnossl,user=root] 135  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 19:58:08.561130 12942926 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:58272,hostnossl,user=root] 136  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 19:58:25.594208 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 137  taking CPU profile for 10.00s
+I260601 20:00:33.500039 1431 jobs/job_scheduler.go:171 ⋮ [T1,Vsystem,n1] 138  Starting job for schedule 1180518014754783233 (‹"sql-stats-compaction"›); scheduled to run at 2026-06-01 20:00:00 +0000 UTC; next run scheduled for 2026-06-01 21:00:00 +0000 UTC
+I260601 20:03:50.978605 1031 sql/temporary_schema.go:521 ⋮ [T1,Vsystem,n1] 139  running temporary object cleanup background job
+I260601 20:03:50.986279 1031 sql/temporary_schema.go:580 ⋮ [T1,Vsystem,n1] 140  found 0 temporary schemas
+I260601 20:03:50.986304 1031 sql/temporary_schema.go:583 ⋮ [T1,Vsystem,n1] 141  early exiting temporary schema cleaner as no temporary schemas were found
+I260601 20:03:50.986313 1031 sql/temporary_schema.go:584 ⋮ [T1,Vsystem,n1] 142  completed temporary object cleanup job
+I260601 20:03:50.986319 1031 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 143  temporary object cleaner next scheduled to run at 2026-06-01 20:33:50.977900371 +0000 UTC m=+7201.134036270
+I260601 20:05:10.056992 13993439 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:41952,hostnossl,user=root] 144  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 20:05:25.825601 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 145  taking CPU profile for 10.00s
+I260601 20:08:26.057851 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 146  taking CPU profile for 10.00s
+I260601 20:10:10.057088 13993543 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:42498,hostnossl,user=root] 147  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 20:15:10.057175 15121458 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:48674,hostnossl,user=root] 148  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 20:20:10.057191 16213692 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:37662,hostnossl,user=root] 149  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 20:26:09.355735 1430 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 150  garbage collected 0 rows from ‹rangelog›.‹timestamp›
+I260601 20:26:09.357504 1430 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 151  garbage collected 0 rows from ‹eventlog›.‹timestamp›
+I260601 20:26:09.358942 1430 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 152  garbage collected 0 rows from ‹web_sessions›.‹expiresAt›
+I260601 20:26:09.360322 1430 server/server_systemlog_gc.go:207 ⋮ [T1,Vsystem,n1] 153  garbage collected 0 rows from ‹web_sessions›.‹revokedAt›
+I260601 20:26:16.020259 17322044 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:59450,hostnossl,user=root] 154  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 20:28:26.377522 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 155  taking CPU profile for 10.00s
+I260601 20:28:36.601356 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 156  taking CPU profile for 10.00s
+I260601 20:33:18.081255 18410220 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:58998,hostnossl,user=root] 157  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 20:33:50.977925 1031 sql/temporary_schema.go:521 ⋮ [T1,Vsystem,n1] 158  running temporary object cleanup background job
+I260601 20:33:51.042901 1031 sql/temporary_schema.go:580 ⋮ [T1,Vsystem,n1] 159  found 0 temporary schemas
+I260601 20:33:51.042924 1031 sql/temporary_schema.go:583 ⋮ [T1,Vsystem,n1] 160  early exiting temporary schema cleaner as no temporary schemas were found
+I260601 20:33:51.042931 1031 sql/temporary_schema.go:584 ⋮ [T1,Vsystem,n1] 161  completed temporary object cleanup job
+I260601 20:33:51.042937 1031 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 162  temporary object cleaner next scheduled to run at 2026-06-01 21:03:50.977900371 +0000 UTC m=+9001.134036270
+I260601 20:38:18.081462 18410180 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:58736,hostnossl,user=root] 163  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 20:43:18.081579 19508845 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:38172,hostnossl,user=root] 164  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+W260601 20:44:44.554941 1506 2@rpc/clock_offset.go:392 ⋮ [T1,Vsystem,n1,rnode=1,raddr=‹172.24.40.32:26257›,class=system,rpc] 165  latency jump (prev avg 1.57ms, current 58.42ms)
+I260601 20:48:18.081625 20585689 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:60366,hostnossl,user=root] 166  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 20:48:37.250753 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 167  taking CPU profile for 10.00s
+W260601 20:48:45.047835 589 2@rpc/clock_offset.go:392 ⋮ [T1,Vsystem,n1,rnode=2,raddr=‹172.24.40.33:26257›,class=system,rpc] 168  latency jump (prev avg 7.12ms, current 55.85ms)
+I260601 20:48:57.463229 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 169  taking CPU profile for 10.00s
+I260601 20:49:07.626433 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 170  taking CPU profile for 10.00s
+I260601 20:54:23.836769 21669688 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:47468,hostnossl,user=root] 171  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 20:59:23.836892 21669618 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:47412,hostnossl,user=root] 172  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 21:00:15.758895 1431 jobs/job_scheduler.go:171 ⋮ [T1,Vsystem,n1] 173  Starting job for schedule 1180518014754783233 (‹"sql-stats-compaction"›); scheduled to run at 2026-06-01 21:00:00 +0000 UTC; next run scheduled for 2026-06-01 22:00:00 +0000 UTC
+I260601 21:03:50.977925 1031 sql/temporary_schema.go:521 ⋮ [T1,Vsystem,n1] 174  running temporary object cleanup background job
+I260601 21:03:51.080952 1031 sql/temporary_schema.go:580 ⋮ [T1,Vsystem,n1] 175  found 0 temporary schemas
+I260601 21:03:51.080973 1031 sql/temporary_schema.go:583 ⋮ [T1,Vsystem,n1] 176  early exiting temporary schema cleaner as no temporary schemas were found
+I260601 21:03:51.080980 1031 sql/temporary_schema.go:584 ⋮ [T1,Vsystem,n1] 177  completed temporary object cleanup job
+I260601 21:03:51.080985 1031 sql/temporary_schema.go:665 ⋮ [T1,Vsystem,n1] 178  temporary object cleaner next scheduled to run at 2026-06-01 21:33:50.977900371 +0000 UTC m=+10801.134036270
+I260601 21:04:23.836935 22774528 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:48258,hostnossl,user=root] 179  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 21:09:08.042230 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 180  taking CPU profile for 10.00s
+I260601 21:09:23.837065 23869019 server/license/enforcer.go:447 ⋮ [T1,Vsystem,n1,client=172.24.40.31:42492,hostnossl,user=root] 181  throttling will happen soon: ‹No license is installed. Throttling will begin after 2026-06-08 17:45:06 +0000 UTC unless a license is installed before then.›
+I260601 21:10:38.270932 731 server/profiler/cpuprofiler.go:128 ⋮ [T1,Vsystem,n1] 182  taking CPU profile for 10.00s

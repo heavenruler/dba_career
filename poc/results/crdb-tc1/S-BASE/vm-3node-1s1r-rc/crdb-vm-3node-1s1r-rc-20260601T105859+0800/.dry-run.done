@@ -1,0 +1,21 @@
+{
+  "phase": "dry-run",
+  "db": "crdb",
+  "topology": "vm-3node-1s1r",
+  "sub_topology": "1s1r",
+  "iso": "rc",
+  "ts": "20260601T105859+0800",
+  "db_host": "172.24.40.32",
+  "node_count": 3,
+  "rf_expected": "1",
+  "rf_actual": "1",
+  "rf_actual_peer_min": "n/a",
+  "rf_actual_peer_max": "n/a",
+  "rf_actual_regions": "n/a",
+  "haproxy_backends_up": "n/a",
+  "iso_expected": "read committed",
+  "iso_actual": "read committed",
+  "yb_effective_iso": "n/a",
+  "all_pass": true,
+  "fails": ""
+}

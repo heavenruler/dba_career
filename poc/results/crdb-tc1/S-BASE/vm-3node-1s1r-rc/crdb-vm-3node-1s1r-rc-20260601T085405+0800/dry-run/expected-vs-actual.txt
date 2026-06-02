@@ -1,0 +1,12 @@
+=== dry-run gate vm-3node-1s1r / crdb / rc ===
+expected-node-count = 3        actual = 3
+expected-rf (config) = 1        actual = 1
+actual-rf-peer-min  = 0  (TiDB/CRDB; per-region/range replica count)
+actual-rf-peer-max  = 0  (TiDB/CRDB)
+actual-rf-regions   = 0  (TiDB/CRDB; total regions/ranges sampled)
+haproxy-backends-up = n/a  (haproxy-* sub only; F-B)
+expected-iso        = read committed   actual = read committed
+yb-effective-iso    = n/a
+ybdb-cluster-healthy = n/a
+all_pass            = false
+fails               = rf-actual-mismatch:min=0/max=0/expected=1
