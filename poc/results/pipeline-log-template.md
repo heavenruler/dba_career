@@ -17,6 +17,49 @@
 - 文末固定使用 `<a id="note-1"></a>` anchor，避免 Markdown renderer 對中文 heading anchor 產生差異。
 - `N` 表示獨立重跑次數（不是 round）；`N=1` 為方向性觀察，需 `N=3` 才可作為對外結論基準（同 README N9）。
 
+## 章節骨架與例外（2026-06-04 audit 後新增）
+
+### Mandatory 章節（每家 pipeline-log 必有，依出現順序）
+
+| § | 章節 | 說明 |
+|---|---|---|
+| 0 | `# <DB Display Name> TPC-C Pipeline Log — <db>-tc1 / S-BASE` + 一行 framing | H1 + 指向 archive |
+| 1 | `## 使用規則` 或同等聲明（採本模板規則者可略）| 風格與 N=1/N=3 約定 |
+| 2 | `## TL;DR — vm-1node <count> isolation 矩陣完成（<yyyy-mm-dd[/dd]>）` | 整檔最頂 5 段集中總結（核心結論 / tpmC 排行 / 三大發現 / 業務啟示 / 完整資料目錄 / vm-3node 段尾摘要 / 下一步）|
+| 3 | `## 取數來源（Data trace）`（或拆入各段內的「取數來源」子節）| tpmC / latency / DB-host 指標的 source-of-truth |
+| 4 | `## vm-1node-rc — <date>` | 完整段（環境 / Suite 時序 / Gate / Prepare / Execute / Round-by-round / DB-host / vs 對比 / Saturation / 觀察 / 結論）|
+| 5 | `## vm-1node-rr — <date>` | 完整段，同 §4 結構 |
+| 6 | `## vm-1node-strict — <date>` *or* `## vm-1node-strict — 略過（<DB> 不支援 SERIALIZABLE）` | 完整段或略過段擇一 |
+| 7 | `## vm-3node 系列（4 sub-topology × RC，PoC-DESIGN §6.3.2）` | 共同元件分配 + 5 sub-topology（1s1r / 1s3r / 3s1r / 3s3r / haproxy-3s3r）|
+| 8 | `## K8s — 已移轉至 ...` *or* `## Kubernetes — 未排期；待 v4.7 detached suite 重跑後回填` | 收尾段；即使無 K8s 資料也須單行說明 |
+
+### DB-specific optional 章節（夾在 §3 與 §4 之間，或於對應 iso 段內）
+
+| 章節 | 適用 DB | 理由 |
+|---|---|---|
+| `## YugabyteDB Isolation 注意事項（重跑前置 — 必讀）` | YBDB | tserver gflag + session iso + `yb_get_effective_transaction_isolation_level()` triple gate 為 YBDB 獨有 setup chore |
+| `## v4.7 重跑 setup 修法紀錄（<date>）` | YBDB | YBDB-specific 8 個 deploy chore fixes |
+| `### RR=SI 機制差異 ★（同名不同實作）` | CRDB | CRDB preview RR 與 TiDB pessimistic RR 文件對比 |
+| `### CockroachDB pessimistic 工具集（補充）` | CRDB | CRDB 無 `tidb_txn_mode` 全域開關，補語句層工具集 |
+| `### 為何 RR 反而比 RC 快？` | TiDB | pessimistic + snapshot ts 省切換機制解析 |
+| `### Error 時序分布 ★ — starting-gun storm` | CRDB | RR / strict 衝突時序分析 |
+| `### Error 分析 — N-1 pattern` | YBDB | rr / strict 線性 N-1 error pattern |
+
+### Forbidden 章節（已知反例，不可寫入實際 pipeline-log）
+
+| 章節 | 反例 | 移除原因 |
+|---|---|---|
+| `## v4.7 重跑檢核項` 表格 | YBDB（已修） | 與本模板末尾 `## v4.7 檢核項` 重複；且 rr / strict 完成後表內仍寫「待測」造成 stale。注意：本模板末尾的 `## v4.7 檢核項` 屬於 **template-acceptance 用 checklist**，**不應複製到實際 pipeline-log** |
+| `### TL;DR — vm-3node <N> cells（<date>）` 子表（出現於 §7 開頭）| YBDB（已修）| vm-3node 摘要表應只出現於 §2 TL;DR 主節（2.6 段尾摘要）；§7 開頭只放一行 framing，不重複 table |
+| 連續多條 `---` 分隔線 | YBDB（已修） | 每節之間 `---` 必為單條；連續多條為遺留排版錯誤 |
+
+### 風格規則（補強既有 §「使用規則」）
+
+- TL;DR 標題日期格式：`（YYYY-MM-DD/DD）` 無空格、單一斜線 — 反例 `（2026-05-20 / 21）`
+- 「下一步」wording 三家須同步：`K8s 對照組待重跑` 不寫 `Kubernetes 對照組待排程`
+- vm-3node 5-cell 摘要在 §2.6 只出現一次；§7 開頭僅放一行 framing
+- 失敗 trial（如 F-E FAIL）不入 sub-topology Execute 主表、不入 SUMMARY 5-cell 表；以 `⚠️ ... 不入 canonical` 註腳說明
+
 ## TL;DR — <scope>（<date>）
 
 > 本段只放目前最重要結論，避免塞完整分析。完整數據放各 isolation / 各 vm-3node 子拓撲段。
@@ -365,3 +408,62 @@
 | 平均口徑 | tpmC / p50 / p95 / p99 全為 5-round mean，range/mean 看穩定性 |
 | 三 isolation 矩陣 | READ COMMITTED + REPEATABLE READ + 最嚴格隔離級（僅 vm-1node；vm-3node 全部以 RC 為主）|
 | 重跑次數 N | 對外結論需 `N=3`；`N=1` 僅作為方向性觀察 |
+
+> ⚠️ **本檢核項屬 template-acceptance 用 checklist，不應複製到實際 pipeline-log**；參見上方「Forbidden 章節」說明。
+
+## 三家對齊矩陣（2026-06-04 audit snapshot）
+
+| 對齊項 | TiDB | CRDB | YBDB | 待修正 |
+|---|:---:|:---:|:---:|---|
+| 章節骨架 §0-§8 | ✓（strict 略過段，合理）| ✗ 缺 §8 K8s 段 | ✓ 多 2 節 stale | YBDB 移除 stale 兩節；CRDB 補 §8 |
+| TL;DR 日期格式 | `(2026-05-18/19)` ✓ | `(2026-05-19)` ✓ | `(2026-05-20 / 21)` ✗ | YBDB 改 `(2026-05-20/21)` |
+| 「下一步」wording | `K8s 對照組待重跑` ✓ | n/a（無 §8）| `Kubernetes 對照組待排程` ✗ | YBDB 改 `K8s 對照組待重跑` |
+| 取數來源 markers | 6 markers | 6 markers | 7 markers（含 `.db-config.done`）| ✓ 合理差異 |
+| vm-3node 5 sub-topology Execute | 1s1r placeholder ✗ | 5/5 ✓ | 5/5 ✓ | TiDB 1s1r 補 Execute 數據（待 EXECUTE=1）|
+| `## v4.7 重跑檢核項` stale 章節 | ✗ | ✗ | ✓ stale | YBDB 移除（line 706-722）|
+| vm-3node 系列開頭 `### TL;DR — vm-3node N cells` 子表 | ✗（合理）| ✗（合理）| ✓ stale 4-cell | YBDB 移除（line 729-738）|
+| 連續多條 `---` 分隔線 | ✗ | ✗ | ✓ 2 處（rr 段尾 line 531-535 / strict 段尾 line 700-704）| YBDB 收斂為單條 |
+| §6 vm-1node-strict 完整段 vs 略過段 | 略過 | 完整 | 完整 | ✓ 合理 |
+| §7 vm-3node-haproxy disk/CPU shift 對比表 | ✓ | ✓ stability shift | ✗（DB-host metrics missing caveat）| ✓ 合理（YBDB metrics 缺失已 caveat）|
+
+### 已知合理差異（不修）
+
+- TiDB `vm-1node-strict — 略過` 段（TiDB 不支援原生 SERIALIZABLE）
+- CRDB / TiDB / YBDB 各自 vs 另兩家 cross-DB 對比段 wording 不同
+- YBDB optional 兩節（Isolation 注意事項 / v4.7 重跑 setup 修法）— DB-specific deploy chore 獨有
+- YBDB haproxy 段缺 CPU/disk shift 對比表 — DB-host metrics 採樣失敗已 caveat
+- 取數來源 markers 6 vs 7 — YBDB 修法 #8 後 `.db-config.done` 獨立成 phase
+
+### 待修項目逐項追蹤
+
+| 修正項 | 對應檔 | 預期動作 | 狀態 |
+|---|---|---|---|
+| YBDB `(2026-05-20/21)` 日期格式 | `yuga-tc1/S-BASE/pipeline-log.md` line 7 | Edit 移除空格 | 待 |
+| YBDB「Kubernetes 對照組待排程」→「K8s 對照組待重跑」 | line 46 | Edit | 待 |
+| YBDB 移除 `## v4.7 重跑檢核項` 章節 | line 706-722 | Delete 17 行 | 待 |
+| YBDB 移除 `### TL;DR — vm-3node 4 cells` 子表 | line 729-738 | Delete 10 行 | 待 |
+| YBDB 連續 `---` 收斂為單條 | line 531-535、line 700-704 | Edit | 待 |
+| CRDB 補 `## Kubernetes — 未排期` 收尾段 | `crdb-tc1/S-BASE/pipeline-log.md` 末尾 | 新增 1 節 | 待 |
+| TiDB vm-3node-1s1r Execute 數據 placeholder | `tidb-tc1/S-BASE/pipeline-log.md` line 439 | 待 EXECUTE=1 跑完回填 | 排程 |
+
+### 驗證指令
+
+```bash
+# pipeline-log 三家骨架對比（mandatory section header 數）
+for db in tidb crdb yuga; do
+  echo "${db}: $(grep -c '^## ' results/${db}-tc1/S-BASE/pipeline-log.md)"
+done
+# 預期：TiDB 7 / CRDB 7（補 K8s 後）/ YBDB 8（含 2 DB-specific optional）
+
+# 連續多條 --- 反例檢查
+awk '/^---$/{c++; if(c>=2) print FILENAME ":" NR; next} {c=0}' results/*/S-BASE/pipeline-log.md
+# 預期：0 行
+
+# 過時章節檢查
+rg -n '## v4\.7 重跑檢核項' results/*/S-BASE/pipeline-log.md
+# 預期：0 行
+
+# vm-3node TL;DR 子表反例檢查
+rg -n '^### TL;DR — vm-3node' results/*/S-BASE/pipeline-log.md
+# 預期：0 行
+```
