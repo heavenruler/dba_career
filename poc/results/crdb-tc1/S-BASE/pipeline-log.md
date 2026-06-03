@@ -830,3 +830,9 @@ client → .32:26257 (gateway 路由 leaseholder for each range)
 
 跨 cell 詳細分析 → [`dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md`](../../dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)。
 
+---
+
+## Kubernetes — 未排期
+
+> CockroachDB Kubernetes 對照組（unlimit / limit 兩變體）待以 v4.7 detached suite 重跑後回填正式段落。舊版 cockroach-tc1 VM 資料保留於 `cockroach-tc1/S-BASE/pipeline-log.md`，與本檔 v4.7 流程不同（手動部署、無 detached suite wrapper、無 DB-host 雙邊監控），不直接對比。
+

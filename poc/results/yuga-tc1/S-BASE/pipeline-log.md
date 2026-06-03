@@ -4,7 +4,7 @@
 
 ---
 
-## TL;DR — vm-1node 三 isolation 矩陣完成（2026-05-20 / 21）
+## TL;DR — vm-1node 三 isolation 矩陣完成（2026-05-20/21）
 
 **核心結論**：YugabyteDB 2025.2.2 LTS 在 4 vCPU + single XFS 硬體下，**rc ＞ rr ＞ strict** — 與 CockroachDB「strict ＞ rc ＞ rr」**完全相反**。原因：YugabyteDB rc 本身 CPU-bound（無 IO headroom 可榨），SSI 額外的 read-refresh / serializable detector 直接吃 CPU，反而拖慢；對比 CockroachDB rc IO-bound（fsync ceiling），SSI 改走 CPU 路徑剛好避開 IO 瓶頸。
 
@@ -43,7 +43,7 @@
 
 vm-3node 5-cell（1s1r / 1s3r / 3s1r / 3s3r / haproxy-3s3r × RC）已於 2026-05-24 ~ 2026-05-25 完成（5-round mean、N=1；含 `d654824` / `68189bc` / `29b5fc5` 三筆 YugabyteDB vm3 ansible 修補與 RF-aware cluster gate）；詳見下方 `vm-3node 系列` + [4 cells 跨 cell 分析](../../dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md) + [HAProxy vs direct 分析](../../dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)。
 
-下一步：三家 `haproxy-3s3r` 補 N=3 → 升級為對外可引用 baseline；Kubernetes 對照組待排程；跨區規劃見 [`1_MeetingMinutes/0602.md §10`](../../../1_MeetingMinutes/0602.md)。
+下一步：三家 `haproxy-3s3r` 補 N=3 → 升級為對外可引用 baseline；K8s 對照組待重跑；跨區規劃見 [`1_MeetingMinutes/0602.md §10`](../../../1_MeetingMinutes/0602.md)。
 
 ---
 
@@ -530,10 +530,6 @@ YugabyteDB v2025.2.2.2 vm-1node RR 在 4 vCPU + single disk 硬體下：
 
 ---
 
-
-
----
-
 ## vm-1node-strict — 2026-05-21（PoC v4.7，serializable isolation = SSI）
 
 > **本段目的**：在同硬體 / 同流程下完成 YugabyteDB vm-1node 三 isolation 矩陣的最後一塊：原生 SERIALIZABLE（SSI）。對標 CockroachDB SSI 觀察「強 iso 反而快」是否在 YugabyteDB 成立。
@@ -699,43 +695,9 @@ YugabyteDB v2025.2.2.2 vm-1node strict (SERIALIZABLE / SSI) 在 4 vCPU + single 
 
 ---
 
-
-
----
-
-## v4.7 重跑檢核項
-
-每組 `(vm-1node, iso)` 完成後逐項勾選；全部齊備才能在 README 從 🔄 升為 ✅。
-
-| 項目 | v4.7 目標 | vm-1node-rc 本輪結果 |
-|------|-----------|---------------------|
-| Run 結構 | 5 round × 5 min × 4 thread groups (16/32/64/128) + 20min warmup @ 64 threads | ✅（20/20 round 完成）|
-| Round artifact 格式 | `runs/threads-X/round-Y/go-tpc-stdout.txt` per-round | ✅ |
-| DB-host 監控 | mpstat / iostat / vmstat / sar 1s 取樣，client (`*.txt`) + db-host (`*-db.txt`) 雙邊 | ✅ |
-| Gate 雙閘 | `isolation-db.txt` + `isolation-driver-verify.txt`，兩者一致才放行 prepare；同時驗 `yb_effective_transaction_isolation_level` | ✅（修法 #7 加 effective gate；本輪 expected = actual = effective = `read committed`）|
-| Suite marker | `.gate.done` / `.prepare.done` / `.gate-isolation.done` / `.run.done` / `.collect.done` / `.suite.done` | ✅（含 `.db-config.done`，`.suite.done` 在 collect 修復後 manual 補寫）|
-| TPCC_TS | `yyyyMMddTHHmmss+0800` 共用整 suite | ✅ `20260520T134929+0800` |
-| 平均口徑 | tpmC / p50 / p95 / p99 全為 5-round mean，range/mean 看穩定性 | ✅（range/mean 2.2-4.9%）|
-| Latency aggregate | NO p50 / p95 / p99（5-round mean） | ✅ |
-| 三 isolation 矩陣 | RC + RR + Strict | RC ✅ ; RR / Strict 待測 |
-| go-tpc `--check-all` | §8.1 列出（但 §4.1 強制對齊未列）| **deviation**：YugabyteDB 跳過，改 row-count 9 表（W=128 對齊預期）— 文件已備案 [`修法 #4`](#修法總覽)|
-
----
-
 ## vm-3node 系列（4 sub-topology × RC，PoC-DESIGN §6.3.2）
 
-> 本段為 YugabyteDB 2025.2 在 vm-3node 拓樸 / `READ COMMITTED` 隔離級下的 4 個 sub-topology baseline。**2026-05-24/25 全 4 cells 完成**（post-patch，0 fatal）。詳細跨 cell 比較見 [results/dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md](../../dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)。
-
-### TL;DR — vm-3node 4 cells（2026-05-25）
-
-**核心結論**：RF=3 寫多副本固定 ~25% 損耗、shard=3 加 ~13% 協調成本；兩者疊加在 1s1r→3s3r 是 **−36.4% throughput / +47% NO_p99**。3s3r 在本 4 vCPU 硬體上 tablet 協調瓶頸（CPU 24-42% idle 但 throughput drop），生產配置需 vCPU ≥ 8。
-
-| cell | RF | shards | 代表 threads | 5-round mean tpmC | NO_p99 ms |
-|------|---:|------:|:------------:|------------------:|----------:|
-| 1s1r | 1 | 1 | t=32 | **13,702** | 205 |
-| 1s3r | 3 | 1 | t=128 | 10,228 | 1,034 |
-| 3s1r | 1 | 3 | t=32 | 11,967 | 203 |
-| 3s3r | 3 | 3 | t=128 | 8,729 | 1,114 |
+> 本段為 YugabyteDB 2025.2 在 vm-3node 拓樸 / `READ COMMITTED` 隔離級下的 4 個 sub-topology baseline。**2026-05-24/25 全 4 cells 完成**（post-patch，0 fatal）；haproxy-3s3r 同 2026-05-25 完成為第 5 cell（詳見下方 [vm-3node-haproxy-3s3r-rc](#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)）。詳細跨 cell 比較見 [results/dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md](../../dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)；5-cell 完整摘要見 [`SUMMARY-ybdb-vm3.md`](../../dispatch-records/SUMMARY-ybdb-vm3.md)。
 
 ### 共同元件分配（3 顆 VM）
 
