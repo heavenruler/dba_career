@@ -941,13 +941,11 @@ client → .32:5433
 
 **警示**：3s3r 在 t=32 / t=64 CPU idle 高達 24-42% 但 throughput 反而 drop，workload 卡 tablet/raft 協調而非 CPU；stddev 在所有 thread 等級 ≥ 1,400，t=16 round-to-round 振幅 4.9×（min=1517 / max=7453）。**本 hardware 4 vCPU 不適合 3s3r 生產配置**，要穩定需 vCPU ≥ 8 或降 tablet 數。詳見 analysis report。
 
----
-
-## vm-3node-haproxy-3s3r-rc（3 shards × RF=3 + HAProxy）
+### vm-3node-haproxy-3s3r-rc（3 shards × RF=3 + HAProxy）
 
 > 本段為 YugabyteDB 2025.2 在 `vm-3node-3s3r-rc` 基準上加入 HAProxy 連線分散的 N=1 結果。HAProxy 位於 `.20:5433`，以 roundrobin 分散到 `.32/.33/.34:5433` 三個 tserver/YSQL entry point；cluster 本身仍為 RF=3、每表 3 tablets、`READ COMMITTED`。
 
-### Artifact 與取數口徑
+#### Artifact 與取數口徑
 
 | 項目 | 值 |
 |---|---|
@@ -959,7 +957,7 @@ client → .32:5433
 | DB-host metrics | 檔案存在但內容為 `command not found`（`mpstat` / `iostat`），不可作 DB-host 飽和判讀 |
 | 詳細分析 | [HAProxy vs direct 3s3r analysis](../../dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
 
-### Execute 結果（2026-05-25，TS=20260525T193740+0800）
+#### Execute 結果（2026-05-25，TS=20260525T193740+0800）
 
 5-round mean tpmC：
 
@@ -972,7 +970,7 @@ client → .32:5433
 
 代表點 = **t=128 / 15,632 tpmC / NO_p99 = 705 ms**。對照 direct `vm-3node-3s3r-rc` 代表點 **8,729 tpmC / NO_p99 = 1,114 ms**，HAProxy 增加 **+79.1% tpmC**，NO_p99 降低約 **-36.7%**。
 
-### Caveat
+#### Caveat
 
 - 本組為 N=1；N=3 待後續時程空檔再確認。
 - direct 3s3r baseline 本身高變異，HAProxy delta 可能受 direct outlier 放大。
