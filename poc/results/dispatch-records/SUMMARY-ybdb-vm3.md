@@ -1,6 +1,6 @@
 # YugabyteDB vm-3node Dispatch Summary
 
-> **彙整** YugabyteDB 在 vm-3node 拓樸下所有 dispatch records、踩坑修補、跨 cell 分析、Leader-balance verification；底層 raw records 保留於本目錄，供細節查閱。
+> **彙整** YugabyteDB 在 vm-3node 拓樸下所有踩坑修補、跨 cell 分析、Leader-balance verification；本檔保留可引用的 journey、fixes、數據摘要與分析入口；已清理的 raw / operational logs 僅透過 git history 追溯。
 
 ---
 
@@ -37,14 +37,26 @@
 
 | 階段 | 日期 | 事件 | 引用 |
 |---|---|---|---|
-| Pre-check | 2026-05-22 | vm-3node RC pre-flight（三家共用） | [2026-05-22-vm-3node-rc-pre-check.md](./2026-05-22-vm-3node-rc-pre-check.md) |
-| Handover | 2026-05-24 | vm-3node 剩餘任務交接清單 | [HANDOVER-2026-05-24-vm3-poc-remaining.md](./HANDOVER-2026-05-24-vm3-poc-remaining.md) |
-| Cell 1s1r 首跑 | 2026-05-23 | 第一個 vm-3node cell；踩 LookupByIdRpc / kResponseSent timeout cascade（parallel `yugabyted --join` 導致 tserver_master_addrs 不一致）；同時發現 `SPLIT INTO 1 TABLETS` pre-create 對 RF=1 placement 只覆蓋 1 tserver（不是「自然 3 tablets」）→ 需顯式 `SPLIT INTO 3 TABLETS` | [2026-05-23-vm-3node-ybdb-1s1r-rc-result.md](./2026-05-23-vm-3node-ybdb-1s1r-rc-result.md) |
+| Cell 1s1r 首跑 | 2026-05-23 | 第一個 vm-3node cell；踩 LookupByIdRpc / kResponseSent timeout cascade（parallel `yugabyted --join` 導致 tserver_master_addrs 不一致）；同時發現 `SPLIT INTO 1 TABLETS` pre-create 對 RF=1 placement 只覆蓋 1 tserver（不是「自然 3 tablets」）→ 需顯式 `SPLIT INTO 3 TABLETS` | commit `d654824`（見下方 Fixes Catalog） |
 | Playbook 修補 | 2026-05-23/24 | commit `d654824`（serial worker join + stabilize + master_addrs gate）；`68189bc`（stabilize 移至 workers-only，在 `configure data_placement` 之後）；`29b5fc5`（RF-aware cluster health gate + drop ineffective stabilize-workers） | commit log |
 | Cells 1s1r / 1s3r / 3s1r / 3s3r 全跑 | 2026-05-24 ~ 05-25 | 4 cells × N=1，5-round mean；3s3r 首跑中斷一次（cold-reset 失敗）後 2026-05-25 重跑成功 | [2026-05-25-vm-3node-ybdb-all4-rc-analysis.md](./2026-05-25-vm-3node-ybdb-all4-rc-analysis.md) |
-| HAProxy 變體 dispatch | 2026-05-25 | 3 tservers + HAProxy round-robin 量化分散收益；首次 dispatch 因 coldreset-ybdb.sh 漏 patch 中斷 → 用新 TS `20260525T193740+0800` 重跑成功 | [2026-05-25-vm-3node-haproxy-3s3r-ybdb-dispatch.md](./2026-05-25-vm-3node-haproxy-3s3r-ybdb-dispatch.md) |
+| HAProxy 變體 dispatch | 2026-05-25 | 3 tservers + HAProxy round-robin 量化分散收益；首次 dispatch 因 coldreset-ybdb.sh 漏 patch 中斷 → 用新 TS `20260525T193740+0800` 重跑成功 | （operational 紀錄已併入本 SUMMARY；deep analysis → 2026-05-26 record）|
 | HAProxy 跨 cell 分析 | 2026-05-26 | direct vs haproxy 3s3r 對照：+79.1% tpmC / −36.7% p99 / 14.7× stability 改善 | [2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md](./2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) |
 | D10 leader balance verification | 2026-05-31 | first-hand 驗證 YugabyteDB 3s3r 在 default `--enable_load_balancing=true` 下 27 tablet leaders 收斂至 **9/9/9 per tserver**（零偏差）；對比 TiDB 同期 27/0/0 全集中（D10 修補前狀態）| [2026-05-31-ybdb-leader-balance-verification.md](./2026-05-31-ybdb-leader-balance-verification.md) + [check artifact](./2026-05-31-ybdb-leader-balance-check/) |
+
+---
+
+## HAProxy 變體 replay 摘要
+
+承接已清除的 `2026-05-25-vm-3node-haproxy-3s3r-ybdb-dispatch.md` operational facts，供未來重跑 / 對照查閱：
+
+- Topology：`.20:5433` round-robin → `.32 / .33 / .34:5433`（`mode tcp`、`balance roundrobin`）
+- HAProxy timeout：`timeout connect 10s` / `timeout client 1h` / `timeout server 1h`
+- Keepalive：`option clitcpka` / `option srvtcpka`
+- Stats socket：`/var/lib/haproxy/stats`
+- 首次 dispatch TS `20260525T155542+0800` 因 `coldreset-ybdb.sh` 漏 patch 中斷 → **不採用**
+- 正式採用 TS `20260525T193740+0800`（5 rounds × 4 thread tiers，全 PASS）
+- 跨 cell deep analysis：[`2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md`](./2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)
 
 ---
 
@@ -77,10 +89,6 @@
 
 | 文件 | 焦點 |
 |---|---|
-| [2026-05-22-vm-3node-rc-pre-check.md](./2026-05-22-vm-3node-rc-pre-check.md) | vm-3node pre-flight check（三家共用）|
-| [HANDOVER-2026-05-24-vm3-poc-remaining.md](./HANDOVER-2026-05-24-vm3-poc-remaining.md) | vm-3node 剩餘任務交接清單 |
-| [2026-05-23-vm-3node-ybdb-1s1r-rc-result.md](./2026-05-23-vm-3node-ybdb-1s1r-rc-result.md) | 1s1r 首跑 LookupByIdRpc / placement 踩坑紀錄 |
-| [2026-05-25-vm-3node-haproxy-3s3r-ybdb-dispatch.md](./2026-05-25-vm-3node-haproxy-3s3r-ybdb-dispatch.md) | HAProxy 3s3r dispatch 與 first-dispatch 中斷處置 |
 | [2026-05-25-vm-3node-ybdb-all4-rc-analysis.md](./2026-05-25-vm-3node-ybdb-all4-rc-analysis.md) | 4 cells（1s1r/1s3r/3s1r/3s3r）跨 cell 對標分析 — 含變數獨立成本拆解 |
 | [2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md](./2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) | HAProxy vs direct 3s3r 對照（+79.1% tpmC、14.7× stability）|
 | [2026-05-31-ybdb-leader-balance-check/](./2026-05-31-ybdb-leader-balance-check/) | Leader balance verification 原始檢查 artifact |

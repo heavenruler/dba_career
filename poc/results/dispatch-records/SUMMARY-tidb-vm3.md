@@ -1,6 +1,6 @@
 # TiDB vm-3node Dispatch Summary
 
-> **彙整** TiDB 在 vm-3node 拓樸下所有 dispatch records、踩坑修補、跨 cell 分析；底層 raw records 保留於本目錄，供細節查閱。
+> **彙整** TiDB 在 vm-3node 拓樸下所有踩坑修補、跨 cell 分析；本檔保留可引用的 journey、fixes、數據摘要與分析入口；已清理的 raw / operational logs 僅透過 git history 追溯。
 
 ---
 
@@ -41,9 +41,7 @@
 
 | 階段 | 日期 | 事件 | 引用 |
 |---|---|---|---|
-| Pre-check | 2026-05-22 | vm-3node RC pre-flight（disk / kernel / NTP / ulimit / iso conn-params） | [2026-05-22-vm-3node-rc-pre-check.md](./2026-05-22-vm-3node-rc-pre-check.md) |
-| Handover | 2026-05-24 | vm-3node PoC 剩餘任務交接清單（給三家共用） | [HANDOVER-2026-05-24-vm3-poc-remaining.md](./HANDOVER-2026-05-24-vm3-poc-remaining.md) |
-| Initial batch | 2026-05-29 | TiDB vm-3node 4-cell batch logs（含 prepare/SPLIT 踩坑：CLUSTERED PK 無法 `INDEX PRIMARY` 分裂、warehouse 42 keys < 1000 觸發 ERROR 8212）→ Fix #9 / Fix #10 | [2026-05-29-tidb-vm3-batch-logs/](./2026-05-29-tidb-vm3-batch-logs/) |
+| Initial batch | 2026-05-29 | TiDB vm-3node 4-cell batch（含 prepare/SPLIT 踩坑：CLUSTERED PK 無法 `INDEX PRIMARY` 分裂、warehouse 42 keys < 1000 觸發 ERROR 8212）→ Fix #9 / Fix #10 | commit `9fb9e5f` / `a35142d`（見下方 Fixes Catalog） |
 | Schedule-limit 修補 | 2026-05-30/31 | PD `l0r0` 跑出來實際 RF=1（leader 27/0/0 全集中單 store）→ D10 / Fix #11 → 1s3r/3s3r 重跑 `l4r4` variant；shard-count gate 嚴格 `==` 與 auto-split 衝突 → Fix #12 | [2026-05-31-tidb-schedule-limit-0-vs-4.md](./2026-05-31-tidb-schedule-limit-0-vs-4.md) |
 | HAProxy 變體 | 2026-06-01 | 3 tidb_servers + HAProxy round-robin (mode tcp)，量化 single-entry → multi-entry 紅利；vs direct `l4r4` +78.7% tpmC / −47.6% p99 | [2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md](./2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md) |
 
@@ -77,9 +75,6 @@
 
 | 文件 | 焦點 |
 |---|---|
-| [2026-05-22-vm-3node-rc-pre-check.md](./2026-05-22-vm-3node-rc-pre-check.md) | vm-3node pre-flight check（disk / kernel / NTP / ulimit / iso conn-params）|
-| [HANDOVER-2026-05-24-vm3-poc-remaining.md](./HANDOVER-2026-05-24-vm3-poc-remaining.md) | vm-3node 剩餘任務交接清單 |
-| [2026-05-29-tidb-vm3-batch-logs/](./2026-05-29-tidb-vm3-batch-logs/) | 初版 batch logs（含 Fix #9 / #10 踩坑紀錄）|
 | [2026-05-31-tidb-schedule-limit-0-vs-4.md](./2026-05-31-tidb-schedule-limit-0-vs-4.md) | PD schedule-limit `l0r0` vs `l4r4` 跨 cell 對照（含 1s3r/3s3r 兩 variant）|
 | [2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md](./2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md) | HAProxy vs direct 3s3r-`l4r4` 對照（含 .32 disk/CPU shift 證據）|
 

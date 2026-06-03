@@ -1,6 +1,6 @@
 # CockroachDB vm-3node Dispatch Summary
 
-> **彙整** CockroachDB 在 vm-3node 拓樸下所有 dispatch records、踩坑修補（F-A → F-E 系列）、5-cell suite 完整 journey；底層 raw record 保留於本目錄，供細節查閱。
+> **彙整** CockroachDB 在 vm-3node 拓樸下所有踩坑修補（F-A → F-E 系列）、5-cell suite 完整 journey；本檔保留可引用的 journey、fixes、數據摘要與分析入口；已清理的 raw / operational logs 僅透過 git history 追溯。
 
 ---
 
@@ -83,8 +83,6 @@
 
 | 文件 | 焦點 |
 |---|---|
-| [2026-05-22-vm-3node-rc-pre-check.md](./2026-05-22-vm-3node-rc-pre-check.md) | vm-3node pre-flight check（三家共用）|
-| [HANDOVER-2026-05-24-vm3-poc-remaining.md](./HANDOVER-2026-05-24-vm3-poc-remaining.md) | vm-3node 剩餘任務交接清單（含 CockroachDB 預期）|
 | [2026-06-02-crdb-vm3-5cell-suite-dispatch.md](./2026-06-02-crdb-vm3-5cell-suite-dispatch.md) | 5-cell suite + F-E root cause / fix / resume journey 完整記錄 |
 
 ---

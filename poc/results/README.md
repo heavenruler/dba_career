@@ -401,19 +401,14 @@ grep '平均時間' <artifact-dir>/runs/threads-<N>/round-<R>/mpstat-db.txt
 - CockroachDB：[`SUMMARY-crdb-vm3.md`](./dispatch-records/SUMMARY-crdb-vm3.md)（含 F-A→F-E 系列 + 5 cells + F-E journey）
 - YugabyteDB：[`SUMMARY-ybdb-vm3.md`](./dispatch-records/SUMMARY-ybdb-vm3.md)（含 `ybdb-vm3` a/b/c playbook 修補 + 5 cells + Leader balance verification）
 
-**原始 dispatch records**（細節 / 跨 cell 分析）：
-- 預檢：[`2026-05-22 vm-3node-rc-pre-check`](./dispatch-records/2026-05-22-vm-3node-rc-pre-check.md)
-- YugabyteDB 1s1r 結果：[`2026-05-23 ybdb-1s1r-rc-result`](./dispatch-records/2026-05-23-vm-3node-ybdb-1s1r-rc-result.md)
-- YugabyteDB HAProxy dispatch：[`2026-05-25 haproxy-3s3r-ybdb-dispatch`](./dispatch-records/2026-05-25-vm-3node-haproxy-3s3r-ybdb-dispatch.md)
+**原始 dispatch records**（細節 / 跨 cell 分析；operational 與 raw logs 已併入 SUMMARY / pipeline-log 後清除）：
 - YugabyteDB 4 cells 分析：[`2026-05-25 ybdb-all4-rc-analysis`](./dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)
 - YugabyteDB HAProxy vs direct：[`2026-05-26 haproxy-vs-direct-3s3r-ybdb-analysis`](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)
-- TiDB vm-3node batch logs：[`2026-05-29 tidb-vm3-batch-logs/`](./dispatch-records/2026-05-29-tidb-vm3-batch-logs/)
 - TiDB schedule-limit 0→4：[`2026-05-31 tidb-schedule-limit-0-vs-4`](./dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md)
 - YugabyteDB leader balance check：[`2026-05-31 ybdb-leader-balance-check/`](./dispatch-records/2026-05-31-ybdb-leader-balance-check/)
 - YugabyteDB leader balance verification：[`2026-05-31 ybdb-leader-balance-verification`](./dispatch-records/2026-05-31-ybdb-leader-balance-verification.md)
 - TiDB HAProxy vs direct：[`2026-06-01 tidb-haproxy-vs-direct-3s3r-l4r4`](./dispatch-records/2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md)
 - CockroachDB 5-cell suite + F-E：[`2026-06-02 crdb-vm3-5cell-suite-dispatch`](./dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)
-- vm-3node remaining handover：[`HANDOVER-2026-05-24-vm3-poc-remaining`](./dispatch-records/HANDOVER-2026-05-24-vm3-poc-remaining.md)
 
 ### Agent 參考材料
 
