@@ -41,7 +41,9 @@
 | rr | 20260520T215216+0800 | 1,879 @ t32 | t16=15 → t128=127（線性 N−1） | [§ vm-1node-rr](#vm-1node-rr--2026-05-21poc-v47-snapshot-isolation--retry-storm) |
 | strict | 20260521T091048+0800 | **1,130 @ t32** | t16=14.6 → t128=121.8（≈N−1，比 rr 少 ~5%）| [§ vm-1node-strict](#vm-1node-strict--2026-05-21poc-v47-serializable-isolation--ssi) |
 
-下一步：vm-3node-direct / vm-3node-haproxy（驗證 cross-zone Raft replication 對三家 iso 衝擊）+ Kubernetes 系列。
+vm-3node 5-cell（1s1r / 1s3r / 3s1r / 3s3r / haproxy-3s3r × RC）已於 2026-05-24 ~ 2026-05-25 完成（5-round mean、N=1；含 `d654824` / `68189bc` / `29b5fc5` 三筆 YugabyteDB vm3 ansible 修補與 RF-aware cluster gate）；詳見下方 `vm-3node 系列` + [4 cells 跨 cell 分析](../../dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md) + [HAProxy vs direct 分析](../../dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)。
+
+下一步：三家 `haproxy-3s3r` 補 N=3 → 升級為對外可引用 baseline；Kubernetes 對照組待排程；跨區規劃見 [`1_MeetingMinutes/0602.md §10`](../../../1_MeetingMinutes/0602.md)。
 
 ---
 

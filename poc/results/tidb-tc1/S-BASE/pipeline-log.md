@@ -37,7 +37,9 @@
 | rr | 20260519T001949+0800 | 13,874 | 0 | [§ vm-1node-rr](#vm-1node-rr--2026-05-19poc-v47含-db-host-os-監控) |
 | strict | — (alias to rr) | — | — | [§ vm-1node-strict 略過原因](#vm-1node-strict--略過tidb-不支援-serializable) |
 
-下一步：vm-3node-direct（TiKV 分散驗證；預期 scale-out ratio ~1.75x 非線性）+ K8s 對照組（資源 unlimit 場景）。
+vm-3node 5-cell（1s1r / 1s3r / 3s1r / 3s3r / haproxy-3s3r × RC）已於 2026-05-29 ~ 2026-06-01 完成（5-round mean、N=1；含 Fix #9-#12 / D10 系列修補）；詳見下方 `vm-3node 系列` 與 [2026-05-31 schedule-limit 0→4 分析](../../dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md) + [2026-06-01 HAProxy vs direct 分析](../../dispatch-records/2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md)。
+
+下一步：三家 `haproxy-3s3r` 補 N=3 → 升級為對外可引用 baseline；K8s 對照組待重跑；跨區規劃見 [`1_MeetingMinutes/0602.md §10`](../../../1_MeetingMinutes/0602.md)。
 
 ---
 

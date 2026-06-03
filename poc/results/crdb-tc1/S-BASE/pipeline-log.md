@@ -37,7 +37,9 @@
 | rr | 20260519T124506+0800 | 3,788 | [§ vm-1node-rr](#vm-1node-rr--2026-05-19poc-v47crdb-preview-rr) |
 | strict | 20260519T164057+0800 | 10,456 | [§ vm-1node-strict](#vm-1node-strict--2026-05-19poc-v47crdb-serializable--ssi) |
 
-下一步：vm-3node-direct 對標（驗證 Raft fsync 並行化是否解 RC 的 IO 瓶頸）+ YugabyteDB 系列對標 SI / SSI 實作差異。
+vm-3node 5-cell（1s1r / 1s3r / 3s1r / 3s3r / haproxy-3s3r × RC）已於 2026-06-01/02 完成（5-round mean、N=1）；途中踩 F-E history SPLIT octal parse 後 resume；詳見下方 `vm-3node 系列` 與 [2026-06-02-crdb-vm3-5cell-suite-dispatch.md](../../dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)。
+
+下一步：三家 `haproxy-3s3r` 補 N=3 → 升級為對外可引用 baseline；跨區規劃見 [`1_MeetingMinutes/0602.md §10`](../../../1_MeetingMinutes/0602.md)。
 
 ---
 
@@ -642,9 +644,18 @@ client .31:go-tpc → .32:26257  (gateway routes; lease holder on .32 for all ra
 
 > ⚠️ CRDB dry-run 的 `replication-factor.txt` 讀的是 `RANGE default`（系統預設），不是 tpcc DB 的實際 zone。tpcc DB zone 在 prepare 階段設定，hard gate 由 `crdb_internal.ranges` 計數驗。
 
-#### Execute 結果
+#### Execute 結果（2026-06-01，TS=20260601T105859+0800）
 
-> 待 `make vm3-crdb-1s1r-rc EXECUTE=1 TPCC_TS=<ts>` 完成後回填 5-round mean tpmC / p50 / p95 / p99 / error rate，並與 vm-1node-rc 對照 scale-out ratio。
+5-round mean tpmC（4 thread × 5 round = 20 取樣）：
+
+| threads | tpmC mean | range/mean | NO p99 mean (ms) |
+|--------:|----------:|-----------:|-----------------:|
+| 16 | 12,954 | 4.1% | 90 |
+| 32 | **14,564** | 2.6% | 175（sweet spot）|
+| 64 | 14,057 | 22.1% ⚠️ | 389 |
+| 128 | 14,260 | 4.8% | 779 |
+
+代表點 = **t=32 / 14,564 tpmC / NO_p99 = 175 ms**。對照 vm-1node-rc（**8,813 tpmC**）→ **+65.3% throughput**（3-node Raft 並行寫入 + leaseholder 分散解單機 fsync 瓶頸；對應 vm-1node §saturation 推測獲得驗證）。t=64 stddev 22% 偏高、t=128 latency 翻倍但 tpmC 邊際 +1.4%。詳見 [5-cell suite dispatch](../../dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)。
 
 ### vm-3node-1s3r-rc
 
@@ -672,9 +683,18 @@ client → .32:26257 (gateway 可能路由到任一 leaseholder)
 
 - 同 1s1r（注意：dry-run 階段讀的是 default zone，實際 tpcc num_replicas=3 由 prepare 設定）。
 
-#### Execute 結果
+#### Execute 結果（2026-06-01，TS=20260601T142702+0800）
 
-> 待回填；與 1s1r 比 → Raft 3-replica 寫入 amplification。
+5-round mean tpmC：
+
+| threads | tpmC mean | range/mean | NO p99 mean (ms) |
+|--------:|----------:|-----------:|-----------------:|
+| 16 | 9,432 | 16.2% ⚠️ | 126 |
+| 32 | **10,911** | 2.8% | 222（sweet spot）|
+| 64 | 10,768 | 22.0% ⚠️ | 493 |
+| 128 | 10,381 | 4.4% | 1,007 |
+
+代表點 = **t=32 / 10,911 tpmC / NO_p99 = 222 ms**。對照 1s1r（同 1-shard、RF=1）→ **−25.1% throughput / +26% NO_p99**，量化 Raft 3-replica 寫入 quorum amplification（與 YugabyteDB 1s3r 量到的 -25.5% 高度吻合）。t=16 / t=64 stddev 偏高（16-22%），表示 1s3r 在低或中併發下 Raft commit 路徑波動較大；t=32 / t=128 較穩。
 
 ### vm-3node-3s1r-rc
 
@@ -701,9 +721,20 @@ client → .32:26257 (gateway 路由 leaseholder)
 
 - 同 1s1r（shard SPLIT 由 prepare 執行 + hard gate 驗）
 
-#### Execute 結果
+#### Execute 結果（2026-06-01，TS=20260601T221341+0800 — F-E resume PASS）
 
-> 待回填；與 1s1r 比 → sharding 純效應；驗 range leaseholder 是否 evenly distributed。
+> ⚠️ **F-E history SPLIT octal parse**：原 `prepare.sh:156` 用 `'00000086'` 字串字面量，CockroachDB v26.2.0 `strconv.ParseInt(s, 0, 64)` 把前導零視為八進位，digit 8 不合法 → SQLSTATE 22P02、cell 在 prepare SPLIT 階段炸出。修補 commit `0ac53da` 改用裸 int `(1280000), (2560000)` 鏡像 TiDB `_tidb_rowid` 切點；resume batch 從 3s1r 接續成功。失敗 trial TS=`20260601T175625+0800`（不入 canonical）。詳 [dispatch record](../../dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)。
+
+5-round mean tpmC：
+
+| threads | tpmC mean | range/mean | NO p99 mean (ms) |
+|--------:|----------:|-----------:|-----------------:|
+| 16 | 11,971 | 6.5% | 96 |
+| 32 | 13,469 | 8.8% | 191 |
+| 64 | **14,051** | 10.7% | 379（sweet spot）|
+| 128 | 13,254 | 17.1% ⚠️ | 832 |
+
+代表點 = **t=64 / 14,051 tpmC / NO_p99 = 379 ms**。對照 1s1r（同 RF=1）→ **−3.5% throughput**（CockroachDB sharding 純成本約 4%，遠低於 YugabyteDB 的 -13%；推測 CockroachDB range-leaseholder gateway routing 比 tablet 協調更有效率）。t=128 stddev 17% 偏高，表示 128 thread 撞到 leaseholder 路由協調瓶頸。
 
 ### vm-3node-3s3r-rc
 
@@ -731,7 +762,71 @@ client → .32:26257 (gateway 路由 leaseholder for each range)
 
 - 同 1s1r。
 
-#### Execute 結果
+#### Execute 結果（2026-06-02，TS=20260602T014253+0800）
 
-> 待回填；與 3s1r 比 → replication 成本 in sharded cluster；與 1s3r 比 → sharding 攤平效益。
+5-round mean tpmC：
+
+| threads | tpmC mean | range/mean | NO p99 mean (ms) |
+|--------:|----------:|-----------:|-----------------:|
+| 16 | 8,873 | 14.7% ⚠️ | 138 |
+| 32 | 10,631 | 2.9% | 233 |
+| 64 | **11,132** | 3.8% | 473（sweet spot）|
+| 128 | 10,931 | 2.7% | 953 |
+
+代表點 = **t=64 / 11,132 tpmC / NO_p99 = 473 ms**。對照 3s1r（同 3-shard）→ **−20.8% throughput**，量化 RF=3 寫入 quorum 成本（與 1s1r→1s3r 量到的 -25% 接近，但 sharded 路徑略低）。對照 1s3r（同 RF=3）→ **+2.0% throughput**（sharding 在 RF=3 下有小幅攤平效益）。CockroachDB 3s3r 的 t=64-128 stddev ≤4%（遠優於 YugabyteDB 3s3r t=16-128 stddev 1,400-2,615 的極不穩），表示 CockroachDB Raft 在 4 vCPU 3-node + 3-shard 仍可穩定運作。
+
+### vm-3node-haproxy-3s3r-rc
+
+> 3 shard × 3 replica + 3 CockroachDB nodes 並接 HAProxy frontend：在 3s3r 基礎上把 client 入口從單 .32 改成 HAProxy 在 .20:26257 round-robin 分流到 .32/.33/.34:26257。量化「分散 SQL 入口」紅利。
+
+#### 拓樸示意
+
+```
+                     client (.31)
+                       │  go-tpc → 172.24.47.20:26257
+                       ▼
+            ┌──────────────────────┐
+            │  HAProxy on .20:26257 │
+            │  balance roundrobin   │
+            │  mode tcp             │
+            └─────┬────┬────┬───────┘
+                  │    │    │
+        .32:26257 │    │    │  .34:26257
+         cockroach│    │    │   cockroach
+                  │ .33:26257│
+                  │  cockroach│
+   底層 cluster：3-node KV peer，RF=3，per-range leaseholder
+```
+
+#### 關鍵 DB 設定（與 3s3r 完全相同；唯一變因是 SQL frontend）
+
+| 維度 | 設定 |
+|---|---|
+| `ALTER DATABASE tpcc CONFIGURE ZONE USING num_replicas` | `3` |
+| `kv.range_split.by_load_enabled` | `false` |
+| `range_max_bytes` | `128 GB` |
+| HAProxy timeout | client/server 各 1800s |
+| HAProxy balance | `roundrobin` `mode tcp` |
+| client `--db-host` | `172.24.47.20:26257`（HAProxy frontend） |
+
+#### Dry-run 預期
+
+- `actual-rf` 同 3s3r = 3
+- HAProxy backend health：3 個 server check OK（cfg 中 `check inter 2s`）
+- F-A-v2 / F-D / F-E 修補後 dry-run-confirm 全程 PASS
+
+#### Execute 結果（2026-06-02，TS=20260602T051500+0800）
+
+5-round mean tpmC：
+
+| threads | tpmC mean | range/mean | NO p99 mean (ms) |
+|--------:|----------:|-----------:|-----------------:|
+| 16 | 10,113 | 5.4% | 114 |
+| 32 | 11,922 | 6.3% | 203 |
+| 64 | 13,444 | 8.9% | 376 |
+| 128 | **15,033** | 6.9% | 718（sweet spot at scale）|
+
+代表點 = **t=128 / 15,033 tpmC / NO_p99 = 718 ms**。對照 direct 3s3r（同 RF=3、同 3-shard）→ **+37.5% throughput @ t=128**（CockroachDB direct 模式 client 已連 .32，gateway 已具備內部 lease 路由能力，故 HAProxy 收益 +37.5% 比 TiDB / YugabyteDB 的 +78% 小；CockroachDB 真正能釋放 multi-node 並行的場景需要在 single-entry 與 round-robin 之間多測拓樸變數）。Stability：t=16-128 range/mean ≤8.9%，遠優於 direct 3s3r 在 t=128 的 17.1%。
+
+跨 cell 詳細分析 → [`dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md`](../../dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)。
 
