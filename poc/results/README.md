@@ -232,7 +232,7 @@ SPLIT: manual ALTER TABLE ... SPLIT AT VALUES (43),(86)  for 3-shard cells
 v26.2.0 注意：crdb_internal.* 多處 access restricted；用 SHOW RANGES / SHOW ZONE CONFIGURATION 等 supported API
 ```
 
-**證據**：5-cell suite 全 PASS（[2026-06-02 dispatch record](./dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)）；HAProxy 3s3r 末 round 抽樣 14,348 tpmC / p99 772 ms；5-round mean 待 `summary-from-stdout.py` 後補。
+**證據**：5-cell suite 全 PASS（[2026-06-02 dispatch record](./dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)）；5-round mean HAProxy 3s3r `15,033 tpmC / p99 718 ms @ t=128`（vs direct 3s3r `+37.5%`）；direct 5-cell sweet spot 14,564 @ 1s1r t=32（[summary.json](./crdb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/crdb-vm-3node-haproxy-3s3r-rc-20260602T051500+0800/summary.json)）。
 
 **Caveat**：
 - v26.2.0 `crdb_internal.*` access restricted（[§B / F-A-v2 / F-D](#修正歷程-fixes-catalog)）；其他散落呼叫尚未稽核。
@@ -265,7 +265,7 @@ triple gate: ysql_default_transaction_isolation + enable flag + SQL active check
 - **建議生產**：vm-3node 必上 HAProxy；single-entry 拓樸已飽和（client/parser/coord 在單 DB-server 排隊）。
 - **模式**：`mode tcp` + `balance roundrobin`；3 個 DB-server 並行接收。
 - **驗證 gate**：本輪 N=1 HAProxy stats socket 沒開啟、roundrobin 生效是以 tpmC delta 反推。後續應補 `show stat` dump。
-- **Caveat**：未對 CockroachDB 直接量化（5-round mean 待出）；初步末 round 抽樣顯示同向收益但量級待補。
+- **CockroachDB 5-round mean 已量到**：direct 3s3r 11,132 → haproxy 3s3r 15,033 = **+37.5%**（比 TiDB / YugabyteDB 的 +78% 小，因 CockroachDB direct 模式 client 已連 .32 即有 gateway 內部 leaseholder routing 能力）。
 
 ### C.6 N=3 補測規劃
 
