@@ -394,6 +394,12 @@ grep '平均時間' <artifact-dir>/runs/threads-<N>/round-<R>/mpstat-db.txt
 
 ### Dispatch records（執行經過與跨 cell 分析）
 
+**Per-DB 彙整**（推薦入口）：
+- TiDB：[`SUMMARY-tidb-vm3.md`](./dispatch-records/SUMMARY-tidb-vm3.md)（含 Fix #9-#12 / D10 + 5 cells × 5-round mean + 跨 cell 分析）
+- CockroachDB：[`SUMMARY-crdb-vm3.md`](./dispatch-records/SUMMARY-crdb-vm3.md)（含 F-A→F-E 系列 + 5 cells + F-E journey）
+- YugabyteDB：[`SUMMARY-ybdb-vm3.md`](./dispatch-records/SUMMARY-ybdb-vm3.md)（含 `ybdb-vm3` a/b/c playbook 修補 + 5 cells + Leader balance verification）
+
+**原始 dispatch records**（細節 / 跨 cell 分析）：
 - 預檢：[`2026-05-22 vm-3node-rc-pre-check`](./dispatch-records/2026-05-22-vm-3node-rc-pre-check.md)
 - YugabyteDB 1s1r 結果：[`2026-05-23 ybdb-1s1r-rc-result`](./dispatch-records/2026-05-23-vm-3node-ybdb-1s1r-rc-result.md)
 - YugabyteDB HAProxy dispatch：[`2026-05-25 haproxy-3s3r-ybdb-dispatch`](./dispatch-records/2026-05-25-vm-3node-haproxy-3s3r-ybdb-dispatch.md)
