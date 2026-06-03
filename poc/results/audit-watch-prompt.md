@@ -20,7 +20,6 @@
 - `results/AI-COLLABORATION.md`
 - `results/README-template.md`
 - `results/pipeline-log-template.md`
-- `results/audit-prompt.md`
 - `results/audit-watch-prompt.md`
 
 鎖定文件：
@@ -122,6 +121,33 @@ ssh root@<新-controller> 'df -h /tmp /root 2>/dev/null | tail -3'
 | D10 | Cluster leader 平衡（RF>1 必驗）| vm-3node RF>1 拓樸 deploy 後須驗 region/tablet leader 分佈：每 store 應持有 ≈ `total_regions / N_stores` 個 leader（±20% 容差）。若全集中於單 store → 拓樸實效退化為「single-store-leader + 多 follower」，failed to deliver "3 stores 同時寫" 設計初衷。<br>**TiDB**：`tidb-vm3.yml` 寫死 `pd.schedule.leader-schedule-limit=0`（從 vm-1node 沿用未解）→ PD 不會 rebalance；2026-05-30 Cell 4 (3s3r) 實測 27/27 leaders 全在單 store。修法：vm-3node 此值改回預設 4；vm-1node 可保留 0。<br>**YugabyteDB**：playbook 沒 disable `--load_balancer_enabled`，走預設 true → master 自動均衡，**不踩同坑**（2026-05-31 first-hand verified：deploy ybdb 3s3r + pre-create 9 表 SPLIT INTO 3 TABLETS → 27 tablet leaders 落到 **9 / 9 / 9** per tserver、零偏差；`get_load_balancer_state` = ENABLED × 3 master；證據見 [`dispatch-records/2026-05-31-ybdb-leader-balance-verification.md`](./dispatch-records/2026-05-31-ybdb-leader-balance-verification.md)）。<br>**CockroachDB**：類似 ybdb，cluster setting `kv.allocator.load_based_lease_rebalancing.enabled` 預設 true → 自動均衡。<br>**驗證指令**：<br>- TiDB: `mysql ... -e "SELECT p.STORE_ID, COUNT(*) FROM information_schema.tikv_region_peers p JOIN information_schema.tikv_region_status r ON p.REGION_ID=r.REGION_ID WHERE p.IS_LEADER=1 AND r.DB_NAME='tpcc' GROUP BY p.STORE_ID"`<br>- YugabyteDB: `yb-admin --master_addresses=... get_load_balancer_state` + `list_tablets ysql.yugabyte <tbl>` 看 leader_uuid 分佈<br>- CockroachDB: `SHOW RANGES FROM TABLE <tbl>` 看 lease_holder 分佈 |
 | D11 | Shard-count gate 容許 auto-split | `prepare.sh:310` 早期以 `actual == EXPECTED_SHARDS` 嚴格比較；2026-05-30 Cell 4 (3s3r) 套 Fix #11 後 RF=3 真實生效 + order_line 體量最大，TiKV auto-split 把 order_line 從 3 → 4 region → strict gate fail-closed、整個 cell 報廢。<br>**規格**：SPLIT TABLE 設定值為「保底」，auto-split 只會「加 region」不會「減」；`actual >= EXPECTED_SHARDS` 才符合 PoC-DESIGN §7.5.4 sharding 精神（actual < expected = SPLIT 沒生效）。<br>**修法**：`prepare.sh` 改 `(( actual >= EXPECTED_SHARDS ))`（Fix #12）。<br>**驗證**：`cat $PREP_DIR/shard-count.txt` 應每行 `expected>=N actual≥N pass=true`、`overall_pass=true`。 |
 
+## Finding 嚴重度
+
+- **critical** = 影響結論的數據錯誤 / 機制錯誤（典型對應 D1 / D2 / D10）
+- **major** = 段落缺漏 / 跨檔不一致 / 引用錯誤（D4 / D5 / D6）
+- **minor** = 排版 / 用詞 / 補強建議（D3 / D7 / D8）
+- D9 / D11 為 process-level finding，依具體情境分級
+
+## 報告落地
+
+- 完成後將 markdown 報告寫入 `results/audit/audit-<yyyy-mm-dd>.md`
+- 若 `results/audit/` 不存在 → 先建立目錄
+- 不修改 `README.md` / `pipeline-log.md` / 任何 source；如需具體 fix 建議，列出檔案、行號與段落即可
+- 對任何「斷言 vs artifact 數據」的不一致 → 重算原始 `go-tpc-stdout.txt` 驗證（`grep '^tpmC:'` / `grep '^\[Summary\]'`）
+- 對機制描述疑點（isolation / retry / refresh / split / placement / raft / MVCC）→ 引用 DB 官方文件 URL（CRDB / TiDB / YugabyteDB docs）
+
+## 文件審計模式（純逐檔審計，"only audit, no watch"）
+
+當被要求僅執行文件審計（不需 watch / 進度監督）時，對下列 5 個檔案執行**逐檔審計**：
+
+1. `results/README.md`
+2. `results/tidb-tc1/S-BASE/pipeline-log.md`
+3. `results/crdb-tc1/S-BASE/pipeline-log.md`
+4. `results/cockroach-tc1/S-BASE/pipeline-log.md` ← 舊版資料，僅核對「已移轉至 crdb-tc1」標註是否清楚
+5. `results/yuga-tc1/S-BASE/pipeline-log.md` ← v4.7 active；pre-v4.7 archive 於 `yuga-tc1-old/S-BASE/pipeline-log.md` + `pipeline-log_old.md`，僅核對 active log 是否有 pointer 至 yuga-tc1-old
+
+每檔產生 findings；最後輸出跨檔一致性矩陣（TiDB / CockroachDB / YugabyteDB 同數字對標）。輸出仍依「報告落地」段寫入 `results/audit/audit-<yyyy-mm-dd>.md`。
+
 ## 輸出格式
 
 ```markdown
@@ -181,6 +207,7 @@ ssh root@<新-controller> 'df -h /tmp /root 2>/dev/null | tail -3'
 - 不要把尚未完成的測試寫成已完成。
 - 不要修改任何檔案，除非使用者明確要求 `fix` / `apply` / `commit`。
 - 不要 commit、不要 push。
+- 不要訪問 `*.lock-*`、`runlocks/` 等非審計目標的檔案。
 - 若建議修改，請指出具體檔案與段落。
 
 開始審計與監督。
