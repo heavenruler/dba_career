@@ -144,15 +144,15 @@
 
 > 列出 PoC 過程中踩到的 bug / 設計缺陷與對應修補。所有 commit hash 對應 `git log` 可追溯；dispatch record 連結提供完整背景。
 
-### F 系列（CRDB 5-cell suite 修補）
+### F 系列（CockroachDB 5-cell suite 修補）
 
 | ID | Commit | 症狀 | 根因 | 修補 | 影響範圍 |
 |---|---|---|---|---|---|
-| **F-A / F-B / F-C** | `15c3208` | CRDB 5-cell batch pre-flight 失敗 | dry-run RF gate / HAProxy backend health / inventory self-ssh 三項缺漏 | 加入 pre-flight check 三項 | 全 5-cell CRDB suite |
-| **F-A-v2** | `eaa2420` | dry-run-confirm §1c 在 CockroachDB v26.2.0 失效（`crdb_internal.*` access restricted，SQLSTATE 42501）| v26.2.0 require `SET allow_unsafe_internals=true`；且 CRDB per-range zone 系統 range RF=5 永遠超過 EXPECTED_RF=1 | §1c 改 no-op 註解；§2 已涵蓋 dry-run RF target 驗證 | CRDB 5-cell dry-run validated |
-| **F-B-v2** | `eaa2420` | HAProxy backend health check 在 .20 host 失敗 | health probe 超時設定 | 調整 timeout | CRDB haproxy-3s3r cell |
-| **F-D** | `ebc481f` | `prepare.sh` shard-count gate 全 9 表 actual=0 | v26.2.0 `crdb_internal.ranges` 受限 → query 靜默 failure，gate fail-closed | 改用 `SHOW RANGES FROM TABLE`（v26.2.0 supported API） | CRDB shard-count gate |
-| **F-E** | `0ac53da` | `prepare.sh` history SPLIT 失敗：`could not parse "00000086" as type int: invalid syntax (SQLSTATE 22P02)` | 字串字面量 `'00000086'` → CRDB `strconv.ParseInt(s, 0, 64)` 以 base=0 解析，前導零觸發八進位，digit 8 不合法 | 改用裸 int `(1280000), (2560000)` 鏡像 TiDB `_tidb_rowid` 切點 | CRDB 3s1r / 3s3r / haproxy-3s3r cell ([5-cell dispatch](./dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)) |
+| **F-A / F-B / F-C** | `15c3208` | CockroachDB 5-cell batch pre-flight 失敗 | dry-run RF gate / HAProxy backend health / inventory self-ssh 三項缺漏 | 加入 pre-flight check 三項 | 全 5-cell CockroachDB suite |
+| **F-A-v2** | `eaa2420` | dry-run-confirm §1c 在 CockroachDB v26.2.0 失效（`crdb_internal.*` access restricted，SQLSTATE 42501）| v26.2.0 require `SET allow_unsafe_internals=true`；且 CockroachDB per-range zone 系統 range RF=5 永遠超過 EXPECTED_RF=1 | §1c 改 no-op 註解；§2 已涵蓋 dry-run RF target 驗證 | CockroachDB 5-cell dry-run validated |
+| **F-B-v2** | `eaa2420` | HAProxy backend health check 在 .20 host 失敗 | health probe 超時設定 | 調整 timeout | CockroachDB haproxy-3s3r cell |
+| **F-D** | `ebc481f` | `prepare.sh` shard-count gate 全 9 表 actual=0 | v26.2.0 `crdb_internal.ranges` 受限 → query 靜默 failure，gate fail-closed | 改用 `SHOW RANGES FROM TABLE`（v26.2.0 supported API） | CockroachDB shard-count gate |
+| **F-E** | `0ac53da` | `prepare.sh` history SPLIT 失敗：`could not parse "00000086" as type int: invalid syntax (SQLSTATE 22P02)` | 字串字面量 `'00000086'` → CockroachDB `strconv.ParseInt(s, 0, 64)` 以 base=0 解析，前導零觸發八進位，digit 8 不合法 | 改用裸 int `(1280000), (2560000)` 鏡像 TiDB `_tidb_rowid` 切點 | CockroachDB 3s1r / 3s3r / haproxy-3s3r cell ([5-cell dispatch](./dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)) |
 
 ### D 系列（系統性設計缺陷）
 
@@ -170,7 +170,7 @@
 | **Fix #10** | `a35142d` | TiDB SPLIT BY syntax for small tables — `BETWEEN/REGIONS` warehouse 42 keys < 1000 觸發 ERROR 8212；改用顯式分裂點 `BY (43),(86)` |
 | **Fix #11** | `d30bceb` + `07d9da9` | PD `replica-schedule-limit=0→4`（讓 RF=3 真實生效）+ ansible shell task 改 `/bin/bash`（process substitution）+ dry-run actual peer count gate |
 | **Fix #12** | `24d0c05` | shard-count gate `>=`（同 D11） |
-| YugabyteDB vm3 a | `d654824` | YBDB vm3 serial worker join + stabilize + master_addrs gate |
+| YugabyteDB vm3 a | `d654824` | YugabyteDB vm3 serial worker join + stabilize + master_addrs gate |
 | YugabyteDB vm3 b | `68189bc` | stabilize 移至 workers-only，在 `configure data_placement` 之後 |
 | YugabyteDB vm3 c | `29b5fc5` | RF-aware cluster gate + drop ineffective stabilize-workers |
 | TiKV race fix | `3dd4989` | TiKV race + ansible `gather_facts` + TiDB vm-3node 4 cells dry-run anchors |
