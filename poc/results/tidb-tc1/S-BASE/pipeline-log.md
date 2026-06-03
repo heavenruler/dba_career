@@ -434,9 +434,18 @@ TiKV stores
 - `cluster-health.txt` = `SELECT 1` 回 1
 - 全項通過 → `.dry-run.done` `all_pass: true`
 
-#### Execute 結果
+#### Execute 結果（2026-05-29，TS=20260529T132940+0800）
 
-> 待 `make vm3-tidb-1s1r-rc EXECUTE=1 TPCC_TS=<ts>` 完成後回填 5-round mean tpmC / p50 / p95 / p99 / error rate，並與 vm-1node-rc 對照 scale-out ratio。
+5-round mean tpmC：
+
+| threads | tpmC mean | range/mean | NO p99 mean (ms) |
+|--------:|----------:|-----------:|-----------------:|
+| 16  | 11,682 | 18.9% ⚠️ | 83 |
+| 32  | 14,993 | 25.5% ⚠️ | 138 |
+| 64  | 18,516 | 21.2% ⚠️ | 242 |
+| 128 | **19,654** | 7.0% | 456（代表點）|
+
+代表點 = **t=128 / 19,654 tpmC / NO_p99 = 456 ms**（5-round mean，0 error）。對照 vm-1node-rc（**13,064 tpmC @ t=128**）→ **+50.4% throughput**，量化 TiDB 3-node + RF=1 cluster framework 對單節點 baseline 的 scale-out 紅利（RF=1 無 quorum 寫入，3 TiKV stores 仍能分散 region leader 工作）。t=16/32/64 range/mean 18.9-25.5% 偏高，符合 1s1r RF=1 下 region leader 路由波動的預期；t=128 收斂至 7% 為 worker queue 填滿後的穩態。Source: [`tidb-vm-3node-1s1r-rc-20260529T132940+0800/summary.json`](./vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260529T132940+0800/summary.json)。
 
 ### vm-3node-1s3r-rc
 
