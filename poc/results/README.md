@@ -129,9 +129,9 @@
 
 ### YugabyteDB
 
-[![YugabyteDB Architecture](https://docs.yugabyte.com/images/architecture/layered-architecture.png)](https://docs.yugabyte.com/stable/architecture/)
+[![YugabyteDB Architecture](https://raw.githubusercontent.com/yugabyte/yugabyte-db/master/architecture/images/yb-architecture.jpg)](https://github.com/yugabyte/yugabyte-db#architecture)
 
-來源：[Architecture — YugabyteDB Docs](https://docs.yugabyte.com/stable/architecture/)
+來源：[yugabyte/yugabyte-db — Architecture](https://github.com/yugabyte/yugabyte-db#architecture)
 
 - **YSQL**：PostgreSQL-compatible SQL API，負責接收 SQL、處理 query planning 與 transaction request。
 - **YCQL**：Cassandra-compatible API，本輪 TPC-C-derived OLTP 測試不走此路徑。
