@@ -9,7 +9,7 @@
 | 指標 | 結果 |
 |---|---|
 | 完成 cells | **5 / 5**（1s1r / 1s3r / 3s1r / 3s3r / haproxy-3s3r）|
-| 樣本數 | N=1（對外結論前須 N=3）|
+| 樣本數 | N=1（對外結論前須 N=3；見 [README N9](../README.md#note-N9)）|
 | Best mean tpmC | **26,947 @ haproxy-3s3r t=128**（vs direct 3s3r `l4r4` +78.7%） |
 | Best p99 | 309 ms @ haproxy-3s3r t=128 |
 | 主要 Fixes | D10 / Fix #9 / #10 / #11 / #12（共 5 項）|
@@ -19,15 +19,17 @@
 
 ## 5-cell 測試結果（canonical TS、5-round mean）
 
-| Cell | TS | best @ t | tpmC | NO p99 (ms) | 來源目錄 |
-|---|---|:---:|---:|---:|---|
-| 1s1r | `20260529T132940+0800` | t=128 | 19,654 | 456 | [vm-3node-1s1r-rc/](../tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260529T132940+0800/) |
-| 1s3r `l4r4` | `20260530T162428+0800` | t=128 | 16,336 | 527 | [vm-3node-1s3r-rc-pd-sched-l4r4/](../tidb-tc1/S-BASE/vm-3node-1s3r-rc-pd-sched-l4r4/tidb-vm-3node-1s3r-rc-20260530T162428+0800/) |
-| 1s3r `l0r0` (broken) | `20260529T170933+0800` | t=128 | 14,130 | 567 | [vm-3node-1s3r-rc-pd-sched-l0r0/](../tidb-tc1/S-BASE/vm-3node-1s3r-rc-pd-sched-l0r0/tidb-vm-3node-1s3r-rc-20260529T170933+0800/) |
-| 3s1r | `20260530T023238+0800` | t=128 | 14,130 | 423 | [vm-3node-3s1r-rc/](../tidb-tc1/S-BASE/vm-3node-3s1r-rc/tidb-vm-3node-3s1r-rc-20260530T023238+0800/) |
-| 3s3r `l4r4` | `20260531T085812+0800` | t=128 | 15,082 | 591 | [vm-3node-3s3r-rc-pd-sched-l4r4/](../tidb-tc1/S-BASE/vm-3node-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-3s3r-rc-20260531T085812+0800/) |
-| 3s3r `l0r0` (broken) | `20260530T061352+0800` | t=128 | 20,455 | 423 | [vm-3node-3s3r-rc-pd-sched-l0r0/](../tidb-tc1/S-BASE/vm-3node-3s3r-rc-pd-sched-l0r0/tidb-vm-3node-3s3r-rc-20260530T061352+0800/) |
-| **haproxy-3s3r** `l4r4` | `20260601T003316+0800` | t=128 | **26,947** | **309** | [vm-3node-haproxy-3s3r-rc-pd-sched-l4r4/](../tidb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-haproxy-3s3r-rc-20260601T003316+0800/) |
+> 「代表點 @ t」採「mean tpmC 最大且不撞極端 latency」原則；本批主表使用 t=128（3s1r 例外用 t=64，t=128 已開始撞 latency 翻倍 + range/mean 23.8%）。Source: 5 個 `summary.json` 由 [`tests/common/summary-from-stdout.py`](../../tests/common/summary-from-stdout.py) 從 raw stdout 產生。
+
+| Cell | TS | 代表點 @ t | tpmC | NO p99 (ms) | range/mean | error rate | 來源目錄 |
+|---|---|:---:|---:|---:|---:|---:|---|
+| 1s1r | `20260529T132940+0800` | t=128 | 19,654 | 456 | 7.0% | 0.000% | [vm-3node-1s1r-rc/](../tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260529T132940+0800/) |
+| 1s3r `l4r4` | `20260530T162428+0800` | t=128 | 16,336 | 527 | 1.6% | 0.000% | [vm-3node-1s3r-rc-pd-sched-l4r4/](../tidb-tc1/S-BASE/vm-3node-1s3r-rc-pd-sched-l4r4/tidb-vm-3node-1s3r-rc-20260530T162428+0800/) |
+| 1s3r `l0r0` (broken) | `20260529T170933+0800` | t=128 | 14,130 | 567 | — | — | [vm-3node-1s3r-rc-pd-sched-l0r0/](../tidb-tc1/S-BASE/vm-3node-1s3r-rc-pd-sched-l0r0/tidb-vm-3node-1s3r-rc-20260529T170933+0800/) |
+| 3s1r | `20260530T023238+0800` | t=64 | 16,580 | 270 | 15.6% | 0.000% | [vm-3node-3s1r-rc/](../tidb-tc1/S-BASE/vm-3node-3s1r-rc/tidb-vm-3node-3s1r-rc-20260530T023238+0800/) |
+| 3s3r `l4r4` | `20260531T085812+0800` | t=128 | 15,082 | 591 | 11.6% | 0.000% | [vm-3node-3s3r-rc-pd-sched-l4r4/](../tidb-tc1/S-BASE/vm-3node-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-3s3r-rc-20260531T085812+0800/) |
+| 3s3r `l0r0` (broken) | `20260530T061352+0800` | t=128 | 20,455 | 423 | — | — | [vm-3node-3s3r-rc-pd-sched-l0r0/](../tidb-tc1/S-BASE/vm-3node-3s3r-rc-pd-sched-l0r0/tidb-vm-3node-3s3r-rc-20260530T061352+0800/) |
+| **haproxy-3s3r** `l4r4` | `20260601T003316+0800` | t=128 | **26,947** | **309** | 7.4% | 0.000% | [vm-3node-haproxy-3s3r-rc-pd-sched-l4r4/](../tidb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-haproxy-3s3r-rc-20260601T003316+0800/) |
 
 > **`l0r0` 為 broken baseline**（PD `replica-schedule-limit=0` + `leader-schedule-limit=0`，實際 RF=1、leader 集中單 store）— 不入主表，僅作 caveat 對照。
 >
@@ -88,4 +90,4 @@
 1. **`haproxy-3s3r-l4r4` 補 N=3**（~3h × 3 = 9h）→ 升級為對外可引用 baseline
 2. **`l4r4` mixed state caveat 移入主表註腳**（[`results/README.md §A.4`](../README.md) 已標）
 3. **TiDB Kubernetes 變體 v4.7 重跑**（unlimit / limit 各一）
-4. **跨區 IDC↔GCP 規劃**：見 [`1_MeetingMinutes/0602.md §10`](../../1_MeetingMinutes/0602.md)
+4. **跨區 IDC↔GCP 規劃**：見 [`1_MeetingMinutes/0602.md §10 跨區 PoC（Track E）`](../../1_MeetingMinutes/0602.md#10-跨區-poctrack-e-詳細設計)

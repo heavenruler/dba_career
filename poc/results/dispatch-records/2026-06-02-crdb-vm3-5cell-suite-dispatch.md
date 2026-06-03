@@ -64,7 +64,7 @@ ALTER TABLE history    SPLIT AT VALUES ('00000043'), ('00000086');
 - 前導 `0` 觸發**八進位**解析 → digit `8` 在 octal 不合法 → `SQLSTATE 22P02`
 - 其他 8 表（warehouse / district / customer / new_order / orders / order_line / stock / item）使用裸 int 字面量，全部成功；只有 history 因採用引號字串路徑炸鍋
 
-**Fix** (commit [`0ac53da`](https://github.com/.../commit/0ac53da))：
+**Fix** (commit `0ac53da`)：
 ```sql
 -- history: CRDB 無顯式 PK → 隱式 rowid INT8 (unique_rowid()，~10^17 範圍)。
 -- 用裸 int 值；早期版本帶引號的 '00000043' 被 CRDB parseInt(base=0) 當八進位
@@ -125,11 +125,11 @@ ALTER TABLE history    SPLIT AT VALUES (1280000), (2560000);
 
 | Commit | Topic |
 |---|---|
-| [`15c3208`](#) | fix: pre-flight CRDB 5-cell batch — F-A / F-B / F-C（dry-run RF gate + haproxy backend health + inventory self-ssh fix）|
-| [`eaa2420`](#) | fix: dry-run-confirm F-A-v2 + F-B-v2 — CRDB 5-cell dry-run validated（drop §1c CRDB peer-count gate；v26.2.0 不適用）|
-| [`db3936b`](#) | feat: status-vm1.sh — show in-progress phase sub-log |
-| [`ebc481f`](#) | fix: prepare.sh F-D — CRDB shard-count gate v26.2.0 supported API（改 `SHOW RANGES FROM TABLE`，原 `crdb_internal.ranges` 受限）|
-| [`0ac53da`](#) | **fix: prepare.sh CRDB history SPLIT — F-E remove octal-parsed quoted ints**（本次新增）|
+| `15c3208` | fix: pre-flight CRDB 5-cell batch — F-A / F-B / F-C（dry-run RF gate + haproxy backend health + inventory self-ssh fix）|
+| `eaa2420` | fix: dry-run-confirm F-A-v2 + F-B-v2 — CRDB 5-cell dry-run validated（drop §1c CRDB peer-count gate；v26.2.0 不適用）|
+| `db3936b` | feat: status-vm1.sh — show in-progress phase sub-log |
+| `ebc481f` | fix: prepare.sh F-D — CRDB shard-count gate v26.2.0 supported API（改 `SHOW RANGES FROM TABLE`，原 `crdb_internal.ranges` 受限）|
+| `0ac53da` | **fix: prepare.sh CRDB history SPLIT — F-E remove octal-parsed quoted ints**（本次新增）|
 
 ---
 

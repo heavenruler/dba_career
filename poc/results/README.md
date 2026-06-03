@@ -22,7 +22,7 @@
 | 資料庫 | 已完成且可用的結果 | 目前最高 tpmC | 狀態 | 追溯入口 |
 |---|---|---:|---|---|
 | TiDB | - 單節點虛擬機，三 isolation<br>- 三節點虛擬機，direct RC（含 PD `l4r4` 主用、`l0r0` caveat 對照）<br>- 三節點虛擬機，HAProxy 3s3r RC | **26,947**<br>三節點 HAProxy 3s3r RC (`l4r4`)，t=128 | - ✅ 單節點三 isolation 完成<br>- ✅ 三節點 5 cells (1s1r/1s3r/3s1r/3s3r/haproxy-3s3r) 完成<br>- 🔄 Kubernetes 待重跑 | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md) |
-| CockroachDB | - 單節點虛擬機，三 isolation<br>- 三節點虛擬機，direct RC<br>- 三節點虛擬機，HAProxy 3s3r RC | **14,348**<br>三節點 HAProxy 3s3r RC，t=128 round-5（樣本，5-round mean 待 `summary-from-stdout.py` 後補） | - ✅ 單節點三 isolation 完成<br>- ✅ 三節點 5 cells (1s1r/1s3r/3s1r/3s3r/haproxy-3s3r) 完成<br>- 🔄 Kubernetes 待重跑 | [流程紀錄](./crdb-tc1/S-BASE/pipeline-log.md) |
+| CockroachDB | - 單節點虛擬機，三 isolation<br>- 三節點虛擬機，direct RC<br>- 三節點虛擬機，HAProxy 3s3r RC | **15,033**<br>三節點 HAProxy 3s3r RC，t=128 | - ✅ 單節點三 isolation 完成<br>- ✅ 三節點 5 cells (1s1r/1s3r/3s1r/3s3r/haproxy-3s3r) 完成<br>- 🔄 Kubernetes 待重跑 | [流程紀錄](./crdb-tc1/S-BASE/pipeline-log.md) |
 | YugabyteDB | - 單節點虛擬機，三 isolation<br>- 三節點虛擬機，direct RC（4 cells）<br>- 三節點虛擬機，HAProxy 3s3r RC | **15,632**<br>三節點 HAProxy 3s3r RC，t=128 | - ✅ 單節點三 isolation 完成<br>- ✅ 三節點（多分片 / 副本 / HAProxy）完成<br>- 🔄 Kubernetes 待重跑 | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md) |
 
 - 同硬體規格對照：4 vCPU / 16 GiB / single XFS，5-round mean，9 組（資料庫 × isolation）[註3](#note-3)。
@@ -48,21 +48,23 @@
 
 ### vm-3node（5 cells × 3 DB，全 `N=1`；[N9](#note-N9) caveat）
 
-> TiDB 主表只列 PD `l4r4` 主用配置；`l0r0` 為退化 baseline（PD 不 rebalance leader / replica），caveat 與修正歷程詳見 [§B / Fix #11 / D10](#修正歷程-fixes-catalog)。CockroachDB 5-round mean 待跑完 `summary-from-stdout.py`（artifact 已 fetch 至 Mac）後補；目前展示末 round 抽樣或 dispatch record 數字。
+> TiDB 主表只列 PD `l4r4` 主用配置；`l0r0` 為退化 baseline（PD 不 rebalance leader / replica），caveat 與修正歷程詳見 [§B / Fix #11 / D10](#修正歷程-fixes-catalog)。三家 `summary.json` 已由 `summary-from-stdout.py` 從 raw stdout 產生。
+>
+> **代表點 `@ t` 選擇原則**：「mean tpmC 最大且不撞極端 latency」（throughput-latency 平衡）。1s1r/3s1r 多在 t=32~t=64 飽和；1s3r/3s3r/haproxy 多在 t=128 才 plateau；TiDB 3s1r 例外用 t=64（t=128 已 latency 翻倍 + range 23.8%）。
 
-| 資料庫 | 案例 | 隔離級 | 來源目錄 (canonical TS) | t | tpmC | p99 (ms) | error rate | 判讀 / dispatch |
+| 資料庫 | 案例 | 隔離級 | 來源目錄 (canonical TS) | 代表點 t | tpmC | p99 (ms) | error rate | 判讀 / dispatch |
 |---|---|---|---|---:|---:|---:|---:|---|
 | TiDB | 直連 — 1s1r | RC | [20260529T132940](./tidb-tc1/S-BASE/vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260529T132940+0800/) | 128 | 19,654 | 456 | 0.000% | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md) |
 | TiDB | 直連 — 1s3r（`l4r4`） | RC | [20260530T162428](./tidb-tc1/S-BASE/vm-3node-1s3r-rc-pd-sched-l4r4/tidb-vm-3node-1s3r-rc-20260530T162428+0800/) | 128 | 16,336 | 527 | 0.000% | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md#vm-3node-1s3r-rc)；[schedule-limit 0→4 分析](./dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md) |
-| TiDB | 直連 — 3s1r | RC | [20260530T023238](./tidb-tc1/S-BASE/vm-3node-3s1r-rc/tidb-vm-3node-3s1r-rc-20260530T023238+0800/) | 128 | 14,130 | 423 | 0.000% | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md) |
+| TiDB | 直連 — 3s1r | RC | [20260530T023238](./tidb-tc1/S-BASE/vm-3node-3s1r-rc/tidb-vm-3node-3s1r-rc-20260530T023238+0800/) | 64 | 16,580 | 270 | 0.000% | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md) |
 | TiDB | 直連 — 3s3r（`l4r4`） | RC | [20260531T085812](./tidb-tc1/S-BASE/vm-3node-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-3s3r-rc-20260531T085812+0800/) | 128 | 15,082 | 591 | 0.000% | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md#vm-3node-3s3r-rc)；[schedule-limit 0→4 分析](./dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md) |
 | TiDB | HAProxy — 3s3r（`l4r4`） | RC | [20260601T003316](./tidb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-haproxy-3s3r-rc-20260601T003316+0800/) | 128 | **26,947** | 309 | 0.000% | [流程紀錄](./tidb-tc1/S-BASE/pipeline-log.md#vm-3node-haproxy-3s3r-rc)；[HAProxy vs direct 分析](./dispatch-records/2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md)；3 tidb_servers + round-robin，vs direct +78.7% |
-| CockroachDB | 直連 — 1s1r | RC | [20260601T105859](./crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260601T105859+0800/) | — | 待 summary | — | — | [5-cell suite dispatch](./dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md) |
-| CockroachDB | 直連 — 1s3r | RC | [20260601T142702](./crdb-tc1/S-BASE/vm-3node-1s3r-rc/crdb-vm-3node-1s3r-rc-20260601T142702+0800/) | — | 待 summary | — | — | 同上 |
-| CockroachDB | 直連 — 3s1r | RC | [20260601T221341](./crdb-tc1/S-BASE/vm-3node-3s1r-rc/crdb-vm-3node-3s1r-rc-20260601T221341+0800/) | — | 待 summary | — | — | 同上；resume PASS（pre-F-E TS `20260601T175625` 為失敗 trial，[F-E 修補詳見 §B](#修正歷程-fixes-catalog)） |
-| CockroachDB | 直連 — 3s3r | RC | [20260602T014253](./crdb-tc1/S-BASE/vm-3node-3s3r-rc/crdb-vm-3node-3s3r-rc-20260602T014253+0800/) | — | 待 summary | — | — | 同上 |
-| CockroachDB | HAProxy — 3s3r | RC | [20260602T051500](./crdb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/crdb-vm-3node-haproxy-3s3r-rc-20260602T051500+0800/) | 128 | 14,348（末 round 抽樣） | 772（末 round） | 0.000% | 同上；5-round mean 待 summary parser |
-| YugabyteDB | 直連 — 1s1r | RC | [20260524T032814](./yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260524T032814+0800/) | 128 | 13,725 | 758 | 0.000% | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md)；[4 cells 跨 cell 分析](./dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md) |
+| CockroachDB | 直連 — 1s1r | RC | [20260601T105859](./crdb-tc1/S-BASE/vm-3node-1s1r-rc/crdb-vm-3node-1s1r-rc-20260601T105859+0800/) | 32 | 14,564 | 175 | 0.000% | [5-cell suite dispatch](./dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md) |
+| CockroachDB | 直連 — 1s3r | RC | [20260601T142702](./crdb-tc1/S-BASE/vm-3node-1s3r-rc/crdb-vm-3node-1s3r-rc-20260601T142702+0800/) | 32 | 10,911 | 222 | 0.000% | 同上 |
+| CockroachDB | 直連 — 3s1r | RC | [20260601T221341](./crdb-tc1/S-BASE/vm-3node-3s1r-rc/crdb-vm-3node-3s1r-rc-20260601T221341+0800/) | 64 | 14,051 | 379 | 0.000% | 同上；resume PASS（pre-F-E TS `20260601T175625` 為失敗 trial，[F-E 修補詳見 §B](#修正歷程-fixes-catalog)） |
+| CockroachDB | 直連 — 3s3r | RC | [20260602T014253](./crdb-tc1/S-BASE/vm-3node-3s3r-rc/crdb-vm-3node-3s3r-rc-20260602T014253+0800/) | 64 | 11,132 | 473 | 0.000% | 同上 |
+| CockroachDB | HAProxy — 3s3r | RC | [20260602T051500](./crdb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/crdb-vm-3node-haproxy-3s3r-rc-20260602T051500+0800/) | 128 | **15,033** | 718 | 0.000% | 同上；vs direct 3s3r +37.5% tpmC |
+| YugabyteDB | 直連 — 1s1r | RC | [20260524T032814](./yuga-tc1/S-BASE/vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260524T032814+0800/) | 32 | 13,702 | 205 | 0.000% | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md)；[4 cells 跨 cell 分析](./dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)；代表點口徑（best mean tpmC 在 t=128=13,725/p99 758）|
 | YugabyteDB | 直連 — 1s3r | RC | [20260524T074754](./yuga-tc1/S-BASE/vm-3node-1s3r-rc/ybdb-vm-3node-1s3r-rc-20260524T074754+0800/) | 128 | 10,228 | 1,034 | 0.000% | 同上 |
 | YugabyteDB | 直連 — 3s1r | RC | [20260524T202219](./yuga-tc1/S-BASE/vm-3node-3s1r-rc/ybdb-vm-3node-3s1r-rc-20260524T202219+0800/) | 32 | 11,967 | 203 | 0.000% | 同上；3s1r 在 t=32 飽和 |
 | YugabyteDB | 直連 — 3s3r | RC | [20260525T031918](./yuga-tc1/S-BASE/vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260525T031918+0800/) | 128 | 8,729 | 1,114 | 0.000% | 同上；3s3r tablet 協調瓶頸（mpstat CPU 24-42% idle、throughput 反而 drop）|

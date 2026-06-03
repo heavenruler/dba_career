@@ -522,9 +522,18 @@ TiKV stores                                      9 張 TPC-C 表，每張 SPLIT 
 - `replication-factor.txt` = `1`（dry-run 階段 tpcc DB 尚未建，無 shard SPLIT 紀錄；hard gate 由 prepare 階段執行）
 - 其餘同 1s1r。
 
-#### Execute 結果
+#### Execute 結果（2026-05-30，TS=20260530T023238+0800）
 
-> 待回填；與 1s1r 比 → sharding 純效應；驗 region leader 是否 evenly distributed。
+5-round mean tpmC：
+
+| threads | tpmC mean | range/mean | NO p99 mean (ms) |
+|--------:|----------:|-----------:|-----------------:|
+| 16 | 11,052 | 20.5% ⚠️ | 92 |
+| 32 | 14,890 | 15.1% | 143 |
+| 64 | **16,580** | 15.6% | 270（sweet spot）|
+| 128 | 15,842 | 23.8% ⚠️ | 597 |
+
+代表點 = **t=64 / 16,580 tpmC / NO_p99 = 270 ms**（mean tpmC 最大且不撞極端 latency 之平衡點；t=128 latency 翻倍且 range/mean 飆 23.8%）。對照 vm-3node-1s1r（同 RF=1）→ **−15.6% throughput**（t=128 對比），量化 TiDB 在 RF=1 下純 sharding 成本（low 於 YugabyteDB 同位 −12.7%）。t=64 range/mean 15.6% 偏高，可能與 region leader 分布有關。
 
 ### vm-3node-3s3r-rc
 
