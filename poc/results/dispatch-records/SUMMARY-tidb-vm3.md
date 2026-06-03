@@ -11,7 +11,7 @@
 | 完成 cells | **5 / 5**（1s1r / 1s3r / 3s1r / 3s3r / haproxy-3s3r）|
 | 樣本數 | N=1（對外結論前須 N=3；見 [README N9](../README.md#note-N9)）|
 | Best mean tpmC | **26,947 @ haproxy-3s3r t=128**（vs direct 3s3r `l4r4` +78.7%） |
-| Best p99 | 309 ms @ haproxy-3s3r t=128 |
+| Best p99 | 83 ms @ 1s1r t=16；309 ms @ haproxy-3s3r t=128 |
 | 主要 Fixes | D10 / Fix #9 / #10 / #11 / #12（共 5 項）|
 | 主要踩坑 | PD `l0r0` 退化為 RF=1 假 baseline → 修為 `l4r4`；CLUSTERED PK 不能用 `SPLIT TABLE INDEX PRIMARY` → 改顯式分裂點；shard-count gate 嚴格比較與 auto-split 衝突 |
 
