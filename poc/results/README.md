@@ -148,38 +148,38 @@
 
 | ID | Commit | 症狀 | 根因 | 修補 | 影響範圍 |
 |---|---|---|---|---|---|
-| **F-A / F-B / F-C** | [`15c3208`](#) | CRDB 5-cell batch pre-flight 失敗 | dry-run RF gate / HAProxy backend health / inventory self-ssh 三項缺漏 | 加入 pre-flight check 三項 | 全 5-cell CRDB suite |
-| **F-A-v2** | [`eaa2420`](#) | dry-run-confirm §1c 在 CockroachDB v26.2.0 失效（`crdb_internal.*` access restricted，SQLSTATE 42501）| v26.2.0 require `SET allow_unsafe_internals=true`；且 CRDB per-range zone 系統 range RF=5 永遠超過 EXPECTED_RF=1 | §1c 改 no-op 註解；§2 已涵蓋 dry-run RF target 驗證 | CRDB 5-cell dry-run validated |
-| **F-B-v2** | [`eaa2420`](#) | HAProxy backend health check 在 .20 host 失敗 | health probe 超時設定 | 調整 timeout | CRDB haproxy-3s3r cell |
-| **F-D** | [`ebc481f`](#) | `prepare.sh` shard-count gate 全 9 表 actual=0 | v26.2.0 `crdb_internal.ranges` 受限 → query 靜默 failure，gate fail-closed | 改用 `SHOW RANGES FROM TABLE`（v26.2.0 supported API） | CRDB shard-count gate |
-| **F-E** | [`0ac53da`](#) | `prepare.sh` history SPLIT 失敗：`could not parse "00000086" as type int: invalid syntax (SQLSTATE 22P02)` | 字串字面量 `'00000086'` → CRDB `strconv.ParseInt(s, 0, 64)` 以 base=0 解析，前導零觸發八進位，digit 8 不合法 | 改用裸 int `(1280000), (2560000)` 鏡像 TiDB `_tidb_rowid` 切點 | CRDB 3s1r / 3s3r / haproxy-3s3r cell ([5-cell dispatch](./dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)) |
+| **F-A / F-B / F-C** | `15c3208` | CRDB 5-cell batch pre-flight 失敗 | dry-run RF gate / HAProxy backend health / inventory self-ssh 三項缺漏 | 加入 pre-flight check 三項 | 全 5-cell CRDB suite |
+| **F-A-v2** | `eaa2420` | dry-run-confirm §1c 在 CockroachDB v26.2.0 失效（`crdb_internal.*` access restricted，SQLSTATE 42501）| v26.2.0 require `SET allow_unsafe_internals=true`；且 CRDB per-range zone 系統 range RF=5 永遠超過 EXPECTED_RF=1 | §1c 改 no-op 註解；§2 已涵蓋 dry-run RF target 驗證 | CRDB 5-cell dry-run validated |
+| **F-B-v2** | `eaa2420` | HAProxy backend health check 在 .20 host 失敗 | health probe 超時設定 | 調整 timeout | CRDB haproxy-3s3r cell |
+| **F-D** | `ebc481f` | `prepare.sh` shard-count gate 全 9 表 actual=0 | v26.2.0 `crdb_internal.ranges` 受限 → query 靜默 failure，gate fail-closed | 改用 `SHOW RANGES FROM TABLE`（v26.2.0 supported API） | CRDB shard-count gate |
+| **F-E** | `0ac53da` | `prepare.sh` history SPLIT 失敗：`could not parse "00000086" as type int: invalid syntax (SQLSTATE 22P02)` | 字串字面量 `'00000086'` → CRDB `strconv.ParseInt(s, 0, 64)` 以 base=0 解析，前導零觸發八進位，digit 8 不合法 | 改用裸 int `(1280000), (2560000)` 鏡像 TiDB `_tidb_rowid` 切點 | CRDB 3s1r / 3s3r / haproxy-3s3r cell ([5-cell dispatch](./dispatch-records/2026-06-02-crdb-vm3-5cell-suite-dispatch.md)) |
 
 ### D 系列（系統性設計缺陷）
 
 | ID | Commit | 症狀 | 根因 | 修補 |
 |---|---|---|---|---|
-| **D9** | [`2057ada`](#) | batch 移到新 controller 後 30s 內 fail（`ansible.posix` collection 缺失），1 cell TPCC_TS 作廢 | 跨 controller collection 對齊缺乏 preflight 驗證 | `audit-watch-prompt` 加入 batch-readiness preflight 章節（syntax-check + collection list + ssh + disk） |
-| **D10** | [`97ce300`](#) | TiDB vm-3node 3s3r leader 27 全部集中單一 store；PD `leader-schedule-limit=0` 沿用自 vm-1node | vm-3node playbook 寫死 `leader-schedule-limit=0` 未調整 | vm-3node 改回 `4`（PD 預設）；vm-1node 保留 0 |
+| **D9** | `2057ada` | batch 移到新 controller 後 30s 內 fail（`ansible.posix` collection 缺失），1 cell TPCC_TS 作廢 | 跨 controller collection 對齊缺乏 preflight 驗證 | `audit-watch-prompt` 加入 batch-readiness preflight 章節（syntax-check + collection list + ssh + disk） |
+| **D10** | `97ce300` | TiDB vm-3node 3s3r leader 27 全部集中單一 store；PD `leader-schedule-limit=0` 沿用自 vm-1node | vm-3node playbook 寫死 `leader-schedule-limit=0` 未調整 | vm-3node 改回 `4`（PD 預設）；vm-1node 保留 0 |
 | **D11** | (Fix #12 涵蓋) | shard-count gate 嚴格 `actual == EXPECTED_SHARDS` 在 RF=3 + auto-split 情境 fail-closed（order_line 3→4 region）| TiKV auto-split 把熱點 region 自動加切 | gate 改 `actual >= EXPECTED_SHARDS`（SPLIT 是保底，auto-split 加 region 應允許） |
 
 ### Fix # 系列（TiDB / YugabyteDB 個別修補）
 
 | ID | Commit | 對應 |
 |---|---|---|
-| **Fix #9** | [`9fb9e5f`](#) | TiDB SPLIT TABLE syntax for CLUSTERED PK — 不能用 `INDEX PRIMARY` |
-| **Fix #10** | [`a35142d`](#) | TiDB SPLIT BY syntax for small tables — `BETWEEN/REGIONS` warehouse 42 keys < 1000 觸發 ERROR 8212；改用顯式分裂點 `BY (43),(86)` |
-| **Fix #11** | [`d30bceb`](#) + [`07d9da9`](#) | PD `replica-schedule-limit=0→4`（讓 RF=3 真實生效）+ ansible shell task 改 `/bin/bash`（process substitution）+ dry-run actual peer count gate |
-| **Fix #12** | [`24d0c05`](#) | shard-count gate `>=`（同 D11） |
-| YugabyteDB vm3 a | [`d654824`](#) | YBDB vm3 serial worker join + stabilize + master_addrs gate |
-| YugabyteDB vm3 b | [`68189bc`](#) | stabilize 移至 workers-only，在 `configure data_placement` 之後 |
-| YugabyteDB vm3 c | [`29b5fc5`](#) | RF-aware cluster gate + drop ineffective stabilize-workers |
-| TiKV race fix | [`3dd4989`](#) | TiKV race + ansible `gather_facts` + TiDB vm-3node 4 cells dry-run anchors |
+| **Fix #9** | `9fb9e5f` | TiDB SPLIT TABLE syntax for CLUSTERED PK — 不能用 `INDEX PRIMARY` |
+| **Fix #10** | `a35142d` | TiDB SPLIT BY syntax for small tables — `BETWEEN/REGIONS` warehouse 42 keys < 1000 觸發 ERROR 8212；改用顯式分裂點 `BY (43),(86)` |
+| **Fix #11** | `d30bceb` + `07d9da9` | PD `replica-schedule-limit=0→4`（讓 RF=3 真實生效）+ ansible shell task 改 `/bin/bash`（process substitution）+ dry-run actual peer count gate |
+| **Fix #12** | `24d0c05` | shard-count gate `>=`（同 D11） |
+| YugabyteDB vm3 a | `d654824` | YBDB vm3 serial worker join + stabilize + master_addrs gate |
+| YugabyteDB vm3 b | `68189bc` | stabilize 移至 workers-only，在 `configure data_placement` 之後 |
+| YugabyteDB vm3 c | `29b5fc5` | RF-aware cluster gate + drop ineffective stabilize-workers |
+| TiKV race fix | `3dd4989` | TiKV race + ansible `gather_facts` + TiDB vm-3node 4 cells dry-run anchors |
 
 ### 觀測 / 工具
 
 | ID | Commit | 用途 |
 |---|---|---|
-| status-vm1.sh phase sub-log | [`db3936b`](#) | 顯示正在執行的 phase 子日誌，dispatch 中觀察用 |
+| status-vm1.sh phase sub-log | `db3936b` | 顯示正在執行的 phase 子日誌，dispatch 中觀察用 |
 
 ## 候選配置與彙整分析 (Pending N=3 Validation)
 
