@@ -907,6 +907,45 @@ client → .32:5433
 
 > 本段為 YugabyteDB 2025.2 在 `vm-3node-3s3r-rc` 基準上加入 HAProxy 連線分散的 N=1 結果。HAProxy 位於 `.20:5433`，以 roundrobin 分散到 `.32/.33/.34:5433` 三個 tserver/YSQL entry point；cluster 本身仍為 RF=3、每表 3 tablets、`READ COMMITTED`。
 
+#### 拓樸示意
+
+```
+                     client (.31)
+                       │  go-tpc → 172.24.47.20:5433
+                       ▼
+            ┌──────────────────────┐
+            │  HAProxy on .20:5433  │
+            │  balance roundrobin   │
+            │  mode tcp             │
+            └─────┬────┬────┬───────┘
+                  │    │    │
+        .32:5433  │    │    │  .34:5433
+         tserver  │    │    │   tserver
+                  │ .33:5433│
+                  │ tserver │
+   底層 cluster：3-master / 3-tserver，RF=3，每表 SPLIT INTO 3 TABLETS
+```
+
+#### 關鍵 DB 設定（與 3s3r 完全相同；唯一變因是 SQL frontend）
+
+| 維度 | 設定 |
+|---|---|
+| `yugabyted start --rf` | `3` |
+| Pre-create schema | 9 張表 `SPLIT INTO 3 TABLETS`（同 3s3r 修法） |
+| HAProxy 主機 | `172.24.47.20:5433` |
+| HAProxy timeout | `timeout connect 10s` / `timeout client 1h` / `timeout server 1h` |
+| HAProxy keepalive | `option clitcpka` / `option srvtcpka` |
+| HAProxy balance | `roundrobin` / `mode tcp` |
+| HAProxy stats socket | `/var/lib/haproxy/stats` |
+| client `--db-host` | `172.24.47.20:5433`（HAProxy frontend） |
+
+#### Dry-run 預期
+
+- `actual-rf` 同 3s3r = 3（master raft alive = 3）
+- `replication-factor.txt`：`num_replicas = 3`
+- HAProxy backend health：3 個 server check OK（cfg 中 `check inter 2s`）
+- 首次 dispatch TS `20260525T155542+0800` 因 `coldreset-ybdb.sh` 漏 patch 中斷 → **不採用**；正式 TS `20260525T193740+0800` PASS
+
 #### Artifact 與取數口徑
 
 | 項目 | 值 |

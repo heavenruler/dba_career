@@ -411,7 +411,9 @@
 
 > ⚠️ **本檢核項屬 template-acceptance 用 checklist，不應複製到實際 pipeline-log**；參見上方「Forbidden 章節」說明。
 
-## 三家對齊矩陣（2026-06-04 audit snapshot）
+## 三家對齊矩陣（歷史 audit snapshot — 2026-06-04 audit-1 起點）
+
+> 本表為 2026-06-04 audit-1 啟動時的對齊起點，並非當前 active baseline。當前 baseline 見「§ 三家對齊矩陣 current state（2026-06-04 audit-2 後）」（本檔下方）。本表保留作歷史證據（哪些項曾偏離、修了什麼）。
 
 | 對齊項 | TiDB | CRDB | YBDB | 待修正 |
 |---|:---:|:---:|:---:|---|
@@ -446,24 +448,43 @@
 | CRDB 補 `## Kubernetes — 未排期` 收尾段 | `crdb-tc1/S-BASE/pipeline-log.md` 末尾 | 新增 1 節 | 待 |
 | TiDB vm-3node-1s1r Execute 數據 placeholder | `tidb-tc1/S-BASE/pipeline-log.md` line 439 | 待 EXECUTE=1 跑完回填 | 排程 |
 
+## 三家對齊矩陣 current state（2026-06-04 audit-2 後）
+
+| 對齊項 | TiDB | CRDB | YBDB | 備註 |
+|---|:---:|:---:|:---:|---|
+| Mandatory §0-§8 完整 | ✓ | ✓ | ✓ | YBDB stale 2 節已移除（F3/F4）；CRDB 補 K8s 收尾（F6）|
+| 每 iso 段 11 子節 | ✓ | ✓（rr/strict 補 Gate/Prepare/Saturation/觀察，audit-2 F-001）| ✓ | — |
+| vm-3node 5 sub-topology Execute | ✓（1s1r 已回填，F7）| ✓ 5/5 | ✓ HAProxy 段補 3 子節（audit-2 F-002）| — |
+| TL;DR 日期格式 `(YYYY-MM-DD/DD)` | ✓ | ✓ | ✓（F1 已去空格）| — |
+| 「下一步」wording 同步 | ✓ | n/a | ✓（F2 改為 `K8s 對照組待重跑`）| — |
+| Forbidden 章節 hit count | 0 | 0 | 0 | F3/F4/F5 完成 |
+| 連續多條 `---` | ✗ | ✗ | ✗（F5 收斂）| — |
+| K8s 收尾段 | ✓ pipeline-log-old.md | ✓ Kubernetes — 未排期 | ✓ yuga-tc1-old | — |
+| SUMMARY 5-cell 一致性 | ✓ 5/5 | ✓ 5/5 | ✓ 5/5 | audit-2 D8 全 Yes |
+| TL;DR ranking 表欄位 | `err / 5min` | `err / 5min` | thread 矩陣 | template 允許 DB-specific 變體（audit-2 F-004）|
+
 ### 驗證指令
 
+> ⚠️ scope：只驗 active pipeline-log 三份；`results/*/S-BASE/` glob 會掃入 `cockroach-tc1-old` / `yuga-tc1-old` archive，須以 `-g '!*-old/**'` 排除或明列三份檔。
+
 ```bash
+ACTIVE='results/tidb-tc1/S-BASE/pipeline-log.md results/crdb-tc1/S-BASE/pipeline-log.md results/yuga-tc1/S-BASE/pipeline-log.md'
+
 # pipeline-log 三家骨架對比（mandatory section header 數）
-for db in tidb crdb yuga; do
-  echo "${db}: $(grep -c '^## ' results/${db}-tc1/S-BASE/pipeline-log.md)"
+for f in $ACTIVE; do
+  echo "${f}: $(grep -c '^## ' $f)"
 done
 # 預期：TiDB 7 / CRDB 7（補 K8s 後）/ YBDB 8（含 2 DB-specific optional）
 
-# 連續多條 --- 反例檢查
-awk '/^---$/{c++; if(c>=2) print FILENAME ":" NR; next} {c=0}' results/*/S-BASE/pipeline-log.md
+# 連續多條 --- 反例檢查（active scope only）
+awk '/^---$/{c++; if(c>=2) print FILENAME ":" NR; next} {c=0}' $ACTIVE
 # 預期：0 行
 
-# 過時章節檢查
-rg -n '## v4\.7 重跑檢核項' results/*/S-BASE/pipeline-log.md
-# 預期：0 行
+# 過時章節檢查（active scope only）
+rg -n '## v4\.7 重跑檢核項' $ACTIVE
+# 預期：0 行（archive `yuga-tc1-old/S-BASE/pipeline-log.md:129` 為合理歷史命中，不掃）
 
-# vm-3node TL;DR 子表反例檢查
-rg -n '^### TL;DR — vm-3node' results/*/S-BASE/pipeline-log.md
+# vm-3node TL;DR 子表反例檢查（active scope only）
+rg -n '^### TL;DR — vm-3node' $ACTIVE
 # 預期：0 行
 ```
