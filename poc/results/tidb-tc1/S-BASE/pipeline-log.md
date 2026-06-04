@@ -8,13 +8,13 @@
 
 **核心結論**：TiDB v8.5.2 在 4 vCPU + single XFS disk 硬體下，**pessimistic mode 全跑零 error、RR 反而比 RC 快 6%**；strict 在 TiDB 等價於 RR（不支援原生 SERIALIZABLE），跳過不重跑。
 
-### tpmC 排行（t128, 5 round mean）
+### tpmC 排行（5 round mean）
 
-| 排名 | iso | tpmC | DB-host 瓶頸 | err / 5min |
-|------|-----|------|--------------|------------|
-| 🥇 | **rr (pessimistic)** | **13,874** | CPU-bound（%user 80.8% / %idle 4.5% / 瞬間 %idle min 0.25%）| **0** |
-| 🥈 | rc (pessimistic) | 13,064 | CPU-bound（%user 79.6% / %idle 4.5%）| **0** |
-| — | strict | （等價於 rr，略過） | — | — |
+| 排名 | iso | tpmC | 併發 | DB-host 瓶頸 | err count / round | error rate | N |
+|---|---|---:|:---:|---|---:|---:|:---:|
+| 🥇 | **rr (pessimistic)** | **13,874** | t128 | CPU-bound（%user 80.8% / %idle 4.5%）| **0** | 0.0% | 1 |
+| 🥈 | rc (pessimistic) | 13,064 | t128 | CPU-bound（%user 79.6% / %idle 4.5%） | **0** | 0.0% | 1 |
+| — | strict | — | — | 等價於 rr，略過 | — | — | — |
 
 ### 三大發現
 

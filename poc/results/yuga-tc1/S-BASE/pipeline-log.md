@@ -8,13 +8,15 @@
 
 **核心結論**：YugabyteDB 2025.2.2 LTS 在 4 vCPU + single XFS 硬體下，**rc ＞ rr ＞ strict** — 與 CockroachDB「strict ＞ rc ＞ rr」**完全相反**。原因：YugabyteDB rc 本身 CPU-bound（無 IO headroom 可榨），SSI 額外的 read-refresh / serializable detector 直接吃 CPU，反而拖慢；對比 CockroachDB rc IO-bound（fsync ceiling），SSI 改走 CPU 路徑剛好避開 IO 瓶頸。
 
-### tpmC 排行（5-round mean，4 vCPU + single XFS）
+### tpmC 排行（5 round mean）
 
-| iso | t16 | t32 | t64 | t128 | peak | err / round 模式 |
-|-----|-----|-----|-----|------|------|------------------|
-| rc  | 10,653 | **11,436** | 11,240 | 10,885 | **t32** | **0** 全程 |
-| rr  | 1,846 | 1,879 | 1,847 | 1,714 | t32 | 15 / 31 / 63 / 127（線性 N−1，SI 衝突）|
-| strict | 1,096 | 1,130 | 1,092 | 1,129 | t32 | 14.6 / 30.2 / 58.2 / 121.8（~N−1 但比 rr 略少 ~5%）|
+> 三家 YBDB iso 都在 **t32** 達 peak（與 TiDB / CRDB 的 t128 peak 不同）；rr / strict 在 t128 已掉約 8.8%/0.1%，反映 CPU-bound + N−1 retry pattern。完整 4 thread sweep 數字見各 iso §「Execute 結果」與 §「Saturation」。
+
+| 排名 | iso | tpmC | 併發 | DB-host 瓶頸 | err count / round | error rate | N |
+|---|---|---:|:---:|---|---:|---:|:---:|
+| 🥇 | **rc** | **11,436** | t32 | CPU-bound（%user 74% + %sys 18% ≈ 92%）| **0** | 0.0% | 1 |
+| 🥈 | rr | 1,879 | t32 | retry-bound（SI 線性 N−1 衝突）| 31 | 0.149% | 1 |
+| 🥉 | strict | 1,130 | t32 | retry-bound（SSI ≈N−1，比 rr 略少 ~5%）| 31 | 0.248% | 1 |
 
 ### 三大發現
 

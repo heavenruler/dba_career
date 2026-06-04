@@ -8,13 +8,13 @@
 
 **核心結論**：CockroachDB v26.2 在 4 vCPU + single XFS disk 硬體下，**預設 SERIALIZABLE 最快**（違反「強 iso 較慢」直覺）；preview RR 是最慢的選項（retry storm 浪費 60% 吞吐）。
 
-### tpmC 排行（t128, 5 round mean）
+### tpmC 排行（5 round mean）
 
-| 排名 | iso | tpmC | DB-host 瓶頸 | err / 5min |
-|------|-----|------|--------------|------------|
-| 🥇 | **strict (SSI, 預設)** | **10,456** | scale with threads（%idle 33→10%）| 125 |
-| 🥈 | rc | 8,813 | fsync IO 立即觸頂（%idle 5% / %iowait 18%） | 0 |
-| 🥉 | rr (preview) | 3,788 | retry storm（DB %idle 46%、CPU 浪費在 client 重送）| 127 |
+| 排名 | iso | tpmC | 併發 | DB-host 瓶頸 | err count / round | error rate | N |
+|---|---|---:|:---:|---|---:|---:|:---:|
+| 🥇 | **strict (SSI, 預設)** | **10,456** | t128 | scale with threads（%idle 33→10%）| 126 | 0.108% | 1 |
+| 🥈 | rc | 8,813 | t128 | fsync IO 立即觸頂（%idle 5% / %iowait 18%）| **0** | 0.0% | 1 |
+| 🥉 | rr (preview) | 3,788 | t128 | retry storm（DB %idle 46%、CPU 浪費在 client 重送）| 127 | 0.300% | 1 |
 
 ### 三大發現
 

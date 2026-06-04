@@ -66,11 +66,15 @@
 
 ### tpmC 排行
 
-| 排名 | 案例 / 隔離級 | tpmC | 併發 | DB-host 瓶頸 | error count | error rate | N |
-|---|---|---:|---:|---|---:|---:|---:|
-| 🥇 | `<隔離級 / 子拓撲>` | `<tpmC>` | `<threads>` | `<CPU-bound / IO-bound / retry-bound / coordination-bound / 待確認>` | `<count>` | `<errors / total 或 %>` | `<1 或 3>` |
-| 🥈 | `<隔離級 / 子拓撲>` | `<tpmC>` | `<threads>` | `<瓶頸>` | `<count>` | `<errors / total 或 %>` | `<1 或 3>` |
-| 🥉 | `<隔離級 / 子拓撲>` | `<tpmC>` | `<threads>` | `<瓶頸>` | `<count>` | `<errors / total 或 %>` | `<1 或 3>` |
+統一 8 欄 ranking-style；`併發` 允許 per-row 變動（讓「peak 點不同 t」訊息留在 TL;DR），thread sweep 細節歸 §「Execute 結果」/「Round-by-round」/「Saturation」，TL;DR 不重複展開。
+
+| 排名 | 案例 / 隔離級 | tpmC | 併發 | DB-host 瓶頸 | err count / round | error rate | N |
+|---|---|---:|:---:|---|---:|---:|:---:|
+| 🥇 | `<隔離級 / 子拓撲>` | `<tpmC>` | `t??` | `<CPU-bound / IO-bound / retry-bound / coordination-bound / 待確認>` | `<count>` | `<all_txn.error_rate_pct>` | `<1 或 3>` |
+| 🥈 | `<隔離級 / 子拓撲>` | `<tpmC>` | `t??` | `<瓶頸>` | `<count>` | `<rate>` | `<1 或 3>` |
+| 🥉 | `<隔離級 / 子拓撲>` | `<tpmC>` | `t??` | `<瓶頸>` | `<count>` | `<rate>` | `<1 或 3>` |
+
+> 數據口徑：`err count / round` = `all_txn.error_count / 5`（5-round mean）；`error rate` 取 `summary.json.thread_results.<N>.all_txn.error_rate_pct`。peak 點不同 t 的事實透過 `併發` 欄 per-row 表達；若有跨 iso thread 不一致需更深入觀察，補一行說明指向 §「Execute 結果」。
 
 ### 三大發現
 
@@ -461,7 +465,7 @@
 | 連續多條 `---` | ✗ | ✗ | ✗（F5 收斂）| — |
 | K8s 收尾段 | ✓ pipeline-log-old.md | ✓ Kubernetes — 未排期 | ✓ yuga-tc1-old | — |
 | SUMMARY 5-cell 一致性 | ✓ 5/5 | ✓ 5/5 | ✓ 5/5 | audit-2 D8 全 Yes |
-| TL;DR ranking 表欄位 | `err / 5min` | `err / 5min` | thread 矩陣 | template 允許 DB-specific 變體（audit-2 F-004）|
+| TL;DR ranking 表欄位 | 8 欄統一（併發=t128 三列）| 8 欄統一（併發=t128 三列）| 8 欄統一（併發=t32 三列）| 三家統一 8-col；併發欄允許 per-row 變動（本批三家各 DB 內三列同 t）；audit-2 F-004 收尾 |
 
 ### 驗證指令
 
