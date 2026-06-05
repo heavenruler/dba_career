@@ -2,25 +2,30 @@
 
 > 對應文件：`poc/1_MeetingMinutes/0602.md`（含 Track A–E 完整規劃）
 
+> **Status as of 2026-06-05**：§3 + §4 跨專線決策已透過 [`0602-decisions-track-E.md`](./0602-decisions-track-E.md) 拍板（commit `fca302b`）；§5 阻塞點清空；§1 大部分仍 pending（A 區 6 項待拍）；新增 §6 = 0605 議題（commit `9dc0231`）。
+>
+> 圖例：✓ 已決 / ⏳ pending / ✗ 阻塞
+
 ---
 
 ## §1. 第一階段 測試結論彙整（TiDB / YBDB）
 
-1. **TiDB 結果呈現方式（l4r4 leader balance 已知 caveat）**
+1. **TiDB 結果呈現方式（l4r4 leader balance 已知 caveat）** ⏳ 待 §12 A2/A3
    - 選項 A：l4r4 直接跑、README 主表加 caveat 註腳 — 成本最低；對外解讀可能模糊
    - 選項 B：l0r0 重跑 5 cell — 消滅 caveat；成本 +15h
    - 選項 C：l4r4 主跑 + l0r0 補 1 cell 對照 — 折衷量化影響；成本 +3h
 
-2. **YBDB 結論固化**
+2. **YBDB 結論固化** ⏳ 待 §12 A 區（連動 N=3）
    - 現況：vm-3node 5 cell 全綠 N=1 已完
    - 待決：N=1 是否足以入主表
 
-3. **N=3 補測範圍**
+3. **N=3 補測範圍** ⏳ 待 §12 A6
    - 選項 A：三家 3s3r 各補 N=3（最有代表性對照組；~9h）
    - 選項 B：只補 haproxy-3s3r 一個 cell（~3h）
    - 選項 C：全 cell N=3（~45h，過大）
+   - **選項 D（建議補入）**：3s3r + haproxy-3s3r 兩 cell × 三家（~18h，與 Pre-P0 並行不擋路）
 
-4. **Batch script 入庫**
+4. **Batch script 入庫** ⏳ 待 §12 A4
    - 現況：`/tmp/batch-crdb-5cell-suite.sh` + `/tmp/batch-tidb-5cell-suite.sh` 為 transient
    - 待決：是否搬至 `poc/tests/batch/` commit（保留可重現）
 
@@ -133,19 +138,18 @@
 2. **鎖定變數**
    - iso = rc / HAProxy = 每區 1 / 3 shard × 3 replica / W = 128
 
-3. **Cluster 拓樸**
+3. **Cluster 拓樸** ✓ single 6-node（B1）
    - 選項 A：single 6-node cluster — 測 raft 跨 WAN（PoC 重點）
    - 選項 B：two 3-node + 邏輯複製 (CDC) — 物理隔離、無 raft 跨區、測場景不同
 
-4. **Placement 策略**
+4. **Placement 策略** ✓ P-A + P-B 兩拓樸都測（B2）
    - P-A：2-IDC + 1-GCP（majority IDC，GCP 純 follower）— 適 Test 1
    - P-B：1-IDC + 1-GCP + 1-arbiter / leader 各區散 — 適 Test 2
-   - 建議：兩拓樸都測
 
-5. **DB 範圍**
+5. **DB 範圍** ✓ 先 TiDB（B3 / C3）
    - 選項 A：三家全測；選項 B：先 CRDB（跨區語義最完整）；選項 C：先 TiDB（既有最熟）
 
-6. **N 數**
+6. **N 數** ✓ 全部 N=1（B5；caveat: exploratory only，不入跨家 median table）
    - 建議：N=1 先 → 確認趨勢後挑代表 cell 補 N=3
 
 ---
@@ -157,14 +161,14 @@
    - 拓樸：6-node + P-A placement / 只 IDC client → IDC haproxy → IDC nodes
    - 預期：tpmC ↓ 10–30%（依 RTT）
 
-2. **Test 2 — 兩區並發 TPCC**
+2. **Test 2 — 兩區並發 TPCC** ✓ W 分配 Option B（C6）
    - 目的：量化 WAN 競爭 + 跨區 conflict
    - 拓樸：6-node + P-B placement / IDC + GCP 並行
    - W 分配選擇：
      - 選項 A：兩側都 W=1–128（測極端 contention）
      - 選項 B：IDC W=1–64, GCP W=65–128（隔離 key conflict 與 WAN 互擾）
 
-3. **Test 3 — Chaos / Failover 7 場景**
+3. **Test 3 — Chaos / Failover 7 場景** ✓ 首輪 4 場景 C1/C3/C4/C7（C7）
    - C1：IDC node 1 down / C2：IDC haproxy down
    - C3：WAN 全斷 / C4：WAN +200ms 延遲 / C5：WAN packet loss 5%
    - C6：慢 disk / C7：IDC 全 3 node down
@@ -173,14 +177,14 @@
      - 選項 A：7 場景全跑（~21h）
      - 選項 B：挑關鍵 C1/C3/C4/C7（~12h）
 
-4. **Baseline 對照來源**
+4. **Baseline 對照來源** ✓ current haproxy-3s3r 3-node only（B7/C4，caveat: WAN + scale-out delta 混合）
    - 選項 A：現行 vm-3node-haproxy-3s3r 主表（直接 delta，拓樸非全同）
    - 選項 B：另跑純 IDC 6-node 同規格（拓樸對齊，+12h）
 
-5. **WAN baseline 量測**
+5. **WAN baseline 量測** ✓ Pre-P0 hard gate（B4；iperf3 + ping + MTU + 飽和 packet loss，多時段）
    - 必跑 iperf3 + ping p50/p99（起前 60s + 起末 60s）
 
-6. **Chaos C3 / C7 風險**
+6. **Chaos C3 / C7 風險** ✓ lab 模式（C5；首輪讓 failure 持續整 5 round）
    - C3：GCP minority 期間 read-only；C7：全 cluster 寫拒
    - 待決：production-like 或 lab 模式
 
@@ -196,36 +200,63 @@
 
 ### 第一階段（單區 vm-3node）
 
-| # | 項目 | 狀態 / 預估 |
+| # | 項目 | 狀態 |
 |---|---|---|
-| 1 | CRDB 5-cell suite | 進行中（cell 1/5 threads-128 round-3）；預估 2026-06-02 04:00 完 |
-| 2 | TiDB 5-cell suite | 腳本 ready（.31:/tmp/）；等 CRDB 完 dispatch；預估 2026-06-02 18:00 完 |
-| 3 | YBDB vm-3node | 已完 N=1 |
-| 4 | TiDB dispatch 前 strict patch | 待決：是否加 settle gate (P-1) + schedule-limit verify (P-2) |
-| 5 | TiDB dispatch 觸發方式 | 選項 A 自動 / 選項 B 手動 review summary |
-| 6 | N=3 補測 | Track A 全完後啟動，範圍見 §1 |
-| 7 | 0602.md §13/§14 數據結論 + 決策結果 | Phase 1 完後補 |
+| 1 | CRDB 5-cell suite | ✓ 完成（dispatch-records 系列 / commit 系列）|
+| 2 | TiDB 5-cell suite | ✓ 完成（含 1s1r 數據回填 F7）|
+| 3 | YBDB vm-3node | ✓ 完成 N=1 |
+| 4 | TiDB dispatch 前 strict patch | — pending 釐清（settle gate / schedule-limit verify）|
+| 5 | TiDB dispatch 觸發方式 | ✓ 完成（手動 batch dispatch 已執行）|
+| 6 | N=3 補測 | ⏳ 待 §12 A6（建議選項 D：3s3r + haproxy-3s3r × 三家 ~18h）|
+| 7 | 0602.md §13/§14 數據結論 + 決策結果 | ⏳ §14 跨區部分完成（[`0602-decisions-track-E.md`](./0602-decisions-track-E.md)）；§13 數據結論待 N=3 補測後彙整 |
 
 ### 第二階段（跨專線 vm-6node）
 
 | # | 項目 | 預估 | 阻塞 |
 |---|---|---|---|
-| 1 | Pre-P0：iperf3 baseline + GCP 環境 + ansible 6-node playbook | 2–3 天 | §3 全部決策 |
-| 2 | P0：placement deploy + dry-run smoke | 1 天 | Pre-P0 完 |
-| 3 | P1 Test 1：IDC 獨立 | ~12h | P0 完 |
-| 4 | P2 Test 2：兩區並發 | ~12h | P1 完 |
-| 5 | P3 Test 3：chaos | ~12–21h（依範圍） | P2 完 |
-| 6 | 結果分析 + 0602.md §13/§14 補入 | 1 天 | P3 完 |
+| 1 | Pre-P0：WAN baseline + TiDB 6-node ansible + placement rule + dry-run gate + results 子目錄 | 3 工作天 | ✓ 全解除（可啟動）|
+| 2 | P0：IDC-only-6-node TiDB 5-cell（選跑作 ansible 熱身）| ~3h × 5 cell | Pre-P0 完 |
+| 3 | P1 Test 1：P-A 拓樸（IDC-only TPCC，GCP follower）| ~3h × 5 cell | P0 完 |
+| 4 | P2 Test 2：P-B 拓樸（IDC+GCP 並行，Option B W 分配）| ~3h × 5 cell | P1 完 |
+| 5 | P3 Test 3：4 chaos 場景 C1/C3/C4/C7 lab 模式 | ~半天 × 4 | P2 完 |
+| 6 | P4：Track E 報告產出（pipeline-log + SUMMARY + 跨家對齊矩陣）| ~1 工作天 | P3 完 |
 
 ### 阻塞點
 
-- GCP IP 10.162.0.x 路由是否開通（決定 Pre-P0 起點）
-- iac/ansible 全未支援 6-node 跨區（playbook 重寫 2–3 天）
-- Pre-P0 是否接受 / GCP 端是否 manual deploy 先測
+- ~~GCP IP 10.162.0.x 路由是否開通~~ → ✓ 已開通（C1）
+- ~~iac/ansible 全未支援 6-node 跨區~~ → ✓ 已決定一次性 6-node ansible 重寫（C2，2-3 天）
+- ~~Pre-P0 是否接受~~ → ✓ 接受 ansible 重寫路線（C2）
 
 ### 文件 / Doc 待辦
 
-- Batch script 入庫（§1 第 4 項）
-- PoC-DESIGN §6.5「Track 分類」章節
-- pipeline-log-template 加 settle 欄位
-- 0602.md 補 §13 數據結論 + §14 決策結果
+- Batch script 入庫（§1 第 4 項）— ⏳ 待 §12 A4
+- PoC-DESIGN §6.5「Track 分類」章節 — ⏳
+- PoC-DESIGN §「硬體飽和假設」— ⏳ 待 0605 #1 拍板（CPU ~80% 條件下調參目的論述）
+- pipeline-log-template 加 settle 欄位 — ⏳
+- pipeline-log-template 加 db-config dump checklist — ⏳ 待 0605 #2 拍板
+- 0602.md 補 §13 數據結論 + §14 決策結果 — ⏳（§14 跨區部分完成）
+- 三家統一 8-col TL;DR ranking — ✓ 完成（commit `8d4dded`，含 template 更新）
+- audit-2026-06-04-pipeline-log-spec — ✓ 完成（commit `eb22cc4`，含 F-001 to F-006）
+
+---
+
+## §6. 新議題（2026-06-05 補充）
+
+> 對應文件：[`0605.md`](./0605.md) §0 討論項目（commit `9dc0231`）
+
+1. **CPU ~80% 飽和條件下，調整 process/thread/admission 參數的目的為何？** ⏳
+   - 背景：TiDB / YBDB 4 vCPU 已 CPU-bound（~95% / ~92%）；CRDB rc 是 IO-bound 例外
+   - 論述：A 池大小 / C memory budget / D split guardrails 三類服務 controlled experiment 而非 throughput tuning；只有 B admission control 在飽和下直接改 throughput
+   - 待決：(a) 寫入 PoC-DESIGN §「硬體飽和假設」？ (b) README 主表加註？ (c) pipeline-log template `db-config-dump` 段標明「dump 出來只供 controlled experiment 驗證」？
+
+2. **§6.1 config dump 清單是否同步落地到 pipeline-log-template？** ⏳
+   - 現況：pipeline-log-template `db-config` 只列 effective-config.txt + cluster-settings.txt；0605 §6.1 列更細的 dump 需求
+   - 待決：(a) 寫入 template 為 mandatory checklist / (b) 補三家 `db-config-dump.sh` 對齊 / (c) 只在新測項追加
+
+3. **三家參數不對等對 cross-DB comparison 的 caveat 寫法** ⏳
+   - 不對等：TiDB/YBDB 顯式 thread pool；CRDB 無等價 knob（單 process）
+   - 待決：(a) README 主表加 caveat 句 / (b) 顯式列三家不可調項 / (c) implicit 假設不寫
+
+4. **§6.3 第 4 點「tuning track 與 baseline track 分離」是否立為 PoC-DESIGN 條款？** ⏳
+   - 現況：TiDB l4r4 caveat 即「tuning 混入 baseline」反例（dispatch-records 2026-05-31）
+   - 待決：(a) 寫入 PoC-DESIGN / (b) Track E 是否也適用 / (c) 連動 §12 A2/A3：l4r4 caveat 是否拉出 baseline 獨立 tuning cell
