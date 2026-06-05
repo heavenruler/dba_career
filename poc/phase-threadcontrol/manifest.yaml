@@ -1,0 +1,27 @@
+phase: phase-threadcontrol
+phase_version: 1
+result_scope: T-THRD
+baseline_family: tuning
+comparison_scope: tuning-only
+allowed_result_scopes: [T-THRD]
+forbidden_result_scopes: [S-BASE, S-K8S, X-CROSS]
+allowed_topology:
+  - vm-1node
+  - vm-3node-1s1r
+  - vm-3node-3s3r
+  - vm-3node-haproxy-3s3r
+isolation: [rc, rr, strict]
+warehouses: 128
+warmup_sec: 1200
+warmup_threads: 64
+threads_list: [16, 32, 64, 128]
+rounds: 5
+requires_n: 1
+metrics_hosts:
+  source: topology-derived
+  kind: vm
+  ids: [dbhost-1, dbhost-2, dbhost-3]
+artifact_prefix: results/{db}-tc1/T-THRD/
+baseline_eligible: false
+tuning_profile_id: REQUIRED  # 每次跑必須由 caller 指定具體 profile id（如 tidb-readpool-a / ybdb-rpc-a / crdb-admission-a）
+owner_doc: 1_MeetingMinutes/0605.md
