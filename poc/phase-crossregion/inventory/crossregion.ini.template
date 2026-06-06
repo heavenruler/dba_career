@@ -1,0 +1,34 @@
+# Ansible inventory template for phase-crossregion
+# Copy to ansible/inventory/crossregion.ini (gitignored) and fill in IPs.
+# 來源：phase-crossregion/manifest.yaml metrics_hosts.ids
+# 決議：0602-decisions-track-E.md (single 6-node, P-A + P-B placement)
+
+# IDC region (3 nodes)
+[idc_db]
+172.24.40.32 ansible_hostname=idc-dbhost-1 logical_id=idc-dbhost-1 region=idc zone=vlan241
+172.24.40.33 ansible_hostname=idc-dbhost-2 logical_id=idc-dbhost-2 region=idc zone=vlan241
+172.24.40.34 ansible_hostname=idc-dbhost-3 logical_id=idc-dbhost-3 region=idc zone=vlan241
+
+# GCP region (3 nodes; SSH via IAP tunnel, see iac-gcp/tunnel.sh)
+[gcp_db]
+localhost ansible_hostname=gcp-dbhost-1 ansible_port=12211 logical_id=gcp-dbhost-1 region=gcp zone=asia-east1-a
+localhost ansible_hostname=gcp-dbhost-2 ansible_port=12212 logical_id=gcp-dbhost-2 region=gcp zone=asia-east1-b
+localhost ansible_hostname=gcp-dbhost-3 ansible_port=12213 logical_id=gcp-dbhost-3 region=gcp zone=asia-east1-c
+
+# Union group for cross-region cluster ops
+[idc_gcp_cluster:children]
+idc_db
+gcp_db
+
+# Client nodes
+[idc_client]
+172.24.40.31 ansible_hostname=idc-client ansible_python_interpreter=/usr/bin/python3.12
+
+[gcp_client]
+localhost ansible_hostname=gcp-client ansible_port=12211
+
+# Phase metadata (for ansible playbook to set CLUSTER_HOSTS env)
+[idc_gcp_cluster:vars]
+phase=phase-crossregion
+result_scope=X-CROSS
+cluster_hosts=idc-dbhost-1@172.24.40.32 idc-dbhost-2@172.24.40.33 idc-dbhost-3@172.24.40.34 gcp-dbhost-1@localhost:12211 gcp-dbhost-2@localhost:12212 gcp-dbhost-3@localhost:12213

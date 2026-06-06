@@ -1,0 +1,19 @@
+# Example tfvars for iac-gcp/.
+#
+# Copy to iac-gcp/terraform.tfvars (already gitignored) and fill with REAL values.
+# Never commit the real terraform.tfvars; never expose credentials in chat / logs / files.
+
+# Required: SSH public key for root login on GCP VMs
+ssh_public_key = "ssh-ed25519 AAAA... your-key-here"
+
+# Required: root password (used by startup-script for emergency console access).
+# Treat as a secret; rotate as policy demands.
+# NOTE: 推薦改用 IAP + project-level OS Login + ssh-key 取代 plaintext password。
+root_password = "REDACTED-SET-LOCALLY"
+
+# Optional overrides (defaults in variables.tf):
+# project               = "lab-service-project-dba"
+# region                = "asia-east1"
+# subnetwork            = "projects/lab-host-project-104/regions/asia-east1/subnetworks/lab-dba-subnet"
+# service_account_email = "350556399058-compute@developer.gserviceaccount.com"
+# disk_size             = 100
