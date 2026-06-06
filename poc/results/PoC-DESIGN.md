@@ -1495,3 +1495,56 @@ MAC (orchestrator)
 | Phase F — vm-3node-haproxy-3s3r-rc | 3 shard / 3 replica + HAProxy | 連線分散效益 |
 
 每階段完成後更新本文件「15. 設計取捨記錄」與 README.md 結果表。
+
+## 17. Phase Isolation Framework (IaC 環境隔離)
+
+為避免不同測試環境互相污染（設定、結果、文件口徑），建立四 `result_scope` 隔離框架。
+
+### 17.1 四 scope SSOT
+
+詳 [`PHASES.md`](./PHASES.md) registry。
+
+| scope | phase dir | baseline_family | baseline_eligible | 主用途 |
+|---|---|---|:---:|---|
+| `S-BASE` | （無）| `vm` | ✓ | vm-1node / vm-3node baseline（既有；對應 §16 Phase A–F）|
+| `S-K8S` | [`phase-k8s/`](../phase-k8s/) | `k8s` | ✓ (K8s family only) | Kubernetes 對照組 |
+| `T-THRD` | [`phase-threadcontrol/`](../phase-threadcontrol/) | `tuning` | ✗ | process/thread/admission tuning 隔離 |
+| `X-CROSS` | [`phase-crossregion/`](../phase-crossregion/) | `crossregion` | ✗ | IDC↔GCP 跨區 / 跨專線 PoC |
+
+### 17.2 隔離規則
+
+1. **路徑** sibling：`results/{db}-tc1/{S-BASE, S-K8S, T-THRD, X-CROSS}/`（不可嵌套）
+2. **主表 source list** 禁讀 `T-THRD/` 與 `X-CROSS/`（落地：`verify-readme-gates.sh` P4f）
+3. **跨 family 對比** 須在 README 明標 `baseline_family`（VM vs K8s 不可直引）
+4. **Make target fail-fast**：[`tests/common/lib/guard.sh`](../tests/common/lib/guard.sh) 四個 `assert_*_target` helper
+5. **threadcontrol 三層 hard gate**：詳 [`phase-threadcontrol/guardrails.md`](../phase-threadcontrol/guardrails.md)
+
+### 17.3 manifest schema
+
+每 phase 一份 `manifest.yaml`，schema 詳 [`PHASES.md §3`](./PHASES.md)。驗證 helper：
+
+```bash
+tests/common/validate-phase-manifest.sh <path-to-manifest.yaml>
+tests/common/validate-phase-manifest.sh --self-test   # validate fixture
+```
+
+### 17.4 metrics fan-out
+
+`tests/common/lib/host-resolution.sh` 在 `$CLUSTER_HOSTS` 設定時啟用 fan-out，產出 `metrics/hosts.json` mapping + per-host artifact `mpstat-db-<logical-id>.txt` 等。未設時沿用既有單 host 路徑 bit-exact。詳 [`PHASES.md §4`](./PHASES.md)。
+
+### 17.5 Make target
+
+```
+make phase-k8s-{plan,deploy,run}
+make phase-threadcontrol-{plan,verify}
+make phase-crossregion-{plan,deploy,run}
+make phase-crossregion-chaos-{plan,deploy,run}
+```
+
+`plan` target 為 read-only echo manifest；deploy/run 在 wrapper 未實作前 `exit 1`（避免誤觸發）。
+
+### 17.6 變更歷史
+
+| 日期 | commit | 變更 |
+|---|---|---|
+| 2026-06-06 | T108a/T108b/T104/T105/T106/T107 | 初版 framework 落地（codex review v2 approve-with-constraints）|

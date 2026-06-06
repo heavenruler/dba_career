@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # verify-readme-gates.sh — comprehensive README/results integrity gates
 #
-# Runs 5 sub-phase verifications:
+# Runs 6 sub-phase verifications:
 #   P4a: markdown link + anchor verify (delegates to verify-readme-links.py)
 #   P4b: canonical TS dry-run — 18 cells × 3 DB, picker should yield expected TS
 #   P4c: deprecated archive reference check — cockroach-tc1 / yuga-tc1-old
@@ -9,6 +9,8 @@
 #   P4d: TOC smoke — required main headings exist in README.md
 #   P4e: terminology — `CRDB` / `YBDB` should not appear in narrative
 #        (path codes like `crdb-tc1` are exempt — lowercase only)
+#   P4f: phase scope contamination — T-THRD / X-CROSS paths禁入 README main tables
+#        (baseline_eligible=false scopes must not feed main-table source list)
 #
 # Exit: 0 = all gates pass; >0 = number of gates that failed.
 
@@ -165,10 +167,35 @@ else
 fi
 
 # ----------------------------------------------------------------------------
+section "P4f: phase scope contamination (T-THRD / X-CROSS in README main tables)"
+# ----------------------------------------------------------------------------
+# baseline_eligible=false scopes (T-THRD, X-CROSS) must not appear as data
+# source in README.md main tables. Allowed contexts:
+#   - phase registry references (e.g., 連結 results/PHASES.md / phase-*/README.md)
+#   - explicit forbidden / caveat / 禁讀 discussion
+# Implementation: any line in README.md containing `T-THRD/` or `X-CROSS/` MUST
+# co-occur with one of: `PHASES.md`, `phase-`, `forbidden`, `禁讀`, `caveat`.
+
+phase_violations=""
+while IFS= read -r line; do
+  case "$line" in
+    *PHASES.md*|*phase-*|*forbidden*|*禁讀*|*caveat*) ;;
+    *) phase_violations+="$line"$'\n' ;;
+  esac
+done < <(grep -nE 'T-THRD/|X-CROSS/' "$README" || true)
+
+if [ -z "$phase_violations" ]; then
+  pass "no main-table contamination from T-THRD / X-CROSS in README.md"
+else
+  fail "T-THRD / X-CROSS references in README.md missing phase-registry context:"
+  echo "$phase_violations"
+fi
+
+# ----------------------------------------------------------------------------
 echo
 echo "=== SUMMARY ==="
 if [ "$ERR" -eq 0 ]; then
-  echo "  All 5 sub-phase gates PASS."
+  echo "  All 6 sub-phase gates PASS."
   exit 0
 else
   echo "  $ERR gate(s) FAILED — see above."

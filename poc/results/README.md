@@ -391,8 +391,17 @@ grep '平均時間' <artifact-dir>/runs/threads-<N>/round-<R>/mpstat-db.txt
 ### 設計與會議文件
 
 - 設計規劃：[`PoC-DESIGN.md`](./PoC-DESIGN.md)
+- **Phase Registry**（4 個 result_scope SSOT）：[`PHASES.md`](./PHASES.md)
 - 會議備忘（單區 + 跨區整合）：[`../1_MeetingMinutes/0602.md`](../1_MeetingMinutes/0602.md)
 - 會議討論議題（email-ready）：[`../1_MeetingMinutes/0602-agenda.md`](../1_MeetingMinutes/0602-agenda.md)
+
+### Phase isolation entries（IaC 分環境實作）
+
+`S-BASE` 為既有 vm baseline；以下三個 phase 為 sibling scope，**不可混入主表**。詳 [`PHASES.md`](./PHASES.md)。
+
+- **phase-k8s** — Kubernetes 對照組（v4.7 detached suite, RC only, `baseline_family: k8s`）：[`../phase-k8s/README.md`](../phase-k8s/README.md)
+- **phase-threadcontrol** — process/thread/admission tuning isolation（`baseline_eligible: false`，三層 hard gate）：[`../phase-threadcontrol/README.md`](../phase-threadcontrol/README.md)
+- **phase-crossregion** — IDC↔GCP 跨區（spec-only this commit, `baseline_eligible: false`，placement × workload 正交）：[`../phase-crossregion/README.md`](../phase-crossregion/README.md)
 
 ### Dispatch records（執行經過與跨 cell 分析）
 

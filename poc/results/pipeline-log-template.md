@@ -16,6 +16,7 @@
 - `註1` 到 `註4` 為全文件共用，不針對單一表格重新編號。
 - 文末固定使用 `<a id="note-1"></a>` anchor，避免 Markdown renderer 對中文 heading anchor 產生差異。
 - `N` 表示獨立重跑次數（不是 round）；`N=1` 為方向性觀察，需 `N=3` 才可作為對外結論基準（同 README N9）。
+- **Phase scope 規則**（2026-06-06 phase isolation framework 後）：本模板僅適用 `S-BASE` (vm baseline)；其他 scope (`S-K8S` / `T-THRD` / `X-CROSS`) 須另寫對應 pipeline-log。`baseline_eligible: false` 的 scope (`T-THRD` / `X-CROSS`) **嚴禁**作為跨家對比的 source（[`PHASES.md`](./PHASES.md) §2）。`S-K8S` 屬 `baseline_family: k8s`，與 `S-BASE` 屬不同 family，不可直引；跨 family 對比須明標。
 
 ## 章節骨架與例外（2026-06-04 audit 後新增）
 
