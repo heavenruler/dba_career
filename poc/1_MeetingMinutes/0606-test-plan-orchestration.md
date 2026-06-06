@@ -6,7 +6,7 @@
 
 ```
 [A] phase-threadcontrol smoke (~4h 15min, incl. ~1h pending deliverable)
-    Topology: vm-3node-3s3r-haproxy
+    Topology: vm-3node-haproxy-3s3r
     Knob: TiDB readpool.unified.max-thread-count 4 → 8 + auto-adjust=false
     Profile id: tidb-readpool-a
     Output: results/tidb-tc1/T-THRD/tidb-vm-3node-haproxy-3s3r-rc-tidb-readpool-a-<TS>/
@@ -26,9 +26,9 @@
         ▼ K8s ready, NodePort :30004 通
         │
 [D] phase-k8s smoke (~4h pure run, incl. ~半天-1天 pending deliverable first time)
-    Topology: k8s-3node-3s3r-haproxy-unlimit
+    Topology: k8s-3node-haproxy-3s3r-unlimit
     DB: TiDB unlimit
-    Output: results/tidb-tc1/S-K8S/tidb-k8s-3node-3s3r-haproxy-unlimit-rc-<TS>/
+    Output: results/tidb-tc1/S-K8S/tidb-k8s-3node-haproxy-3s3r-unlimit-rc-<TS>/
 ```
 
 ## 2. 預估總時
@@ -46,9 +46,9 @@
 | Q | 決策 | 影響到本 plan |
 |---|---|---|
 | Q1 | phase-threadcontrol = 1 cell smoke | [A] 1 cell only |
-| Q2 | topology = vm-3node-3s3r-haproxy | [A] topology 鎖定 |
+| Q2 | topology = vm-3node-haproxy-3s3r | [A] topology 鎖定 |
 | Q3 | wrapper = thin + 包 run.sh | [D] phase-k8s/run-k8s-suite.sh design |
-| Q4 | phase-k8s = 1 cell smoke @ K8s 3s3r-haproxy 等價 | [D] topology = k8s-3node-3s3r-haproxy-unlimit |
+| Q4 | phase-k8s = 1 cell smoke @ K8s haproxy-3s3r 等價 | [D] topology = k8s-3node-haproxy-3s3r-unlimit |
 | Q5 | VM rebuild 排在 phase-threadcontrol 後 | [B] 序列 [A] → [B] |
 | Q6 | plan doc 走 codex review (B 規則)| 本文件 + 兩 sub-plan 須先 codex approve |
 
@@ -58,14 +58,16 @@
 |---|---|---|---|
 | 1 | `phase-threadcontrol/playbooks/apply-tidb-readpool.yml` | A | Stage A 開始前 |
 | 2 | `phase-threadcontrol/playbooks/revert-tidb-readpool.yml` | A | Stage A 結束時 |
-| 3 | `phase-k8s/manifest.yaml` allowed_topology patch | D | Stage D 開始前 |
-| 4 | `phase-k8s/run-k8s-suite.sh` | D | Stage D 開始前 |
-| 5 | `phase-k8s/gate-k8s.sh` | D | Stage D 開始前 |
-| 6 | `phase-k8s/prepare-k8s.sh` | D | Stage D 開始前 |
-| 7 | `phase-k8s/collect-k8s.sh` | D | Stage D 開始前 |
-| 8 | Makefile `phase-k8s-run` body | D | Stage D 開始前 |
+| 3 | **`phase-threadcontrol/run-threadcontrol-suite.sh`** | A | Stage A 開始前（codex v6 blocking #1）|
+| 4 | **`tests/common/lib/common.sh::write_phase_done` patch** | A + D 共用 | Stage A 開始前（codex v6 blocking #2）|
+| 5 | `phase-k8s/manifest.yaml` allowed_topology patch | D | Stage D 開始前（命名 `haproxy-3s3r` 一致，codex v6 blocking #4）|
+| 6 | `phase-k8s/run-k8s-suite.sh` (thin wrapper)| D | Stage D 開始前（含 phase guard, codex v6 blocking #1 + 5）|
+| 7 | `phase-k8s/gate-k8s.sh` | D | Stage D 開始前 |
+| 8 | `phase-k8s/prepare-k8s.sh` (prepare → SPLIT → mark) | D | Stage D 開始前（codex v6 blocking #3）|
+| 9 | `phase-k8s/collect-k8s.sh` | D | Stage D 開始前 |
+| 10 | Makefile `phase-k8s-run` body | D | Stage D 開始前 |
 
-deliverable 1-2 為 A pre-req；3-8 為 D pre-req（可在 A 跑 ~3h suite 期間平行寫）。
+deliverable 1-4 為 A pre-req；5-10 為 D pre-req。其中 #4 (write_phase_done patch) A 與 D 共用，需先寫。
 
 ## 5. 風險與 fallback
 
