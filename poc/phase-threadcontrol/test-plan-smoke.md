@@ -77,10 +77,13 @@ PROFILE_ID="tidb-readpool-a"
 OUT="results/tidb-tc1/T-THRD/tidb-vm-3node-haproxy-3s3r-rc-${PROFILE_ID}-${TS}"
 mkdir -p "$OUT/db-config"
 
-# Read-only HTTP config dump (per codex v6 blocking #6); verifies 2 keys × 3 nodes.
-# `tikv-ctl modify-tikv-config -n KEY` is a modify interface and only peeks one key.
+# Read-only HTTP config dump (per codex v6 blocking #6 + v7 non-blocking #4).
+# ssh + curl localhost 較不受 firewall / status_addr bind 影響；先 ss 確認 port open。
 for ip in 172.24.40.32 172.24.40.33 172.24.40.34; do
-  curl -sS "http://$ip:20180/config" > "$OUT/db-config/before-tikv-config-${ip##*.}.json"
+  ssh root@$ip 'ss -ltnp | grep 20180' > "$OUT/db-config/before-port-check-${ip##*.}.txt" \
+    || { echo "[gate] TiKV :20180 not listening on $ip" >&2; exit 1; }
+  ssh root@$ip 'curl -sS http://127.0.0.1:20180/config' \
+    > "$OUT/db-config/before-tikv-config-${ip##*.}.json"
   jq -r '.readpool.unified | {max_thread_count: ."max-thread-count", auto_adjust: ."auto-adjust-pool-size"}' \
     "$OUT/db-config/before-tikv-config-${ip##*.}.json" \
     > "$OUT/db-config/before-readpool-${ip##*.}.txt"
@@ -92,9 +95,10 @@ ansible-playbook -i ansible/inventory/hosts.ini \
   phase-threadcontrol/playbooks/apply-tidb-readpool.yml \
   --extra-vars 'readpool_max_threads=8 auto_adjust=false'
 
-# === Stage 3: 採 after-config dump (read-only via :20180, 同 Stage 1) ===
+# === Stage 3: 採 after-config dump (read-only via SSH + curl localhost) ===
 for ip in 172.24.40.32 172.24.40.33 172.24.40.34; do
-  curl -sS "http://$ip:20180/config" > "$OUT/db-config/after-tikv-config-${ip##*.}.json"
+  ssh root@$ip 'curl -sS http://127.0.0.1:20180/config' \
+    > "$OUT/db-config/after-tikv-config-${ip##*.}.json"
   jq -r '.readpool.unified | {max_thread_count: ."max-thread-count", auto_adjust: ."auto-adjust-pool-size"}' \
     "$OUT/db-config/after-tikv-config-${ip##*.}.json" \
     > "$OUT/db-config/after-readpool-${ip##*.}.txt"
@@ -126,8 +130,12 @@ ssh root@172.24.40.31 "env \
 # === Stage 5: 等待 + fetch + verify ===
 # 等 ~3h；status check via:
 make status-vm3-tidb-haproxy-3s3r-rc
-# fetch when .suite.done present：
-rsync -av root@172.24.40.31:/tmp/poc-tpcc/artifacts/T-THRD/tidb-vm-3node-haproxy-3s3r-rc-${TS}/ "$OUT/"
+#
+# Remote artifact name = common form: tidb-vm-3node-haproxy-3s3r-rc-<TS>
+# Local profile path = tidb-vm-3node-haproxy-3s3r-rc-<profile-id>-<TS>
+# 此處明示 rsync source 不含 profile_id；fetch 時 rename 落 local profile path（codex v7 non-blocking #5）。
+REMOTE_SRC="root@172.24.40.31:/tmp/poc-tpcc/artifacts/T-THRD/tidb-vm-3node-haproxy-3s3r-rc-${TS}/"
+rsync -av "$REMOTE_SRC" "$OUT/"     # $OUT 已含 profile_id, see Stage 1
 
 # verify markers
 jq '.phase, .result_scope, .baseline_eligible, .tuning_profile_id' "$OUT/.suite.done"
@@ -181,3 +189,4 @@ ansible-playbook -i ansible/inventory/hosts.ini \
 |---|---|---|
 | 2026-06-06 | （本 commit）| 初版 smoke plan，Q1-Q6 拍板（cell=1 / topology=haproxy-3s3r / wrapper=thin / codex review enabled）|
 | 2026-06-06 | （本 commit fixup）| codex v6 review changes-required 修正 6 blocking：命名統一 haproxy-3s3r / 改用 read-only :20180/config dump / 引入 phase wrapper / `write_phase_done` patch 規劃 / TUNING_PROFILE-aware acceptance criteria |
+| 2026-06-06 | （本 commit fixup-2）| codex v7 review non-blocking 修正：TiKV dump 改 `ssh + curl localhost:20180` + `ss -ltnp` 預檢 / rsync source 明示為 common name，fetch 時 rename 進 profile-id local path / write_phase_done env 一致性 fail-fast 規劃 |

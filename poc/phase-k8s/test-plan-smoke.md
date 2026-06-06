@@ -39,11 +39,13 @@ manifest patch 為本 smoke pre-req。
 | VM 元件 | K8s 對應 |
 |---|---|
 | 3 個 TiKV process on .32/.33/.34 | TiDB Operator 自動建 3 個 TiKV Pod（每 node 1 個）|
-| 3 shard via manual `SPLIT TABLE warehouse` | 同手動 SPLIT（post-prepare）|
+| **9-table 全 split 為 3 region**（VM 3s3r baseline 慣例：warehouse, district, customer, history, new_order, order_line, orders, item, stock）| 同 9-table split via post-prepare `SPLIT TABLE <name> BETWEEN (1) AND (128) REGIONS 3`；per-table shard count verify |
 | HAProxy `.20:4000` round-robin | NodePort `:30004` + K8s `Service` round-robin（k3s 預設 iptables mode）|
 | `tests/common/run.sh` SSH 至 `.32/.33/.34` 採 metrics | SSH 至 k8s-node-1/2/3（=.32/.33/.34，本來就是 K3s host）採 node-level metrics |
 
 → K8s 與 VM haproxy-3s3r 在 baseline_family 區隔下**機制等價**；tpmC 數字差異視為 K8s vs VM family 對比的 sample point。
+
+**Critical**（codex v7 blocking #2）：必須 9-table 全 split；只 split warehouse 結果不能稱為等價對照。詳 prepare-k8s.sh deliverable spec（§7 #4）。
 
 ## 4. 環境前置 / 假設
 
@@ -128,11 +130,11 @@ cat results/tidb-tc1/S-K8S/.../runs/threads-128/round-3/metrics/hosts.json
 | # | 檔 | 內容 |
 |---|---|---|
 | 1 | `phase-k8s/manifest.yaml` patch | `allowed_topology` 加 `k8s-3node-haproxy-3s3r-{limit,unlimit}`（codex v6 blocking #4 一致命名）|
-| 2 | `phase-k8s/run-k8s-suite.sh` | **thin phase wrapper**（codex v6 blocking #1）：入口先 `source tests/common/lib/guard.sh; assert_phase_k8s_target "$ROOT"`，然後 export `CLUSTER_HOSTS` + `PHASE_NAME` + `RESULT_SCOPE` + `BASELINE_ELIGIBLE` + `TIDB_PORT=30004` + `TPCC_ARTIFACTS`，最後 delegate 到 baseline `launch-vm1-suite.sh` (or 內建 gate → prepare-k8s → run → collect chain) |
-| 3 | `phase-k8s/gate-k8s.sh` | K8s OS gate：`kubectl get pods -A` 驗 ready + `nc -zv 172.24.40.32 30004` 驗 NodePort |
-| 4 | `phase-k8s/prepare-k8s.sh` | **prepare → SPLIT → mark**（codex v6 blocking #3）：(a) go-tpc prepare via NodePort (b) `SPLIT TABLE warehouse BETWEEN (1) AND (128) REGIONS 3` (c) verify 3 region via `information_schema.tikv_region_status` (d) write `.prepare.done`。順序固定，避免外部 SPLIT 被內部 DROP 清掉 |
+| 2 | `phase-k8s/run-k8s-suite.sh` | **thin phase wrapper**（codex v7 blocking #1 修正：**唯一 chain**，不 delegate baseline launcher）：(a) 入口先 `source tests/common/lib/guard.sh; assert_phase_k8s_target "$ROOT"` (b) validate `PHASE_NAME=phase-k8s` + `RESULT_SCOPE=S-K8S` + `BASELINE_ELIGIBLE=true` + `BASELINE_FAMILY=k8s` 已正確 set（漏設 → fail-fast）(c) export `CLUSTER_HOSTS` + `TIDB_PORT=30004` + `TPCC_ARTIFACTS` (d) **固定 chain**：`gate-k8s.sh` → `prepare-k8s.sh` → `tests/common/run.sh` → `collect-k8s.sh` → write `.suite.done`（含 phase/result_scope/baseline_eligible/baseline_family 全 metadata）|
+| 3 | `phase-k8s/gate-k8s.sh` | K8s OS gate：`kubectl get pods -A` 驗 ready + `nc -zv 172.24.40.32 30004` 驗 NodePort + `ssh root@<each k8s-node> 'ss -ltnp \| grep 20180'` 驗 TiKV status port |
+| 4 | `phase-k8s/prepare-k8s.sh` | **prepare → 9-table SPLIT → verify → mark**（codex v6 blocking #3 + v7 blocking #2）：<br>(a) go-tpc prepare via NodePort（生成 9 TPCC tables）<br>(b) 9-table split：對 `warehouse, district, customer, history, new_order, order_line, orders, item, stock` 各跑 `SPLIT TABLE <name> BETWEEN (1) AND (128) REGIONS 3`<br>(c) per-table verify：`SELECT TABLE_NAME, COUNT(*) FROM information_schema.tikv_region_status WHERE DB_NAME='tpcc' GROUP BY TABLE_NAME` 確認 9 表都 ≥3 region<br>(d) write `.prepare.done` 含 per-table shard count |
 | 5 | `phase-k8s/collect-k8s.sh` | `kubectl logs --tail=1000 -l app.kubernetes.io/name=tidb` + `kubectl describe pod -l app.kubernetes.io/name=tidb` + 三家 status playbook output |
-| 6 | `tests/common/lib/common.sh::write_phase_done` patch | env auto-inject `phase`/`result_scope`/`baseline_eligible`/`tuning_profile_id`（codex v6 blocking #2，與 phase-threadcontrol 共用）|
+| 6 | `tests/common/lib/common.sh::write_phase_done` patch | env auto-inject `phase`/`result_scope`/`baseline_eligible`/`baseline_family`/`tuning_profile_id`（codex v6 blocking #2 + v7 non-blocking #3：phase env 漏設 → fail-fast，不默默寫舊格式）|
 | 7 | Makefile `phase-k8s-run` target body | 取代目前 exit 1；call ssh + launch wrapper |
 
 ## 8. Rollback
@@ -150,9 +152,8 @@ cat results/tidb-tc1/S-K8S/.../runs/threads-128/round-3/metrics/hosts.json
 |---|---|
 | Pending deliverable 補 (5 scripts + Makefile body + manifest patch) | ~半天-1 天 |
 | Stage 0（VM rebuild + K8s deploy）| ~30 min |
-| Stage 1（SPLIT TABLE）| ~5 min |
-| Stage 2（v4.7 suite run）| ~3h |
-| Stage 3（fetch + verify）| ~10 min |
+| Stage 1（phase-k8s smoke suite: gate-k8s + prepare-k8s(prepare+9-table split+verify) + run + collect）| ~3h 15min |
+| Stage 2（fetch + verify markers + per-table shard）| ~10 min |
 | **合計（首次，含 deliverable 補）** | **~1-1.5 工作天** |
 | **合計（純 run, deliverable 已就緒）**| **~4h** |
 
@@ -162,3 +163,4 @@ cat results/tidb-tc1/S-K8S/.../runs/threads-128/round-3/metrics/hosts.json
 |---|---|---|
 | 2026-06-06 | （本 commit）| 初版 smoke plan，Q1-Q6 拍板（cell=1 / topology=k8s-haproxy-3s3r 等價 / wrapper=thin / VM rebuild 排在 phase-threadcontrol 之後）|
 | 2026-06-06 | （本 commit fixup）| codex v6 review changes-required 修正 6 blocking：topology 命名 `haproxy-3s3r` 一致 / `TIDB_PORT` 用 env / Stage 1 改為 suite 內 prepare-k8s.sh (prepare→SPLIT→mark) / phase wrapper 入口先 guard / `write_phase_done` env auto-inject 規劃 / deliverable list 補 #6 common.sh patch |
+| 2026-06-06 | （本 commit fixup-2）| codex v7 review changes-required 修正 2 blocking + 4 non-blocking：(1) wrapper 改唯一 chain `gate-k8s → prepare-k8s → run → collect-k8s`，不 delegate baseline launcher (2) prepare-k8s.sh 9-table 全 split + per-table shard verify (3) write_phase_done env validate fail-fast (4) gate-k8s.sh 補 `ss -ltnp` 20180 預檢 (5) baseline_family 加入 marker (6) Stage 1 估時 wording 整併（SPLIT 已併入 prepare）|
