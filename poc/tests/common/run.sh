@@ -59,12 +59,15 @@ esac
 
 # HAProxy 等 proxy 拓樸：db-host 是 proxy（無 mpstat 等套件、無 DB process）；
 # DB-host OS 監控 ssh 必須走實 cluster member。
-case "$TOPO" in
-  *haproxy-*) CLUSTER_HOST="172.24.40.32" ;;
-  *)          CLUSTER_HOST="$DB_HOST"     ;;
-esac
+#
+# Fan-out (T108b)：若 $CLUSTER_HOSTS 設定 → 多 host 並行採；否則沿用既有單 host 行為（unchanged）。
+# 詳 tests/common/lib/host-resolution.sh + results/PHASES.md §4.
+source "$SELF/lib/host-resolution.sh"
+resolve_hosts "$TOPO" "$DB_HOST"
+# Legacy single-host alias (kept for backward-compat code paths within run.sh)
+CLUSTER_HOST=$(host_ssh_target "${RESOLVED_HOSTS[0]}")
 
-info "run start  db=$DB iso=$ISO topo=$TOPO host=$DB_HOST cluster-host=$CLUSTER_HOST"
+info "run start  db=$DB iso=$ISO topo=$TOPO host=$DB_HOST cluster-host=$CLUSTER_HOST fanout=$FANOUT_ENABLED hosts=${#RESOLVED_HOSTS[@]}"
 
 # ---- 1. cold-reset (per-DB script) ---------------------------------
 info "cold-reset"
@@ -99,11 +102,28 @@ for threads in $THREADS_LIST; do
     ( iostat -xz 1 "$DUR" > "$RD/iostat-1s.txt" 2>&1 ) &
     ( vmstat 1 "$DUR"  > "$RD/vmstat-1s.txt"  2>&1 ) &
     ( sar -n DEV 1 "$DUR" > "$RD/sar-net.txt" 2>&1 ) &
-    ( ssh root@"$CLUSTER_HOST" "mpstat 1 $DUR"      > "$RD/mpstat-db.txt"    2>&1 ) &
-    ( ssh root@"$CLUSTER_HOST" "iostat -xz 1 $DUR"  > "$RD/iostat-1s-db.txt" 2>&1 ) &
-    ( ssh root@"$CLUSTER_HOST" "vmstat 1 $DUR"      > "$RD/vmstat-1s-db.txt" 2>&1 ) &
-    ( ssh root@"$CLUSTER_HOST" "sar -n DEV 1 $DUR"  > "$RD/sar-net-db.txt"   2>&1 ) &
-    ( for ((i=0; i<RUN_SEC/60+1; i++)); do ssh root@"$CLUSTER_HOST" free -h >> "$RD/free-1m.txt"; sleep 60; done ) &
+
+    # DB-host monitors: branch on $FANOUT_ENABLED to preserve backward-compat artifact names.
+    if [[ "$FANOUT_ENABLED" == "true" ]]; then
+      # Fan-out path (T108b): per-host with logical id suffix. Used by phase-k8s / phase-crossregion.
+      write_hosts_manifest "${PHASE_NAME:-unknown}" "${RESULT_SCOPE:-unknown}" "${MANIFEST_SHA:-unset}" "$RD"
+      for entry in "${RESOLVED_HOSTS[@]}"; do
+        h=$(host_ssh_target "$entry")
+        sfx=$(host_artifact_suffix "$entry")
+        ( ssh root@"$h" "mpstat 1 $DUR"      > "$RD/mpstat-db${sfx}.txt"    2>&1 ) &
+        ( ssh root@"$h" "iostat -xz 1 $DUR"  > "$RD/iostat-1s-db${sfx}.txt" 2>&1 ) &
+        ( ssh root@"$h" "vmstat 1 $DUR"      > "$RD/vmstat-1s-db${sfx}.txt" 2>&1 ) &
+        ( ssh root@"$h" "sar -n DEV 1 $DUR"  > "$RD/sar-net-db${sfx}.txt"   2>&1 ) &
+        ( for ((i=0; i<RUN_SEC/60+1; i++)); do ssh root@"$h" free -h >> "$RD/free-1m-db${sfx}.txt"; sleep 60; done ) &
+      done
+    else
+      # Backward-compat path: bit-exact to pre-T108b behavior. Do NOT change filenames.
+      ( ssh root@"$CLUSTER_HOST" "mpstat 1 $DUR"      > "$RD/mpstat-db.txt"    2>&1 ) &
+      ( ssh root@"$CLUSTER_HOST" "iostat -xz 1 $DUR"  > "$RD/iostat-1s-db.txt" 2>&1 ) &
+      ( ssh root@"$CLUSTER_HOST" "vmstat 1 $DUR"      > "$RD/vmstat-1s-db.txt" 2>&1 ) &
+      ( ssh root@"$CLUSTER_HOST" "sar -n DEV 1 $DUR"  > "$RD/sar-net-db.txt"   2>&1 ) &
+      ( for ((i=0; i<RUN_SEC/60+1; i++)); do ssh root@"$CLUSTER_HOST" free -h >> "$RD/free-1m.txt"; sleep 60; done ) &
+    fi
     MON_PIDS=$(jobs -p)
 
     # go-tpc run
