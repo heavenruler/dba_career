@@ -117,6 +117,21 @@ help:
 	@echo "  make status-vm3-<db>-<sub>-rc         - 看 dry-run 結果 + lock/marker"
 	@echo "  make fetch-vm3-<db>-<sub>-rc TPCC_TS=<ts>"
 	@echo "  變數: db=tidb|crdb|ybdb, sub=1s1r|1s3r|3s1r|3s3r"
+	@echo ""
+	@echo "=== Phase-K8s (K8s 對照組 / v4.7 detached suite / RC only / family=k8s; 詳 phase-k8s/README.md) ==="
+	@echo "  make phase-k8s-plan          - 印出 phase scope / topology / 缺項 (read-only)"
+	@echo "  make phase-k8s-deploy        - 三家 ansible-playbook *-k8s.yml (current 既有路徑)"
+	@echo "  make phase-k8s-run           - 待補；v4.7 K8s wrapper 尚未實作 (exit 1)"
+	@echo ""
+	@echo "=== Phase-ThreadControl (process/thread/admission tuning 隔離 / family=tuning / baseline_eligible=false) ==="
+	@echo "  make phase-threadcontrol-plan   - 印出 phase scope / 三家可調參數 / guardrail 規則 (read-only)"
+	@echo "  make phase-threadcontrol-verify - 驗 manifest.yaml + 三層 hard gate 設定 (不跑 benchmark)"
+	@echo ""
+	@echo "=== Phase-CrossRegion (IDC↔GCP / family=crossregion / baseline_eligible=false; 詳 phase-crossregion/README.md) ==="
+	@echo "  make phase-crossregion-plan   - 印出 placement × workload 矩陣 / chaos plan / WAN baseline 任務 (read-only)"
+	@echo "  make phase-crossregion-deploy - 6-node ansible playbook (待 Pre-P0 完成；目前 exit 1)"
+	@echo "  make phase-crossregion-run    - 跨區 runtime；本輪 spec-only (exit 1)"
+	@echo "  make phase-crossregion-chaos-plan / -deploy / -run - chaos 4 場景 (lab mode; 本輪 plan only)"
 
 ## Build
 new-vms:
@@ -718,3 +733,90 @@ vm3-tidb-haproxy-3s3r-rc vm3-crdb-haproxy-3s3r-rc vm3-ybdb-haproxy-3s3r-rc:
 vm3-tidb-all5-rc-dry: vm3-tidb-all-rc-dry vm3-tidb-haproxy-3s3r-rc
 vm3-crdb-all5-rc-dry: vm3-crdb-all-rc-dry vm3-crdb-haproxy-3s3r-rc
 vm3-ybdb-all5-rc-dry: vm3-ybdb-all-rc-dry vm3-ybdb-haproxy-3s3r-rc
+
+## ============================================================================
+## Phase isolation targets (T104-T106) — see results/PHASES.md + phase-*/README.md
+## ============================================================================
+
+.PHONY: phase-k8s-plan phase-k8s-deploy phase-k8s-run \
+        phase-threadcontrol-plan phase-threadcontrol-verify \
+        phase-crossregion-plan phase-crossregion-deploy phase-crossregion-run \
+        phase-crossregion-chaos-plan phase-crossregion-chaos-deploy phase-crossregion-chaos-run
+
+# --- Phase-K8s ---
+phase-k8s-plan:
+	@echo "===================================================================="
+	@echo " phase-k8s — Kubernetes 對照組 (v4.7 detached suite, RC only)"
+	@echo "===================================================================="
+	@cat phase-k8s/manifest.yaml | sed 's/^/  /'
+	@echo "  ---"
+	@echo "  Status: deploy ready / v4.7 run-wrapper PENDING (see phase-k8s/README.md §Pending)"
+	@echo "  Existing scripts (pre-v4.7, do NOT use as output source):"
+	@for f in tests/run-all/*-k8s-3node-*.sh tests/prepare/*-k8s-3node-*.sh; do echo "    $$f"; done
+
+phase-k8s-deploy:
+	@echo "==> phase-k8s deploy: 三家 K8s ansible playbook"
+	cd $(ANSIBLE_DIR) && ansible-playbook -i $(INVENTORY) playbooks/tidb-k8s.yml
+	cd $(ANSIBLE_DIR) && ansible-playbook -i $(INVENTORY) playbooks/cockroach-k8s.yml
+	cd $(ANSIBLE_DIR) && ansible-playbook -i $(INVENTORY) playbooks/yugabyte-k8s.yml
+	@echo "==> phase-k8s deploy complete; status via:"
+	@echo "    cd $(ANSIBLE_DIR) && ansible-playbook -i $(INVENTORY) playbooks/{tidb,cockroach,yugabyte}-k8s-status.yml"
+
+phase-k8s-run:
+	@echo "==> phase-k8s-run: v4.7 K8s detached suite wrapper NOT YET IMPLEMENTED."
+	@echo "    See phase-k8s/README.md §Pending v4.7 K8s wrapper for required deliverables."
+	@echo "    Until wrapper lands, run results MUST NOT be promoted to S-K8S."
+	@exit 1
+
+# --- Phase-ThreadControl ---
+phase-threadcontrol-plan:
+	@echo "===================================================================="
+	@echo " phase-threadcontrol — process/thread/admission tuning isolation"
+	@echo "===================================================================="
+	@cat phase-threadcontrol/manifest.yaml | sed 's/^/  /'
+	@echo "  ---"
+	@echo "  Status: manifest + guardrail spec landed; benchmark execution out of scope this round."
+	@echo "  Tuning sources (read-only refs):"
+	@echo "    - 1_MeetingMinutes/0605.md §3-§5 (TiDB / YBDB / CRDB process knob inventory)"
+	@echo "    - 1_MeetingMinutes/0602-agenda.md §6 (4 議題)"
+
+phase-threadcontrol-verify:
+	@echo "==> phase-threadcontrol-verify: validating manifest + guardrails"
+	@tests/common/validate-phase-manifest.sh phase-threadcontrol/manifest.yaml
+	@echo "==> manifest OK; guardrail rules (path/marker/Make fail-fast) — see phase-threadcontrol/guardrails.md"
+
+# --- Phase-CrossRegion (本輪 spec-only) ---
+phase-crossregion-plan:
+	@echo "===================================================================="
+	@echo " phase-crossregion — IDC ↔ GCP cross-region (single 6-node, RC, exploratory)"
+	@echo "===================================================================="
+	@cat phase-crossregion/manifest.yaml | sed 's/^/  /'
+	@echo "  ---"
+	@echo "  Topology (placement × workload 正交):"
+	@echo "    placement: P-A (2-IDC + 1-GCP, majority IDC) / P-B (1+1+1 散)"
+	@echo "    workload : A-A / A-A-RO / A-S / backup / migration"
+	@echo "  Chaos plan (lab mode, plan-only this round):"
+	@echo "    C1 GCP partition / C3 GCP read-only / C4 IDC leader die / C7 cluster write reject"
+	@echo "  Decision source: 1_MeetingMinutes/0602-decisions-track-E.md"
+	@echo "  Status: spec landed; deploy / runtime / chaos NOT executed this round."
+
+phase-crossregion-deploy:
+	@echo "==> phase-crossregion-deploy: 6-node cross-region ansible NOT YET IMPLEMENTED (Pre-P0 task 2)."
+	@echo "    See phase-crossregion/README.md + 1_MeetingMinutes/0602-decisions-track-E.md §2."
+	@exit 1
+
+phase-crossregion-run:
+	@echo "==> phase-crossregion-run: runtime phase P0+ NOT YET IMPLEMENTED (spec-only this round)."
+	@exit 1
+
+phase-crossregion-chaos-plan:
+	@echo "==> phase-crossregion chaos plan (4 scenarios, lab mode):"
+	@for f in phase-crossregion/chaos/*.md; do echo "  - $$f"; done
+
+phase-crossregion-chaos-deploy:
+	@echo "==> phase-crossregion-chaos-deploy: NOT YET IMPLEMENTED."
+	@exit 1
+
+phase-crossregion-chaos-run:
+	@echo "==> phase-crossregion-chaos-run: NOT YET IMPLEMENTED (chaos infra pending Pre-P0/P0)."
+	@exit 1
