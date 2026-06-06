@@ -11,15 +11,40 @@
 | **Stage 1 — dry-run** | gate + ansible tuning patch apply + before/after config dump + wrapper env validation + guard dispatch 驗證；**NOT run go-tpc prepare / warmup / 4-thread sweep** | ~30 min | revert + 修 framework bug + 重來 |
 | **Stage 2 — real benchmark** | 完整 v4.7 suite（go-tpc prepare 128W + warmup 20min + 4 thread × 5 round × 5min + collect + fetch + commit）| ~3-4h | check rollback 流程 |
 
-**DRY_RUN env flag**（新 deliverable）：
+**DRY_RUN env flag**（新 deliverable #13，codex v11 修正後規格）：
 
-- `DRY_RUN=1` env set 時，`tests/common/run.sh` 在 `cold-reset` + `gate-isolation` 後**跳過** `warmup` + `4-thread sweep`，改寫：
-  - `dry-run/process-check.txt`（DB process count, ps aux, thread count, port listen）
-  - `dry-run/db-config-check.txt`（DB SHOW VARS / system variables dump）
-  - `dry-run/wrapper-env-trace.txt`（PHASE_NAME / RESULT_SCOPE / BASELINE_FAMILY / BASELINE_ELIGIBLE / TUNING_PROFILE / CLUSTER_HOSTS / TPCC_ARTIFACTS 全 trace）
-  - `.dry-run.done` marker JSON（含 4 + 1 phase env metadata，per `write_phase_done` patch）
-- `DRY_RUN=1` **不寫** `.run.done` / `.collect.done`（這些屬 Stage 2）
-- 順序：DRY_RUN 路徑跑完後，artifact dir 保留；Stage 2 再啟動會接續從 prepare 開始
+`DRY_RUN=1` 的關鍵行為（**不可走既有 prepare/run/gate-isolation 路徑**）：
+
+| Path | 改動 |
+|---|---|
+| `tests/common/run.sh` | 入口 if `DRY_RUN=1`：**bypass** `.prepare.done` lookup（不存在亦可），直接 `mkdir -p "$ROOT/dry-run"`，跑 guard.sh dispatch + dry-run probes，跳過 cold-reset / gate-isolation（既有版用 go-tpc 跑 tpcc DB）/ warmup / 4-thread sweep |
+| `phase-threadcontrol/run-threadcontrol-suite.sh` | DRY_RUN=1 → special-case：只 env validation + scope assert + ansible config patch + before/after dump + dry-run probes；**不**呼叫 `launch-vm1-suite.sh`（會 cascade 跑 prepare/run）|
+| 既有 `gate-isolation.sh` | DRY_RUN=1 **不用**；改用無 DB 依賴的 isolation probe：直接 `mysql -e 'SELECT @@global.tx_isolation'`（VM TiDB）/ `psql -c 'SHOW transaction_isolation'`（YBDB）/ `cockroach sql -e 'SHOW transaction_isolation_level'`（CRDB），不開 tpcc DB / 不跑 go-tpc |
+
+**dry-run probe items**（codex v11 non-blocking 補充）：
+
+```
+dry-run/
+├── process-check.txt        DB process count, ps aux, thread count, port listen
+├── db-config-check.txt      DB SHOW VARS / system variables (no tpcc DB needed)
+├── wrapper-env-trace.txt    5 phase env + CLUSTER_HOSTS + TPCC_ARTIFACTS 全 trace
+├── isolation-probe.txt      no-prepare safe isolation probe (per Path #3 above)
+├── ansible-patch-result.txt before/after tuning config diff (threadcontrol only)
+├── split-sql-lint.txt       (k8s only) SPLIT SQL 內容驗證 mirror VM TiDB
+├── infra-probe.txt          多 host probe (codex v11 non-blocking #5):
+│                              - go-tpc binary 存在 + version
+│                              - chrony drift (chronyc tracking)
+│                              - SSH 到所有 CLUSTER_HOSTS 可達
+│                              - artifact FS writable
+│                              - mpstat / iostat / sar / free 存在
+│                              - NodePort / mysql client connect 可通
+│                              - host-resolution.sh resolve_hosts output
+└── .dry-run.done            marker JSON（含 4 + 1 phase env metadata）
+```
+
+- **DRY_RUN=1 不寫**：`.run.done` / `.collect.done` / `.suite.done`（這些屬 Stage 2）
+- **DRY_RUN=0 / 未設**：sustain 既有 v4.7 流程（backward-compat）
+- 順序：DRY_RUN 路徑跑完後，artifact dir 保留；Stage 2 再啟動會接續從 prepare 開始（同 TPCC_TS lineage）
 
 ## 1. 範疇
 
@@ -229,7 +254,8 @@ ansible-playbook -i ansible/inventory/hosts.ini \
 | 3 | **`phase-threadcontrol/run-threadcontrol-suite.sh`** | phase wrapper（codex v6 blocking #1）：在 suite 入口先 `source tests/common/lib/guard.sh; assert_threadcontrol_target "$ROOT"`，然後 delegate 到 `launch-vm1-suite.sh`。確保 gate / prepare 階段都已過 guard |
 | 4 | **`tests/common/lib/common.sh::write_phase_done` patch** | 從 env auto-inject 至 `.<phase>.done` JSON（codex v6 blocking #2 + v8/v9 非 blocking 細化）：<br>**Required 4 (common)**: `PHASE_NAME` / `RESULT_SCOPE` / `BASELINE_ELIGIBLE` / `BASELINE_FAMILY`<br>**Conditional**: 若 `RESULT_SCOPE=T-THRD` → `TUNING_PROFILE` 必填且 ≠ `default`；其他 phase 自動寫 `tuning_profile_id=default`<br>**規則**：任一上述 env 出現 → 必驗對應 env 完整 + `$ROOT` scope 一致；缺一 `die "phase env partial; require: <列表>"` + `exit 1`<br>**Backward-compat**: 4 common env 全未設 → legacy baseline 行為（write phase=$phase only）|
 | 5 | **`tests/common/run-vm1-suite.sh` + `tests/common/prepare.sh` scope guard** | codex v8 non-blocking #2：對 `/S-K8S/` `/T-THRD/` `/X-CROSS/` scope fail-fast，要求只能走對應 phase wrapper |
-| 6 | **`tests/common/run.sh` DRY_RUN flag** | 新增 `DRY_RUN=1` env：在 cold-reset + gate-isolation 後跳過 warmup + 4-thread sweep；改寫 `dry-run/process-check.txt`（ps aux + thread count + port listen）+ `dry-run/db-config-check.txt`（DB SHOW VARS dump）+ `dry-run/wrapper-env-trace.txt`（5 phase env + CLUSTER_HOSTS + TPCC_ARTIFACTS）+ `.dry-run.done` marker。Stage 2 real run 時不重複此 artifact；DRY_RUN=0 / 未設時 sustain 既有 v4.7 流程 |
+| 6 | **`tests/common/run.sh` DRY_RUN flag**（codex v11 修正後）| `DRY_RUN=1`：**bypass `.prepare.done` lookup**（不存在亦 OK），直接建 `$ROOT/dry-run/`，跑 guard dispatch + dry-run probes，**跳過** cold-reset / gate-isolation / warmup / 4-thread sweep。不呼叫既有 `gate-isolation.sh`（會跑 go-tpc + 需 tpcc DB）；改用 no-prepare safe isolation probe（`mysql/psql/cockroach -e 'SHOW transaction_isolation'`）。產 7+ probe artifacts: `dry-run/{process-check, db-config-check, wrapper-env-trace, isolation-probe, ansible-patch-result, infra-probe}.txt` + `.dry-run.done`。DRY_RUN=0/未設 → sustain 既有 v4.7 流程 |
+| 7 | **`phase-threadcontrol/run-threadcontrol-suite.sh` DRY_RUN special-case** | wrapper 入口判 DRY_RUN=1 → 只跑 env/scope validation + ansible config patch apply + before/after dump + dry-run probes；**不** delegate `launch-vm1-suite.sh`（會 cascade 跑 prepare/run）。DRY_RUN=0 → 沿用既有 chain |
 
 ## 8. Rollback
 

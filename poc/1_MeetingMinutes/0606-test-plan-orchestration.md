@@ -87,7 +87,11 @@ deliverable 1-4 為 A pre-req；5-10 為 D pre-req。其中 #4 (write_phase_done
 
 **codex v8 補充 deliverable #12**（D 專用）：prepare-k8s.sh 的 9-table split SQL **必須 mirror VM TiDB 明確 split points** (`tests/common/prepare.sh:134-144`)，不可用 generic BETWEEN/REGIONS（會 ERROR 8212）。
 
-**user 補充 deliverable #13**（A+D 共用，2026-06-06 新指示）：`tests/common/run.sh` 新 `DRY_RUN=1` env flag — 在 cold-reset + gate-isolation 後跳過 warmup + 4-thread sweep；改寫 dry-run/process-check.txt + dry-run/db-config-check.txt + dry-run/wrapper-env-trace.txt + .dry-run.done marker。兩 phase Stage 1 dry-run 共用此 flag。
+**user 補充 deliverable #13**（A+D 共用，2026-06-06 新指示 + codex v11 修正後規格）：`tests/common/run.sh` 新 `DRY_RUN=1` env flag — **bypass `.prepare.done` lookup**（不存在亦 OK）→ 直接 mkdir `$ROOT/dry-run/` + guard.sh dispatch + dry-run probes；**不呼叫**既有 gate-isolation.sh（需 tpcc DB + go-tpc）；改用無 DB 依賴 isolation probe (`mysql/psql/cockroach -e 'SHOW transaction_isolation'`)。產 7+ probe artifacts（process-check / db-config-check / wrapper-env-trace / isolation-probe / ansible-patch-result / infra-probe / `.dry-run.done`）。
+
+**deliverable #14**（A+D 共用 wrapper special-case，codex v11 blocking）：`phase-{threadcontrol,k8s}/run-*-suite.sh` 入口判 `DRY_RUN=1` → 只跑 env/scope validation + dry-run probes；**不**進 prepare-k8s.sh / launch-vm1-suite.sh。
+
+**deliverable #15**（K8s 專用 K8s-aware probes）：phase-k8s 場景 dry-run 額外產 `dry-run/{k8s-pod-ready, nodeport-check, tikv-status-port-check, split-sql-lint, manifest-patch-check}.txt`。
 
 ## 5. 風險與 fallback
 

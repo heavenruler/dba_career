@@ -11,11 +11,26 @@
 | **Stage 1 — dry-run** | K8s deploy + NodePort `kubectl get pods` + `ss -ltnp` TiKV port + manifest patch verify + dry-run wrapper env trace + `DRY_RUN=1` 跑到 prepare 前停 + dry-run-confirm anchor；**NOT go-tpc prepare / SPLIT / warmup / run**（K8s SPLIT 驗證留 Stage 2 因為需 table 存在）| ~30 min | redeploy K8s + 修 wrapper bug |
 | **Stage 2 — real benchmark** | 完整 v4.7 K8s suite（go-tpc prepare via NodePort + 9-table SPLIT + verify + warmup + 4 thread × 5 round × 5min + collect + fetch + commit）| ~3-4h | rollback K8s state + redeploy |
 
-**DRY_RUN env flag**（沿用 phase-threadcontrol 同一 deliverable）：
+**DRY_RUN env flag**（codex v11 修正後；與 phase-threadcontrol 共用 deliverable #6+#7，K8s wrapper 加 K8s-specific probes）：
 
-- `DRY_RUN=1` 跑：K8s pod ready check + NodePort 通 + `ss -ltnp` 20180 預檢 + manifest patch verify + wrapper env trace
-- `DRY_RUN=1` 不跑：go-tpc prepare（128W table create）+ SPLIT + warmup + thread sweep
-- 輸出：`dry-run/{process-check,db-config-check,wrapper-env-trace,k8s-pod-ready,nodeport-check}.txt` + `.dry-run.done`
+- `DRY_RUN=1` 跑：guard dispatch + wrapper env validation + K8s pod ready check (`kubectl get pods -A`) + NodePort 通 (`nc -zv 30004`) + TiKV `:20180` (`ss -ltnp` via SSH) + manifest patch verify + no-prepare isolation probe + split-sql-lint
+- `DRY_RUN=1` **不跑**：go-tpc prepare 128W / SPLIT 實際執行 / warmup / 4-thread sweep
+- `DRY_RUN=1` **不呼叫**：`prepare-k8s.sh`（會 go-tpc prepare）；wrapper 入口 if DRY_RUN=1 → skip 進 prepare-k8s.sh
+- 輸出：
+  ```
+  dry-run/
+  ├── process-check.txt
+  ├── db-config-check.txt
+  ├── wrapper-env-trace.txt
+  ├── isolation-probe.txt
+  ├── infra-probe.txt           (go-tpc / chrony / SSH / FS / mpstat etc.)
+  ├── k8s-pod-ready.txt         (kubectl get pods -A)
+  ├── nodeport-check.txt        (nc -zv :30004)
+  ├── tikv-status-port-check.txt (ss -ltnp 20180 via SSH × 3 k8s-node)
+  ├── split-sql-lint.txt        (verify SPLIT SQL 內容 mirror VM TiDB; 不執行)
+  ├── manifest-patch-check.txt  (verify allowed_topology 含 k8s-3node-haproxy-3s3r-*)
+  └── .dry-run.done
+  ```
 
 ## 1. 範疇
 
@@ -54,7 +69,7 @@ manifest patch 為本 smoke pre-req。
 | VM 元件 | K8s 對應 |
 |---|---|
 | 3 個 TiKV process on .32/.33/.34 | TiDB Operator 自動建 3 個 TiKV Pod（每 node 1 個）|
-| **9-table 全 split 為 3 region**（VM 3s3r baseline 慣例：warehouse, district, customer, history, new_order, order_line, orders, item, stock）| 同 9-table split via post-prepare `SPLIT TABLE <name> BETWEEN (1) AND (128) REGIONS 3`；per-table shard count verify |
+| **9-table 全 split 為 3 region**（VM 3s3r baseline 慣例：warehouse, district, customer, history, new_order, order_line, orders, item, stock）| 同 9-table split via post-prepare 明確 split points (`SPLIT TABLE warehouse BY (43),(86)` 等，mirror VM TiDB `tests/common/prepare.sh:134-144`)；per-table shard count verify |
 | HAProxy `.20:4000` round-robin | NodePort `:30004` + K8s `Service` round-robin（k3s 預設 iptables mode）|
 | `tests/common/run.sh` SSH 至 `.32/.33/.34` 採 metrics | SSH 至 k8s-node-1/2/3（=.32/.33/.34，本來就是 K3s host）採 node-level metrics |
 
@@ -183,7 +198,8 @@ cat results/tidb-tc1/S-K8S/.../runs/threads-128/round-3/metrics/hosts.json
 | 6 | `tests/common/lib/common.sh::write_phase_done` patch | env auto-inject（codex v6 blocking #2 + v7-v9 細化）：<br>**Required 4 (common)**: `PHASE_NAME` / `RESULT_SCOPE` / `BASELINE_ELIGIBLE` / `BASELINE_FAMILY`<br>**Conditional**: `RESULT_SCOPE=T-THRD` → `TUNING_PROFILE` 必填且 ≠ `default`；其他 phase 自動寫 `tuning_profile_id=default`<br>**規則**：任一上述 env 出現 → 必驗對應 env + `$ROOT` scope 一致；缺一 `die` + `exit 1`<br>4 common env 全未設 → legacy baseline 行為 |
 | 7 | `tests/common/run-vm1-suite.sh` + `tests/common/prepare.sh` scope guard | codex v8 non-blocking #2：對 `/S-K8S/` 與 `/X-CROSS/` / `/T-THRD/` scope artifact path fail-fast（要求只能走對應 phase wrapper，不能從 baseline launcher 進來）|
 | 8 | Makefile `phase-k8s-run` target body | 取代目前 exit 1；call ssh + launch wrapper |
-| 9 | **`tests/common/run.sh` DRY_RUN flag**（與 phase-threadcontrol 共用 deliverable）| 新增 `DRY_RUN=1` env：跑到 prepare 前停；產 `dry-run/{process-check, db-config-check, wrapper-env-trace, k8s-pod-ready, nodeport-check}.txt` + `.dry-run.done` marker。K8s 場景需新增 K8s-specific dump（kubectl get pods + nc -zv NodePort + ss -ltnp 20180 via SSH）|
+| 9 | **`tests/common/run.sh` DRY_RUN flag**（codex v11 修正後；與 phase-threadcontrol 共用 deliverable #6）| `DRY_RUN=1` bypass `.prepare.done` lookup → 直接建 dry-run dir + guard + probes，跳過 cold-reset / gate-isolation / warmup / sweep。不呼叫既有 gate-isolation.sh；改用 no-prepare isolation probe |
+| 10 | **`phase-k8s/run-k8s-suite.sh` DRY_RUN special-case** | wrapper 入口判 `DRY_RUN=1` → 只跑 env/scope validation + K8s pod ready + NodePort + TiKV `:20180` 預檢 + manifest patch verify + split-sql-lint + dry-run probes；**不**進 `prepare-k8s.sh`（會 go-tpc prepare 128W）。DRY_RUN=0 → 沿用固定 chain `gate-k8s → prepare-k8s → run.sh → collect-k8s` |
 
 ## 8. Rollback
 
