@@ -44,6 +44,17 @@ if [[ ! -f "$ROOT/.prepare.done" ]]; then
   TS=$(basename "$ROOT" | sed "s|${DB}-${TOPO}-${ISO}-||")
   warn "TS auto-detected from latest prepare: $TS"
 fi
+# Phase isolation guard (T105 Layer 3 hard gate) — auto-pick scope assert by $ROOT path.
+# Refuses any cross-scope contamination (e.g. TUNING_PROFILE on /S-BASE/ run, or /T-THRD/ output
+# from a baseline target).
+source "$SELF/lib/guard.sh"
+case "$ROOT" in
+  */T-THRD/*)  assert_threadcontrol_target "$ROOT" ;;
+  */S-K8S/*)   assert_phase_k8s_target "$ROOT" ;;
+  */X-CROSS/*) assert_phase_crossregion_target "$ROOT" ;;
+  *)           assert_baseline_target "$ROOT" ;;   # default: vm-1node / vm-3node / unspecified
+esac
+
 flock_phase "$ROOT" "run"
 
 RUNS_DIR="$ROOT/runs"

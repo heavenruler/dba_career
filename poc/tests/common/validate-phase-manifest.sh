@@ -49,6 +49,8 @@ REQUIRED_LISTS=(
 VALID_PHASES="phase-k8s phase-threadcontrol phase-crossregion"
 VALID_SCOPES="S-BASE S-K8S T-THRD X-CROSS"
 VALID_FAMILIES="vm k8s tuning crossregion"
+VALID_HOST_SOURCES="topology-derived inventory explicit"
+VALID_HOST_KINDS="vm k8s-node k8s-pod crossregion-vm"
 
 read_yaml() {
   # Prefer yq if present; fallback to python3.
@@ -109,6 +111,33 @@ FAMILY=$(read_yaml '.baseline_family' 2>/dev/null || echo "")
 case "$PHASE:$SCOPE" in
   phase-k8s:S-K8S|phase-threadcontrol:T-THRD|phase-crossregion:X-CROSS) ;;
   *) report "phase/result_scope mismatch: phase=$PHASE result_scope=$SCOPE" ;;
+esac
+
+# 5. nested metrics_hosts.{source,kind,ids} validation (Add A completion per codex v3 review).
+HOST_SRC=$(read_yaml '.metrics_hosts.source' 2>/dev/null || echo "")
+HOST_KIND=$(read_yaml '.metrics_hosts.kind' 2>/dev/null || echo "")
+HOST_IDS=$(read_yaml '.metrics_hosts.ids' 2>/dev/null || echo "")
+if [[ -z "$HOST_SRC" || "$HOST_SRC" == "null" ]]; then
+  report "missing metrics_hosts.source"
+elif [[ " $VALID_HOST_SOURCES " != *" $HOST_SRC "* ]]; then
+  report "invalid metrics_hosts.source: '$HOST_SRC' (must be one of: $VALID_HOST_SOURCES)"
+fi
+if [[ -z "$HOST_KIND" || "$HOST_KIND" == "null" ]]; then
+  report "missing metrics_hosts.kind"
+elif [[ " $VALID_HOST_KINDS " != *" $HOST_KIND "* ]]; then
+  report "invalid metrics_hosts.kind: '$HOST_KIND' (must be one of: $VALID_HOST_KINDS)"
+fi
+if [[ -z "$HOST_IDS" || "$HOST_IDS" == "null" || "$HOST_IDS" == "[]" ]]; then
+  report "missing or empty metrics_hosts.ids"
+fi
+
+# 6. phase/host-kind consistency
+case "$PHASE:$HOST_KIND" in
+  phase-k8s:k8s-node|phase-k8s:k8s-pod) ;;
+  phase-threadcontrol:vm) ;;
+  phase-crossregion:crossregion-vm) ;;
+  *:"") ;;   # already reported above
+  *) report "phase/metrics_hosts.kind mismatch: phase=$PHASE kind=$HOST_KIND" ;;
 esac
 
 if [[ $err -eq 0 ]]; then
