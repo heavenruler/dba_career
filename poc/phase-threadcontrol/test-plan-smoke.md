@@ -121,11 +121,16 @@ ssh root@172.24.40.31 "env \
   PHASE_NAME=phase-threadcontrol \
   RESULT_SCOPE=T-THRD \
   BASELINE_ELIGIBLE=false \
+  BASELINE_FAMILY=tuning \
   CLUSTER_HOSTS='dbhost-1@172.24.40.32 dbhost-2@172.24.40.33 dbhost-3@172.24.40.34' \
   TPCC_ARTIFACTS=/tmp/poc-tpcc/artifacts/T-THRD \
   bash /tmp/poc-tpcc/scripts/run-threadcontrol-suite.sh \
     --db tidb --iso rc --topology vm-3node-haproxy-3s3r \
     --db-host 172.24.47.20 --ts ${TS}"
+
+# 註：5 phase env (PHASE_NAME / RESULT_SCOPE / BASELINE_ELIGIBLE / BASELINE_FAMILY / TUNING_PROFILE)
+# 必須全在 caller env 顯式設定（per codex v9 blocking）。run-threadcontrol-suite.sh 入口
+# 會再次 validate 完整性 + 與 $ROOT scope 一致；缺一 → die "phase env partial" + exit 1。
 
 # === Stage 5: 等待 + fetch + verify ===
 # 等 ~3h；status check via:
@@ -162,7 +167,7 @@ ansible-playbook -i ansible/inventory/hosts.ini \
 | 1 | `phase-threadcontrol/playbooks/apply-tidb-readpool.yml` | ansible playbook：set TiKV `readpool.unified.max-thread-count=8` + `readpool.unified.auto-adjust-pool-size=false`，via online config reload（無須 restart）|
 | 2 | `phase-threadcontrol/playbooks/revert-tidb-readpool.yml` | revert above（restore default `max-thread-count=auto`, `auto-adjust-pool-size=true`）|
 | 3 | **`phase-threadcontrol/run-threadcontrol-suite.sh`** | phase wrapper（codex v6 blocking #1）：在 suite 入口先 `source tests/common/lib/guard.sh; assert_threadcontrol_target "$ROOT"`，然後 delegate 到 `launch-vm1-suite.sh`。確保 gate / prepare 階段都已過 guard |
-| 4 | **`tests/common/lib/common.sh::write_phase_done` patch** | 從 env auto-inject `phase` / `result_scope` / `baseline_eligible` / `baseline_family` / `tuning_profile_id` 至 `.<phase>.done` JSON（codex v6 blocking #2 + v8 non-blocking #4）：<br>規則：任一 phase env 出現 → 必驗 5 env 全 + `$ROOT` scope 一致；缺一 `die "phase env partial; require all"` + `exit 1`<br>5 env 全未設 → legacy baseline 行為（backward-compat） |
+| 4 | **`tests/common/lib/common.sh::write_phase_done` patch** | 從 env auto-inject 至 `.<phase>.done` JSON（codex v6 blocking #2 + v8/v9 非 blocking 細化）：<br>**Required 4 (common)**: `PHASE_NAME` / `RESULT_SCOPE` / `BASELINE_ELIGIBLE` / `BASELINE_FAMILY`<br>**Conditional**: 若 `RESULT_SCOPE=T-THRD` → `TUNING_PROFILE` 必填且 ≠ `default`；其他 phase 自動寫 `tuning_profile_id=default`<br>**規則**：任一上述 env 出現 → 必驗對應 env 完整 + `$ROOT` scope 一致；缺一 `die "phase env partial; require: <列表>"` + `exit 1`<br>**Backward-compat**: 4 common env 全未設 → legacy baseline 行為（write phase=$phase only）|
 | 5 | **`tests/common/run-vm1-suite.sh` + `tests/common/prepare.sh` scope guard** | codex v8 non-blocking #2：對 `/S-K8S/` `/T-THRD/` `/X-CROSS/` scope fail-fast，要求只能走對應 phase wrapper |
 
 ## 8. Rollback
@@ -192,3 +197,4 @@ ansible-playbook -i ansible/inventory/hosts.ini \
 | 2026-06-06 | （本 commit fixup）| codex v6 review changes-required 修正 6 blocking：命名統一 haproxy-3s3r / 改用 read-only :20180/config dump / 引入 phase wrapper / `write_phase_done` patch 規劃 / TUNING_PROFILE-aware acceptance criteria |
 | 2026-06-06 | （本 commit fixup-2）| codex v7 review non-blocking 修正：TiKV dump 改 `ssh + curl localhost:20180` + `ss -ltnp` 預檢 / rsync source 明示為 common name，fetch 時 rename 進 profile-id local path / write_phase_done env 一致性 fail-fast 規劃 |
 | 2026-06-06 | （本 commit fixup-3）| codex v8 review non-blocking 修正：write_phase_done 改 die()/exit 1 + 5 phase env 任一出現必驗全 + 新增 deliverable #5 `run-vm1-suite.sh + prepare.sh` 對 `/S-K8S/` `/T-THRD/` `/X-CROSS/` scope fail-fast |
+| 2026-06-06 | （本 commit fixup-4）| codex v9 review changes-required 修正 1 blocking + 3 non-blocking：(blocking) Stage 4 env block 補 `BASELINE_FAMILY=tuning`，5 env 完整 (1) write_phase_done 規則細化：4 common required + T-THRD 時 TUNING_PROFILE 額外必填 (2) deliverable table 順序維持 |
