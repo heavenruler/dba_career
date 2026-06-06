@@ -69,6 +69,10 @@
 
 deliverable 1-4 為 A pre-req；5-10 為 D pre-req。其中 #4 (write_phase_done patch) A 與 D 共用，需先寫。
 
+**codex v8 補充 deliverable #11**（A+D 共用，先做）：`tests/common/run-vm1-suite.sh` + `tests/common/prepare.sh` 對 phase scope path (`/S-K8S/` `/T-THRD/` `/X-CROSS/`) fail-fast，要求只能走對應 phase wrapper，不能從 baseline launcher 進來。
+
+**codex v8 補充 deliverable #12**（D 專用）：prepare-k8s.sh 的 9-table split SQL **必須 mirror VM TiDB 明確 split points** (`tests/common/prepare.sh:134-144`)，不可用 generic BETWEEN/REGIONS（會 ERROR 8212）。
+
 ## 5. 風險與 fallback
 
 | 風險 | impact | mitigation |

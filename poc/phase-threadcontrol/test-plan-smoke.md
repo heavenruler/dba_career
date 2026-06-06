@@ -162,7 +162,8 @@ ansible-playbook -i ansible/inventory/hosts.ini \
 | 1 | `phase-threadcontrol/playbooks/apply-tidb-readpool.yml` | ansible playbook：set TiKV `readpool.unified.max-thread-count=8` + `readpool.unified.auto-adjust-pool-size=false`，via online config reload（無須 restart）|
 | 2 | `phase-threadcontrol/playbooks/revert-tidb-readpool.yml` | revert above（restore default `max-thread-count=auto`, `auto-adjust-pool-size=true`）|
 | 3 | **`phase-threadcontrol/run-threadcontrol-suite.sh`** | phase wrapper（codex v6 blocking #1）：在 suite 入口先 `source tests/common/lib/guard.sh; assert_threadcontrol_target "$ROOT"`，然後 delegate 到 `launch-vm1-suite.sh`。確保 gate / prepare 階段都已過 guard |
-| 4 | **`tests/common/lib/common.sh::write_phase_done` patch** | 從 env auto-inject `phase` / `result_scope` / `baseline_eligible` / `tuning_profile_id` 至 `.<phase>.done` JSON（codex v6 blocking #2；backward-compat：未設 env 維持原行為）|
+| 4 | **`tests/common/lib/common.sh::write_phase_done` patch** | 從 env auto-inject `phase` / `result_scope` / `baseline_eligible` / `baseline_family` / `tuning_profile_id` 至 `.<phase>.done` JSON（codex v6 blocking #2 + v8 non-blocking #4）：<br>規則：任一 phase env 出現 → 必驗 5 env 全 + `$ROOT` scope 一致；缺一 `die "phase env partial; require all"` + `exit 1`<br>5 env 全未設 → legacy baseline 行為（backward-compat） |
+| 5 | **`tests/common/run-vm1-suite.sh` + `tests/common/prepare.sh` scope guard** | codex v8 non-blocking #2：對 `/S-K8S/` `/T-THRD/` `/X-CROSS/` scope fail-fast，要求只能走對應 phase wrapper |
 
 ## 8. Rollback
 
@@ -190,3 +191,4 @@ ansible-playbook -i ansible/inventory/hosts.ini \
 | 2026-06-06 | （本 commit）| 初版 smoke plan，Q1-Q6 拍板（cell=1 / topology=haproxy-3s3r / wrapper=thin / codex review enabled）|
 | 2026-06-06 | （本 commit fixup）| codex v6 review changes-required 修正 6 blocking：命名統一 haproxy-3s3r / 改用 read-only :20180/config dump / 引入 phase wrapper / `write_phase_done` patch 規劃 / TUNING_PROFILE-aware acceptance criteria |
 | 2026-06-06 | （本 commit fixup-2）| codex v7 review non-blocking 修正：TiKV dump 改 `ssh + curl localhost:20180` + `ss -ltnp` 預檢 / rsync source 明示為 common name，fetch 時 rename 進 profile-id local path / write_phase_done env 一致性 fail-fast 規劃 |
+| 2026-06-06 | （本 commit fixup-3）| codex v8 review non-blocking 修正：write_phase_done 改 die()/exit 1 + 5 phase env 任一出現必驗全 + 新增 deliverable #5 `run-vm1-suite.sh + prepare.sh` 對 `/S-K8S/` `/T-THRD/` `/X-CROSS/` scope fail-fast |
