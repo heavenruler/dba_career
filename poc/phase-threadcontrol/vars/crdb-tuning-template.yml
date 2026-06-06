@@ -1,0 +1,35 @@
+# CockroachDB tuning vars template — phase-threadcontrol
+# SSOT: 1_MeetingMinutes/0605.md §5 (CockroachDB 控制點)
+# Usage: copy to phase-threadcontrol/vars/<profile_id>.yml, fill in concrete values, set TUNING_PROFILE=<profile_id>.
+#
+# 警告：本檔產出的結果 baseline_eligible=false；嚴禁進 README 主表或 pipeline-log canonical row。
+
+tuning_profile_id: crdb-admission-a          # 必填
+target_db: crdb
+target_db_version: v26.2.0
+
+# Process start flags
+process_start_flags:
+  # https://www.cockroachlabs.com/docs/stable/cockroach-start.html
+  --cache: 1GiB                              # Pebble block cache (default 25% memory)
+  --max-sql-memory: 1GiB                     # SQL query memory budget
+  --max-go-memory: 4GiB                      # Go runtime soft memory limit
+
+# Cluster settings (apply via SQL after deploy)
+cluster_settings:
+  # https://www.cockroachlabs.com/docs/stable/cluster-settings
+  admission.kv.enabled: true                 # KV admission control
+  admission.sql_kv_response.enabled: true    # SQL/KV response admission
+  admission.sql_sql_response.enabled: true   # SQL response admission
+  server.max_connections_per_gateway: 0      # 0=unlimited
+
+# GOMAXPROCS hint (env var when launching cockroach)
+gomaxprocs: 0                                # 0=runtime default (= num CPU)
+
+# Session variables (per-session via SET)
+session_vars:
+  distsql: on                                # DistSQL planning
+
+# Expected before/after dump
+# - before-config.txt: SHOW ALL CLUSTER SETTINGS + cockroach node status --json
+# - after-config.txt: same after applying this profile

@@ -1,0 +1,36 @@
+# TiDB tuning vars template — phase-threadcontrol
+# SSOT: 1_MeetingMinutes/0605.md §3 (TiDB 控制點)
+# Usage: copy to phase-threadcontrol/vars/<profile_id>.yml, fill in concrete knob values, set TUNING_PROFILE=<profile_id>.
+#
+# 警告：本檔產出的結果 baseline_eligible=false；嚴禁進 README 主表或 pipeline-log canonical row。
+
+tuning_profile_id: tidb-readpool-a           # 必填，命名格式：<db>-<knob-category>-<variant>
+target_db: tidb
+target_db_version: v8.5.2
+
+# TiDB Server (SQL layer)
+tidb_server:
+  # https://docs.pingcap.com/tidb/stable/system-variables/
+  tidb_executor_concurrency: 5              # default 5；測 hot-path operator 平行度
+  tidb_distsql_scan_concurrency: 15         # default 15；測 DistSQL coprocessor 平行度
+  max_connections: 0                        # 0=unlimited；測 connection cap 對 thread pool 影響
+
+# TiKV (KV / Raft / RocksDB)
+tikv:
+  # https://docs.pingcap.com/tidb/stable/tikv-configuration-file/
+  server.grpc-concurrency: 4                # default 4；gRPC worker thread 數
+  readpool.unified.max-thread-count: 8      # default = MIN(CPU, 16)；read pool 上限
+  readpool.unified.auto-adjust-pool-size: true   # default true；自動 CPU adjust
+  storage.scheduler-worker-pool-size: 8     # default 8；storage scheduler worker
+
+# PD (placement driver)
+pd:
+  schedule.region-schedule-limit: 0         # PoC baseline 鎖 0；tuning 可改 4 / 16 試 leader balance 對 tpmC 影響
+
+# Expected before/after dump (artifacts/<run-dir>/db-config/)
+# Layer 2 marker `tuning_profile_id` must equal this file's tuning_profile_id.
+# Caller pipeline:
+#   1. dump pre-tuning config → before-config.txt
+#   2. apply this vars file via ansible (separate playbook outside Track A baseline)
+#   3. dump post-tuning config → after-config.txt
+#   4. run benchmark with TUNING_PROFILE=<id> + output to results/tidb-tc1/T-THRD/...

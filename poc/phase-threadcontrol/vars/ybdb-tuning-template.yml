@@ -1,0 +1,32 @@
+# YugabyteDB tuning vars template — phase-threadcontrol
+# SSOT: 1_MeetingMinutes/0605.md §4 (YugabyteDB 控制點)
+# Usage: copy to phase-threadcontrol/vars/<profile_id>.yml, fill in concrete values, set TUNING_PROFILE=<profile_id>.
+#
+# 警告：本檔產出的結果 baseline_eligible=false；嚴禁進 README 主表或 pipeline-log canonical row。
+
+tuning_profile_id: ybdb-rpc-a                # 必填
+target_db: ybdb
+target_db_version: 2025.2.2
+
+# YB-TServer gflags
+yb_tserver:
+  # https://docs.yugabyte.com/stable/reference/configuration/yb-tserver/
+  --ysql_max_connections: 300                # default 300
+  --rpc_workers_limit: 256                   # default 256
+  --num_reactor_threads: 4                   # default 4
+  --tablet_server_svc_queue_length: 5000     # default 5000
+  --tablet_operation_memory_limit_mb: 1024   # default 1024
+  --enable_automatic_tablet_splitting: false # PoC 鎖 false
+
+# YB-Master gflags
+yb_master:
+  # https://docs.yugabyte.com/stable/reference/configuration/yb-master/
+  --num_reactor_threads: 4                   # default 4
+
+# YSQL backend (per-session, via psql SET)
+ysql_session_vars:
+  yb_enable_read_committed_isolation: true   # 必設，否則 silent fallback 到 SI
+
+# Expected before/after dump
+# - before-config.txt: tserver/master :9000/varz + universe config dump
+# - after-config.txt: same after applying this profile via ansible (separate playbook)
