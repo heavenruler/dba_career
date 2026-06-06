@@ -1,6 +1,25 @@
-# phase-threadcontrol — Smoke Test Plan (1 cell)
+# phase-threadcontrol — Smoke Test Plan (1 cell, two-stage)
 
 > Goal: 驗證 phase-threadcontrol 三層 hard gate + manifest + T-THRD artifact path 全鏈在真實 run 下 work；不追求 throughput 結論。
+>
+> **兩階段測試**（2026-06-06 user 新指示）：先 Stage 1 dry-run 驗 process / DB config 符合預期；通過才進 Stage 2 real benchmark。
+
+## 0. 兩階段測試（two-stage）
+
+| Stage | 範圍 | 估時 | 失敗 → |
+|---|---|---|---|
+| **Stage 1 — dry-run** | gate + ansible tuning patch apply + before/after config dump + wrapper env validation + guard dispatch 驗證；**NOT run go-tpc prepare / warmup / 4-thread sweep** | ~30 min | revert + 修 framework bug + 重來 |
+| **Stage 2 — real benchmark** | 完整 v4.7 suite（go-tpc prepare 128W + warmup 20min + 4 thread × 5 round × 5min + collect + fetch + commit）| ~3-4h | check rollback 流程 |
+
+**DRY_RUN env flag**（新 deliverable）：
+
+- `DRY_RUN=1` env set 時，`tests/common/run.sh` 在 `cold-reset` + `gate-isolation` 後**跳過** `warmup` + `4-thread sweep`，改寫：
+  - `dry-run/process-check.txt`（DB process count, ps aux, thread count, port listen）
+  - `dry-run/db-config-check.txt`（DB SHOW VARS / system variables dump）
+  - `dry-run/wrapper-env-trace.txt`（PHASE_NAME / RESULT_SCOPE / BASELINE_FAMILY / BASELINE_ELIGIBLE / TUNING_PROFILE / CLUSTER_HOSTS / TPCC_ARTIFACTS 全 trace）
+  - `.dry-run.done` marker JSON（含 4 + 1 phase env metadata，per `write_phase_done` patch）
+- `DRY_RUN=1` **不寫** `.run.done` / `.collect.done`（這些屬 Stage 2）
+- 順序：DRY_RUN 路徑跑完後，artifact dir 保留；Stage 2 再啟動會接續從 prepare 開始
 
 ## 1. 範疇
 
@@ -63,7 +82,9 @@ make prepare-vm3-tidb-haproxy-3s3r-rc
 ### Layer 4 — README 主表 readback
 - 跑完後 `results/verify-readme-gates.sh` P4f 應 PASS（artifact 雖在 T-THRD/ 但 README 未 reference）
 
-## 5. 執行步驟
+## 5. 執行步驟（two-stage）
+
+### Stage 1 — dry-run（process / DB config 驗證）
 
 ```bash
 # === Stage 0: 前置驗證 ===
@@ -112,9 +133,48 @@ for ip in 32 33 34; do
 done
 # expected: max_thread_count: before=4 after=8; auto_adjust: before=true after=false
 
-# === Stage 4: 跑 v4.7 suite via phase-threadcontrol/run-threadcontrol-suite.sh ===
+# === Stage 4a: Stage 1 dry-run via DRY_RUN=1 ===
 # Phase wrapper 是 codex v6 blocking #1 修正：在 suite 入口先 guard，避免 gate/prepare 階段
 # 在 guard 之前已寫 artifact 到錯路徑。
+ssh root@172.24.40.31 "env \
+  DRY_RUN=1 \
+  TPCC_TS=${TS} \
+  TUNING_PROFILE=${PROFILE_ID} \
+  PHASE_NAME=phase-threadcontrol \
+  RESULT_SCOPE=T-THRD \
+  BASELINE_ELIGIBLE=false \
+  BASELINE_FAMILY=tuning \
+  CLUSTER_HOSTS='dbhost-1@172.24.40.32 dbhost-2@172.24.40.33 dbhost-3@172.24.40.34' \
+  TPCC_ARTIFACTS=/tmp/poc-tpcc/artifacts/T-THRD \
+  bash /tmp/poc-tpcc/scripts/run-threadcontrol-suite.sh \
+    --db tidb --iso rc --topology vm-3node-haproxy-3s3r \
+    --db-host 172.24.47.20 --ts ${TS}"
+
+# 等 ~30 min；fetch dry-run artifact
+DRY_OUT="${OUT}-dry-run"
+rsync -av "root@172.24.40.31:/tmp/poc-tpcc/artifacts/T-THRD/tidb-vm-3node-haproxy-3s3r-rc-${TS}/" "$DRY_OUT/"
+
+# === Stage 1 acceptance check ===
+# 驗 .dry-run.done marker
+jq '.phase, .result_scope, .baseline_eligible, .baseline_family, .tuning_profile_id' \
+  "$DRY_OUT/.dry-run.done"
+# expected: "phase-threadcontrol" "T-THRD" false "tuning" "tidb-readpool-a"
+
+# 驗 process / config / env trace 各文件存在
+test -s "$DRY_OUT/dry-run/process-check.txt"
+test -s "$DRY_OUT/dry-run/db-config-check.txt"
+test -s "$DRY_OUT/dry-run/wrapper-env-trace.txt"
+
+# 驗 4 + 1 phase env trace
+grep -E '^(PHASE_NAME|RESULT_SCOPE|BASELINE_ELIGIBLE|BASELINE_FAMILY|TUNING_PROFILE)=' \
+  "$DRY_OUT/dry-run/wrapper-env-trace.txt"
+
+# Stage 1 通過 → 進 Stage 2；不通過 → STOP, 修 framework bug + rollback tuning + 重來。
+
+### Stage 2 — real benchmark
+
+# === Stage 4b: Stage 2 跑 v4.7 suite via phase-threadcontrol/run-threadcontrol-suite.sh ===
+# 不設 DRY_RUN；其他 env 同 Stage 1。
 ssh root@172.24.40.31 "env \
   TPCC_TS=${TS} \
   TUNING_PROFILE=${PROFILE_ID} \
@@ -169,6 +229,7 @@ ansible-playbook -i ansible/inventory/hosts.ini \
 | 3 | **`phase-threadcontrol/run-threadcontrol-suite.sh`** | phase wrapper（codex v6 blocking #1）：在 suite 入口先 `source tests/common/lib/guard.sh; assert_threadcontrol_target "$ROOT"`，然後 delegate 到 `launch-vm1-suite.sh`。確保 gate / prepare 階段都已過 guard |
 | 4 | **`tests/common/lib/common.sh::write_phase_done` patch** | 從 env auto-inject 至 `.<phase>.done` JSON（codex v6 blocking #2 + v8/v9 非 blocking 細化）：<br>**Required 4 (common)**: `PHASE_NAME` / `RESULT_SCOPE` / `BASELINE_ELIGIBLE` / `BASELINE_FAMILY`<br>**Conditional**: 若 `RESULT_SCOPE=T-THRD` → `TUNING_PROFILE` 必填且 ≠ `default`；其他 phase 自動寫 `tuning_profile_id=default`<br>**規則**：任一上述 env 出現 → 必驗對應 env 完整 + `$ROOT` scope 一致；缺一 `die "phase env partial; require: <列表>"` + `exit 1`<br>**Backward-compat**: 4 common env 全未設 → legacy baseline 行為（write phase=$phase only）|
 | 5 | **`tests/common/run-vm1-suite.sh` + `tests/common/prepare.sh` scope guard** | codex v8 non-blocking #2：對 `/S-K8S/` `/T-THRD/` `/X-CROSS/` scope fail-fast，要求只能走對應 phase wrapper |
+| 6 | **`tests/common/run.sh` DRY_RUN flag** | 新增 `DRY_RUN=1` env：在 cold-reset + gate-isolation 後跳過 warmup + 4-thread sweep；改寫 `dry-run/process-check.txt`（ps aux + thread count + port listen）+ `dry-run/db-config-check.txt`（DB SHOW VARS dump）+ `dry-run/wrapper-env-trace.txt`（5 phase env + CLUSTER_HOSTS + TPCC_ARTIFACTS）+ `.dry-run.done` marker。Stage 2 real run 時不重複此 artifact；DRY_RUN=0 / 未設時 sustain 既有 v4.7 流程 |
 
 ## 8. Rollback
 

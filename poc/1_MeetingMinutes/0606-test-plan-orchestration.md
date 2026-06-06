@@ -5,7 +5,20 @@
 ## 1. 總序列
 
 ```
-[A] phase-threadcontrol smoke (~4h 15min, incl. ~1h pending deliverable)
+[A] VM rebuild #1 (~35 min)
+    make drop-idc-vms + make new-idc-vms + ansible-ping + ansible-setup
+        │
+        ▼ fresh 3 VM (.32/.33/.34)
+        │
+[B] ansible-playbook deploy vm-3node-haproxy-3s3r (~30 min)
+    ansible-playbook playbooks/tidb-vm3.yml + dry-run-confirm
+        │
+[C] phase-threadcontrol Stage 1 — dry-run (~30 min)
+    DRY_RUN=1 + apply readpool tuning playbook + before/after config dump
+    → verify dry-run/process-check.txt + db-config-check.txt + wrapper-env-trace.txt
+    → 通過 Stage 1 才進 Stage 2；失敗 STOP + 修 framework bug
+        │
+[D] phase-threadcontrol Stage 2 — real benchmark (~3h)
     Topology: vm-3node-haproxy-3s3r
     Knob: TiDB readpool.unified.max-thread-count 4 → 8 + auto-adjust=false
     Profile id: tidb-readpool-a
@@ -13,19 +26,20 @@
         │
         ▼ revert tuning + verify guardrails
         │
-[B] VM rebuild (~10 min destroy + ~10 min apply + ~15 min ansible-setup)
-    make drop-idc-vms + make new-idc-vms
-    make ansible-ping + ansible-setup
+[E] VM rebuild #2 (~35 min)
+    make drop-idc-vms + make new-idc-vms + ansible-ping + ansible-setup
         │
-        ▼ fresh 3 VM (.32/.33/.34)
-        │
-[C] K3s + TiDB Operator deploy (~30 min)
+[F] K3s + TiDB Operator deploy (~30 min)
     ansible-playbook playbooks/k8s.yml
     ansible-playbook playbooks/tidb-k8s.yml --extra-vars '@vars/tidb-k8s-3node-unlimit.yml'
         │
         ▼ K8s ready, NodePort :30004 通
         │
-[D] phase-k8s smoke (~4h pure run, incl. ~半天-1天 pending deliverable first time)
+[G] phase-k8s Stage 1 — dry-run (~30 min)
+    DRY_RUN=1 + verify K8s pod ready + NodePort + manifest patch + wrapper env trace
+    → 通過 Stage 1 才進 Stage 2；失敗 STOP + 修 K8s wrapper
+        │
+[H] phase-k8s Stage 2 — real benchmark (~3h)
     Topology: k8s-3node-haproxy-3s3r-unlimit
     DB: TiDB unlimit
     Output: results/tidb-tc1/S-K8S/tidb-k8s-3node-haproxy-3s3r-unlimit-rc-<TS>/
@@ -72,6 +86,8 @@ deliverable 1-4 為 A pre-req；5-10 為 D pre-req。其中 #4 (write_phase_done
 **codex v8 補充 deliverable #11**（A+D 共用，先做）：`tests/common/run-vm1-suite.sh` + `tests/common/prepare.sh` 對 phase scope path (`/S-K8S/` `/T-THRD/` `/X-CROSS/`) fail-fast，要求只能走對應 phase wrapper，不能從 baseline launcher 進來。
 
 **codex v8 補充 deliverable #12**（D 專用）：prepare-k8s.sh 的 9-table split SQL **必須 mirror VM TiDB 明確 split points** (`tests/common/prepare.sh:134-144`)，不可用 generic BETWEEN/REGIONS（會 ERROR 8212）。
+
+**user 補充 deliverable #13**（A+D 共用，2026-06-06 新指示）：`tests/common/run.sh` 新 `DRY_RUN=1` env flag — 在 cold-reset + gate-isolation 後跳過 warmup + 4-thread sweep；改寫 dry-run/process-check.txt + dry-run/db-config-check.txt + dry-run/wrapper-env-trace.txt + .dry-run.done marker。兩 phase Stage 1 dry-run 共用此 flag。
 
 ## 5. 風險與 fallback
 
