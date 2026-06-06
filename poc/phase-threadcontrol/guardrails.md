@@ -79,8 +79,19 @@ results/tidb-tc1/T-THRD/...                                       ✓
 
 ### 實作位置
 
-- `tests/common/lib/guard.sh`（本 commit 新增；目前僅含 helper 函式骨架）
-- 各 Makefile target body 開頭 source 該檔（待後續整合 T107 docs sync 時補）
+- `tests/common/lib/guard.sh` — 提供 4 個 assert helper（commit `06fe573`，10/10 self-test pass）
+- `tests/common/run.sh` 入口處 source guard.sh 並依 `$ROOT` 自動 dispatch（commit `0b59897`）：
+  ```bash
+  case "$ROOT" in
+    */T-THRD/*)  assert_threadcontrol_target "$ROOT" ;;
+    */S-K8S/*)   assert_phase_k8s_target "$ROOT" ;;
+    */X-CROSS/*) assert_phase_crossregion_target "$ROOT" ;;
+    *)           assert_baseline_target "$ROOT" ;;   # vm-1node / vm-3node baseline
+  esac
+  ```
+  → baseline target 偵測 `TUNING_PROFILE` 或 `/T-THRD/` path → exit 1
+  → threadcontrol target 偵測 path 不含 `/T-THRD/` 或 TUNING_PROFILE 缺/為 default → exit 1
+  → 6 scope×scenario combo 全 pass (codex review v4 verified)
 
 ## Layer 4（衍生） — README / pipeline-log 主表讀取防護
 

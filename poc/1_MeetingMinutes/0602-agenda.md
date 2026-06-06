@@ -237,6 +237,14 @@
 - 0602.md 補 §13 數據結論 + §14 決策結果 — ⏳（§14 跨區部分完成）
 - 三家統一 8-col TL;DR ranking — ✓ 完成（commit `8d4dded`，含 template 更新）
 - audit-2026-06-04-pipeline-log-spec — ✓ 完成（commit `eb22cc4`，含 F-001 to F-006）
+- **IaC phase isolation framework — ✓ 完成（commits `832a3b3..0b59897` 共 7 個，codex v4 approve）**
+  - 新增 `results/PHASES.md` registry（4 scope SSOT：S-BASE / S-K8S / T-THRD / X-CROSS）
+  - 三個頂層 phase dir：`phase-k8s/`、`phase-threadcontrol/`、`phase-crossregion/`
+  - 三層 hard gate（path / marker / Makefile fail-fast via `tests/common/lib/guard.sh`）
+  - metrics fan-out abstraction（backward-compat；K8s/crossregion 用 logical host id）
+  - Makefile 三 phase target（plan ✓、deploy/run 視 phase 完成度 exit 1）
+  - `verify-readme-gates.sh` 新增 P4f「phase scope contamination」check
+  - codex review 環節走完 v1 → v2 (approve-with-constraints) → v3 (changes-required) → v4 (approve)
 
 ---
 
