@@ -19,7 +19,7 @@
 |---|---|
 | `tests/common/run.sh` | 入口 if `DRY_RUN=1`：**bypass** `.prepare.done` lookup（不存在亦可），直接 `mkdir -p "$ROOT/dry-run"`，跑 guard.sh dispatch + dry-run probes，跳過 cold-reset / gate-isolation（既有版用 go-tpc 跑 tpcc DB）/ warmup / 4-thread sweep |
 | `phase-threadcontrol/run-threadcontrol-suite.sh` | DRY_RUN=1 → special-case：只 env validation + scope assert + ansible config patch + before/after dump + dry-run probes；**不**呼叫 `launch-vm1-suite.sh`（會 cascade 跑 prepare/run）|
-| 既有 `gate-isolation.sh` | DRY_RUN=1 **不用**；改用無 DB 依賴的 isolation probe：直接 `mysql -e 'SELECT @@global.tx_isolation'`（VM TiDB）/ `psql -c 'SHOW transaction_isolation'`（YBDB）/ `cockroach sql -e 'SHOW transaction_isolation_level'`（CRDB），不開 tpcc DB / 不跑 go-tpc |
+| 既有 `gate-isolation.sh` | DRY_RUN=1 **不用**；改用無 tpcc DB 依賴的 isolation probe（codex v12 blocking 修正）：<br>**TiDB**（對齊既有 isolation gate 口徑；不指定 DB）：<br>```sql<br>SET SESSION transaction_isolation='READ-COMMITTED';<br>SET SESSION tidb_txn_mode='pessimistic';<br>SELECT @@transaction_isolation, @@tidb_txn_mode;<br>```<br>**CockroachDB**：`cockroach sql -e 'SHOW transaction_isolation; SHOW default_transaction_isolation'`<br>**YugabyteDB**（連預設 `yugabyte` DB，不要 tpcc）：`psql -d yugabyte -c 'SHOW transaction_isolation; SHOW default_transaction_isolation'` |
 
 **dry-run probe items**（codex v11 non-blocking 補充）：
 
@@ -185,14 +185,23 @@ jq '.phase, .result_scope, .baseline_eligible, .baseline_family, .tuning_profile
   "$DRY_OUT/.dry-run.done"
 # expected: "phase-threadcontrol" "T-THRD" false "tuning" "tidb-readpool-a"
 
-# 驗 process / config / env trace 各文件存在
-test -s "$DRY_OUT/dry-run/process-check.txt"
-test -s "$DRY_OUT/dry-run/db-config-check.txt"
-test -s "$DRY_OUT/dry-run/wrapper-env-trace.txt"
+# 驗 全部 7 個 dry-run probe 文件存在 (codex v12 non-blocking #1)
+for f in process-check db-config-check wrapper-env-trace isolation-probe \
+         ansible-patch-result infra-probe; do
+  test -s "$DRY_OUT/dry-run/${f}.txt" || { echo "missing $f.txt"; exit 1; }
+done
 
 # 驗 4 + 1 phase env trace
 grep -E '^(PHASE_NAME|RESULT_SCOPE|BASELINE_ELIGIBLE|BASELINE_FAMILY|TUNING_PROFILE)=' \
   "$DRY_OUT/dry-run/wrapper-env-trace.txt"
+
+# 驗 ansible patch 確實 apply (before/after diff 應非空)
+diff -u "$DRY_OUT/db-config/before-readpool-32.txt" "$DRY_OUT/db-config/after-readpool-32.txt" \
+  > "$DRY_OUT/dry-run/ansible-patch-result.txt"
+test -s "$DRY_OUT/dry-run/ansible-patch-result.txt"
+
+# 驗 isolation probe 有 RC + pessimistic
+grep -E 'READ-COMMITTED|pessimistic' "$DRY_OUT/dry-run/isolation-probe.txt"
 
 # Stage 1 通過 → 進 Stage 2；不通過 → STOP, 修 framework bug + rollback tuning + 重來。
 
@@ -285,3 +294,6 @@ ansible-playbook -i ansible/inventory/hosts.ini \
 | 2026-06-06 | （本 commit fixup-2）| codex v7 review non-blocking 修正：TiKV dump 改 `ssh + curl localhost:20180` + `ss -ltnp` 預檢 / rsync source 明示為 common name，fetch 時 rename 進 profile-id local path / write_phase_done env 一致性 fail-fast 規劃 |
 | 2026-06-06 | （本 commit fixup-3）| codex v8 review non-blocking 修正：write_phase_done 改 die()/exit 1 + 5 phase env 任一出現必驗全 + 新增 deliverable #5 `run-vm1-suite.sh + prepare.sh` 對 `/S-K8S/` `/T-THRD/` `/X-CROSS/` scope fail-fast |
 | 2026-06-06 | （本 commit fixup-4）| codex v9 review changes-required 修正 1 blocking + 3 non-blocking：(blocking) Stage 4 env block 補 `BASELINE_FAMILY=tuning`，5 env 完整 (1) write_phase_done 規則細化：4 common required + T-THRD 時 TUNING_PROFILE 額外必填 (2) deliverable table 順序維持 |
+| 2026-06-06 | （本 commit two-stage）| user 新指示：拆 Stage 1 dry-run + Stage 2 real benchmark；新增 DRY_RUN flag deliverable |
+| 2026-06-06 | （本 commit fixup-5）| codex v11 review changes-required 修正 3 blocking + 5 non-blocking：(1) DRY_RUN bypass .prepare.done (2) wrapper DRY_RUN special-case 不進 prepare (3) no-prepare isolation probe；補 dry-run probe 7 項 + split-sql-lint |
+| 2026-06-07 | （本 commit fixup-6）| codex v12 review changes-required 修正 1 blocking + 3 non-blocking：(blocking) no-prepare isolation probe SQL 三家對齊既有 gate 口徑（TiDB SET SESSION + SELECT @@; CRDB SHOW transaction_isolation; YBDB 連 yugabyte DB）；(1) Stage 1 acceptance 補驗 7 probes (2) wrapper 註解明示「DRY_RUN branch 不進 prepare/run benchmark path」(3) §2 估時表更新 8-stage |

@@ -105,8 +105,10 @@ ansible-playbook -i ../ansible/inventory/hosts.ini playbooks/tidb-k8s-status.yml
 mysql -h 172.24.40.32 -P 30004 -u root -D mysql -e 'SELECT @@version;'
 
 # === Stage 1a: dry-run via DRY_RUN=1 ===
-# IMPORTANT (codex v6 blocking #3): prepare-k8s.sh 內部處理 prepare → SPLIT → mark .prepare.done。
-# 不能在 suite 啟動前外部跑 SPLIT，因為 suite 內 prepare.sh 會 DROP+CREATE 把 SPLIT 抹掉。
+# IMPORTANT: DRY_RUN=1 wrapper special-case (codex v12 non-blocking #2)：wrapper 入口判 DRY_RUN
+# 進 DRY_RUN branch — 只跑 env/scope validation + K8s pod ready + NodePort + dry-run probes，
+# 不進 prepare-k8s.sh (避 go-tpc prepare 128W) 不進 run.sh benchmark path (避 warmup/sweep)。
+# Stage 2 才走完整 chain (gate-k8s → prepare-k8s → run.sh → collect-k8s)。
 TS=$(date '+%Y%m%dT%H%M%S%z')
 
 # wrapper invocation — thin wrapper sets env + delegates to tests/common/run.sh
@@ -132,12 +134,26 @@ ssh root@172.24.40.31 "env \
 DRY_OUT="results/tidb-tc1/S-K8S/tidb-k8s-3node-haproxy-3s3r-unlimit-rc-${TS}-dry-run"
 rsync -av "root@172.24.40.31:/tmp/poc-tpcc/artifacts/S-K8S/tidb-k8s-3node-haproxy-3s3r-unlimit-rc-${TS}/" "$DRY_OUT/"
 
-# === Stage 1 acceptance check ===
+# === Stage 1 acceptance check (codex v12 non-blocking #1：驗全部 probe) ===
 jq '.phase, .result_scope, .baseline_eligible, .baseline_family' "$DRY_OUT/.dry-run.done"
 # expected: "phase-k8s" "S-K8S" true "k8s"
-test -s "$DRY_OUT/dry-run/k8s-pod-ready.txt"
-test -s "$DRY_OUT/dry-run/nodeport-check.txt"
-test -s "$DRY_OUT/dry-run/wrapper-env-trace.txt"
+
+# common dry-run probes
+for f in process-check db-config-check wrapper-env-trace isolation-probe infra-probe; do
+  test -s "$DRY_OUT/dry-run/${f}.txt" || { echo "missing $f.txt"; exit 1; }
+done
+
+# K8s-specific probes
+for f in k8s-pod-ready nodeport-check tikv-status-port-check split-sql-lint manifest-patch-check; do
+  test -s "$DRY_OUT/dry-run/${f}.txt" || { echo "missing $f.txt"; exit 1; }
+done
+
+# 驗 SPLIT SQL mirror VM TiDB
+grep -F 'SPLIT TABLE warehouse  BY (43)' "$DRY_OUT/dry-run/split-sql-lint.txt"
+grep -F 'SPLIT TABLE history    BY (1280000)' "$DRY_OUT/dry-run/split-sql-lint.txt"
+
+# 驗 isolation probe RC
+grep -E 'READ-COMMITTED|read committed' "$DRY_OUT/dry-run/isolation-probe.txt"
 
 # Stage 1 通過 → 進 Stage 2；不通過 → STOP, 修 K8s wrapper / NodePort / TiKV pod。
 
@@ -230,3 +246,6 @@ cat results/tidb-tc1/S-K8S/.../runs/threads-128/round-3/metrics/hosts.json
 | 2026-06-06 | （本 commit fixup-2）| codex v7 review changes-required 修正 2 blocking + 4 non-blocking：(1) wrapper 改唯一 chain `gate-k8s → prepare-k8s → run → collect-k8s`，不 delegate baseline launcher (2) prepare-k8s.sh 9-table 全 split + per-table shard verify (3) write_phase_done env validate fail-fast (4) gate-k8s.sh 補 `ss -ltnp` 20180 預檢 (5) baseline_family 加入 marker (6) Stage 1 估時 wording 整併（SPLIT 已併入 prepare）|
 | 2026-06-06 | （本 commit fixup-3）| codex v8 review changes-required 修正 1 blocking + 3 non-blocking：(1) prepare-k8s.sh split SQL 改 mirror VM TiDB 明確 split points（`SPLIT TABLE <name> BY (43)...(86)...`）取代 generic BETWEEN/REGIONS，避免 ERROR 8212 region too small；(2) SHOW TABLE REGIONS fallback；(3) write_phase_done 改 die()/exit 1，5 phase env 任一出現必驗全 + scope；(4) 新增 deliverable #8: launch-vm1-suite.sh + prepare.sh 對 /S-K8S/ /T-THRD/ /X-CROSS/ scope fail-fast |
 | 2026-06-06 | （本 commit fixup-4）| codex v9 review non-blocking 修正：write_phase_done 規則細化（4 common required + RESULT_SCOPE=T-THRD 時 TUNING_PROFILE 必填且 ≠ default）；deliverable 編號 1-8 順序整理；prepare-k8s.sh fallback 結果與 information_schema 結果正規化到同一 shard-count.txt schema |
+| 2026-06-06 | （本 commit two-stage）| user 新指示：拆 Stage 1 dry-run + Stage 2 real benchmark；DRY_RUN flag K8s wrapper 加 K8s-specific probes (k8s-pod-ready/nodeport/tikv-status/split-sql-lint/manifest-patch) |
+| 2026-06-06 | （本 commit fixup-5）| codex v11 review 修正 3 blocking + 5 non-blocking：DRY_RUN bypass .prepare.done / wrapper special-case 不進 prepare-k8s / no-prepare isolation；§3 表「mirror VM TiDB 明確 split points」取代「BETWEEN」；補 7+ dry-run probes |
+| 2026-06-07 | （本 commit fixup-6）| codex v12 review 修正 1 blocking + 3 non-blocking：no-prepare isolation probe SQL 三家對齊 gate 口徑；Stage 1 acceptance 補驗 5 K8s-specific + 5 common probes + SPLIT SQL lint；wrapper 註解明示「DRY_RUN branch，不進 prepare-k8s / run.sh benchmark path」 |

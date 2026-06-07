@@ -49,11 +49,16 @@
 
 | Stage | 時間（首次）| 時間（再執行）|
 |---|---|---|
-| A. phase-threadcontrol smoke | ~4h 15min | ~3h 15min |
-| B. VM rebuild | ~35 min | ~35 min |
-| C. K3s + TiDB Operator deploy | ~30 min | ~30 min |
-| D. phase-k8s smoke | ~1-1.5 天（含 pending deliverable）| ~4h |
-| **合計** | **~2-2.5 工作天** | **~8h 20min** |
+| A. VM rebuild #1 | ~35 min | ~35 min |
+| B. deploy vm-3node-haproxy-3s3r | ~30 min | ~30 min |
+| C. phase-threadcontrol Stage 1 dry-run | ~30 min | ~30 min |
+| D. phase-threadcontrol Stage 2 real benchmark | ~3h | ~3h |
+| E. VM rebuild #2 | ~35 min | ~35 min |
+| F. K3s + TiDB Operator deploy | ~30 min | ~30 min |
+| G. phase-k8s Stage 1 dry-run | ~30 min | ~30 min |
+| H. phase-k8s Stage 2 real benchmark | ~3h | ~3h |
+| 15 deliverable 補（首次）| ~半天-1 天 | 0 |
+| **合計** | **~2-2.5 工作天** | **~9h 10min** |
 
 ## 3. 拍板來源（2026-06-06 Q1-Q6）
 
