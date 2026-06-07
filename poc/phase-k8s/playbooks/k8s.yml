@@ -1,0 +1,12 @@
+---
+# phase-k8s/playbooks/k8s.yml — K3s cluster install (thin wrapper)
+#
+# Reuses ansible/playbooks/k8s.yml entrypoint so the heavy lifting
+# (iptables/proxy/uninstall preflight/local-path patch) stays in
+# ansible/roles/k3s_{server,agent}/. Phase-isolated config (resource
+# limits, namespace, etc.) lives in phase-k8s/vars/.
+#
+# Usage:
+#   ansible-playbook -i ansible/inventory/tidb-tc1-k8s.ini \
+#     phase-k8s/playbooks/k8s.yml
+- import_playbook: ../../ansible/playbooks/k8s.yml

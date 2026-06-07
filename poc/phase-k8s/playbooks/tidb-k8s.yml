@@ -1,0 +1,11 @@
+---
+# phase-k8s/playbooks/tidb-k8s.yml — TiDB Operator + TidbCluster (thin wrapper)
+#
+# Reuses ansible/playbooks/tidb-k8s.yml entrypoint. Phase-isolated vars
+# live in phase-k8s/vars/tidb-k8s-3node-haproxy-3s3r-unlimit.yml.
+#
+# Usage:
+#   ansible-playbook -i ansible/inventory/tidb-tc1-k8s.ini \
+#     phase-k8s/playbooks/tidb-k8s.yml \
+#     -e @phase-k8s/vars/tidb-k8s-3node-haproxy-3s3r-unlimit.yml
+- import_playbook: ../../ansible/playbooks/tidb-k8s.yml

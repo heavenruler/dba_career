@@ -1,0 +1,28 @@
+# phase-k8s vars: TiDB-unlimit @ k8s-3node-haproxy-3s3r-unlimit
+# Mirrors ansible/vars/tidb-k8s-3node-unlimit.yml; phase-isolated copy.
+# Usage: ansible-playbook ... -e @phase-k8s/vars/tidb-k8s-3node-haproxy-3s3r-unlimit.yml
+
+tidb_version: "v8.5.2"
+k8s_resource_limits: false           # unlimit cell
+
+tidb_k8s_namespace: tidb-cluster
+tidb_k8s_cluster_name: tidb-poc
+tidb_sql_nodeport: 30004
+
+tidb_replicas:
+  pd: 3
+  tidb: 2
+  tikv: 3
+
+tidb_storage:
+  pd: 10Gi
+  tikv: 100Gi
+  storageClassName: local-path
+
+# phase-k8s metadata for downstream wrapper / manifest validation
+phase_name: phase-k8s
+result_scope: S-K8S
+baseline_eligible: true
+baseline_family: k8s
+tuning_profile_id: default
+topology: k8s-3node-haproxy-3s3r-unlimit

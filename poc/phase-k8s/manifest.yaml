@@ -5,9 +5,11 @@ baseline_family: k8s
 comparison_scope: k8s-only
 allowed_result_scopes: [S-K8S]
 forbidden_result_scopes: [S-BASE, T-THRD, X-CROSS]
+allowed_db: [tidb]                        # phase-1 MVP: tidb only; phase-2 → add crdb, ybdb
 allowed_topology:
   - k8s-3node-limit
   - k8s-3node-unlimit
+  - k8s-3node-haproxy-3s3r-unlimit         # phase-1 MVP cell
 isolation: [rc]
 warehouses: 128
 warmup_sec: 1200
