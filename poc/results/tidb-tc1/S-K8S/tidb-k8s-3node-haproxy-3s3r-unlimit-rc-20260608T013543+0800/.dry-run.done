@@ -1,0 +1,13 @@
+{
+  "phase": "phase-k8s",
+  "result_scope": "S-K8S",
+  "baseline_eligible": true,
+  "baseline_family": "k8s",
+  "tuning_profile_id": "default",
+  "db": "tidb",
+  "topology": "k8s-3node-haproxy-3s3r-unlimit",
+  "ts": "20260608T013543+0800",
+  "dry_run": true,
+  "diff_pass": true,
+  "compare_vm_deny_count": 0
+}

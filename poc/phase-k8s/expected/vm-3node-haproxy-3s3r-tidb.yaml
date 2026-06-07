@@ -17,7 +17,7 @@ vm:                                      # K8s 沒有 vm.*；compare-vm 走 allo
     tikv: 1
 db_config:
   tidb_version: v8.5.2                   # 跟 K8s cell 對齊；drift = warn
-  tikv_readpool_unified_auto_adjust_pool_size: true
+  tikv_readpool_unified_auto_adjust_pool_size: false      # 與 K8s cell 對齊；compare-vm 應 0 diff
   pd_max_replicas: 3
 workload:                                # deny: drift 必 exit 1
   warehouses: 128

@@ -1,6 +1,3 @@
-# expected.yaml SSOT for phase-1 MVP cell.
-# Used by dump-actual.sh + diff-check.sh + compare-vm.sh.
-# canonicalize-compare: yq sort_keys + jq subset (expected ⊆ actual).
 db: tidb
 topology: k8s-3node-haproxy-3s3r-unlimit
 phase_env:
@@ -16,15 +13,15 @@ k8s:
     pd: 3
     tidb: 2
     tikv: 3
-  resource_limits: null                  # unlimit cell — limits unset by k8s_resource_limits=false
+  resource_limits: null
   storage_class: local-path
   pv_size:
     pd: 10Gi
     tikv: 100Gi
-  db_image_prefix: pingcap/tidb          # actual tag pinned by tidb_version v8.5.2
+  db_image_prefix: pingcap/tidb
 db_config:
   tidb_version: v8.5.2
-  tikv_readpool_unified_auto_adjust_pool_size: false      # TiDB Operator 預設 false (verified 2026-06-08)
+  tikv_readpool_unified_auto_adjust_pool_size: false
   pd_max_replicas: 3
 workload:
   warehouses: 128
@@ -39,9 +36,9 @@ isolation:
 network:
   nodeport: 30004
   client_proto: mysql
-  haproxy_backends: 0                    # phase-1 MVP: K8s NodePort 直連 (haproxy defer 至 phase-2)
+  haproxy_backends: 0
 split:
-  strategy: tidb_explicit_9table         # phase-1 MVP dry-run 不執行 prepare/split; declarative only
+  strategy: tidb_explicit_9table
   source_ref: tests/common/prepare.sh:134-144
   expected_tables: 9
   expected_shards_per_table: 3

@@ -1,0 +1,327 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-pd-0",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-3",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-07T17:16:58Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app.kubernetes.io/component": "pd",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/member-id": "13895895201674635410",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-pd-0"
+                },
+                "name": "pd-tidb-poc-pd-0",
+                "namespace": "tidb-cluster",
+                "resourceVersion": "1174",
+                "uid": "1d725144-d793-4e85-98c6-2968baa400a8"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "10Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-1d725144-d793-4e85-98c6-2968baa400a8"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "10Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-pd-1",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-1",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-07T17:16:58Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app.kubernetes.io/component": "pd",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/member-id": "13265188041439701517",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-pd-1"
+                },
+                "name": "pd-tidb-poc-pd-1",
+                "namespace": "tidb-cluster",
+                "resourceVersion": "1196",
+                "uid": "24497f89-5bcb-4812-8c3a-7adc65165df0"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "10Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-24497f89-5bcb-4812-8c3a-7adc65165df0"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "10Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-pd-2",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-2",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-07T17:16:58Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app.kubernetes.io/component": "pd",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/member-id": "2159158993245462817",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-pd-2"
+                },
+                "name": "pd-tidb-poc-pd-2",
+                "namespace": "tidb-cluster",
+                "resourceVersion": "1189",
+                "uid": "e7f8f617-19b2-462c-b7cd-9e63b486694c"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "10Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-e7f8f617-19b2-462c-b7cd-9e63b486694c"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "10Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-tikv-0",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-3",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-07T17:18:14Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app.kubernetes.io/component": "tikv",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-tikv-0",
+                    "tidb.pingcap.com/store-id": "1001"
+                },
+                "name": "tikv-tidb-poc-tikv-0",
+                "namespace": "tidb-cluster",
+                "resourceVersion": "1199",
+                "uid": "8cbab205-0ac1-420b-870c-ecb026ad929e"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "100Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-8cbab205-0ac1-420b-870c-ecb026ad929e"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "100Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-tikv-1",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-2",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-07T17:18:14Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app.kubernetes.io/component": "tikv",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-tikv-1",
+                    "tidb.pingcap.com/store-id": "1004"
+                },
+                "name": "tikv-tidb-poc-tikv-1",
+                "namespace": "tidb-cluster",
+                "resourceVersion": "1203",
+                "uid": "8be9f037-4dfd-4498-8602-f76f0e75988a"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "100Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-8be9f037-4dfd-4498-8602-f76f0e75988a"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "100Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-tikv-2",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-1",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-07T17:18:14Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app.kubernetes.io/component": "tikv",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/pod-name": "tidb-poc-tikv-2",
+                    "tidb.pingcap.com/store-id": "1005"
+                },
+                "name": "tikv-tidb-poc-tikv-2",
+                "namespace": "tidb-cluster",
+                "resourceVersion": "1209",
+                "uid": "0bd49feb-1bdb-467f-aac4-27599a4b2420"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "100Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-0bd49feb-1bdb-467f-aac4-27599a4b2420"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "100Gi"
+                },
+                "phase": "Bound"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

@@ -53,8 +53,8 @@ PD_PV_SIZE=$(jq -r '.items[] | select(.metadata.labels["app.kubernetes.io/compon
 TIKV_PV_SIZE=$(jq -r '.items[] | select(.metadata.labels["app.kubernetes.io/component"]=="tikv") | .spec.resources.requests.storage' "$OUT_DIR/raw/kubectl-pvc.json" | head -1)
 STORAGE_CLASS=$(jq -r '.items[0].spec.storageClassName' "$OUT_DIR/raw/kubectl-pvc.json")
 
-# image
-TIDB_IMG=$(jq -r '.items[] | select(.metadata.labels["app.kubernetes.io/component"]=="tidb") | .spec.containers[0].image' "$OUT_DIR/raw/kubectl-pods.json" | head -1)
+# image — TiDB pod 有 2 container (slowlog alpine + tidb pingcap); 過濾 name=tidb
+TIDB_IMG=$(jq -r '.items[] | select(.metadata.labels["app.kubernetes.io/component"]=="tidb") | .spec.containers[] | select(.name=="tidb") | .image' "$OUT_DIR/raw/kubectl-pods.json" | head -1)
 TIDB_VERSION=$(echo "$TIDB_IMG" | sed -E 's|.*:||')
 
 echo "[dump] TiKV /config..."

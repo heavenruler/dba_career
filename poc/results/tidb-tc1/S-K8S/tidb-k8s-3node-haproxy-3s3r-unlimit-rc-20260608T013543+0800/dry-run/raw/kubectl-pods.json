@@ -1,0 +1,2735 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "creationTimestamp": "2026-06-07T17:16:58Z",
+                "generateName": "tidb-poc-discovery-776644785c-",
+                "labels": {
+                    "app.kubernetes.io/component": "discovery",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "pod-template-hash": "776644785c",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477"
+                },
+                "name": "tidb-poc-discovery-776644785c-m9pzt",
+                "namespace": "tidb-cluster",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "tidb-poc-discovery-776644785c",
+                        "uid": "eca08389-a38c-4ba5-b483-f28e6c4fd269"
+                    }
+                ],
+                "resourceVersion": "1171",
+                "uid": "533e375e-ee85-4893-b02e-9ced3d7b17e4"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "command": [
+                            "/usr/local/bin/tidb-discovery"
+                        ],
+                        "env": [
+                            {
+                                "name": "MY_POD_NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "TZ",
+                                "value": "Asia/Taipei"
+                            },
+                            {
+                                "name": "TC_NAME",
+                                "value": "tidb-poc"
+                            }
+                        ],
+                        "image": "pingcap/tidb-operator:v1.6.5",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "discovery",
+                        "ports": [
+                            {
+                                "containerPort": 10261,
+                                "name": "discovery",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 10262,
+                                "name": "proxy",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-r5hpl",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "l-test-poc-3",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "tidb-poc-discovery",
+                "serviceAccountName": "tidb-poc-discovery",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "kube-api-access-r5hpl",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:27Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:16:58Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:27Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:27Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:16:58Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://beae0bce9f1125af9485fdcab17e4ffdc3452440c9aa109a8f9f4251e5052551",
+                        "image": "docker.io/pingcap/tidb-operator:v1.6.5",
+                        "imageID": "docker.io/pingcap/tidb-operator@sha256:9522f9c1aef9fba59ed7a117a182f810a872479aa68aeca895f9311c80b1edb4",
+                        "lastState": {},
+                        "name": "discovery",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-07T17:17:26Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.34",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.34"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.1.2",
+                "podIPs": [
+                    {
+                        "ip": "10.42.1.2"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-06-07T17:16:58Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "prometheus.io/path": "/metrics",
+                    "prometheus.io/port": "2379",
+                    "prometheus.io/scrape": "true"
+                },
+                "creationTimestamp": "2026-06-07T17:16:58Z",
+                "generateName": "tidb-poc-pd-",
+                "labels": {
+                    "app.kubernetes.io/component": "pd",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "apps.kubernetes.io/pod-index": "0",
+                    "controller-revision-hash": "tidb-poc-pd-d6c668b6",
+                    "statefulset.kubernetes.io/pod-name": "tidb-poc-pd-0",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/member-id": "13895895201674635410"
+                },
+                "name": "tidb-poc-pd-0",
+                "namespace": "tidb-cluster",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "tidb-poc-pd",
+                        "uid": "9b63f852-b2c8-4fa2-88cc-f18aa0f4e588"
+                    }
+                ],
+                "resourceVersion": "1173",
+                "uid": "5581546d-b85a-4f62-ac0d-d91fcfd01427"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "command": [
+                            "/bin/sh",
+                            "/usr/local/bin/pd_start_script.sh"
+                        ],
+                        "env": [
+                            {
+                                "name": "NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "PEER_SERVICE_NAME",
+                                "value": "tidb-poc-pd-peer"
+                            },
+                            {
+                                "name": "SERVICE_NAME",
+                                "value": "tidb-poc-pd"
+                            },
+                            {
+                                "name": "SET_NAME",
+                                "value": "tidb-poc-pd"
+                            },
+                            {
+                                "name": "TZ",
+                                "value": "Asia/Taipei"
+                            }
+                        ],
+                        "image": "pingcap/pd:v8.5.2",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "pd",
+                        "ports": [
+                            {
+                                "containerPort": 2380,
+                                "name": "server",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 2379,
+                                "name": "client",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/podinfo",
+                                "name": "annotations",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/pd",
+                                "name": "config",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/usr/local/bin",
+                                "name": "startup-script",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/lib/pd",
+                                "name": "pd"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-8tdpn",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "tidb-poc-pd-0",
+                "nodeName": "l-test-poc-3",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "subdomain": "tidb-poc-pd-peer",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "pd",
+                        "persistentVolumeClaim": {
+                            "claimName": "pd-tidb-poc-pd-0"
+                        }
+                    },
+                    {
+                        "downwardAPI": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.annotations"
+                                    },
+                                    "path": "annotations"
+                                }
+                            ]
+                        },
+                        "name": "annotations"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "config-file",
+                                    "path": "pd.toml"
+                                }
+                            ],
+                            "name": "tidb-poc-pd-6130373"
+                        },
+                        "name": "config"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "startup-script",
+                                    "path": "pd_start_script.sh"
+                                }
+                            ],
+                            "name": "tidb-poc-pd-6130373"
+                        },
+                        "name": "startup-script"
+                    },
+                    {
+                        "name": "kube-api-access-8tdpn",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:33Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:09Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:33Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:33Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:09Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://5f7bdd112a5c3db04193a27c2045a521a1a86fb3a1e71cf61e2de26126b0bee8",
+                        "image": "docker.io/pingcap/pd:v8.5.2",
+                        "imageID": "docker.io/pingcap/pd@sha256:6d7a25550c58905a2b938f4d9f8b44e373811e9a0b84ca7ad85dfdfeaaa91811",
+                        "lastState": {},
+                        "name": "pd",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-07T17:17:33Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.34",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.34"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.1.4",
+                "podIPs": [
+                    {
+                        "ip": "10.42.1.4"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-06-07T17:17:09Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "prometheus.io/path": "/metrics",
+                    "prometheus.io/port": "2379",
+                    "prometheus.io/scrape": "true"
+                },
+                "creationTimestamp": "2026-06-07T17:16:58Z",
+                "generateName": "tidb-poc-pd-",
+                "labels": {
+                    "app.kubernetes.io/component": "pd",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "apps.kubernetes.io/pod-index": "1",
+                    "controller-revision-hash": "tidb-poc-pd-d6c668b6",
+                    "statefulset.kubernetes.io/pod-name": "tidb-poc-pd-1",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/member-id": "13265188041439701517"
+                },
+                "name": "tidb-poc-pd-1",
+                "namespace": "tidb-cluster",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "tidb-poc-pd",
+                        "uid": "9b63f852-b2c8-4fa2-88cc-f18aa0f4e588"
+                    }
+                ],
+                "resourceVersion": "1195",
+                "uid": "eb441bca-0d04-4987-82d3-40d1aa281582"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "command": [
+                            "/bin/sh",
+                            "/usr/local/bin/pd_start_script.sh"
+                        ],
+                        "env": [
+                            {
+                                "name": "NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "PEER_SERVICE_NAME",
+                                "value": "tidb-poc-pd-peer"
+                            },
+                            {
+                                "name": "SERVICE_NAME",
+                                "value": "tidb-poc-pd"
+                            },
+                            {
+                                "name": "SET_NAME",
+                                "value": "tidb-poc-pd"
+                            },
+                            {
+                                "name": "TZ",
+                                "value": "Asia/Taipei"
+                            }
+                        ],
+                        "image": "pingcap/pd:v8.5.2",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "pd",
+                        "ports": [
+                            {
+                                "containerPort": 2380,
+                                "name": "server",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 2379,
+                                "name": "client",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/podinfo",
+                                "name": "annotations",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/pd",
+                                "name": "config",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/usr/local/bin",
+                                "name": "startup-script",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/lib/pd",
+                                "name": "pd"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-g66fb",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "tidb-poc-pd-1",
+                "nodeName": "l-test-poc-1",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "subdomain": "tidb-poc-pd-peer",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "pd",
+                        "persistentVolumeClaim": {
+                            "claimName": "pd-tidb-poc-pd-1"
+                        }
+                    },
+                    {
+                        "downwardAPI": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.annotations"
+                                    },
+                                    "path": "annotations"
+                                }
+                            ]
+                        },
+                        "name": "annotations"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "config-file",
+                                    "path": "pd.toml"
+                                }
+                            ],
+                            "name": "tidb-poc-pd-6130373"
+                        },
+                        "name": "config"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "startup-script",
+                                    "path": "pd_start_script.sh"
+                                }
+                            ],
+                            "name": "tidb-poc-pd-6130373"
+                        },
+                        "name": "startup-script"
+                    },
+                    {
+                        "name": "kube-api-access-g66fb",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:31Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:05Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:31Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:31Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:05Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://1640ef40c1caf6100eb0fec6c03ce07d9a7b0f093d47cebb9546bf6d93ca2d1e",
+                        "image": "docker.io/pingcap/pd:v8.5.2",
+                        "imageID": "docker.io/pingcap/pd@sha256:6d7a25550c58905a2b938f4d9f8b44e373811e9a0b84ca7ad85dfdfeaaa91811",
+                        "lastState": {},
+                        "name": "pd",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-07T17:17:31Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.32",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.32"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.0.6",
+                "podIPs": [
+                    {
+                        "ip": "10.42.0.6"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-06-07T17:17:05Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "prometheus.io/path": "/metrics",
+                    "prometheus.io/port": "2379",
+                    "prometheus.io/scrape": "true"
+                },
+                "creationTimestamp": "2026-06-07T17:16:58Z",
+                "generateName": "tidb-poc-pd-",
+                "labels": {
+                    "app.kubernetes.io/component": "pd",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "apps.kubernetes.io/pod-index": "2",
+                    "controller-revision-hash": "tidb-poc-pd-d6c668b6",
+                    "statefulset.kubernetes.io/pod-name": "tidb-poc-pd-2",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/member-id": "2159158993245462817"
+                },
+                "name": "tidb-poc-pd-2",
+                "namespace": "tidb-cluster",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "tidb-poc-pd",
+                        "uid": "9b63f852-b2c8-4fa2-88cc-f18aa0f4e588"
+                    }
+                ],
+                "resourceVersion": "1187",
+                "uid": "0cc2f574-d132-454e-a7cf-318c1b85880a"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "command": [
+                            "/bin/sh",
+                            "/usr/local/bin/pd_start_script.sh"
+                        ],
+                        "env": [
+                            {
+                                "name": "NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "PEER_SERVICE_NAME",
+                                "value": "tidb-poc-pd-peer"
+                            },
+                            {
+                                "name": "SERVICE_NAME",
+                                "value": "tidb-poc-pd"
+                            },
+                            {
+                                "name": "SET_NAME",
+                                "value": "tidb-poc-pd"
+                            },
+                            {
+                                "name": "TZ",
+                                "value": "Asia/Taipei"
+                            }
+                        ],
+                        "image": "pingcap/pd:v8.5.2",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "pd",
+                        "ports": [
+                            {
+                                "containerPort": 2380,
+                                "name": "server",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 2379,
+                                "name": "client",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/podinfo",
+                                "name": "annotations",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/pd",
+                                "name": "config",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/usr/local/bin",
+                                "name": "startup-script",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/lib/pd",
+                                "name": "pd"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-9mw2q",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "tidb-poc-pd-2",
+                "nodeName": "l-test-poc-2",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "subdomain": "tidb-poc-pd-peer",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "pd",
+                        "persistentVolumeClaim": {
+                            "claimName": "pd-tidb-poc-pd-2"
+                        }
+                    },
+                    {
+                        "downwardAPI": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.annotations"
+                                    },
+                                    "path": "annotations"
+                                }
+                            ]
+                        },
+                        "name": "annotations"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "config-file",
+                                    "path": "pd.toml"
+                                }
+                            ],
+                            "name": "tidb-poc-pd-6130373"
+                        },
+                        "name": "config"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "startup-script",
+                                    "path": "pd_start_script.sh"
+                                }
+                            ],
+                            "name": "tidb-poc-pd-6130373"
+                        },
+                        "name": "startup-script"
+                    },
+                    {
+                        "name": "kube-api-access-9mw2q",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:31Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:05Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:47Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:47Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:17:05Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://89768a8e698fdd5607446855c81cdc4da4a576d7d0b80205e12f43d48d838251",
+                        "image": "docker.io/pingcap/pd:v8.5.2",
+                        "imageID": "docker.io/pingcap/pd@sha256:6d7a25550c58905a2b938f4d9f8b44e373811e9a0b84ca7ad85dfdfeaaa91811",
+                        "lastState": {
+                            "terminated": {
+                                "containerID": "containerd://74208778c214faa20ea79eb33ad98c9cac3b5d5a008e8e667c197b308cba8805",
+                                "exitCode": 1,
+                                "finishedAt": "2026-06-07T17:17:45Z",
+                                "reason": "Error",
+                                "startedAt": "2026-06-07T17:17:30Z"
+                            }
+                        },
+                        "name": "pd",
+                        "ready": true,
+                        "restartCount": 1,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-07T17:17:46Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.33",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.33"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.2.4",
+                "podIPs": [
+                    {
+                        "ip": "10.42.2.4"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-06-07T17:17:05Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "prometheus.io/path": "/metrics",
+                    "prometheus.io/port": "10080",
+                    "prometheus.io/scrape": "true"
+                },
+                "creationTimestamp": "2026-06-07T17:19:49Z",
+                "generateName": "tidb-poc-tidb-",
+                "labels": {
+                    "app.kubernetes.io/component": "tidb",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "apps.kubernetes.io/pod-index": "0",
+                    "controller-revision-hash": "tidb-poc-tidb-549bbfb645",
+                    "statefulset.kubernetes.io/pod-name": "tidb-poc-tidb-0",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477"
+                },
+                "name": "tidb-poc-tidb-0",
+                "namespace": "tidb-cluster",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "tidb-poc-tidb",
+                        "uid": "bf0ba8de-0e1e-4d67-abef-3198a3e81dab"
+                    }
+                ],
+                "resourceVersion": "1280",
+                "uid": "725b873c-8be2-439a-a2d7-40ac79a1e4a0"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "command": [
+                            "sh",
+                            "-c",
+                            "touch /var/log/tidb/slowlog; tail -n0 -F /var/log/tidb/slowlog;"
+                        ],
+                        "image": "alpine:3.16.0",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "slowlog",
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/log/tidb",
+                                "name": "slowlog"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-kfjvg",
+                                "readOnly": true
+                            }
+                        ]
+                    },
+                    {
+                        "command": [
+                            "/bin/sh",
+                            "/usr/local/bin/tidb_start_script.sh"
+                        ],
+                        "env": [
+                            {
+                                "name": "CLUSTER_NAME",
+                                "value": "tidb-poc"
+                            },
+                            {
+                                "name": "TZ",
+                                "value": "Asia/Taipei"
+                            },
+                            {
+                                "name": "BINLOG_ENABLED",
+                                "value": "false"
+                            },
+                            {
+                                "name": "SLOW_LOG_FILE",
+                                "value": "/var/log/tidb/slowlog"
+                            },
+                            {
+                                "name": "POD_NAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.name"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "HEADLESS_SERVICE_NAME",
+                                "value": "tidb-poc-tidb-peer"
+                            }
+                        ],
+                        "image": "pingcap/tidb:v8.5.2",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "tidb",
+                        "ports": [
+                            {
+                                "containerPort": 4000,
+                                "name": "server",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 10080,
+                                "name": "status",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "initialDelaySeconds": 10,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "tcpSocket": {
+                                "port": 4000
+                            },
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/podinfo",
+                                "name": "annotations",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/tidb",
+                                "name": "config",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/usr/local/bin",
+                                "name": "startup-script",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/log/tidb",
+                                "name": "slowlog"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-kfjvg",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "tidb-poc-tidb-0",
+                "nodeName": "l-test-poc-2",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "subdomain": "tidb-poc-tidb-peer",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "downwardAPI": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.annotations"
+                                    },
+                                    "path": "annotations"
+                                }
+                            ]
+                        },
+                        "name": "annotations"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "config-file",
+                                    "path": "tidb.toml"
+                                }
+                            ],
+                            "name": "tidb-poc-tidb-6462366"
+                        },
+                        "name": "config"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "startup-script",
+                                    "path": "tidb_start_script.sh"
+                                }
+                            ],
+                            "name": "tidb-poc-tidb-6462366"
+                        },
+                        "name": "startup-script"
+                    },
+                    {
+                        "emptyDir": {},
+                        "name": "slowlog"
+                    },
+                    {
+                        "name": "kube-api-access-kfjvg",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:20:03Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:49Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:20:29Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:20:29Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:49Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://40d6761b207e0e84ecfba8e29d81774fdec9615e475e54261a7b7c81c9e24984",
+                        "image": "docker.io/library/alpine:3.16.0",
+                        "imageID": "docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f271ab1acc53015037c",
+                        "lastState": {},
+                        "name": "slowlog",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-07T17:19:53Z"
+                            }
+                        }
+                    },
+                    {
+                        "containerID": "containerd://d5976fa53d258c418bfdd2a9ff0567cf7809d81917262829409bad1ee92fe859",
+                        "image": "docker.io/pingcap/tidb:v8.5.2",
+                        "imageID": "docker.io/pingcap/tidb@sha256:8719349fd679099c92db83c1d4b70c6f67cb8b54e80061ccfadd843ded2a82f3",
+                        "lastState": {},
+                        "name": "tidb",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-07T17:20:02Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.33",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.33"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.2.7",
+                "podIPs": [
+                    {
+                        "ip": "10.42.2.7"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-06-07T17:19:49Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "prometheus.io/path": "/metrics",
+                    "prometheus.io/port": "10080",
+                    "prometheus.io/scrape": "true"
+                },
+                "creationTimestamp": "2026-06-07T17:19:49Z",
+                "generateName": "tidb-poc-tidb-",
+                "labels": {
+                    "app.kubernetes.io/component": "tidb",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "apps.kubernetes.io/pod-index": "1",
+                    "controller-revision-hash": "tidb-poc-tidb-549bbfb645",
+                    "statefulset.kubernetes.io/pod-name": "tidb-poc-tidb-1",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477"
+                },
+                "name": "tidb-poc-tidb-1",
+                "namespace": "tidb-cluster",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "tidb-poc-tidb",
+                        "uid": "bf0ba8de-0e1e-4d67-abef-3198a3e81dab"
+                    }
+                ],
+                "resourceVersion": "1283",
+                "uid": "4acc2cda-514d-4a13-bb63-49faac715855"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "command": [
+                            "sh",
+                            "-c",
+                            "touch /var/log/tidb/slowlog; tail -n0 -F /var/log/tidb/slowlog;"
+                        ],
+                        "image": "alpine:3.16.0",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "slowlog",
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/log/tidb",
+                                "name": "slowlog"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-wwq95",
+                                "readOnly": true
+                            }
+                        ]
+                    },
+                    {
+                        "command": [
+                            "/bin/sh",
+                            "/usr/local/bin/tidb_start_script.sh"
+                        ],
+                        "env": [
+                            {
+                                "name": "CLUSTER_NAME",
+                                "value": "tidb-poc"
+                            },
+                            {
+                                "name": "TZ",
+                                "value": "Asia/Taipei"
+                            },
+                            {
+                                "name": "BINLOG_ENABLED",
+                                "value": "false"
+                            },
+                            {
+                                "name": "SLOW_LOG_FILE",
+                                "value": "/var/log/tidb/slowlog"
+                            },
+                            {
+                                "name": "POD_NAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.name"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "HEADLESS_SERVICE_NAME",
+                                "value": "tidb-poc-tidb-peer"
+                            }
+                        ],
+                        "image": "pingcap/tidb:v8.5.2",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "tidb",
+                        "ports": [
+                            {
+                                "containerPort": 4000,
+                                "name": "server",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 10080,
+                                "name": "status",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "initialDelaySeconds": 10,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "tcpSocket": {
+                                "port": 4000
+                            },
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/podinfo",
+                                "name": "annotations",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/tidb",
+                                "name": "config",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/usr/local/bin",
+                                "name": "startup-script",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/log/tidb",
+                                "name": "slowlog"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-wwq95",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "tidb-poc-tidb-1",
+                "nodeName": "l-test-poc-3",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "subdomain": "tidb-poc-tidb-peer",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "downwardAPI": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.annotations"
+                                    },
+                                    "path": "annotations"
+                                }
+                            ]
+                        },
+                        "name": "annotations"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "config-file",
+                                    "path": "tidb.toml"
+                                }
+                            ],
+                            "name": "tidb-poc-tidb-6462366"
+                        },
+                        "name": "config"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "startup-script",
+                                    "path": "tidb_start_script.sh"
+                                }
+                            ],
+                            "name": "tidb-poc-tidb-6462366"
+                        },
+                        "name": "startup-script"
+                    },
+                    {
+                        "emptyDir": {},
+                        "name": "slowlog"
+                    },
+                    {
+                        "name": "kube-api-access-wwq95",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:20:05Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:49Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:20:29Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:20:29Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:49Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://43d18d12454ebffb3b4eafb0126f94f512a53b7a18f5b23946405a6f0da41bdf",
+                        "image": "docker.io/library/alpine:3.16.0",
+                        "imageID": "docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f271ab1acc53015037c",
+                        "lastState": {},
+                        "name": "slowlog",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-07T17:19:53Z"
+                            }
+                        }
+                    },
+                    {
+                        "containerID": "containerd://36656675f0f0fdda0ca3b2225dc3c225965d43d9445b33464e750291f8e505dd",
+                        "image": "docker.io/pingcap/tidb:v8.5.2",
+                        "imageID": "docker.io/pingcap/tidb@sha256:8719349fd679099c92db83c1d4b70c6f67cb8b54e80061ccfadd843ded2a82f3",
+                        "lastState": {},
+                        "name": "tidb",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-07T17:20:04Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.34",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.34"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.1.7",
+                "podIPs": [
+                    {
+                        "ip": "10.42.1.7"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-06-07T17:19:49Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "prometheus.io/path": "/metrics",
+                    "prometheus.io/port": "20180",
+                    "prometheus.io/scrape": "true"
+                },
+                "creationTimestamp": "2026-06-07T17:18:14Z",
+                "generateName": "tidb-poc-tikv-",
+                "labels": {
+                    "app.kubernetes.io/component": "tikv",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "apps.kubernetes.io/pod-index": "0",
+                    "controller-revision-hash": "tidb-poc-tikv-7b899b8895",
+                    "statefulset.kubernetes.io/pod-name": "tidb-poc-tikv-0",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/store-id": "1001"
+                },
+                "name": "tidb-poc-tikv-0",
+                "namespace": "tidb-cluster",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "tidb-poc-tikv",
+                        "uid": "d45271c5-05e1-44c3-b10d-f499f48537cc"
+                    }
+                ],
+                "resourceVersion": "1198",
+                "uid": "4cd4fb6f-319e-4690-a2dd-7f9076fb94b3"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "command": [
+                            "/bin/sh",
+                            "/usr/local/bin/tikv_start_script.sh"
+                        ],
+                        "env": [
+                            {
+                                "name": "NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "CLUSTER_NAME",
+                                "value": "tidb-poc"
+                            },
+                            {
+                                "name": "HEADLESS_SERVICE_NAME",
+                                "value": "tidb-poc-tikv-peer"
+                            },
+                            {
+                                "name": "CAPACITY",
+                                "value": "0"
+                            },
+                            {
+                                "name": "TZ",
+                                "value": "Asia/Taipei"
+                            }
+                        ],
+                        "image": "pingcap/tikv:v8.5.2",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "tikv",
+                        "ports": [
+                            {
+                                "containerPort": 20160,
+                                "name": "server",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "securityContext": {
+                            "privileged": false
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/podinfo",
+                                "name": "annotations",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/lib/tikv",
+                                "name": "tikv"
+                            },
+                            {
+                                "mountPath": "/etc/tikv",
+                                "name": "config",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/usr/local/bin",
+                                "name": "startup-script",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-g7zpr",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "tidb-poc-tikv-0",
+                "nodeName": "l-test-poc-3",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "subdomain": "tidb-poc-tikv-peer",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "tikv",
+                        "persistentVolumeClaim": {
+                            "claimName": "tikv-tidb-poc-tikv-0"
+                        }
+                    },
+                    {
+                        "downwardAPI": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.annotations"
+                                    },
+                                    "path": "annotations"
+                                }
+                            ]
+                        },
+                        "name": "annotations"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "config-file",
+                                    "path": "tikv.toml"
+                                }
+                            ],
+                            "name": "tidb-poc-tikv-6365303"
+                        },
+                        "name": "config"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "startup-script",
+                                    "path": "tikv_start_script.sh"
+                                }
+                            ],
+                            "name": "tidb-poc-tikv-6365303"
+                        },
+                        "name": "startup-script"
+                    },
+                    {
+                        "name": "kube-api-access-g7zpr",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:16Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:18:17Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:16Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:16Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:18:17Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://e58e02d6fbf4bfd579a47451458ed10fe075ee7ef97b5cb74901a894ee48900c",
+                        "image": "docker.io/pingcap/tikv:v8.5.2",
+                        "imageID": "docker.io/pingcap/tikv@sha256:3ec043d2eddbd5a39be046e37271bab53e9819c6bf1de716b4ead38e0cb16678",
+                        "lastState": {},
+                        "name": "tikv",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-07T17:19:15Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.34",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.34"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.1.6",
+                "podIPs": [
+                    {
+                        "ip": "10.42.1.6"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-06-07T17:18:17Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "prometheus.io/path": "/metrics",
+                    "prometheus.io/port": "20180",
+                    "prometheus.io/scrape": "true"
+                },
+                "creationTimestamp": "2026-06-07T17:18:14Z",
+                "generateName": "tidb-poc-tikv-",
+                "labels": {
+                    "app.kubernetes.io/component": "tikv",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "apps.kubernetes.io/pod-index": "1",
+                    "controller-revision-hash": "tidb-poc-tikv-7b899b8895",
+                    "statefulset.kubernetes.io/pod-name": "tidb-poc-tikv-1",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/store-id": "1004"
+                },
+                "name": "tidb-poc-tikv-1",
+                "namespace": "tidb-cluster",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "tidb-poc-tikv",
+                        "uid": "d45271c5-05e1-44c3-b10d-f499f48537cc"
+                    }
+                ],
+                "resourceVersion": "1202",
+                "uid": "87f29c2e-22d4-41d8-9e88-0cdad335a493"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "command": [
+                            "/bin/sh",
+                            "/usr/local/bin/tikv_start_script.sh"
+                        ],
+                        "env": [
+                            {
+                                "name": "NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "CLUSTER_NAME",
+                                "value": "tidb-poc"
+                            },
+                            {
+                                "name": "HEADLESS_SERVICE_NAME",
+                                "value": "tidb-poc-tikv-peer"
+                            },
+                            {
+                                "name": "CAPACITY",
+                                "value": "0"
+                            },
+                            {
+                                "name": "TZ",
+                                "value": "Asia/Taipei"
+                            }
+                        ],
+                        "image": "pingcap/tikv:v8.5.2",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "tikv",
+                        "ports": [
+                            {
+                                "containerPort": 20160,
+                                "name": "server",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "securityContext": {
+                            "privileged": false
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/podinfo",
+                                "name": "annotations",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/lib/tikv",
+                                "name": "tikv"
+                            },
+                            {
+                                "mountPath": "/etc/tikv",
+                                "name": "config",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/usr/local/bin",
+                                "name": "startup-script",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-qnprz",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "tidb-poc-tikv-1",
+                "nodeName": "l-test-poc-2",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "subdomain": "tidb-poc-tikv-peer",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "tikv",
+                        "persistentVolumeClaim": {
+                            "claimName": "tikv-tidb-poc-tikv-1"
+                        }
+                    },
+                    {
+                        "downwardAPI": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.annotations"
+                                    },
+                                    "path": "annotations"
+                                }
+                            ]
+                        },
+                        "name": "annotations"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "config-file",
+                                    "path": "tikv.toml"
+                                }
+                            ],
+                            "name": "tidb-poc-tikv-6365303"
+                        },
+                        "name": "config"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "startup-script",
+                                    "path": "tikv_start_script.sh"
+                                }
+                            ],
+                            "name": "tidb-poc-tikv-6365303"
+                        },
+                        "name": "startup-script"
+                    },
+                    {
+                        "name": "kube-api-access-qnprz",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:17Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:18:18Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:17Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:17Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:18:18Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://ef7850eb1dca7fc95341dba492c813b7806aa3a73c1356f2bb51c400083dffb5",
+                        "image": "docker.io/pingcap/tikv:v8.5.2",
+                        "imageID": "docker.io/pingcap/tikv@sha256:3ec043d2eddbd5a39be046e37271bab53e9819c6bf1de716b4ead38e0cb16678",
+                        "lastState": {},
+                        "name": "tikv",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-07T17:19:16Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.33",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.33"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.2.6",
+                "podIPs": [
+                    {
+                        "ip": "10.42.2.6"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-06-07T17:18:18Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "prometheus.io/path": "/metrics",
+                    "prometheus.io/port": "20180",
+                    "prometheus.io/scrape": "true"
+                },
+                "creationTimestamp": "2026-06-07T17:18:14Z",
+                "generateName": "tidb-poc-tikv-",
+                "labels": {
+                    "app.kubernetes.io/component": "tikv",
+                    "app.kubernetes.io/instance": "tidb-poc",
+                    "app.kubernetes.io/managed-by": "tidb-operator",
+                    "app.kubernetes.io/name": "tidb-cluster",
+                    "apps.kubernetes.io/pod-index": "2",
+                    "controller-revision-hash": "tidb-poc-tikv-7b899b8895",
+                    "statefulset.kubernetes.io/pod-name": "tidb-poc-tikv-2",
+                    "tidb.pingcap.com/cluster-id": "7648703928429609477",
+                    "tidb.pingcap.com/store-id": "1005"
+                },
+                "name": "tidb-poc-tikv-2",
+                "namespace": "tidb-cluster",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "tidb-poc-tikv",
+                        "uid": "d45271c5-05e1-44c3-b10d-f499f48537cc"
+                    }
+                ],
+                "resourceVersion": "1208",
+                "uid": "b3d611d0-2c8c-4024-a914-cc4e4c5b67ca"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "command": [
+                            "/bin/sh",
+                            "/usr/local/bin/tikv_start_script.sh"
+                        ],
+                        "env": [
+                            {
+                                "name": "NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "CLUSTER_NAME",
+                                "value": "tidb-poc"
+                            },
+                            {
+                                "name": "HEADLESS_SERVICE_NAME",
+                                "value": "tidb-poc-tikv-peer"
+                            },
+                            {
+                                "name": "CAPACITY",
+                                "value": "0"
+                            },
+                            {
+                                "name": "TZ",
+                                "value": "Asia/Taipei"
+                            }
+                        ],
+                        "image": "pingcap/tikv:v8.5.2",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "tikv",
+                        "ports": [
+                            {
+                                "containerPort": 20160,
+                                "name": "server",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "securityContext": {
+                            "privileged": false
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/podinfo",
+                                "name": "annotations",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/lib/tikv",
+                                "name": "tikv"
+                            },
+                            {
+                                "mountPath": "/etc/tikv",
+                                "name": "config",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/usr/local/bin",
+                                "name": "startup-script",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-ts8gp",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "tidb-poc-tikv-2",
+                "nodeName": "l-test-poc-1",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "subdomain": "tidb-poc-tikv-peer",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "tikv",
+                        "persistentVolumeClaim": {
+                            "claimName": "tikv-tidb-poc-tikv-2"
+                        }
+                    },
+                    {
+                        "downwardAPI": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.annotations"
+                                    },
+                                    "path": "annotations"
+                                }
+                            ]
+                        },
+                        "name": "annotations"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "config-file",
+                                    "path": "tikv.toml"
+                                }
+                            ],
+                            "name": "tidb-poc-tikv-6365303"
+                        },
+                        "name": "config"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "startup-script",
+                                    "path": "tikv_start_script.sh"
+                                }
+                            ],
+                            "name": "tidb-poc-tikv-6365303"
+                        },
+                        "name": "startup-script"
+                    },
+                    {
+                        "name": "kube-api-access-ts8gp",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:16Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:18:17Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:16Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:19:16Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-07T17:18:17Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://0539856d69f0ef96c8ba0b9d4ee339045f91549c35f7409c7b04beca8b8dde2d",
+                        "image": "docker.io/pingcap/tikv:v8.5.2",
+                        "imageID": "docker.io/pingcap/tikv@sha256:3ec043d2eddbd5a39be046e37271bab53e9819c6bf1de716b4ead38e0cb16678",
+                        "lastState": {},
+                        "name": "tikv",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-07T17:19:16Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.32",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.32"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.0.8",
+                "podIPs": [
+                    {
+                        "ip": "10.42.0.8"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-06-07T17:18:17Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

@@ -43,7 +43,7 @@ classify_path() {
       echo "ALLOW" ;;
     .db_config.tikv_readpool_*|.db_config.pd_max_replicas|.db_config.tidb_version|.split.expected_shards_per_table)
       echo "WARN" ;;
-    .phase_env.PHASE_NAME|.phase_env.RESULT_SCOPE|.phase_env.BASELINE_FAMILY)
+    .phase_env.PHASE_NAME|.phase_env.RESULT_SCOPE|.phase_env.BASELINE_FAMILY|.topology|.db)
       echo "PLATFORM" ;;
     .phase_env.BASELINE_ELIGIBLE|.workload*|.isolation*|.split.strategy|.split.expected_tables|.split.source_ref)
       echo "DENY" ;;

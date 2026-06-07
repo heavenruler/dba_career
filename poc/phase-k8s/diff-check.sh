@@ -31,13 +31,16 @@ mkdir -p "$OUT_DIR"
 EXP_JSON=$(yq -o=json 'sort_keys(..)' "$EXPECTED")
 ACT_JSON=$(yq -o=json 'sort_keys(..)' "$ACTUAL")
 
-# 2) subset compare via jq — every leaf in expected must match in actual
+# 2) subset compare via jq — every leaf in expected must match in actual.
+#    NB: use type-aware indexing (NOT `a[k] // null`) — `// null` treats
+#        `false` and `0` as falsy and overwrites them with null.
 DIFF=$(jq -n --argjson exp "$EXP_JSON" --argjson act "$ACT_JSON" '
   def walk(prefix; e; a):
     if (e | type) == "object" then
       e | to_entries | map(
         . as $kv
-        | walk("\(prefix).\($kv.key)"; $kv.value; (a[$kv.key] // null))
+        | walk("\(prefix).\($kv.key)"; $kv.value;
+            (a | if type == "object" then .[$kv.key] else null end))
       ) | add // []
     elif (e | type) == "array" then
       if (a | type) != "array" or (e | length) != (a | length) then
