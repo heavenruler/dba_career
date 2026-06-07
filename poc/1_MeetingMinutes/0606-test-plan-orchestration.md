@@ -29,20 +29,26 @@
 [E] VM rebuild #2 (~35 min)
     make drop-idc-vms + make new-idc-vms + ansible-ping + ansible-setup
         │
-[F] K3s + TiDB Operator deploy (~30 min)
+[F] K3s deploy (~30 min)
     ansible-playbook playbooks/k8s.yml
-    ansible-playbook playbooks/tidb-k8s.yml --extra-vars '@vars/tidb-k8s-3node-unlimit.yml'
         │
-        ▼ K8s ready, NodePort :30004 通
+        ▼ K3s ready
         │
-[G] phase-k8s Stage 1 — dry-run (~30 min)
-    DRY_RUN=1 + verify K8s pod ready + NodePort + manifest patch + wrapper env trace
-    → 通過 Stage 1 才進 Stage 2；失敗 STOP + 修 K8s wrapper
-        │
-[H] phase-k8s Stage 2 — real benchmark (~3h)
-    Topology: k8s-3node-haproxy-3s3r-unlimit
-    DB: TiDB unlimit
-    Output: results/tidb-tc1/S-K8S/tidb-k8s-3node-haproxy-3s3r-unlimit-rc-<TS>/
+[G+H] phase-k8s 6-cell 分 3 batch 執行（codex v14 NB #4）
+    Batch 1: TiDB-limit + TiDB-unlimit （dry-run + suite + cleanup-gate × 2 = ~7.5h）
+        ↓ ✋ user review batch 1 → 通過才進 Batch 2
+    Batch 2: CRDB-limit + CRDB-unlimit （~7.5h）
+        ↓ ✋ user review batch 2 → 通過才進 Batch 3
+    Batch 3: YBDB-limit + YBDB-unlimit （~7.5h）
+        ↓ ✋ user review batch 3 → 結束
+
+    Per cell 流程：helm install (namespace=<db>-<res>) → DRY_RUN=1 wrapper →
+                  dump-actual.sh → diff-check.sh (canonicalize compare) →
+                  compare-vm.sh (allow/warn/deny field path SSOT) →
+                  Stage G gate pass → suite execute → cell-cleanup-gate
+
+    通過條件：6 cell × .diff-pass + compare-vm.md 無「絕對不允許」diff
+    Output: results/{tidb,crdb,ybdb}-tc1/S-K8S/<db>-k8s-3node-haproxy-3s3r-{limit,unlimit}-rc-<TS>/
 ```
 
 ## 2. 預估總時
@@ -54,11 +60,15 @@
 | C. phase-threadcontrol Stage 1 dry-run | ~30 min | ~30 min |
 | D. phase-threadcontrol Stage 2 real benchmark | ~3h | ~3h |
 | E. VM rebuild #2 | ~35 min | ~35 min |
-| F. K3s + TiDB Operator deploy | ~30 min | ~30 min |
-| G. phase-k8s Stage 1 dry-run | ~30 min | ~30 min |
-| H. phase-k8s Stage 2 real benchmark | ~3h | ~3h |
-| 15 deliverable 補（首次）| ~半天-1 天 | 0 |
-| **合計** | **~2-2.5 工作天** | **~9h 10min** |
+| F. K3s deploy | ~30 min | ~30 min |
+| G+H Batch 1 (TiDB) dry-run + suite × 2 + cleanup-gate × 2 | ~7.5h | ~7.5h |
+| ✋ user review batch 1 | ~30 min | ~30 min |
+| G+H Batch 2 (CRDB) | ~7.5h | ~7.5h |
+| ✋ user review batch 2 | ~30 min | ~30 min |
+| G+H Batch 3 (YBDB) | ~7.5h | ~7.5h |
+| ✋ user review batch 3 | ~30 min | ~30 min |
+| deliverable 補（首次, 含 6-cell expected/dump/diff/compare/cell-cleanup-gate scripts）| ~1.5 工作天 | 0 |
+| **合計** | **~4-5 工作天** | **~25h** |
 
 ## 3. 拍板來源（2026-06-06 Q1-Q6）
 
@@ -68,6 +78,7 @@
 | Q2 | topology = vm-3node-haproxy-3s3r | [A] topology 鎖定 |
 | Q3 | wrapper = thin + 包 run.sh | [D] phase-k8s/run-k8s-suite.sh design |
 | Q4 | phase-k8s = 1 cell smoke @ K8s haproxy-3s3r 等價 | [D] topology = k8s-3node-haproxy-3s3r-unlimit |
+| Q4b (2026-06-07 user 改寫) | phase-k8s 改 6 cell = TiDB/CRDB/YBDB × {limit, unlimit} @ k8s-3node-haproxy-3s3r；dry-run 採 expected/actual/diff 簡化版（不再堆 Tier 3 11 層 probe）| [G] 6 cell dry-run sequence + helm swap；[H] 6 cell suite execute；deliverable list 新增 expected.yaml × 6 + VM baseline yaml × 3 + dump-actual.sh + diff-check.sh + compare-vm.sh |
 | Q5 | VM rebuild 排在 phase-threadcontrol 後 | [B] 序列 [A] → [B] |
 | Q6 | plan doc 走 codex review (B 規則)| 本文件 + 兩 sub-plan 須先 codex approve |
 
@@ -97,6 +108,34 @@ deliverable 1-4 為 A pre-req；5-10 為 D pre-req。其中 #4 (write_phase_done
 **deliverable #14**（A+D 共用 wrapper special-case，codex v11 blocking）：`phase-{threadcontrol,k8s}/run-*-suite.sh` 入口判 `DRY_RUN=1` → 只跑 env/scope validation + dry-run probes；**不**進 prepare-k8s.sh / launch-vm1-suite.sh。
 
 **deliverable #15**（K8s 專用 K8s-aware probes）：phase-k8s 場景 dry-run 額外產 `dry-run/{k8s-pod-ready, nodeport-check, tikv-status-port-check, split-sql-lint, manifest-patch-check}.txt`。
+
+**2026-06-07 user 改寫 → 取代 #15 + 擴展 D 專用 list**（6-cell expected/actual/diff 簡化版）：
+
+| # | 檔 | 內容 |
+|---|---|---|
+| 16 | `phase-k8s/manifest.yaml` patch | `allowed_topology` 加 6 entry (TiDB/CRDB/YBDB × {limit, unlimit} @ k8s-3node-haproxy-3s3r)；取代 deliverable #5 |
+| 17 | `phase-k8s/expected/{tidb,crdb,ybdb}-k8s-3node-haproxy-3s3r-{limit,unlimit}.yaml` × 6 | 6 cell expected SSOT |
+| 18 | `phase-k8s/expected/vm-3node-haproxy-3s3r-{tidb,crdb,ybdb}.yaml` × 3 | VM baseline 對照 SSOT |
+| 19 | `phase-k8s/dump-actual.sh` | DB-aware dump (kubectl + DB config + wrapper env + isolation + haproxy.cfg) → actual.yaml |
+| 20 | `phase-k8s/diff-check.sh` | `diff expected.yaml actual.yaml` → 非 0 exit 1 |
+| 21 | `phase-k8s/compare-vm.sh` | actual vs VM baseline → compare-vm.md (allow/deny list 判定) |
+| 22 | `phase-k8s/prepare-k8s.sh` 擴展（取代 deliverable #8）| DB-aware：TiDB 9-table explicit split / CRDB no-op / YBDB tablet pre-split |
+| 23 | `phase-k8s/gate-k8s.sh` DB-aware 擴展（取代 deliverable #7）| TiDB :20180 / CRDB :8080 / YBDB :7000 status port 各別預檢 |
+| 24 | `phase-k8s/run-k8s-suite.sh` DB-aware（取代 deliverable #6）| `--db {tidb,crdb,ybdb}` flag；DRY_RUN=1 → dump+diff+compare → STOP；DRY_RUN=0 → 固定 chain |
+| 25 | `Makefile` `phase-k8s-dry-run-<cell>` + `phase-k8s-run-<cell>` × 6（取代 deliverable #10）| Make entrypoint × 12（或 loop）|
+
+deliverable #15 K8s-aware probes 仍部分保留（含於 #19 dump-actual.sh 內，但格式從 free-text 改為 yaml 結構）。
+
+**2026-06-07 codex v14 review fixes（additional deliverable）**：
+
+| # | 檔 | 內容 |
+|---|---|---|
+| 26 | `phase-k8s/manifest.yaml` patch 擴展（取代 #16）| 新增 `allowed_db: [tidb, crdb, ybdb]` 欄位；`allowed_topology` 加 2 entry；6 cell = `allowed_db × allowed_topology` 笛卡兒積；對應 PHASES.md §3 schema 補 `allowed_db: REQUIRED list[string]` |
+| 27 | expected.yaml × 6 schema 擴展（取代 #17）| 補：`tuning_profile_id: default` (取代 `TUNING_PROFILE: ""`)；`k8s.namespace=<db>-{limit,unlimit}` (每 cell 獨立 ns)；`k8s.db_image`/`resource_requests`/`anti_affinity`/`pvc_bound_nodes`；`split.expected_region_count`；workload 對齊 v4.7 (`warmup_sec:1200`/`warmup_threads:64`/`threads_list:[16,32,64,128]`/`rounds:5`/`duration_sec_per_thread:300`)；YBDB `enable_automatic_tablet_splitting` typo fix |
+| 28 | `phase-k8s/cell-cleanup-gate.sh`（新增；介於 #21 #22）| helm uninstall + namespace delete + PVC + PV (local-path retain) + CRD instances + ansible FS clean (`/var/lib/rancher/k3s/storage/pvc-*`) + final no-residue check；每 cell 結束必呼叫 |
+| 29 | `phase-k8s/diff-check.sh` 改 canonicalize-compare（取代 #20）| `yq -P 'sort_keys(.)' actual.yaml expected.yaml` 先 canonicalize → `jq -e` subset compare expected ⊆ actual；**不**用 raw `diff` |
+| 30 | `phase-k8s/compare-vm.sh` field path SSOT（取代 #21）| allow/warn/deny 寫死 field path：`network.nodeport`/`k8s.*`/`db_config.tikv_block_cache_*` = allow；`db_config.tikv_readpool_*` = warn；`workload.*`/`isolation.*`/`split.strategy`/`network.haproxy_backends` = deny |
+| 31 | Batch 執行 sequence（取代 #25）| Makefile 改 `phase-k8s-batch-{tidb,crdb,ybdb}` × 3（每 batch 跑 dry-run + suite × 2 + cleanup × 2）；user review gate 在 batch 間 |
 
 ## 5. 風險與 fallback
 
@@ -136,4 +175,6 @@ deliverable 1-4 為 A pre-req；5-10 為 D pre-req。其中 #4 (write_phase_done
 
 | 日期 | commit | 變更 |
 |---|---|---|
-| 2026-06-06 | （本 commit）| 初版 orchestration plan（Q1-Q6 已拍板）|
+| 2026-06-06 | （已 push）| 初版 orchestration plan（Q1-Q6 已拍板）|
+| 2026-06-07 | （本 commit）| **大改**：phase-k8s 1-cell → 6-cell (TiDB/CRDB/YBDB × {limit, unlimit})；dry-run 改 expected/actual/diff 簡化版；Stage G/H 序列 + 估時更新；新增 deliverable #16-25（expected.yaml × 6 + VM baseline × 3 + dump/diff/compare scripts + DB-aware gate/prepare/run-suite/Makefile）|
+| 2026-06-07 | （本 commit fixup-1, codex v14 review）| 修 5 blocking + 4 non-blocking：workload schema 對齊 v4.7 / manifest `allowed_db` + 6-cell 笛卡兒積 / `tuning_profile_id: default` / cell-cleanup-gate.sh (PVC/PV/CRD/FS clean) / YBDB typo fix；NB: canonicalize-compare / expected schema 擴展 / compare-vm field path SSOT / 3 batch 執行 (TiDB→CRDB→YBDB) 含 user review gate。新增 deliverable #26-31。 |
