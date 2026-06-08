@@ -1,0 +1,24 @@
+# phase-k8s vars: CRDB-limit @ k8s-3node-haproxy-3s3r-limit
+helm_version: "v3.16.4"
+crdb_chart_version: "15.0.5"
+crdb_resource_limits: true           # limit cell
+crdb_image_tag: "v26.1.4"
+crdb_namespace: cockroach-tc1
+crdb_replicas: 3
+crdb_sql_nodeport: 30007
+crdb_admin_nodeport: 30008
+crdb_storage:
+  size: 30Gi
+  storageClass: local-path
+crdb_resources:
+  requests: { cpu: "1", memory: 2Gi }
+  limits:   { cpu: "2", memory: 8Gi }
+crdb_tls_enabled: false
+crdb_read_committed: true
+
+phase_name: phase-k8s
+result_scope: S-K8S
+baseline_eligible: true
+baseline_family: k8s
+tuning_profile_id: default
+topology: k8s-3node-haproxy-3s3r-limit

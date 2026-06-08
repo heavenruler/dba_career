@@ -1,0 +1,1127 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "creationTimestamp": "2026-06-08T00:46:56Z",
+                "generateName": "cockroachdb-",
+                "labels": {
+                    "app.kubernetes.io/component": "cockroachdb",
+                    "app.kubernetes.io/instance": "cockroachdb",
+                    "app.kubernetes.io/name": "cockroachdb",
+                    "apps.kubernetes.io/pod-index": "0",
+                    "controller-revision-hash": "cockroachdb-6cb7b5d4c5",
+                    "statefulset.kubernetes.io/pod-name": "cockroachdb-0"
+                },
+                "name": "cockroachdb-0",
+                "namespace": "cockroach-tc1",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "cockroachdb",
+                        "uid": "5e661190-61d8-4b11-b562-524cbc7d8153"
+                    }
+                ],
+                "resourceVersion": "18299",
+                "uid": "ed7a5878-435f-4b0e-8fb0-d2d78d056673"
+            },
+            "spec": {
+                "affinity": {
+                    "podAntiAffinity": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": [
+                            {
+                                "podAffinityTerm": {
+                                    "labelSelector": {
+                                        "matchLabels": {
+                                            "app.kubernetes.io/component": "cockroachdb",
+                                            "app.kubernetes.io/instance": "cockroachdb",
+                                            "app.kubernetes.io/name": "cockroachdb"
+                                        }
+                                    },
+                                    "topologyKey": "kubernetes.io/hostname"
+                                },
+                                "weight": 100
+                            }
+                        ]
+                    }
+                },
+                "containers": [
+                    {
+                        "args": [
+                            "shell",
+                            "-ecx",
+                            "exec /cockroach/cockroach start --join=${STATEFULSET_NAME}-0.${STATEFULSET_FQDN}:26257,${STATEFULSET_NAME}-1.${STATEFULSET_FQDN}:26257,${STATEFULSET_NAME}-2.${STATEFULSET_FQDN}:26257 --cluster-name=poc-crdb --advertise-host=$(hostname).${STATEFULSET_FQDN} --insecure --http-port=8080 --port=26257 --cache=25% --max-sql-memory=25% --logtostderr=INFO"
+                        ],
+                        "env": [
+                            {
+                                "name": "STATEFULSET_NAME",
+                                "value": "cockroachdb"
+                            },
+                            {
+                                "name": "STATEFULSET_FQDN",
+                                "value": "cockroachdb.cockroach-tc1.svc.cluster.local"
+                            },
+                            {
+                                "name": "COCKROACH_CHANNEL",
+                                "value": "kubernetes-helm"
+                            }
+                        ],
+                        "image": "cockroachdb/cockroach:v26.1.4",
+                        "imagePullPolicy": "IfNotPresent",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/health",
+                                "port": "http",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 5,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "name": "db",
+                        "ports": [
+                            {
+                                "containerPort": 26257,
+                                "name": "grpc",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 8080,
+                                "name": "http",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 2,
+                            "httpGet": {
+                                "path": "/health?ready=1",
+                                "port": "http",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 10,
+                            "periodSeconds": 5,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "requests": {
+                                "cpu": "1",
+                                "memory": "2Gi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "privileged": false,
+                            "readOnlyRootFilesystem": true
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/cockroach/cockroach-data/",
+                                "name": "datadir"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-49czz",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "cockroachdb-0",
+                "nodeName": "l-test-poc-2",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {
+                    "fsGroup": 1000,
+                    "runAsGroup": 1000,
+                    "runAsNonRoot": true,
+                    "runAsUser": 1000,
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "serviceAccount": "cockroachdb",
+                "serviceAccountName": "cockroachdb",
+                "subdomain": "cockroachdb",
+                "terminationGracePeriodSeconds": 300,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "topologySpreadConstraints": [
+                    {
+                        "labelSelector": {
+                            "matchLabels": {
+                                "app.kubernetes.io/component": "cockroachdb",
+                                "app.kubernetes.io/instance": "cockroachdb",
+                                "app.kubernetes.io/name": "cockroachdb"
+                            }
+                        },
+                        "maxSkew": 1,
+                        "topologyKey": "topology.kubernetes.io/zone",
+                        "whenUnsatisfiable": "ScheduleAnyway"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "datadir",
+                        "persistentVolumeClaim": {
+                            "claimName": "datadir-cockroachdb-0"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-49czz",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:18Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:00Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:30Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:30Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:00Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://4ab86aac73a2ee80ee854497566e525073fa29485de5a5576f4fd07c8c46657b",
+                        "image": "docker.io/cockroachdb/cockroach:v26.1.4",
+                        "imageID": "docker.io/cockroachdb/cockroach@sha256:66082934e823505f0f171eafd397b35396f3a7dba588225a01b2434eb4b53e77",
+                        "lastState": {},
+                        "name": "db",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-08T00:47:18Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.33",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.33"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.2.15",
+                "podIPs": [
+                    {
+                        "ip": "10.42.2.15"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-06-08T00:47:00Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "creationTimestamp": "2026-06-08T00:46:56Z",
+                "generateName": "cockroachdb-",
+                "labels": {
+                    "app.kubernetes.io/component": "cockroachdb",
+                    "app.kubernetes.io/instance": "cockroachdb",
+                    "app.kubernetes.io/name": "cockroachdb",
+                    "apps.kubernetes.io/pod-index": "1",
+                    "controller-revision-hash": "cockroachdb-6cb7b5d4c5",
+                    "statefulset.kubernetes.io/pod-name": "cockroachdb-1"
+                },
+                "name": "cockroachdb-1",
+                "namespace": "cockroach-tc1",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "cockroachdb",
+                        "uid": "5e661190-61d8-4b11-b562-524cbc7d8153"
+                    }
+                ],
+                "resourceVersion": "18305",
+                "uid": "099d1630-64e9-46f7-aebc-e48e8bdfe435"
+            },
+            "spec": {
+                "affinity": {
+                    "podAntiAffinity": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": [
+                            {
+                                "podAffinityTerm": {
+                                    "labelSelector": {
+                                        "matchLabels": {
+                                            "app.kubernetes.io/component": "cockroachdb",
+                                            "app.kubernetes.io/instance": "cockroachdb",
+                                            "app.kubernetes.io/name": "cockroachdb"
+                                        }
+                                    },
+                                    "topologyKey": "kubernetes.io/hostname"
+                                },
+                                "weight": 100
+                            }
+                        ]
+                    }
+                },
+                "containers": [
+                    {
+                        "args": [
+                            "shell",
+                            "-ecx",
+                            "exec /cockroach/cockroach start --join=${STATEFULSET_NAME}-0.${STATEFULSET_FQDN}:26257,${STATEFULSET_NAME}-1.${STATEFULSET_FQDN}:26257,${STATEFULSET_NAME}-2.${STATEFULSET_FQDN}:26257 --cluster-name=poc-crdb --advertise-host=$(hostname).${STATEFULSET_FQDN} --insecure --http-port=8080 --port=26257 --cache=25% --max-sql-memory=25% --logtostderr=INFO"
+                        ],
+                        "env": [
+                            {
+                                "name": "STATEFULSET_NAME",
+                                "value": "cockroachdb"
+                            },
+                            {
+                                "name": "STATEFULSET_FQDN",
+                                "value": "cockroachdb.cockroach-tc1.svc.cluster.local"
+                            },
+                            {
+                                "name": "COCKROACH_CHANNEL",
+                                "value": "kubernetes-helm"
+                            }
+                        ],
+                        "image": "cockroachdb/cockroach:v26.1.4",
+                        "imagePullPolicy": "IfNotPresent",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/health",
+                                "port": "http",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 5,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "name": "db",
+                        "ports": [
+                            {
+                                "containerPort": 26257,
+                                "name": "grpc",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 8080,
+                                "name": "http",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 2,
+                            "httpGet": {
+                                "path": "/health?ready=1",
+                                "port": "http",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 10,
+                            "periodSeconds": 5,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "requests": {
+                                "cpu": "1",
+                                "memory": "2Gi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "privileged": false,
+                            "readOnlyRootFilesystem": true
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/cockroach/cockroach-data/",
+                                "name": "datadir"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-dxlzz",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "cockroachdb-1",
+                "nodeName": "l-test-poc-3",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {
+                    "fsGroup": 1000,
+                    "runAsGroup": 1000,
+                    "runAsNonRoot": true,
+                    "runAsUser": 1000,
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "serviceAccount": "cockroachdb",
+                "serviceAccountName": "cockroachdb",
+                "subdomain": "cockroachdb",
+                "terminationGracePeriodSeconds": 300,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "topologySpreadConstraints": [
+                    {
+                        "labelSelector": {
+                            "matchLabels": {
+                                "app.kubernetes.io/component": "cockroachdb",
+                                "app.kubernetes.io/instance": "cockroachdb",
+                                "app.kubernetes.io/name": "cockroachdb"
+                            }
+                        },
+                        "maxSkew": 1,
+                        "topologyKey": "topology.kubernetes.io/zone",
+                        "whenUnsatisfiable": "ScheduleAnyway"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "datadir",
+                        "persistentVolumeClaim": {
+                            "claimName": "datadir-cockroachdb-1"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-dxlzz",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:20Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:00Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:30Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:30Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:00Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://ee084493d37a19a9a00ce039f020b4a700c94915ebff7a079ff09ef83d02d2f5",
+                        "image": "docker.io/cockroachdb/cockroach:v26.1.4",
+                        "imageID": "docker.io/cockroachdb/cockroach@sha256:66082934e823505f0f171eafd397b35396f3a7dba588225a01b2434eb4b53e77",
+                        "lastState": {},
+                        "name": "db",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-08T00:47:20Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.34",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.34"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.1.16",
+                "podIPs": [
+                    {
+                        "ip": "10.42.1.16"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-06-08T00:47:00Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "creationTimestamp": "2026-06-08T00:46:56Z",
+                "generateName": "cockroachdb-",
+                "labels": {
+                    "app.kubernetes.io/component": "cockroachdb",
+                    "app.kubernetes.io/instance": "cockroachdb",
+                    "app.kubernetes.io/name": "cockroachdb",
+                    "apps.kubernetes.io/pod-index": "2",
+                    "controller-revision-hash": "cockroachdb-6cb7b5d4c5",
+                    "statefulset.kubernetes.io/pod-name": "cockroachdb-2"
+                },
+                "name": "cockroachdb-2",
+                "namespace": "cockroach-tc1",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "cockroachdb",
+                        "uid": "5e661190-61d8-4b11-b562-524cbc7d8153"
+                    }
+                ],
+                "resourceVersion": "18311",
+                "uid": "a6645654-7993-40c0-89ab-033d02616ec9"
+            },
+            "spec": {
+                "affinity": {
+                    "podAntiAffinity": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": [
+                            {
+                                "podAffinityTerm": {
+                                    "labelSelector": {
+                                        "matchLabels": {
+                                            "app.kubernetes.io/component": "cockroachdb",
+                                            "app.kubernetes.io/instance": "cockroachdb",
+                                            "app.kubernetes.io/name": "cockroachdb"
+                                        }
+                                    },
+                                    "topologyKey": "kubernetes.io/hostname"
+                                },
+                                "weight": 100
+                            }
+                        ]
+                    }
+                },
+                "containers": [
+                    {
+                        "args": [
+                            "shell",
+                            "-ecx",
+                            "exec /cockroach/cockroach start --join=${STATEFULSET_NAME}-0.${STATEFULSET_FQDN}:26257,${STATEFULSET_NAME}-1.${STATEFULSET_FQDN}:26257,${STATEFULSET_NAME}-2.${STATEFULSET_FQDN}:26257 --cluster-name=poc-crdb --advertise-host=$(hostname).${STATEFULSET_FQDN} --insecure --http-port=8080 --port=26257 --cache=25% --max-sql-memory=25% --logtostderr=INFO"
+                        ],
+                        "env": [
+                            {
+                                "name": "STATEFULSET_NAME",
+                                "value": "cockroachdb"
+                            },
+                            {
+                                "name": "STATEFULSET_FQDN",
+                                "value": "cockroachdb.cockroach-tc1.svc.cluster.local"
+                            },
+                            {
+                                "name": "COCKROACH_CHANNEL",
+                                "value": "kubernetes-helm"
+                            }
+                        ],
+                        "image": "cockroachdb/cockroach:v26.1.4",
+                        "imagePullPolicy": "IfNotPresent",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/health",
+                                "port": "http",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 5,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "name": "db",
+                        "ports": [
+                            {
+                                "containerPort": 26257,
+                                "name": "grpc",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 8080,
+                                "name": "http",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 2,
+                            "httpGet": {
+                                "path": "/health?ready=1",
+                                "port": "http",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 10,
+                            "periodSeconds": 5,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "requests": {
+                                "cpu": "1",
+                                "memory": "2Gi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "privileged": false,
+                            "readOnlyRootFilesystem": true
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/cockroach/cockroach-data/",
+                                "name": "datadir"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-ln9rq",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "cockroachdb-2",
+                "nodeName": "l-test-poc-1",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {
+                    "fsGroup": 1000,
+                    "runAsGroup": 1000,
+                    "runAsNonRoot": true,
+                    "runAsUser": 1000,
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "serviceAccount": "cockroachdb",
+                "serviceAccountName": "cockroachdb",
+                "subdomain": "cockroachdb",
+                "terminationGracePeriodSeconds": 300,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "topologySpreadConstraints": [
+                    {
+                        "labelSelector": {
+                            "matchLabels": {
+                                "app.kubernetes.io/component": "cockroachdb",
+                                "app.kubernetes.io/instance": "cockroachdb",
+                                "app.kubernetes.io/name": "cockroachdb"
+                            }
+                        },
+                        "maxSkew": 1,
+                        "topologyKey": "topology.kubernetes.io/zone",
+                        "whenUnsatisfiable": "ScheduleAnyway"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "datadir",
+                        "persistentVolumeClaim": {
+                            "claimName": "datadir-cockroachdb-2"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-ln9rq",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:18Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:00Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:30Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:30Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:00Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://0defbe3f515099db0af05f3ff4c0390e0859bfadef4ed1d620a20ce5af56ff93",
+                        "image": "docker.io/cockroachdb/cockroach:v26.1.4",
+                        "imageID": "docker.io/cockroachdb/cockroach@sha256:66082934e823505f0f171eafd397b35396f3a7dba588225a01b2434eb4b53e77",
+                        "lastState": {},
+                        "name": "db",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-06-08T00:47:18Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.32",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.32"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "10.42.0.14",
+                "podIPs": [
+                    {
+                        "ip": "10.42.0.14"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-06-08T00:47:00Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "creationTimestamp": "2026-06-08T00:46:56Z",
+                "generateName": "cockroachdb-init-",
+                "labels": {
+                    "app.kubernetes.io/component": "init",
+                    "app.kubernetes.io/instance": "cockroachdb",
+                    "app.kubernetes.io/name": "cockroachdb",
+                    "batch.kubernetes.io/controller-uid": "fe6d9d1b-da78-4245-8a9e-5aa18e595ec6",
+                    "batch.kubernetes.io/job-name": "cockroachdb-init",
+                    "controller-uid": "fe6d9d1b-da78-4245-8a9e-5aa18e595ec6",
+                    "job-name": "cockroachdb-init"
+                },
+                "name": "cockroachdb-init-nzjrl",
+                "namespace": "cockroach-tc1",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "cockroachdb-init",
+                        "uid": "fe6d9d1b-da78-4245-8a9e-5aa18e595ec6"
+                    }
+                ],
+                "resourceVersion": "18290",
+                "uid": "61c9a9af-ee05-4abc-89ad-4ce68b34bd14"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "command": [
+                            "/bin/bash",
+                            "-c",
+                            "initCluster() {\n  while true; do\n    local output=$(\n      set -x;\n\n      /cockroach/cockroach init \\\n        --insecure \\\n        --cluster-name=poc-crdb \\\n        --host=cockroachdb-0.cockroachdb:26257 \\\n    2\u003e\u00261);\n\n    local exitCode=\"$?\";\n    echo $output;\n\n    if [[ \"$output\" =~ .*\"Cluster successfully initialized\".* || \"$output\" =~ .*\"cluster has already been initialized\".* ]]; then\n      break;\n    fi\n\n    echo \"Cluster is not ready to be initialized, retrying in 5 seconds\"\n    sleep 5;\n  done\n}\ninitCluster;"
+                        ],
+                        "image": "cockroachdb/cockroach:v26.1.4",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "cluster-init",
+                        "resources": {},
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-q2fbw",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "l-test-poc-3",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "OnFailure",
+                "schedulerName": "default-scheduler",
+                "securityContext": {
+                    "fsGroup": 1000,
+                    "runAsGroup": 1000,
+                    "runAsNonRoot": true,
+                    "runAsUser": 1000,
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "serviceAccount": "cockroachdb",
+                "serviceAccountName": "cockroachdb",
+                "terminationGracePeriodSeconds": 300,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "kube-api-access-q2fbw",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:47:21Z",
+                        "status": "False",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:46:56Z",
+                        "reason": "PodCompleted",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:46:56Z",
+                        "reason": "PodCompleted",
+                        "status": "False",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:46:56Z",
+                        "reason": "PodCompleted",
+                        "status": "False",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-08T00:46:56Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://fb21d16392ceb63d4858dc9805986259729ea4f4205a7f7547b2a436bc8a0014",
+                        "image": "docker.io/cockroachdb/cockroach:v26.1.4",
+                        "imageID": "docker.io/cockroachdb/cockroach@sha256:66082934e823505f0f171eafd397b35396f3a7dba588225a01b2434eb4b53e77",
+                        "lastState": {},
+                        "name": "cluster-init",
+                        "ready": false,
+                        "restartCount": 0,
+                        "started": false,
+                        "state": {
+                            "terminated": {
+                                "containerID": "containerd://fb21d16392ceb63d4858dc9805986259729ea4f4205a7f7547b2a436bc8a0014",
+                                "exitCode": 0,
+                                "finishedAt": "2026-06-08T00:47:20Z",
+                                "reason": "Completed",
+                                "startedAt": "2026-06-08T00:47:20Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "172.24.40.34",
+                "hostIPs": [
+                    {
+                        "ip": "172.24.40.34"
+                    }
+                ],
+                "phase": "Succeeded",
+                "podIP": "10.42.1.15",
+                "podIPs": [
+                    {
+                        "ip": "10.42.1.15"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-06-08T00:46:56Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

@@ -1,0 +1,43 @@
+db: crdb
+topology: k8s-3node-haproxy-3s3r-limit
+phase_env:
+  PHASE_NAME: phase-k8s
+  RESULT_SCOPE: S-K8S
+  BASELINE_ELIGIBLE: true
+  BASELINE_FAMILY: k8s
+  tuning_profile_id: default
+k8s:
+  namespace: cockroach-tc1
+  cluster_name: cockroachdb
+  pod_replicas:
+    pd: 0
+    sql: 3
+    storage: 3
+  resource_limits: {
+  "cpu": "2",
+  "memory": "8Gi"
+}
+  storage_class: local-path
+  pv_size:
+    pd: null
+    storage: 30Gi
+  db_image_prefix: cockroachdb/cockroach
+db_config:
+  crdb_version: v26.1.4
+  default_transaction_isolation: "read committed"
+  kv_range_split_by_load_enabled: false
+workload:
+  warehouses: 128
+  threads_list: [16, 32, 64, 128]
+  rounds: 5
+  warmup_threads: 64
+  warmup_sec: 1200
+  run_sec: 300
+isolation:
+  level: "read committed"
+network:
+  nodeport: 30007
+  client_proto: postgres
+  haproxy_backends: 0
+split:
+  strategy: crdb_split_placeholder

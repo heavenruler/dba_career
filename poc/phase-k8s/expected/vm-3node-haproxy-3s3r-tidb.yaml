@@ -1,36 +1,36 @@
-# VM baseline SSOT (TiDB @ vm-3node-haproxy-3s3r-rc).
-# Used by phase-k8s/compare-vm.sh to cross-check K8s actual vs VM baseline.
-# allow/warn/deny field path enforced by compare-vm.sh.
+# VM baseline SSOT — TiDB @ vm-3node-haproxy-3s3r-rc
+# Schema v2 — split section retained (VM baseline has prepare info).
+# compare-vm classifies .split.* as ALLOW (dry-run vs VM-with-prepare asymmetry).
 db: tidb
 topology: vm-3node-haproxy-3s3r
 phase_env:
-  PHASE_NAME: phase-baseline             # platform-derived; compare-vm 用 mapping 不 raw eq
+  PHASE_NAME: phase-baseline
   RESULT_SCOPE: S-BASE
   BASELINE_ELIGIBLE: true
   BASELINE_FAMILY: vm
   tuning_profile_id: default
-vm:                                      # K8s 沒有 vm.*；compare-vm 走 allow
+vm:
   nodes: 3
   per_node:
-    pd: 1                                # 3 nodes × 1 pd = 3 pd
-    tidb: 1
-    tikv: 1
+    pd: 1
+    sql: 1
+    storage: 1
 db_config:
-  tidb_version: v8.5.2                   # 跟 K8s cell 對齊；drift = warn
-  tikv_readpool_unified_auto_adjust_pool_size: false      # 與 K8s cell 對齊；compare-vm 應 0 diff
+  tidb_version: v8.5.2
+  tikv_readpool_unified_auto_adjust_pool_size: false
   pd_max_replicas: 3
-workload:                                # deny: drift 必 exit 1
+workload:
   warehouses: 128
   threads_list: [16, 32, 64, 128]
   rounds: 5
   warmup_threads: 64
   warmup_sec: 1200
   run_sec: 300
-isolation:                               # deny
+isolation:
   level: READ-COMMITTED
   txn_mode: pessimistic
 network:
-  haproxy_backends: 3                    # VM 用 haproxy 前端
+  haproxy_backends: 3
   haproxy_port: 4000
   client_proto: mysql
 split:

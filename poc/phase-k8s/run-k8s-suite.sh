@@ -1,24 +1,23 @@
 #!/usr/bin/env bash
-# phase-k8s/run-k8s-suite.sh — DRY_RUN-only wrapper for phase-1 MVP.
+# phase-k8s/run-k8s-suite.sh — DRY_RUN-only wrapper.
+# Supports TiDB / CRDB / YBDB.
 #
-# DRY_RUN=1 branch (this MVP):
-#   1. env / scope validation
+# DRY_RUN=1 branch:
+#   1. env / scope validation + DB-aware default port
 #   2. mkdir $ROOT/dry-run/
-#   3. dump-actual.sh → actual.yaml
+#   3. dump-actual.sh → actual.yaml (DB-aware dispatch inside script)
 #   4. diff-check.sh expected.yaml actual.yaml → .diff-pass / diff.txt
 #   5. compare-vm.sh actual.yaml vm-baseline.yaml → compare-vm.md
-#   6. write $ROOT/.dry-run.done (phase env metadata)
-#   7. STOP (no prepare / no run / no collect)
+#   6. write $ROOT/.dry-run.done
+#   7. STOP
 #
-# Full chain (DRY_RUN=0) → defer 至 phase-2.
-#
-# Usage (from .31 / locally):
+# Usage:
 #   env DRY_RUN=1 TPCC_TS=<ts> \
 #     PHASE_NAME=phase-k8s RESULT_SCOPE=S-K8S \
 #     BASELINE_ELIGIBLE=true BASELINE_FAMILY=k8s \
-#     K3S_HOST=172.24.40.32 K8S_NAMESPACE=tidb-cluster K8S_CLUSTER=tidb-poc \
-#     TIDB_HOST=172.24.40.32 TIDB_PORT=30004 \
-#     bash run-k8s-suite.sh --db tidb --topology k8s-3node-haproxy-3s3r-unlimit --ts <ts>
+#     K3S_HOST=<ip> K8S_NAMESPACE=<ns> K8S_CLUSTER=<name> \
+#     [DB_HOST=<ip>] [DB_PORT=<port>] \
+#     bash run-k8s-suite.sh --db {tidb,crdb,ybdb} --topology <topo> --ts <ts>
 
 set -euo pipefail
 
@@ -37,10 +36,10 @@ done
 : "${DB:?--db required}"
 : "${TOPOLOGY:?--topology required}"
 : "${TS:?--ts required}"
-: "${DRY_RUN:?DRY_RUN required for phase-1 MVP (set DRY_RUN=1)}"
+: "${DRY_RUN:?DRY_RUN required (set DRY_RUN=1; full chain defer 至 phase-2)}"
 
 if [[ "$DRY_RUN" != "1" ]]; then
-  echo "[run-k8s-suite] phase-1 MVP only supports DRY_RUN=1 — full chain defer 至 phase-2" >&2
+  echo "[run-k8s-suite] only DRY_RUN=1 supported in this phase" >&2
   exit 1
 fi
 
@@ -49,27 +48,37 @@ fi
 : "${BASELINE_ELIGIBLE:?missing}"
 : "${BASELINE_FAMILY:?missing}"
 : "${tuning_profile_id:=default}"
+: "${K3S_HOST:?missing}"
+: "${K8S_NAMESPACE:?missing}"
+: "${K8S_CLUSTER:?missing}"
 
-[[ "$PHASE_NAME"     == "phase-k8s" ]] || { echo "PHASE_NAME must be phase-k8s, got $PHASE_NAME" >&2; exit 1; }
-[[ "$RESULT_SCOPE"   == "S-K8S"    ]] || { echo "RESULT_SCOPE must be S-K8S, got $RESULT_SCOPE" >&2; exit 1; }
-[[ "$BASELINE_FAMILY" == "k8s"     ]] || { echo "BASELINE_FAMILY must be k8s, got $BASELINE_FAMILY" >&2; exit 1; }
+[[ "$PHASE_NAME"     == "phase-k8s" ]] || { echo "PHASE_NAME must be phase-k8s" >&2; exit 1; }
+[[ "$RESULT_SCOPE"   == "S-K8S"    ]] || { echo "RESULT_SCOPE must be S-K8S" >&2; exit 1; }
+[[ "$BASELINE_FAMILY" == "k8s"     ]] || { echo "BASELINE_FAMILY must be k8s" >&2; exit 1; }
+
+# DB-aware default port + host
+case "$DB" in
+  tidb) : "${DB_HOST:=$K3S_HOST}"; : "${DB_PORT:=30004}" ;;
+  crdb) : "${DB_HOST:=$K3S_HOST}"; : "${DB_PORT:=30007}" ;;
+  ybdb) : "${DB_HOST:=$K3S_HOST}"; : "${DB_PORT:=30005}" ;;
+  *) echo "unknown DB=$DB" >&2; exit 1 ;;
+esac
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-POC_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 
 ROOT="${TPCC_ARTIFACTS:-/tmp/poc-tpcc/artifacts/S-K8S}/${DB}-${TOPOLOGY}-rc-${TS}"
 DRY_OUT="$ROOT/dry-run"
 mkdir -p "$DRY_OUT"
 
-echo "[wrapper] DRY_RUN=1 dry-run only; ROOT=$ROOT"
+echo "[wrapper] DRY_RUN=1 dry-run only; DB=$DB ROOT=$ROOT"
 
-# Resolve expected/baseline files
 EXPECTED="$SCRIPT_DIR/expected/${DB}-${TOPOLOGY}.yaml"
 VMBASE="$SCRIPT_DIR/expected/vm-3node-haproxy-3s3r-${DB}.yaml"
-[[ -f "$EXPECTED" ]] || { echo "missing expected file: $EXPECTED" >&2; exit 1; }
-[[ -f "$VMBASE"   ]] || { echo "missing vm baseline file: $VMBASE" >&2; exit 1; }
+[[ -f "$EXPECTED" ]] || { echo "missing expected: $EXPECTED" >&2; exit 1; }
+[[ -f "$VMBASE"   ]] || { echo "missing vm baseline: $VMBASE" >&2; exit 1; }
 
-export TOPOLOGY OUT_DIR="$DRY_OUT" \
+export DB TOPOLOGY OUT_DIR="$DRY_OUT" \
+  K3S_HOST K8S_NAMESPACE K8S_CLUSTER DB_HOST DB_PORT \
   PHASE_NAME RESULT_SCOPE BASELINE_ELIGIBLE BASELINE_FAMILY tuning_profile_id
 
 echo "[wrapper] step 1/3 dump-actual.sh"
@@ -85,7 +94,6 @@ echo "[wrapper] step 3/3 compare-vm.sh"
 COMPARE_RC=0
 bash "$SCRIPT_DIR/compare-vm.sh" "$DRY_OUT/actual.yaml" "$VMBASE" "$DRY_OUT" || COMPARE_RC=$?
 
-# Write .dry-run.done marker (always; compare-vm.md may have deny diffs)
 cat > "$ROOT/.dry-run.done" <<JSON
 {
   "phase": "${PHASE_NAME}",
@@ -103,11 +111,11 @@ cat > "$ROOT/.dry-run.done" <<JSON
 JSON
 
 if [[ $COMPARE_RC -ne 0 ]]; then
-  echo "[wrapper] compare-vm FAILED — deny diffs present; see $DRY_OUT/compare-vm.md" >&2
+  echo "[wrapper] compare-vm FAIL — deny diffs; see $DRY_OUT/compare-vm.md" >&2
   exit $COMPARE_RC
 fi
 
-echo "[wrapper] DRY_RUN PASS — artifact at $ROOT"
+echo "[wrapper] DRY_RUN PASS — $ROOT"
 echo "[wrapper]   - $DRY_OUT/.diff-pass"
 echo "[wrapper]   - $DRY_OUT/compare-vm.md"
 echo "[wrapper]   - $ROOT/.dry-run.done"

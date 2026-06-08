@@ -1,0 +1,153 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-3",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-08T02:12:25Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app.kubernetes.io/component": "cockroachdb",
+                    "app.kubernetes.io/instance": "cockroachdb",
+                    "app.kubernetes.io/name": "cockroachdb"
+                },
+                "name": "datadir-cockroachdb-0",
+                "namespace": "cockroach-tc1",
+                "resourceVersion": "21161",
+                "uid": "4acfc735-d2a9-44ad-af15-ba526ee85e23"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "30Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-4acfc735-d2a9-44ad-af15-ba526ee85e23"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "30Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-1",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-08T02:12:25Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app.kubernetes.io/component": "cockroachdb",
+                    "app.kubernetes.io/instance": "cockroachdb",
+                    "app.kubernetes.io/name": "cockroachdb"
+                },
+                "name": "datadir-cockroachdb-1",
+                "namespace": "cockroach-tc1",
+                "resourceVersion": "21169",
+                "uid": "b1f3c7bc-d0a4-4935-a83a-618d61df9cf8"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "30Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-b1f3c7bc-d0a4-4935-a83a-618d61df9cf8"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "30Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-2",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-08T02:12:25Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app.kubernetes.io/component": "cockroachdb",
+                    "app.kubernetes.io/instance": "cockroachdb",
+                    "app.kubernetes.io/name": "cockroachdb"
+                },
+                "name": "datadir-cockroachdb-2",
+                "namespace": "cockroach-tc1",
+                "resourceVersion": "21183",
+                "uid": "fc655ca6-b5a1-4402-8634-d261c093fb0d"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "30Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-fc655ca6-b5a1-4402-8634-d261c093fb0d"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "30Gi"
+                },
+                "phase": "Bound"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

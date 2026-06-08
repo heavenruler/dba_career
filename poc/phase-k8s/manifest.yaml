@@ -5,11 +5,12 @@ baseline_family: k8s
 comparison_scope: k8s-only
 allowed_result_scopes: [S-K8S]
 forbidden_result_scopes: [S-BASE, T-THRD, X-CROSS]
-allowed_db: [tidb]                        # phase-1 MVP: tidb only; phase-2 → add crdb, ybdb
+allowed_db: [tidb, crdb, ybdb]            # phase-1 MVP + CRDB/YBDB extension (2026-06-08)
 allowed_topology:
   - k8s-3node-limit
   - k8s-3node-unlimit
-  - k8s-3node-haproxy-3s3r-unlimit         # phase-1 MVP cell
+  - k8s-3node-haproxy-3s3r-limit
+  - k8s-3node-haproxy-3s3r-unlimit
 isolation: [rc]
 warehouses: 128
 warmup_sec: 1200
@@ -21,7 +22,7 @@ metrics_hosts:
   source: topology-derived
   kind: k8s-node
   ids: [k8s-node-1, k8s-node-2, k8s-node-3]
-artifact_prefix: results/{db}-tc1/S-K8S/
+artifact_prefix: results/{db}-tc1/S-K8S/   # NB: ybdb → results/yuga-tc1/ (codebase convention, 2026-06-08)
 baseline_eligible: true
 tuning_profile_id: default
 owner_doc: results/PHASES.md

@@ -39,13 +39,14 @@ VM_JSON=$(yq -o=json 'sort_keys(..)' "$VMBASE")
 classify_path() {
   local p=$1
   case "$p" in
-    .network.nodeport|.network.client_proto|.network.haproxy_*|.k8s.*|.vm.*|.phase_env.tuning_profile_id|.db_config.tikv_block_cache_capacity_*)
+    .network.nodeport|.network.client_proto|.network.haproxy_*|.k8s.*|.vm.*|.phase_env.tuning_profile_id|.db_config.tikv_block_cache_capacity_*|.split.*)
+      # split.* ALLOW: dry-run no prepare → split is intent-only spec
       echo "ALLOW" ;;
-    .db_config.tikv_readpool_*|.db_config.pd_max_replicas|.db_config.tidb_version|.split.expected_shards_per_table)
+    .db_config.tikv_readpool_*|.db_config.pd_max_replicas|.db_config.*_version|.db_config.kv_range_split_by_load_enabled)
       echo "WARN" ;;
     .phase_env.PHASE_NAME|.phase_env.RESULT_SCOPE|.phase_env.BASELINE_FAMILY|.topology|.db)
       echo "PLATFORM" ;;
-    .phase_env.BASELINE_ELIGIBLE|.workload*|.isolation*|.split.strategy|.split.expected_tables|.split.source_ref)
+    .phase_env.BASELINE_ELIGIBLE|.workload*|.isolation*|.db_config.replication_factor|.db_config.enable_automatic_tablet_splitting|.db_config.yb_enable_read_committed_isolation|.db_config.default_transaction_isolation)
       echo "DENY" ;;
     *)
       # Unknown path defaults to DENY for safety; user can extend allow list.

@@ -1,0 +1,3 @@
+---
+# phase-k8s/playbooks/cockroach-k8s.yml — CockroachDB on K8s (thin wrapper)
+- import_playbook: ../../ansible/playbooks/cockroach-k8s.yml

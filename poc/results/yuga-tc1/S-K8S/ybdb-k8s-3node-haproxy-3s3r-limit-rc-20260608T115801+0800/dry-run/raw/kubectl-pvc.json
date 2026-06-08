@@ -1,0 +1,309 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-3",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-08T03:55:03Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app": "yb-master",
+                    "chart": "yugabyte",
+                    "component": "yugabytedb",
+                    "heritage": "Helm",
+                    "release": "yugabyte"
+                },
+                "name": "datadir0-yb-master-0",
+                "namespace": "yb-demo",
+                "resourceVersion": "25400",
+                "uid": "89898251-1303-49d1-9ea6-8fb380c84793"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "10Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-89898251-1303-49d1-9ea6-8fb380c84793"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "10Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-1",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-08T03:55:03Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app": "yb-master",
+                    "chart": "yugabyte",
+                    "component": "yugabytedb",
+                    "heritage": "Helm",
+                    "release": "yugabyte"
+                },
+                "name": "datadir0-yb-master-1",
+                "namespace": "yb-demo",
+                "resourceVersion": "25429",
+                "uid": "76233336-e0d4-456e-9cb4-3543557d10f3"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "10Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-76233336-e0d4-456e-9cb4-3543557d10f3"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "10Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-2",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-08T03:55:03Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app": "yb-master",
+                    "chart": "yugabyte",
+                    "component": "yugabytedb",
+                    "heritage": "Helm",
+                    "release": "yugabyte"
+                },
+                "name": "datadir0-yb-master-2",
+                "namespace": "yb-demo",
+                "resourceVersion": "25508",
+                "uid": "1b0dae2b-b153-4dd6-9ed2-8ea9815379c3"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "10Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-1b0dae2b-b153-4dd6-9ed2-8ea9815379c3"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "10Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-2",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-08T03:55:03Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app": "yb-tserver",
+                    "chart": "yugabyte",
+                    "component": "yugabytedb",
+                    "heritage": "Helm",
+                    "release": "yugabyte"
+                },
+                "name": "datadir0-yb-tserver-0",
+                "namespace": "yb-demo",
+                "resourceVersion": "25444",
+                "uid": "b36923e9-5fd3-4758-9319-53015d095140"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "50Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-b36923e9-5fd3-4758-9319-53015d095140"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "50Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-1",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-08T03:55:03Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app": "yb-tserver",
+                    "chart": "yugabyte",
+                    "component": "yugabytedb",
+                    "heritage": "Helm",
+                    "release": "yugabyte"
+                },
+                "name": "datadir0-yb-tserver-1",
+                "namespace": "yb-demo",
+                "resourceVersion": "25530",
+                "uid": "7a83a0aa-928e-4bb6-bd9c-8c5421cfea7f"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "50Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-7a83a0aa-928e-4bb6-bd9c-8c5421cfea7f"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "50Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+                    "volume.kubernetes.io/selected-node": "l-test-poc-3",
+                    "volume.kubernetes.io/storage-provisioner": "rancher.io/local-path"
+                },
+                "creationTimestamp": "2026-06-08T03:55:03Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "labels": {
+                    "app": "yb-tserver",
+                    "chart": "yugabyte",
+                    "component": "yugabytedb",
+                    "heritage": "Helm",
+                    "release": "yugabyte"
+                },
+                "name": "datadir0-yb-tserver-2",
+                "namespace": "yb-demo",
+                "resourceVersion": "25456",
+                "uid": "2c617a0e-f9d3-4b49-8562-1e24191a8544"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "50Gi"
+                    }
+                },
+                "storageClassName": "local-path",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-2c617a0e-f9d3-4b49-8562-1e24191a8544"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "50Gi"
+                },
+                "phase": "Bound"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

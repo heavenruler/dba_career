@@ -1,9 +1,6 @@
-# expected.yaml SSOT — TiDB-unlimit
-# Schema v2 (2026-06-08, post-MVP):
-#   - pod_replicas: {pd, sql, storage}  (was {pd, tidb, tikv})
-#   - split section dropped (no prepare in dry-run)
+# expected.yaml SSOT — TiDB-limit
 db: tidb
-topology: k8s-3node-haproxy-3s3r-unlimit
+topology: k8s-3node-haproxy-3s3r-limit
 phase_env:
   PHASE_NAME: phase-k8s
   RESULT_SCOPE: S-K8S
@@ -17,7 +14,9 @@ k8s:
     pd: 3
     sql: 2
     storage: 3
-  resource_limits: null                  # unlimit
+  resource_limits:                       # dump picks STORAGE (tikv) container limits
+    cpu: "2"
+    memory: 8Gi
   storage_class: local-path
   pv_size:
     pd: 10Gi

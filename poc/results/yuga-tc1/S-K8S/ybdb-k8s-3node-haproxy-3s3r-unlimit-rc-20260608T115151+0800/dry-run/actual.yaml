@@ -1,0 +1,41 @@
+db: ybdb
+topology: k8s-3node-haproxy-3s3r-unlimit
+phase_env:
+  PHASE_NAME: phase-k8s
+  RESULT_SCOPE: S-K8S
+  BASELINE_ELIGIBLE: true
+  BASELINE_FAMILY: k8s
+  tuning_profile_id: default
+k8s:
+  namespace: yb-demo
+  cluster_name: yugabyte
+  pod_replicas:
+    pd: 3
+    sql: 3
+    storage: 3
+  resource_limits: null
+  storage_class: local-path
+  pv_size:
+    pd: 10Gi
+    storage: 50Gi
+  db_image_prefix: yugabytedb/yugabyte
+db_config:
+  ybdb_version: 2025.2.2.2-b11
+  replication_factor: 3
+  enable_automatic_tablet_splitting: false
+  yb_enable_read_committed_isolation: true
+workload:
+  warehouses: 128
+  threads_list: [16, 32, 64, 128]
+  rounds: 5
+  warmup_threads: 64
+  warmup_sec: 1200
+  run_sec: 300
+isolation:
+  level: "read committed"
+network:
+  nodeport: 30005
+  client_proto: postgres
+  haproxy_backends: 0
+split:
+  strategy: ybdb_split_placeholder

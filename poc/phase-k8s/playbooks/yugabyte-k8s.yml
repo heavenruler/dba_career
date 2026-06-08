@@ -1,0 +1,3 @@
+---
+# phase-k8s/playbooks/yugabyte-k8s.yml — YugabyteDB on K8s (thin wrapper)
+- import_playbook: ../../ansible/playbooks/yugabyte-k8s.yml

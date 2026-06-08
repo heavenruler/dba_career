@@ -1,0 +1,41 @@
+# expected.yaml SSOT — YBDB-unlimit
+# NB: ybdb_version not pinned — chart 2025.2.2 maps to image internally;
+#     dump-actual will produce actual value; expected omits → expected ⊆ actual.
+db: ybdb
+topology: k8s-3node-haproxy-3s3r-unlimit
+phase_env:
+  PHASE_NAME: phase-k8s
+  RESULT_SCOPE: S-K8S
+  BASELINE_ELIGIBLE: true
+  BASELINE_FAMILY: k8s
+  tuning_profile_id: default
+k8s:
+  namespace: yb-demo
+  cluster_name: yugabyte                   # helm release
+  pod_replicas:
+    pd: 3                                  # yb-master
+    sql: 3                                 # yb-tserver
+    storage: 3                             # yb-tserver (same)
+  resource_limits: null                  # 真 unlimit (post-deploy kubectl patch 移除 chart default limits)
+  storage_class: local-path
+  pv_size:
+    pd: 10Gi                               # master
+    storage: 50Gi                          # tserver
+  db_image_prefix: yugabytedb/yugabyte
+db_config:
+  replication_factor: 3
+  enable_automatic_tablet_splitting: false # SSOT guardrail
+  yb_enable_read_committed_isolation: true
+workload:
+  warehouses: 128
+  threads_list: [16, 32, 64, 128]
+  rounds: 5
+  warmup_threads: 64
+  warmup_sec: 1200
+  run_sec: 300
+isolation:
+  level: "read committed"
+network:
+  nodeport: 30005
+  client_proto: postgres
+  haproxy_backends: 0

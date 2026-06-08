@@ -1,0 +1,37 @@
+# VM baseline SSOT — YBDB @ vm-3node-haproxy-3s3r-rc
+db: ybdb
+topology: vm-3node-haproxy-3s3r
+phase_env:
+  PHASE_NAME: phase-baseline
+  RESULT_SCOPE: S-BASE
+  BASELINE_ELIGIBLE: true
+  BASELINE_FAMILY: vm
+  tuning_profile_id: default
+vm:
+  nodes: 3
+  per_node:
+    pd: 1                                  # yb-master
+    sql: 1                                 # yb-tserver
+    storage: 1
+db_config:
+  replication_factor: 3
+  enable_automatic_tablet_splitting: false
+  yb_enable_read_committed_isolation: true
+workload:
+  warehouses: 128
+  threads_list: [16, 32, 64, 128]
+  rounds: 5
+  warmup_threads: 64
+  warmup_sec: 1200
+  run_sec: 300
+isolation:
+  level: "read committed"
+network:
+  haproxy_backends: 3
+  haproxy_port: 4000
+  client_proto: postgres
+split:
+  strategy: ybdb_pre_create_split_into_n_tablets
+  source_ref: tests/common/prepare.sh:96-102
+  expected_tables: 9
+  expected_shards_per_table: 3
