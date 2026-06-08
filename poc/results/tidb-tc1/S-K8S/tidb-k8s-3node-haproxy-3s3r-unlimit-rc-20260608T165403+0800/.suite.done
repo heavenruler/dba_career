@@ -1,0 +1,13 @@
+{
+  "phase": "suite",
+  "db": "tidb",
+  "iso": "rc",
+  "topology": "k8s-3node-haproxy-3s3r-unlimit",
+  "ts": "20260608T165403+0800",
+  "phase_name": "phase-k8s",
+  "result_scope": "S-K8S",
+  "baseline_eligible": true,
+  "baseline_family": "k8s",
+  "tuning_profile_id": "default",
+  "completed_at": "2026-06-08T20:55:11+0800"
+}

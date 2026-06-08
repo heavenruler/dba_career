@@ -1,0 +1,10 @@
+table=warehouse expected>=3 actual=3 pass=true
+table=district expected>=3 actual=3 pass=true
+table=customer expected>=3 actual=14 pass=true
+table=new_order expected>=3 actual=3 pass=true
+table=orders expected>=3 actual=4 pass=true
+table=order_line expected>=3 actual=52 pass=true
+table=stock expected>=3 actual=23 pass=true
+table=item expected>=3 actual=3 pass=true
+table=history expected>=3 actual=4 pass=true
+overall_pass=true

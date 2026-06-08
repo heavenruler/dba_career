@@ -15,7 +15,7 @@ k8s:
   cluster_name: tidb-poc
   pod_replicas:
     pd: 3
-    sql: 2
+    sql: 3              # 2026-06-08 改 3 嚴格對齊 vm-3node-haproxy-3s3r
     storage: 3
   resource_limits: null                  # unlimit
   storage_class: local-path
