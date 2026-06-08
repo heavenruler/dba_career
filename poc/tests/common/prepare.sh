@@ -39,12 +39,13 @@ PREP_DIR="$ROOT/prepare"
 ISO_CONN_PARAMS=$(get_conn_params "$DB" "$ISO")
 DRIVER=$(get_driver "$DB")
 
-# PoC-DESIGN §7.5.4 — vm-3node 每張表預期 shard 數（hard gate 比對基準）
+# PoC-DESIGN §7.5.4 — vm-3node / k8s-3node 每張表預期 shard 數（hard gate 比對基準）
 case "$TOPO" in
-  vm-3node-1s1r|vm-3node-1s3r)        EXPECTED_SHARDS=1 ;;
-  vm-3node-3s1r|vm-3node-3s3r)        EXPECTED_SHARDS=3 ;;
-  vm-3node-haproxy-3s3r)              EXPECTED_SHARDS=3 ;;
-  *)                                  EXPECTED_SHARDS=0 ;;   # vm-1node / 其他 → 不 enforce
+  vm-3node-1s1r|vm-3node-1s3r)                            EXPECTED_SHARDS=1 ;;
+  vm-3node-3s1r|vm-3node-3s3r)                            EXPECTED_SHARDS=3 ;;
+  vm-3node-haproxy-3s3r)                                  EXPECTED_SHARDS=3 ;;
+  k8s-3node-haproxy-3s3r-limit|k8s-3node-haproxy-3s3r-unlimit) EXPECTED_SHARDS=3 ;;  # 2026-06-08: phase-k8s S-K8S
+  *)                                                      EXPECTED_SHARDS=0 ;;   # vm-1node / 其他 → 不 enforce
 esac
 
 info "prepare root: $ROOT  db=$DB iso=$ISO topo=$TOPO host=$DB_HOST expected_shards=$EXPECTED_SHARDS"
@@ -93,7 +94,7 @@ info "drop+create done"
 # tablet 預設）。實作上一律 SPLIT INTO $EXPECTED_SHARDS TABLETS。
 # go-tpc 跑 CREATE TABLE IF NOT EXISTS，pre-create 後它會 skip CREATE；INSERT 照常。
 # Schema file 內寫 "SPLIT INTO 1 TABLETS"，由 sed substitute 為 EXPECTED_SHARDS。
-if [[ "$DB" == "ybdb" && "$TOPO" =~ ^vm-3node ]]; then
+if [[ "$DB" == "ybdb" && "$TOPO" =~ ^(vm|k8s)-3node ]]; then
   info "YBDB pre-create 9 tables with SPLIT INTO $EXPECTED_SHARDS TABLETS"
   sed "s|SPLIT INTO [0-9]\+ TABLETS|SPLIT INTO $EXPECTED_SHARDS TABLETS|g" \
     "$SELF/lib/ybdb-tpcc-schema-1tablet.sql" | \
@@ -300,18 +301,31 @@ if [[ "$EXPECTED_SHARDS" != "0" ]]; then
       ;;
     ybdb)
       : > "$PREP_DIR/.shard-raw.tsv"
-      YB_MASTERS="172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100"
-      # HAProxy 等 proxy 拓樸：yb-admin 必須走實 cluster member（db-host 是 proxy）
-      case "$TOPO" in
-        *haproxy-*) YB_ADMIN_HOST="172.24.40.32" ;;
-        *)          YB_ADMIN_HOST="$DB_HOST"     ;;
-      esac
-      for tbl in $TABLES; do
-        n=$(ssh -o StrictHostKeyChecking=accept-new "root@$YB_ADMIN_HOST" \
-              "/opt/yugabyte/bin/yb-admin --master_addresses=$YB_MASTERS list_tablets ysql.$DBNAME $tbl 2>/dev/null | tail -n +2 | wc -l" \
-              2>/dev/null || echo 0)
-        printf "%s\t%s\n" "$tbl" "$n" >> "$PREP_DIR/.shard-raw.tsv"
-      done
+      # 2026-06-08: K8s topology 走 kubectl exec → yb-master pod 內 yb-admin (FQDN masters)
+      if [[ "$TOPO" =~ ^k8s- ]]; then
+        K3S_HOST="${K3S_HOST:-172.24.40.32}"
+        YB_NS="${YBDB_NAMESPACE:-yb-demo}"
+        YB_MASTERS="yb-master-0.yb-masters.${YB_NS}.svc.cluster.local:7100,yb-master-1.yb-masters.${YB_NS}.svc.cluster.local:7100,yb-master-2.yb-masters.${YB_NS}.svc.cluster.local:7100"
+        for tbl in $TABLES; do
+          n=$(ssh -o StrictHostKeyChecking=accept-new "root@$K3S_HOST" \
+                "k3s kubectl -n $YB_NS exec yb-master-0 -c yb-master -- /home/yugabyte/bin/yb-admin --master_addresses=$YB_MASTERS list_tablets ysql.$DBNAME $tbl 2>/dev/null | tail -n +2 | wc -l" \
+                2>/dev/null || echo 0)
+          printf "%s\t%s\n" "$tbl" "$n" >> "$PREP_DIR/.shard-raw.tsv"
+        done
+      else
+        YB_MASTERS="172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100"
+        # HAProxy 等 proxy 拓樸：yb-admin 必須走實 cluster member（db-host 是 proxy）
+        case "$TOPO" in
+          *haproxy-*) YB_ADMIN_HOST="172.24.40.32" ;;
+          *)          YB_ADMIN_HOST="$DB_HOST"     ;;
+        esac
+        for tbl in $TABLES; do
+          n=$(ssh -o StrictHostKeyChecking=accept-new "root@$YB_ADMIN_HOST" \
+                "/opt/yugabyte/bin/yb-admin --master_addresses=$YB_MASTERS list_tablets ysql.$DBNAME $tbl 2>/dev/null | tail -n +2 | wc -l" \
+                2>/dev/null || echo 0)
+          printf "%s\t%s\n" "$tbl" "$n" >> "$PREP_DIR/.shard-raw.tsv"
+        done
+      fi
       ;;
   esac
 
