@@ -6,7 +6,7 @@ tidb_k8s_cluster_name: tidb-poc
 tidb_sql_nodeport: 30004
 tidb_replicas:
   pd: 3
-  tidb: 2
+  tidb: 3       # strict 3s3r alignment (3 TiDB compute pods, mirror vm-3node-haproxy-3s3r)
   tikv: 3
 tidb_storage:
   pd: 10Gi

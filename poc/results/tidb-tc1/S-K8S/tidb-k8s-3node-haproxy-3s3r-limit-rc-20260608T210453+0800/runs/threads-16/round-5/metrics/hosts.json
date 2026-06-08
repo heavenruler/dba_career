@@ -1,0 +1,37 @@
+{
+  "phase": "phase-k8s",
+  "result_scope": "S-K8S",
+  "manifest_sha256": "unset",
+  "hosts": [
+    {
+      "id": "k8s-node-1",
+      "kind": "k8s-node",
+      "region": "idc",
+      "zone": "vlan241",
+      "node": "k8s-node-1",
+      "pod": null,
+      "ssh_host": "172.24.40.32",
+      "artifact_suffix": "k8s-node-1"
+    },
+    {
+      "id": "k8s-node-2",
+      "kind": "k8s-node",
+      "region": "idc",
+      "zone": "vlan241",
+      "node": "k8s-node-2",
+      "pod": null,
+      "ssh_host": "172.24.40.33",
+      "artifact_suffix": "k8s-node-2"
+    },
+    {
+      "id": "k8s-node-3",
+      "kind": "k8s-node",
+      "region": "idc",
+      "zone": "vlan241",
+      "node": "k8s-node-3",
+      "pod": null,
+      "ssh_host": "172.24.40.34",
+      "artifact_suffix": "k8s-node-3"
+    }
+  ]
+}

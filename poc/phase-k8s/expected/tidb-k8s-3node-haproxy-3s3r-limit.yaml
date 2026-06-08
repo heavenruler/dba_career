@@ -12,7 +12,7 @@ k8s:
   cluster_name: tidb-poc
   pod_replicas:
     pd: 3
-    sql: 2
+    sql: 3              # strict 3s3r alignment
     storage: 3
   resource_limits:                       # dump picks STORAGE (tikv) container limits
     cpu: "2"
