@@ -1,14 +1,14 @@
 # compare-vm.md — phase-k8s actual vs VM baseline
 
 Sources:
-- actual: /tmp/poc-tpcc/artifacts/S-K8S/ybdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260608T115151+0800/dry-run/actual.yaml
+- actual: /tmp/poc-tpcc/artifacts/S-K8S/ybdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260608T120857+0800/dry-run/actual.yaml
 - vm baseline: /tmp/poc-tpcc/phase-k8s/expected/vm-3node-haproxy-3s3r-ybdb.yaml
 
 ## ❌ DENY (exit 1 if any)
 - (none)
 
 ## ⚠️ WARN (codex review)
-- .db_config.ybdb_version: k8s=2025.2.2.2-b11 vm=<absent>
+- (none)
 
 ## ✅ ALLOW (platform diff)
 - .k8s.cluster_name: k8s=yugabyte vm=<absent>

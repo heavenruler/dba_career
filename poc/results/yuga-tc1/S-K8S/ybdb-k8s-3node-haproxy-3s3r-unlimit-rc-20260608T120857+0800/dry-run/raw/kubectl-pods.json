@@ -8,7 +8,7 @@
                 "annotations": {
                     "checksum/gflags": "289e7e345098c24c5832cbb5b87faba9892c313d0ef01e74f946c2c6557a8e66"
                 },
-                "creationTimestamp": "2026-06-08T02:33:01Z",
+                "creationTimestamp": "2026-06-08T04:06:20Z",
                 "generateName": "yb-master-",
                 "labels": {
                     "app": "yb-master",
@@ -30,11 +30,11 @@
                         "controller": true,
                         "kind": "StatefulSet",
                         "name": "yb-master",
-                        "uid": "e8411db7-f4b6-4f95-885c-7dd8e127c6dc"
+                        "uid": "bb536dd2-199b-4a5b-9fdf-581cee86516b"
                     }
                 ],
-                "resourceVersion": "22281",
-                "uid": "b9756601-682f-48cf-9e32-85b71aee6300"
+                "resourceVersion": "26383",
+                "uid": "10319902-c8fa-462e-8114-4b86de698791"
             },
             "spec": {
                 "affinity": {
@@ -156,7 +156,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-qg8m6",
+                                "name": "kube-api-access-z8dhr",
                                 "readOnly": true
                             }
                         ],
@@ -206,7 +206,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-qg8m6",
+                                "name": "kube-api-access-z8dhr",
                                 "readOnly": true
                             }
                         ]
@@ -254,7 +254,7 @@
                         "volumeMounts": [
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-qg8m6",
+                                "name": "kube-api-access-z8dhr",
                                 "readOnly": true
                             }
                         ]
@@ -309,7 +309,7 @@
                         }
                     },
                     {
-                        "name": "kube-api-access-qg8m6",
+                        "name": "kube-api-access-z8dhr",
                         "projected": {
                             "defaultMode": 420,
                             "sources": [
@@ -352,38 +352,38 @@
                 "conditions": [
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:45Z",
+                        "lastTransitionTime": "2026-06-08T04:06:26Z",
                         "status": "True",
                         "type": "PodReadyToStartContainers"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:07Z",
+                        "lastTransitionTime": "2026-06-08T04:06:25Z",
                         "status": "True",
                         "type": "Initialized"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:45Z",
+                        "lastTransitionTime": "2026-06-08T04:06:26Z",
                         "status": "True",
                         "type": "Ready"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:45Z",
+                        "lastTransitionTime": "2026-06-08T04:06:26Z",
                         "status": "True",
                         "type": "ContainersReady"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:07Z",
+                        "lastTransitionTime": "2026-06-08T04:06:25Z",
                         "status": "True",
                         "type": "PodScheduled"
                     }
                 ],
                 "containerStatuses": [
                     {
-                        "containerID": "containerd://8097994f2c07b5106ea00dfe445b625a54232f2f3aac834cf1f3f2d321428e19",
+                        "containerID": "containerd://f5c56fbe50eb90a3774be5940fea68a2fc327d8c28372cd2ebb07e09e500b82b",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -393,12 +393,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T02:33:45Z"
+                                "startedAt": "2026-06-08T04:06:26Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://0d5b394a2eab590976e6f8c5e4481a224f57ed19d5ac6b416145e48b9086dca9",
+                        "containerID": "containerd://d7281e90b4c75fb463c4005ffd64a86ec2390a7a8f8f3bbb57b18c1bcbe052c7",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -408,12 +408,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T02:33:44Z"
+                                "startedAt": "2026-06-08T04:06:26Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://be170cdb312d469f58639bd1cae8ec70ed04276db53d72d46a9db28d486ce48f",
+                        "containerID": "containerd://3df109f8547e0192d6f2f2a6664512f617c6ffe706f6546205f01bfb6b51c568",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -423,7 +423,7 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T02:33:45Z"
+                                "startedAt": "2026-06-08T04:06:26Z"
                             }
                         }
                     }
@@ -435,14 +435,14 @@
                     }
                 ],
                 "phase": "Running",
-                "podIP": "10.42.2.23",
+                "podIP": "10.42.2.36",
                 "podIPs": [
                     {
-                        "ip": "10.42.2.23"
+                        "ip": "10.42.2.36"
                     }
                 ],
                 "qosClass": "Burstable",
-                "startTime": "2026-06-08T02:33:07Z"
+                "startTime": "2026-06-08T04:06:25Z"
             }
         },
         {
@@ -452,7 +452,7 @@
                 "annotations": {
                     "checksum/gflags": "289e7e345098c24c5832cbb5b87faba9892c313d0ef01e74f946c2c6557a8e66"
                 },
-                "creationTimestamp": "2026-06-08T02:33:01Z",
+                "creationTimestamp": "2026-06-08T04:06:20Z",
                 "generateName": "yb-master-",
                 "labels": {
                     "app": "yb-master",
@@ -474,11 +474,11 @@
                         "controller": true,
                         "kind": "StatefulSet",
                         "name": "yb-master",
-                        "uid": "e8411db7-f4b6-4f95-885c-7dd8e127c6dc"
+                        "uid": "bb536dd2-199b-4a5b-9fdf-581cee86516b"
                     }
                 ],
-                "resourceVersion": "22313",
-                "uid": "5973f490-088e-4cba-bfbe-7261ed42df40"
+                "resourceVersion": "26463",
+                "uid": "30c7836c-8922-4bf7-ac62-7f9a7cb18107"
             },
             "spec": {
                 "affinity": {
@@ -600,7 +600,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-754wf",
+                                "name": "kube-api-access-rb9gv",
                                 "readOnly": true
                             }
                         ],
@@ -650,7 +650,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-754wf",
+                                "name": "kube-api-access-rb9gv",
                                 "readOnly": true
                             }
                         ]
@@ -698,7 +698,7 @@
                         "volumeMounts": [
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-754wf",
+                                "name": "kube-api-access-rb9gv",
                                 "readOnly": true
                             }
                         ]
@@ -753,7 +753,7 @@
                         }
                     },
                     {
-                        "name": "kube-api-access-754wf",
+                        "name": "kube-api-access-rb9gv",
                         "projected": {
                             "defaultMode": 420,
                             "sources": [
@@ -796,38 +796,38 @@
                 "conditions": [
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:47Z",
+                        "lastTransitionTime": "2026-06-08T04:06:31Z",
                         "status": "True",
                         "type": "PodReadyToStartContainers"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:07Z",
+                        "lastTransitionTime": "2026-06-08T04:06:29Z",
                         "status": "True",
                         "type": "Initialized"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:47Z",
+                        "lastTransitionTime": "2026-06-08T04:06:31Z",
                         "status": "True",
                         "type": "Ready"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:47Z",
+                        "lastTransitionTime": "2026-06-08T04:06:31Z",
                         "status": "True",
                         "type": "ContainersReady"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:07Z",
+                        "lastTransitionTime": "2026-06-08T04:06:29Z",
                         "status": "True",
                         "type": "PodScheduled"
                     }
                 ],
                 "containerStatuses": [
                     {
-                        "containerID": "containerd://005bae9d6c4271c6d7870a8b2a77db372723f4a20c09ad17ab4862114fddd284",
+                        "containerID": "containerd://7cbe5a8a93551c16c571531bb69232f46a5d6bc447a56d56287b35f4e7f7b113",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -837,12 +837,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T02:33:46Z"
+                                "startedAt": "2026-06-08T04:06:30Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://34664c465fcc3c3f6564696da376763a435dcf2ed4ad2c9e34c98f4bbb3d14b0",
+                        "containerID": "containerd://b475231258d3f41dfefabb94698cb5a17fe5b4ac945ccdee19c809e30508124a",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -852,12 +852,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T02:33:46Z"
+                                "startedAt": "2026-06-08T04:06:30Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://1d7fba18966e6dbd6ad34e6888147490ed43550c13b2c076d6b8785c2dd41494",
+                        "containerID": "containerd://1b6e76021d8de1e78c97a7f24fa57b137088d285c26ee2778f970a7ce940d695",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -867,7 +867,7 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T02:33:46Z"
+                                "startedAt": "2026-06-08T04:06:30Z"
                             }
                         }
                     }
@@ -879,14 +879,14 @@
                     }
                 ],
                 "phase": "Running",
-                "podIP": "10.42.1.24",
+                "podIP": "10.42.1.37",
                 "podIPs": [
                     {
-                        "ip": "10.42.1.24"
+                        "ip": "10.42.1.37"
                     }
                 ],
                 "qosClass": "Burstable",
-                "startTime": "2026-06-08T02:33:07Z"
+                "startTime": "2026-06-08T04:06:29Z"
             }
         },
         {
@@ -896,7 +896,7 @@
                 "annotations": {
                     "checksum/gflags": "289e7e345098c24c5832cbb5b87faba9892c313d0ef01e74f946c2c6557a8e66"
                 },
-                "creationTimestamp": "2026-06-08T02:33:01Z",
+                "creationTimestamp": "2026-06-08T04:06:20Z",
                 "generateName": "yb-master-",
                 "labels": {
                     "app": "yb-master",
@@ -918,11 +918,11 @@
                         "controller": true,
                         "kind": "StatefulSet",
                         "name": "yb-master",
-                        "uid": "e8411db7-f4b6-4f95-885c-7dd8e127c6dc"
+                        "uid": "bb536dd2-199b-4a5b-9fdf-581cee86516b"
                     }
                 ],
-                "resourceVersion": "22276",
-                "uid": "43e840f7-9989-4f7f-b847-56a874d2cc95"
+                "resourceVersion": "26436",
+                "uid": "36196f53-1bab-49c0-820e-a567dd18b14b"
             },
             "spec": {
                 "affinity": {
@@ -1044,7 +1044,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-xsxrs",
+                                "name": "kube-api-access-cjh7n",
                                 "readOnly": true
                             }
                         ],
@@ -1094,7 +1094,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-xsxrs",
+                                "name": "kube-api-access-cjh7n",
                                 "readOnly": true
                             }
                         ]
@@ -1142,7 +1142,7 @@
                         "volumeMounts": [
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-xsxrs",
+                                "name": "kube-api-access-cjh7n",
                                 "readOnly": true
                             }
                         ]
@@ -1197,7 +1197,7 @@
                         }
                     },
                     {
-                        "name": "kube-api-access-xsxrs",
+                        "name": "kube-api-access-cjh7n",
                         "projected": {
                             "defaultMode": 420,
                             "sources": [
@@ -1240,38 +1240,38 @@
                 "conditions": [
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:45Z",
+                        "lastTransitionTime": "2026-06-08T04:06:28Z",
                         "status": "True",
                         "type": "PodReadyToStartContainers"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:10Z",
+                        "lastTransitionTime": "2026-06-08T04:06:27Z",
                         "status": "True",
                         "type": "Initialized"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:45Z",
+                        "lastTransitionTime": "2026-06-08T04:06:28Z",
                         "status": "True",
                         "type": "Ready"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:45Z",
+                        "lastTransitionTime": "2026-06-08T04:06:28Z",
                         "status": "True",
                         "type": "ContainersReady"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T02:33:10Z",
+                        "lastTransitionTime": "2026-06-08T04:06:27Z",
                         "status": "True",
                         "type": "PodScheduled"
                     }
                 ],
                 "containerStatuses": [
                     {
-                        "containerID": "containerd://bf8111001dc1248a7aefb7d6a0604a89c7a2c3cc0a764853be45ab537d5d6fea",
+                        "containerID": "containerd://e7723bdf6b5524de378423696f876a838d80a6e49a8f7af7472c6aa2cb77d517",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -1281,12 +1281,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T02:33:44Z"
+                                "startedAt": "2026-06-08T04:06:28Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://bed0d8b1d572f644396788b4d7495b1c561d0f977ca73e8940db0b6b6b43d691",
+                        "containerID": "containerd://241d1c140a0601717c50c5764db2c9fed3ba86786895d31dadfcced730e1a401",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -1296,12 +1296,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T02:33:44Z"
+                                "startedAt": "2026-06-08T04:06:28Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://4202db7805746818d1c8845e2e5d69c4bb8519709202350ee7a56aecced7229e",
+                        "containerID": "containerd://bd9bf08e93a8f0c25e6b11ef8401cee449bef37b79f832fa4431edfd43fab3d4",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -1311,7 +1311,7 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T02:33:44Z"
+                                "startedAt": "2026-06-08T04:06:28Z"
                             }
                         }
                     }
@@ -1323,14 +1323,14 @@
                     }
                 ],
                 "phase": "Running",
-                "podIP": "10.42.0.22",
+                "podIP": "10.42.0.35",
                 "podIPs": [
                     {
-                        "ip": "10.42.0.22"
+                        "ip": "10.42.0.35"
                     }
                 ],
                 "qosClass": "Burstable",
-                "startTime": "2026-06-08T02:33:10Z"
+                "startTime": "2026-06-08T04:06:27Z"
             }
         },
         {
@@ -1339,16 +1339,16 @@
             "metadata": {
                 "annotations": {
                     "checksum/gflags": "31942dd22bc4f05906f5eaa61a0e3815db14fb87a33d2ab7125bea44edb75f59",
-                    "kubectl.kubernetes.io/restartedAt": "2026-06-08T11:50:06+08:00"
+                    "kubectl.kubernetes.io/restartedAt": "2026-06-08T12:07:52+08:00"
                 },
-                "creationTimestamp": "2026-06-08T03:50:48Z",
+                "creationTimestamp": "2026-06-08T04:08:55Z",
                 "generateName": "yb-tserver-",
                 "labels": {
                     "app": "yb-tserver",
                     "apps.kubernetes.io/pod-index": "0",
                     "chart": "yugabyte",
                     "component": "yugabytedb",
-                    "controller-revision-hash": "yb-tserver-6ff44bbb4b",
+                    "controller-revision-hash": "yb-tserver-79fb7d658",
                     "heritage": "Helm",
                     "release": "yugabyte",
                     "statefulset.kubernetes.io/pod-name": "yb-tserver-0",
@@ -1363,11 +1363,11 @@
                         "controller": true,
                         "kind": "StatefulSet",
                         "name": "yb-tserver",
-                        "uid": "2e0f888e-3746-4176-a435-b846a4fbcb61"
+                        "uid": "06d33f23-6db5-43f8-9252-47f4dd39663a"
                     }
                 ],
-                "resourceVersion": "24916",
-                "uid": "4e9590c7-c5e3-4433-b27d-475428ba17c1"
+                "resourceVersion": "26662",
+                "uid": "912fb0b6-9126-48de-828e-391290da6576"
             },
             "spec": {
                 "affinity": {
@@ -1519,7 +1519,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-cqkdq",
+                                "name": "kube-api-access-5f6t7",
                                 "readOnly": true
                             }
                         ],
@@ -1569,7 +1569,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-cqkdq",
+                                "name": "kube-api-access-5f6t7",
                                 "readOnly": true
                             }
                         ]
@@ -1617,7 +1617,7 @@
                         "volumeMounts": [
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-cqkdq",
+                                "name": "kube-api-access-5f6t7",
                                 "readOnly": true
                             }
                         ]
@@ -1676,7 +1676,7 @@
                         "name": "tserver-tmp"
                     },
                     {
-                        "name": "kube-api-access-cqkdq",
+                        "name": "kube-api-access-5f6t7",
                         "projected": {
                             "defaultMode": 420,
                             "sources": [
@@ -1719,38 +1719,38 @@
                 "conditions": [
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:49Z",
+                        "lastTransitionTime": "2026-06-08T04:08:56Z",
                         "status": "True",
                         "type": "PodReadyToStartContainers"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:48Z",
+                        "lastTransitionTime": "2026-06-08T04:08:55Z",
                         "status": "True",
                         "type": "Initialized"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:49Z",
+                        "lastTransitionTime": "2026-06-08T04:08:56Z",
                         "status": "True",
                         "type": "Ready"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:49Z",
+                        "lastTransitionTime": "2026-06-08T04:08:56Z",
                         "status": "True",
                         "type": "ContainersReady"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:48Z",
+                        "lastTransitionTime": "2026-06-08T04:08:55Z",
                         "status": "True",
                         "type": "PodScheduled"
                     }
                 ],
                 "containerStatuses": [
                     {
-                        "containerID": "containerd://9b358827fbc21a5b0b7088f3828888282d9bb5ba47964e47b4e8e9a38b6526a0",
+                        "containerID": "containerd://8c617772a49d7e1b560f413d00a6df469ebdf913cdff1bf8ec2065275b7a4a40",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -1760,12 +1760,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T03:50:48Z"
+                                "startedAt": "2026-06-08T04:08:56Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://76d1f8ec6b0fe4e2cbd09119e5780125bfcccc3f472ddf684223abf430996879",
+                        "containerID": "containerd://761673ab42c8b1291a6e91651b4377ed3d7df32e4b8b49c55517c2ae14898ce6",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -1775,12 +1775,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T03:50:48Z"
+                                "startedAt": "2026-06-08T04:08:56Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://359e645fef3e1d2c16e6ce97c3a8a3dcc1de3834506d68eac026e2d3dac091d1",
+                        "containerID": "containerd://2b7b5a73dbe37c0907020fcb3c531ef340784a45b94551a9a2d6d4acc840db07",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -1790,7 +1790,7 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T03:50:49Z"
+                                "startedAt": "2026-06-08T04:08:56Z"
                             }
                         }
                     }
@@ -1802,14 +1802,14 @@
                     }
                 ],
                 "phase": "Running",
-                "podIP": "10.42.1.25",
+                "podIP": "10.42.1.38",
                 "podIPs": [
                     {
-                        "ip": "10.42.1.25"
+                        "ip": "10.42.1.38"
                     }
                 ],
                 "qosClass": "Burstable",
-                "startTime": "2026-06-08T03:50:48Z"
+                "startTime": "2026-06-08T04:08:55Z"
             }
         },
         {
@@ -1818,16 +1818,16 @@
             "metadata": {
                 "annotations": {
                     "checksum/gflags": "31942dd22bc4f05906f5eaa61a0e3815db14fb87a33d2ab7125bea44edb75f59",
-                    "kubectl.kubernetes.io/restartedAt": "2026-06-08T11:50:06+08:00"
+                    "kubectl.kubernetes.io/restartedAt": "2026-06-08T12:07:52+08:00"
                 },
-                "creationTimestamp": "2026-06-08T03:50:45Z",
+                "creationTimestamp": "2026-06-08T04:08:27Z",
                 "generateName": "yb-tserver-",
                 "labels": {
                     "app": "yb-tserver",
                     "apps.kubernetes.io/pod-index": "1",
                     "chart": "yugabyte",
                     "component": "yugabytedb",
-                    "controller-revision-hash": "yb-tserver-6ff44bbb4b",
+                    "controller-revision-hash": "yb-tserver-79fb7d658",
                     "heritage": "Helm",
                     "release": "yugabyte",
                     "statefulset.kubernetes.io/pod-name": "yb-tserver-1",
@@ -1842,11 +1842,11 @@
                         "controller": true,
                         "kind": "StatefulSet",
                         "name": "yb-tserver",
-                        "uid": "2e0f888e-3746-4176-a435-b846a4fbcb61"
+                        "uid": "06d33f23-6db5-43f8-9252-47f4dd39663a"
                     }
                 ],
-                "resourceVersion": "24874",
-                "uid": "40a60af7-3200-4260-9fff-822be77e5b10"
+                "resourceVersion": "26608",
+                "uid": "38157ec0-5310-4b1c-98aa-426aad1a6ca1"
             },
             "spec": {
                 "affinity": {
@@ -1998,7 +1998,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-wd9n7",
+                                "name": "kube-api-access-8q44g",
                                 "readOnly": true
                             }
                         ],
@@ -2048,7 +2048,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-wd9n7",
+                                "name": "kube-api-access-8q44g",
                                 "readOnly": true
                             }
                         ]
@@ -2096,7 +2096,7 @@
                         "volumeMounts": [
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-wd9n7",
+                                "name": "kube-api-access-8q44g",
                                 "readOnly": true
                             }
                         ]
@@ -2155,7 +2155,7 @@
                         "name": "tserver-tmp"
                     },
                     {
-                        "name": "kube-api-access-wd9n7",
+                        "name": "kube-api-access-8q44g",
                         "projected": {
                             "defaultMode": 420,
                             "sources": [
@@ -2198,38 +2198,38 @@
                 "conditions": [
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:46Z",
+                        "lastTransitionTime": "2026-06-08T04:08:28Z",
                         "status": "True",
                         "type": "PodReadyToStartContainers"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:45Z",
+                        "lastTransitionTime": "2026-06-08T04:08:27Z",
                         "status": "True",
                         "type": "Initialized"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:46Z",
+                        "lastTransitionTime": "2026-06-08T04:08:28Z",
                         "status": "True",
                         "type": "Ready"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:46Z",
+                        "lastTransitionTime": "2026-06-08T04:08:28Z",
                         "status": "True",
                         "type": "ContainersReady"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:45Z",
+                        "lastTransitionTime": "2026-06-08T04:08:27Z",
                         "status": "True",
                         "type": "PodScheduled"
                     }
                 ],
                 "containerStatuses": [
                     {
-                        "containerID": "containerd://fb3d0f58476288f20ab26bb1a4404708cf95865fbaf22cbc1d437055ab5833b4",
+                        "containerID": "containerd://0d7e54228082b4f95fc401d52f1837b68de7a913524009ec709045596cf612c2",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -2239,12 +2239,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T03:50:46Z"
+                                "startedAt": "2026-06-08T04:08:28Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://80746e7d7933b0b9a3179a3c7fa250414f3126dfce291957b615f23ea2c90f8c",
+                        "containerID": "containerd://150420b4bbe3f9e160b7f430378cc5442e20cc296d25c49bd7ea650db97359f6",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -2254,12 +2254,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T03:50:45Z"
+                                "startedAt": "2026-06-08T04:08:27Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://9c444684fa6c50519c36a082de6deea3d246c44e95d472ea482462cbec4e87dc",
+                        "containerID": "containerd://b0a189569ee666a5be51621c58f19099740e2210ba13118f1bd537fa485e737a",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -2269,7 +2269,7 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T03:50:46Z"
+                                "startedAt": "2026-06-08T04:08:28Z"
                             }
                         }
                     }
@@ -2281,14 +2281,14 @@
                     }
                 ],
                 "phase": "Running",
-                "podIP": "10.42.0.23",
+                "podIP": "10.42.0.36",
                 "podIPs": [
                     {
-                        "ip": "10.42.0.23"
+                        "ip": "10.42.0.36"
                     }
                 ],
                 "qosClass": "Burstable",
-                "startTime": "2026-06-08T03:50:45Z"
+                "startTime": "2026-06-08T04:08:27Z"
             }
         },
         {
@@ -2297,16 +2297,16 @@
             "metadata": {
                 "annotations": {
                     "checksum/gflags": "31942dd22bc4f05906f5eaa61a0e3815db14fb87a33d2ab7125bea44edb75f59",
-                    "kubectl.kubernetes.io/restartedAt": "2026-06-08T11:50:06+08:00"
+                    "kubectl.kubernetes.io/restartedAt": "2026-06-08T12:07:52+08:00"
                 },
-                "creationTimestamp": "2026-06-08T03:50:16Z",
+                "creationTimestamp": "2026-06-08T04:07:57Z",
                 "generateName": "yb-tserver-",
                 "labels": {
                     "app": "yb-tserver",
                     "apps.kubernetes.io/pod-index": "2",
                     "chart": "yugabyte",
                     "component": "yugabytedb",
-                    "controller-revision-hash": "yb-tserver-6ff44bbb4b",
+                    "controller-revision-hash": "yb-tserver-79fb7d658",
                     "heritage": "Helm",
                     "release": "yugabyte",
                     "statefulset.kubernetes.io/pod-name": "yb-tserver-2",
@@ -2321,11 +2321,11 @@
                         "controller": true,
                         "kind": "StatefulSet",
                         "name": "yb-tserver",
-                        "uid": "2e0f888e-3746-4176-a435-b846a4fbcb61"
+                        "uid": "06d33f23-6db5-43f8-9252-47f4dd39663a"
                     }
                 ],
-                "resourceVersion": "24819",
-                "uid": "9aeb2b24-f47a-46cb-9561-5d323c9ad655"
+                "resourceVersion": "26554",
+                "uid": "32cade28-69f6-4b1d-8679-c53410bbe042"
             },
             "spec": {
                 "affinity": {
@@ -2477,7 +2477,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-pv69x",
+                                "name": "kube-api-access-zbxql",
                                 "readOnly": true
                             }
                         ],
@@ -2527,7 +2527,7 @@
                             },
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-pv69x",
+                                "name": "kube-api-access-zbxql",
                                 "readOnly": true
                             }
                         ]
@@ -2575,7 +2575,7 @@
                         "volumeMounts": [
                             {
                                 "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-                                "name": "kube-api-access-pv69x",
+                                "name": "kube-api-access-zbxql",
                                 "readOnly": true
                             }
                         ]
@@ -2634,7 +2634,7 @@
                         "name": "tserver-tmp"
                     },
                     {
-                        "name": "kube-api-access-pv69x",
+                        "name": "kube-api-access-zbxql",
                         "projected": {
                             "defaultMode": 420,
                             "sources": [
@@ -2677,38 +2677,38 @@
                 "conditions": [
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:17Z",
+                        "lastTransitionTime": "2026-06-08T04:07:58Z",
                         "status": "True",
                         "type": "PodReadyToStartContainers"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:16Z",
+                        "lastTransitionTime": "2026-06-08T04:07:57Z",
                         "status": "True",
                         "type": "Initialized"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:17Z",
+                        "lastTransitionTime": "2026-06-08T04:07:58Z",
                         "status": "True",
                         "type": "Ready"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:17Z",
+                        "lastTransitionTime": "2026-06-08T04:07:58Z",
                         "status": "True",
                         "type": "ContainersReady"
                     },
                     {
                         "lastProbeTime": null,
-                        "lastTransitionTime": "2026-06-08T03:50:16Z",
+                        "lastTransitionTime": "2026-06-08T04:07:57Z",
                         "status": "True",
                         "type": "PodScheduled"
                     }
                 ],
                 "containerStatuses": [
                     {
-                        "containerID": "containerd://8e4f7932c387028054b634f1a10c358edd50201274034319b1e4512f38a5cfc9",
+                        "containerID": "containerd://429704e3903f3f0a075c78caff47fc5306ebf1e571d0262d7dcbdf046a2cbfd3",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -2718,12 +2718,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T03:50:17Z"
+                                "startedAt": "2026-06-08T04:07:58Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://8fd014363343d3b687b68023f094afc4bdbda8dd895666395cdd93fe8c97def3",
+                        "containerID": "containerd://b2672b7858eb01cc506736474c92a812c2b7e29e994118d9d7114423c8017b13",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -2733,12 +2733,12 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T03:50:16Z"
+                                "startedAt": "2026-06-08T04:07:58Z"
                             }
                         }
                     },
                     {
-                        "containerID": "containerd://9776e552671a7f2235c85079a26abe6e34a5a2d0b993c0879a0405ebb71169f7",
+                        "containerID": "containerd://bb61d3bae6549456480a5c91dd4b928914abfb2a2e6c7f3cc38db765ddc28e55",
                         "image": "docker.io/yugabytedb/yugabyte:2025.2.2.2-b11",
                         "imageID": "docker.io/yugabytedb/yugabyte@sha256:1fdda2ae928facf0b7b25b7c1183c540567c33730cce10a557c81c33a8e18422",
                         "lastState": {},
@@ -2748,7 +2748,7 @@
                         "started": true,
                         "state": {
                             "running": {
-                                "startedAt": "2026-06-08T03:50:17Z"
+                                "startedAt": "2026-06-08T04:07:58Z"
                             }
                         }
                     }
@@ -2760,14 +2760,14 @@
                     }
                 ],
                 "phase": "Running",
-                "podIP": "10.42.2.25",
+                "podIP": "10.42.2.38",
                 "podIPs": [
                     {
-                        "ip": "10.42.2.25"
+                        "ip": "10.42.2.38"
                     }
                 ],
                 "qosClass": "Burstable",
-                "startTime": "2026-06-08T03:50:16Z"
+                "startTime": "2026-06-08T04:07:57Z"
             }
         }
     ],
