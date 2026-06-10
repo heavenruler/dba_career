@@ -103,3 +103,88 @@ hash(primary key) -> tablet 3
 - TiDB / CockroachDB：用 range split 明確切 key space。
 - YugabyteDB：用 `SPLIT INTO N TABLETS` 明確建立 tablet 數。
 - 不依賴 auto split / auto rebalance / default shard 推論，避免結果混入背景行為。
+
+## Scale-out 階段要面對的事
+
+Scale-out 不是單純「新增節點」就完成。分散式資料庫新增節點後，資料是否會移動、leader 是否會重分布、write path 是否真的吃到新節點，都取決於 sharding 策略與 rebalancing 行為。
+
+### 不同 sharding 策略下的操作重點
+
+| 策略 | Scale-out 要做什麼 | 需要確認什麼 |
+|---|---|---|
+| Range split | 新增節點後，確認既有 range / region 是否搬移到新節點 | split point 是否合理、hot range 是否仍集中、leader 是否重分布 |
+| Hash / tablet split | 新增節點後，確認 tablet 是否 rebalance 到新節點 | tablet 數是否足夠、leader 是否分散、搬移是否完成 |
+| Auto split / auto rebalance | 讓系統背景自動切分與搬移 | 背景行為何時觸發、是否影響 benchmark、是否留下 compaction / raft backlog |
+| Manual split / pre-split | 事前或 prepare 階段明確指定 shard 數 | shard 數是否符合預期、是否需要重新 split 或重新 prepare |
+
+### TiDB：Range / Region scale-out
+
+TiDB 新增 TiKV node 後，PD 會依照 scheduler 將 Region / leader 搬到新節點。若只是新增節點但沒有足夠 Region，或 leader 沒有搬移，新節點不一定會立即承擔 workload。
+
+Scale-out 時需要確認：
+
+- Region 是否從舊 TiKV 搬到新 TiKV。
+- Leader 是否分布到新 TiKV。
+- Hot Region 是否仍集中在少數節點。
+- PD scheduler 是否被關閉、限速或尚未收斂。
+- benchmark 是否在搬移尚未完成時就開始。
+
+主要問題：
+
+- Range split point 若不合理，可能產生 hot range。
+- 新節點加入後需要等待 leader / region balance 收斂。
+- 測試期間若發生 Region move，tpmC / p99 會混入搬移成本。
+
+### CockroachDB：Range / Leaseholder scale-out
+
+CockroachDB 新增 node 後，range replica 與 leaseholder 會逐步 rebalancing。吞吐是否提升，不只看 range 數，也要看 leaseholder 是否分散。
+
+Scale-out 時需要確認：
+
+- Range replica 是否分布到新節點。
+- Leaseholder 是否仍集中在原節點。
+- Zone config / constraints 是否允許資料搬到新節點。
+- Range split / rebalance 是否仍在進行。
+- Retry / contention 是否因跨節點或跨區延遲上升。
+
+主要問題：
+
+- Leaseholder 不均會讓新增節點沒有實際承擔主要流量。
+- Range rebalancing 期間會影響 latency。
+- Serializable / retry 行為可能放大 scale-out 過程中的不穩定。
+
+### YugabyteDB：Hash / Tablet scale-out
+
+YugabyteDB 的 scale-out 重點是 tablet 與 tablet leader 是否搬到新 tserver。若 tablet 數太少，即使新增節點，也沒有足夠切分單位可以分散。
+
+Scale-out 時需要確認：
+
+- Tablet 是否搬移到新 tserver。
+- Tablet leader 是否重分布。
+- `SPLIT INTO N TABLETS` 的 N 是否足以支撐新增節點。
+- Load balancer 是否完成 tablet move。
+- RF / placement 是否允許 tablet 分布到新節點。
+
+主要問題：
+
+- Tablet 數不足時，新增節點無法有效分攤 workload。
+- 不能只靠 `ysql_num_shards_per_tserver × tserver 數` 推論實際 tablet 數。
+- Tablet move / leader balance 未完成前，benchmark 會混入搬移成本。
+
+### Scale-out 對 PoC 的影響
+
+| 問題 | 對結果的影響 |
+|---|---|
+| shard / region / tablet 數不足 | 新節點閒置，scale-out ratio 被低估 |
+| leader / leaseholder 未重分布 | 寫入仍集中在舊節點，吞吐不會線性提升 |
+| rebalancing 在測試中發生 | tpmC 降低、p99 上升，數據混入搬移成本 |
+| auto split 行為不一致 | 三家結果不可客觀比較 |
+| placement / RF 設定不一致 | replication cost 與 availability 假設不同 |
+
+因此 scale-out 測試前應先完成 gate：
+
+- shard / range / tablet actual count 符合預期。
+- replica / RF 符合預期。
+- leader / leaseholder 分布已收斂。
+- auto split / auto rebalance 狀態有明確紀錄。
+- 若測試目標是觀察 rebalancing 本身，需把它標成獨立測項，不可混入 baseline。
