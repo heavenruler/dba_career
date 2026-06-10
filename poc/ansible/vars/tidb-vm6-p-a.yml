@@ -1,0 +1,29 @@
+---
+# TiDB vm-6node cross-region — P-A placement (leader majority in IDC).
+#
+# Reference: phase-crossregion/topology/P-A.md
+#            phase-crossregion/decisions-2026-06-08.md Q9 (先 P-A 後 P-B)
+#
+# Semantics:
+#   - RF=3; voter-1/voter-2 在 region=idc，voter-3 在 region=gcp（each shard）
+#   - Leader 偏好 region=idc → cross-region WAN 不阻塞 commit critical path
+#   - 與 workload A-S / A-A-RO 主搭配
+#
+# 用法:
+#   ansible-playbook -i ansible/inventory/crossregion.ini \
+#     ansible/playbooks/tidb-vm6.yml -e @ansible/vars/tidb-vm6-p-a.yml
+#
+# 配套 SQL: tests/tidb/placement-p-a.sql
+#   wrapper (phase-crossregion/scripts/run-vm6-suite.sh) 負責 rsync 此 SQL 至控制節點。
+
+tidb_placement: P-A
+tidb_placement_sql: tests/tidb/placement-p-a.sql
+tidb_cluster_name: tpcc-tidb-vm6
+tidb_version: v8.5.2
+
+# label→placement mapping reference（PD 用 location-labels [region,zone] 排副本）
+tidb_placement_labels:
+  region:
+    idc: { voters: 2 }
+    gcp: { voters: 1 }
+  leader_preferred_region: idc

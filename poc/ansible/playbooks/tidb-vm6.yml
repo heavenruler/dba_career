@@ -1,0 +1,418 @@
+---
+# Deploy TiDB vm-6node cross-region cluster (3 IDC + 3 GCP).
+#
+# Topology (per phase-crossregion/decisions-2026-06-08.md + topology/P-A.md / P-B.md):
+#   idc-dbhost-1 (172.24.40.32):  PD + TiKV + TiDB(4000)  ← IDC control + entry
+#   idc-dbhost-2 (172.24.40.33):  PD + TiKV
+#   idc-dbhost-3 (172.24.40.34):  PD + TiKV
+#   gcp-dbhost-1 (10.160.152.11): PD + TiKV               ← via IAP tunnel :12211
+#   gcp-dbhost-2 (10.160.152.12): PD + TiKV               ← via IAP tunnel :12212
+#   gcp-dbhost-3 (10.160.152.13): PD + TiKV               ← via IAP tunnel :12213
+#
+# Locality labels (per Q3):
+#   config.labels.region = idc | gcp
+#   config.labels.zone   = idc-vlan241 | gcp-asia-east1-{a,b,c}
+#
+# HAProxy (Q1 / Q3): dual-side
+#   IDC haproxy on 172.24.40.20:4000  (existing, NOT redeployed by this playbook)
+#   GCP haproxy on g-test-poc-4:4000  (deployed by haproxy_deploy role; backends = 3 TiDB stateless)
+#
+# Required extra-vars:
+#   tidb_placement=P-A|P-B          (governs SQL apply step — placement only,
+#                                    cluster topology itself is identical for P-A/P-B)
+#
+# Inventory: ansible/inventory/crossregion.ini
+# Wrapper  : phase-crossregion/playbooks/tidb-vm6.yml (import_playbook 至此檔)
+#
+# Safety:
+#   - 此 playbook 不修改 .31 (IDC TPC-C client) 上的任何 binary/config
+#   - 不動 phase-k8s / tidb-vm3 既有 cluster (named tpcc-tidb-vm3 → 此處 tpcc-tidb-vm6)
+#   - IDC haproxy (.20) 此 playbook 不 touch（既有設定保留）
+
+- name: Sanity check extra-vars
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Assert tidb_placement
+      ansible.builtin.assert:
+        that:
+          - tidb_placement is defined
+          - tidb_placement in ['P-A', 'P-B']
+        fail_msg: "Must pass -e tidb_placement=P-A or -e tidb_placement=P-B"
+
+- name: Bootstrap TiDB control node (idc-dbhost-1 = 172.24.40.32)
+  hosts: idc-dbhost-1
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    tidb_cluster_name: tpcc-tidb-vm6
+    tidb_version: v8.5.2
+  tasks:
+    - name: Install TiDB prerequisites (control + worker tooling)
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar openssh-clients mysql sysstat; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          dnf install -y --setopt=keepcache=1 "$pkg"
+        done
+      args:
+        executable: /bin/bash
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: Ensure root SSH keypair exists for tiup
+      ansible.builtin.user:
+        name: root
+        generate_ssh_key: true
+        ssh_key_bits: 4096
+        ssh_key_file: /root/.ssh/id_rsa
+
+    - name: Read root public key
+      ansible.builtin.slurp:
+        src: /root/.ssh/id_rsa.pub
+      register: tidb_root_pubkey
+
+    - name: Install TiUP
+      ansible.builtin.shell: |
+        curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
+      args:
+        creates: /root/.tiup/bin/tiup
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Add TiUP to root profile
+      ansible.builtin.lineinfile:
+        path: /root/.bash_profile
+        line: 'export PATH=$PATH:/root/.tiup/bin'
+        create: true
+        mode: "0644"
+
+    - name: Install tiup cluster component
+      ansible.builtin.command: /root/.tiup/bin/tiup install cluster
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+# Prepare workers (idc-dbhost-2/3 + gcp-dbhost-1/2/3): prereqs + accept control key + OS tuning
+- name: Prepare TiDB worker nodes (IDC + GCP)
+  hosts: idc-dbhost-2,idc-dbhost-3,gcp-dbhost-1,gcp-dbhost-2,gcp-dbhost-3
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+  tasks:
+    - name: Install TiDB node prerequisites
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar openssh-clients sysstat; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          dnf install -y --setopt=keepcache=1 "$pkg"
+        done
+      args:
+        executable: /bin/bash
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: OS tuning (swappiness / THP / ulimit)
+      ansible.builtin.shell: |
+        set -e
+        sysctl -w vm.swappiness=1
+        echo "vm.swappiness = 1" > /etc/sysctl.d/99-tidb.conf
+        echo never > /sys/kernel/mm/transparent_hugepage/enabled
+        echo never > /sys/kernel/mm/transparent_hugepage/defrag
+        grep -q "transparent_hugepage" /etc/rc.d/rc.local 2>/dev/null || {
+          echo 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' >> /etc/rc.d/rc.local
+          echo 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'  >> /etc/rc.d/rc.local
+          chmod +x /etc/rc.d/rc.local
+        }
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Set ulimit nofile
+      ansible.builtin.copy:
+        dest: /etc/security/limits.d/99-tidb.conf
+        mode: "0644"
+        content: |
+          root soft nofile 65536
+          root hard nofile 65536
+          * soft nofile 65536
+          * hard nofile 65536
+
+    # Same grpc-rust CIDR workaround as tidb-vm3.yml; only applies on IDC where
+    # IT 預設 /etc/systemd/system.conf.d/proxy.conf 用 CIDR no_proxy。
+    - name: Stat systemd proxy drop-in (IDC only)
+      ansible.builtin.stat:
+        path: /etc/systemd/system.conf.d/proxy.conf
+      register: tidb_systemd_proxy_stat
+      when: region | default('') == 'idc'
+
+    - name: Patch systemd no_proxy to include 6-node cluster IPs (grpc-rust CIDR workaround)
+      ansible.builtin.shell: |
+        set -e
+        if ! grep -q '172.24.40.32,172.24.40.33,172.24.40.34,10.160.152.11,10.160.152.12,10.160.152.13' /etc/systemd/system.conf.d/proxy.conf; then
+          sed -i 's|\(no_proxy=[^"]*\)"|\1,172.24.40.32,172.24.40.33,172.24.40.34,10.160.152.11,10.160.152.12,10.160.152.13"|' /etc/systemd/system.conf.d/proxy.conf
+          systemctl daemon-reload
+          echo PATCHED
+        else
+          echo ALREADY_OK
+        fi
+      args:
+        executable: /bin/bash
+      register: tidb_no_proxy_patch
+      changed_when: "'PATCHED' in tidb_no_proxy_patch.stdout"
+      when:
+        - region | default('') == 'idc'
+        - tidb_systemd_proxy_stat.stat is defined
+        - tidb_systemd_proxy_stat.stat.exists | default(false)
+
+    - name: Authorize control (idc-dbhost-1) root key on this node for tiup SSH
+      ansible.posix.authorized_key:
+        user: root
+        state: present
+        key: "{{ hostvars['idc-dbhost-1']['tidb_root_pubkey']['content'] | b64decode | trim }}"
+
+# Render topology + deploy + start
+- name: Render topology and deploy TiDB vm-6node cluster
+  hosts: idc-dbhost-1
+  become: true
+  gather_facts: false
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    tidb_cluster_name: tpcc-tidb-vm6
+    tidb_version: v8.5.2
+    tidb_topology_path: /root/tidb-vm6-topology.yaml
+    tidb_replicas: 3
+    # Static host map — keep symmetric with crossregion.ini logical_id → IP
+    tidb_hosts:
+      - { id: idc-dbhost-1, ip: 172.24.40.32,  region: idc, zone: idc-vlan241,      tidb_entry: true  }
+      - { id: idc-dbhost-2, ip: 172.24.40.33,  region: idc, zone: idc-vlan241,      tidb_entry: true  }
+      - { id: idc-dbhost-3, ip: 172.24.40.34,  region: idc, zone: idc-vlan241,      tidb_entry: false }
+      - { id: gcp-dbhost-1, ip: 10.160.152.11, region: gcp, zone: gcp-asia-east1-a, tidb_entry: true  }
+      - { id: gcp-dbhost-2, ip: 10.160.152.12, region: gcp, zone: gcp-asia-east1-b, tidb_entry: false }
+      - { id: gcp-dbhost-3, ip: 10.160.152.13, region: gcp, zone: gcp-asia-east1-c, tidb_entry: false }
+  tasks:
+    - name: Render TiDB vm-6node topology
+      ansible.builtin.copy:
+        dest: "{{ tidb_topology_path }}"
+        mode: "0644"
+        content: |
+          global:
+            user: "tidb"
+            ssh_port: 22
+            deploy_dir: "/tidb-deploy"
+            data_dir: "/tidb-data"
+
+          server_configs:
+            tidb:
+              mem-quota-query: 3221225472
+              performance.feedback-probability: 0
+              performance.run-auto-analyze: false
+            tikv:
+              storage.block-cache.capacity: "5GB"
+              raftstore.sync-log: true
+              coprocessor.region-split-size: "128GB"
+              coprocessor.region-max-size: "128GB"
+            pd:
+              replication.max-replicas: {{ tidb_replicas }}
+              # Cross-region location-labels: PD 用 region/zone label 排 RF 副本（per Q3）
+              replication.location-labels: ["region", "zone"]
+              # Bias leader 至 region=idc (P-A 預設；P-B 透過 SQL placement policy 覆蓋)
+              schedule.leader-schedule-limit: 4
+              schedule.region-schedule-limit: 0
+              schedule.replica-schedule-limit: 4
+
+          pd_servers:
+          {% for h in tidb_hosts %}
+            - host: {{ h.ip }}
+              client_port: 2379
+              peer_port: 2380
+              deploy_dir: "/tidb-deploy/pd-2379"
+              data_dir: "/tidb-data/pd-2379"
+              log_dir: "/tidb-deploy/pd-2379/log"
+          {% endfor %}
+
+          tidb_servers:
+          {% for h in tidb_hosts %}
+          {% if h.tidb_entry %}
+            - host: {{ h.ip }}
+              port: 4000
+              status_port: 10080
+              deploy_dir: "/tidb-deploy/tidb-4000"
+              log_dir: "/tidb-deploy/tidb-4000/log"
+              config:
+                labels:
+                  region: {{ h.region }}
+                  zone: {{ h.zone }}
+          {% endif %}
+          {% endfor %}
+
+          tikv_servers:
+          {% for h in tidb_hosts %}
+            - host: {{ h.ip }}
+              port: 20160
+              status_port: 20180
+              deploy_dir: "/tidb-deploy/tikv-20160"
+              data_dir: "/tidb-data/tikv-20160"
+              log_dir: "/tidb-deploy/tikv-20160/log"
+              config:
+                server.labels:
+                  region: {{ h.region }}
+                  zone: {{ h.zone }}
+          {% endfor %}
+      register: tidb_topology
+
+    - name: Check existing TiDB cluster
+      ansible.builtin.command: /root/.tiup/bin/tiup cluster display {{ tidb_cluster_name }}
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      register: tidb_cluster_display
+      failed_when: false
+      changed_when: false
+
+    - name: Deploy TiDB vm-6node cluster
+      ansible.builtin.command:
+        cmd: /root/.tiup/bin/tiup cluster deploy {{ tidb_cluster_name }} {{ tidb_version }} {{ tidb_topology_path }} --yes -i /root/.ssh/id_rsa
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      when: tidb_cluster_display.rc != 0
+
+    - name: Reload TiDB cluster config when topology changed
+      ansible.builtin.command:
+        cmd: /root/.tiup/bin/tiup cluster reload {{ tidb_cluster_name }} --yes
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      when:
+        - tidb_cluster_display.rc == 0
+        - tidb_topology.changed
+
+    - name: Ensure systemd drop-in dirs exist for TiDB cluster services
+      ansible.builtin.file:
+        path: "/etc/systemd/system/{{ item }}.service.d"
+        state: directory
+        mode: "0755"
+      loop:
+        - tikv-20160
+        - pd-2379
+        - tidb-4000
+
+    - name: Unset proxy for TiDB cluster services (gRPC C core ignores CIDR in no_proxy)
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/{{ item }}.service.d/no-proxy.conf"
+        mode: "0644"
+        content: |
+          [Service]
+          Environment="http_proxy="
+          Environment="https_proxy="
+          Environment="HTTP_PROXY="
+          Environment="HTTPS_PROXY="
+      loop:
+        - tikv-20160
+        - pd-2379
+        - tidb-4000
+
+    - name: Reload systemd after drop-in
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Start TiDB vm-6node cluster
+      ansible.builtin.command:
+        cmd: /root/.tiup/bin/tiup cluster start {{ tidb_cluster_name }}
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      register: tidb_start
+      changed_when: "'Started cluster' in (tidb_start.stdout + tidb_start.stderr)"
+      failed_when:
+        - tidb_start.rc != 0
+        - "'already started' not in (tidb_start.stdout + tidb_start.stderr)"
+
+    - name: Wait for TiDB SQL port on idc-dbhost-1 (172.24.40.32)
+      ansible.builtin.wait_for:
+        host: 172.24.40.32
+        port: 4000
+        timeout: 300
+
+    - name: Wait for all 6 TiKV stores to register Up with PD
+      ansible.builtin.shell: |
+        set -e
+        up=0
+        for i in $(seq 1 60); do
+          up=$(/root/.tiup/bin/tiup cluster display tpcc-tidb-vm6 2>/dev/null \
+                | awk '$2=="tikv" && $6=="Up"' | wc -l)
+          if [ "$up" -ge 6 ]; then echo "tikv_up=$up/6"; exit 0; fi
+          sleep 5
+        done
+        echo "timeout: only $up/6 TiKV stores Up after 300s"
+        /root/.tiup/bin/tiup cluster display tpcc-tidb-vm6 2>&1 | tail -20
+        exit 1
+      environment:
+        PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"
+      changed_when: false
+
+    - name: Wait for region replicas to converge to RF=3
+      ansible.builtin.shell: |
+        set -e
+        rfmin=0 rfmax=0 cnt=0
+        for i in $(seq 1 60); do
+          row=$(mysql -h 172.24.40.32 -P 4000 -uroot -B -N -e \
+            "SELECT IFNULL(MIN(pc),0), IFNULL(MAX(pc),0), COUNT(*) FROM (
+               SELECT COUNT(*) AS pc FROM information_schema.tikv_region_peers GROUP BY REGION_ID
+             ) p" 2>/dev/null || echo "0 0 0")
+          rfmin=$(echo "$row" | awk '{print $1}')
+          rfmax=$(echo "$row" | awk '{print $2}')
+          cnt=$(echo "$row" | awk '{print $3}')
+          if [ "$rfmin" = "3" ] && [ "$rfmax" = "3" ]; then
+            echo "rf_converged: min=$rfmin max=$rfmax regions=$cnt"
+            exit 0
+          fi
+          sleep 5
+        done
+        echo "timeout: RF not converged (min=$rfmin max=$rfmax expected=3 regions=$cnt)"
+        exit 1
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Apply TiDB benchmark settings (auto-analyze off + pessimistic)
+      ansible.builtin.command:
+        cmd: mysql -h 172.24.40.32 -P 4000 -uroot -e "SET GLOBAL tidb_enable_auto_analyze=OFF; SET GLOBAL tidb_txn_mode='pessimistic';"
+      changed_when: false
+
+    - name: Apply placement SQL ({{ tidb_placement }})
+      ansible.builtin.shell: |
+        set -e
+        mysql -h 172.24.40.32 -P 4000 -uroot < /root/tidb-vm6-placement-{{ tidb_placement | lower }}.sql
+      args:
+        executable: /bin/bash
+      register: tidb_placement_apply
+      changed_when: false
+      failed_when: tidb_placement_apply.rc != 0
+      # SQL 由 tests/tidb/placement-p-{a,b}.sql 提供；wrapper script (run-vm6-suite.sh)
+      # 先 rsync 至 /root/tidb-vm6-placement-{p-a,p-b}.sql 後再呼叫此 playbook。
+      # 若檔案不存在則 mysql exit 非 0 → fail-closed。
+
+# GCP HAProxy deployment (g-test-poc-4 → backends = 3 TiDB stateless on .32/.33/.gcp-1)
+# IDC haproxy (172.24.40.20) 為既有 setup，本 playbook 不 touch。
+- name: Deploy GCP-side HAProxy for TiDB (g-test-poc-4)
+  hosts: gcp_haproxy
+  become: true
+  gather_facts: false
+  vars:
+    # 3 TiDB stateless 入口（idc-dbhost-1/2 + gcp-dbhost-1）
+    haproxy_backends: "172.24.40.32:4000,172.24.40.33:4000,10.160.152.11:4000"
+    haproxy_port: 4000
+    haproxy_frontend: tidb
+  tasks:
+    - name: Include haproxy_deploy role
+      ansible.builtin.include_role:
+        name: haproxy_deploy

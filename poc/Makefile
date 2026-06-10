@@ -7,7 +7,7 @@ IDC_ADMIN := 172.24.40.31
 IDC_NODES := 172.24.40.32 172.24.40.33 172.24.40.34
 IDC_KNOWN := $(IDC_ADMIN) $(IDC_NODES)
 
-GCP_PORTS := 12211 12212 12213 12214
+GCP_PORTS := 12211 12212 12213 12214 12215
 
 # === TPC-C client / DB endpoint (vm-1node SSOT §11.2) ===
 TPCC_CLIENT       := root@172.24.40.31
@@ -67,21 +67,21 @@ help:
 	@echo "=== VM Lifecycle ==="
 	@echo "  make new-vms                 - 並行建立 IDC + GCP 全部 VM"
 	@echo "  make new-idc-vms             - destroy → apply iac-idc (l-test-poc-1/2/3, 172.24.40.32-34) + 清 known_hosts (Mac + .31)"
-	@echo "  make new-gcp-vms             - destroy → apply iac-gcp (g-test-poc-1/2/3/4, 10.160.152.11-14, zone a/b/c/a, AlmaLinux 8) + 清 known_hosts"
+	@echo "  make new-gcp-vms             - destroy → apply iac-gcp (g-test-poc-1/2/3/4/5, 10.160.152.11-15, zone a/b/c/a/a, AlmaLinux 8; per phase-crossregion decisions Q1: 3 db + 1 haproxy + 1 client) + 清 known_hosts"
 	@echo "  make drop-vms                - 並行銷毀 IDC + GCP 全部 VM"
 	@echo "  make drop-idc-vms            - terraform destroy iac-idc"
 	@echo "  make drop-gcp-vms            - terraform destroy iac-gcp"
 	@echo ""
 	@echo "=== Inventory ==="
 	@echo "  make inventory-refresh       - 從 iac-idc 重建 [poc_db] 段 (python3.12)"
-	@echo "  make gcp-inventory-refresh   - 從 iac-gcp 追加 [gcp_poc] 段 (port 12211/12212/12213/12214)"
+	@echo "  make gcp-inventory-refresh   - 從 iac-gcp 追加 [gcp_poc] 段 (port 12211/12212/12213/12214/12215)"
 	@echo "  make inventory-refresh-all   - inventory-refresh + gcp-inventory-refresh"
 	@echo ""
 	@echo "=== GCP IAP Tunnel ==="
-	@echo "  make gcp-tunnel-start        - (先 stop 再) 啟動 IAP tunnel (poc-1:12211, poc-2:12212, poc-3:12213, poc-4:12214)"
+	@echo "  make gcp-tunnel-start        - (先 stop 再) 啟動 IAP tunnel (poc-1:12211, poc-2:12212, poc-3:12213, poc-4:12214, poc-5:12215)"
 	@echo "  make gcp-tunnel-stop         - 關閉 IAP tunnel"
 	@echo "  make gcp-tunnel-ensure       - 若未啟動則啟動"
-	@echo "  make gcp-wait-startup        - gcp-tunnel-start + 等 4 台 GCP VM 的 startup-script 完成 (touch /var/lib/startup-done)"
+	@echo "  make gcp-wait-startup        - gcp-tunnel-start + 等 5 台 GCP VM 的 startup-script 完成 (touch /var/lib/startup-done)"
 	@echo ""
 	@echo "=== Ansible ==="
 	@echo "  make ansible-ping            - inventory-refresh-all + tunnel-ensure + ansible all -m ping"
@@ -184,7 +184,7 @@ inventory-refresh:
 
 gcp-inventory-refresh:
 	cd $(GCP_IAC_DIR) && terraform output -json host_ip_mapping | \
-	  jq -r '"[gcp_poc]", (to_entries[] | .key + " ansible_host=localhost ansible_port=" + (if .key == "g-test-poc-1" then "12211" elif .key == "g-test-poc-2" then "12212" elif .key == "g-test-poc-3" then "12213" else "12214" end) + " ansible_hostname=" + .key + " ansible_python_interpreter=/usr/bin/python3.12")' \
+	  jq -r '"[gcp_poc]", (to_entries[] | .key + " ansible_host=localhost ansible_port=" + (if .key == "g-test-poc-1" then "12211" elif .key == "g-test-poc-2" then "12212" elif .key == "g-test-poc-3" then "12213" elif .key == "g-test-poc-4" then "12214" elif .key == "g-test-poc-5" then "12215" else "0" end) + " ansible_hostname=" + .key + " ansible_python_interpreter=/usr/bin/python3.12")' \
 	  >> ../$(INVENTORY)
 	@echo "==> GCP section appended to $(INVENTORY)"
 
@@ -208,7 +208,7 @@ gcp-tunnel-ensure:
 	  echo "==> IAP tunnel already running"; \
 	fi
 
-## 等 4 台 GCP VM 的 startup-script 完成 (避免與 ansible dnf 撞)
+## 等 5 台 GCP VM 的 startup-script 完成 (避免與 ansible dnf 撞)
 gcp-wait-startup: gcp-tunnel-start
 	@for p in $(GCP_PORTS); do \
 	  echo "==> waiting startup-done on :$$p"; \
@@ -741,6 +741,10 @@ vm3-ybdb-all5-rc-dry: vm3-ybdb-all-rc-dry vm3-ybdb-haproxy-3s3r-rc
 .PHONY: phase-k8s-plan phase-k8s-deploy phase-k8s-run \
         phase-threadcontrol-plan phase-threadcontrol-verify \
         phase-crossregion-plan phase-crossregion-deploy phase-crossregion-run \
+        phase-crossregion-deploy-tidb \
+        phase-crossregion-run-tidb-a-s-p-a phase-crossregion-run-tidb-a-s-p-b \
+        phase-crossregion-run-tidb-a-a-ro-p-a phase-crossregion-run-tidb-a-a-ro-p-b \
+        phase-crossregion-run-tidb-a-a-p-a phase-crossregion-run-tidb-a-a-p-b \
         phase-crossregion-chaos-plan phase-crossregion-chaos-deploy phase-crossregion-chaos-run
 
 # --- Phase-K8s ---

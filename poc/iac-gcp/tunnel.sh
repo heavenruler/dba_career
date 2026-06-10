@@ -30,12 +30,19 @@ start() {
     --zone=asia-east1-a &
   echo $! > /tmp/iap-tunnel-poc4.pid
 
+  gcloud compute start-iap-tunnel g-test-poc-5 22 \
+    --local-host-port=localhost:12215 \
+    --project=$PROJECT \
+    --zone=asia-east1-a &
+  echo $! > /tmp/iap-tunnel-poc5.pid
+
   sleep 2
   echo "Tunnels ready:"
-  echo "  ssh g-test-poc-1  -> localhost:12211"
-  echo "  ssh g-test-poc-2  -> localhost:12212"
-  echo "  ssh g-test-poc-3  -> localhost:12213"
-  echo "  ssh g-test-poc-4  -> localhost:12214"
+  echo "  ssh g-test-poc-1  -> localhost:12211  (db node, zone a)"
+  echo "  ssh g-test-poc-2  -> localhost:12212  (db node, zone b)"
+  echo "  ssh g-test-poc-3  -> localhost:12213  (db node, zone c)"
+  echo "  ssh g-test-poc-4  -> localhost:12214  (haproxy,  zone a)"
+  echo "  ssh g-test-poc-5  -> localhost:12215  (client,   zone a)"
 }
 
 stop() {

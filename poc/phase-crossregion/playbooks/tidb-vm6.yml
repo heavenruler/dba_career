@@ -1,0 +1,17 @@
+---
+# Thin wrapper: phase-crossregion 入口 → ansible/playbooks/tidb-vm6.yml
+#
+# 用途:
+#   - 在 phase-crossregion/ 下提供「phase 本位」入口，與 phase-k8s/playbooks/ 對稱
+#   - 實作以 import_playbook 委派至 ansible/playbooks/tidb-vm6.yml（避免兩處重複維護）
+#
+# 用法:
+#   ansible-playbook -i ansible/inventory/crossregion.ini \
+#     phase-crossregion/playbooks/tidb-vm6.yml \
+#     -e @ansible/vars/tidb-vm6-p-a.yml      # 或 p-b
+#
+# 等價於:
+#   ansible-playbook -i ansible/inventory/crossregion.ini \
+#     ansible/playbooks/tidb-vm6.yml -e @ansible/vars/tidb-vm6-p-a.yml
+
+- import_playbook: ../../ansible/playbooks/tidb-vm6.yml

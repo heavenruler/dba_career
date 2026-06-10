@@ -1,0 +1,29 @@
+---
+# TiDB vm-6node cross-region — P-B placement (cross-region active-active leader).
+#
+# Reference: phase-crossregion/topology/P-B.md
+#            phase-crossregion/decisions-2026-06-08.md Q9 (先 P-A 後 P-B)
+#
+# Semantics:
+#   - RF=3; voter 散分 region=idc / region=gcp（per-shard 不同 leader 區）
+#   - Leader 分散 → 部分寫必走 WAN raft commit
+#   - 與 workload A-A 主搭配（max contention / cross-region commit）
+#
+# 用法:
+#   ansible-playbook -i ansible/inventory/crossregion.ini \
+#     ansible/playbooks/tidb-vm6.yml -e @ansible/vars/tidb-vm6-p-b.yml
+#
+# 配套 SQL: tests/tidb/placement-p-b.sql
+
+tidb_placement: P-B
+tidb_placement_sql: tests/tidb/placement-p-b.sql
+tidb_cluster_name: tpcc-tidb-vm6
+tidb_version: v8.5.2
+
+# label→placement mapping reference（PD 排副本散；leader 不偏好任一 region）
+tidb_placement_labels:
+  region:
+    idc: { voters: 2 }
+    gcp: { voters: 1 }
+  # P-B 多 shard 不同 leader region → 用 placement policy CONSTRAINTS 散
+  leader_preferred_region: spread

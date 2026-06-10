@@ -1,14 +1,19 @@
 locals {
+  # phase-crossregion topology (decisions-2026-06-08.md Q1):
+  #   g-test-poc-1/2/3 = DB nodes (zone a/b/c)
+  #   g-test-poc-4     = HAProxy (zone a) — GCP-side load balancer
+  #   g-test-poc-5     = go-tpc client (zone a) — GCP-side TPCC client
   instance_configs = {
     0 = { zone = "asia-east1-a", tags = ["zone-a-vm"] }
     1 = { zone = "asia-east1-b", tags = ["zone-b-vm"] }
     2 = { zone = "asia-east1-c", tags = ["zone-c-vm"] }
     3 = { zone = "asia-east1-a", tags = ["zone-a-vm"] }
+    4 = { zone = "asia-east1-a", tags = ["zone-a-vm"] }
   }
 }
 
 resource "google_compute_instance" "poc" {
-  count = 4
+  count = 5
 
   name         = "g-test-poc-${count.index + 1}"
   machine_type = "e2-standard-4"
