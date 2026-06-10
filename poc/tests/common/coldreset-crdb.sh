@@ -12,6 +12,30 @@ while [[ $# -gt 0 ]]; do
 done
 [[ -n "$DB_HOST" ]] || die "missing --db-host"
 
+# 2026-06-09: K8s topology → kubectl rollout restart sts/cockroachdb (no systemd)
+if [[ "${TOPOLOGY:-}" =~ ^k8s- ]]; then
+  K3S_HOST="${K3S_HOST:-172.24.40.32}"
+  NS="${K8S_NAMESPACE:-cockroach-tc1}"
+  DB_PORT="${CRDB_PORT:-30007}"
+  info "K8s cold-reset: kubectl rollout restart sts/cockroachdb + drop_caches × 3 k3s nodes"
+  ssh -o StrictHostKeyChecking=accept-new "root@$K3S_HOST" "set -euo pipefail
+    k3s kubectl -n '$NS' rollout restart sts/cockroachdb
+    k3s kubectl -n '$NS' rollout status sts/cockroachdb --timeout=240s
+  "
+  for ip in 172.24.40.32 172.24.40.33 172.24.40.34; do
+    ssh -o StrictHostKeyChecking=accept-new "root@$ip" 'sync; echo 3 > /proc/sys/vm/drop_caches' 2>&1 || warn "drop_caches failed on $ip"
+  done
+  for i in $(seq 1 60); do
+    if psql "postgres://root@${K3S_HOST}:${DB_PORT}/defaultdb?sslmode=disable" -t -c 'SELECT 1' >/dev/null 2>&1; then
+      sleep 60
+      info "cold reset CockroachDB (K8s) done"
+      exit 0
+    fi
+    sleep 5
+  done
+  die "CRDB NodePort $K3S_HOST:$DB_PORT not reachable post-cold-reset"
+fi
+
 # vm-1node: cockroach 只在 .32；vm-3node / haproxy: 三節點都有 cockroach.service。
 # 自動 probe 三台是否有 cockroach.service，對有的全部 stop / drop_caches / start。
 COCKROACH_HOSTS=()
