@@ -1,0 +1,25 @@
+=== gate-chrony-cross-region.sh  ts=20260611T161930+0800  threshold_median_ms=100.0  threshold_worst_ms=250.0 ===
+
+--- IDC hosts ---
+  idc-driver     stratum=7   leap=Normal             last_offset=-0.004523 ms       refid=AC13FE07 (172.19.254.7)
+  idc-dbhost-1   stratum=7   leap=Normal             last_offset=-0.001081 ms       refid=AC13FE07 (172.19.254.7)
+  idc-dbhost-2   stratum=7   leap=Normal             last_offset=-0.030605 ms       refid=AC13FE07 (172.19.254.7)
+  idc-dbhost-3   stratum=7   leap=Normal             last_offset=-0.013467 ms       refid=AC13FE07 (172.19.254.7)
+  idc-haproxy    stratum=7   leap=Normal             last_offset=-0.064682 ms       refid=AC13FE07 (172.19.254.7)
+
+--- GCP hosts ---
+  gcp-poc-1      stratum=3   leap=Normal             last_offset=+0.003736 ms       refid=A9FEA9FE (metadata.google.internal)
+  gcp-poc-2      stratum=3   leap=Normal             last_offset=+0.000841 ms       refid=A9FEA9FE (metadata.google.internal)
+  gcp-poc-3      stratum=3   leap=Normal             last_offset=+0.005311 ms       refid=A9FEA9FE (metadata.google.internal)
+  gcp-poc-4      stratum=3   leap=Normal             last_offset=-0.012063 ms       refid=A9FEA9FE (metadata.google.internal)
+  gcp-poc-5      stratum=3   leap=Normal             last_offset=-0.003851 ms       refid=A9FEA9FE (metadata.google.internal)
+
+----- parsed -----
+idc_n=5 idc_median_ms=0.013467 idc_mean_ms=0.022872 idc_max_ms=0.064682 idc_min_ms=0.001081
+gcp_n=5 gcp_median_ms=0.003851 gcp_mean_ms=0.005160 gcp_max_ms=0.012063 gcp_min_ms=0.000841
+cross_region_drift_median_ms=0.017318
+cross_region_drift_mean_ms=0.028032
+cross_region_drift_worst_ms=0.076745
+threshold_ms=100.0
+threshold_worst_ms=250.0
+verdict=PASS

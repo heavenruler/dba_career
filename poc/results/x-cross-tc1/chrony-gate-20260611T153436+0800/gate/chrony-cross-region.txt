@@ -1,0 +1,44 @@
+=== gate-chrony-cross-region.sh  ts=20260611T153436+0800  threshold_ms=100 ===
+
+=== IDC client (.31) chronyc tracking ===
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Reference ID    : 00000000 ()
+Stratum         : 0
+Ref time (UTC)  : Thu Jan 01 00:00:00 1970
+System time     : 0.000000000 seconds fast of NTP time
+Last offset     : +0.000000000 seconds
+RMS offset      : 0.000000000 seconds
+Frequency       : 0.000 ppm slow
+Residual freq   : +0.000 ppm
+Skew            : 0.000 ppm
+Root delay      : 1.000000000 seconds
+Root dispersion : 1.000000000 seconds
+Update interval : 0.0 seconds
+Leap status     : Not synchronised
+
+=== GCP client (g-test-poc-5 via :12215) chronyc tracking ===
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Reference ID    : A9FEA9FE (metadata.google.internal)
+Stratum         : 3
+Ref time (UTC)  : Thu Jun 11 07:35:07 2026
+System time     : 0.000002248 seconds slow of NTP time
+Last offset     : -0.000001077 seconds
+RMS offset      : 0.394308388 seconds
+Frequency       : 83.944 ppm slow
+Residual freq   : -0.000 ppm
+Skew            : 0.043 ppm
+Root delay      : 0.000131904 seconds
+Root dispersion : 0.000194836 seconds
+Update interval : 129.2 seconds
+Leap status     : Normal
+
+----- parsed -----
+idc_last_offset_sec=0.000000000
+gcp_last_offset_sec=-0.000001077
+cross_region_drift_ms=0.001
+threshold_ms=100
+verdict=PASS
