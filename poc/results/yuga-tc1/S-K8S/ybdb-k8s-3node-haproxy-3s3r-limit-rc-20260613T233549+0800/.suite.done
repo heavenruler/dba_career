@@ -1,0 +1,14 @@
+{
+  "phase": "suite",
+  "db": "ybdb",
+  "iso": "rc",
+  "topology": "k8s-3node-haproxy-3s3r-limit",
+  "ts": "20260613T233549+0800",
+  "phase_name": "phase-k8s",
+  "result_scope": "S-K8S",
+  "baseline_eligible": true,
+  "baseline_family": "k8s",
+  "tuning_profile_id": "default",
+  "caveat": "T128 round 5 partial (SIGTERM after 25min hang); 19/20 rounds usable",
+  "completed_at": "2026-06-14T03:34:46+0800"
+}

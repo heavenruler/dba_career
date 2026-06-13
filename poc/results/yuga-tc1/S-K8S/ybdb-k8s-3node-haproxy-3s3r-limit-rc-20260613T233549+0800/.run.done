@@ -1,0 +1,9 @@
+{
+  "phase": "run",
+  "ts": "20260613T233549+0800",
+  "db": "ybdb",
+  "iso": "rc",
+  "topology": "k8s-3node-haproxy-3s3r-limit",
+  "caveat": "T128 round 5 aborted via SIGTERM @ ~25min into 5min test due to YBDB-limit cpu=2 saturation hang; 4/5 T128 rounds complete (1609.8, 1579.2, 1596.8, 1632.4)",
+  "completed_at": "2026-06-14T03:34:46+0800"
+}
