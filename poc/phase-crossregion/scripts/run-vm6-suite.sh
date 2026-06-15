@@ -63,9 +63,9 @@ done
 [[ "$PROFILE"   =~ ^(A-S|A-A-RO|A-A)$     ]] || { echo "PROFILE must be A-S | A-A-RO | A-A" >&2; exit 1; }
 [[ "$DB"        =~ ^tidb$                 ]] || { echo "DB must be tidb (crdb/ybdb TODO this agent)" >&2; exit 1; }
 
-# DB endpoint: IDC haproxy on 172.24.40.20:4000 (Q3 雙 haproxy 配置；IDC 既有 .20)
+# DB endpoint: IDC haproxy on 172.24.47.20:4000 (Q3 雙 haproxy 配置；IDC 既有 .47.20)
 # A-A profile 也可從 GCP haproxy (g-test-poc-4:4000) 出發；本 wrapper 默認走 IDC haproxy。
-: "${DB_HOST:=172.24.40.20}"
+: "${DB_HOST:=172.24.47.20}"
 : "${DB_PORT:=4000}"
 
 # Suite ISO mapping (manifest pins rc-only — phase-crossregion/manifest.yaml)

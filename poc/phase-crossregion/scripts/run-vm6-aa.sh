@@ -64,11 +64,11 @@ done
 }
 [[ "$DB" == "tidb" ]] || { echo "DB must be tidb (crdb/ybdb TODO)" >&2; exit 1; }
 
-# IDC writer side: 走 IDC haproxy .20:4000；GCP side: 走 GCP haproxy g-test-poc-4:4000
+# IDC writer side: 走 IDC haproxy .47.20:4000；GCP side: 走 GCP haproxy g-test-poc-4:4000
 : "${IDC_CLIENT:=root@172.24.40.31}"
 : "${GCP_CLIENT_PORT:=12215}"                 # IAP tunnel forward on Mac/orchestrator localhost
 : "${GCP_CLIENT_SSH:=root@localhost}"
-: "${IDC_DB_HOST:=172.24.40.20}"              # IDC haproxy
+: "${IDC_DB_HOST:=172.24.47.20}"              # IDC haproxy
 : "${IDC_DB_PORT:=4000}"
 : "${GCP_DB_HOST:=10.160.152.14}"             # GCP haproxy g-test-poc-4 internal IP
 : "${GCP_DB_PORT:=4000}"

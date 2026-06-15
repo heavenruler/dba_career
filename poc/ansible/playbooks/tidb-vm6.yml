@@ -14,7 +14,7 @@
 #   config.labels.zone   = idc-vlan241 | gcp-asia-east1-{a,b,c}
 #
 # HAProxy (Q1 / Q3): dual-side
-#   IDC haproxy on 172.24.40.20:4000  (existing, NOT redeployed by this playbook)
+#   IDC haproxy on 172.24.47.20:4000  (existing, NOT redeployed by this playbook)
 #   GCP haproxy on g-test-poc-4:4000  (deployed by haproxy_deploy role; backends = 3 TiDB stateless)
 #
 # Required extra-vars:
@@ -41,7 +41,7 @@
         fail_msg: "Must pass -e tidb_placement=P-A or -e tidb_placement=P-B"
 
 - name: Bootstrap TiDB control node (idc-dbhost-1 = 172.24.40.32)
-  hosts: idc-dbhost-1
+  hosts: 172.24.40.32
   become: true
   gather_facts: true
   vars:
@@ -101,7 +101,7 @@
 
 # Prepare workers (idc-dbhost-2/3 + gcp-dbhost-1/2/3): prereqs + accept control key + OS tuning
 - name: Prepare TiDB worker nodes (IDC + GCP)
-  hosts: idc-dbhost-2,idc-dbhost-3,gcp-dbhost-1,gcp-dbhost-2,gcp-dbhost-3
+  hosts: 172.24.40.33,172.24.40.34,g-test-poc-1,g-test-poc-2,g-test-poc-3
   become: true
   gather_facts: true
   vars:
@@ -178,11 +178,11 @@
       ansible.posix.authorized_key:
         user: root
         state: present
-        key: "{{ hostvars['idc-dbhost-1']['tidb_root_pubkey']['content'] | b64decode | trim }}"
+        key: "{{ hostvars['172.24.40.32']['tidb_root_pubkey']['content'] | b64decode | trim }}"
 
 # Render topology + deploy + start
 - name: Render topology and deploy TiDB vm-6node cluster
-  hosts: idc-dbhost-1
+  hosts: 172.24.40.32
   become: true
   gather_facts: false
   vars:
@@ -402,7 +402,7 @@
       # 若檔案不存在則 mysql exit 非 0 → fail-closed。
 
 # GCP HAProxy deployment (g-test-poc-4 → backends = 3 TiDB stateless on .32/.33/.gcp-1)
-# IDC haproxy (172.24.40.20) 為既有 setup，本 playbook 不 touch。
+# IDC haproxy (172.24.47.20) 為既有 setup，本 playbook 不 touch。
 - name: Deploy GCP-side HAProxy for TiDB (g-test-poc-4)
   hosts: gcp_haproxy
   become: true
