@@ -29,3 +29,12 @@ artifact_prefix: results/{db}-tc1/X-CROSS/
 baseline_eligible: false
 tuning_profile_id: default
 owner_doc: 1_MeetingMinutes/0602-decisions-track-E.md
+
+# §3 zone-local + haproxy topology (REPLAN-2026-06-15 v2)
+haproxy_topology: dual_idc_gcp           # IDC haproxy .47.20:4000 + GCP haproxy g-test-poc-4:4000
+client_locality_enforce: true            # CLIENT_ZONE 必填，DB_HOST 須匹配 zone (idc 走 .47.20/.32-.34；gcp 走 10.160.152.11-15)
+wan_probe_enabled: false                 # per-cell env override (WAN_PROBE_ENABLED=1)；passive default
+wan_probe_iperf: false                   # opt-in (WAN_PROBE_IPERF=1) + iperf3 binary 必存在；round 間隙跑
+profiles: [A-S, A-A-RO, A-A]             # 對應 run-vm6-suite.sh PROFILE valid set
+placements: [P-A, P-B]                   # 對應 PLACEMENT valid set；P-A 先 P-B 後 (per Q8)
+client_zones: [idc, gcp]                 # 對應 CLIENT_ZONE valid set

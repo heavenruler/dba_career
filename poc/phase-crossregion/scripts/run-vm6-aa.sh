@@ -64,14 +64,25 @@ done
 }
 [[ "$DB" == "tidb" ]] || { echo "DB must be tidb (crdb/ybdb TODO)" >&2; exit 1; }
 
+# §3 zone-local enforce: A-A / A-A-RO 是雙 client orchestration, 兩端都需 zone-local
+# IDC client → idc-haproxy (.47.20)；GCP client → gcp-haproxy (g-test-poc-4 內網)
+# 違反 zone-local（如 IDC client 連 GCP haproxy）→ fail-closed
+# (REPLAN-2026-06-15 §3; manifest client_locality_enforce: true)
+
 # IDC writer side: 走 IDC haproxy .47.20:4000；GCP side: 走 GCP haproxy g-test-poc-4:4000
 : "${IDC_CLIENT:=root@172.24.40.31}"
 : "${GCP_CLIENT_PORT:=12215}"                 # IAP tunnel forward on Mac/orchestrator localhost
 : "${GCP_CLIENT_SSH:=root@localhost}"
-: "${IDC_DB_HOST:=172.24.47.20}"              # IDC haproxy
+: "${IDC_DB_HOST:=172.24.47.20}"              # IDC haproxy (zone-local for IDC client)
 : "${IDC_DB_PORT:=4000}"
-: "${GCP_DB_HOST:=10.160.152.14}"             # GCP haproxy g-test-poc-4 internal IP
+: "${GCP_DB_HOST:=10.160.152.14}"             # GCP haproxy g-test-poc-4 internal IP (zone-local for GCP client)
 : "${GCP_DB_PORT:=4000}"
+
+# Zone-local fail-closed checks
+[[ "$IDC_DB_HOST" =~ ^(172\.24\.47\.20|172\.24\.40\.3[234])$ ]] || \
+  { echo "[zone-local enforce] IDC_DB_HOST=$IDC_DB_HOST 不在 IDC zone (預期 .47.20 或 .32/.33/.34) — fail-closed" >&2; exit 1; }
+[[ "$GCP_DB_HOST" =~ ^10\.160\.152\.1[1-5]$ ]] || \
+  { echo "[zone-local enforce] GCP_DB_HOST=$GCP_DB_HOST 不在 GCP zone (預期 10.160.152.11-15) — fail-closed" >&2; exit 1; }
 
 ISO="${ISO:-rc}"
 WAREHOUSES="${WAREHOUSES:-128}"
