@@ -12,7 +12,7 @@
 
 ### Q2 — 對外溝通 / 內部背書
 
-- **問題**：是否邀請廠商來司簡報、是否需要第三方背書（顧問公司 / Gartner 評估）？
+- **問題**：是否邀請廠商來司簡報、是否需要第三方背書（顧問公司評估）？
 
 ### Q3 — PoC 報告呈現形式
 
@@ -33,11 +33,11 @@
 
 ### Q5 — 是否全面採用 TiDB
 
-- **情境**：PoC 中 TiDB tpmC 26,947（最強，相較 CockroachDB 約 15,000、YugabyteDB 約 15,600）；但全面採用 = 中資廠商綁定
+- **情境**：PoC 中 TiDB tpmC 26,947 目前較佔優勢；但依賴 Q1 Vendor 疑慮
 - **選項**：
-  - (a) 全面採用 TiDB
-  - (b) TiDB 為主 + 1 家備援廠商
+  - (a) 採用 TiDB
   - (c) 依使用情境分廠商（不同應用走不同 DB）
+  - (d) other
 - **影響**：廠商策略；與 Q1 / Q4 強連動
 
 ---
@@ -47,11 +47,14 @@
 ### D1 — 跨區（自有機房 IDC ↔ GCP）災難復原：**現行 No，但中長期必需**
 
 - **拍板理由**：分散式資料庫導入主要範圍在自有機房，先累積維運經驗與架構穩定性
-- **phase-crossregion 處置**：框架保留作能力儲備（5 台 GCP 機器 IaC 程式 + tidb-vm6 ansible + placement SQL + dry-run 閘門 + chrony 時鐘閘門）；**不拆除** commit `0c17ae9`；業務面就緒時隨時啟動
+  - phase-n: IDC Only
+  - phase-n+1: IDC + EDC
+  	- phase-n+2: IDC + EDC [A/S]
+  	- phase-n+3: IDC + EDC [A/A(RO)]
+  	- phase-n+4: IDC + EDC [A/S]
+- **phase-crossregion 處置**：框架保留作能力儲備（5 台 GCP 機器 IaC 程式 + tidb-vm6 ansible + placement SQL + dry-run gate + chrony timesync gate）；**不拆除** commit `0c17ae9`；業務面就緒時隨時啟動
 
-### D2 — 傳輸加密 TLS 補測：**降權，僅備註不另測**
-
-- 不啟動約 9 小時補測；PoC 報告寫備註：「正式環境啟用 TLS 後吞吐預估 −5 ~ −15%」
+### D2 — 傳輸加密 TLS 補測：**僅備註不另測**
 
 ### D3 — PostgreSQL → TiDB 可行性（對應 Q4）：**TiDB 為主**（採 MySQL 相容路線）
 
@@ -59,12 +62,11 @@
 
 ### D4 — 是否全面採用 TiDB（對應 Q5）：**Unknown / 資訊不足**
 
-- DBA 手上資訊不足以送 CTO / IT 治理委員會決議
-- 阻塞點：缺以下 4 項背書（補完約 4-6 週後重議）
+- DBA 手上資訊不足以送 CTO / IT 治理委員會決議(僅技術層面可行性)
+- 阻塞點：缺以下 3 項背書（補完約 4-6 週後重議）
   1. PingCAP 商業實體最新狀態
-  2. 中資廠商政策依據
-  3. 5 年總持有成本（TCO）對比
-  4. 客戶推薦訪談結果
+  2. SG PingCAP 廠商政策依據
+  3. 5 年總持有成本（TCO）對比 (On premise between TiDB Cloud)
 
 ---
 
