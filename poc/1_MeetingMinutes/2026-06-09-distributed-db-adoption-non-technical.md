@@ -22,18 +22,19 @@
   - 技術完整報告（30 頁以上）
 - **預設答**：兩層皆做（不同對象用不同版本）
 
-### Q4 — PostgreSQL 應用導入 TiDB 可行性
+### Q4 — MongoDB / PostgreSQL 應用導入 TiDB 可行性
 
 - **情境**：TiDB 走 MySQL 8.0 通訊協定相容路線；PostgreSQL → TiDB 屬跨資料庫引擎遷移（SQL 方言、驅動程式、ORM 方言三層都要改）
 - **選項**：
   - (a) 公司以 PostgreSQL 為主 → 排除 TiDB
   - (b) 公司以 MySQL 為主 → TiDB 為首選
   - (c) 兩種並存 → 拆成不同路線各自評估
+  - (d) 在 TiDB 有限條件下使用 MongoDB / PostgreSQL (應用語法不同 ; 商務邏輯仍需面對改寫議題)
 - **影響**：直接決定三家廠商篩選；與 Q1 / Q5 連動
 
-### Q5 — 是否全面採用 TiDB
+### Q5 — 採用 TiDB
 
-- **情境**：PoC 中 TiDB tpmC 26,947 目前較佔優勢；但依賴 Q1 Vendor 疑慮
+- **情境**：PoC 中 TiDB tpmC 目前較佔優勢；但依賴 Q1 Vendor 疑慮
 - **選項**：
   - (a) 採用 TiDB
   - (c) 依使用情境分廠商（不同應用走不同 DB）
