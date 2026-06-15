@@ -26,14 +26,16 @@ remote() {
 info "cold reset TiDB on $CLUSTER_HOST (db-host=$DB_HOST)"
 remote 'set -euo pipefail
   export PATH=/root/.tiup/bin:$PATH
-  # vm-1node 用 tpcc-tidb；vm-3node / haproxy 用 tpcc-tidb-vm3；自動偵測。
+  # vm-1node = tpcc-tidb；vm-3node / haproxy = tpcc-tidb-vm3；vm-6node (X-CROSS) = tpcc-tidb-vm6；自動偵測（vm6 優先）
   CLUSTER_NAME=""
-  if tiup cluster list 2>/dev/null | awk "{print \$1}" | grep -qx tpcc-tidb-vm3; then
+  if tiup cluster list 2>/dev/null | awk "{print \$1}" | grep -qx tpcc-tidb-vm6; then
+    CLUSTER_NAME=tpcc-tidb-vm6
+  elif tiup cluster list 2>/dev/null | awk "{print \$1}" | grep -qx tpcc-tidb-vm3; then
     CLUSTER_NAME=tpcc-tidb-vm3
   elif tiup cluster list 2>/dev/null | awk "{print \$1}" | grep -qx tpcc-tidb; then
     CLUSTER_NAME=tpcc-tidb
   else
-    echo "ERROR: no tiup cluster found (expected tpcc-tidb or tpcc-tidb-vm3)" >&2
+    echo "ERROR: no tiup cluster found (expected tpcc-tidb / tpcc-tidb-vm3 / tpcc-tidb-vm6)" >&2
     exit 1
   fi
   echo "cold-resetting tiup cluster=$CLUSTER_NAME"

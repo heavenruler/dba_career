@@ -36,6 +36,15 @@ done
 : "${RUN_SEC:=300}"
 : "${ROUND_SLEEP_SEC:=60}"
 
+# B0-4: GO_TPC_MIX_FLAG passthrough — 限 RESULT_SCOPE=X-CROSS 才啟用，
+# 避免影響 S-BASE / S-K8S 既有 artifact 行為 (per REPLAN-2026-06-15 §0 B0-4)
+# 用法: GO_TPC_MIX_FLAG="0:0:50:0:50" run.sh ... (read-only mix for A-A-RO profile)
+GO_TPC_MIX_ARGS=""
+if [[ "${RESULT_SCOPE:-}" == "X-CROSS" && -n "${GO_TPC_MIX_FLAG:-}" ]]; then
+  GO_TPC_MIX_ARGS="--mix ${GO_TPC_MIX_FLAG}"
+  echo "[run.sh] X-CROSS with GO_TPC_MIX_FLAG=$GO_TPC_MIX_FLAG → run-stage 加上 $GO_TPC_MIX_ARGS"
+fi
+
 ROOT=$(artifact_dir "$DB" "$TOPO" "$ISO" "$TS")
 if [[ ! -f "$ROOT/.prepare.done" ]]; then
   latest=$(ls -d "${TPCC_ARTIFACTS}/${DB}-${TOPO}-${ISO}-"*/.prepare.done 2>/dev/null | sort | tail -1)
@@ -137,7 +146,7 @@ for threads in $THREADS_LIST; do
     fi
     MON_PIDS=$(jobs -p)
 
-    # go-tpc run
+    # go-tpc run (B0-4: $GO_TPC_MIX_ARGS 僅 X-CROSS 啟用，無變化保留空字串)
     go-tpc tpcc run \
       -d "$DRIVER" -H "$DB_HOST" -P "$PORT" -U "$USER" -D "$DBNAME" \
       --conn-params "$ISO_CONN_PARAMS" \
@@ -145,6 +154,7 @@ for threads in $THREADS_LIST; do
       --time="${RUN_SEC}s" \
       --threads="$threads" \
       --output=plain \
+      $GO_TPC_MIX_ARGS \
       2>&1 | tee "$RD/go-tpc-stdout.txt"
 
     # wait for monitors to finish (some have 5s buffer)

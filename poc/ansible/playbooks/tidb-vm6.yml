@@ -388,18 +388,27 @@
         cmd: mysql -h 172.24.40.32 -P 4000 -uroot -e "SET GLOBAL tidb_enable_auto_analyze=OFF; SET GLOBAL tidb_txn_mode='pessimistic';"
       changed_when: false
 
-    - name: Apply placement SQL ({{ tidb_placement }})
+    # B0-3: deploy-time 只 CREATE POLICY；ALTER DATABASE/TABLE 留至 prepare.sh 跑完 tpcc tables 建好後才套
+    # ALTER 部分由 run-vm6-suite.sh post-prepare 階段執行 (per REPLAN-2026-06-15 §0 B0-3)
+    - name: Copy placement SQL to control node /root/
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../tests/tidb/placement-{{ tidb_placement | lower }}.sql"
+        dest: "/root/tidb-vm6-placement-{{ tidb_placement | lower }}.sql"
+        mode: '0640'
+      # copy from repo (controller fs) → .32:/root/
+
+    - name: Apply placement SQL — CREATE POLICY only (deploy-time，不含 ALTER TABLE)
       ansible.builtin.shell: |
         set -e
-        mysql -h 172.24.40.32 -P 4000 -uroot < /root/tidb-vm6-placement-{{ tidb_placement | lower }}.sql
+        # 只跑到 "-- tpcc database 套用" 標記前的 CREATE POLICY 段；
+        # ALTER DATABASE / ALTER TABLE 由 run-vm6-suite.sh 在 prepare 後執行
+        awk '/^-- tpcc database 套用/{exit}1' /root/tidb-vm6-placement-{{ tidb_placement | lower }}.sql \
+          | mysql -h 172.24.40.32 -P 4000 -uroot
       args:
         executable: /bin/bash
       register: tidb_placement_apply
       changed_when: false
       failed_when: tidb_placement_apply.rc != 0
-      # SQL 由 tests/tidb/placement-p-{a,b}.sql 提供；wrapper script (run-vm6-suite.sh)
-      # 先 rsync 至 /root/tidb-vm6-placement-{p-a,p-b}.sql 後再呼叫此 playbook。
-      # 若檔案不存在則 mysql exit 非 0 → fail-closed。
 
 # GCP HAProxy deployment (g-test-poc-4 → backends = 3 TiDB stateless on .32/.33/.gcp-1)
 # IDC haproxy (172.24.47.20) 為既有 setup，本 playbook 不 touch。
