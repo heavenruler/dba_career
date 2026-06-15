@@ -39,7 +39,7 @@ runtime phase（P0 deploy 起）為後續 commit，依 `0602-decisions-track-E.m
 | A/A (active-active) | — | **P3**（兩邊都寫）|
 | backup | **P4**（placement 任一）| 同 |
 | migration | **P5**（placement 任一）| 同 |
-| chaos C1/C3/C4/C7 | **P6** lab mode | lab mode |
+| chaos C1/C4/C7 | **P6** lab mode | lab mode |
 
 → runtime phase 排序 = P0 → P1 → P2 → P3 → P4 → P5 → P6（chaos plan only）。
 
@@ -54,11 +54,13 @@ workload spec：
 - [`workload-profiles/backup.md`](./workload-profiles/backup.md)
 - [`workload-profiles/migration.md`](./workload-profiles/migration.md)
 
-chaos spec（lab mode；本輪 plan only，不跑）：
+chaos spec（lab mode；本輪 planner-only / 不實跑）：
 - [`chaos/C1.md`](./chaos/C1.md) — GCP partition (WAN drop)
-- [`chaos/C3.md`](./chaos/C3.md) — GCP read-only (region quorum loss)
 - [`chaos/C4.md`](./chaos/C4.md) — IDC leader die
 - [`chaos/C7.md`](./chaos/C7.md) — cluster write reject
+- [`chaos/README.md`](./chaos/README.md) — planner runner index
+
+C3（GCP region quorum loss）已於 2026-06 Q4 review 淘汰，spec 移除。
 
 ## WAN baseline measurement (B4 Pre-P0 hard gate)
 
@@ -88,7 +90,7 @@ cross-region inventory template：[`inventory/crossregion.ini.template`](./inven
 | P3 | P-B × A/A | ~3h × 5 cell |
 | P4 | backup workload | TBD |
 | P5 | migration workload | TBD |
-| P6 | chaos 4 場景 lab mode | ~半天 × 4 |
+| P6 | chaos 3 場景 lab mode（C1/C4/C7；planner-only 已落地） | ~半天 × 3 |
 
 ## Make target（本輪）
 

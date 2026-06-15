@@ -1,0 +1,429 @@
+---
+# Deploy CockroachDB vm-6node cross-region cluster (3 IDC + 3 GCP).
+#
+# Status: REPLAN-2026-06-15 §2 Tier-2 — spec + syntax check only.
+#         此版本本輪不真實 deploy；inventory_hostname 對齊 crossregion.ini logical_id。
+#
+# Topology (per phase-crossregion/decisions-2026-06-08.md Q1/Q3 + tidb-vm6.yml 4-play 結構):
+#   idc-dbhost-1 (172.24.40.32):  cockroach node 1 (cluster init by this node)  ← IDC control + entry
+#   idc-dbhost-2 (172.24.40.33):  cockroach node 2
+#   idc-dbhost-3 (172.24.40.34):  cockroach node 3
+#   gcp-dbhost-1 (10.160.152.11): cockroach node 4                              ← via IAP tunnel :12211
+#   gcp-dbhost-2 (10.160.152.12): cockroach node 5                              ← via IAP tunnel :12212
+#   gcp-dbhost-3 (10.160.152.13): cockroach node 6                              ← via IAP tunnel :12213
+#
+# Locality labels (per decisions-2026-06-08.md Q3):
+#   --locality=region=idc|gcp,zone=idc-vlan241|gcp-asia-east1-{a,b,c}
+#
+# HAProxy (Q1 / Q3): dual-side
+#   IDC haproxy on 172.24.47.20:26257  (existing, NOT redeployed by this playbook)
+#   GCP haproxy on g-test-poc-4:26257  (deployed by haproxy_deploy role; backends = 3 CRDB SQL)
+#
+# Required extra-vars:
+#   crdb_placement=P-A|P-B          (governs SQL apply step — placement only,
+#                                    cluster topology itself is identical for P-A/P-B)
+#
+# Inventory: ansible/inventory/crossregion.ini
+#
+# Safety:
+#   - 此 playbook 不修改 .31 (IDC TPC-C client) 上的任何 binary/config
+#   - 不動 phase-k8s / tidb-vm6 既有 cluster
+#   - IDC haproxy (.20) 此 playbook 不 touch（既有設定保留）
+#   - placement SQL 套用走 B0-3 兩段式：deploy 階段只 COPY SQL 到 /root + ALTER DATABASE
+#     設 ZONE PER POLICY；ALTER TABLE 留至 prepare.sh 跑完 tpcc tables 建好後才套
+#   - CRDB insecure mode（PoC only；非 production）— 對齊 tidb-vm6 也走 unauthenticated SQL
+
+- name: Sanity check extra-vars
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Assert crdb_placement
+      ansible.builtin.assert:
+        that:
+          - crdb_placement is defined
+          - crdb_placement in ['P-A', 'P-B']
+        fail_msg: "Must pass -e crdb_placement=P-A or -e crdb_placement=P-B"
+
+# Play 1: control node bootstrap on idc-dbhost-1 (172.24.40.32)
+#   - install cockroach CLI binary
+#   - pre-create cockroach user + dirs
+#   - generate root SSH keypair（worker authorize 用）
+- name: Bootstrap CRDB control node (idc-dbhost-1 = 172.24.40.32)
+  hosts: 172.24.40.32
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    crdb_cluster_name: tpcc-crdb-vm6
+    crdb_version: v26.2.0
+    crdb_download_url: "https://binaries.cockroachdb.com/cockroach-{{ crdb_version }}.linux-amd64.tgz"
+    crdb_install_dir: /opt/cockroach
+    crdb_data_dir: /var/lib/cockroach
+    crdb_log_dir: /var/log/cockroach
+  tasks:
+    - name: Install CRDB prerequisites (control + worker tooling)
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar openssh-clients ncurses sysstat; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          dnf install -y --setopt=keepcache=1 "$pkg"
+        done
+      args:
+        executable: /bin/bash
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: Ensure cockroach system user exists
+      ansible.builtin.user:
+        name: cockroach
+        system: true
+        shell: /sbin/nologin
+        home: "{{ crdb_data_dir }}"
+        create_home: false
+
+    - name: Create CRDB dirs (install / data / log)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: cockroach
+        group: cockroach
+        mode: "0750"
+      loop:
+        - "{{ crdb_install_dir }}"
+        - "{{ crdb_data_dir }}"
+        - "{{ crdb_log_dir }}"
+
+    - name: Download cockroach CLI tarball
+      ansible.builtin.get_url:
+        url: "{{ crdb_download_url }}"
+        dest: "/tmp/cockroach-{{ crdb_version }}.linux-amd64.tgz"
+        mode: "0644"
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Extract cockroach binary to install dir
+      ansible.builtin.unarchive:
+        src: "/tmp/cockroach-{{ crdb_version }}.linux-amd64.tgz"
+        dest: "{{ crdb_install_dir }}"
+        remote_src: true
+        creates: "{{ crdb_install_dir }}/cockroach-{{ crdb_version }}.linux-amd64/cockroach"
+
+    - name: Symlink cockroach binary into /usr/local/bin
+      ansible.builtin.file:
+        src: "{{ crdb_install_dir }}/cockroach-{{ crdb_version }}.linux-amd64/cockroach"
+        dest: /usr/local/bin/cockroach
+        state: link
+        force: true
+
+    - name: Ensure root SSH keypair exists for control fan-out
+      ansible.builtin.user:
+        name: root
+        generate_ssh_key: true
+        ssh_key_bits: 4096
+        ssh_key_file: /root/.ssh/id_rsa
+
+    - name: Read root public key
+      ansible.builtin.slurp:
+        src: /root/.ssh/id_rsa.pub
+      register: crdb_root_pubkey
+
+# Play 2: worker nodes prereqs + accept control SSH key
+#   - idc-dbhost-2/3 (172.24.40.33/.34) + gcp-dbhost-1/2/3 (g-test-poc-1/2/3)
+- name: Prepare CRDB worker nodes (IDC + GCP)
+  hosts: 172.24.40.33,172.24.40.34,g-test-poc-1,g-test-poc-2,g-test-poc-3
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    crdb_version: v26.2.0
+    crdb_download_url: "https://binaries.cockroachdb.com/cockroach-{{ crdb_version }}.linux-amd64.tgz"
+    crdb_install_dir: /opt/cockroach
+    crdb_data_dir: /var/lib/cockroach
+    crdb_log_dir: /var/log/cockroach
+  tasks:
+    - name: Install CRDB node prerequisites
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar openssh-clients ncurses sysstat; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          dnf install -y --setopt=keepcache=1 "$pkg"
+        done
+      args:
+        executable: /bin/bash
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: OS tuning (swappiness / THP / ulimit)
+      ansible.builtin.shell: |
+        set -e
+        sysctl -w vm.swappiness=1
+        echo "vm.swappiness = 1" > /etc/sysctl.d/99-crdb.conf
+        echo never > /sys/kernel/mm/transparent_hugepage/enabled
+        echo never > /sys/kernel/mm/transparent_hugepage/defrag
+        grep -q "transparent_hugepage" /etc/rc.d/rc.local 2>/dev/null || {
+          echo 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' >> /etc/rc.d/rc.local
+          echo 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'  >> /etc/rc.d/rc.local
+          chmod +x /etc/rc.d/rc.local
+        }
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Set ulimit nofile
+      ansible.builtin.copy:
+        dest: /etc/security/limits.d/99-crdb.conf
+        mode: "0644"
+        content: |
+          root soft nofile 65536
+          root hard nofile 65536
+          cockroach soft nofile 65536
+          cockroach hard nofile 65536
+
+    - name: Ensure cockroach system user exists
+      ansible.builtin.user:
+        name: cockroach
+        system: true
+        shell: /sbin/nologin
+        home: "{{ crdb_data_dir }}"
+        create_home: false
+
+    - name: Create CRDB dirs (install / data / log)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: cockroach
+        group: cockroach
+        mode: "0750"
+      loop:
+        - "{{ crdb_install_dir }}"
+        - "{{ crdb_data_dir }}"
+        - "{{ crdb_log_dir }}"
+
+    - name: Download cockroach CLI tarball
+      ansible.builtin.get_url:
+        url: "{{ crdb_download_url }}"
+        dest: "/tmp/cockroach-{{ crdb_version }}.linux-amd64.tgz"
+        mode: "0644"
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Extract cockroach binary to install dir
+      ansible.builtin.unarchive:
+        src: "/tmp/cockroach-{{ crdb_version }}.linux-amd64.tgz"
+        dest: "{{ crdb_install_dir }}"
+        remote_src: true
+        creates: "{{ crdb_install_dir }}/cockroach-{{ crdb_version }}.linux-amd64/cockroach"
+
+    - name: Symlink cockroach binary into /usr/local/bin
+      ansible.builtin.file:
+        src: "{{ crdb_install_dir }}/cockroach-{{ crdb_version }}.linux-amd64/cockroach"
+        dest: /usr/local/bin/cockroach
+        state: link
+        force: true
+
+    # Same grpc-rust CIDR workaround as tidb-vm6.yml:158-175; only applies on IDC.
+    - name: Stat systemd proxy drop-in (IDC only)
+      ansible.builtin.stat:
+        path: /etc/systemd/system.conf.d/proxy.conf
+      register: crdb_systemd_proxy_stat
+      when: region | default('') == 'idc'
+
+    - name: Patch systemd no_proxy to include 6-node cluster IPs (grpc-rust CIDR workaround)
+      ansible.builtin.shell: |
+        set -e
+        if ! grep -q '172.24.40.32,172.24.40.33,172.24.40.34,10.160.152.11,10.160.152.12,10.160.152.13' /etc/systemd/system.conf.d/proxy.conf; then
+          sed -i 's|\(no_proxy=[^"]*\)"|\1,172.24.40.32,172.24.40.33,172.24.40.34,10.160.152.11,10.160.152.12,10.160.152.13"|' /etc/systemd/system.conf.d/proxy.conf
+          systemctl daemon-reload
+          echo PATCHED
+        else
+          echo ALREADY_OK
+        fi
+      args:
+        executable: /bin/bash
+      register: crdb_no_proxy_patch
+      changed_when: "'PATCHED' in crdb_no_proxy_patch.stdout"
+      when:
+        - region | default('') == 'idc'
+        - crdb_systemd_proxy_stat.stat is defined
+        - crdb_systemd_proxy_stat.stat.exists | default(false)
+
+    - name: Authorize control (idc-dbhost-1) root key on this node for fan-out SSH
+      ansible.posix.authorized_key:
+        user: root
+        state: present
+        key: "{{ hostvars['172.24.40.32']['crdb_root_pubkey']['content'] | b64decode | trim }}"
+
+# Play 3: cluster start
+#   - render per-node systemd unit on every host（含 control 自己），帶 --locality=region=...,zone=...
+#   - start cockroach on all 6 nodes
+#   - cockroach init from idc-dbhost-1（只跑一次；idempotent via ' cluster has already been initialized'）
+- name: Render systemd unit + start cockroach on all 6 nodes
+  hosts: 172.24.40.32,172.24.40.33,172.24.40.34,g-test-poc-1,g-test-poc-2,g-test-poc-3
+  become: true
+  gather_facts: true
+  vars:
+    crdb_cluster_name: tpcc-crdb-vm6
+    crdb_data_dir: /var/lib/cockroach
+    crdb_log_dir: /var/log/cockroach
+    crdb_sql_port: 26257
+    crdb_http_port: 8080
+    # Static host map — keep symmetric with crossregion.ini logical_id → IP/locality
+    # advertise_addr 必須是 inter-node 連得到的位置（IDC=本機 IP；GCP=本機內網 IP）
+    crdb_hosts:
+      - { id: idc-dbhost-1, inv: '172.24.40.32',  advertise: '172.24.40.32',  region: idc, zone: idc-vlan241      }
+      - { id: idc-dbhost-2, inv: '172.24.40.33',  advertise: '172.24.40.33',  region: idc, zone: idc-vlan241      }
+      - { id: idc-dbhost-3, inv: '172.24.40.34',  advertise: '172.24.40.34',  region: idc, zone: idc-vlan241      }
+      - { id: gcp-dbhost-1, inv: 'g-test-poc-1',  advertise: '10.160.152.11', region: gcp, zone: gcp-asia-east1-a }
+      - { id: gcp-dbhost-2, inv: 'g-test-poc-2',  advertise: '10.160.152.12', region: gcp, zone: gcp-asia-east1-b }
+      - { id: gcp-dbhost-3, inv: 'g-test-poc-3',  advertise: '10.160.152.13', region: gcp, zone: gcp-asia-east1-c }
+    # join list = 全部 advertise addr：cockroach gossip 多 join target 容錯
+    crdb_join: "172.24.40.32:26257,172.24.40.33:26257,172.24.40.34:26257,10.160.152.11:26257,10.160.152.12:26257,10.160.152.13:26257"
+  tasks:
+    - name: Resolve self host record from crdb_hosts (match inventory_hostname)
+      ansible.builtin.set_fact:
+        crdb_self: "{{ (crdb_hosts | selectattr('inv', 'equalto', inventory_hostname) | list | first) }}"
+
+    - name: Assert crdb_self resolved
+      ansible.builtin.assert:
+        that:
+          - crdb_self is defined
+          - crdb_self.advertise is defined
+        fail_msg: "Could not resolve inventory_hostname={{ inventory_hostname }} in crdb_hosts map"
+
+    - name: Render cockroach systemd unit (insecure PoC mode, with locality)
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/cockroach.service
+        mode: "0644"
+        content: |
+          [Unit]
+          Description=CockroachDB node ({{ crdb_self.id }})
+          Documentation=https://www.cockroachlabs.com/docs/
+          Requires=network-online.target
+          After=network-online.target
+
+          [Service]
+          Type=notify
+          User=cockroach
+          Group=cockroach
+          ExecStart=/usr/local/bin/cockroach start \
+            --insecure \
+            --advertise-addr={{ crdb_self.advertise }}:{{ crdb_sql_port }} \
+            --listen-addr=0.0.0.0:{{ crdb_sql_port }} \
+            --http-addr=0.0.0.0:{{ crdb_http_port }} \
+            --store={{ crdb_data_dir }} \
+            --log-dir={{ crdb_log_dir }} \
+            --cache=.25 \
+            --max-sql-memory=.25 \
+            --locality=region={{ crdb_self.region }},zone={{ crdb_self.zone }} \
+            --join={{ crdb_join }}
+          TimeoutStopSec=300
+          Restart=on-failure
+          RestartSec=10
+          # gRPC C core ignores CIDR in no_proxy — kill proxy env for service
+          Environment="http_proxy="
+          Environment="https_proxy="
+          Environment="HTTP_PROXY="
+          Environment="HTTPS_PROXY="
+
+          [Install]
+          WantedBy=multi-user.target
+      register: crdb_unit
+
+    - name: Reload systemd after unit drop-in
+      ansible.builtin.systemd:
+        daemon_reload: true
+      when: crdb_unit.changed
+
+    - name: Enable + start cockroach service
+      ansible.builtin.systemd:
+        name: cockroach
+        enabled: true
+        state: started
+
+- name: Initialize CRDB cluster (one-shot from idc-dbhost-1)
+  hosts: 172.24.40.32
+  become: true
+  gather_facts: false
+  vars:
+    crdb_sql_port: 26257
+  tasks:
+    - name: Wait for local cockroach SQL port
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: "{{ crdb_sql_port }}"
+        timeout: 120
+
+    - name: Run cockroach init (idempotent — already-initialized 不 fail)
+      ansible.builtin.shell: |
+        set -e
+        out=$(/usr/local/bin/cockroach init --insecure --host=172.24.40.32:{{ crdb_sql_port }} 2>&1) || true
+        echo "$out"
+        if echo "$out" | grep -q "Cluster successfully initialized"; then
+          echo "INIT_DONE"
+          exit 0
+        fi
+        if echo "$out" | grep -q "cluster has already been initialized"; then
+          echo "INIT_ALREADY"
+          exit 0
+        fi
+        echo "INIT_FAILED" >&2
+        exit 1
+      args:
+        executable: /bin/bash
+      register: crdb_init
+      changed_when: "'INIT_DONE' in crdb_init.stdout"
+
+    - name: Wait for all 6 nodes to register as live
+      ansible.builtin.shell: |
+        set -e
+        for i in $(seq 1 60); do
+          live=$(/usr/local/bin/cockroach node status --insecure --host=172.24.40.32:{{ crdb_sql_port }} 2>/dev/null \
+                  | awk 'NR>1 && $NF=="true" {c++} END{print c+0}')
+          if [ "$live" -ge 6 ]; then
+            echo "nodes_live=$live/6"
+            exit 0
+          fi
+          sleep 5
+        done
+        echo "timeout: only $live/6 nodes live after 300s" >&2
+        /usr/local/bin/cockroach node status --insecure --host=172.24.40.32:{{ crdb_sql_port }} 2>&1 | tail -20
+        exit 1
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+# Play 4: placement SQL apply（同 §0 B0-3 兩段式）
+#   - deploy 階段只 COPY SQL 到 /root + 跑前段（database-level zone PER POLICY）
+#   - 不跑 ALTER TABLE（tpcc tables 不存在；ALTER TABLE 留至 prepare.sh 後 run-vm6-suite.sh 觸發）
+- name: Apply CRDB placement SQL (deploy-time, CONFIGURE ZONE on DATABASE only)
+  hosts: 172.24.40.32
+  become: true
+  gather_facts: false
+  vars:
+    crdb_sql_port: 26257
+  tasks:
+    - name: Copy placement SQL to control node /root/
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../tests/cockroach/placement-{{ crdb_placement | lower }}.sql"
+        dest: "/root/crdb-vm6-placement-{{ crdb_placement | lower }}.sql"
+        mode: '0640'
+      # copy from repo (controller fs) → .32:/root/
+
+    - name: Apply placement SQL — DATABASE-level CONFIGURE ZONE only (deploy-time，不含 ALTER TABLE)
+      ansible.builtin.shell: |
+        set -e
+        # 只跑到 "-- tpcc database 套用" 標記前的 CONFIGURE ZONE 段；
+        # ALTER TABLE 由 run-vm6-suite.sh 在 prepare 後執行 (per REPLAN-2026-06-15 §0 B0-3)
+        awk '/^-- tpcc database 套用/{exit}1' /root/crdb-vm6-placement-{{ crdb_placement | lower }}.sql \
+          | /usr/local/bin/cockroach sql --insecure --host=172.24.40.32:{{ crdb_sql_port }}
+      args:
+        executable: /bin/bash
+      register: crdb_placement_apply
+      changed_when: false
+      failed_when: crdb_placement_apply.rc != 0

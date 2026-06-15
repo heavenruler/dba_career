@@ -45,6 +45,17 @@ if [[ "${RESULT_SCOPE:-}" == "X-CROSS" && -n "${GO_TPC_MIX_FLAG:-}" ]]; then
   echo "[run.sh] X-CROSS with GO_TPC_MIX_FLAG=$GO_TPC_MIX_FLAG → run-stage 加上 $GO_TPC_MIX_ARGS"
 fi
 
+# §4: WAN probe hook — 限 RESULT_SCOPE=X-CROSS && WAN_PROBE_ENABLED=1 才啟用
+# (per REPLAN-2026-06-15 §4). 採樣失敗 warn-only，不阻斷 sweep。
+WAN_PROBE_SH="$(cd "$SELF/../../phase-crossregion/scripts" 2>/dev/null && pwd)/wan-probe.sh"
+wan_probe() {  # wan_probe <phase> <out-dir>
+  [[ "${RESULT_SCOPE:-}" == "X-CROSS" && "${WAN_PROBE_ENABLED:-0}" == "1" ]] || return 0
+  [[ -x "$WAN_PROBE_SH" ]] || { warn "wan-probe.sh not executable: $WAN_PROBE_SH"; return 0; }
+  mkdir -p "$2"
+  bash "$WAN_PROBE_SH" --phase "$1" --out-dir "$2" --ts "$TS" || \
+    warn "wan-probe phase=$1 returned non-zero (treated warn-only)"
+}
+
 ROOT=$(artifact_dir "$DB" "$TOPO" "$ISO" "$TS")
 if [[ ! -f "$ROOT/.prepare.done" ]]; then
   latest=$(ls -d "${TPCC_ARTIFACTS}/${DB}-${TOPO}-${ISO}-"*/.prepare.done 2>/dev/null | sort | tail -1)
@@ -99,6 +110,7 @@ bash "$SELF/gate-isolation.sh" --db "$DB" --iso "$ISO" --db-host "$DB_HOST" --ts
 
 # ---- 3. warmup 20m (single threads=64, no recording) ---------------
 info "warmup ${WARMUP_SEC}s (threads=64)"
+wan_probe "warmup" "$RUNS_DIR"
 go-tpc tpcc run \
   -d "$DRIVER" -H "$DB_HOST" -P "$PORT" -U "$USER" -D "$DBNAME" \
   --conn-params "$ISO_CONN_PARAMS" \
@@ -107,6 +119,7 @@ go-tpc tpcc run \
   --threads=64 \
   --output=plain \
   > "$RUNS_DIR/warmup.log" 2>&1
+wan_probe "warmup-post" "$RUNS_DIR"
 
 # ---- 4. for each threads × round ----------------------------------
 for threads in $THREADS_LIST; do
@@ -114,6 +127,8 @@ for threads in $THREADS_LIST; do
     RD="$RUNS_DIR/threads-${threads}/round-${r}"
     mkdir -p "$RD"
     info "  run threads=$threads round=$r → $RD"
+
+    wan_probe "round-pre" "$RD"
 
     # parallel OS monitors (sample every 1s for run duration)
     # client-side (.31): characterise driver overhead; db-side (DB_HOST): characterise DB engine saturation
@@ -159,6 +174,8 @@ for threads in $THREADS_LIST; do
 
     # wait for monitors to finish (some have 5s buffer)
     wait $MON_PIDS 2>/dev/null || true
+
+    wan_probe "round-post" "$RD"
 
     info "  sleeping ${ROUND_SLEEP_SEC}s between rounds"
     sleep "$ROUND_SLEEP_SEC"

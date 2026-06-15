@@ -1,0 +1,484 @@
+---
+# Deploy YugabyteDB vm-6node cross-region cluster (3 IDC + 3 GCP).
+#
+# Topology (per phase-crossregion/decisions-2026-06-08.md + topology/P-A.md / P-B.md):
+#   idc-dbhost-1 (172.24.40.32):  yb-master + yb-tserver   ← IDC control + primary bootstrap
+#   idc-dbhost-2 (172.24.40.33):  yb-master + yb-tserver
+#   idc-dbhost-3 (172.24.40.34):  yb-master + yb-tserver
+#   gcp-dbhost-1 (g-test-poc-1):  yb-master + yb-tserver   ← via IAP tunnel :12211
+#   gcp-dbhost-2 (g-test-poc-2):  yb-master + yb-tserver   ← via IAP tunnel :12212
+#   gcp-dbhost-3 (g-test-poc-3):  yb-master + yb-tserver   ← via IAP tunnel :12213
+#
+# YBDB locality labels (per Q3 / REPLAN-2026-06-15 §2):
+#   placement_cloud  = 104
+#   placement_region = idc | gcp
+#   placement_zone   = vlan241 | asia-east1-a | asia-east1-b | asia-east1-c
+#
+# Required extra-vars:
+#   yb_placement=P-A|P-B     (governs SQL apply step — placement only,
+#                             cluster topology itself is identical for P-A/P-B)
+#
+# Inventory: ansible/inventory/crossregion.ini
+#
+# Reference playbooks (read-only, NOT modified by this playbook):
+#   ansible/playbooks/tidb-vm6.yml  — 4-play structure + B0-3 two-stage placement apply
+#   ansible/playbooks/yugabyte-vm3.yml — yugabyted CLI usage + RF configure
+#
+# Safety:
+#   - dry-run / syntax-check only this round; full deploy gated on §2 Tier-2 readiness
+#   - 不修改 tidb-vm6.yml / yugabyte-vm3.yml
+#   - IDC haproxy (.20) 此 playbook 不 touch（既有設定保留）
+#   - GCP haproxy (g-test-poc-4) 此 playbook 不 touch（YBDB 用 yugabyted smart client；
+#     cross-region client 直連 master_addresses，不需 L4 haproxy 介入）
+
+- name: Sanity check extra-vars
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Assert yb_placement
+      ansible.builtin.assert:
+        that:
+          - yb_placement is defined
+          - yb_placement in ['P-A', 'P-B']
+        fail_msg: "Must pass -e yb_placement=P-A or -e yb_placement=P-B"
+
+# Play 1 — Bootstrap control node (idc-dbhost-1 = 172.24.40.32)
+#   * Install yugabyted CLI / prereqs / dirs on .32
+#   * Generate root SSH key for fan-out to workers (mirror tidb-vm6.yml pattern)
+- name: Bootstrap YugabyteDB control node (idc-dbhost-1 = 172.24.40.32)
+  hosts: 172.24.40.32
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    yb_version: "2025.2.2.2"
+    yb_build: "b11"
+    yb_archive: "yugabyte-{{ yb_version }}-{{ yb_build }}-linux-x86_64.tar.gz"
+    yb_url: "https://software.yugabyte.com/releases/{{ yb_version }}/{{ yb_archive }}"
+    yb_install_dir: /opt/yugabyte
+    yb_base_dir: /var/yugabyte
+  tasks:
+    - name: Install YugabyteDB prerequisites (control + worker tooling)
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar gzip openssh-clients python3-setuptools python3-six postgresql sysstat; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          dnf install -y --setopt=keepcache=1 "$pkg"
+        done
+      args:
+        executable: /bin/bash
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: Ensure root SSH keypair exists for control fan-out
+      ansible.builtin.user:
+        name: root
+        generate_ssh_key: true
+        ssh_key_bits: 4096
+        ssh_key_file: /root/.ssh/id_rsa
+
+    - name: Read root public key
+      ansible.builtin.slurp:
+        src: /root/.ssh/id_rsa.pub
+      register: yb_root_pubkey
+
+    - name: Create yugabyte user (control node)
+      ansible.builtin.user:
+        name: yugabyte
+        shell: /bin/bash
+        create_home: true
+
+    - name: Create YugabyteDB directories (control node)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: yugabyte
+        group: yugabyte
+        mode: "0755"
+      loop:
+        - "{{ yb_install_dir }}"
+        - "{{ yb_base_dir }}"
+
+    - name: Download YugabyteDB archive (control node)
+      ansible.builtin.get_url:
+        url: "{{ yb_url }}"
+        dest: "/tmp/{{ yb_archive }}"
+        mode: "0644"
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Extract YugabyteDB (control node)
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ yb_archive }}"
+        dest: "{{ yb_install_dir }}"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+        creates: "{{ yb_install_dir }}/bin/yugabyted"
+        owner: yugabyte
+        group: yugabyte
+
+    - name: Run YugabyteDB post install (control node)
+      ansible.builtin.shell: |
+        {{ yb_install_dir }}/bin/post_install.sh
+        touch {{ yb_install_dir }}/.post_install_done
+      become_user: yugabyte
+      args:
+        creates: "{{ yb_install_dir }}/.post_install_done"
+      failed_when: false
+
+    - name: Link YugabyteDB client binaries (control node)
+      ansible.builtin.file:
+        src: "{{ yb_install_dir }}/bin/{{ item }}"
+        dest: "/usr/local/bin/{{ item }}"
+        state: link
+        force: true
+      loop:
+        - yugabyted
+        - ysqlsh
+        - yb-admin
+
+# Play 2 — Prepare workers (idc-dbhost-2/3 + gcp-dbhost-1/2/3): prereqs + accept control key + OS tuning + install YB
+- name: Prepare YugabyteDB worker nodes (IDC + GCP)
+  hosts: 172.24.40.33,172.24.40.34,g-test-poc-1,g-test-poc-2,g-test-poc-3
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    yb_version: "2025.2.2.2"
+    yb_build: "b11"
+    yb_archive: "yugabyte-{{ yb_version }}-{{ yb_build }}-linux-x86_64.tar.gz"
+    yb_url: "https://software.yugabyte.com/releases/{{ yb_version }}/{{ yb_archive }}"
+    yb_install_dir: /opt/yugabyte
+    yb_base_dir: /var/yugabyte
+  tasks:
+    - name: Install YugabyteDB node prerequisites
+      ansible.builtin.shell: |
+        set -e
+        for pkg in curl tar gzip openssh-clients python3-setuptools python3-six postgresql sysstat; do
+          rpm -q "$pkg" >/dev/null 2>&1 && continue
+          dnf install -y --setopt=keepcache=1 "$pkg"
+        done
+      args:
+        executable: /bin/bash
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      changed_when: false
+
+    - name: OS tuning (swappiness / THP / ulimit)
+      ansible.builtin.shell: |
+        set -e
+        sysctl -w vm.swappiness=1
+        echo "vm.swappiness = 1" > /etc/sysctl.d/99-yugabyte.conf
+        echo never > /sys/kernel/mm/transparent_hugepage/enabled
+        echo never > /sys/kernel/mm/transparent_hugepage/defrag
+        grep -q "transparent_hugepage" /etc/rc.d/rc.local 2>/dev/null || {
+          echo 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' >> /etc/rc.d/rc.local
+          echo 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'  >> /etc/rc.d/rc.local
+          chmod +x /etc/rc.d/rc.local
+        }
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Set ulimit nofile
+      ansible.builtin.copy:
+        dest: /etc/security/limits.d/99-yugabyte.conf
+        mode: "0644"
+        content: |
+          root soft nofile 65536
+          root hard nofile 65536
+          yugabyte soft nofile 65536
+          yugabyte hard nofile 65536
+          * soft nofile 65536
+          * hard nofile 65536
+
+    # gRPC CIDR workaround — yb-master/yb-tserver inter-node RPC 走 gRPC，
+    # 會被 IDC sproxy 攔 403 → join 失敗。補 explicit cluster IPs 後 daemon-reload。
+    # Mirror tidb-vm6.yml lines 158-175 pattern; only applies on IDC nodes.
+    - name: Stat systemd proxy drop-in (IDC only)
+      ansible.builtin.stat:
+        path: /etc/systemd/system.conf.d/proxy.conf
+      register: yb_systemd_proxy_stat
+      when: region | default('') == 'idc'
+
+    - name: Patch systemd no_proxy to include 6-node cluster IPs (gRPC CIDR workaround)
+      ansible.builtin.shell: |
+        set -e
+        if ! grep -q '172.24.40.32,172.24.40.33,172.24.40.34,10.160.152.11,10.160.152.12,10.160.152.13' /etc/systemd/system.conf.d/proxy.conf; then
+          sed -i 's|\(no_proxy=[^"]*\)"|\1,172.24.40.32,172.24.40.33,172.24.40.34,10.160.152.11,10.160.152.12,10.160.152.13"|' /etc/systemd/system.conf.d/proxy.conf
+          systemctl daemon-reload
+          echo PATCHED
+        else
+          echo ALREADY_OK
+        fi
+      args:
+        executable: /bin/bash
+      register: yb_no_proxy_patch
+      changed_when: "'PATCHED' in yb_no_proxy_patch.stdout"
+      when:
+        - region | default('') == 'idc'
+        - yb_systemd_proxy_stat.stat is defined
+        - yb_systemd_proxy_stat.stat.exists | default(false)
+
+    - name: Authorize control (idc-dbhost-1) root key on worker (for control fan-out)
+      ansible.posix.authorized_key:
+        user: root
+        state: present
+        key: "{{ hostvars['172.24.40.32']['yb_root_pubkey']['content'] | b64decode | trim }}"
+
+    - name: Create yugabyte user (worker)
+      ansible.builtin.user:
+        name: yugabyte
+        shell: /bin/bash
+        create_home: true
+
+    - name: Create YugabyteDB directories (worker)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: yugabyte
+        group: yugabyte
+        mode: "0755"
+      loop:
+        - "{{ yb_install_dir }}"
+        - "{{ yb_base_dir }}"
+
+    - name: Download YugabyteDB archive (worker)
+      ansible.builtin.get_url:
+        url: "{{ yb_url }}"
+        dest: "/tmp/{{ yb_archive }}"
+        mode: "0644"
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+
+    - name: Extract YugabyteDB (worker)
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ yb_archive }}"
+        dest: "{{ yb_install_dir }}"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+        creates: "{{ yb_install_dir }}/bin/yugabyted"
+        owner: yugabyte
+        group: yugabyte
+
+    - name: Run YugabyteDB post install (worker)
+      ansible.builtin.shell: |
+        {{ yb_install_dir }}/bin/post_install.sh
+        touch {{ yb_install_dir }}/.post_install_done
+      become_user: yugabyte
+      args:
+        creates: "{{ yb_install_dir }}/.post_install_done"
+      failed_when: false
+
+    - name: Link YugabyteDB client binaries (worker)
+      ansible.builtin.file:
+        src: "{{ yb_install_dir }}/bin/{{ item }}"
+        dest: "/usr/local/bin/{{ item }}"
+        state: link
+        force: true
+      loop:
+        - yugabyted
+        - ysqlsh
+        - yb-admin
+
+# Play 3 — Cluster start
+#   * Bootstrap primary on .32 first (no --join)
+#   * Workers join via --join=172.24.40.32 (serial: 1 — same race fix as yugabyte-vm3.yml lines 200-205)
+#   * Each node carries placement_cloud=104,placement_region=idc|gcp,placement_zone=<a|b|c> via tserver_flags
+#   * master_addresses = full 6-node list (3 IDC + 3 GCP) for cross-region quorum
+- name: Start YugabyteDB cluster — primary (idc-dbhost-1 = 172.24.40.32)
+  hosts: 172.24.40.32
+  become: true
+  gather_facts: false
+  vars:
+    yb_install_dir: /opt/yugabyte
+    yb_base_dir: /var/yugabyte
+    yb_master_addresses: "172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100,10.160.152.11:7100,10.160.152.12:7100,10.160.152.13:7100"
+    # placement_zone per host (idc-vlan241 → "vlan241"; gcp asia-east1-{a,b,c})
+    yb_placement_cloud: "104"
+    yb_placement_region: "idc"
+    yb_placement_zone: "vlan241"
+    yb_master_flags: >-
+      enable_automatic_tablet_splitting=false,
+      placement_cloud=104,
+      placement_region=idc,
+      placement_zone=vlan241
+    yb_tserver_flags: >-
+      memory_limit_hard_bytes=11811160064,
+      db_block_cache_size_percentage=50,
+      durable_wal_write=true,
+      require_durable_wal_write=true,
+      yb_enable_read_committed_isolation=true,
+      ysql_enable_auth=false,
+      ysql_enable_auto_analyze=false,
+      ysql_num_shards_per_tserver=1,
+      enable_automatic_tablet_splitting=false,
+      placement_cloud=104,
+      placement_region=idc,
+      placement_zone=vlan241
+  tasks:
+    - name: Check yugabyted status on primary
+      ansible.builtin.command: "{{ yb_install_dir }}/bin/yugabyted status --base_dir={{ yb_base_dir }}"
+      become_user: yugabyte
+      register: yb_status_primary
+      failed_when: false
+      changed_when: false
+
+    - name: Start YugabyteDB primary (bootstrap, no --join)
+      ansible.builtin.command:
+        cmd: >-
+          {{ yb_install_dir }}/bin/yugabyted start
+          --base_dir={{ yb_base_dir }}
+          --advertise_address=172.24.40.32
+          --master_flags={{ (yb_master_flags | regex_replace('\s+', '')) | quote }}
+          --tserver_flags={{ (yb_tserver_flags | regex_replace('\s+', '')) | quote }}
+      become_user: yugabyte
+      when: "'is not running' in (yb_status_primary.stdout | default('')) or yb_status_primary.rc != 0"
+
+    - name: Wait for YSQL port on primary
+      ansible.builtin.wait_for:
+        host: 172.24.40.32
+        port: 5433
+        timeout: 300
+
+# IDC + GCP workers join in serial (one at a time) — avoids the race documented
+# in yugabyte-vm3.yml lines 200-205 (tserver_master_addrs missing peers if
+# workers join in parallel).  6-node cross-region 更敏感（GCP 端 RTT 較高）。
+- name: Join YugabyteDB workers (IDC .33/.34 + GCP g-test-poc-1/2/3)
+  hosts: 172.24.40.33,172.24.40.34,g-test-poc-1,g-test-poc-2,g-test-poc-3
+  serial: 1
+  become: true
+  gather_facts: false
+  vars:
+    yb_install_dir: /opt/yugabyte
+    yb_base_dir: /var/yugabyte
+    yb_host_primary: "172.24.40.32"
+    # Per-host placement_zone resolved from inventory `zone` var
+    # (idc-vlan241 → vlan241; gcp-asia-east1-{a,b,c} → asia-east1-{a,b,c})
+    yb_placement_cloud: "104"
+    yb_placement_region: "{{ region | default('idc') }}"
+    yb_placement_zone_raw: "{{ zone | default('idc-vlan241') }}"
+    yb_placement_zone: "{{ yb_placement_zone_raw | regex_replace('^idc-', '') | regex_replace('^gcp-', '') }}"
+    yb_master_flags: >-
+      enable_automatic_tablet_splitting=false,
+      placement_cloud={{ yb_placement_cloud }},
+      placement_region={{ yb_placement_region }},
+      placement_zone={{ yb_placement_zone }}
+    yb_tserver_flags: >-
+      memory_limit_hard_bytes=11811160064,
+      db_block_cache_size_percentage=50,
+      durable_wal_write=true,
+      require_durable_wal_write=true,
+      yb_enable_read_committed_isolation=true,
+      ysql_enable_auth=false,
+      ysql_enable_auto_analyze=false,
+      ysql_num_shards_per_tserver=1,
+      enable_automatic_tablet_splitting=false,
+      placement_cloud={{ yb_placement_cloud }},
+      placement_region={{ yb_placement_region }},
+      placement_zone={{ yb_placement_zone }}
+  tasks:
+    - name: Check yugabyted status on worker
+      ansible.builtin.command: "{{ yb_install_dir }}/bin/yugabyted status --base_dir={{ yb_base_dir }}"
+      become_user: yugabyte
+      register: yb_status_worker
+      failed_when: false
+      changed_when: false
+
+    - name: Start YugabyteDB worker (join primary {{ yb_host_primary }})
+      ansible.builtin.command:
+        cmd: >-
+          {{ yb_install_dir }}/bin/yugabyted start
+          --base_dir={{ yb_base_dir }}
+          --advertise_address={{ inventory_hostname }}
+          --join={{ yb_host_primary }}
+          --master_flags={{ (yb_master_flags | regex_replace('\s+', '')) | quote }}
+          --tserver_flags={{ (yb_tserver_flags | regex_replace('\s+', '')) | quote }}
+      become_user: yugabyte
+      when: "'is not running' in (yb_status_worker.stdout | default('')) or yb_status_worker.rc != 0"
+
+    - name: Wait for YSQL port on worker
+      ansible.builtin.wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 5433
+        timeout: 300
+
+# Verify cluster + configure RF=3 (per-DB placement is via TABLESPACE in Play 4 SQL)
+- name: Verify YugabyteDB cluster RF + health (primary)
+  hosts: 172.24.40.32
+  become: true
+  gather_facts: false
+  vars:
+    yb_install_dir: /opt/yugabyte
+    yb_base_dir: /var/yugabyte
+    yb_master_addresses: "172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100,10.160.152.11:7100,10.160.152.12:7100,10.160.152.13:7100"
+  tasks:
+    # yugabyted start 不接受 --rf；正確命令是 configure data_placement --rf=N (per yugabyte-vm3.yml line 264-275)。
+    - name: Configure data placement (RF=3)
+      ansible.builtin.command:
+        cmd: >-
+          {{ yb_install_dir }}/bin/yugabyted configure data_placement
+          --base_dir={{ yb_base_dir }}
+          --rf=3
+      become_user: yugabyte
+      register: yb_rf_set
+      failed_when: yb_rf_set.rc != 0
+      changed_when: "'success' in (yb_rf_set.stdout | default('') | lower) or yb_rf_set.rc == 0"
+
+    - name: Wait for RF to propagate (universe config converges)
+      ansible.builtin.shell: |
+        set -e
+        rf=""
+        for i in $(seq 1 60); do
+          rf=$({{ yb_install_dir }}/bin/yb-admin --master_addresses={{ yb_master_addresses }} get_universe_config 2>/dev/null \
+               | grep -oE '"numReplicas"\s*:\s*[0-9]+' | grep -oE '[0-9]+' | head -1)
+          if [ "$rf" = "3" ]; then echo "RF converged to $rf"; exit 0; fi
+          sleep 5
+        done
+        echo "RF did not converge (last=$rf, expected=3)"; exit 1
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Health check YugabyteDB (SELECT 1)
+      ansible.builtin.command:
+        cmd: "{{ yb_install_dir }}/bin/ysqlsh -h 172.24.40.32 -p 5433 -U yugabyte -d yugabyte -c \"SELECT 1\""
+      become_user: yugabyte
+      changed_when: false
+
+# Play 4 — Placement SQL apply (B0-3 two-stage; same pattern as tidb-vm6.yml lines 391-411)
+#   * Deploy-time : CREATE TABLESPACE only (不依賴 tpcc tables 存在)
+#   * Post-prepare: ALTER TABLE ... SET TABLESPACE (由 tests/common/prepare.sh 跑完才執行)
+- name: Apply YBDB placement SQL — CREATE TABLESPACE stage (deploy-time)
+  hosts: 172.24.40.32
+  become: true
+  gather_facts: false
+  vars:
+    yb_install_dir: /opt/yugabyte
+  tasks:
+    - name: Copy placement SQL to control node /root/
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../tests/yuga/placement-{{ yb_placement | lower }}.sql"
+        dest: "/root/yugabyte-vm6-placement-{{ yb_placement | lower }}.sql"
+        mode: '0640'
+
+    - name: Apply placement SQL — CREATE TABLESPACE only (deploy-time，不含 ALTER TABLE)
+      ansible.builtin.shell: |
+        set -e
+        # 只跑到 "-- tpcc database 套用" 標記前的 CREATE TABLESPACE 段；
+        # ALTER TABLE ... SET TABLESPACE 由 tests/common/prepare.sh post-prepare 階段執行
+        # (per REPLAN-2026-06-15 §0 B0-3, mirror tidb-vm6.yml lines 400-411)
+        awk '/^-- tpcc database 套用/{exit}1' /root/yugabyte-vm6-placement-{{ yb_placement | lower }}.sql \
+          | {{ yb_install_dir }}/bin/ysqlsh -h 172.24.40.32 -p 5433 -U yugabyte -d yugabyte
+      args:
+        executable: /bin/bash
+      register: yb_placement_apply
+      changed_when: false
+      failed_when: yb_placement_apply.rc != 0
