@@ -34,7 +34,7 @@
 
 3. **下一步需要誰決策**
    - **application owner**：交易一致性需求、可接受延遲、retry / timeout 行為、RTO / RPO
-   - **管理層**：候選 vendor 是否含特定授權或商業實體限制、預算編列窗口（Q4 對齊）
+   - **管理層**：候選廠商之商業實體限制、預算編列窗口（Q4 對齊）
    - **DBA / 維運**：依上述決策選擇導入路徑（VM 或 K8s、是否啟跨區）
 
 ---
@@ -102,8 +102,8 @@ CockroachDB    ≈ 15,000
 
 ### Done — 已完成
 
-- 10 道技術 Q&A 拍板（GCP 5 VM 拓撲、9 cell-track 範圍、placement P-A/P-B、chaos C1/C4/C7、A-A 全 W=128 等）
-- 14 道非技術 Q&A 拍板（採購、預算、授權、stakeholder 對齊、商業實體 review）
+- 10 道技術議題拍板（GCP 5 VM 拓撲、9 cell-track 範圍、placement P-A/P-B、chaos C1/C4/C7、A-A 全 W=128 等）
+- 非技術議題收斂為 9 項（5 待決 + 4 已拍板）；已拍板含：跨區 DR「現行 No、中長期必需」、PG→TiDB「TiDB 為主」、是否全面採用 TiDB「Unknown 待補背書 4-6 週」、TLS 補測「僅備註不另測」
 - IaC（GCP 5 VM Terraform）、ansible playbook、suite scripts、chrony drift gate（10-host 升級版，drift_median 0.017 ms）
 - IDC 端機器盤點與 K8s 殘留清理
 - GCP 5 VM 已驗證可建可連，已 destroy 釋出（節費）
@@ -139,7 +139,7 @@ CockroachDB    ≈ 15,000
 | 分類 | 內容 | 處置 |
 |---|---|---|
 | **短期候選** | TiDB | 優先進入應用情境對接 |
-| **保留觀察** | CockroachDB | 依一致性需求、retry 容忍度、授權 / BSL 政策、維運成本評估 |
+| **保留觀察** | CockroachDB | 依一致性需求、retry 容忍度、維運成本評估 |
 | **保留觀察** | YugabyteDB | VM 路徑可評估；K8s 路徑需先完成部署層級調校與驗證 |
 | **暫不作結論** | 跨區域場景、K8s 退化未定位項 | 等下一階段 sweep 與調校產出再回頭評估 |
 
@@ -171,7 +171,7 @@ CockroachDB    ≈ 15,000
 
 - **N=1 量測**：第一階段全部 cell 單次跑，pipeline-log 已標註「下一階段補 N=3」
 - **YugabyteDB K8s 19% retention**：成因尚未定位，列為後續調校項；可能涉及 helm chart 預設、tablet 配置、raft 跨 pod 開銷等
-- **採購 / 商業實體層面**：候選 vendor 之授權模式（OSS / BSL / Enterprise）、商業實體狀態、供應鏈 / 政策考量，需另案 review，**不在本份技術簡報範圍內**
+- **採購 / 商業實體層面**：候選廠商之商業實體狀態、供應鏈與政策考量，需另案 review，**不在本份技術簡報範圍內**
 
 ---
 
@@ -208,8 +208,8 @@ CockroachDB    ≈ 15,000
 | 主題 | 引用 |
 |---|---|
 | 第一階段數據彙整 | `1_MeetingMinutes/analytics-S-K8S-2026-06-15.md` |
-| 跨區域技術決策 | `phase-crossregion/decisions-2026-06-08.md`（10 道 Q&A） |
-| 跨區域非技術決策 | `1_MeetingMinutes/2026-06-09-distributed-db-adoption-non-technical.md`（14 道 Q&A） |
+| 跨區域技術決策 | `phase-crossregion/decisions-2026-06-08.md`（10 道議題） |
+| 分散式 DB 非技術議題 | `1_MeetingMinutes/2026-06-09-distributed-db-adoption-non-technical.md`（5 待決 + 4 拍板） |
 | PoC 設計原則 | `results/PoC-DESIGN.md`（SSOT） |
 | 結果索引 | `results/README.md` |
 | chrony 跨區域 drift gate | `phase-crossregion/scripts/gate-chrony-cross-region.sh` |
