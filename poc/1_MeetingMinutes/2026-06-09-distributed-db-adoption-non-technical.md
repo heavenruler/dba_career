@@ -47,23 +47,9 @@ PoC 已累積 4 個 phase 完整討論與資料：
 
 ### 3.2 Vendor 政策與篩選
 
-**現況**：PoC 涵蓋 TiDB / CockroachDB / YugabyteDB 三家。
+**核心議題**：三家潛在排除因素 — 公司國籍（TiDB 中資）/ 授權純度（CRDB 走 BSL+ELv2）/ 商業實體規模（私募 vs IPO）。
 
-**潛在排除因素**：
-| 因素 | TiDB (PingCAP) | CockroachDB (Cockroach Labs) | YugabyteDB (Yugabyte Inc.) |
-|---|---|---|---|
-| 公司國籍 | 中國（雖總部 California，創辦人/主力研發中國）| 美國 | 美國 |
-| 授權模式 | Apache 2.0 (OSS) + Enterprise | BSL → Apache（PR 後） | Apache 2.0 |
-| 商業實體狀態 | 私募，Series F (2024) ~3.6B 估值 | IPO 申請中 (2024)，年營收 ~150M | 私募，Series C (2022) ~1.3B 估值 |
-| 中資投資 | Tencent / Matrix Partners China | 無 | 無 |
-| 國內客戶可見度 | 多（中信 / 富邦 / 玉山）| 少 | 少 |
-
-**議題**：
-- 公司是否有「禁止中資技術」政策？
-- BSL 授權是否 acceptable（CRDB 已 BSL）？
-- 三家任一是否屬被監管的「禁用名單」？
-
-**待決**：→ **Q2**
+**待決**：→ **Q2**（vendor 排除政策）；詳細維運 / 後勤對照見 [§9](#9-vendor-維運後勤對比q2-user-補問追加)。
 
 ### 3.3 組織/人力
 
@@ -186,12 +172,9 @@ PoC 已累積 4 個 phase 完整討論與資料：
 
 ### 3.10 對外溝通 / 內部背書
 
-**議題**：
-- POC report 該以什麼形式呈現？BOD / executive summary / technical deep dive？
-- 是否需邀請 vendor presentation 給 stakeholder？
-- 第三方驗證（顧問公司 / Gartner 評估）必要？
+**核心議題**：PoC 報告形式（給誰看 / 多深）、vendor 是否來司簡報、是否需第三方背書（Gartner / 顧問公司）。
 
-**待決**：→ **Q12**
+**待決**：→ **Q12**（report 呈現形式）。
 
 ---
 
@@ -268,9 +251,7 @@ PoC 已累積 4 個 phase 完整討論與資料：
 - *預設答*: 待 CFO / 採購 確認
 
 **Q12**: POC report 呈現形式？
-- *Context*: 給誰看 + 深度
-- *選項*: BOD summary (1-2 pg) / Executive deep dive (10 pg) / Technical detail (30+ pg)
-- *預設答*: 三層皆做（不同 audience）
+- 給誰看 + 多深；選項 = BOD 摘要 (1-2 pg) / executive deep dive (10 pg) / technical detail (30+ pg)；預設**三層皆做**（不同 audience）。
 
 ---
 
