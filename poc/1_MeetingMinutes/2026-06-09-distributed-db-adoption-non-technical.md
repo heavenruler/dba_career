@@ -1,58 +1,70 @@
 # 2026-06-09 分散式資料庫導入：非技術討論
 
-> 純 Q / 選項結構；待決議題 + 已拍板紀錄分列。
+> 純「問題 / 選項」結構；待決議題 + 已拍板紀錄分列。
 
 ---
 
 ## 待決議題
 
-### Q1 — Vendor 政策
+### Q1 — 廠商政策
 
-- **問題**：排除哪些（中資 / BSL / 規模 / 商業實體）？
+- **問題**：要排除哪些廠商？（中資、商業源授權 BSL、公司規模、商業實體狀態）
 
 ### Q2 — 對外溝通 / 內部背書
 
-- **問題**：是否邀請 vendor presentation / 第三方驗證（顧問 / Gartner）？
+- **問題**：是否邀請廠商來司簡報、是否需要第三方背書（顧問公司 / Gartner 評估）？
 
-### Q3 — POC report 呈現形式
+### Q3 — PoC 報告呈現形式
 
-- **Context**：給誰看 + 深度
-- **選項**：BOD summary (1-2 pg) / Executive deep dive (10 pg) / Technical detail (30+ pg)
-- **預設答**：三層皆做（不同 audience）
+- **情境**：給誰看、寫多深
+- **選項**：
+  - 主管層級深度報告（10 頁）
+  - 技術完整報告（30 頁以上）
+- **預設答**：兩層皆做（不同對象用不同版本）
 
-### Q4 — PG 應用導入 TiDB 可行性
+### Q4 — PostgreSQL 應用導入 TiDB 可行性
 
-- **Context**：TiDB 是 MySQL 8.0 wire-compat；PG → TiDB 是 cross-engine 遷移（SQL 方言 + driver + ORM dialect 三重）
-- **選項**：(a) PG-stack 為主 → 排除 TiDB / (b) MySQL-stack 為主 → TiDB 首選 / (c) 混合 → 拆 track
-- **影響**：直接決定三家篩選；與 Q1 / Q5 連動
+- **情境**：TiDB 走 MySQL 8.0 通訊協定相容路線；PostgreSQL → TiDB 屬跨資料庫引擎遷移（SQL 方言、驅動程式、ORM 方言三層都要改）
+- **選項**：
+  - (a) 公司以 PostgreSQL 為主 → 排除 TiDB
+  - (b) 公司以 MySQL 為主 → TiDB 為首選
+  - (c) 兩種並存 → 拆成不同路線各自評估
+- **影響**：直接決定三家廠商篩選；與 Q1 / Q5 連動
 
-### Q5 — all-in TiDB 公司樂見否
+### Q5 — 是否全面採用 TiDB
 
-- **Context**：PoC 中 TiDB tpmC 26,947（最強 vs CRDB 15k / YBDB 15.6k）；但 all-in = 中資 vendor lock-in
-- **選項**：(a) all-in TiDB / (b) TiDB-primary + 1 backup vendor / (c) multi-vendor by use-case
-- **影響**：vendor 策略；與 Q1 / Q4 強連動
+- **情境**：PoC 中 TiDB tpmC 26,947（最強，相較 CockroachDB 約 15,000、YugabyteDB 約 15,600）；但全面採用 = 中資廠商綁定
+- **選項**：
+  - (a) 全面採用 TiDB
+  - (b) TiDB 為主 + 1 家備援廠商
+  - (c) 依使用情境分廠商（不同應用走不同 DB）
+- **影響**：廠商策略；與 Q1 / Q4 強連動
 
 ---
 
 ## 已拍板紀錄（2026-06-09）
 
-### D1 — 跨區 IDC↔GCP DR：**No, 但中長期必需**
+### D1 — 跨區（自有機房 IDC ↔ GCP）災難復原：**現行 No，但中長期必需**
 
-- **拍板理由**：distributed DB 導入 focus 在 IDC，累積維運經驗 + 架構穩定性
-- **phase-crossregion 處置**：framework 保留作能力儲備（5 GCP VM iac + tidb-vm6 ansible + placement SQL + dry-run gate + chrony gate）；**不 destroy** commit `0c17ae9`；業務面 ready 時隨時啟動
+- **拍板理由**：分散式資料庫導入主要範圍在自有機房，先累積維運經驗與架構穩定性
+- **phase-crossregion 處置**：框架保留作能力儲備（5 台 GCP 機器 IaC 程式 + tidb-vm6 ansible + placement SQL + dry-run 閘門 + chrony 時鐘閘門）；**不拆除** commit `0c17ae9`；業務面就緒時隨時啟動
 
-### D2 — TLS 補測：**降權，cavet-only**
+### D2 — 傳輸加密 TLS 補測：**降權，僅備註不另測**
 
-- 不啟動 9h 補測；PoC report 寫 caveat-only：「production TLS 預估 −5 ~ −15%」
+- 不啟動約 9 小時補測；PoC 報告寫備註：「正式環境啟用 TLS 後吞吐預估 −5 ~ −15%」
 
-### D3 — PG → TiDB 可行性（對應 Q4）：**TiDB 著重**（MySQL 相容性為主）
+### D3 — PostgreSQL → TiDB 可行性（對應 Q4）：**TiDB 為主**（採 MySQL 相容路線）
 
-- 公司現行業務 MySQL stack 為主，PG stack < 5%
+- 公司現行業務 MySQL 應用為主，PostgreSQL 應用佔比 < 5%
 
-### D4 — all-in TiDB（對應 Q5）：**Unknown / 資訊不足**
+### D4 — 是否全面採用 TiDB（對應 Q5）：**Unknown / 資訊不足**
 
-- DBA 持有資訊不足以上 CTO / IT 治理委員會
-- 阻塞：缺 PingCAP 商業實體狀態 / 中資政策依據 / 5-yr TCO 對比 / reference call / dual-vendor 量化共 5 項背書（補完約 4-6 週後重議）
+- DBA 手上資訊不足以送 CTO / IT 治理委員會決議
+- 阻塞點：缺以下 4 項背書（補完約 4-6 週後重議）
+  1. PingCAP 商業實體最新狀態
+  2. 中資廠商政策依據
+  3. 5 年總持有成本（TCO）對比
+  4. 客戶推薦訪談結果
 
 ---
 
@@ -60,7 +72,8 @@
 
 | 日期 | 變更 |
 |---|---|
-| 2026-06-09 | 初稿 + 14 Q&A 拍板（commit cdb13e3）|
-| 2026-06-15 | §3.2 / §3.10 / Q12 三節縮減（commit 85825a0）|
-| 2026-06-15 | 整體結構重組為 10 個 section（commit 324d4be）|
-| 2026-06-15 | 改為純 Q / 選項結構；移除原 10 section 對齊表 / vendor 對照表 / Q5 材料清單 / Q3 衍生 10 項 / critical path 等延伸資料 |
+| 2026-06-09 | 初稿 + 14 道問答拍板（commit `cdb13e3`）|
+| 2026-06-15 | §3.2 / §3.10 / Q12 三節縮減（commit `85825a0`）|
+| 2026-06-15 | 整體結構重組為 10 個段（commit `324d4be`）|
+| 2026-06-15 | 改為純「問題 / 選項」結構；移除原段落式延伸資料（commit `b7c9955`）|
+| 2026-06-15 | 減少英文技術名詞用法；加註中文翻譯（BSL、TCO、TLS、IDC、IaC 等首次出現補中文）|
