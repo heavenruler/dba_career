@@ -90,12 +90,12 @@ note_fail() {
 
 ssh_idc() {  # ssh_idc <user@host> <remote-cmd>
   ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
-      -o BatchMode=yes "$1" "$2" 2>&1
+      -o BatchMode=yes -o LogLevel=ERROR "$1" "$2" 2>&1
 }
 
 ssh_gcp() {  # ssh_gcp <port> <remote-cmd>
   ssh -i "$GCP_SSH_KEY" -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
-      -o BatchMode=yes -p "$1" "${GCP_SSH_USER}@localhost" "$2" 2>&1
+      -o BatchMode=yes -o LogLevel=ERROR -p "$1" "${GCP_SSH_USER}@localhost" "$2" 2>&1
 }
 
 # ---- header ----------------------------------------------------------

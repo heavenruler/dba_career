@@ -38,11 +38,17 @@ resource "google_compute_instance" "poc" {
     subnetwork = var.subnetwork
   }
 
+  # phase-crossregion §6 / PRE-FLIGHT-TEST-PLAN A9 (2026-06-17):
+  #   SPOT → STANDARD：避免 150h sweep 期間被 GCP preempt 中斷。
+  #   成本影響：5 × e2-standard-4 月費約 +$300 (SPOT 折扣 ~50% → STANDARD)。
+  #   sweep 完成後可回 SPOT：恢復 provisioning_model="SPOT" / preemptible=true
+  #                       / automatic_restart=false / on_host_maintenance="TERMINATE"，
+  #                       terraform apply 走 stop→update→start in-place（不 destroy/recreate）。
   scheduling {
-    automatic_restart   = false
-    on_host_maintenance = "TERMINATE"
-    preemptible         = true
-    provisioning_model  = "SPOT"
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+    preemptible         = false
+    provisioning_model  = "STANDARD"
   }
 
   service_account {
@@ -103,12 +109,31 @@ resource "google_compute_instance" "poc" {
       alternatives --set python3 /usr/bin/python3.12
 
       # 共通工具 (僅 BaseOS/AppStream，jq/htop 需 EPEL 故略)
+      # iperf3 為 wan-probe.sh opt-in mode (WAN_PROBE_IPERF=1) 預備 (phase-crossregion §6 #4)
       dnf -y install tar gzip rsync unzip lvm2 nmap-ncat bind-utils \
                      git wget tmux vim-enhanced iotop sysstat \
-                     policycoreutils-python-utils perl chrony tuned
+                     policycoreutils-python-utils perl chrony tuned \
+                     iperf3
 
       systemctl enable --now chronyd
       systemctl enable --now tuned
+
+      # iperf3 server for WAN probe (port 5201; GCP firewall by tag; sweep 結束後 disable)
+      cat > /etc/systemd/system/iperf3-server.service <<'UNIT_EOF'
+[Unit]
+Description=iperf3 server (WAN probe)
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/iperf3 -s -p 5201
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+UNIT_EOF
+      systemctl daemon-reload
+      systemctl enable --now iperf3-server.service
 
       dnf clean all
       touch "$STARTUP_DONE"
