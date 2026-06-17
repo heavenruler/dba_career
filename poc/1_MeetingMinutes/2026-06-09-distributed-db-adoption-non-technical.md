@@ -53,7 +53,20 @@
   	- phase-n+2: IDC + EDC [A/S]
   	- phase-n+3: IDC + EDC [A/A(RO)]
   	- phase-n+4: IDC + EDC [A/S]
-- **phase-crossregion 處置**：框架保留作能力儲備（5 台 GCP 機器 IaC 程式 + tidb-vm6 ansible + placement SQL + dry-run gate + chrony timesync gate）；**不拆除** commit `0c17ae9`；業務面就緒時隨時啟動
+- **phase-crossregion 處置**：框架保留作能力儲備。
+
+  **現有 framework（更新至 2026-06-17）**：
+  - IaC：5 台 GCP 機器（STANDARD provisioning，per `iac-gcp/main.tf`）
+  - Ansible：`tidb-vm6.yml` / `cockroach-vm6.yml` / `yugabyte-vm6.yml` 三套
+  - Placement SQL：TiDB / CRDB / YBDB × P-A / P-B 六份（`tests/{tidb,cockroach,yuga}/placement-p-{a,b}.sql`）
+  - Suite 驅動：`run-vm6-suite.sh`（含 DRY_RUN=1 path）+ `run-vm6-aa.sh` + `wan-probe.sh`
+  - Pre-flight gate：`gate-chrony-cross-region.sh`（10-host fail-closed < 100ms）+ `idc-vm-baseline-reset.sh`（DB-family aware）+ `idc-iperf3-bootstrap.sh`
+  - Chaos / F1：C1 / C4 / C7 + F1 failover **planner-only**（嚴禁 --execute；改實跑需 PR + DBA review，per template at `PRE-FLIGHT-TEST-PLAN-2026-06-17.md` §3.3）
+  - Archive：`sweep-archive.sh`（7-step：verify → GCP fetch → summary → tar → terraform destroy → IAP cleanup → .archive.done）
+  - SSOT 文件：`phase-crossregion/REPLAN-2026-06-15.md`（執行計畫）+ `PRE-FLIGHT-TEST-PLAN-2026-06-17.md`（10 階段 A-J checklist + fail 嚴重度矩陣）
+  - P-A vs P-B explainer：`phase-crossregion/P-A-vs-P-B-explainer.md`（C-level 風格，含 ASCII 圖 + 決策樹）
+
+  **不拆除** commit `0c17ae9`；業務面就緒時隨時啟動（dry-run → sweep 入口已備）。
 
 ### D2 — 傳輸加密 TLS 補測：**僅備註不另測**
 
