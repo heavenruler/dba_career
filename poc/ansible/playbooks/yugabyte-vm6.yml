@@ -50,7 +50,7 @@
   become: true
   gather_facts: true
   vars:
-    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    proxy_url: "http://{{ 'gproxy' if region | default('idc') == 'gcp' else 'sproxy' }}.104-dev.com.tw:3128"
     yb_version: "2025.2.2.2"
     yb_build: "b11"
     yb_archive: "yugabyte-{{ yb_version }}-{{ yb_build }}-linux-x86_64.tar.gz"
@@ -147,7 +147,7 @@
   become: true
   gather_facts: true
   vars:
-    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    proxy_url: "http://{{ 'gproxy' if region | default('idc') == 'gcp' else 'sproxy' }}.104-dev.com.tw:3128"
     yb_version: "2025.2.2.2"
     yb_build: "b11"
     yb_archive: "yugabyte-{{ yb_version }}-{{ yb_build }}-linux-x86_64.tar.gz"

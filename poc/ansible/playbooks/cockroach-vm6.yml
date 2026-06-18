@@ -53,7 +53,7 @@
   become: true
   gather_facts: true
   vars:
-    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    proxy_url: "http://{{ 'gproxy' if region | default('idc') == 'gcp' else 'sproxy' }}.104-dev.com.tw:3128"
     crdb_cluster_name: tpcc-crdb-vm6
     crdb_version: v26.2.0
     crdb_download_url: "https://binaries.cockroachdb.com/cockroach-{{ crdb_version }}.linux-amd64.tgz"
@@ -137,7 +137,7 @@
   become: true
   gather_facts: true
   vars:
-    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    proxy_url: "http://{{ 'gproxy' if region | default('idc') == 'gcp' else 'sproxy' }}.104-dev.com.tw:3128"
     crdb_version: v26.2.0
     crdb_download_url: "https://binaries.cockroachdb.com/cockroach-{{ crdb_version }}.linux-amd64.tgz"
     crdb_install_dir: /opt/cockroach

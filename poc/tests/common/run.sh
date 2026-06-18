@@ -47,7 +47,11 @@ fi
 
 # §4: WAN probe hook — 限 RESULT_SCOPE=X-CROSS && WAN_PROBE_ENABLED=1 才啟用
 # (per REPLAN-2026-06-15 §4). 採樣失敗 warn-only，不阻斷 sweep。
-WAN_PROBE_SH="$(cd "$SELF/../../phase-crossregion/scripts" 2>/dev/null && pwd)/wan-probe.sh"
+WAN_PROBE_SH=""
+if _wan_dir=$(cd "$SELF/../../phase-crossregion/scripts" 2>/dev/null && pwd); then
+  WAN_PROBE_SH="$_wan_dir/wan-probe.sh"
+fi
+unset _wan_dir
 wan_probe() {  # wan_probe <phase> <out-dir>
   [[ "${RESULT_SCOPE:-}" == "X-CROSS" && "${WAN_PROBE_ENABLED:-0}" == "1" ]] || return 0
   [[ -x "$WAN_PROBE_SH" ]] || { warn "wan-probe.sh not executable: $WAN_PROBE_SH"; return 0; }

@@ -45,7 +45,7 @@
   become: true
   gather_facts: true
   vars:
-    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    proxy_url: "http://{{ 'gproxy' if region | default('idc') == 'gcp' else 'sproxy' }}.104-dev.com.tw:3128"
     tidb_cluster_name: tpcc-tidb-vm6
     tidb_version: v8.5.2
   tasks:
@@ -99,13 +99,20 @@
         https_proxy: "{{ proxy_url }}"
       changed_when: false
 
+    # tiup deploy 會 ssh root@<self> 取 cpu-arch/kernel-name；control node 必須能 ssh 到自己。
+    - name: Authorize control node root pubkey on itself (tiup self-ssh)
+      ansible.posix.authorized_key:
+        user: root
+        state: present
+        key: "{{ tidb_root_pubkey['content'] | b64decode | trim }}"
+
 # Prepare workers (idc-dbhost-2/3 + gcp-dbhost-1/2/3): prereqs + accept control key + OS tuning
 - name: Prepare TiDB worker nodes (IDC + GCP)
   hosts: 172.24.40.33,172.24.40.34,g-test-poc-1,g-test-poc-2,g-test-poc-3
   become: true
   gather_facts: true
   vars:
-    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    proxy_url: "http://{{ 'gproxy' if region | default('idc') == 'gcp' else 'sproxy' }}.104-dev.com.tw:3128"
   tasks:
     - name: Install TiDB node prerequisites
       ansible.builtin.shell: |
@@ -186,7 +193,7 @@
   become: true
   gather_facts: false
   vars:
-    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    proxy_url: "http://{{ 'gproxy' if region | default('idc') == 'gcp' else 'sproxy' }}.104-dev.com.tw:3128"
     tidb_cluster_name: tpcc-tidb-vm6
     tidb_version: v8.5.2
     tidb_topology_path: /root/tidb-vm6-topology.yaml
