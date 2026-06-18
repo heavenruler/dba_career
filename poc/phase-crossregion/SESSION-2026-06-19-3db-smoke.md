@@ -13,20 +13,25 @@
 |---|---|---|---|---|---|
 | **TiDB v8.5.2** | ✅ | ✅ | **11112.9** | 24967.1 | 6-node cluster, P-A leader pinned IDC |
 | **CRDB v26.2.0** | ✅ | ✅ | **2145.2** | 4896.0 | 6 nodes all ALIVE, region locality 正確 |
-| **YBDB 2025.2.2.2** | ⚠️ deploy 6-node OK | ✅ IDC-only | **4324.6** | 9546.6 | 6 tservers deploy 通 / 3 IDC masters / 跑前需把 GCP 3 tservers kill 才能過 DDL |
+| **YBDB 2025.2.2.2** (IDC-only) | ⚠️ deploy 6-node OK | ✅ IDC-only | 4324.6 | 9546.6 | 6 tservers deploy / 3 IDC masters / kill GCP 後 IDC-only 3-tserver 跑 |
+| **YBDB 2025.2.2.2 (true 6-node)** | ✅ | ✅ | **6812.2** | 15129.2 | 真 6 tservers ALIVE (3 IDC + 3 GCP IP) + placement idc:2+gcp:1 + leader-pin IDC + 60s catalog wait |
 
-**Smoke 設定**：W=4 warehouses / 16 threads / 60s run (YBDB 為 86s) / 1 round / Read Committed isolation
+**Smoke 設定**：W=4 warehouses / 16 threads / 60s run (YBDB IDC-only 為 86s) / 1 round / Read Committed isolation
 
-**對照**：3 家同一 6-node 跨 region 拓樸 + P-A placement + Active-Standby profile，IDC writer client 從 .31 連 .32。YBDB 的 tpmC 不直接可比（其 cluster 實質為 IDC-only 3-node，TiDB/CRDB 為 6-node）。
+**對照**：3 家同一 6-node 跨 region 拓樸 + P-A placement + Active-Standby profile，IDC writer client 從 .31 連 .32。
+
+YBDB 6-node vs IDC-only 對比顯示：加上 GCP 3 個 tserver 作為 follower 後 tpmC 從 4324.6 升到 6812.2（+58%）——
+GCP follower 分擔讀寫負載，leader 仍在 IDC 享 quorum-local commit 的好處。
 
 ---
 
 ## 2. Cross-region 性能觀察
 
 ```
-TiDB tpmC  11112.9  ≈ 5.2 × CRDB   (6-node, P-A leader-pinned IDC)
-YBDB tpmC   4324.6  ≈ 2.0 × CRDB   (IDC-only 3-tserver, not strictly 6-node)
-CRDB tpmC   2145.2  ≈ 1 × baseline (6-node, cross-region Raft commit)
+TiDB tpmC  11112.9  ≈ 5.2 × CRDB   (true 6-node, P-A leader-pinned IDC)
+YBDB tpmC   6812.2  ≈ 3.2 × CRDB   (true 6-node, idc:2+gcp:1, leader-pinned IDC)
+YBDB tpmC   4324.6  ≈ 2.0 × CRDB   (IDC-only 3-tserver workaround，前期 fallback)
+CRDB tpmC   2145.2  ≈ 1 × baseline (true 6-node, cross-region Raft commit per write)
 ```
 
 **TiDB 領先的結構性原因**：P-A placement 把 region leader 釘在 IDC，2 follower 可同 region（IDC quorum）；
@@ -68,11 +73,38 @@ NEW_ORDER p99 1140ms vs TiDB p99 104.9ms — 約 11 倍延遲差。
 5. 重跑 prepare + run + collect
 ```
 
-**結果**：原本 panic 在 `creating index idx_customer`，fix 後 prepare 全跑完，run 出 tpmC 4324.6。
+**結果**：原本 panic 在 `creating index idx_customer`，fix 後 prepare 全跑完，run 出 tpmC 4324.6（IDC-only）。
 
-**Caveat**：本次 YBDB 是 IDC-only 3-tserver，不像 TiDB/CRDB 是真 6-node 跨 region。
-**Follow-up**：YBDB v2 真正跨 region 需手動 `yb-admin change_master_config` 把 GCP master 加進 quorum
-（yugabyted CLI 不支援），並設計 placement constraint 讓 GCP 當 read replica 或 follower-only。
+---
+
+## 2.6 YBDB 真 6-node 跨 region 突破（追加 06:30–07:21）
+
+第二輪確認 IDC-only 不夠完整，補做真 6-node 跨 region。
+
+**新發現的關鍵 bug**：
+- yugabyted `--advertise_address=g-test-poc-1` 在 GCP 端解析到 **IPv6 fe80::xxx**
+  （Linux hostname resolution priority），導致 join cluster 時 master 看到的 register address
+  與 advertise 不一致 → "A node is already running on 172.24.40.33" 假錯誤。
+  Fix: `--advertise_address=10.160.152.11` (直接用 IPv4 IP)。
+
+**追加 fix step**：
+```
+# 1. 在 tserver_flags 加入兩個 catalog wait timeout (default 5s 對 cross-region 不夠)
+   wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=60000
+   wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=300000
+
+# 2. yugabyted start 在 GCP 用 IP 而非 hostname:
+   sudo -u yugabyte yugabyted start --advertise_address=10.160.152.11 --join=172.24.40.32 ...
+
+# 3. yb-admin modify_placement_info "104.idc.vlan241:2,104.gcp.asia-east1-a:1" 3
+   yb-admin set_preferred_zones 104.idc.vlan241
+```
+
+**結果**：tpmC 從 IDC-only 4324.6 → **真 6-node 6812.2 (+58%)**。
+- GCP follower 分擔讀負載
+- Leader pinned IDC 仍享 IDC-quorum-local commit
+- 跨 region replica 帶來 1 額外 raft RTT，但 IDC quorum (2/3) 不卡 GCP slow follower
+- 真正 cross-region durability + IDC-local latency 的混合
 
 ---
 
@@ -106,9 +138,12 @@ NEW_ORDER p99 1140ms vs TiDB p99 104.9ms — 約 11 倍延遲差。
    今天用 DB_HOST=.32 直連繞過。Follow-up: 補 `ansible/playbooks/roles/haproxy_deploy/` 或 conditional skip。
 2. **cockroach-vm6.yml** 最後 `Apply placement SQL` task 太早跑（tpcc DB 還沒建）→ `ERROR: database "tpcc" does not exist`。
    應 deferred 到 prepare 後（同 TiDB 模式：deploy 只 CREATE POLICY、ALTER 留給 suite 用）。
-3. **yugabyte-vm6.yml** `yugabyted configure data_placement` 失敗（"Failed to add master g-test-poc-1"）→ §2.5 已找出
-   root cause + workaround (IDC-only)；真正 cross-region 修法需 `yb-admin change_master_config` 手動 + placement
-   read-replica 設計，本輪不修。
+3. **yugabyte-vm6.yml** `yugabyted configure data_placement` 失敗 → §2.5/§2.6 已找出
+   root cause + fix。真 6-node 跨 region 已驗證可行（tpmC 6812.2）：
+   - 需用 IP 而非 hostname 做 advertise_address (避 IPv6 解析)
+   - tserver_flags 加 catalog wait timeout 60s
+   - yb-admin modify_placement_info + set_preferred_zones IDC
+   Follow-up: 把 §2.6 步驟做成 playbook tasks 取代 yugabyted CLI 的 data_placement step。
 4. **`.47.20` haproxy.cfg** 仍未設定 → 今天 DB_HOST 改走 .32 直連。Follow-up: 配 haproxy 給 sweep 走 6-backend 均衡。
 
 ---
@@ -121,6 +156,7 @@ NEW_ORDER p99 1140ms vs TiDB p99 104.9ms — 約 11 倍延遲差。
 /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260619-025055/  ← YBDB 第 1 次 (prepare panic)
 /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260619-034736/  ← YBDB 第 2 次 (panic 仍在，placement_info 修但 GCP tservers 還 ALIVE)
 /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260619-045217/  ← YBDB 第 3 次 完整 (IDC-only after GCP kill)
+/tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260619-071031/  ← YBDB 第 4 次 完整 (真 6-node, tpmC 6812.2)
 ```
 
 ---
@@ -130,12 +166,13 @@ NEW_ORDER p99 1140ms vs TiDB p99 104.9ms — 約 11 倍延遲差。
 業務面 D1 拍板「現行 No，但中長期必需」維持。今天技術面新增證據：
 
 - **IaC** 兩邊重建/毀通過 ×2（昨 + 今）
-- **FW 開通後跨 region 集群可運作**：3 家 DB 全部 deploy 成功；TiDB/CRDB 跑出 tpmC
+- **FW 開通後跨 region 集群可運作**：3 家 DB 真 6-node 跨 region 全部跑出 tpmC（§2.6）
 - **TiDB P-A** 在跨 region 維持 IDC-quorum 寫入，效能近似 single-region（per smoke 數據）
 - **CRDB** 跨 region 寫入需付 5× 代價（per smoke 數據）— 適合 A-A 場景但要接受延遲
-- **YBDB** 跨 region master quorum 仍需手動處理（GCP master add 機制未明）
+- **YBDB** 真 6-node 跨 region 已驗證：placement idc:2+gcp:1 + leader-pin IDC + catalog wait 60s
+  + advertise_address 用 IP → tpmC 6812.2，居 TiDB 與 CRDB 中間
 
-→ D1「中長期必需」的技術可行性**已從 framework reserve 提升到「驗證可運作但需 tune」**。
+→ D1「中長期必需」的技術可行性**已從 framework reserve 提升到「3 家 DB 真 cross-region 都跑得起來」**。
 
 不拆除 commit `0c17ae9`；下輪 sweep 啟動條件齊備（FW + 3 DB framework + tpmC baseline 已測）。
 

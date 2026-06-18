@@ -320,6 +320,8 @@
       ysql_enable_auto_analyze=false,
       ysql_num_shards_per_tserver=1,
       enable_automatic_tablet_splitting=false,
+      wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=60000,
+      wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=300000,
       placement_cloud=104,
       placement_region=idc,
       placement_zone=vlan241
@@ -381,6 +383,8 @@
       ysql_enable_auto_analyze=false,
       ysql_num_shards_per_tserver=1,
       enable_automatic_tablet_splitting=false,
+      wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=60000,
+      wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=300000,
       placement_cloud={{ yb_placement_cloud }},
       placement_region={{ yb_placement_region }},
       placement_zone={{ yb_placement_zone }}
