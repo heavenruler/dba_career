@@ -91,9 +91,14 @@ case "$CLIENT_ZONE" in
 esac
 
 # Pre-flight: chrony cross-region drift gate (Q10, fail-closed <100ms)
-echo "[wrapper] step 0/5 chrony-cross-region drift gate"
-bash "$SELF/gate-chrony-cross-region.sh" --ts "$TS" --root-suffix "${DB}-${TOPOLOGY}-${ISO}-${TS}" \
-  --result-scope "$RESULT_SCOPE"
+# GATE_SKIP=1: skip if upstream (MAC-side) already verified; suite cannot reach IAP tunnels.
+if [[ "${GATE_SKIP:-0}" == "1" ]]; then
+  echo "[wrapper] step 0/5 chrony gate SKIP (GATE_SKIP=1)"
+else
+  echo "[wrapper] step 0/5 chrony-cross-region drift gate"
+  bash "$SELF/gate-chrony-cross-region.sh" --ts "$TS" --root-suffix "${DB}-${TOPOLOGY}-${ISO}-${TS}" \
+    --result-scope "$RESULT_SCOPE"
+fi
 
 # fan-out CLUSTER_HOSTS (logical_id@addr:port)
 : "${CLUSTER_HOSTS:=idc-dbhost-1@172.24.40.32 idc-dbhost-2@172.24.40.33 idc-dbhost-3@172.24.40.34 gcp-dbhost-1@localhost:12211 gcp-dbhost-2@localhost:12212 gcp-dbhost-3@localhost:12213}"
