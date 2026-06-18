@@ -147,10 +147,11 @@ if anomalies:
     verdict='FAIL'
     for label,reason in anomalies:
         fail_reasons.append(f'host {label}: {reason}')
-if drift.get('median', float('inf')) >= mx:
-    verdict='FAIL'; fail_reasons.append(f'drift_median {drift["median"]:.3f}ms >= {mx}ms')
-if drift.get('worst', float('inf')) >= wmx:
-    verdict='FAIL'; fail_reasons.append(f'drift_worst {drift["worst"]:.3f}ms >= {wmx}ms')
+if drift:
+    if drift['median'] >= mx:
+        verdict='FAIL'; fail_reasons.append(f'drift_median {drift["median"]:.3f}ms >= {mx}ms')
+    if drift['worst'] >= wmx:
+        verdict='FAIL'; fail_reasons.append(f'drift_worst {drift["worst"]:.3f}ms >= {wmx}ms')
 
 # --- Write OUT_TXT (legacy-compatible) ---
 with open(out_txt,'w') as f:

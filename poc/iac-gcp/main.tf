@@ -119,24 +119,26 @@ resource "google_compute_instance" "poc" {
       systemctl enable --now tuned
 
       # iperf3 server for WAN probe (port 5201; GCP firewall by tag; sweep 結束後 disable)
+      # NOTE: outer HCL <<-EOF closes at col 6 → HCL strips 6 → bash sees PROXYEOF /
+      # UNIT_EOF terminators at col 0. col-0 [Unit] would defeat strip; indent to col 6.
       cat > /etc/systemd/system/iperf3-server.service <<'UNIT_EOF'
-[Unit]
-Description=iperf3 server (WAN probe)
-After=network-online.target
+      [Unit]
+      Description=iperf3 server (WAN probe)
+      After=network-online.target
 
-[Service]
-ExecStart=/usr/bin/iperf3 -s -p 5201
-Restart=always
-RestartSec=5
+      [Service]
+      ExecStart=/usr/bin/iperf3 -s -p 5201
+      Restart=always
+      RestartSec=5
 
-[Install]
-WantedBy=multi-user.target
-UNIT_EOF
+      [Install]
+      WantedBy=multi-user.target
+      UNIT_EOF
       systemctl daemon-reload
       systemctl enable --now iperf3-server.service
 
       dnf clean all
       touch "$STARTUP_DONE"
-    EOF
+      EOF
   }
 }
