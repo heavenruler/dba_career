@@ -1,8 +1,9 @@
 # SESSION 2026-06-19 — 3-DB Cross-Region Smoke (TiDB / CRDB / YBDB)
 
 > 接續 2026-06-18：FW 開通後重啟 3 DB phase-crossregion smoke。
-> TiDB + CRDB 完整 1-round smoke 跑出 tpmC；YBDB cluster deploy 通但 prepare DDL 超時。
+> TiDB + CRDB 6-node 跨 region 完整 smoke；YBDB 因 yugabyted master add 機制限制改 IDC-only 3-tserver 跑成。
 > 不拆 commit `0c17ae9`；framework reserve 維持。
+> **Update 04:52–05:02**：原報「YBDB ❌」追加 IDC-only 跑出 tpmC 4324.6（見 §2.5 fix 過程）。
 
 ---
 
@@ -12,19 +13,20 @@
 |---|---|---|---|---|---|
 | **TiDB v8.5.2** | ✅ | ✅ | **11112.9** | 24967.1 | 6-node cluster, P-A leader pinned IDC |
 | **CRDB v26.2.0** | ✅ | ✅ | **2145.2** | 4896.0 | 6 nodes all ALIVE, region locality 正確 |
-| **YBDB 2025.2.2.2** | ⚠️ partial | ❌ | — | — | 6 tservers ALIVE / 3 IDC masters only / DDL 跨 region timeout |
+| **YBDB 2025.2.2.2** | ⚠️ deploy 6-node OK | ✅ IDC-only | **4324.6** | 9546.6 | 6 tservers deploy 通 / 3 IDC masters / 跑前需把 GCP 3 tservers kill 才能過 DDL |
 
-**Smoke 設定**：W=4 warehouses / 16 threads / 60s run / 1 round / Read Committed isolation
+**Smoke 設定**：W=4 warehouses / 16 threads / 60s run (YBDB 為 86s) / 1 round / Read Committed isolation
 
-**對照**：3 家同一 6-node 跨 region 拓樸 + P-A placement + Active-Standby profile，IDC writer client 從 .31 連 .32。
+**對照**：3 家同一 6-node 跨 region 拓樸 + P-A placement + Active-Standby profile，IDC writer client 從 .31 連 .32。YBDB 的 tpmC 不直接可比（其 cluster 實質為 IDC-only 3-node，TiDB/CRDB 為 6-node）。
 
 ---
 
 ## 2. Cross-region 性能觀察
 
 ```
-TiDB tpmC  11112.9  ≈ 5.2 × CRDB
-CRDB tpmC   2145.2  ≈ 1 × baseline
+TiDB tpmC  11112.9  ≈ 5.2 × CRDB   (6-node, P-A leader-pinned IDC)
+YBDB tpmC   4324.6  ≈ 2.0 × CRDB   (IDC-only 3-tserver, not strictly 6-node)
+CRDB tpmC   2145.2  ≈ 1 × baseline (6-node, cross-region Raft commit)
 ```
 
 **TiDB 領先的結構性原因**：P-A placement 把 region leader 釘在 IDC，2 follower 可同 region（IDC quorum）；
@@ -35,6 +37,42 @@ NEW_ORDER p99 1140ms vs TiDB p99 104.9ms — 約 11 倍延遲差。
 
 **YBDB 結構性卡點**：master quorum 在 IDC，tablet allocation DDL 需要等所有 tserver 回應，
 跨 region tablet creation timeout（go-tpc `pq: timed out waiting for postgres backends to catch up`）。
+
+---
+
+## 2.5 YBDB 失敗→成功 root cause 與 fix 過程
+
+**FW verdict**：雙向 nc listener 測 7100 / 9100，IDC ↔ GCP 都通 — **不是 FW 問題**。
+
+**Root cause 3 連環**：
+1. **yugabyted v2 master add 限制**：只在前 3 個 joiner 啟 yb-master；後續 joiner 只啟 yb-tserver。
+   GCP 3 node 第 4-6 順位 join → 沒 yb-master → `yugabyted configure data_placement` add master 失敗。
+2. **預設 placement_info 含 `cloud1.datacenter1.rack1:1` 假 zone block**：
+   yb-master process 啟動時帶 `--placement_cloud=cloud1 --placement_region=datacenter1 --placement_zone=rack1`
+   作為「最後一組」flag（cmdline 重複後 wins），導致 master 自報 default zone → universe placementBlocks 多了
+   一塊「沒任何 tserver 在裡面」的 zone, RF=3 之 1 replica 永遠 allocate 失敗。
+3. **DDL catalog wait**：YSQL `CREATE INDEX` 觸發 catalog version 更新，需要等所有 ALIVE tservers 的
+   postgres backend ack。GCP 3 tservers 還在 ALIVE 但跨 region catalog ack 慢 → 超過 pg_backend
+   等待上限 → `pq: timed out waiting for postgres backends to catch up`。
+
+**Fix steps**（按順序套用）：
+```
+1. yb-admin modify_placement_info "104.idc.vlan241:3" 3
+   → universe placementBlocks 變單一 IDC zone, RF=3 全在 IDC tservers（消滅假 zone block）
+2. yb-admin change_blacklist ADD g-test-poc-{1,2,3}:9100
+   → tablet 不放 GCP tservers
+3. ssh root@gcp-N "sudo -u yugabyte yugabyted stop --base_dir=/var/yugabyte"
+   + pkill -9 yb-master yb-tserver yugabyted
+   → GCP processes 全死
+4. 等 60s (tserver_unresponsive_timeout_ms default) 讓 master 標 GCP 為 DEAD
+5. 重跑 prepare + run + collect
+```
+
+**結果**：原本 panic 在 `creating index idx_customer`，fix 後 prepare 全跑完，run 出 tpmC 4324.6。
+
+**Caveat**：本次 YBDB 是 IDC-only 3-tserver，不像 TiDB/CRDB 是真 6-node 跨 region。
+**Follow-up**：YBDB v2 真正跨 region 需手動 `yb-admin change_master_config` 把 GCP master 加進 quorum
+（yugabyted CLI 不支援），並設計 placement constraint 讓 GCP 當 read replica 或 follower-only。
 
 ---
 
@@ -68,8 +106,9 @@ NEW_ORDER p99 1140ms vs TiDB p99 104.9ms — 約 11 倍延遲差。
    今天用 DB_HOST=.32 直連繞過。Follow-up: 補 `ansible/playbooks/roles/haproxy_deploy/` 或 conditional skip。
 2. **cockroach-vm6.yml** 最後 `Apply placement SQL` task 太早跑（tpcc DB 還沒建）→ `ERROR: database "tpcc" does not exist`。
    應 deferred 到 prepare 後（同 TiDB 模式：deploy 只 CREATE POLICY、ALTER 留給 suite 用）。
-3. **yugabyte-vm6.yml** `yugabyted configure data_placement` 失敗（"Failed to add master g-test-poc-1"），
-   GCP master 沒 join → 後續 DDL 跨 region timeout。Root cause 需另查 yugabyted master add 機制（可能需手動 yb-admin add_master）。
+3. **yugabyte-vm6.yml** `yugabyted configure data_placement` 失敗（"Failed to add master g-test-poc-1"）→ §2.5 已找出
+   root cause + workaround (IDC-only)；真正 cross-region 修法需 `yb-admin change_master_config` 手動 + placement
+   read-replica 設計，本輪不修。
 4. **`.47.20` haproxy.cfg** 仍未設定 → 今天 DB_HOST 改走 .32 直連。Follow-up: 配 haproxy 給 sweep 走 6-backend 均衡。
 
 ---
@@ -79,7 +118,9 @@ NEW_ORDER p99 1140ms vs TiDB p99 104.9ms — 約 11 倍延遲差。
 ```
 /tmp/poc-tpcc/artifacts/X-CROSS/tidb-vm-6node-P-A-rc-20260619-010846/  ← TiDB 完整 (.gate/.prepare/.run/.collect 全齊)
 /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-A-rc-20260619-015549/  ← CRDB 完整
-/tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260619-025055/  ← YBDB 只到 .gate.done (prepare panic)
+/tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260619-025055/  ← YBDB 第 1 次 (prepare panic)
+/tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260619-034736/  ← YBDB 第 2 次 (panic 仍在，placement_info 修但 GCP tservers 還 ALIVE)
+/tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260619-045217/  ← YBDB 第 3 次 完整 (IDC-only after GCP kill)
 ```
 
 ---
