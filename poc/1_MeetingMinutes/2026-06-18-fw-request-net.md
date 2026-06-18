@@ -34,40 +34,53 @@ NET 同仁：
     10.160.152.15              (TPCC client)
 
 方向：**雙向**（IDC → GCP 與 GCP → IDC 皆需）
+理由：3 家 DB 都是 mesh-topology cluster（每節點同時為 client + server），PD/master
+      Raft 選舉與副本同步必須雙向；單向開只能達到「client → DB」一半流量。
 
-== 需開通 Port (TCP，依 DB 分群) ==
+== Source / Destination 網段 (CIDR) ==
 
-【TiDB v8.5 — 6 個 port】
-  2379       PD client API           (集群中控、tiup 健康檢查、TSO 取得)
-  2380       PD peer RPC             (PD 6-node Raft 選舉與 region 路由同步)
-  4000       TiDB SQL                (MySQL 8.0 wire protocol；client 連線)
-  10080      TiDB status / metrics   (Prometheus pull、健康檢查)
-  20160      TiKV server RPC         (跨 region Raft replication、coprocessor)
-  20180      TiKV status / metrics   (Prometheus pull、Raft 狀態查詢)
+  IDC 側（2 網段）：
+    172.24.40.0/24   ← .31 driver + .32/.33/.34 DB
+    172.24.47.0/24   ← .20 haproxy/monitor
 
-【CockroachDB v23+ — 2 個 port】
-  26257      CockroachDB SQL + RPC   (Postgres wire + 節點 Raft；同 port 雙用)
-  8080       DB Console / HTTP admin (健康檢查、UI、metrics)
+  GCP 側（1 網段）：
+    10.160.152.0/24  ← .11-.13 DB + .14 haproxy + .15 client
 
-【YugabyteDB v2024+ — 5 個 port】
-  7100       yb-master RPC           (master 跨節點 Raft 同步、tablet 路由)
-  7000       yb-master HTTP / UI     (健康檢查、tablet 狀態)
-  9100       yb-tserver RPC          (tserver 跨節點 Raft、tablet 副本同步)
-  9000       yb-tserver HTTP / UI    (健康檢查、tablet 狀態)
-  5433       YSQL (Postgres wire)    (client 連線、TPCC workload)
+  雙向 rule：(IDC 2 segs) ↔ (GCP 1 seg)
 
-【共通基礎服務 (TCP/UDP) — 已驗證可通，列出以求完整性】
-  22  / TCP  SSH                     (ansible 部署、tiup 控制；目前已通)
-  123 / UDP chrony NTP               (跨 region 時鐘同步；目前已通，median drift 0.02ms)
-  5201 / TCP iperf3                  (WAN probe；opt-in，本輪未啟用可不開)
+== 需開通 Port range (TCP，9 rule 整合) ==
 
-== 統計 ==
+  Rule  Port range    Proto  涵蓋 service                         備註
+  ─────────────────────────────────────────────────────────────────────────
+  R1    2379-2380     TCP    TiDB PD client + peer                集群中控 / Raft 選舉
+  R2    4000          TCP    TiDB SQL                             MySQL wire
+  R3    5433          TCP    YBDB YSQL                            Postgres wire (client)
+  R4    7000-7100     TCP    YBDB yb-master HTTP + RPC            UI + 跨節點同步
+  R5    8080          TCP    CRDB DB Console                      HTTP admin / UI
+  R6    9000-9100     TCP    YBDB yb-tserver HTTP + RPC           UI + 跨節點同步
+  R7    10080         TCP    TiDB status / metrics                Prometheus pull
+  R8    20160-20180   TCP    TiKV RPC + status                    跨 region Raft + metrics
+  R9    26257         TCP    CRDB SQL + 節點 Raft                  同 port 雙用 (Postgres wire)
 
-3 家 DB 合計：**13 個 TCP port**（TiDB 6 + CRDB 2 + YBDB 5）
-加共通：+22 (TCP, 已通) + 123 (UDP, 已通)
+  合計：9 rule / 涵蓋 13 個具名 port
+
+== 優先序（如 NET 一次無法開齊）==
+
+  P0 (跨節點 cluster mesh 必須，6 rule)：
+    R1 (TiDB PD)、R8 (TiKV)、R4 (YBDB master)、R6 (YBDB tserver)、R9 (CRDB)、
+    R2/R3 (TiDB / YBDB client)
+
+  P1 (status/HTTP UI，建議開但非阻塞，3 rule)：
+    R5 (CRDB HTTP)、R7 (TiDB status)、(R4/R6 HTTP 部分 — 已含於 P0 range)
+
+== 共通基礎服務 (TCP/UDP) — 已驗證可通 ==
+
+  22  / TCP  SSH                ansible 部署、tiup 控制 (目前已通)
+  123 / UDP chrony NTP          時鐘同步 (目前已通，median drift 0.02ms)
+  5201 / TCP iperf3 (opt-in)    WAN probe (本輪未啟用，可暫不開)
 
 註：本 PoC 同一時間只啟用一家 DB（sequential 測試），但為避免每次切換都重申請，
-建議一次性開通三家全部 port。
+建議一次性開通 9 rule 全部 port range。
 
 == 期程 ==
 
@@ -86,8 +99,8 @@ PoC 結束後：可關閉
 
 == 安全 / 範圍限制 ==
 
-- 開通範圍限上述 5 IDC IP × 5 GCP IP，非整個 VLAN。
-- TCP port 一一列舉，無 ANY-ANY 申請。
+- 開通範圍限上述兩個 IDC /24 網段 × 一個 GCP /24 網段（host 級別本 PoC 5×5 = 25 對）。
+- TCP port range 9 rule，非 ANY-ANY 申請；最寬單一 range 為 7000-7100 / 9000-9100 (各 101 port，YBDB master/tserver 雙服務同段)。
 - 無外部 internet 暴露：5 GCP VM 已用 IAP-only（無 external IP）。
 - 結束後可立即關閉（PoC 為時間框架，非長期 prod 路徑）。
 
@@ -118,8 +131,8 @@ DBA team
      `failed to get cluster id ... dial tcp 172.24.40.32:2379: i/o timeout` × 3 IDC PD
    - 三條都是 PD 2379 port 跨 region 阻擋。
 
-→ 申請的 port 清單裡 **2379 / 2380 / 4000 / 20160 / 20180**（TiDB 跨節點 RPC 全 5 port）
-   是今天直接被阻擋的，**最高優先**。CRDB / YBDB 對等 port 雖未實測但
+→ 申請的 port range 裡 **R1 (2379-2380) / R2 (4000) / R8 (20160-20180)**（TiDB 跨節點 RPC 全 5 port）
+   是今天直接被阻擋的，**最高優先**。CRDB / YBDB 對等 port range（R3/R4/R6/R9）雖未實測但
    架構相同（每家都是 SQL port + RPC port + status port），預期同樣需要開通。
 
 ---
