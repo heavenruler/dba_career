@@ -320,8 +320,8 @@
       ysql_enable_auto_analyze=false,
       ysql_num_shards_per_tserver=1,
       enable_automatic_tablet_splitting=false,
-      wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=60000,
-      wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=300000,
+      wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=300000,
+      wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=600000,
       placement_cloud=104,
       placement_region=idc,
       placement_zone=vlan241
@@ -383,8 +383,8 @@
       ysql_enable_auto_analyze=false,
       ysql_num_shards_per_tserver=1,
       enable_automatic_tablet_splitting=false,
-      wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=60000,
-      wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=300000,
+      wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=300000,
+      wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=600000,
       placement_cloud={{ yb_placement_cloud }},
       placement_region={{ yb_placement_region }},
       placement_zone={{ yb_placement_zone }}
@@ -425,7 +425,9 @@
     yb_master_addresses: "172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100,10.160.152.11:7100,10.160.152.12:7100,10.160.152.13:7100"
   tasks:
     # yugabyted start 不接受 --rf；正確命令是 configure data_placement --rf=N (per yugabyte-vm3.yml line 264-275)。
-    - name: Configure data placement (RF=3)
+    # NOTE: yugabyted v2 fails to add GCP masters via this CLI (known limitation).
+    # Mark warn-only; phase4-ybdb-fix6n in Makefile applies placement via yb-admin instead.
+    - name: Configure data placement (RF=3) — best-effort; fix6n handles via yb-admin
       ansible.builtin.command:
         cmd: >-
           {{ yb_install_dir }}/bin/yugabyted configure data_placement
@@ -433,7 +435,8 @@
           --rf=3
       become_user: yugabyte
       register: yb_rf_set
-      failed_when: yb_rf_set.rc != 0
+      failed_when: false
+      changed_when: yb_rf_set.rc == 0
       changed_when: "'success' in (yb_rf_set.stdout | default('') | lower) or yb_rf_set.rc == 0"
 
     - name: Wait for RF to propagate (universe config converges)

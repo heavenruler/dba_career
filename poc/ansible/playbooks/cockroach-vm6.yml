@@ -415,15 +415,16 @@
         mode: '0640'
       # copy from repo (controller fs) → .32:/root/
 
-    - name: Apply placement SQL — DATABASE-level CONFIGURE ZONE only (deploy-time，不含 ALTER TABLE)
+    # NOTE: tpcc DB is created at smoke prepare time, not at deploy. CONFIGURE ZONE on
+    # tpcc DB before prepare → ERROR: database "tpcc" does not exist. Mark warn-only;
+    # ALTER TABLE is applied later (per REPLAN-2026-06-15 §0 B0-3).
+    - name: Apply placement SQL — DATABASE-level CONFIGURE ZONE only (best-effort; tpcc DB 不存在時 skip)
       ansible.builtin.shell: |
-        set -e
-        # 只跑到 "-- tpcc database 套用" 標記前的 CONFIGURE ZONE 段；
-        # ALTER TABLE 由 run-vm6-suite.sh 在 prepare 後執行 (per REPLAN-2026-06-15 §0 B0-3)
+        # 只跑到 "-- tpcc database 套用" 標記前的 CONFIGURE ZONE 段
         awk '/^-- tpcc database 套用/{exit}1' /root/crdb-vm6-placement-{{ crdb_placement | lower }}.sql \
           | /usr/local/bin/cockroach sql --insecure --host=172.24.40.32:{{ crdb_sql_port }}
       args:
         executable: /bin/bash
       register: crdb_placement_apply
-      changed_when: false
-      failed_when: crdb_placement_apply.rc != 0
+      changed_when: crdb_placement_apply.rc == 0
+      failed_when: false

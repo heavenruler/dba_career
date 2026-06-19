@@ -266,21 +266,41 @@ phase4-ybdb-fix6n:
 	  port=1221$$i; ip=10.160.152.1$$i; \
 	  case $$i in 1) zone=asia-east1-a;; 2) zone=asia-east1-b;; 3) zone=asia-east1-c;; esac; \
 	  ssh -p $$port root@localhost " \
-	    pkill -9 -f 'yb-master|yb-tserver|yugabyted' 2>/dev/null || true; sleep 3; \
+	    pkill -9 -x yb-master 2>/dev/null; pkill -9 -x yb-tserver 2>/dev/null; \
+	    pkill -9 -x yugabyted-ui 2>/dev/null; \
+	    for pid in \$$(pgrep -x python3 2>/dev/null); do \
+	      cmd=\$$(tr '\\0' ' ' < /proc/\$$pid/cmdline 2>/dev/null); \
+	      case \"\$$cmd\" in *bin/yugabyted*) kill -9 \$$pid 2>/dev/null ;; esac; \
+	    done; sleep 3; \
 	    rm -rf /var/yugabyte && mkdir -p /var/yugabyte && chown yugabyte:yugabyte /var/yugabyte; \
 	    sudo -u yugabyte /opt/yugabyte/bin/yugabyted start \
 	      --base_dir=/var/yugabyte \
 	      --advertise_address=$$ip \
 	      --join=172.24.40.32 \
 	      --master_flags='enable_automatic_tablet_splitting=false,placement_cloud=104,placement_region=gcp,placement_zone='$$zone \
-	      --tserver_flags='memory_limit_hard_bytes=11811160064,db_block_cache_size_percentage=50,durable_wal_write=true,require_durable_wal_write=true,yb_enable_read_committed_isolation=true,ysql_enable_auth=false,ysql_enable_auto_analyze=false,ysql_num_shards_per_tserver=1,enable_automatic_tablet_splitting=false,wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=60000,wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=300000,placement_cloud=104,placement_region=gcp,placement_zone='$$zone"; \
+	      --tserver_flags='memory_limit_hard_bytes=11811160064,db_block_cache_size_percentage=50,durable_wal_write=true,require_durable_wal_write=true,yb_enable_read_committed_isolation=true,ysql_enable_auth=false,ysql_enable_auto_analyze=false,ysql_num_shards_per_tserver=1,enable_automatic_tablet_splitting=false,wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=300000,wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=600000,placement_cloud=104,placement_region=gcp,placement_zone='$$zone"; \
 	done
 	@echo "==> sleep 60 (waiting tserver register)"
 	sleep 60
+	@echo "==> remove DEAD tservers from master metadata (avoid catalog wait race)"
+	@ssh root@$(IDC_NODES_HEAD) ' \
+	  MASTERS=$(YB_MASTER_ADDR); \
+	  for uuid in $$(/opt/yugabyte/bin/yb-admin --master_addresses=$$MASTERS list_all_tablet_servers 2>/dev/null | awk "/DEAD/{print \$$1}"); do \
+	    echo "  remove DEAD $$uuid"; \
+	    /opt/yugabyte/bin/yb-admin --master_addresses=$$MASTERS remove_tablet_server $$uuid 2>&1 | tail -1; \
+	  done; true'
 	@echo "==> set placement_info $(YB_PLACEMENT_INFO) RF=$(YB_RF)"
 	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) modify_placement_info '$(YB_PLACEMENT_INFO)' $(YB_RF)"
 	@echo "==> set preferred_zone $(YB_PREFERRED_ZONE)"
 	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) set_preferred_zones $(YB_PREFERRED_ZONE)"
+	@echo "==> wait load_balancer idle (max 10 min) — must Idle=1 before smoke"
+	@for i in $$(seq 1 60); do \
+	  out=$$(ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_is_load_balancer_idle" 2>&1); \
+	  case "$$out" in *"Idle = 1"*) echo "  load_balancer idle"; break;; esac; \
+	  printf "  %2d/60 not idle yet: %s\n" $$i "$$out"; \
+	  sleep 10; \
+	  [ $$i -eq 60 ] && { echo "[fix6n] load_balancer 10min 未 idle — abort"; exit 1; }; \
+	done
 
 # ===================================================================
 # Phase 5 — CRDB deploy
@@ -315,11 +335,13 @@ phase6-tidb-smoke:
 phase6-tidb-result:
 	@echo "==> phase6-tidb-result ts=$(TPCC_TS)"
 	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
-	ssh $(TPCC_CLIENT) "ls -la $$ROOT/.run.done 2>/dev/null && cat $$ROOT/.run.done; \
-	  echo '--- per-round tpmC ---'; \
-	  for f in $$ROOT/runs/threads-16/round-*/*.json; do \
-	    [ -f \"\$$f\" ] && python3 -c \"import json,sys; d=json.load(open(sys.argv[1])); print(sys.argv[1], 'tpmC=', d.get('tpmC') or d.get('tpmc'), 'tpmTotal=', d.get('tpmTotal'), 'p99=', (d.get('latency') or {}).get('p99'))\" \"\$$f\"; \
-	  done"
+	ssh $(TPCC_CLIENT) "echo '--- .run.done ---'; cat $$ROOT/.run.done 2>/dev/null || echo '(missing)'; \
+	  echo '--- [Summary] from go-tpc-stdout.txt (per-round) ---'; \
+	  for f in $$ROOT/runs/threads-*/round-*/go-tpc-stdout.txt; do \
+	    [ -f \"\$$f\" ] || continue; \
+	    echo \"### \$$f ###\"; \
+	    grep -E '^\\[Summary\\]|^tpmC|^Finished' \"\$$f\" | tail -10; \
+	  done; true"
 
 # ===================================================================
 # Phase 7 — YBDB smoke (bypass suite; gate/prepare/run/collect direct)
@@ -349,11 +371,13 @@ phase7-ybdb-smoke:
 phase7-ybdb-result:
 	@echo "==> phase7-ybdb-result ts=$(TPCC_TS)"
 	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/ybdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
-	ssh $(TPCC_CLIENT) "ls -la $$ROOT/.run.done 2>/dev/null && cat $$ROOT/.run.done; \
-	  echo '--- per-round tpmC ---'; \
-	  for f in $$ROOT/runs/threads-16/round-*/*.json; do \
-	    [ -f \"\$$f\" ] && python3 -c \"import json,sys; d=json.load(open(sys.argv[1])); print(sys.argv[1], 'tpmC=', d.get('tpmC') or d.get('tpmc'), 'tpmTotal=', d.get('tpmTotal'), 'p99=', (d.get('latency') or {}).get('p99'))\" \"\$$f\"; \
-	  done"
+	ssh $(TPCC_CLIENT) "echo '--- .run.done ---'; cat $$ROOT/.run.done 2>/dev/null || echo '(missing)'; \
+	  echo '--- [Summary] from go-tpc-stdout.txt (per-round) ---'; \
+	  for f in $$ROOT/runs/threads-*/round-*/go-tpc-stdout.txt; do \
+	    [ -f \"\$$f\" ] || continue; \
+	    echo \"### \$$f ###\"; \
+	    grep -E '^\\[Summary\\]|^tpmC|^Finished' \"\$$f\" | tail -10; \
+	  done; true"
 
 # ===================================================================
 # Phase 8 — CRDB smoke (bypass suite; gate/prepare/run/collect direct)
@@ -383,11 +407,13 @@ phase8-crdb-smoke:
 phase8-crdb-result:
 	@echo "==> phase8-crdb-result ts=$(TPCC_TS)"
 	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/crdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
-	ssh $(TPCC_CLIENT) "ls -la $$ROOT/.run.done 2>/dev/null && cat $$ROOT/.run.done; \
-	  echo '--- per-round tpmC ---'; \
-	  for f in $$ROOT/runs/threads-16/round-*/*.json; do \
-	    [ -f \"\$$f\" ] && python3 -c \"import json,sys; d=json.load(open(sys.argv[1])); print(sys.argv[1], 'tpmC=', d.get('tpmC') or d.get('tpmc'), 'tpmTotal=', d.get('tpmTotal'), 'p99=', (d.get('latency') or {}).get('p99'))\" \"\$$f\"; \
-	  done"
+	ssh $(TPCC_CLIENT) "echo '--- .run.done ---'; cat $$ROOT/.run.done 2>/dev/null || echo '(missing)'; \
+	  echo '--- [Summary] from go-tpc-stdout.txt (per-round) ---'; \
+	  for f in $$ROOT/runs/threads-*/round-*/go-tpc-stdout.txt; do \
+	    [ -f \"\$$f\" ] || continue; \
+	    echo \"### \$$f ###\"; \
+	    grep -E '^\\[Summary\\]|^tpmC|^Finished' \"\$$f\" | tail -10; \
+	  done; true"
 
 # ===================================================================
 # Phase 9 — Teardown (tunnels + terraform destroy)
