@@ -291,8 +291,13 @@ phase4-ybdb-fix6n:
 	  done; true'
 	@echo "==> set placement_info $(YB_PLACEMENT_INFO) RF=$(YB_RF)"
 	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) modify_placement_info '$(YB_PLACEMENT_INFO)' $(YB_RF)"
-	@echo "==> set preferred_zone $(YB_PREFERRED_ZONE)"
+	@echo "==> set preferred_zone $(YB_PREFERRED_ZONE) (soft hint)"
 	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) set_preferred_zones $(YB_PREFERRED_ZONE)"
+	@echo "==> Plan A: change_leader_blacklist ADD GCP 3 tservers (HARD pin leaders to IDC)"
+	@for ip in 10.160.152.11 10.160.152.12 10.160.152.13; do \
+	  echo "  blacklist $$ip:9100"; \
+	  ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) change_leader_blacklist ADD $$ip:9100" 2>&1 | tail -1; \
+	done
 	@echo "==> wait load_balancer idle (max 10 min) — must Idle=1 before smoke"
 	@for i in $$(seq 1 60); do \
 	  out=$$(ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_is_load_balancer_idle" 2>&1); \
@@ -300,6 +305,14 @@ phase4-ybdb-fix6n:
 	  printf "  %2d/60 not idle yet: %s\n" $$i "$$out"; \
 	  sleep 10; \
 	  [ $$i -eq 60 ] && { echo "[fix6n] load_balancer 10min 未 idle — abort"; exit 1; }; \
+	done
+	@echo "==> wait leader_blacklist_completion == 100 (max 10 min)"
+	@for i in $$(seq 1 60); do \
+	  out=$$(ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_leader_blacklist_completion" 2>&1); \
+	  case "$$out" in *"100"*) echo "  leader_blacklist 100%"; break;; esac; \
+	  printf "  %2d/60 leader_blacklist not 100%%: %s\n" $$i "$$out"; \
+	  sleep 10; \
+	  [ $$i -eq 60 ] && { echo "[fix6n] leader_blacklist 10min 未完成 — abort"; exit 1; }; \
 	done
 
 # ===================================================================
@@ -328,9 +341,21 @@ phase6-tidb-smoke:
 	         DB_HOST=$(TIDB_HOST) DB_PORT=$(TIDB_PORT) \
 	         WAREHOUSES=$(WAREHOUSES) WARMUP_SEC=$(WARMUP_SEC) \
 	         ROUNDS=$(ROUNDS) THREADS_LIST='$(THREADS_LIST)' RUN_SEC=$(RUN_SEC) ROUND_SLEEP_SEC=$(ROUND_SLEEP_SEC) \
-	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE); \
+	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
+	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1; \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
 	    --db tidb --topology vm-6node-$(PLACEMENT) --ts $$TS"
+	@echo "==> phase6-tidb leader-snapshot (pre/post smoke comparison)"
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	ssh $(TPCC_CLIENT) "mkdir -p $$ROOT/leader-snapshot && \
+	  mysql -h $(TIDB_HOST) -P $(TIDB_PORT) -u root -e \"SELECT \
+	    p.STORE_ID, s.ADDRESS, s.STORE_STATE_NAME, s.LABEL, \
+	    COUNT(*) as leader_count \
+	    FROM information_schema.tikv_region_peers p \
+	    JOIN information_schema.tikv_store_status s ON p.STORE_ID=s.STORE_ID \
+	    WHERE p.IS_LEADER=1 \
+	    GROUP BY p.STORE_ID, s.ADDRESS, s.STORE_STATE_NAME, s.LABEL \
+	    ORDER BY leader_count DESC;\" > $$ROOT/leader-snapshot/tidb-region-leaders.txt 2>&1" || true
 
 phase6-tidb-result:
 	@echo "==> phase6-tidb-result ts=$(TPCC_TS)"
@@ -341,7 +366,11 @@ phase6-tidb-result:
 	    [ -f \"\$$f\" ] || continue; \
 	    echo \"### \$$f ###\"; \
 	    grep -E '^\\[Summary\\]|^tpmC|^Finished' \"\$$f\" | tail -10; \
-	  done; true"
+	  done; \
+	  echo '--- TiDB region leader distribution (pre-smoke) ---'; \
+	  cat $$ROOT/leader-snapshot/tidb-region-leaders.txt 2>/dev/null | head -15 || echo '(no leader-snapshot)'; \
+	  echo '--- WAN probe samples (rx/tx delta + chrony) ---'; \
+	  ls $$ROOT/runs/wan-probe-*.txt 2>/dev/null | head -5 || echo '(no wan-probe samples)'; true"
 
 # ===================================================================
 # Phase 7 — YBDB smoke (bypass suite; gate/prepare/run/collect direct)
@@ -361,12 +390,28 @@ phase7-ybdb-smoke:
 	         WAREHOUSES=$(WAREHOUSES) WARMUP_SEC=$(WARMUP_SEC) \
 	         ROUNDS=$(ROUNDS) THREADS_LIST='$(THREADS_LIST)' RUN_SEC=$(RUN_SEC) ROUND_SLEEP_SEC=$(ROUND_SLEEP_SEC) \
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
+	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
 	         YBDB_USER=yugabyte YBDB_DB=tpcc; \
 	  set -e; \
 	  bash $(TPCC_SCRIPTS)/gate.sh    --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS; \
 	  bash $(TPCC_SCRIPTS)/prepare.sh --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS; \
+	  echo '==> post-prepare: re-check leader_blacklist 100% (deterministic gate)'; \
+	  for i in \$$(seq 1 30); do \
+	    out=\$$(/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_leader_blacklist_completion 2>&1); \
+	    case \"\$$out\" in *100*) echo '  leader_blacklist 100%'; break;; esac; \
+	    sleep 10; \
+	  done; \
 	  bash $(TPCC_SCRIPTS)/run.sh     --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS; \
 	  bash $(TPCC_SCRIPTS)/collect.sh --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS"
+	@echo "==> phase7-ybdb leader-snapshot (tablet leader counts per tserver)"
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/ybdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	ssh $(TPCC_CLIENT) "mkdir -p $$ROOT/leader-snapshot && \
+	  ssh root@$(YBDB_HOST) '/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) list_all_tablet_servers' > $$ROOT/leader-snapshot/ybdb-tservers.txt 2>&1 && \
+	  for tbl in warehouse district customer history new_order orders order_line item stock; do \
+	    echo \"### \$$tbl ###\" >> $$ROOT/leader-snapshot/ybdb-leader-counts.txt; \
+	    ssh root@$(YBDB_HOST) \"/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) list_leader_counts ysql.tpcc \$$tbl\" >> $$ROOT/leader-snapshot/ybdb-leader-counts.txt 2>&1; \
+	  done; \
+	  ssh root@$(YBDB_HOST) '/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_universe_config' > $$ROOT/leader-snapshot/ybdb-universe-config.txt 2>&1" || true
 
 phase7-ybdb-result:
 	@echo "==> phase7-ybdb-result ts=$(TPCC_TS)"
@@ -377,7 +422,11 @@ phase7-ybdb-result:
 	    [ -f \"\$$f\" ] || continue; \
 	    echo \"### \$$f ###\"; \
 	    grep -E '^\\[Summary\\]|^tpmC|^Finished' \"\$$f\" | tail -10; \
-	  done; true"
+	  done; \
+	  echo '--- YBDB tablet leader counts per tserver (key tables) ---'; \
+	  cat $$ROOT/leader-snapshot/ybdb-leader-counts.txt 2>/dev/null | head -50 || echo '(no leader-snapshot)'; \
+	  echo '--- WAN probe samples ---'; \
+	  ls $$ROOT/runs/wan-probe-*.txt 2>/dev/null | head -5 || echo '(no wan-probe samples)'; true"
 
 # ===================================================================
 # Phase 8 — CRDB smoke (bypass suite; gate/prepare/run/collect direct)
@@ -397,12 +446,22 @@ phase8-crdb-smoke:
 	         WAREHOUSES=$(WAREHOUSES) WARMUP_SEC=$(WARMUP_SEC) \
 	         ROUNDS=$(ROUNDS) THREADS_LIST='$(THREADS_LIST)' RUN_SEC=$(RUN_SEC) ROUND_SLEEP_SEC=$(ROUND_SLEEP_SEC) \
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
+	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
 	         CRDB_USER=root CRDB_DB=tpcc; \
 	  set -e; \
 	  bash $(TPCC_SCRIPTS)/gate.sh    --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS; \
 	  bash $(TPCC_SCRIPTS)/prepare.sh --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS; \
+	  echo '==> post-prepare: apply per-table lease_preferences=IDC (hard leader pin)'; \
+	  ssh root@$(CRDB_HOST) \"awk '/^-- tpcc database 套用/{p=1}p' /root/crdb-vm6-placement-$$(echo $(PLACEMENT) | tr A-Z a-z).sql 2>/dev/null | /usr/local/bin/cockroach sql --insecure --host=$(CRDB_HOST):$(CRDB_PORT) -d tpcc\" || echo '  (warn: per-table CONFIGURE ZONE failed)'; \
+	  echo '==> wait CRDB lease migration (sleep 60s for cluster to apply zone changes)'; \
+	  sleep 60; \
 	  bash $(TPCC_SCRIPTS)/run.sh     --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS; \
 	  bash $(TPCC_SCRIPTS)/collect.sh --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS"
+	@echo "==> phase8-crdb leader-snapshot (lease holder locality per range)"
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/crdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	ssh $(TPCC_CLIENT) "mkdir -p $$ROOT/leader-snapshot && \
+	  ssh root@$(CRDB_HOST) '/usr/local/bin/cockroach node status --insecure --host=$(CRDB_HOST):$(CRDB_PORT)' > $$ROOT/leader-snapshot/crdb-nodes.txt 2>&1 && \
+	  ssh root@$(CRDB_HOST) \"/usr/local/bin/cockroach sql --insecure --host=$(CRDB_HOST):$(CRDB_PORT) -d tpcc -e \\\"SELECT lease_holder, lease_holder_locality, COUNT(*) as range_count FROM crdb_internal.ranges WHERE table_name IN ('new_order','orders','warehouse','customer','district','history','order_line','item','stock') GROUP BY lease_holder, lease_holder_locality ORDER BY range_count DESC;\\\"\" > $$ROOT/leader-snapshot/crdb-lease-holders.txt 2>&1" || true
 
 phase8-crdb-result:
 	@echo "==> phase8-crdb-result ts=$(TPCC_TS)"
@@ -413,7 +472,11 @@ phase8-crdb-result:
 	    [ -f \"\$$f\" ] || continue; \
 	    echo \"### \$$f ###\"; \
 	    grep -E '^\\[Summary\\]|^tpmC|^Finished' \"\$$f\" | tail -10; \
-	  done; true"
+	  done; \
+	  echo '--- CRDB lease holder distribution (key TPCC tables) ---'; \
+	  cat $$ROOT/leader-snapshot/crdb-lease-holders.txt 2>/dev/null | head -20 || echo '(no leader-snapshot)'; \
+	  echo '--- WAN probe samples ---'; \
+	  ls $$ROOT/runs/wan-probe-*.txt 2>/dev/null | head -5 || echo '(no wan-probe samples)'; true"
 
 # ===================================================================
 # Phase 9 — Teardown (tunnels + terraform destroy)
