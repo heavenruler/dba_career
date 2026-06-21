@@ -1,0 +1,37 @@
+{
+  "phase": "phase-crossregion",
+  "result_scope": "X-CROSS",
+  "manifest_sha256": "unset",
+  "hosts": [
+    {
+      "id": "idc-dbhost-1",
+      "kind": "crossregion-vm",
+      "region": "idc",
+      "zone": "vlan241",
+      "node": "idc-dbhost-1",
+      "pod": null,
+      "ssh_host": "172.24.40.32",
+      "artifact_suffix": "idc-dbhost-1"
+    },
+    {
+      "id": "idc-dbhost-2",
+      "kind": "crossregion-vm",
+      "region": "idc",
+      "zone": "vlan241",
+      "node": "idc-dbhost-2",
+      "pod": null,
+      "ssh_host": "172.24.40.33",
+      "artifact_suffix": "idc-dbhost-2"
+    },
+    {
+      "id": "idc-dbhost-3",
+      "kind": "crossregion-vm",
+      "region": "idc",
+      "zone": "vlan241",
+      "node": "idc-dbhost-3",
+      "pod": null,
+      "ssh_host": "172.24.40.34",
+      "artifact_suffix": "idc-dbhost-3"
+    }
+  ]
+}

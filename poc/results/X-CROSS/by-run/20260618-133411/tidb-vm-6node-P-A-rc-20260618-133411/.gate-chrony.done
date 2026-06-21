@@ -1,0 +1,69 @@
+{
+  "drift": {},
+  "fail_reasons": [
+    "insufficient samples (region missing all chronyc data)",
+    "host idc-driver: chronyc unreadable / Last offset missing",
+    "host idc-dbhost-1: chronyc unreadable / Last offset missing",
+    "host idc-dbhost-2: chronyc unreadable / Last offset missing",
+    "host idc-dbhost-3: chronyc unreadable / Last offset missing",
+    "host gcp-poc-1: chronyc unreadable / Last offset missing",
+    "host gcp-poc-2: chronyc unreadable / Last offset missing",
+    "host gcp-poc-3: chronyc unreadable / Last offset missing",
+    "host gcp-poc-4: chronyc unreadable / Last offset missing",
+    "host gcp-poc-5: chronyc unreadable / Last offset missing"
+  ],
+  "gcp": null,
+  "idc": {
+    "max": 0.004439,
+    "mean": 0.004439,
+    "median": 0.004439,
+    "min": 0.004439,
+    "n": 1,
+    "stdev": 0.0
+  },
+  "leap_anomalies": [
+    {
+      "label": "idc-driver",
+      "reason": "chronyc unreadable / Last offset missing"
+    },
+    {
+      "label": "idc-dbhost-1",
+      "reason": "chronyc unreadable / Last offset missing"
+    },
+    {
+      "label": "idc-dbhost-2",
+      "reason": "chronyc unreadable / Last offset missing"
+    },
+    {
+      "label": "idc-dbhost-3",
+      "reason": "chronyc unreadable / Last offset missing"
+    },
+    {
+      "label": "gcp-poc-1",
+      "reason": "chronyc unreadable / Last offset missing"
+    },
+    {
+      "label": "gcp-poc-2",
+      "reason": "chronyc unreadable / Last offset missing"
+    },
+    {
+      "label": "gcp-poc-3",
+      "reason": "chronyc unreadable / Last offset missing"
+    },
+    {
+      "label": "gcp-poc-4",
+      "reason": "chronyc unreadable / Last offset missing"
+    },
+    {
+      "label": "gcp-poc-5",
+      "reason": "chronyc unreadable / Last offset missing"
+    }
+  ],
+  "phase": "gate-chrony",
+  "thresholds": {
+    "median_ms": 100.0,
+    "worst_ms": 250.0
+  },
+  "ts": "20260618-133411",
+  "verdict": "FAIL"
+}

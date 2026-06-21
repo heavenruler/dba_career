@@ -1,0 +1,228 @@
+2026/06/20 22:15:10 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+creating table warehouse
+creating table district
+creating table customer
+creating index idx_customer
+creating table history
+creating index idx_h_w_id
+creating index idx_h_c_w_id
+creating table new_order
+creating table orders
+creating index idx_order
+creating table order_line
+creating table stock
+creating table item
+load to item
+load to warehouse in warehouse 1
+load to stock in warehouse 1
+load to district in warehouse 1
+load to warehouse in warehouse 2
+load to stock in warehouse 2
+load to district in warehouse 2
+load to warehouse in warehouse 3
+load to stock in warehouse 3
+load to district in warehouse 3
+load to warehouse in warehouse 4
+load to stock in warehouse 4
+load to district in warehouse 4
+load to customer in warehouse 1 district 1
+load to history in warehouse 1 district 1
+load to orders in warehouse 1 district 1
+load to new_order in warehouse 1 district 1
+load to order_line in warehouse 1 district 1
+load to customer in warehouse 1 district 2
+load to history in warehouse 1 district 2
+load to orders in warehouse 1 district 2
+load to new_order in warehouse 1 district 2
+load to order_line in warehouse 1 district 2
+load to customer in warehouse 1 district 3
+load to history in warehouse 1 district 3
+load to orders in warehouse 1 district 3
+load to new_order in warehouse 1 district 3
+load to order_line in warehouse 1 district 3
+load to customer in warehouse 1 district 4
+load to history in warehouse 1 district 4
+load to orders in warehouse 1 district 4
+load to new_order in warehouse 1 district 4
+load to order_line in warehouse 1 district 4
+load to customer in warehouse 1 district 5
+load to history in warehouse 1 district 5
+load to orders in warehouse 1 district 5
+load to new_order in warehouse 1 district 5
+load to order_line in warehouse 1 district 5
+load to customer in warehouse 1 district 6
+load to history in warehouse 1 district 6
+load to orders in warehouse 1 district 6
+load to new_order in warehouse 1 district 6
+load to order_line in warehouse 1 district 6
+load to customer in warehouse 1 district 7
+load to history in warehouse 1 district 7
+load to orders in warehouse 1 district 7
+load to new_order in warehouse 1 district 7
+load to order_line in warehouse 1 district 7
+load to customer in warehouse 1 district 8
+load to history in warehouse 1 district 8
+load to orders in warehouse 1 district 8
+load to new_order in warehouse 1 district 8
+load to order_line in warehouse 1 district 8
+load to customer in warehouse 1 district 9
+load to history in warehouse 1 district 9
+load to orders in warehouse 1 district 9
+load to new_order in warehouse 1 district 9
+load to order_line in warehouse 1 district 9
+load to customer in warehouse 1 district 10
+load to history in warehouse 1 district 10
+load to orders in warehouse 1 district 10
+load to new_order in warehouse 1 district 10
+load to order_line in warehouse 1 district 10
+load to customer in warehouse 2 district 1
+load to history in warehouse 2 district 1
+load to orders in warehouse 2 district 1
+load to new_order in warehouse 2 district 1
+load to order_line in warehouse 2 district 1
+load to customer in warehouse 2 district 2
+load to history in warehouse 2 district 2
+load to orders in warehouse 2 district 2
+load to new_order in warehouse 2 district 2
+load to order_line in warehouse 2 district 2
+load to customer in warehouse 2 district 3
+load to history in warehouse 2 district 3
+load to orders in warehouse 2 district 3
+load to new_order in warehouse 2 district 3
+load to order_line in warehouse 2 district 3
+load to customer in warehouse 2 district 4
+load to history in warehouse 2 district 4
+load to orders in warehouse 2 district 4
+load to new_order in warehouse 2 district 4
+load to order_line in warehouse 2 district 4
+load to customer in warehouse 2 district 5
+load to history in warehouse 2 district 5
+load to orders in warehouse 2 district 5
+load to new_order in warehouse 2 district 5
+load to order_line in warehouse 2 district 5
+load to customer in warehouse 2 district 6
+load to history in warehouse 2 district 6
+load to orders in warehouse 2 district 6
+load to new_order in warehouse 2 district 6
+load to order_line in warehouse 2 district 6
+load to customer in warehouse 2 district 7
+load to history in warehouse 2 district 7
+load to orders in warehouse 2 district 7
+load to new_order in warehouse 2 district 7
+load to order_line in warehouse 2 district 7
+load to customer in warehouse 2 district 8
+load to history in warehouse 2 district 8
+load to orders in warehouse 2 district 8
+load to new_order in warehouse 2 district 8
+load to order_line in warehouse 2 district 8
+load to customer in warehouse 2 district 9
+load to history in warehouse 2 district 9
+load to orders in warehouse 2 district 9
+load to new_order in warehouse 2 district 9
+load to order_line in warehouse 2 district 9
+load to customer in warehouse 2 district 10
+load to history in warehouse 2 district 10
+load to orders in warehouse 2 district 10
+load to new_order in warehouse 2 district 10
+load to order_line in warehouse 2 district 10
+load to customer in warehouse 3 district 1
+load to history in warehouse 3 district 1
+load to orders in warehouse 3 district 1
+load to new_order in warehouse 3 district 1
+load to order_line in warehouse 3 district 1
+load to customer in warehouse 3 district 2
+load to history in warehouse 3 district 2
+load to orders in warehouse 3 district 2
+load to new_order in warehouse 3 district 2
+load to order_line in warehouse 3 district 2
+load to customer in warehouse 3 district 3
+load to history in warehouse 3 district 3
+load to orders in warehouse 3 district 3
+load to new_order in warehouse 3 district 3
+load to order_line in warehouse 3 district 3
+load to customer in warehouse 3 district 4
+load to history in warehouse 3 district 4
+load to orders in warehouse 3 district 4
+load to new_order in warehouse 3 district 4
+load to order_line in warehouse 3 district 4
+load to customer in warehouse 3 district 5
+load to history in warehouse 3 district 5
+load to orders in warehouse 3 district 5
+load to new_order in warehouse 3 district 5
+load to order_line in warehouse 3 district 5
+load to customer in warehouse 3 district 6
+load to history in warehouse 3 district 6
+load to orders in warehouse 3 district 6
+load to new_order in warehouse 3 district 6
+load to order_line in warehouse 3 district 6
+load to customer in warehouse 3 district 7
+load to history in warehouse 3 district 7
+load to orders in warehouse 3 district 7
+load to new_order in warehouse 3 district 7
+load to order_line in warehouse 3 district 7
+load to customer in warehouse 3 district 8
+load to history in warehouse 3 district 8
+load to orders in warehouse 3 district 8
+load to new_order in warehouse 3 district 8
+load to order_line in warehouse 3 district 8
+load to customer in warehouse 3 district 9
+load to history in warehouse 3 district 9
+load to orders in warehouse 3 district 9
+load to new_order in warehouse 3 district 9
+load to order_line in warehouse 3 district 9
+load to customer in warehouse 3 district 10
+load to history in warehouse 3 district 10
+load to orders in warehouse 3 district 10
+load to new_order in warehouse 3 district 10
+load to order_line in warehouse 3 district 10
+load to customer in warehouse 4 district 1
+load to history in warehouse 4 district 1
+load to orders in warehouse 4 district 1
+load to new_order in warehouse 4 district 1
+load to order_line in warehouse 4 district 1
+load to customer in warehouse 4 district 2
+load to history in warehouse 4 district 2
+load to orders in warehouse 4 district 2
+load to new_order in warehouse 4 district 2
+load to order_line in warehouse 4 district 2
+load to customer in warehouse 4 district 3
+load to history in warehouse 4 district 3
+load to orders in warehouse 4 district 3
+load to new_order in warehouse 4 district 3
+load to order_line in warehouse 4 district 3
+load to customer in warehouse 4 district 4
+load to history in warehouse 4 district 4
+load to orders in warehouse 4 district 4
+load to new_order in warehouse 4 district 4
+load to order_line in warehouse 4 district 4
+load to customer in warehouse 4 district 5
+load to history in warehouse 4 district 5
+load to orders in warehouse 4 district 5
+load to new_order in warehouse 4 district 5
+load to order_line in warehouse 4 district 5
+load to customer in warehouse 4 district 6
+load to history in warehouse 4 district 6
+load to orders in warehouse 4 district 6
+load to new_order in warehouse 4 district 6
+load to order_line in warehouse 4 district 6
+load to customer in warehouse 4 district 7
+load to history in warehouse 4 district 7
+load to orders in warehouse 4 district 7
+load to new_order in warehouse 4 district 7
+load to order_line in warehouse 4 district 7
+load to customer in warehouse 4 district 8
+load to history in warehouse 4 district 8
+load to orders in warehouse 4 district 8
+load to new_order in warehouse 4 district 8
+load to order_line in warehouse 4 district 8
+load to customer in warehouse 4 district 9
+load to history in warehouse 4 district 9
+load to orders in warehouse 4 district 9
+load to new_order in warehouse 4 district 9
+load to order_line in warehouse 4 district 9
+load to customer in warehouse 4 district 10
+load to history in warehouse 4 district 10
+load to orders in warehouse 4 district 10
+load to new_order in warehouse 4 district 10
+load to order_line in warehouse 4 district 10
+Finished

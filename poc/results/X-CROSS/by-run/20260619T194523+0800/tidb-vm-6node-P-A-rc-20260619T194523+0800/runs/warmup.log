@@ -1,0 +1,23 @@
+2026/06/19 20:12:12 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+[Current] DELIVERY - Takes(s): 9.7, Count: 203, TPM: 1260.5, Sum(ms): 23250.3, Avg(ms): 114.5, 50th(ms): 92.3, 90th(ms): 201.3, 95th(ms): 243.3, 99th(ms): 318.8, 99.9th(ms): 352.3, Max(ms): 352.3
+[Current] NEW_ORDER - Takes(s): 9.7, Count: 2005, TPM: 12353.0, Sum(ms): 248949.9, Avg(ms): 124.2, 50th(ms): 96.5, 90th(ms): 285.2, 95th(ms): 318.8, 99th(ms): 402.7, 99.9th(ms): 503.3, Max(ms): 520.1
+[Current] ORDER_STATUS - Takes(s): 9.8, Count: 204, TPM: 1255.2, Sum(ms): 3002.7, Avg(ms): 14.7, 50th(ms): 14.2, 90th(ms): 21.0, 95th(ms): 24.1, 99th(ms): 39.8, 99.9th(ms): 62.9, Max(ms): 62.9
+[Current] PAYMENT - Takes(s): 9.7, Count: 1917, TPM: 11809.7, Sum(ms): 336476.8, Avg(ms): 175.5, 50th(ms): 159.4, 90th(ms): 335.5, 95th(ms): 385.9, 99th(ms): 453.0, 99.9th(ms): 520.1, Max(ms): 570.4
+[Current] STOCK_LEVEL - Takes(s): 9.7, Count: 198, TPM: 1219.7, Sum(ms): 3265.9, Avg(ms): 16.5, 50th(ms): 14.7, 90th(ms): 22.0, 95th(ms): 28.3, 99th(ms): 46.1, 99.9th(ms): 67.1, Max(ms): 67.1
+[Current] DELIVERY - Takes(s): 10.0, Count: 192, TPM: 1154.1, Sum(ms): 20118.1, Avg(ms): 104.7, 50th(ms): 88.1, 90th(ms): 167.8, 95th(ms): 201.3, 99th(ms): 251.7, 99.9th(ms): 302.0, Max(ms): 302.0
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 2112, TPM: 12681.4, Sum(ms): 261933.4, Avg(ms): 124.1, 50th(ms): 71.3, 90th(ms): 318.8, 95th(ms): 402.7, 99th(ms): 520.1, 99.9th(ms): 637.5, Max(ms): 637.5
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 197, TPM: 1185.4, Sum(ms): 2567.8, Avg(ms): 13.0, 50th(ms): 13.1, 90th(ms): 17.8, 95th(ms): 18.9, 99th(ms): 22.0, 99.9th(ms): 23.1, Max(ms): 23.1
+[Current] PAYMENT - Takes(s): 10.0, Count: 1994, TPM: 11966.3, Sum(ms): 353789.2, Avg(ms): 177.4, 50th(ms): 142.6, 90th(ms): 453.0, 95th(ms): 503.3, 99th(ms): 570.4, 99.9th(ms): 671.1, Max(ms): 671.1
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 219, TPM: 1321.2, Sum(ms): 3291.0, Avg(ms): 15.0, 50th(ms): 14.2, 90th(ms): 21.0, 95th(ms): 23.1, 99th(ms): 30.4, 99.9th(ms): 44.0, Max(ms): 44.0
+[Current] DELIVERY - Takes(s): 10.0, Count: 196, TPM: 1179.8, Sum(ms): 20957.6, Avg(ms): 106.9, 50th(ms): 92.3, 90th(ms): 167.8, 95th(ms): 201.3, 99th(ms): 302.0, 99.9th(ms): 385.9, Max(ms): 385.9
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 2134, TPM: 12809.1, Sum(ms): 263660.8, Avg(ms): 123.7, 50th(ms): 75.5, 90th(ms): 302.0, 95th(ms): 369.1, 99th(ms): 453.0, 99.9th(ms): 536.9, Max(ms): 570.4
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 185, TPM: 1110.9, Sum(ms): 2335.0, Avg(ms): 12.6, 50th(ms): 12.6, 90th(ms): 16.8, 95th(ms): 19.9, 99th(ms): 24.1, 99.9th(ms): 29.4, Max(ms): 29.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 2012, TPM: 12073.6, Sum(ms): 345956.1, Avg(ms): 172.1, 50th(ms): 142.6, 90th(ms): 369.1, 95th(ms): 402.7, 99th(ms): 486.5, 99.9th(ms): 520.1, Max(ms): 520.1
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 196, TPM: 1185.8, Sum(ms): 3163.1, Avg(ms): 16.1, 50th(ms): 14.7, 90th(ms): 23.1, 95th(ms): 25.2, 99th(ms): 31.5, 99.9th(ms): 39.8, Max(ms): 39.8
+Finished
+[Summary] DELIVERY - Takes(s): 29.9, Count: 593, TPM: 1190.9, Sum(ms): 64644.3, Avg(ms): 109.0, 50th(ms): 92.3, 90th(ms): 184.5, 95th(ms): 209.7, 99th(ms): 302.0, 99.9th(ms): 352.3, Max(ms): 385.9
+[Summary] NEW_ORDER - Takes(s): 30.0, Count: 6276, TPM: 12572.5, Sum(ms): 779969.8, Avg(ms): 124.4, 50th(ms): 79.7, 90th(ms): 302.0, 95th(ms): 369.1, 99th(ms): 486.5, 99.9th(ms): 604.0, Max(ms): 637.5
+[Summary] ORDER_STATUS - Takes(s): 30.0, Count: 586, TPM: 1173.4, Sum(ms): 7905.4, Avg(ms): 13.5, 50th(ms): 13.1, 90th(ms): 18.9, 95th(ms): 22.0, 99th(ms): 28.3, 99.9th(ms): 44.0, Max(ms): 62.9
+[Summary] PAYMENT - Takes(s): 30.0, Count: 5959, TPM: 11937.0, Sum(ms): 1044659.7, Avg(ms): 175.3, 50th(ms): 151.0, 90th(ms): 369.1, 95th(ms): 436.2, 99th(ms): 520.1, 99.9th(ms): 637.5, Max(ms): 671.1
+[Summary] STOCK_LEVEL - Takes(s): 30.0, Count: 614, TPM: 1229.9, Sum(ms): 9740.2, Avg(ms): 15.9, 50th(ms): 14.7, 90th(ms): 22.0, 95th(ms): 25.2, 99th(ms): 39.8, 99.9th(ms): 50.3, Max(ms): 67.1
+tpmC: 12572.4, tpmTotal: 28103.7, efficiency: 24440.9%

@@ -1,0 +1,32 @@
+=== gate-chrony-cross-region.sh  ts=20260618-133411  threshold_median_ms=100.0  threshold_worst_ms=250.0 ===
+
+--- IDC hosts ---
+  idc-driver     stratum=?   leap=?                  last_offset=(no data)          refid=?
+  idc-dbhost-1   stratum=?   leap=?                  last_offset=(no data)          refid=?
+  idc-dbhost-2   stratum=?   leap=?                  last_offset=(no data)          refid=?
+  idc-dbhost-3   stratum=?   leap=?                  last_offset=(no data)          refid=?
+  idc-haproxy    stratum=7   leap=Normal             last_offset=+0.004439 ms       refid=AC13FE07 (172.19.254.7)
+
+--- GCP hosts ---
+  gcp-poc-1      stratum=?   leap=?                  last_offset=(no data)          refid=?
+  gcp-poc-2      stratum=?   leap=?                  last_offset=(no data)          refid=?
+  gcp-poc-3      stratum=?   leap=?                  last_offset=(no data)          refid=?
+  gcp-poc-4      stratum=?   leap=?                  last_offset=(no data)          refid=?
+  gcp-poc-5      stratum=?   leap=?                  last_offset=(no data)          refid=?
+
+----- parsed -----
+idc_n=1 idc_median_ms=0.004439 idc_mean_ms=0.004439 idc_max_ms=0.004439 idc_min_ms=0.004439
+threshold_ms=100.0
+threshold_worst_ms=250.0
+fail_reasons:
+  - insufficient samples (region missing all chronyc data)
+  - host idc-driver: chronyc unreadable / Last offset missing
+  - host idc-dbhost-1: chronyc unreadable / Last offset missing
+  - host idc-dbhost-2: chronyc unreadable / Last offset missing
+  - host idc-dbhost-3: chronyc unreadable / Last offset missing
+  - host gcp-poc-1: chronyc unreadable / Last offset missing
+  - host gcp-poc-2: chronyc unreadable / Last offset missing
+  - host gcp-poc-3: chronyc unreadable / Last offset missing
+  - host gcp-poc-4: chronyc unreadable / Last offset missing
+  - host gcp-poc-5: chronyc unreadable / Last offset missing
+verdict=FAIL

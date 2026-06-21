@@ -1,0 +1,23 @@
+2026/06/19 07:18:40 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+[Current] DELIVERY - Takes(s): 8.7, Count: 101, TPM: 700.4, Sum(ms): 17242.6, Avg(ms): 171.0, 50th(ms): 134.2, 90th(ms): 302.0, 95th(ms): 436.2, 99th(ms): 570.4, 99.9th(ms): 637.5, Max(ms): 637.5
+[Current] NEW_ORDER - Takes(s): 8.7, Count: 1176, TPM: 8141.7, Sum(ms): 324439.2, Avg(ms): 275.9, 50th(ms): 151.0, 90th(ms): 671.1, 95th(ms): 939.5, 99th(ms): 1677.7, 99.9th(ms): 2684.4, Max(ms): 3355.4
+[Current] ORDER_STATUS - Takes(s): 8.6, Count: 97, TPM: 672.9, Sum(ms): 2509.0, Avg(ms): 25.9, 50th(ms): 23.1, 90th(ms): 48.2, 95th(ms): 54.5, 99th(ms): 79.7, 99.9th(ms): 79.7, Max(ms): 79.7
+[Current] PAYMENT - Takes(s): 8.8, Count: 1128, TPM: 7723.7, Sum(ms): 201112.8, Avg(ms): 178.4, 50th(ms): 159.4, 90th(ms): 335.5, 95th(ms): 385.9, 99th(ms): 604.0, 99.9th(ms): 838.9, Max(ms): 906.0
+[Current] STOCK_LEVEL - Takes(s): 8.8, Count: 126, TPM: 859.8, Sum(ms): 3283.0, Avg(ms): 26.0, 50th(ms): 14.7, 90th(ms): 39.8, 95th(ms): 67.1, 99th(ms): 209.7, 99.9th(ms): 251.7, Max(ms): 251.7
+[Current] DELIVERY - Takes(s): 9.8, Count: 124, TPM: 759.3, Sum(ms): 16020.4, Avg(ms): 128.9, 50th(ms): 109.1, 90th(ms): 218.1, 95th(ms): 243.3, 99th(ms): 318.8, 99.9th(ms): 436.2, Max(ms): 436.2
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 1462, TPM: 8779.2, Sum(ms): 411557.0, Avg(ms): 281.5, 50th(ms): 151.0, 90th(ms): 637.5, 95th(ms): 973.1, 99th(ms): 1879.0, 99.9th(ms): 4026.5, Max(ms): 4831.8
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 120, TPM: 725.1, Sum(ms): 2265.4, Avg(ms): 18.9, 50th(ms): 16.3, 90th(ms): 35.7, 95th(ms): 46.1, 99th(ms): 62.9, 99.9th(ms): 65.0, Max(ms): 65.0
+[Current] PAYMENT - Takes(s): 10.0, Count: 1359, TPM: 8157.5, Sum(ms): 216739.3, Avg(ms): 159.6, 50th(ms): 151.0, 90th(ms): 285.2, 95th(ms): 318.8, 99th(ms): 385.9, 99.9th(ms): 436.2, Max(ms): 453.0
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 125, TPM: 754.0, Sum(ms): 1798.3, Avg(ms): 14.4, 50th(ms): 9.4, 90th(ms): 25.2, 95th(ms): 35.7, 99th(ms): 79.7, 99.9th(ms): 88.1, Max(ms): 88.1
+[Current] DELIVERY - Takes(s): 9.8, Count: 124, TPM: 757.2, Sum(ms): 18689.4, Avg(ms): 150.9, 50th(ms): 121.6, 90th(ms): 226.5, 95th(ms): 352.3, 99th(ms): 453.0, 99.9th(ms): 704.6, Max(ms): 704.6
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 1335, TPM: 8018.8, Sum(ms): 380897.5, Avg(ms): 285.1, 50th(ms): 142.6, 90th(ms): 637.5, 95th(ms): 1140.9, 99th(ms): 2013.3, 99.9th(ms): 3758.1, Max(ms): 3758.1
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 124, TPM: 745.3, Sum(ms): 2396.4, Avg(ms): 19.4, 50th(ms): 17.8, 90th(ms): 33.6, 95th(ms): 41.9, 99th(ms): 67.1, 99.9th(ms): 71.3, Max(ms): 71.3
+[Current] PAYMENT - Takes(s): 10.0, Count: 1264, TPM: 7584.7, Sum(ms): 222203.8, Avg(ms): 175.9, 50th(ms): 151.0, 90th(ms): 369.1, 95th(ms): 419.4, 99th(ms): 486.5, 99.9th(ms): 503.3, Max(ms): 503.3
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 104, TPM: 632.5, Sum(ms): 1267.6, Avg(ms): 12.2, 50th(ms): 8.9, 90th(ms): 19.9, 95th(ms): 24.1, 99th(ms): 67.1, 99.9th(ms): 75.5, Max(ms): 75.5
+Finished
+[Summary] DELIVERY - Takes(s): 29.2, Count: 349, TPM: 717.3, Sum(ms): 51952.4, Avg(ms): 148.9, 50th(ms): 121.6, 90th(ms): 234.9, 95th(ms): 352.3, 99th(ms): 453.0, 99.9th(ms): 704.6, Max(ms): 704.6
+[Summary] NEW_ORDER - Takes(s): 29.2, Count: 4014, TPM: 8246.2, Sum(ms): 1150145.7, Avg(ms): 286.5, 50th(ms): 151.0, 90th(ms): 671.1, 95th(ms): 1040.2, 99th(ms): 2013.3, 99.9th(ms): 3758.1, Max(ms): 4831.8
+[Summary] ORDER_STATUS - Takes(s): 29.2, Count: 341, TPM: 700.9, Sum(ms): 7170.8, Avg(ms): 21.1, 50th(ms): 18.9, 90th(ms): 37.7, 95th(ms): 46.1, 99th(ms): 71.3, 99.9th(ms): 79.7, Max(ms): 79.7
+[Summary] PAYMENT - Takes(s): 29.3, Count: 3773, TPM: 7725.6, Sum(ms): 644445.3, Avg(ms): 170.9, 50th(ms): 151.0, 90th(ms): 318.8, 95th(ms): 385.9, 99th(ms): 469.8, 99.9th(ms): 738.2, Max(ms): 906.0
+[Summary] STOCK_LEVEL - Takes(s): 29.3, Count: 356, TPM: 728.2, Sum(ms): 6363.9, Avg(ms): 17.8, 50th(ms): 10.0, 90th(ms): 31.5, 95th(ms): 48.2, 99th(ms): 192.9, 99.9th(ms): 251.7, Max(ms): 251.7
+tpmC: 8246.2, tpmTotal: 18118.3, efficiency: 16030.6%
