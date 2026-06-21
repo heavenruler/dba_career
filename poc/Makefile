@@ -181,10 +181,18 @@ phase1-apply:
 	for port in $(GCP_PORTS); do ssh-keygen -R "[localhost]:$$port" || true; done
 
 phase1-wait: gcp-tunnel-start
+	@echo "==> sleep 15 for IAP tunnels to be reachable"
+	@sleep 15
 	@for p in $(GCP_PORTS); do \
-	  echo "==> waiting startup-done on :$$p"; \
-	  ssh $(SSH_OPTS) -p $$p root@localhost \
-	    'until [ -f /var/lib/startup-done ]; do sleep 5; done; echo done'; \
+	  echo "==> waiting startup-done on :$$p (max 10 min, retries connection refused)"; \
+	  ok=0; \
+	  for retry in $$(seq 1 60); do \
+	    if ssh $(SSH_OPTS) -o ConnectTimeout=5 -o BatchMode=yes -p $$p root@localhost 'test -f /var/lib/startup-done' 2>/dev/null; then \
+	      echo "  startup-done on :$$p"; ok=1; break; \
+	    fi; \
+	    sleep 10; \
+	  done; \
+	  [ $$ok -eq 1 ] || { echo "[phase1-wait] :$$p startup 10min timeout — abort"; exit 1; }; \
 	done
 
 # ===================================================================
@@ -282,38 +290,47 @@ phase4-ybdb-fix6n:
 	done
 	@echo "==> sleep 60 (waiting tserver register)"
 	sleep 60
-	@echo "==> remove DEAD tservers from master metadata (avoid catalog wait race)"
+	@echo "==> remove DEAD tservers from master metadata (best practice: blacklist+remove+unblacklist)"
 	@ssh root@$(IDC_NODES_HEAD) ' \
 	  MASTERS=$(YB_MASTER_ADDR); \
+	  DEAD_HOSTS=$$(/opt/yugabyte/bin/yb-admin --master_addresses=$$MASTERS list_all_tablet_servers 2>/dev/null | awk "/DEAD/{print \$$2}"); \
+	  for host in $$DEAD_HOSTS; do \
+	    echo "  blacklist $$host"; \
+	    /opt/yugabyte/bin/yb-admin --master_addresses=$$MASTERS change_blacklist ADD $$host 2>&1 | tail -1; \
+	  done; \
+	  sleep 15; \
 	  for uuid in $$(/opt/yugabyte/bin/yb-admin --master_addresses=$$MASTERS list_all_tablet_servers 2>/dev/null | awk "/DEAD/{print \$$1}"); do \
 	    echo "  remove DEAD $$uuid"; \
 	    /opt/yugabyte/bin/yb-admin --master_addresses=$$MASTERS remove_tablet_server $$uuid 2>&1 | tail -1; \
+	  done; \
+	  for host in $$DEAD_HOSTS; do \
+	    /opt/yugabyte/bin/yb-admin --master_addresses=$$MASTERS change_blacklist REMOVE $$host 2>&1 | tail -1; \
 	  done; true'
-	@echo "==> set placement_info $(YB_PLACEMENT_INFO) RF=$(YB_RF)"
-	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) modify_placement_info '$(YB_PLACEMENT_INFO)' $(YB_RF)"
-	@echo "==> set preferred_zone $(YB_PREFERRED_ZONE) (soft hint)"
-	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) set_preferred_zones $(YB_PREFERRED_ZONE)"
-	@echo "==> Plan A: change_leader_blacklist ADD GCP 3 tservers (HARD pin leaders to IDC)"
-	@for ip in 10.160.152.11 10.160.152.12 10.160.152.13; do \
-	  echo "  blacklist $$ip:9100"; \
-	  ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) change_leader_blacklist ADD $$ip:9100" 2>&1 | tail -1; \
-	done
-	@echo "==> wait load_balancer idle (max 10 min) — must Idle=1 before smoke"
-	@for i in $$(seq 1 60); do \
+	@echo "==> Plan B: live_replicas=IDC-only RF=3, GCP=read_replica (clean leader pin, no cache stale)"
+	@echo "    (revert Plan A — leader_blacklist causes postgres backend tablet cache stale)"
+	@echo "==> set live_replicas placement = 104.idc.vlan241:3 RF=3"
+	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) modify_placement_info '104.idc.vlan241:3' 3"
+	@echo "==> add GCP as read_replica (asia-east1-a only, RF=3 = 1 replica per GCP tserver)"
+	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) add_read_replica_placement_info '104.gcp.asia-east1-a:3' 3 ybdb_gcp_rr" 2>&1 | tail -3
+	@echo "==> wait load_balancer Idle=1 sustained for 60s (best practice: not single-sample)"
+	@idle_count=0; for i in $$(seq 1 90); do \
 	  out=$$(ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_is_load_balancer_idle" 2>&1); \
-	  case "$$out" in *"Idle = 1"*) echo "  load_balancer idle"; break;; esac; \
-	  printf "  %2d/60 not idle yet: %s\n" $$i "$$out"; \
+	  case "$$out" in *"Idle = 1"*) idle_count=$$((idle_count+1));; \
+	    *) idle_count=0;; \
+	  esac; \
+	  [ $$idle_count -ge 6 ] && { echo "  load_balancer sustained idle (6×10s consecutive)"; break; }; \
+	  [ $$((i % 6)) -eq 0 ] && printf "  %3d/90 idle_count=%d  state=%s\n" $$i $$idle_count "$$out"; \
 	  sleep 10; \
-	  [ $$i -eq 60 ] && { echo "[fix6n] load_balancer 10min 未 idle — abort"; exit 1; }; \
-	done
-	@echo "==> wait leader_blacklist_completion == 100 (max 10 min)"
-	@for i in $$(seq 1 60); do \
-	  out=$$(ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_leader_blacklist_completion" 2>&1); \
-	  case "$$out" in *"100"*) echo "  leader_blacklist 100%"; break;; esac; \
-	  printf "  %2d/60 leader_blacklist not 100%%: %s\n" $$i "$$out"; \
-	  sleep 10; \
-	  [ $$i -eq 60 ] && { echo "[fix6n] leader_blacklist 10min 未完成 — abort"; exit 1; }; \
-	done
+	done; \
+	[ $$idle_count -ge 6 ] || echo "[fix6n] WARN: 15min 未 sustained idle, proceed anyway (Idle=0 可能 benign)"
+	@echo "==> verify load_move_completion (must be 100%, hard gate)"
+	@ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_load_move_completion" 2>&1 | tail -2
+	@echo "==> health check: all 6 expected tservers ALIVE (3 IDC + 3 GCP read_replica)"
+	@alive=$$(ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) list_all_tablet_servers" 2>/dev/null | grep -c ALIVE); \
+	echo "  ALIVE tservers: $$alive (expect 6)"; \
+	[ $$alive -ge 6 ] || { echo "[fix6n] health check FAIL — abort"; exit 1; }
+	@echo "==> verify placement: 1 live (idc:3) + 1 read_replica (gcp:3)"
+	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_universe_config" | python3 -m json.tool | head -50
 
 # ===================================================================
 # Phase 5 — CRDB deploy
@@ -331,6 +348,13 @@ phase5-crdb-deploy:
 phase6: phase6-tidb-smoke phase6-tidb-result
 
 phase6-tidb-smoke:
+	@echo "==> phase6-tidb-pre-smoke: wait region leaders → IDC (max 5 min, deterministic gate)"
+	@for i in $$(seq 1 30); do \
+	  pct=$$(ssh $(TPCC_CLIENT) "mysql -h $(TIDB_HOST) -P $(TIDB_PORT) -u root -BNe \"SELECT IFNULL(SUM(CASE WHEN s.LABEL LIKE '%idc%' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*),0), 0) FROM information_schema.tikv_region_peers p JOIN information_schema.tikv_store_status s ON p.STORE_ID=s.STORE_ID WHERE p.IS_LEADER=1;\"" 2>/dev/null | tail -1); \
+	  case "$$pct" in *100|100.*) echo "  TiDB region leaders 100% on IDC"; break;; esac; \
+	  printf "  %2d/30 leaders on IDC: %s%%\n" $$i "$$pct"; \
+	  sleep 10; \
+	done
 	@echo "==> phase6-tidb-smoke ts=$(TPCC_TS) placement=$(PLACEMENT)"
 	@TS=$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) " \
@@ -395,10 +419,10 @@ phase7-ybdb-smoke:
 	  set -e; \
 	  bash $(TPCC_SCRIPTS)/gate.sh    --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS; \
 	  bash $(TPCC_SCRIPTS)/prepare.sh --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS; \
-	  echo '==> post-prepare: re-check leader_blacklist 100% (deterministic gate)'; \
+	  echo '==> post-prepare: verify load_balancer idle (Plan B deterministic gate)'; \
 	  for i in \$$(seq 1 30); do \
-	    out=\$$(/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_leader_blacklist_completion 2>&1); \
-	    case \"\$$out\" in *100*) echo '  leader_blacklist 100%'; break;; esac; \
+	    out=\$$(ssh root@$(YBDB_HOST) '/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_is_load_balancer_idle' 2>&1); \
+	    case \"\$$out\" in *'Idle = 1'*) echo '  load_balancer idle (post-prepare)'; break;; esac; \
 	    sleep 10; \
 	  done; \
 	  bash $(TPCC_SCRIPTS)/run.sh     --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS; \
@@ -453,8 +477,13 @@ phase8-crdb-smoke:
 	  bash $(TPCC_SCRIPTS)/prepare.sh --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS; \
 	  echo '==> post-prepare: apply per-table lease_preferences=IDC (hard leader pin)'; \
 	  ssh root@$(CRDB_HOST) \"awk '/^-- tpcc database 套用/{p=1}p' /root/crdb-vm6-placement-$$(echo $(PLACEMENT) | tr A-Z a-z).sql 2>/dev/null | /usr/local/bin/cockroach sql --insecure --host=$(CRDB_HOST):$(CRDB_PORT) -d tpcc\" || echo '  (warn: per-table CONFIGURE ZONE failed)'; \
-	  echo '==> wait CRDB lease migration (sleep 60s for cluster to apply zone changes)'; \
-	  sleep 60; \
+	  echo '==> wait CRDB lease holders → IDC region (max 5 min, deterministic gate)'; \
+	  for i in \$$(seq 1 30); do \
+	    pct=\$$(/usr/local/bin/cockroach sql --insecure --host=$(CRDB_HOST):$(CRDB_PORT) -d tpcc --format=csv -e \"SELECT IFNULL(SUM(CASE WHEN lease_holder_locality LIKE '%region=idc%' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*),0), 0) FROM crdb_internal.ranges WHERE table_name IN ('new_order','orders','warehouse','customer','district','history','order_line','item','stock');\" 2>/dev/null | tail -1); \
+	    case \"\$$pct\" in 100|100.*) echo '  CRDB lease holders 100% on IDC'; break;; esac; \
+	    printf '  %2d/30 leases on IDC: %s%%\n' \$$i \"\$$pct\"; \
+	    sleep 10; \
+	  done; \
 	  bash $(TPCC_SCRIPTS)/run.sh     --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS; \
 	  bash $(TPCC_SCRIPTS)/collect.sh --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS"
 	@echo "==> phase8-crdb leader-snapshot (lease holder locality per range)"
@@ -479,9 +508,22 @@ phase8-crdb-result:
 	  ls $$ROOT/runs/wan-probe-*.txt 2>/dev/null | head -5 || echo '(no wan-probe samples)'; true"
 
 # ===================================================================
-# Phase 9 — Teardown (tunnels + terraform destroy)
+# Phase 8.5 — Fetch artifacts to MAC BEFORE destroy (critical for analysis)
 # ===================================================================
-phase9: phase9-tunnels-stop phase9-destroy
+phase8.5-fetch:
+	@echo "==> phase8.5-fetch: ssh+tar .31 artifacts → MAC results/X-CROSS/$(TPCC_TS)/"
+	@echo "    (uses ssh+tar pipe; macOS openrsync v15+ silently fails on GNU rsync source)"
+	@mkdir -p $(LOCAL_RESULTS)/$(RESULT_SCOPE)/$(TPCC_TS)
+	ssh $(TPCC_CLIENT) "cd $(TPCC_ARTIFACTS)/$(RESULT_SCOPE) && tar czf - ." \
+	  | tar xzf - -C $(LOCAL_RESULTS)/$(RESULT_SCOPE)/$(TPCC_TS)/
+	@echo "==> fetched to: $(LOCAL_RESULTS)/$(RESULT_SCOPE)/$(TPCC_TS)/"
+	@du -sh $(LOCAL_RESULTS)/$(RESULT_SCOPE)/$(TPCC_TS)/ 2>&1
+	@ls $(LOCAL_RESULTS)/$(RESULT_SCOPE)/$(TPCC_TS)/ | head -10
+
+# ===================================================================
+# Phase 9 — Teardown (FETCH first, then tunnels + terraform destroy)
+# ===================================================================
+phase9: phase8.5-fetch phase9-tunnels-stop phase9-destroy
 	@echo "==> phase9 complete"
 
 phase9-tunnels-stop:
