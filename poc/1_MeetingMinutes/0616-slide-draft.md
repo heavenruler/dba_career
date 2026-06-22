@@ -3,7 +3,7 @@
 > 受眾：DBA
 > 頁數：8-11 頁（含 3 頁專案歷程與選頁）
 > 定位：第一階段成果與決策框架；本份**不是**工程細節報告
-> 引用：`1_MeetingMinutes/analytics-S-K8S-2026-06-15.md` / `phase-crossregion/decisions-2026-06-08.md` / `1_MeetingMinutes/2026-06-09-distributed-db-adoption-non-technical.md` / `results/PoC-DESIGN.md` / `results/README.md`
+> 引用：`1_MeetingMinutes/analytics-S-K8S-2026-06-15.md` / `phase-crossregion/decisions-2026-06-08.md` / `1_MeetingMinutes/2026-06-09-distributed-db-adoption-non-technical.md` / `results/PoC-DESIGN.md` / `results/README.md` / `poc/*` 等相關必要檔案
 
 ---
 
