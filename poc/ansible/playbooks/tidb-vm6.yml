@@ -428,7 +428,16 @@
     haproxy_backends: "172.24.40.32:4000,172.24.40.33:4000,10.160.152.11:4000"
     haproxy_port: 4000
     haproxy_frontend: tidb
+    # 控 haproxy 部署開關（預設啟用；-e haproxy_deploy_enabled=false 可跳過）
   tasks:
-    - name: Include haproxy_deploy role
+    - name: Deploy GCP HAProxy
       ansible.builtin.include_role:
         name: haproxy_deploy
+      when: (haproxy_deploy_enabled | default(true)) | bool
+
+    - name: Verify haproxy listening on TiDB port 4000
+      ansible.builtin.wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 4000
+        timeout: 30
+      when: (haproxy_deploy_enabled | default(true)) | bool

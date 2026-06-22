@@ -1,0 +1,147 @@
+# haproxy-dual-sweep.cfg.j2
+# Host: 172.24.47.20 (idc-haproxy / l-monitor-labroom-1)
+# Role: dual-haproxy sweep — 同時暴露三組 listener（IDC-only / GCP-only / dual）
+#       供 cross-region PoC 切流量驗證使用。
+#
+# Port 對應表:
+#   DB     | IDC-only | GCP-only | Dual (IDC primary, GCP backup)
+#   -------|----------|----------|--------------------------------
+#   TiDB   |  14000   |  24000   |  34000
+#   CRDB   |  15257   |  25257   |  35257
+#   YBDB   |  15433   |  25433   |  35433
+#
+# IDC DB nodes  : 172.24.40.32 / .33 / .34   (port: TiDB 4000, CRDB 26257, YBDB 5433)
+# GCP DB nodes  : 10.160.152.11 / .12 / .13  (same ports)
+# Stats UI      : http://172.24.47.20:8404/stats
+#
+# Generated for phase-crossregion PoC (2026-06-22)
+# DO NOT edit manually — managed by ansible role haproxy_deploy (template: haproxy-dual-sweep.cfg.j2)
+
+global
+  daemon
+  log /dev/log local0
+  maxconn 10000
+
+defaults
+  mode tcp
+  timeout connect 5s
+  timeout client  {{ haproxy_timeout_client | default('1800s') }}
+  timeout server  {{ haproxy_timeout_server | default('1800s') }}
+  option clitcpka
+  option srvtcpka
+  option tcplog
+
+# ===========================================================================
+# TiDB (port 4000)
+# ===========================================================================
+
+listen tidb-idc-only
+  # IDC 3 nodes 只，用於驗證 IDC-only 路由
+  bind *:14000
+  balance leastconn
+  option tcp-check
+  server idc-tidb-1 172.24.40.32:4000 check inter 2s
+  server idc-tidb-2 172.24.40.33:4000 check inter 2s
+  server idc-tidb-3 172.24.40.34:4000 check inter 2s
+
+listen tidb-gcp-only
+  # GCP 3 nodes 只，用於驗證 GCP-only 路由
+  bind *:24000
+  balance leastconn
+  option tcp-check
+  server gcp-tidb-1 10.160.152.11:4000 check inter 2s
+  server gcp-tidb-2 10.160.152.12:4000 check inter 2s
+  server gcp-tidb-3 10.160.152.13:4000 check inter 2s
+
+listen tidb-dual
+  # IDC primary + GCP backup；IDC 全 down 才切 GCP
+  bind *:34000
+  balance leastconn
+  option tcp-check
+  server idc-tidb-1 172.24.40.32:4000 check inter 2s
+  server idc-tidb-2 172.24.40.33:4000 check inter 2s
+  server idc-tidb-3 172.24.40.34:4000 check inter 2s
+  server gcp-tidb-1 10.160.152.11:4000 check inter 2s backup
+  server gcp-tidb-2 10.160.152.12:4000 check inter 2s backup
+  server gcp-tidb-3 10.160.152.13:4000 check inter 2s backup
+
+# ===========================================================================
+# CRDB / CockroachDB (port 26257)
+# ===========================================================================
+
+listen crdb-idc-only
+  # IDC 3 nodes 只，用於驗證 IDC-only 路由
+  bind *:15257
+  balance leastconn
+  option tcp-check
+  server idc-crdb-1 172.24.40.32:26257 check inter 2s
+  server idc-crdb-2 172.24.40.33:26257 check inter 2s
+  server idc-crdb-3 172.24.40.34:26257 check inter 2s
+
+listen crdb-gcp-only
+  # GCP 3 nodes 只，用於驗證 GCP-only 路由
+  bind *:25257
+  balance leastconn
+  option tcp-check
+  server gcp-crdb-1 10.160.152.11:26257 check inter 2s
+  server gcp-crdb-2 10.160.152.12:26257 check inter 2s
+  server gcp-crdb-3 10.160.152.13:26257 check inter 2s
+
+listen crdb-dual
+  # IDC primary + GCP backup；IDC 全 down 才切 GCP
+  bind *:35257
+  balance leastconn
+  option tcp-check
+  server idc-crdb-1 172.24.40.32:26257 check inter 2s
+  server idc-crdb-2 172.24.40.33:26257 check inter 2s
+  server idc-crdb-3 172.24.40.34:26257 check inter 2s
+  server gcp-crdb-1 10.160.152.11:26257 check inter 2s backup
+  server gcp-crdb-2 10.160.152.12:26257 check inter 2s backup
+  server gcp-crdb-3 10.160.152.13:26257 check inter 2s backup
+
+# ===========================================================================
+# YBDB / YugabyteDB (YSQL port 5433)
+# ===========================================================================
+
+listen ybdb-idc-only
+  # IDC 3 nodes 只，用於驗證 IDC-only 路由
+  bind *:15433
+  balance leastconn
+  option tcp-check
+  server idc-ybdb-1 172.24.40.32:5433 check inter 2s
+  server idc-ybdb-2 172.24.40.33:5433 check inter 2s
+  server idc-ybdb-3 172.24.40.34:5433 check inter 2s
+
+listen ybdb-gcp-only
+  # GCP 3 nodes 只，用於驗證 GCP-only 路由
+  bind *:25433
+  balance leastconn
+  option tcp-check
+  server gcp-ybdb-1 10.160.152.11:5433 check inter 2s
+  server gcp-ybdb-2 10.160.152.12:5433 check inter 2s
+  server gcp-ybdb-3 10.160.152.13:5433 check inter 2s
+
+listen ybdb-dual
+  # IDC primary + GCP backup；IDC 全 down 才切 GCP
+  # 注意：YBDB 有 smart client，L4 haproxy 僅作 fallback gateway 使用
+  bind *:35433
+  balance leastconn
+  option tcp-check
+  server idc-ybdb-1 172.24.40.32:5433 check inter 2s
+  server idc-ybdb-2 172.24.40.33:5433 check inter 2s
+  server idc-ybdb-3 172.24.40.34:5433 check inter 2s
+  server gcp-ybdb-1 10.160.152.11:5433 check inter 2s backup
+  server gcp-ybdb-2 10.160.152.12:5433 check inter 2s backup
+  server gcp-ybdb-3 10.160.152.13:5433 check inter 2s backup
+
+# ===========================================================================
+# Stats (HTTP)
+# ===========================================================================
+
+frontend stats
+  mode http
+  bind *:8404
+  stats enable
+  stats uri /stats
+  stats refresh 5s
+  # `curl -s http://172.24.47.20:8404/stats;csv` 從任意 IDC host 直接撈 CSV

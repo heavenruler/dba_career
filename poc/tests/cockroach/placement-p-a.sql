@@ -18,20 +18,22 @@
 
 ALTER DATABASE tpcc CONFIGURE ZONE USING
   num_replicas       = 3,
+  num_voters         = 3,
   constraints        = '[+region=idc]',
   voter_constraints  = '{+region=idc: 2, +region=gcp: 1}',
   lease_preferences  = '[[+region=idc]]';
 
 -- tpcc database 套用 (deploy-time DB 由 prepare.sh 建立；以下 per-table override 段需 tables 存在)
-ALTER TABLE tpcc.warehouse  CONFIGURE ZONE USING num_replicas=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
-ALTER TABLE tpcc.district   CONFIGURE ZONE USING num_replicas=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
-ALTER TABLE tpcc.customer   CONFIGURE ZONE USING num_replicas=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
-ALTER TABLE tpcc.history    CONFIGURE ZONE USING num_replicas=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
-ALTER TABLE tpcc.new_order  CONFIGURE ZONE USING num_replicas=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
-ALTER TABLE tpcc.orders     CONFIGURE ZONE USING num_replicas=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
-ALTER TABLE tpcc.order_line CONFIGURE ZONE USING num_replicas=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
-ALTER TABLE tpcc.item       CONFIGURE ZONE USING num_replicas=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
-ALTER TABLE tpcc.stock      CONFIGURE ZONE USING num_replicas=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
+-- v26.2 強制 voter_constraints 必須同時設 num_voters，否則 SQLSTATE 22023
+ALTER TABLE tpcc.warehouse  CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
+ALTER TABLE tpcc.district   CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
+ALTER TABLE tpcc.customer   CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
+ALTER TABLE tpcc.history    CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
+ALTER TABLE tpcc.new_order  CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
+ALTER TABLE tpcc.orders     CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
+ALTER TABLE tpcc.order_line CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
+ALTER TABLE tpcc.item       CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
+ALTER TABLE tpcc.stock      CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='[+region=idc]', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc]]';
 
 -- Verify zone config attached（後續 dry-run-confirm gate 解析）
 SHOW ZONE CONFIGURATION FROM DATABASE tpcc;

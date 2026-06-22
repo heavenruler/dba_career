@@ -90,6 +90,47 @@
         shell: /bin/bash
         create_home: true
 
+    - name: Set yugabyte user file descriptor limits (control)
+      ansible.builtin.copy:
+        dest: /etc/security/limits.d/999-yugabyte-poc.conf
+        content: |
+          yugabyte soft nofile 1048576
+          yugabyte hard nofile 1048576
+          yugabyte soft nproc  unlimited
+          yugabyte hard nproc  unlimited
+          root     soft nofile 1048576
+          root     hard nofile 1048576
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Free port 9100 (stop+disable TiDB tiup-managed node_exporter; prevent respawn)
+      ansible.builtin.shell: |
+        # 1. systemd units (tiup deploy names them <name>-<port>.service)
+        for unit in $(systemctl list-units --type=service --no-legend --all 2>/dev/null \
+                       | awk '{print $1}' \
+                       | grep -E '^(node_exporter|blackbox_exporter|tikv|pd|tidb|tiflash)-[0-9]+\.service$'); do
+          systemctl stop "$unit" 2>/dev/null || true
+          systemctl disable "$unit" 2>/dev/null || true
+        done
+        # 2. residual processes
+        pkill -9 -f "node_exporter" 2>/dev/null || true
+        pkill -9 -f "run_node_exporter" 2>/dev/null || true
+        pkill -9 -f "/tidb-deploy/monitor" 2>/dev/null || true
+        # 3. final: any 9100 listener by PID
+        for i in 1 2 3; do
+          pid=$(ss -lntp 2>/dev/null | awk '/:9100[^0-9]/{for(f=1;f<=NF;f++) if($f ~ /pid=/){split($f,a,",");split(a[1],b,"=");print b[2]}}' | head -1)
+          [ -z "$pid" ] && break
+          kill -9 "$pid" 2>/dev/null || true
+          sleep 1
+        done
+        # verify free
+        ss -lntp 2>/dev/null | grep -E ":9100\b" && exit 1 || exit 0
+      args:
+        executable: /bin/bash
+      changed_when: false
+      failed_when: false
+
     - name: Create YugabyteDB directories (control node)
       ansible.builtin.file:
         path: "{{ item }}"
@@ -237,6 +278,33 @@
         shell: /bin/bash
         create_home: true
 
+    - name: Set yugabyte user file descriptor limits (override 99-tidb/99-yugabyte; 999- = higher lexical)
+      ansible.builtin.copy:
+        dest: /etc/security/limits.d/999-yugabyte-poc.conf
+        content: |
+          yugabyte soft nofile 1048576
+          yugabyte hard nofile 1048576
+          yugabyte soft nproc  unlimited
+          yugabyte hard nproc  unlimited
+          root     soft nofile 1048576
+          root     hard nofile 1048576
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Free port 9100 (TiDB node_exporter conflict with yb-tserver RPC)
+      ansible.builtin.shell: |
+        pkill -9 -f "/tidb-deploy/monitor-9100" 2>/dev/null || true
+        # systemd-managed node_exporter (if any)
+        systemctl stop node_exporter 2>/dev/null || true
+        # final wait
+        sleep 2
+        ss -lntp 2>/dev/null | grep -E ":9100\b" && exit 1 || exit 0
+      args:
+        executable: /bin/bash
+      changed_when: false
+      failed_when: false
+
     - name: Create YugabyteDB directories (worker)
       ansible.builtin.file:
         path: "{{ item }}"
@@ -333,6 +401,27 @@
       failed_when: false
       changed_when: false
 
+    - name: Free port 9100 just-in-time before primary start (mask + kill)
+      ansible.builtin.shell: |
+        set +e
+        for unit in $(systemctl list-units --type=service --no-legend --all 2>/dev/null \
+                       | awk '{print $1}' \
+                       | grep -E '^(node_exporter|blackbox_exporter|tikv|pd|tidb|tiflash)-[0-9]+\.service$'); do
+          systemctl stop "$unit" 2>/dev/null
+          systemctl mask "$unit" 2>/dev/null
+        done
+        pkill -9 -x node_exporter 2>/dev/null
+        pkill -9 -x blackbox_exporter 2>/dev/null
+        sleep 1
+        port_user=$(ss -lntp 2>/dev/null | awk '/:9100[^0-9]/{print; exit}')
+        if [ -z "$port_user" ]; then
+          exit 0
+        fi
+        echo "$port_user" | grep -qE "yb-tserver|yugabyted" && exit 0 || { echo "9100 occupied by: $port_user"; exit 1; }
+      args:
+        executable: /bin/bash
+      changed_when: false
+
     - name: Start YugabyteDB primary (bootstrap, no --join)
       ansible.builtin.command:
         cmd: >-
@@ -396,12 +485,37 @@
       failed_when: false
       changed_when: false
 
+    - name: Free port 9100 just-in-time before worker start (mask + kill)
+      ansible.builtin.shell: |
+        set +e
+        for unit in $(systemctl list-units --type=service --no-legend --all 2>/dev/null \
+                       | awk '{print $1}' \
+                       | grep -E '^(node_exporter|blackbox_exporter|tikv|pd|tidb|tiflash)-[0-9]+\.service$'); do
+          systemctl stop "$unit" 2>/dev/null
+          systemctl mask "$unit" 2>/dev/null
+        done
+        # use -x (exact match on process name) to avoid pkill -f killing
+        # the ansible script itself which contains the string "node_exporter"
+        pkill -9 -x node_exporter 2>/dev/null
+        pkill -9 -x blackbox_exporter 2>/dev/null
+        pkill -9 -x run_node_exporter.sh 2>/dev/null
+        sleep 1
+        # fail-closed: port MUST be free OR occupied by yb-tserver
+        port_user=$(ss -lntp 2>/dev/null | awk '/:9100[^0-9]/{print; exit}')
+        if [ -z "$port_user" ]; then
+          exit 0
+        fi
+        echo "$port_user" | grep -qE "yb-tserver|yugabyted" && exit 0 || { echo "9100 occupied by: $port_user"; exit 1; }
+      args:
+        executable: /bin/bash
+      changed_when: false
+
     - name: Start YugabyteDB worker (join primary {{ yb_host_primary }})
       ansible.builtin.command:
         cmd: >-
           {{ yb_install_dir }}/bin/yugabyted start
           --base_dir={{ yb_base_dir }}
-          --advertise_address={{ inventory_hostname }}
+          --advertise_address={{ ansible_host | default(inventory_hostname) }}
           --join={{ yb_host_primary }}
           --master_flags={{ (yb_master_flags | regex_replace('\s+', '')) | quote }}
           --tserver_flags={{ (yb_tserver_flags | regex_replace('\s+', '')) | quote }}
@@ -410,7 +524,7 @@
 
     - name: Wait for YSQL port on worker
       ansible.builtin.wait_for:
-        host: "{{ inventory_hostname }}"
+        host: "{{ ansible_host | default(inventory_hostname) }}"
         port: 5433
         timeout: 300
 
