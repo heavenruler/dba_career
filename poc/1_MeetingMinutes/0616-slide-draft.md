@@ -1,6 +1,6 @@
 # 第一階段 PoC 成果與下一步決策
 
-> 受眾：C-level / 跨部門主管 / 業務 / application owner
+> 受眾：DBA
 > 頁數：5-8 頁（含選頁）
 > 定位：第一階段成果與決策框架；本份**不是**工程細節報告
 > 引用：`1_MeetingMinutes/analytics-S-K8S-2026-06-15.md` / `phase-crossregion/decisions-2026-06-08.md` / `1_MeetingMinutes/2026-06-09-distributed-db-adoption-non-technical.md` / `results/PoC-DESIGN.md` / `results/README.md`
