@@ -16,8 +16,8 @@
 | Phase | 範圍 | 狀態 |
 |---|---|---|
 | **S-BASE**（VM baseline） | TiDB / CockroachDB / YugabyteDB × 指定 isolation × 指定拓撲 | ✅ 已完成主要驗證 |
-| **T-THRD**（thread control） | thread sweep 行為對標 | ✅ 已完成主要驗證 |
 | **S-K8S**（K8s 對照） | 三家 × {unlimit, limit} = 6 cell | ✅ 已完成主要驗證 |
+| **T-THRD**（thread control） | thread sweep 行為對標 | 🟡 待完成 |
 | **X-CROSS**（跨區域 / 跨專線） | 6-node TiDB cluster + GCP 跨區、placement、failover、chaos | 🟡 框架與規劃已建立；sweep 數據待執行 |
 
 ### 三點結論
@@ -51,7 +51,7 @@
 | **CockroachDB** | 一致性語意較強（SSI 預設）；但 SI / SSI 模式下 retry 與效能成本明顯 | **保留觀察**：應用層需評估 retry 容忍度與交易模式 |
 | **YugabyteDB** | VM + HAProxy 表現可觀；K8s 結果**目前不宜直接作為導入結論** | **保留觀察**：K8s 部署仍需調校與驗證，VM 路徑可進入評估 |
 
-### 同硬體 baseline 數字（vm-3node-haproxy-3s3r-rc，t=128 mean tpmC）
+### 同硬體 baseline 數字（vm-3node-haproxy-3s3r-rc，t=128 mean tpmC）; 後續數據嚴禁四捨五入 ; 禁止修改原始資料
 
 ```
 TiDB           ≈ 26,900
