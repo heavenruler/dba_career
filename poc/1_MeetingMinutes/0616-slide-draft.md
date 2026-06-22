@@ -57,6 +57,25 @@
 
 **目前待驗證假設**：變異可能同時受低 warehouse contention、重新部署後 placement / scheduler 狀態、warmup 與背景調度影響。`SESSION-2026-06-21-determinism.md` 將主要原因判為 W=4 lock contention，但正式因果仍須由 06-22 的同 cluster、freeze 與 CV 實驗確認。
 
+### 06-22 ~ 06-23 Determinism v2 初步驗證結果（X-CROSS）
+
+條件：**同 cluster N 連跑**、W=4、16 threads、每 round 5 min、5 rounds、controller = `.31` (IDC client, 取代 Mac IAP tunnel)、deploy → smoke → cleanup → 下一個 DB（serial chain）。
+
+| 資料庫 | R1 | R2 | R3 | R4 | R5 | mean | CV | 備註 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| **TiDB v8.5.2** | 9525.5 | 9553.2 | 9786.9 | 9393.2 | 9530.8 | **9566.0** (R2-R5) | **1.67%** ✅ | placement P-A，6 store ALIVE |
+| **CockroachDB v26.2.0** | 8409.5 | 8055.3 | 7902.5 | 7720.9 | 7472.3 | **7787.8** (R2-R5) | **3.23%** ✅ | placement P-A num_voters=3，lease 100% IDC |
+| **YugabyteDB 2025.2** | 102.0 | 226.9 | 6424.2 | 6259.3 | 6206.2 | **6296.6** (R3-R5) | **1.82%** ✅ | Plan B (IDC live RF=3 + GCP read_replica RF=3)；R1+R2 為 postgres backend cache warmup |
+
+> 數據來源：`results/X-CROSS/run1-20260622T131459+0800/{tidb,crdb}-vm-6node-P-A-rc-run1-*` 與 `results/X-CROSS/run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-*`。commit `dd948dcf` + `28e39881`。
+
+**已確認結論**：
+- 06-21 觀察到的 ±526% / ±50% 變異主因為「每輪重新 deploy」造成 placement / cache / scheduler 狀態異動，與 W=4 contention 是兩個獨立來源。
+- 同一 cluster 連跑時，三家 W=4 R2-R5（或 YBDB R3-R5）的 CV ≤ 5%，重現性已建立。
+- YBDB Idle=0 詭異（read_replica 模式 benign）解法：(a) gate 改用 `get_load_move_completion=100%`，(b) timed run 前 `set_load_balancer_enabled=0`，run 後 enable=1。
+- CRDB lease gate SQL 改用 `[SHOW RANGES FROM DATABASE tpcc WITH TABLES, DETAILS]`（v26.2 `crdb_internal.ranges` 無 `table_name` 欄位且禁止存取）。
+- 上述為 framework / contention 驗證；**仍不得**作為跨家排名或正式 baseline，後續需依「v2 完成條件」回到 W=128。
+
 ### 06-22 Determinism v2 方向與完成條件
 
 1. **同一 cluster 執行**：不在每輪間重 deploy 或 cold reset。
