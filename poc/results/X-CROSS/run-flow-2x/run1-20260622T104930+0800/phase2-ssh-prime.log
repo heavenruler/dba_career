@@ -1,0 +1,75 @@
+==> phase2-ssh-prime: known_hosts clean + .31 self-ssh + GCP pubkey push
+for ip in 172.24.40.31 172.24.40.32 172.24.40.33 172.24.40.34; do ssh-keygen -R $ip || true; done
+# Host 172.24.40.31 found: line 83
+/Users/wn.lin/.ssh/known_hosts updated.
+Original contents retained as /Users/wn.lin/.ssh/known_hosts.old
+# Host 172.24.40.32 found: line 85
+# Host 172.24.40.32 found: line 88
+# Host 172.24.40.32 found: line 89
+/Users/wn.lin/.ssh/known_hosts updated.
+Original contents retained as /Users/wn.lin/.ssh/known_hosts.old
+# Host 172.24.40.33 found: line 83
+# Host 172.24.40.33 found: line 85
+# Host 172.24.40.33 found: line 86
+/Users/wn.lin/.ssh/known_hosts updated.
+Original contents retained as /Users/wn.lin/.ssh/known_hosts.old
+# Host 172.24.40.34 found: line 83
+# Host 172.24.40.34 found: line 93
+# Host 172.24.40.34 found: line 94
+/Users/wn.lin/.ssh/known_hosts updated.
+Original contents retained as /Users/wn.lin/.ssh/known_hosts.old
+for port in 12211 12212 12213 12214 12215; do ssh-keygen -R "[localhost]:$port" || true; done
+# Host [localhost]:12211 found: line 83
+# Host [localhost]:12211 found: line 84
+# Host [localhost]:12211 found: line 85
+/Users/wn.lin/.ssh/known_hosts updated.
+Original contents retained as /Users/wn.lin/.ssh/known_hosts.old
+# Host [localhost]:12212 found: line 83
+/Users/wn.lin/.ssh/known_hosts updated.
+Original contents retained as /Users/wn.lin/.ssh/known_hosts.old
+# Host [localhost]:12213 found: line 83
+/Users/wn.lin/.ssh/known_hosts updated.
+Original contents retained as /Users/wn.lin/.ssh/known_hosts.old
+# Host [localhost]:12214 found: line 83
+/Users/wn.lin/.ssh/known_hosts updated.
+Original contents retained as /Users/wn.lin/.ssh/known_hosts.old
+# Host [localhost]:12215 found: line 83
+# Host [localhost]:12215 found: line 84
+# Host [localhost]:12215 found: line 85
+/Users/wn.lin/.ssh/known_hosts updated.
+Original contents retained as /Users/wn.lin/.ssh/known_hosts.old
+ssh -o LogLevel=ERROR -o StrictHostKeyChecking=accept-new root@172.24.40.31 'true'
+for port in 12211 12212 12213 12214 12215; do \
+	  ssh -o LogLevel=ERROR -o StrictHostKeyChecking=accept-new -p $port root@localhost 'true'; \
+	done
+ssh root@172.24.40.31 '\
+	  [ -f /root/.ssh/id_rsa ] || ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa; \
+	  grep -qFf /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys 2>/dev/null \
+	    || cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys; \
+	  chmod 600 /root/.ssh/authorized_keys; \
+	  ssh -o StrictHostKeyChecking=accept-new root@172.24.40.31 true'
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+ssh root@172.24.40.31 'for ip in 172.24.40.32 172.24.40.33 172.24.40.34 10.160.152.11 10.160.152.12 10.160.152.13; do ssh-keygen -R $ip 2>/dev/null; done; true'
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html

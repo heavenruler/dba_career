@@ -1,0 +1,90 @@
+=== cockroach.log tail ===
+-- Logs begin at Fri 2026-06-19 00:34:28 CST, end at Fri 2026-06-19 02:07:30 CST. --
+ 6月 19 01:35:14 l-test-poc-1 systemd[1]: Starting CockroachDB node (idc-dbhost-1)...
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: *
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * WARNING: ALL SECURITY CONTROLS HAVE BEEN DISABLED!
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: *
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * This mode is intended for non-production testing only.
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: *
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * In this mode:
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * - Your cluster is open to any client that can access 0.0.0.0.
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * - Intruders with access to your machine or network can observe client-server traffic.
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * - Intruders can log in without password and read or write any data in the cluster.
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * - Intruders can consume all your server's resources and cause unavailability.
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: *
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: *
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * INFO: To start a secure server without mandating TLS for clients,
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * consider --accept-sql-without-tls instead. For other options, see:
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: *
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * - https://go.crdb.dev/issue-v/53404/v26.2
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * - https://www.cockroachlabs.com/docs/v26.2/secure-a-cluster.html
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: *
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: *
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * WARNING: Running a server without --sql-addr, with a combined RPC/SQL listener, is deprecated.
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * This feature will be removed in a later version of CockroachDB.
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: *
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * INFO: initial startup completed.
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * Node will now attempt to join a running cluster, or wait for `cockroach init`.
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * Client connections will be accepted after this completes successfully.
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: * Check the log file(s) for progress.
+ 6月 19 01:35:14 l-test-poc-1 cockroach[21643]: *
+ 6月 19 01:35:14 l-test-poc-1 systemd[1]: Started CockroachDB node (idc-dbhost-1).
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: CockroachDB node starting at 2026-06-18 17:35:16.697563458 +0000 UTC m=+2.486905319 (took 2.3s)
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: build:               CCL v26.2.0 @ 2026/04/21 18:36:57 (go1.25.5)
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: malloc_conf:         prof:false,prof_active:true,background_thread:true,thp:never,metadata_thp:disabled,narenas:16,dirty_decay_ms:2000,muzzy_decay_ms:0
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: webui:               http://172.24.40.32:8080
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: sql:                 postgresql://root@172.24.40.32:26257/defaultdb?sslmode=disable
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: sql (JDBC):          jdbc:postgresql://172.24.40.32:26257/defaultdb?sslmode=disable&user=root
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: RPC client flags:    /usr/local/bin/cockroach <client cmd> --host=172.24.40.32:26257 --insecure
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: logs:                /var/log/cockroach
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: locality:            region=idc,zone=idc-vlan241
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: temp dir:            /var/lib/cockroach/cockroach-temp3110021010
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: external I/O path:   /var/lib/cockroach/extern
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: store[0]:            path=/var/lib/cockroach
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: clusterID:           53b5164f-2c52-4c1c-b8cf-84d2281a0153
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: status:              initialized new cluster
+ 6月 19 01:35:16 l-test-poc-1 cockroach[21643]: nodeID:              1
+ 6月 19 02:03:36 l-test-poc-1 systemd[1]: Stopping CockroachDB node (idc-dbhost-1)...
+ 6月 19 02:03:36 l-test-poc-1 cockroach[21643]: initiating graceful shutdown of server
+ 6月 19 02:03:39 l-test-poc-1 cockroach[21643]: server drained and shutdown completed
+ 6月 19 02:03:39 l-test-poc-1 systemd[1]: cockroach.service: Succeeded.
+ 6月 19 02:03:39 l-test-poc-1 systemd[1]: Stopped CockroachDB node (idc-dbhost-1).
+ 6月 19 02:03:39 l-test-poc-1 systemd[1]: Starting CockroachDB node (idc-dbhost-1)...
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: *
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: * WARNING: ALL SECURITY CONTROLS HAVE BEEN DISABLED!
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: *
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: * This mode is intended for non-production testing only.
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: *
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: * In this mode:
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: * - Your cluster is open to any client that can access 0.0.0.0.
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: * - Intruders with access to your machine or network can observe client-server traffic.
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: * - Intruders can log in without password and read or write any data in the cluster.
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: * - Intruders can consume all your server's resources and cause unavailability.
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: *
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: *
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: * INFO: To start a secure server without mandating TLS for clients,
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: * consider --accept-sql-without-tls instead. For other options, see:
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: *
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: * - https://go.crdb.dev/issue-v/53404/v26.2
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: * - https://www.cockroachlabs.com/docs/v26.2/secure-a-cluster.html
+ 6月 19 02:03:39 l-test-poc-1 cockroach[26066]: *
+ 6月 19 02:03:40 l-test-poc-1 cockroach[26066]: *
+ 6月 19 02:03:40 l-test-poc-1 cockroach[26066]: * WARNING: Running a server without --sql-addr, with a combined RPC/SQL listener, is deprecated.
+ 6月 19 02:03:40 l-test-poc-1 cockroach[26066]: * This feature will be removed in a later version of CockroachDB.
+ 6月 19 02:03:40 l-test-poc-1 cockroach[26066]: *
+ 6月 19 02:03:40 l-test-poc-1 systemd[1]: Started CockroachDB node (idc-dbhost-1).
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: CockroachDB node starting at 2026-06-18 18:03:42.488182251 +0000 UTC m=+3.141213152 (took 2.8s)
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: build:               CCL v26.2.0 @ 2026/04/21 18:36:57 (go1.25.5)
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: malloc_conf:         prof:false,prof_active:true,background_thread:true,thp:never,metadata_thp:disabled,narenas:16,dirty_decay_ms:2000,muzzy_decay_ms:0
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: webui:               http://172.24.40.32:8080
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: sql:                 postgresql://root@172.24.40.32:26257/defaultdb?sslmode=disable
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: sql (JDBC):          jdbc:postgresql://172.24.40.32:26257/defaultdb?sslmode=disable&user=root
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: RPC client flags:    /usr/local/bin/cockroach <client cmd> --host=172.24.40.32:26257 --insecure
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: logs:                /var/log/cockroach
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: locality:            region=idc,zone=idc-vlan241
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: temp dir:            /var/lib/cockroach/cockroach-temp1404128007
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: external I/O path:   /var/lib/cockroach/extern
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: store[0]:            path=/var/lib/cockroach
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: clusterID:           53b5164f-2c52-4c1c-b8cf-84d2281a0153
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: status:              restarted pre-existing node
+ 6月 19 02:03:42 l-test-poc-1 cockroach[26066]: nodeID:              1

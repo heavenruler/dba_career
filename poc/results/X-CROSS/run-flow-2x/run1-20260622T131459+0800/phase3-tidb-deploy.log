@@ -1,0 +1,179 @@
+==> [start] phase3-tidb-deploy at 2026-06-22T13:28:01+0800 (timeout=1800   s)
+==> phase3-tidb-deploy (placement=P-A) — controller=.31 direct ssh to GCP
+ssh root@172.24.40.31 "cd /tmp/poc/ansible && ansible-playbook -i inventory/crossregion-via31.ini \
+	  playbooks/tidb-vm6.yml -e tidb_placement=P-A"
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+
+PLAY [Sanity check extra-vars] *************************************************
+
+TASK [Assert tidb_placement] ***************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY [Bootstrap TiDB control node (idc-dbhost-1 = 172.24.40.32)] ***************
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.24.40.32]
+
+TASK [Install TiDB prerequisites (control + worker tooling)] *******************
+ok: [172.24.40.32]
+
+TASK [Ensure root SSH keypair exists for tiup] *********************************
+changed: [172.24.40.32]
+
+TASK [Read root public key] ****************************************************
+ok: [172.24.40.32]
+
+TASK [Install TiUP] ************************************************************
+changed: [172.24.40.32]
+
+TASK [Add TiUP to root profile] ************************************************
+[WARNING]: Module remote_tmp /root/.ansible/tmp did not exist and was created
+with a mode of 0700, this may cause issues when running as another user. To
+avoid this, create the remote_tmp dir with the correct permissions manually
+changed: [172.24.40.32]
+
+TASK [Install tiup cluster component] ******************************************
+ok: [172.24.40.32]
+
+TASK [Authorize control node root pubkey on itself (tiup self-ssh)] ************
+changed: [172.24.40.32]
+
+PLAY [Prepare TiDB worker nodes (IDC + GCP)] ***********************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+ok: [g-test-poc-1]
+ok: [g-test-poc-2]
+ok: [g-test-poc-3]
+
+TASK [Install TiDB node prerequisites] *****************************************
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+ok: [g-test-poc-2]
+ok: [g-test-poc-1]
+ok: [g-test-poc-3]
+
+TASK [OS tuning (swappiness / THP / ulimit)] ***********************************
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+ok: [g-test-poc-2]
+ok: [g-test-poc-3]
+ok: [g-test-poc-1]
+
+TASK [Set ulimit nofile] *******************************************************
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+changed: [g-test-poc-3]
+changed: [g-test-poc-2]
+changed: [g-test-poc-1]
+
+TASK [Stat systemd proxy drop-in (IDC only)] ***********************************
+skipping: [g-test-poc-1]
+skipping: [g-test-poc-2]
+skipping: [g-test-poc-3]
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+
+TASK [Patch systemd no_proxy to include 6-node cluster IPs (grpc-rust CIDR workaround)] ***
+skipping: [g-test-poc-1]
+skipping: [g-test-poc-2]
+skipping: [g-test-poc-3]
+changed: [172.24.40.33]
+changed: [172.24.40.34]
+
+TASK [Authorize control (idc-dbhost-1) root key on this node for tiup SSH] *****
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+changed: [g-test-poc-3]
+changed: [g-test-poc-2]
+changed: [g-test-poc-1]
+
+PLAY [Render topology and deploy TiDB vm-6node cluster] ************************
+
+TASK [Render TiDB vm-6node topology] *******************************************
+changed: [172.24.40.32]
+
+TASK [Check existing TiDB cluster] *********************************************
+ok: [172.24.40.32]
+
+TASK [Deploy TiDB vm-6node cluster] ********************************************
+changed: [172.24.40.32]
+
+TASK [Reload TiDB cluster config when topology changed] ************************
+skipping: [172.24.40.32]
+
+TASK [Ensure systemd drop-in dirs exist for TiDB cluster services] *************
+changed: [172.24.40.32] => (item=tikv-20160)
+changed: [172.24.40.32] => (item=pd-2379)
+changed: [172.24.40.32] => (item=tidb-4000)
+
+TASK [Unset proxy for TiDB cluster services (gRPC C core ignores CIDR in no_proxy)] ***
+changed: [172.24.40.32] => (item=tikv-20160)
+changed: [172.24.40.32] => (item=pd-2379)
+changed: [172.24.40.32] => (item=tidb-4000)
+
+TASK [Reload systemd after drop-in] ********************************************
+ok: [172.24.40.32]
+
+TASK [Start TiDB vm-6node cluster] *********************************************
+changed: [172.24.40.32]
+
+TASK [Wait for TiDB SQL port on idc-dbhost-1 (172.24.40.32)] *******************
+ok: [172.24.40.32]
+
+TASK [Wait for all 6 TiKV stores to register Up with PD] ***********************
+ok: [172.24.40.32]
+
+TASK [Wait for region replicas to converge to RF=3] ****************************
+ok: [172.24.40.32]
+
+TASK [Apply TiDB benchmark settings (auto-analyze off + pessimistic)] **********
+ok: [172.24.40.32]
+
+TASK [Copy placement SQL to control node /root/] *******************************
+changed: [172.24.40.32]
+
+TASK [Apply placement SQL — CREATE POLICY only (deploy-time，不含 ALTER TABLE)] ***
+ok: [172.24.40.32]
+
+PLAY [Deploy GCP-side HAProxy for TiDB (g-test-poc-4)] *************************
+
+TASK [Deploy GCP HAProxy] ******************************************************
+
+TASK [haproxy_deploy : Install haproxy] ****************************************
+changed: [g-test-poc-4]
+
+TASK [haproxy_deploy : Configure haproxy] **************************************
+changed: [g-test-poc-4]
+
+TASK [haproxy_deploy : Start and enable haproxy] *******************************
+changed: [g-test-poc-4]
+
+TASK [haproxy_deploy : Show haproxy listen address] ****************************
+ok: [g-test-poc-4] => {
+    "msg": "HAProxy ready: g-test-poc-4:4000 → 172.24.40.32:4000,172.24.40.33:4000,10.160.152.11:4000"
+}
+
+TASK [Verify haproxy listening on TiDB port 4000] ******************************
+ok: [g-test-poc-4]
+
+RUNNING HANDLER [haproxy_deploy : restart haproxy] *****************************
+changed: [g-test-poc-4]
+
+PLAY RECAP *********************************************************************
+172.24.40.32               : ok=21   changed=10   unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+172.24.40.33               : ok=7    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+172.24.40.34               : ok=7    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+g-test-poc-1               : ok=5    changed=2    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+g-test-poc-2               : ok=5    changed=2    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+g-test-poc-3               : ok=5    changed=2    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+g-test-poc-4               : ok=6    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+==> [end]   phase3-tidb-deploy at 2026-06-22T13:32:38+0800

@@ -1,0 +1,391 @@
+bash phase-crossregion/scripts/cleanup-tidb.sh
+==> [start] cleanup-tidb at 2026-06-22T14:18:21+0800
+=== IDC nodes (direct ssh) ===
+--- 172.24.40.32 ---
+Warning: Permanently added '172.24.40.32' (ED25519) to the list of known hosts.
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+  stop+disable+mask blackbox_exporter-9115.service
+  stop+disable+mask node_exporter-9100.service
+  stop+disable+mask pd-2379.service
+  stop+disable+mask tidb-4000.service
+  stop+disable+mask tikv-20160.service
+--- 172.24.40.33 ---
+Warning: Permanently added '172.24.40.33' (ED25519) to the list of known hosts.
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+  stop+disable+mask blackbox_exporter-9115.service
+  stop+disable+mask node_exporter-9100.service
+  stop+disable+mask pd-2379.service
+  stop+disable+mask tidb-4000.service
+  stop+disable+mask tikv-20160.service
+--- 172.24.40.34 ---
+Warning: Permanently added '172.24.40.34' (ED25519) to the list of known hosts.
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+  stop+disable+mask blackbox_exporter-9115.service
+  stop+disable+mask node_exporter-9100.service
+  stop+disable+mask pd-2379.service
+  stop+disable+mask tikv-20160.service
+=== GCP nodes (via 172.24.40.31) ===
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+--- 10.160.152.11 ---
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+  stop+disable+mask blackbox_exporter-9115.service
+  stop+disable+mask node_exporter-9100.service
+  stop+disable+mask pd-2379.service
+  stop+disable+mask tidb-4000.service
+  stop+disable+mask tikv-20160.service
+--- 10.160.152.12 ---
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+  stop+disable+mask blackbox_exporter-9115.service
+  stop+disable+mask node_exporter-9100.service
+  stop+disable+mask pd-2379.service
+  stop+disable+mask tikv-20160.service
+--- 10.160.152.13 ---
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+  stop+disable+mask blackbox_exporter-9115.service
+  stop+disable+mask node_exporter-9100.service
+  stop+disable+mask pd-2379.service
+  stop+disable+mask tikv-20160.service
+--- 10.160.152.14 ---
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+--- 10.160.152.15 ---
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+==> verify-cleanup: every node's ports must be free
+=== IDC verify ===
+** This session may be vulnerable to "store now, decrypt later" attacks.
+  [l-test-poc-1] OK: no tiup processes
+** This session may be vulnerable to "store now, decrypt later" attacks.
+  [l-test-poc-2] OK: no tiup processes
+** This session may be vulnerable to "store now, decrypt later" attacks.
+  [l-test-poc-3] OK: no tiup processes
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+=== GCP verify (via 172.24.40.31) ===
+** This session may be vulnerable to "store now, decrypt later" attacks.
+  [g-test-poc-1] OK: no tiup processes
+** This session may be vulnerable to "store now, decrypt later" attacks.
+  [g-test-poc-2] OK: no tiup processes
+** This session may be vulnerable to "store now, decrypt later" attacks.
+  [g-test-poc-3] OK: no tiup processes
+** This session may be vulnerable to "store now, decrypt later" attacks.
+  [g-test-poc-4] OK: no tiup processes
+** This session may be vulnerable to "store now, decrypt later" attacks.
+  [g-test-poc-5] OK: no tiup processes
+==> [end]   cleanup-tidb at 2026-06-22T14:25:08+0800 — all nodes verified clean
+==> [start] phase4-ybdb-deploy at 2026-06-22T14:25:08+0800 (timeout=1800   s)
+==> phase4-ybdb-deploy (placement=P-A) — controller=.31
+ssh root@172.24.40.31 "cd /tmp/poc/ansible && ansible-playbook -i inventory/crossregion-via31.ini \
+	  playbooks/yugabyte-vm6.yml -e yb_placement=P-A"
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+[WARNING]: While constructing a mapping from
+/tmp/poc/ansible/playbooks/yugabyte-vm6.yml, line 544, column 7, found a
+duplicate dict key (changed_when). Using last defined value only.
+
+PLAY [Sanity check extra-vars] *************************************************
+
+TASK [Assert yb_placement] *****************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY [Bootstrap YugabyteDB control node (idc-dbhost-1 = 172.24.40.32)] *********
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.24.40.32]
+
+TASK [Install YugabyteDB prerequisites (control + worker tooling)] *************
+ok: [172.24.40.32]
+
+TASK [Ensure root SSH keypair exists for control fan-out] **********************
+ok: [172.24.40.32]
+
+TASK [Read root public key] ****************************************************
+ok: [172.24.40.32]
+
+TASK [Create yugabyte user (control node)] *************************************
+changed: [172.24.40.32]
+
+TASK [Set yugabyte user file descriptor limits (control)] **********************
+changed: [172.24.40.32]
+
+TASK [Free port 9100 (stop+disable TiDB tiup-managed node_exporter; prevent respawn)] ***
+ok: [172.24.40.32]
+
+TASK [Create YugabyteDB directories (control node)] ****************************
+changed: [172.24.40.32] => (item=/opt/yugabyte)
+changed: [172.24.40.32] => (item=/var/yugabyte)
+
+TASK [Download YugabyteDB archive (control node)] ******************************
+changed: [172.24.40.32]
+
+TASK [Extract YugabyteDB (control node)] ***************************************
+changed: [172.24.40.32]
+
+TASK [Run YugabyteDB post install (control node)] ******************************
+[WARNING]: Module remote_tmp /home/yugabyte/.ansible/tmp did not exist and was
+created with a mode of 0700, this may cause issues when running as another
+user. To avoid this, create the remote_tmp dir with the correct permissions
+manually
+changed: [172.24.40.32]
+
+TASK [Link YugabyteDB client binaries (control node)] **************************
+changed: [172.24.40.32] => (item=yugabyted)
+changed: [172.24.40.32] => (item=ysqlsh)
+changed: [172.24.40.32] => (item=yb-admin)
+
+PLAY [Prepare YugabyteDB worker nodes (IDC + GCP)] *****************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+ok: [g-test-poc-3]
+ok: [g-test-poc-2]
+ok: [g-test-poc-1]
+
+TASK [Install YugabyteDB node prerequisites] ***********************************
+ok: [g-test-poc-3]
+ok: [172.24.40.34]
+ok: [g-test-poc-1]
+ok: [172.24.40.33]
+ok: [g-test-poc-2]
+
+TASK [OS tuning (swappiness / THP / ulimit)] ***********************************
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+ok: [g-test-poc-2]
+ok: [g-test-poc-3]
+ok: [g-test-poc-1]
+
+TASK [Set ulimit nofile] *******************************************************
+changed: [172.24.40.33]
+changed: [172.24.40.34]
+changed: [g-test-poc-3]
+changed: [g-test-poc-2]
+changed: [g-test-poc-1]
+
+TASK [Stat systemd proxy drop-in (IDC only)] ***********************************
+skipping: [g-test-poc-1]
+skipping: [g-test-poc-2]
+skipping: [g-test-poc-3]
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+
+TASK [Patch systemd no_proxy to include 6-node cluster IPs (gRPC CIDR workaround)] ***
+skipping: [g-test-poc-1]
+skipping: [g-test-poc-2]
+skipping: [g-test-poc-3]
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+
+TASK [Authorize control (idc-dbhost-1) root key on worker (for control fan-out)] ***
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+ok: [g-test-poc-3]
+ok: [g-test-poc-1]
+ok: [g-test-poc-2]
+
+TASK [Create yugabyte user (worker)] *******************************************
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+changed: [g-test-poc-3]
+changed: [g-test-poc-2]
+changed: [g-test-poc-1]
+
+TASK [Set yugabyte user file descriptor limits (override 99-tidb/99-yugabyte; 999- = higher lexical)] ***
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+changed: [g-test-poc-2]
+changed: [g-test-poc-3]
+changed: [g-test-poc-1]
+
+TASK [Free port 9100 (TiDB node_exporter conflict with yb-tserver RPC)] ********
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+ok: [g-test-poc-2]
+ok: [g-test-poc-1]
+ok: [g-test-poc-3]
+
+TASK [Create YugabyteDB directories (worker)] **********************************
+changed: [172.24.40.33] => (item=/opt/yugabyte)
+changed: [172.24.40.34] => (item=/opt/yugabyte)
+changed: [g-test-poc-2] => (item=/opt/yugabyte)
+changed: [g-test-poc-3] => (item=/opt/yugabyte)
+changed: [g-test-poc-1] => (item=/opt/yugabyte)
+changed: [172.24.40.33] => (item=/var/yugabyte)
+changed: [172.24.40.34] => (item=/var/yugabyte)
+changed: [g-test-poc-2] => (item=/var/yugabyte)
+changed: [g-test-poc-3] => (item=/var/yugabyte)
+changed: [g-test-poc-1] => (item=/var/yugabyte)
+
+TASK [Download YugabyteDB archive (worker)] ************************************
+changed: [g-test-poc-2]
+changed: [g-test-poc-3]
+changed: [g-test-poc-1]
+changed: [172.24.40.33]
+changed: [172.24.40.34]
+
+TASK [Extract YugabyteDB (worker)] *********************************************
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+changed: [g-test-poc-2]
+changed: [g-test-poc-1]
+changed: [g-test-poc-3]
+
+TASK [Run YugabyteDB post install (worker)] ************************************
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+changed: [g-test-poc-2]
+changed: [g-test-poc-1]
+changed: [g-test-poc-3]
+
+TASK [Link YugabyteDB client binaries (worker)] ********************************
+changed: [172.24.40.33] => (item=yugabyted)
+changed: [172.24.40.34] => (item=yugabyted)
+changed: [g-test-poc-2] => (item=yugabyted)
+changed: [g-test-poc-1] => (item=yugabyted)
+changed: [172.24.40.33] => (item=ysqlsh)
+changed: [172.24.40.34] => (item=ysqlsh)
+changed: [g-test-poc-3] => (item=yugabyted)
+changed: [172.24.40.34] => (item=yb-admin)
+changed: [172.24.40.33] => (item=yb-admin)
+changed: [g-test-poc-2] => (item=ysqlsh)
+changed: [g-test-poc-1] => (item=ysqlsh)
+changed: [g-test-poc-3] => (item=ysqlsh)
+changed: [g-test-poc-2] => (item=yb-admin)
+changed: [g-test-poc-1] => (item=yb-admin)
+changed: [g-test-poc-3] => (item=yb-admin)
+
+PLAY [Start YugabyteDB cluster — primary (idc-dbhost-1 = 172.24.40.32)] ********
+
+TASK [Check yugabyted status on primary] ***************************************
+ok: [172.24.40.32]
+
+TASK [Free port 9100 just-in-time before primary start (mask + kill)] **********
+ok: [172.24.40.32]
+
+TASK [Start YugabyteDB primary (bootstrap, no --join)] *************************
+changed: [172.24.40.32]
+
+TASK [Wait for YSQL port on primary] *******************************************
+ok: [172.24.40.32]
+
+PLAY [Join YugabyteDB workers (IDC .33/.34 + GCP g-test-poc-1/2/3)] ************
+
+TASK [Check yugabyted status on worker] ****************************************
+ok: [172.24.40.33]
+
+TASK [Free port 9100 just-in-time before worker start (mask + kill)] ***********
+ok: [172.24.40.33]
+
+TASK [Start YugabyteDB worker (join primary 172.24.40.32)] *********************
+changed: [172.24.40.33]
+
+TASK [Wait for YSQL port on worker] ********************************************
+ok: [172.24.40.33]
+
+PLAY [Join YugabyteDB workers (IDC .33/.34 + GCP g-test-poc-1/2/3)] ************
+
+TASK [Check yugabyted status on worker] ****************************************
+ok: [172.24.40.34]
+
+TASK [Free port 9100 just-in-time before worker start (mask + kill)] ***********
+ok: [172.24.40.34]
+
+TASK [Start YugabyteDB worker (join primary 172.24.40.32)] *********************
+changed: [172.24.40.34]
+
+TASK [Wait for YSQL port on worker] ********************************************
+ok: [172.24.40.34]
+
+PLAY [Join YugabyteDB workers (IDC .33/.34 + GCP g-test-poc-1/2/3)] ************
+
+TASK [Check yugabyted status on worker] ****************************************
+ok: [g-test-poc-1]
+
+TASK [Free port 9100 just-in-time before worker start (mask + kill)] ***********
+ok: [g-test-poc-1]
+
+TASK [Start YugabyteDB worker (join primary 172.24.40.32)] *********************
+changed: [g-test-poc-1]
+
+TASK [Wait for YSQL port on worker] ********************************************
+ok: [g-test-poc-1]
+
+PLAY [Join YugabyteDB workers (IDC .33/.34 + GCP g-test-poc-1/2/3)] ************
+
+TASK [Check yugabyted status on worker] ****************************************
+ok: [g-test-poc-2]
+
+TASK [Free port 9100 just-in-time before worker start (mask + kill)] ***********
+ok: [g-test-poc-2]
+
+TASK [Start YugabyteDB worker (join primary 172.24.40.32)] *********************
+changed: [g-test-poc-2]
+
+TASK [Wait for YSQL port on worker] ********************************************
+ok: [g-test-poc-2]
+
+PLAY [Join YugabyteDB workers (IDC .33/.34 + GCP g-test-poc-1/2/3)] ************
+
+TASK [Check yugabyted status on worker] ****************************************
+ok: [g-test-poc-3]
+
+TASK [Free port 9100 just-in-time before worker start (mask + kill)] ***********
+ok: [g-test-poc-3]
+
+TASK [Start YugabyteDB worker (join primary 172.24.40.32)] *********************
+changed: [g-test-poc-3]
+
+TASK [Wait for YSQL port on worker] ********************************************
+ok: [g-test-poc-3]
+
+PLAY [Verify YugabyteDB cluster RF + health (primary)] *************************
+
+TASK [Configure data placement (RF=3) — best-effort; fix6n handles via yb-admin] ***
+changed: [172.24.40.32]
+
+TASK [Wait for RF to propagate (universe config converges)] ********************
+ok: [172.24.40.32]
+
+TASK [Health check YugabyteDB (SELECT 1)] **************************************
+ok: [172.24.40.32]
+
+PLAY [Apply YBDB placement SQL — CREATE TABLESPACE stage (deploy-time)] ********
+
+TASK [Copy placement SQL to control node /root/] *******************************
+changed: [172.24.40.32]
+
+TASK [Apply placement SQL — CREATE TABLESPACE only (deploy-time，不含 ALTER TABLE)] ***
+ok: [172.24.40.32]
+
+PLAY RECAP *********************************************************************
+172.24.40.32               : ok=21   changed=10   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+172.24.40.33               : ok=19   changed=9    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+172.24.40.34               : ok=19   changed=9    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+g-test-poc-1               : ok=17   changed=9    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+g-test-poc-2               : ok=17   changed=9    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+g-test-poc-3               : ok=17   changed=9    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+==> [end]   phase4-ybdb-deploy at 2026-06-22T14:28:42+0800

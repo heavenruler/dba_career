@@ -1,0 +1,131 @@
+==> [start] phase4-ybdb-fix6n at 2026-06-22T14:28:42+0800 (timeout=1800   s)
+==> phase4-ybdb-fix6n: GCP restart loop skipped — playbook now advertises IPv4 directly via ansible_host
+    (revisit if Plan B placement still fails; restart logic moved to scripts/fix6n-gcp-restart.sh if needed)
+==> sleep 60 (waiting tserver register)
+sleep 60
+==> remove DEAD tservers from master metadata (best practice: blacklist+remove+unblacklist)
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+==> Plan B: live_replicas=IDC-only RF=3, GCP=read_replica (clean leader pin, no cache stale)
+    (revert Plan A — leader_blacklist causes postgres backend tablet cache stale)
+==> set live_replicas placement = 104.idc.vlan241:3 RF=3
+ssh root@172.24.40.32 "/opt/yugabyte/bin/yb-admin --master_addresses=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100 modify_placement_info '104.idc.vlan241:3' 3"
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+==> add GCP as read_replica (asia-east1-a only, RF=3 = 1 replica per GCP tserver)
+ssh root@172.24.40.32 "/opt/yugabyte/bin/yb-admin --master_addresses=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100 add_read_replica_placement_info '104.gcp.asia-east1-a:3' 3 ybdb_gcp_rr" 2>&1 | tail -3
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+==> wait load_balancer Idle=1 sustained for 60s (best practice: not single-sample)
+    6/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   12/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   18/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   24/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   30/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   36/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   42/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   48/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   54/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   60/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   66/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   72/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   78/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   84/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+   90/90 idle_count=0  state=** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Idle = 0
+[fix6n] WARN: 15min 未 sustained idle, proceed anyway (Idle=0 可能 benign)
+==> verify load_move_completion (must be 100%, hard gate)
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Percent complete = 100 : 0 remaining out of 0
+==> health check: all 6 expected tservers ALIVE (3 IDC + 3 GCP read_replica)
+  ALIVE tservers: 6 (expect 6)
+==> verify placement: 1 live (idc:3) + 1 read_replica (gcp:3)
+ssh root@172.24.40.32 "/opt/yugabyte/bin/yb-admin --master_addresses=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100 get_universe_config" | python3 -m json.tool | head -50
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+{
+    "version": 5,
+    "replicationInfo": {
+        "liveReplicas": {
+            "numReplicas": 3,
+            "placementBlocks": [
+                {
+                    "cloudInfo": {
+                        "placementCloud": "104",
+                        "placementRegion": "idc",
+                        "placementZone": "vlan241"
+                    },
+                    "minNumReplicas": 3
+                }
+            ],
+            "placementUuid": "NTEzNjE3MWYtYzkxNi00ZTY5LWI5NTktM2IyYjdkMWY5MWRj"
+        },
+        "readReplicas": [
+            {
+                "numReplicas": 3,
+                "placementBlocks": [
+                    {
+                        "cloudInfo": {
+                            "placementCloud": "104",
+                            "placementRegion": "gcp",
+                            "placementZone": "asia-east1-a"
+                        },
+                        "minNumReplicas": 3
+                    }
+                ],
+                "placementUuid": "eWJkYl9nY3BfcnI="
+            }
+        ]
+    },
+    "clusterUuid": "10ee2bca-91e3-4080-b496-dc9009ee3f9e",
+    "universeUuid": "b77140d6-6906-4917-a231-cb7853d3933c"
+}
+==> [end]   phase4-ybdb-fix6n at 2026-06-22T14:45:52+0800

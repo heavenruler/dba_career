@@ -1,0 +1,55 @@
+==> [start] phase2-bootstrap at 2026-06-22T11:02:24+0800 (timeout=600   s)
+==> phase2-bootstrap: install go-tpc + rsync scripts (tests/common + phase-crossregion/scripts)
+TPCC_CLIENT=root@172.24.40.31 TPCC_BASE=/tmp/poc-tpcc GOTPC_VERSION=v1.0.12 \
+	  bash tests/common/bootstrap-client.sh
+==> bootstrap TPC-C client: root@172.24.40.31  (base=/tmp/poc-tpcc)
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+    remote go-tpc release: 1.0.12
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+==> rsync scripts -> root@172.24.40.31:/tmp/poc-tpcc/scripts/
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+go-tpc release: 1.0.12
+path=/usr/local/bin/go-tpc
+864cf82c57ffdfb74a8d75644dcf3b4943ca264e16f684618f340bb0e9ce719d  /usr/local/bin/go-tpc
+==> bootstrap complete
+ssh root@172.24.40.31 'mkdir -p /tmp/poc-tpcc/scripts/crossregion'
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+rsync -avz phase-crossregion/scripts/ 'root@172.24.40.31:/tmp/poc-tpcc/scripts/crossregion/'
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Transfer starting: 16 files
+./
+check-gcp-via-31.sh
+gate-chrony-cross-region.sh
+idc-iperf3-bootstrap.sh
+idc-vm-baseline-reset.sh
+preflight-mac.sh
+run-flow-2x.sh
+run-vm6-aa.sh
+run-vm6-failover-plan.sh
+run-vm6-suite.sh
+sweep-archive.sh
+wan-probe.sh
+chaos/
+chaos/chaos-c1-node-down-plan.sh
+chaos/chaos-c4-network-partition-plan.sh
+chaos/chaos-c7-disk-slow-plan.sh
+
+sent 41464 bytes  received 340 bytes  286132 bytes/sec
+total size is 113314  speedup is 2.71
+==> [end]   phase2-bootstrap at 2026-06-22T11:02:28+0800

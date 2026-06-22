@@ -1,0 +1,15 @@
+==> phase1-wait-via-31 (bypass IAP tunnel; ssh from .31 → GCP 內 IP)
+==> check-gcp-via-31: waiting up to 600s for 5 GCP nodes (via 172.24.40.31)
+--- elapsed=0s ---
+10.160.152.11: READY
+g-test-poc-1
+10.160.152.12: READY
+g-test-poc-2
+10.160.152.13: READY
+g-test-poc-3
+10.160.152.14: READY
+g-test-poc-4
+10.160.152.15: READY
+g-test-poc-5
+==> all 5 GCP nodes READY (elapsed=0s)
+==> all 5 GCP nodes READY (via .31)

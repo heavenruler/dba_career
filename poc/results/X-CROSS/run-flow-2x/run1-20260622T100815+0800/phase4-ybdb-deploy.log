@@ -1,0 +1,189 @@
+==> [start] phase4-ybdb-deploy at 2026-06-22T10:26:12+0800 (timeout=1800   s)
+==> phase4-ybdb-deploy (placement=P-A)
+cd ansible && ansible-playbook -i inventory/crossregion.ini \
+	  playbooks/yugabyte-vm6.yml -e yb_placement=P-A
+[WARNING]: While constructing a mapping from /Users/wn.lin/vscode-
+git/dba_career/poc/ansible/playbooks/yugabyte-vm6.yml, line 430, column 7,
+found a duplicate dict key (changed_when). Using last defined value only.
+
+PLAY [Sanity check extra-vars] *************************************************
+
+TASK [Assert yb_placement] *****************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY [Bootstrap YugabyteDB control node (idc-dbhost-1 = 172.24.40.32)] *********
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.24.40.32]
+
+TASK [Install YugabyteDB prerequisites (control + worker tooling)] *************
+ok: [172.24.40.32]
+
+TASK [Ensure root SSH keypair exists for control fan-out] **********************
+[WARNING]: Found existing ssh key private file "/root/.ssh/id_rsa", no force,
+so skipping ssh-keygen generation
+ok: [172.24.40.32]
+
+TASK [Read root public key] ****************************************************
+ok: [172.24.40.32]
+
+TASK [Create yugabyte user (control node)] *************************************
+changed: [172.24.40.32]
+
+TASK [Create YugabyteDB directories (control node)] ****************************
+changed: [172.24.40.32] => (item=/opt/yugabyte)
+changed: [172.24.40.32] => (item=/var/yugabyte)
+
+TASK [Download YugabyteDB archive (control node)] ******************************
+changed: [172.24.40.32]
+
+TASK [Extract YugabyteDB (control node)] ***************************************
+changed: [172.24.40.32]
+
+TASK [Run YugabyteDB post install (control node)] ******************************
+[WARNING]: Module remote_tmp /home/yugabyte/.ansible/tmp did not exist and was
+created with a mode of 0700, this may cause issues when running as another
+user. To avoid this, create the remote_tmp dir with the correct permissions
+manually
+changed: [172.24.40.32]
+
+TASK [Link YugabyteDB client binaries (control node)] **************************
+changed: [172.24.40.32] => (item=yugabyted)
+changed: [172.24.40.32] => (item=ysqlsh)
+changed: [172.24.40.32] => (item=yb-admin)
+
+PLAY [Prepare YugabyteDB worker nodes (IDC + GCP)] *****************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.24.40.33]
+ok: [g-test-poc-2]
+ok: [g-test-poc-1]
+ok: [172.24.40.34]
+ok: [g-test-poc-3]
+
+TASK [Install YugabyteDB node prerequisites] ***********************************
+ok: [g-test-poc-3]
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+ok: [g-test-poc-1]
+ok: [g-test-poc-2]
+
+TASK [OS tuning (swappiness / THP / ulimit)] ***********************************
+ok: [g-test-poc-2]
+ok: [g-test-poc-1]
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+ok: [g-test-poc-3]
+
+TASK [Set ulimit nofile] *******************************************************
+changed: [172.24.40.33]
+changed: [172.24.40.34]
+changed: [g-test-poc-3]
+changed: [g-test-poc-2]
+changed: [g-test-poc-1]
+
+TASK [Stat systemd proxy drop-in (IDC only)] ***********************************
+skipping: [g-test-poc-1]
+skipping: [g-test-poc-2]
+skipping: [g-test-poc-3]
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+
+TASK [Patch systemd no_proxy to include 6-node cluster IPs (gRPC CIDR workaround)] ***
+skipping: [g-test-poc-1]
+skipping: [g-test-poc-2]
+skipping: [g-test-poc-3]
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+
+TASK [Authorize control (idc-dbhost-1) root key on worker (for control fan-out)] ***
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+ok: [g-test-poc-2]
+ok: [g-test-poc-3]
+ok: [g-test-poc-1]
+
+TASK [Create yugabyte user (worker)] *******************************************
+changed: [172.24.40.33]
+changed: [g-test-poc-3]
+changed: [g-test-poc-2]
+changed: [172.24.40.34]
+changed: [g-test-poc-1]
+
+TASK [Create YugabyteDB directories (worker)] **********************************
+changed: [172.24.40.34] => (item=/opt/yugabyte)
+changed: [172.24.40.33] => (item=/opt/yugabyte)
+changed: [g-test-poc-1] => (item=/opt/yugabyte)
+changed: [g-test-poc-3] => (item=/opt/yugabyte)
+changed: [g-test-poc-2] => (item=/opt/yugabyte)
+changed: [172.24.40.33] => (item=/var/yugabyte)
+changed: [172.24.40.34] => (item=/var/yugabyte)
+changed: [g-test-poc-1] => (item=/var/yugabyte)
+changed: [g-test-poc-3] => (item=/var/yugabyte)
+changed: [g-test-poc-2] => (item=/var/yugabyte)
+
+TASK [Download YugabyteDB archive (worker)] ************************************
+changed: [g-test-poc-3]
+changed: [g-test-poc-1]
+changed: [g-test-poc-2]
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+
+TASK [Extract YugabyteDB (worker)] *********************************************
+changed: [172.24.40.33]
+changed: [172.24.40.34]
+changed: [g-test-poc-3]
+changed: [g-test-poc-2]
+changed: [g-test-poc-1]
+
+TASK [Run YugabyteDB post install (worker)] ************************************
+changed: [172.24.40.34]
+changed: [g-test-poc-2]
+changed: [g-test-poc-1]
+changed: [g-test-poc-3]
+changed: [172.24.40.33]
+
+TASK [Link YugabyteDB client binaries (worker)] ********************************
+changed: [172.24.40.33] => (item=yugabyted)
+changed: [172.24.40.34] => (item=yugabyted)
+changed: [g-test-poc-3] => (item=yugabyted)
+changed: [g-test-poc-2] => (item=yugabyted)
+changed: [g-test-poc-1] => (item=yugabyted)
+changed: [172.24.40.33] => (item=ysqlsh)
+changed: [172.24.40.34] => (item=ysqlsh)
+changed: [g-test-poc-3] => (item=ysqlsh)
+changed: [g-test-poc-1] => (item=ysqlsh)
+changed: [172.24.40.34] => (item=yb-admin)
+changed: [g-test-poc-2] => (item=ysqlsh)
+changed: [172.24.40.33] => (item=yb-admin)
+changed: [g-test-poc-3] => (item=yb-admin)
+changed: [g-test-poc-1] => (item=yb-admin)
+changed: [g-test-poc-2] => (item=yb-admin)
+
+PLAY [Start YugabyteDB cluster — primary (idc-dbhost-1 = 172.24.40.32)] ********
+
+TASK [Check yugabyted status on primary] ***************************************
+ok: [172.24.40.32]
+
+TASK [Start YugabyteDB primary (bootstrap, no --join)] *************************
+changed: [172.24.40.32]
+
+TASK [Wait for YSQL port on primary] *******************************************
+fatal: [172.24.40.32]: FAILED! => {"changed": false, "elapsed": 300, "msg": "Timeout when waiting for 172.24.40.32:5433"}
+
+PLAY RECAP *********************************************************************
+172.24.40.32               : ok=12   changed=7    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+172.24.40.33               : ok=13   changed=7    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+172.24.40.34               : ok=13   changed=7    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+g-test-poc-1               : ok=11   changed=7    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+g-test-poc-2               : ok=11   changed=7    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+g-test-poc-3               : ok=11   changed=7    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+make[1]: *** [phase4-ybdb-deploy] Error 2
+[TIMEOUT/FAIL] phase4-ybdb-deploy exit=2 after 1800s
+==> phase-cleanup-on-fail (kill leftover background)
+make: *** [phase4-ybdb-deploy-safe] Error 2

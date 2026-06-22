@@ -1,0 +1,18 @@
+==> phase2-dns-fix: fix DNS + chrony IP server on 172.24.40.32 172.24.40.33 172.24.40.34
+for ip in 172.24.40.32 172.24.40.33 172.24.40.34; do \
+	  ssh -o LogLevel=ERROR -o StrictHostKeyChecking=accept-new root@$ip ' \
+	    chattr -i /etc/resolv.conf 2>/dev/null || true; \
+	    printf "nameserver 10.0.1.5\nnameserver 8.8.8.8\n" > /etc/resolv.conf; \
+	    chattr +i /etc/resolv.conf; \
+	    grep -q "^server 172.19.254.7" /etc/chrony.conf || echo "server 172.19.254.7 iburst" >> /etc/chrony.conf; \
+	    systemctl restart chronyd; sleep 2; chronyc tracking | head -3'; \
+	done
+Reference ID    : 00000000 ()
+Stratum         : 0
+Ref time (UTC)  : Thu Jan 01 00:00:00 1970
+Reference ID    : 00000000 ()
+Stratum         : 0
+Ref time (UTC)  : Thu Jan 01 00:00:00 1970
+Reference ID    : 00000000 ()
+Stratum         : 0
+Ref time (UTC)  : Thu Jan 01 00:00:00 1970

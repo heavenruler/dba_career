@@ -1,0 +1,79 @@
+==> [start] phase4-ybdb-deploy at 2026-06-22T11:08:02+0800 (timeout=1800   s)
+==> phase4-ybdb-deploy (placement=P-A)
+cd ansible && ansible-playbook -i inventory/crossregion.ini \
+	  playbooks/yugabyte-vm6.yml -e yb_placement=P-A
+[WARNING]: While constructing a mapping from /Users/wn.lin/vscode-
+git/dba_career/poc/ansible/playbooks/yugabyte-vm6.yml, line 430, column 7,
+found a duplicate dict key (changed_when). Using last defined value only.
+
+PLAY [Sanity check extra-vars] *************************************************
+
+TASK [Assert yb_placement] *****************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY [Bootstrap YugabyteDB control node (idc-dbhost-1 = 172.24.40.32)] *********
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.24.40.32]
+
+TASK [Install YugabyteDB prerequisites (control + worker tooling)] *************
+ok: [172.24.40.32]
+
+TASK [Ensure root SSH keypair exists for control fan-out] **********************
+[WARNING]: Found existing ssh key private file "/root/.ssh/id_rsa", no force,
+so skipping ssh-keygen generation
+ok: [172.24.40.32]
+
+TASK [Read root public key] ****************************************************
+ok: [172.24.40.32]
+
+TASK [Create yugabyte user (control node)] *************************************
+changed: [172.24.40.32]
+
+TASK [Create YugabyteDB directories (control node)] ****************************
+changed: [172.24.40.32] => (item=/opt/yugabyte)
+changed: [172.24.40.32] => (item=/var/yugabyte)
+
+TASK [Download YugabyteDB archive (control node)] ******************************
+changed: [172.24.40.32]
+
+TASK [Extract YugabyteDB (control node)] ***************************************
+changed: [172.24.40.32]
+
+TASK [Run YugabyteDB post install (control node)] ******************************
+[WARNING]: Module remote_tmp /home/yugabyte/.ansible/tmp did not exist and was
+created with a mode of 0700, this may cause issues when running as another
+user. To avoid this, create the remote_tmp dir with the correct permissions
+manually
+changed: [172.24.40.32]
+
+TASK [Link YugabyteDB client binaries (control node)] **************************
+changed: [172.24.40.32] => (item=yugabyted)
+changed: [172.24.40.32] => (item=ysqlsh)
+changed: [172.24.40.32] => (item=yb-admin)
+
+PLAY [Prepare YugabyteDB worker nodes (IDC + GCP)] *****************************
+
+TASK [Gathering Facts] *********************************************************
+fatal: [172.24.40.33]: UNREACHABLE! => {"changed": false, "msg": "Data could not be sent to remote host \"172.24.40.33\". Make sure this host can be reached over ssh: ssh_dispatch_run_fatal: Connection to 172.24.40.33 port 22: Broken pipe\r\n", "unreachable": true}
+fatal: [172.24.40.34]: UNREACHABLE! => {"changed": false, "msg": "Data could not be sent to remote host \"172.24.40.34\". Make sure this host can be reached over ssh: ssh_dispatch_run_fatal: Connection to 172.24.40.34 port 22: Broken pipe\r\n", "unreachable": true}
+fatal: [g-test-poc-3]: UNREACHABLE! => {"changed": false, "msg": "Data could not be sent to remote host \"localhost\". Make sure this host can be reached over ssh: Connection timed out during banner exchange\r\nConnection to ::1 port 12213 timed out\r\n", "unreachable": true}
+fatal: [g-test-poc-2]: UNREACHABLE! => {"changed": false, "msg": "Data could not be sent to remote host \"localhost\". Make sure this host can be reached over ssh: Connection timed out during banner exchange\r\nConnection to ::1 port 12212 timed out\r\n", "unreachable": true}
+fatal: [g-test-poc-1]: UNREACHABLE! => {"changed": false, "msg": "Data could not be sent to remote host \"localhost\". Make sure this host can be reached over ssh: Connection timed out during banner exchange\r\nConnection to ::1 port 12211 timed out\r\n", "unreachable": true}
+
+PLAY RECAP *********************************************************************
+172.24.40.32               : ok=10   changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+172.24.40.33               : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   
+172.24.40.34               : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   
+g-test-poc-1               : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   
+g-test-poc-2               : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   
+g-test-poc-3               : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   
+localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+make[1]: *** [phase4-ybdb-deploy] Error 4
+[TIMEOUT/FAIL] phase4-ybdb-deploy exit=2 after 1800s
+==> phase-cleanup-on-fail (kill leftover background)
+make: *** [phase4-ybdb-deploy-safe] Error 2

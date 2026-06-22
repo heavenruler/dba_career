@@ -1,0 +1,21 @@
+Tunnels stopped.
+Starting IAP tunnels...
+Tunnels launched (logs: /tmp/iap-tunnel-poc{1..5}.log):
+  ssh g-test-poc-1  -> localhost:12211  (db node, zone a)
+  ssh g-test-poc-2  -> localhost:12212  (db node, zone b)
+  ssh g-test-poc-3  -> localhost:12213  (db node, zone c)
+  ssh g-test-poc-4  -> localhost:12214  (haproxy,  zone a)
+  ssh g-test-poc-5  -> localhost:12215  (client,   zone a)
+==> [start] phase1-wait at 2026-06-22T09:42:10+0800 (timeout=900    s)
+==> sleep 15 for IAP tunnels to be reachable
+==> waiting startup-done on :12211 (max 10 min, retries connection refused)
+  startup-done on :12211
+==> waiting startup-done on :12212 (max 10 min, retries connection refused)
+  startup-done on :12212
+==> waiting startup-done on :12213 (max 10 min, retries connection refused)
+  startup-done on :12213
+==> waiting startup-done on :12214 (max 10 min, retries connection refused)
+  startup-done on :12214
+==> waiting startup-done on :12215 (max 10 min, retries connection refused)
+  startup-done on :12215
+==> [end]   phase1-wait at 2026-06-22T09:50:31+0800

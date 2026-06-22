@@ -3,3 +3,11 @@
 terraform.tfstate*
 terraform.tfvars
 *.tfvars
+
+# phase-crossregion smoke artifacts — ignore bulky per-second sampling files
+results/X-CROSS/by-run/*/*/runs/threads-*/round-*/iostat-1s*.txt
+results/X-CROSS/by-run/*/*/runs/threads-*/round-*/vmstat-1s*.txt
+results/X-CROSS/by-run/*/*/runs/threads-*/round-*/mpstat*.txt
+results/X-CROSS/by-run/*/*/runs/threads-*/round-*/sar-net*.txt
+results/X-CROSS/by-run/*/*/runs/threads-*/round-*/free-1m*.txt
+

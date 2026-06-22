@@ -1,0 +1,113 @@
+==> [start] phase1-apply at 2026-06-22T15:03:02+0800 (timeout=1200   s)
+cd iac-idc && terraform apply -auto-approve
+[0m[1mdata.vsphere_custom_attribute.attrs["DeveloperOwner"]: Reading...[0m[0m
+[0m[1mdata.vsphere_custom_attribute.attrs["Group"]: Reading...[0m[0m
+[0m[1mdata.vsphere_custom_attribute.attrs["BillUnit"]: Reading...[0m[0m
+[0m[1mdata.vsphere_custom_attribute.attrs["BillDomain"]: Reading...[0m[0m
+[0m[1mdata.vsphere_custom_attribute.attrs["SystemOwner"]: Reading...[0m[0m
+[0m[1mdata.vsphere_datacenter.dc: Reading...[0m[0m
+[0m[1mdata.vsphere_custom_attribute.attrs["AZ"]: Reading...[0m[0m
+[0m[1mdata.vsphere_custom_attribute.attrs["SystemOwner"]: Read complete after 0s [id=3403][0m
+[0m[1mdata.vsphere_custom_attribute.attrs["BillUnit"]: Read complete after 0s [id=3405][0m
+[0m[1mdata.vsphere_custom_attribute.attrs["AZ"]: Read complete after 0s [id=3408][0m
+[0m[1mdata.vsphere_custom_attribute.attrs["BillDomain"]: Read complete after 0s [id=3406][0m
+[0m[1mdata.vsphere_custom_attribute.attrs["DeveloperOwner"]: Read complete after 0s [id=3404][0m
+[0m[1mdata.vsphere_custom_attribute.attrs["Group"]: Read complete after 0s [id=3402][0m
+[0m[1mdata.vsphere_datacenter.dc: Read complete after 0s [id=datacenter-3][0m
+[0m[1mdata.vsphere_network.network: Reading...[0m[0m
+[0m[1mdata.vsphere_compute_cluster.cluster: Reading...[0m[0m
+[0m[1mdata.vsphere_datastore.vm_ds: Reading...[0m[0m
+[0m[1mdata.vsphere_resource_pool.pool: Reading...[0m[0m
+[0m[1mdata.vsphere_virtual_machine.template: Reading...[0m[0m
+[0m[1mdata.vsphere_network.network: Read complete after 1s [id=network-2030][0m
+[0m[1mdata.vsphere_compute_cluster.cluster: Read complete after 1s [id=domain-c8][0m
+[0m[1mdata.vsphere_resource_pool.pool: Read complete after 1s [id=resgroup-49188][0m
+[0m[1mdata.vsphere_datastore.vm_ds: Read complete after 1s [id=datastore-5038][0m
+[0m[1mdata.vsphere_virtual_machine.template: Read complete after 1s [id=4218349d-19cc-c899-c5d7-edca6ec427fc][0m
+[0m[1mvsphere_virtual_machine.poc["l-test-poc-2"]: Refreshing state... [id=421858ee-5f8a-491d-ecdf-49369a016c5d][0m
+[0m[1mvsphere_virtual_machine.poc["l-test-poc-3"]: Refreshing state... [id=4218d0a4-86a8-36cc-efbb-17bcdc8b1b68][0m
+[0m[1mvsphere_virtual_machine.poc["l-test-poc-1"]: Refreshing state... [id=42188459-970c-4615-5cc6-4888685f0a35][0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [33m~[0m update in-place[0m
+
+Terraform will perform the following actions:
+
+[1m  # vsphere_virtual_machine.poc["l-test-poc-1"][0m will be updated in-place
+[0m  [33m~[0m[0m resource "vsphere_virtual_machine" "poc" {
+        id                                      = "42188459-970c-4615-5cc6-4888685f0a35"
+        name                                    = "l-test-poc-1"
+        tags                                    = []
+        [90m# (75 unchanged attributes hidden)[0m[0m
+
+      [33m~[0m[0m disk {
+          [33m~[0m[0m thin_provisioned  = false [33m->[0m[0m true
+            [90m# (20 unchanged attributes hidden)[0m[0m
+        }
+
+        [90m# (2 unchanged blocks hidden)[0m[0m
+    }
+
+[1m  # vsphere_virtual_machine.poc["l-test-poc-2"][0m will be updated in-place
+[0m  [33m~[0m[0m resource "vsphere_virtual_machine" "poc" {
+        id                                      = "421858ee-5f8a-491d-ecdf-49369a016c5d"
+        name                                    = "l-test-poc-2"
+        tags                                    = []
+        [90m# (75 unchanged attributes hidden)[0m[0m
+
+      [33m~[0m[0m disk {
+          [33m~[0m[0m thin_provisioned  = false [33m->[0m[0m true
+            [90m# (20 unchanged attributes hidden)[0m[0m
+        }
+
+        [90m# (2 unchanged blocks hidden)[0m[0m
+    }
+
+[1m  # vsphere_virtual_machine.poc["l-test-poc-3"][0m will be updated in-place
+[0m  [33m~[0m[0m resource "vsphere_virtual_machine" "poc" {
+        id                                      = "4218d0a4-86a8-36cc-efbb-17bcdc8b1b68"
+        name                                    = "l-test-poc-3"
+        tags                                    = []
+        [90m# (75 unchanged attributes hidden)[0m[0m
+
+      [33m~[0m[0m disk {
+          [33m~[0m[0m thin_provisioned  = false [33m->[0m[0m true
+            [90m# (20 unchanged attributes hidden)[0m[0m
+        }
+
+        [90m# (2 unchanged blocks hidden)[0m[0m
+    }
+
+[1mPlan:[0m 0 to add, 3 to change, 0 to destroy.
+[0m[0m[1mvsphere_virtual_machine.poc["l-test-poc-2"]: Modifying... [id=421858ee-5f8a-491d-ecdf-49369a016c5d][0m[0m
+[0m[1mvsphere_virtual_machine.poc["l-test-poc-1"]: Modifying... [id=42188459-970c-4615-5cc6-4888685f0a35][0m[0m
+[0m[1mvsphere_virtual_machine.poc["l-test-poc-3"]: Modifying... [id=4218d0a4-86a8-36cc-efbb-17bcdc8b1b68][0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mdisk.0: cannot change the value of "thin_provisioned" - (old: false newValue: true)[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  with vsphere_virtual_machine.poc["l-test-poc-3"],
+[31m│[0m [0m  on main.tf line 42, in resource "vsphere_virtual_machine" "poc":
+[31m│[0m [0m  42: resource "vsphere_virtual_machine" "poc" [4m{[0m[0m
+[31m│[0m [0m
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mdisk.0: cannot change the value of "thin_provisioned" - (old: false newValue: true)[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  with vsphere_virtual_machine.poc["l-test-poc-1"],
+[31m│[0m [0m  on main.tf line 42, in resource "vsphere_virtual_machine" "poc":
+[31m│[0m [0m  42: resource "vsphere_virtual_machine" "poc" [4m{[0m[0m
+[31m│[0m [0m
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mdisk.0: cannot change the value of "thin_provisioned" - (old: false newValue: true)[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  with vsphere_virtual_machine.poc["l-test-poc-2"],
+[31m│[0m [0m  on main.tf line 42, in resource "vsphere_virtual_machine" "poc":
+[31m│[0m [0m  42: resource "vsphere_virtual_machine" "poc" [4m{[0m[0m
+[31m│[0m [0m
+[31m╵[0m[0m
+make[1]: *** [phase1-apply] Error 1
+[TIMEOUT/FAIL] phase1-apply exit=2 after 1200s
+==> phase-cleanup-on-fail (kill leftover background)
+make: *** [phase1-apply-safe] Error 2
