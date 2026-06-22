@@ -1,0 +1,6 @@
+                                    QUERY PLAN                                    
+----------------------------------------------------------------------------------
+ Index Scan using warehouse_pkey on warehouse  (cost=20.01..21.21 rows=1 width=7)
+   Index Cond: (w_id = 1)
+(2 rows)
+

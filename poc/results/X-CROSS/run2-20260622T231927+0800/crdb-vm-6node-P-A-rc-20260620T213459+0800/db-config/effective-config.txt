@@ -1,0 +1,1071 @@
+variable	value	setting_type	public	description	default_value	origin
+admission.cpu_time_tokens.enabled	false	b	f	if true, CPU time token AC will be used for foreground KVWork, instead of slots-based AC -- note that this is not supported in production except on multi-tenant Serverless clusters	false	default
+admission.cpu_time_tokens.target_util.app_tenant	0.8	f	f	the target CPU utilization for app tenant work if using the KV CPU time token system, value is in the interval [0,1] where 1 means all cores	0.8	default
+admission.cpu_time_tokens.target_util.burst_delta	0.05	f	f	the delta between non-burstable & burstable CPU utilization target if using the KV CPU time token system, this delta is the same for both system & app tenant work, and is expressed in the same units as admission.cpu_time_tokens.target_util.app_tenant & admission.cpu_time_tokens.target_util.system_tenant (value is in the interval [0,1] where 1 means all cores)	0.05	default
+admission.cpu_time_tokens.target_util.system_tenant	0.95	f	f	the target CPU utilization for system tenant work if using the KV CPU time token system, value is in the interval [0,1] where 1 means all cores	0.95	default
+admission.disk_bandwidth_tokens.elastic.enabled	true	b	t	when true, and provisioned bandwidth for the disk corresponding to a store is configured, tokens for elastic work will be limited if disk bandwidth becomes a bottleneck	true	default
+admission.elastic_cpu.adjustment_delta_per_second	0.001	f	f	sets the per-second % adjustment used when when adapting elastic work CPU %s	0.001	default
+admission.elastic_cpu.enabled	true	b	f	when true, elastic work (like backups) performed by the KV layer is subject to admission control	true	default
+admission.elastic_cpu.inactive_point	0.1	f	f	the point between {min,max}_utilization the CPU % decreases to when there's no elastic work	0.1	default
+admission.elastic_cpu.max_utilization	0.75	f	f	sets the ceiling on per-node elastic work CPU % utilization	0.75	default
+admission.elastic_cpu.min_utilization	0.05	f	f	sets the floor on per-node elastic work CPU % utilization	0.05	default
+admission.elastic_cpu.multiplicative_factor_on_decrease	2	f	f	sets the multiplier on negative adjustments to elastic work CPU %	2	default
+admission.elastic_cpu.multiplicative_factor_on_inactive_decrease	0.25	f	f	sets the multiplier on negative adjustments to elastic work CPU % when inactive	0.25	default
+admission.elastic_cpu.scheduler_latency_target	1ms	d	f	sets the p99 scheduling latency the elastic CPU controller aims for	1ms	default
+admission.elastic_cpu.yield.enabled	true	b	f	when true, time-based elastic CPU pacing additionally yields CPU as-needed according to the scheduler	true	default
+admission.epoch_lifo.enabled	false	b	t	when true, epoch-LIFO behavior is enabled when there is significant delay in admission	false	default
+admission.epoch_lifo.epoch_closing_delta_duration	5ms	d	t	the delta duration before closing an epoch, for epoch-LIFO admission control ordering	5ms	default
+admission.epoch_lifo.epoch_duration	100ms	d	t	the duration of an epoch, for epoch-LIFO admission control ordering	100ms	default
+admission.epoch_lifo.queue_delay_threshold_to_switch_to_lifo	105ms	d	t	the queue delay encountered by a (tenant,priority) for switching to epoch-LIFO ordering	105ms	default
+admission.kv.bulk_only.enabled	false	b	f	when both admission.kv.enabled and this is true, only throttle bulk work	false	default
+admission.kv.enabled	true	b	t	when true, work performed by the KV layer is subject to admission control	true	default
+admission.kv.pause_replication_io_threshold	0	f	f	pause replication to non-essential followers when their I/O admission control score exceeds the given threshold (zero to disable)	0	default
+admission.kv.stores.tenant_weights.enabled	false	b	f	when true, tenant weights are enabled for KV-stores admission control	false	default
+admission.kv.tenant_weights.enabled	false	b	f	when true, tenant weights are enabled for KV admission control	false	default
+admission.kv_slot_adjuster.overload_threshold	32	i	f	when the number of runnable goroutines per CPU is greater than this threshold, the slot adjuster considers the cpu to be overloaded	32	default
+admission.l0_file_count_overload_threshold	4000	i	f	when the L0 file count exceeds this theshold, the store is considered overloaded	4000	default
+admission.l0_min_size_per_sub_level	5242880	i	f	when non-zero, this indicates the minimum size that is needed to count towards one sub-level	5242880	default
+admission.l0_sub_level_count_overload_threshold	20	i	f	when the L0 sub-level count exceeds this threshold, the store is considered overloaded	20	default
+admission.min_flush_util_fraction	0.5	f	f	when computing flush tokens, this fraction is a lower bound on the dynamically adjusted flush utilization target fraction that attempts to reduce write stalls. Set it to a high fraction (>>1, e.g. 10), to disable flush based tokens. The dynamic target fraction is used to multiply the (measured) peak flush rate, to compute the flush tokens. If the storage.write-stall-nanos indicates significant write stalls, and the granter logs show that the dynamic target fraction has already reached the lower bound, one can consider lowering it slightly (after consultation with domain experts)	0.5	default
+admission.replication_control.range_sequencer_gc_threshold	5m0s	d	f	the inactive duration for a range sequencer after it's garbage collected	5m0s	default
+admission.sql_kv_response.enabled	true	b	t	when true, work performed by the SQL layer when receiving a KV response is subject to admission control	true	default
+admission.sql_sql_response.enabled	true	b	t	when true, work performed by the SQL layer when receiving a DistSQL response is subject to admission control	true	default
+admission.wal.failover.unlimited_tokens.enabled	false	b	f	when true, during WAL failover, unlimited admission tokens are allocated	false	default
+backup.compaction.threshold	0	i	f	the required backup chain length for compaction to be triggered (0 to disable compactions)	0	default
+backup.compaction.window_size	3	i	f	the number of backups to compact per compaction (must be greater than two and less than threshold)	3	default
+backup.index.read.enabled	true	b	f	if true, the backup index will be read when reading from a backup collection	true	default
+backup.restore.online_layer_limit	10	i	f	maximum number of layers to restore in an online restore operation	10	default
+backup.restore.online_use_dist_flow.enabled	true	b	f	if enabled, online restore uses the distributed restore flow with file linking	true	default
+backup.restore.online_worker_count	0	i	f	total workers to use for online restore link phase (defaults to 2x number of nodes if set to 0)	0	default
+backup.restore_span.max_file_count	200	i	f	the maximum number of backup files an extending restore span may contain	200	default
+backup.restore_span.online_target_size	16 GiB	z	f	target size to which base spans of an online restore are merged to produce a restore span (0 disables)	16 GiB	default
+backup.restore_span.target_size	384 MiB	z	f	target size to which base spans of a restore are merged to produce a restore span (0 disables)	384 MiB	default
+bulkio.backup.balanced_distribution.enabled	true	b	f	randomize the selection of which replica backs up each range	true	default
+bulkio.backup.checkpoint_interval	1m0s	d	f	the minimum time between writing progress checkpoints during a backup	1m0s	default
+bulkio.backup.verbose_tracing.enabled	false	b	f	send each export request with a verbose tracing span	false	default
+bulkio.backup.file_size	128 MiB	z	t	target size for individual data files produced during BACKUP	128 MiB	default
+bulkio.backup.file_sst_sink_elastic_control.enabled	true	b	f	determines whether the file sst sink integrates with elastic CPU control	true	default
+bulkio.backup.max_workers	5	i	f	maximum number of workers to use for reading and uploading data in a backup	5	default
+bulkio.backup.presplit_request_spans.enabled	true	b	f	split the spans that will be requests before requesting them	true	default
+bulkio.backup.read_retry_delay	5s	d	f	amount of time since the read-as-of time, per-prior attempt, to wait before making another attempt	5s	default
+bulkio.backup.read_timeout	5m0s	d	t	amount of time after which a read attempt is considered timed out, which causes the backup to fail	5m0s	default
+bulkio.backup.read_with_priority_after	1m0s	d	t	amount of time since the read-as-of time above which a BACKUP should use priority when retrying reads	1m0s	default
+bulkio.blob.flow_control_window	16	i	f	number of unacknowledged chunks the blob service can have in flight; 0 means unbounded	16	default
+bulkio.column_backfill.batch_size	200	i	f	the number of rows updated at a time to add/remove columns	200	default
+bulkio.column_backfill.update_chunk_size_threshold_bytes	10485760	i	f	the batch size in bytes above which an update is immediately run when adding/removing columns	10485760	default
+bulkio.elastic_cpu_control.request_duration	50ms	d	f	exeuction time unit to request when pacing CPU requests during various bulk operations	50ms	default
+bulkio.import.constraint_validation.unsafe.enabled	true	b	f	should import perform constraint validation after data load. NOTE: this setting should not be used on production clusters, as it could result in incorrect query results if the imported data set violates constraints (i.e. contains duplicates).	true	default
+bulkio.import.distributed_merge.enabled	false	b	f	enable distributed merge support for IMPORT	false	default
+bulkio.import.elastic_control.enabled	true	b	f	determines whether import operations integrate with elastic CPU control	true	default
+bulkio.import.initial_splits_per_processor	3	i	f	number of initial splits each import processor with enough data will create	3	default
+bulkio.import.predicate_delete_range_batch_size	10	i	f	the number of ranges to include in a single Predicate Based DeleteRange request	10	default
+bulkio.import.predicate_delete_range_parallelism	4	i	f	the number of workers used to issue Predicate Based DeleteRange request	4	default
+bulkio.import.processors_per_node	1	i	f	number of input processors to run on each sql instance	1	default
+bulkio.import.reader_parallelism	0	i	f	number of parallel workers to use to convert read data for formats that support parallel conversion; 0 indicates number of cores	0	default
+bulkio.import.replan_flow_frequency	2m0s	d	f	frequency at which IMPORT checks to see if restarting would update its physical execution plan	2m0s	default
+bulkio.import.replan_flow_threshold	0	f	f	fraction of initial flow instances that would be added or updated above which an IMPORT is restarted from its last checkpoint (0=disabled)	0	default
+bulkio.import.retry_duration	2m0s	d	f	duration during which the IMPORT can be retried in face of non-permanent errors	2m0s	default
+bulkio.import.row_count_validation.mode	off	e	t	controls validation of imported data via INSPECT jobs. Options: 'off' (no validation), 'async' (background validation), 'sync' (blocking validation). If disabled, IMPORT will not perform a post-import row count check. [off = 0, async = 1, sync = 2]	off	default
+bulkio.index_backfill.batch_size	30000	i	f	the number of rows for which we construct index entries in a single batch	30000	default
+bulkio.index_backfill.checkpoint_interval	30s	d	f	the amount of time between index backfill checkpoint updates	30s	default
+bulkio.index_backfill.distributed_merge.mode	disabled	e	f	controls when the distributed merge pipeline powers index backfills: disabled/off/false, legacy, declarative, or enabled/on/true [disabled = 0, enabled = 1, legacy = 2, declarative = 3, false = 4, true = 5, off = 6, on = 7]	disabled	default
+bulkio.index_backfill.elastic_control.enabled	true	b	f	determines whether index backfill operations integrate with elastic CPU control	true	default
+bulkio.index_backfill.ingest_concurrency	0	i	f	the number of goroutines to use for bulk adding index entries: 0 assigns a reasonable default based on CPU count for distributed merge or 2 for the legacy path, >0 assigns the setting value	0	default
+bulkio.index_backfill.initial_splits_per_processor	3	i	f	number of initial splits each index backfill processor with enough data will create	3	default
+bulkio.index_backfill.merge_batch_bytes	16777216	i	f	the max number of bytes we merge between temporary and adding indexes in a single batch	16777216	default
+bulkio.index_backfill.merge_batch_size	1000	i	f	the number of rows we merge between temporary and adding indexes in a single batch	1000	default
+bulkio.index_backfill.merge_max_kv_auto_retries	10	i	f	the number of times a merge operation will automatically retry in the KV layer before lowering the batch size	10	default
+bulkio.index_backfill.merge_num_workers	4	i	f	the number of parallel merges per node in the cluster	4	default
+bulkio.index_backfill.progress_interval	10s	d	f	the amount of time between index backfill progress fraction updates	10s	default
+bulkio.index_backfill.vector_merge_batch_size	3	i	f	the number of vectors we merge between temporary and adding indexes in a single batch	3	default
+bulkio.ingest.compute_stats_diff_in_stream_batcher.enabled	true	b	f	if set, kvserver will compute an accurate stats diff for every addsstable request	true	default
+bulkio.ingest.flush_delay	0s	d	f	amount of time to wait before sending a file to the KV/Storage layer to ingest	0s	default
+bulkio.ingest.sender_concurrency_limit	0	i	f	maximum number of concurrent bulk ingest requests sent by any one sender, such as a processor in an IMPORT, index creation or RESTORE, etc (0 = no limit)	0	default
+bulkio.ingest.sst_batcher_elastic_control.enabled	true	b	f	determines whether the sst batcher integrates with elastic CPU control	true	default
+bulkio.ingest.unsafe_debug.drop_sst_on_flush.enabled	false	b	f	if set, the SSTBatcher will simply discard data instead of flushing it (destroys data; for performance debugging experiments only)	false	default
+bulkio.merge.file_size	1.0 GiB	z	t	target size for individual data files produced during local only merge phases	1.0 GiB	default
+bulkio.merge.rpc_inflight_fraction	0.5	f	f	estimated fraction of remote SST files that are actively streaming during a merge; used to reserve memory for RPC transport buffers	0.5	default
+bulkio.restore.insert_stats_workers	5	i	f	number of concurrent workers that will restore backed up table statistics	5	default
+bulkio.restore.replan_flow_frequency	10m0s	d	f	frequency at which RESTORE checks the number of lagging nodes to see if the job should be replanned	10m0s	default
+bulkio.sst_writer.batch_size	128 MiB	z	f	bytes to buffer in-memory per SST before the bulk writer flushes	128 MiB	default
+physical_replication.consumer.failover_signal_poll_interval	10s	d	f	the interval at which the stream ingestion job checks if it has been signaled to cutover	10s	default
+physical_replication.consumer.ingest_range_keys_as_writes	400 KiB	z	f	size below which a range key SST will be ingested using normal writes	400 KiB	default
+physical_replication.consumer.kv_buffer_size	128 MiB	z	f	the maximum size of the KV buffer allowed before a flush	128 MiB	default
+physical_replication.consumer.minimum_flush_interval	5s	d	t	the minimum timestamp between flushes; flushes may still occur if internal buffers fill up	5s	default
+physical_replication.consumer.range_key_buffer_size	32 MiB	z	f	the maximum size of the range key buffer allowed before a flush	32 MiB	default
+bulkio.stream_ingestion.standby_read_ts_poll_interval	15s	d	f	the interval at which a StandbyReadTSPoller job polls for replicated timestamp	15s	default
+bulkmerge.instance_unavailability.timeout	30m0s	d	f	duration to wait for unavailable SQL instances before permanently failing the job	30m0s	default
+changefeed.aggregator.flush_jitter	0.1	f	t	jitter aggregator flushes as a fraction of min_checkpoint_frequency. This setting has no effect if min_checkpoint_frequency is set to 0.	0.1	default
+changefeed.backfill.concurrent_scan_requests	0	i	t	number of concurrent scan requests per node issued during a backfill	0	default
+changefeed.backfill.scan_request_size	524288	i	t	the maximum number of bytes returned by each scan request	524288	default
+changefeed.balance_range_distribution.sensitivity	0.05	f	f	rebalance if the number of ranges on a node exceeds the average by this fraction	0.05	default
+changefeed.bare_table_names.enabled	true	b	f	set to true to use bare table names in changefeed topics, false to use quoted table names; default is true	true	default
+changefeed.batch_reduction_retry.enabled	false	b	t	if true, kafka changefeeds upon erroring on an oversized batch will attempt to resend the messages with progressively lower batch sizes	false	default
+changefeed.bulk_delivery.enabled	true	b	f	if true, rangefeed events are delivered in bulk during catchup scans; if false, rangefeed events are delivered individually	true	default
+changefeed.cdcevent.trace_kv.log_frequency	500ms	d	f	controls how frequently KVs are logged when KV tracing is enabled	500ms	default
+changefeed.cloudstorage.async_flush.enabled	true	b	f	enable async flushing	true	default
+changefeed.cpu.per_event_consumer_worker_allocation	50ms	d	f	an event consumer worker will perform a blocking request for CPU time before consuming events. after fully utilizing this CPU time, it will request more	50ms	default
+changefeed.cpu.per_event_elastic_control.enabled	true	b	f	determines whether changefeed event processing integrates with elastic CPU control	true	default
+changefeed.cpu.sink_encoding_allocation	50ms	d	f	an event consumer worker will perform a blocking request for CPU time before consuming events. after fully utilizing this CPU time, it will request more	50ms	default
+changefeed.default_range_distribution_strategy	default	e	t	controls how changefeed work is distributed across nodes. 'default' defers to DistSQL for node selection and work distribution. 'balanced_simple' uses DistSQL for node selection but then attempts to evenly distribute ranges across those selected nodes for better load balancing. this setting does not override locality restrictions and can be overridden per-changefeed using the 'range_distribution_strategy' option. [default = 0, balanced_simple = 1]	default	default
+changefeed.event_consumer_worker_queue_size	16	i	t	if changefeed.event_consumer_workers is enabled, this setting sets the maxmimum number of events which a worker can buffer	16	default
+changefeed.event_consumer_workers	0	i	t	the number of workers to use when processing events: <0 disables, 0 assigns a reasonable default, >0 assigns the setting value. for experimental/core changefeeds and changefeeds using parquet format, this is disabled	0	default
+changefeed.event_memory_multiplier	3	f	f	the amount of memory required to process an event is multiplied by this factor	3	default
+changefeed.experimental_poll_interval	1s	d	f	polling interval for the table descriptors	1s	default
+changefeed.fast_gzip.enabled	true	b	t	use fast gzip implementation	true	default
+changefeed.frontier_advance_check.enabled	true	b	f	if true, attempts to advance the frontier only if the last recorded frontier is less than the current time	true	default
+changefeed.span_checkpoint.interval	10m0s	d	f	interval at which span-level checkpoints will be written; if 0, span-level checkpoints are disabled	10m0s	default
+changefeed.span_checkpoint.max_bytes	1.0 MiB	z	f	the maximum size of a changefeed span-level checkpoint as measured by the total size of key bytes	1.0 MiB	default
+changefeed.span_checkpoint.lag_threshold	10m0s	d	t	the amount of time a changefeed's lagging (slowest) spans must lag behind its leading (fastest) spans before a span-level checkpoint to save leading span progress is written; if 0, span-level checkpoints due to lagging spans is disabled	10m0s	default
+changefeed.auto_idle.timeout	10m0s	d	f	a changefeed will mark itself idle if no changes have been emitted for greater than this duration; if 0, the changefeed will never be marked idle	10m0s	default
+changefeed.kafka.max_request_size	256 MiB	z	t	"the maximum number of uncompressed bytes sent in a single request to a Kafka broker; lowering this value helps avoid spurious ""message too large"" errors that can occur when multiple messages are combined into a single batch; this setting is overridden by the per-changefeed Flush { MaxBytes: <int> } option"	256 MiB	default
+changefeed.kafka_v2_error_details.enabled	true	b	t	if enabled, Kafka v2 sinks will include the message key, size, and MVCC timestamp in message too large errors	true	default
+changefeed.max_retry_backoff	30s	d	f	the maximum time a changefeed will backoff when retrying after a restart and how long between retries before backoff resets	30s	default
+changefeed.memory.per_changefeed_limit	512 MiB	z	t	controls amount of data that can be buffered per changefeed	512 MiB	default
+changefeed.resolved_timestamp.min_update_interval	0s	d	t	minimum amount of time that must have elapsed since the last time a changefeed's resolved timestamp was updated before it is eligible to be updated again; default of 0 means no minimum interval is enforced but updating will still be limited by the average time it takes to checkpoint progress	0s	default
+changefeed.new_kafka_sink.enabled	true	b	f	if enabled, this setting enables a new implementation of the kafka sink with improved reliability	true	default
+changefeed.node_throttle_config		s	t	specifies node level throttling configuration for all changefeeeds		default
+changefeed.parallel_io.request_quota	128	i	f	the number of requests which can be admitted into the parallelio system before blocking the producer	128	default
+changefeed.partition_alg.enabled	false	b	t	if enabled, allows specifying the partition_alg changefeed option to choose between fnv-1a (default) and murmur2 hash functions for Kafka partitioning. Only affects changefeeds using a kafka sink with changefeed.new_kafka_sink_enabled set to true.	false	default
+changefeed.permissions.require_external_connection_sink.enabled	false	b	f	if enabled, this settings restricts users with the CHANGEFEED privilege to create changefeeds with external connection sinks only. see https://www.cockroachlabs.com/docs/stable/create-external-connection.html	false	default
+changefeed.progress.frontier_persistence.interval	30s	d	t	minimum amount of time that must elapse before a changefeed will persist its entire span frontier again	30s	default
+changefeed.progress.per_table_tracking.enabled	true	b	f	track progress on a per-table basis in-memory; enabling this will enable more granular saving/restoring of progress, which will reduce duplicates during restarts, but doing so may incur additional overhead during ordinary changefeed execution	true	default
+changefeed.protect_timestamp.lag	10m0s	d	f	controls how far behind the checkpoint the changefeed's protected timestamp is	10m0s	default
+changefeed.protect_timestamp.max_age	96h0m0s	d	t	fail the changefeed if the protected timestamp age exceeds this threshold; 0 disables expiration	96h0m0s	default
+changefeed.protect_timestamp_interval	10m0s	d	t	controls how often the changefeed forwards its protected timestamp to the resolved timestamp	10m0s	default
+changefeed.random_replica_selection.enabled	true	b	f	randomize the selection of which replica backs up each range	true	default
+changefeed.reset_backoff_on_highwater_advance.enabled	true	b	f	if true, the changefeed retry backoff resets when the resolved timestamp advances between retries	true	default
+changefeed.resolved_timestamp.granularity	1s	d	f	the granularity at which changefeed progress is quantized to make tracking more efficient	1s	default
+changefeed.retry_backoff_reset	10m0s	d	f	the time between changefeed retries before the backoff timer resets	10m0s	default
+changefeed.schema_feed.read_with_priority_after	1m0s	d	t	retry with high priority if we were not able to read descriptors for too long; 0 disables	1m0s	default
+changefeed.sink_io_workers	0	i	t	the number of workers used by changefeeds when sending requests to the sink (currently the batching versions of webhook, pubsub, and kafka sinks that are enabled by changefeed.new_<sink type>_sink_enabled only): <0 disables, 0 assigns a reasonable default, >0 assigns the setting value	0	default
+changefeed.slow_span_log_threshold	0s	d	f	a changefeed will log spans with resolved timestamps this far behind the current wall-clock time; if 0, a default value is calculated based on other cluster settings	0s	default
+changefeed.telemetry.continuous_logging.interval	24h0m0s	d	f	determines the interval at which each node emits continuous telemetry events during the lifespan of every changefeed; setting a zero value disables logging	24h0m0s	default
+changefeed.usage.reporting_interval	5m0s	d	f	the interval at which the changefeed calculates and updates its usage metric	5m0s	default
+changefeed.usage.reporting_timeout_percent	50	i	f	the percent of changefeed.usage.reporting_interval that may be spent gathering the usage metrics	50	default
+cloudstorage.aws.reuse_kms_session.enabled	true	b	f	persist the last opened AWS KMS session and reuse it when opening a new session with the same arguments	true	default
+cloudstorage.azure.concurrent_upload_buffers	1	i	t	controls the number of concurrent buffers that will be used by the Azure client when uploading chunks.Each buffer can buffer up to cloudstorage.write_chunk.size of memory during an upload	1	default
+cloudstorage.azure.max_retries	10	i	f	the maximum number of retries per Azure operation	10	default
+cloudstorage.azure.read.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.azure.read.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.azure.session_reuse.enabled	true	b	f	persist the last opened azure client and re-use it when opening a new client with the same argument (some settings may take 2mins to take effect)	true	default
+cloudstorage.azure.try.timeout	0s	d	f	the timeout for individual retry attempts in Azure operations	0s	default
+cloudstorage.azure.write.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.azure.write.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.connection_timed_out_retries.enabled	false	b	f	retry generic connection timed out errors; use with extreme caution	false	default
+cloudstorage.gs.chunking.enabled	true	b	f	enable chunking of file upload to Google Cloud Storage	true	default
+cloudstorage.gs.chunking.per_chunk_retry.timeout	1m0s	d	f	per-chunk retry deadline when chunking of file upload to Google Cloud Storage	1m0s	default
+cloudstorage.gs.read.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.gs.read.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.gs.write.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.gs.write.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.http.custom_ca		s	t	custom root CA (appended to system's default CAs) for verifying certificates when interacting with HTTPS storage		default
+cloudstorage.http.detailed_metrics.enabled	true	b	f	enabled collection of detailed metrics on cloud http requests	true	default
+cloudstorage.http.read.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.http.read.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.http.write.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.http.write.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.nodelocal.read.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.nodelocal.read.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.nodelocal.write.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.nodelocal.write.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.nullsink.read.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.nullsink.read.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.nullsink.write.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.nullsink.write.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.s3.buffer_and_put_uploads.enabled	false	b	f	construct files in memory before uploading via PutObject (may cause crashes due to memory usage)	false	default
+cloudstorage.s3.client_retry_token_bucket.enabled	false	b	f	enable the client side retry token bucket in the AWS S3 client	false	default
+cloudstorage.s3.max_retries	10	i	f	the maximum number of retries per S3 operation	10	default
+cloudstorage.s3.read.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.s3.read.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.s3.session_reuse.enabled	true	b	f	persist the last opened s3 session and re-use it when opening a new session with the same arguments	true	default
+cloudstorage.s3.write.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.s3.write.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.timeout	10m0s	d	t	the timeout for import/export storage operations	10m0s	default
+cloudstorage.userfile.read.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.userfile.read.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.userfile.write.node_burst_limit	0 B	z	t	burst limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.userfile.write.node_rate_limit	0 B	z	t	limit on number of bytes per second per node across operations writing to the designated cloud storage provider if non-zero	0 B	default
+cloudstorage.write_chunk.size	5.0 MiB	z	f	controls the size of each file chunk uploaded by the cloud storage client	5.0 MiB	default
+cluster.auto_upgrade.enabled	true	b	t	disable automatic cluster version upgrade until reset	true	default
+cluster.auto_upgrade.initiate_from_meta1leaseholder.enabled	true	b	f	only initiate automatic cluster version upgrade from the Meta1 leaseholder (system-cluster only)	true	default
+cluster.label		s	f	cluster specific free-form label		default
+cluster.organization		s	t	organization name		default
+cluster.preserve_downgrade_option		s	t	disable (automatic or manual) cluster version upgrade from the specified version until reset		default
+cluster.secret	6359d3d7-adca-449e-b663-43046890fab7	s	f	cluster specific secret, used to anonymize telemetry reports		override
+debug.panic_on_failed_assertions.enabled	false	b	f	panic when an assertion fails rather than reporting	false	default
+debug.zip.redact_addresses.enabled	false	b	t	enables the redaction of hostnames and ip addresses in debug zip	false	default
+diagnostics.active_query_dumps.enabled	true	b	t	experimental: enable dumping of anonymized active queries to disk when node is under memory pressure	true	default
+diagnostics.forced_sql_stat_reset.interval	2h0m0s	d	t	interval after which the reported SQL Stats are reset even if not collected by telemetry reporter. It has a max value of 24H.	2h0m0s	default
+diagnostics.memory_monitor_tree.enabled	true	b	f	enable tracking of memory monitor tree	true	default
+diagnostics.memory_monitoring_dumps.enabled	true	b	t	enable dumping of memory monitoring state at the same time as heap profiles are taken	true	default
+diagnostics.reporting.enabled	true	b	t	enable reporting diagnostic metrics to cockroach labs, but is ignored for Trial or Free licenses	true	override
+diagnostics.reporting.interval	1h0m0s	d	t	interval at which diagnostics data should be reported	1h0m0s	default
+diagnostics.reporting.send_crash_reports.enabled	true	b	f	send crash and panic reports	true	default
+enterprise.license		s	t	the encoded cluster license		default
+export.event_memory_multiplier	3	f	f	the amount of memory required to export a datum is multiplied by this factor	3	default
+external.graphite.endpoint		s	t	if nonempty, push server metrics to the Graphite or Carbon server at the specified host:port		default
+external.graphite.interval	10s	d	t	the interval at which metrics are pushed to Graphite (if enabled)	10s	default
+feature.backup.enabled	true	b	t	set to true to enable backups, false to disable; default is true	true	default
+feature.changefeed.enabled	true	b	t	set to true to enable changefeeds, false to disable; default is true	true	default
+feature.export.enabled	true	b	t	set to true to enable exports, false to disable; default is true	true	default
+feature.import.enabled	true	b	t	set to true to enable imports, false to disable; default is true	true	default
+feature.infer_rbr_region_col_using_constraint.enabled	false	b	t	set to true to enable looking up the region column via a foreign key constraint in a REGIONAL BY ROW table, false to disable; default is false	false	default
+feature.restore.enabled	true	b	t	set to true to enable restore, false to disable; default is true	true	default
+feature.schema_change.enabled	true	b	t	set to true to enable schema changes, false to disable; default is true	true	default
+feature.stats.enabled	true	b	t	set to true to enable CREATE STATISTICS/ANALYZE, false to disable; default is true	true	default
+feature.vector_index.enabled	true	b	t	set to true to enable vector indexes, false to disable; default is true	true	default
+goschedstats.always_use_short_sample_period.enabled	true	b	f	when set to true, the system always does 1ms sampling of runnable queue lengths	true	default
+jobs.avoid_full_scans_in_find_running_jobs.enabled	true	b	f	when true, enables hints to avoid full scans for internal, jobs-related queries	true	default
+jobs.cancel_update_limit	1000	i	f	the number of jobs that can be updated when canceling jobs concurrently from dead sessions	1000	default
+jobs.debug.pausepoints		s	f	the list, comma separated, of named pausepoints currently enabled for debugging		default
+jobs.metrics.interval.poll	30s	d	f	the interval at which a node in the cluster will poll the jobs table for metrics	30s	default
+jobs.registry.claim_query.select_for_update.enabled	true	b	f	when true, uses SELECT FOR UPDATE in the claim loop to prevent deadlock; when false, uses the legacy single-query UPDATE RETURNING approach	true	default
+jobs.registry.claim_query.timeout	1m0s	d	f	the timeout for the claim query used when adopting jobs	1m0s	default
+jobs.registry.interval.adopt	30s	d	f	the interval at which a node (a) claims some of the pending jobs and (b) restart its already claimed jobs that are in running or reverting states but are not running	30s	default
+jobs.registry.interval.base	1	f	f	the base multiplier for other intervals such as adopt, cancel, and gc	1	default
+jobs.registry.interval.cancel	10s	d	f	the interval at which a node cancels the jobs belonging to the known dead sessions	10s	default
+jobs.registry.interval.gc	1h0m0s	d	f	the interval a node deletes expired job records that have exceeded their retention duration	1h0m0s	default
+jobs.registry.max_adoptions_per_loop	10	i	f	the maximum number of jobs a node can adopt in one adoption loop	10	default
+jobs.retained_messages	100	i	f	number of historical messages of each kind to retain per job	100	default
+jobs.retained_progress_entries	1000	i	f	number of historical progress entries to retain per job	1000	default
+jobs.retention_time	336h0m0s	d	t	the amount of time for which records for completed jobs are retained	336h0m0s	default
+jobs.scheduler.enabled	true	b	f	enable/disable job scheduler	true	default
+jobs.scheduler.max_jobs_per_iteration	5	i	f	how many schedules to start per iteration; setting to 0 turns off this limit	5	default
+jobs.scheduler.pace	1m0s	d	f	how often to scan system.scheduled_jobs table	1m0s	default
+jobs.scheduler.schedule_execution.timeout	30s	d	f	sets a timeout on for schedule execution; 0 disables timeout	30s	default
+keyvisualizer.enabled	false	b	f	enable the use of the key visualizer	false	default
+keyvisualizer.max_buckets	256	i	f	the maximum number of buckets in a sample	256	default
+keyvisualizer.sample_interval	5m0s	d	f	the frequency at which the key visualizer samples are collected	5m0s	default
+kv.allocator.disk_unhealthy_io_overload_score	0.4	f	f	the IO overload score to assign to a store when its disk is unhealthy	0.4	default
+kv.allocator.lease_io_overload_threshold	0.3	f	f	a store will not receive new leases when its IO overload score is at or above this value and `kv.allocator.io_overload_threshold` is `shed` or `block_transfer_to`	0.3	default
+kv.allocator.lease_io_overload_threshold_enforcement	shed	e	f	the level of enforcement on lease transfers when a candidate store has anio overload score exceeding `kv.allocator.io_overload_threshold_lease` and above the average of comparable allocation candidates:`ignore` disable enforcement, `block_transfer_to` a store will receive no new leases but won't lose existing leases,`shed`: a store will receive no new leases and shed existing leases to non io-overloaded stores, this is a superset of block_transfer_to [ignore = 0, block_transfer_to = 1, shed = 3]	shed	default
+kv.allocator.lease_rebalance_threshold	0.05	f	t	minimum fraction away from the mean a store's lease count can be before it is considered for lease-transfers	0.05	default
+kv.allocator.lease_rebalancing_aggressiveness	1	f	f	set greater than 1.0 to rebalance leases toward load more aggressively, or between 0 and 1.0 to be more conservative about rebalancing leases	1	default
+kv.allocator.lease_shed_io_overload_threshold	0.4	f	f	a store will shed its leases and receive no new leases when its IO overload score is at or above this value and `kv.allocator.lease_io_overload_threshold_enforcement` is `shed`	0.4	default
+kv.allocator.load_based_lease_rebalancing.enabled	true	b	t	set to enable rebalancing of range leases based on load and latency	true	default
+kv.allocator.load_based_rebalancing	leases and replicas	e	t	whether to rebalance based on the distribution of load across stores [off = 0, leases = 1, leases and replicas = 2, multi-metric only = 3, multi-metric and count = 4]	leases and replicas	default
+kv.allocator.load_based_rebalancing.objective	cpu	e	t	what objective does the cluster use to rebalance; if set to `qps` the cluster will attempt to balance qps among stores, if set to `cpu` the cluster will attempt to balance cpu usage among stores [qps = 0, cpu = 1]	cpu	default
+kv.allocator.load_based_rebalancing_interval	1m0s	d	t	the rough interval at which each store will check for load-based lease / replica rebalancing opportunities	1m0s	default
+kv.allocator.max_disk_utilization_threshold	0.95	f	f	maximum disk utilization before a store will never be used as a rebalance or allocation target and will actively have replicas moved off of it; this should be set higher than `kv.allocator.rebalance_to_max_disk_utilization_threshold`	0.95	default
+kv.allocator.min_io_overload_lease_shed_interval	30s	d	f	controls how frequently all leases can be shed from a node due to the node becoming IO overloaded	30s	default
+kv.allocator.min_lease_transfer_interval	1s	d	f	controls how frequently leases can be transferred for rebalancing. It does not prevent transferring leases in order to allow a replica to be removed from a range.	1s	default
+kv.allocator.min_qps_difference_for_transfers	200	f	f	the minimum qps difference that must exist between any two stores for the allocator to allow a lease or replica transfer between them	200	default
+kv.allocator.qps_rebalance_threshold	0.1	f	t	minimum fraction away from the mean a store's QPS (such as queries per second) can be before it is considered overfull or underfull	0.1	default
+kv.allocator.range_rebalance_threshold	0.05	f	t	minimum fraction away from the mean a store's range count can be before it is considered overfull or underfull	0.05	default
+kv.allocator.rebalance_to_max_disk_utilization_threshold	0.925	f	f	maximum disk utilization before a store will never be used as a rebalance target; this should be set lower than `kv.allocator.max_disk_utilization_threshold`	0.925	default
+kv.allocator.recovery_store_selector	good	s	f	if set to 'good', the allocator may recover replicas to any valid store, if set to 'best' it will pick one of the most ideal stores	good	default
+kv.allocator.replica_io_overload_threshold	0.3	f	f	the threshold store io overload at or above which the enforcement defined by `kv.allocator.io_overload_threshold_enforce` is taken on a store for allocation decisions	0.3	default
+kv.allocator.replica_io_overload_threshold_enforcement	block_rebalance_to	e	f	the level of enforcement when a candidate store has an io overload score  exceeding `kv.allocator.io_overload_threshold` and above the average of comparable allocation candidates:`block_none` will exclude no candidate stores, `block_none_log` will exclude no candidates but log an event, `block_rebalance_to` will exclude candidates stores from being targets of rebalance actions, `block_all` will exclude candidate stores from being targets of both allocation and rebalancing [ignore = 0, block_rebalance_to = 1, block_all = 2]	block_rebalance_to	default
+kv.allocator.store_cpu_rebalance_threshold	0.1	f	t	minimum fraction away from the mean a store's cpu usage can be before it is considered overfull or underfull	0.1	default
+kv.bulk_ingest.batch_size	16 MiB	z	f	the maximum size of the payload in an AddSSTable request	16 MiB	default
+kv.bulk_ingest.index_buffer_size	32 MiB	z	f	the initial size of the BulkAdder buffer handling secondary index imports	32 MiB	default
+kv.bulk_ingest.max_index_buffer_size	512 MiB	z	f	the maximum size of the BulkAdder buffer handling secondary index imports	512 MiB	default
+kv.bulk_ingest.max_pk_buffer_size	128 MiB	z	f	the maximum size of the BulkAdder buffer handling primary index imports	128 MiB	default
+kv.bulk_ingest.pk_buffer_size	32 MiB	z	f	the initial size of the BulkAdder buffer handling primary index imports	32 MiB	default
+kv.bulk_ingest.stream_external_ssts.enabled	true	b	f	if enabled, external SSTables are iterated directly in some cases, rather than being downloaded entirely first	true	default
+kv.bulk_ingest.stream_external_ssts.suffix_cache_size	64 KiB	z	f	size of suffix of remote SSTs to download and cache before reading from remote stream	64 KiB	default
+kv.bulk_io_write.concurrent_addsstable_as_writes_requests	9223372036854775807	i	f	number of concurrent AddSSTable requests ingested as writes per store before queueing	9223372036854775807	default
+kv.bulk_io_write.concurrent_addsstable_requests	9223372036854775807	i	f	number of concurrent AddSSTable requests per store before queueing	9223372036854775807	default
+kv.bulk_io_write.concurrent_export_requests	3	i	f	number of export requests a store will handle concurrently before queuing	3	default
+kv.bulk_io_write.max_rate	1.0 TiB	z	t	the rate limit (bytes/sec) to use for writes to disk on behalf of bulk io ops	1.0 TiB	default
+kv.bulk_io_write.min_capacity_remaining_fraction	0.05	f	t	remaining store capacity fraction below which bulk ingestion requests are rejected	0.05	default
+kv.bulk_io_write.restore_node_concurrency	3	i	f	the number of workers processing a restore per job per node; maximum 32	3	default
+kv.bulk_io_write.small_write_size	400 KiB	z	f	size below which a 'bulk' write will be performed as a normal write instead	400 KiB	default
+kv.bulk_io_write.sst_require_at_request_timestamp.enabled	false	b	f	rejects addsstable requests that don't write at the request timestamp	false	default
+kv.bulk_io_write.sst_rewrite_concurrency.per_call	4	i	f	concurrency to use when rewriting sstable timestamps by block, or 0 to use a loop	4	default
+kv.bulk_sst.max_allowed_overage	64 MiB	z	t	if positive, allowed size in excess of target size for SSTs from export requests; export requests (i.e. BACKUP) may buffer up to the sum of kv.bulk_sst.target_size and kv.bulk_sst.max_allowed_overage in memory	64 MiB	default
+kv.bulk_sst.sync_size	512 KiB	z	f	threshold after which non-Rocks SST writes must fsync	512 KiB	default
+kv.bulk_sst.target_size	16 MiB	z	t	target size for SSTs emitted from export requests; export requests (i.e. BACKUP) may buffer up to the sum of kv.bulk_sst.target_size and kv.bulk_sst.max_allowed_overage in memory	16 MiB	default
+kv.closed_timestamp.follower_reads.enabled	true	b	t	allow (all) replicas to serve consistent historical reads based on closed timestamp information	true	default
+kv.closed_timestamp.lead_for_global_reads_auto_tune.enabled	false	b	t	if enabled, observed network latency between leaseholders and their furthest follower will be used to adjust closed timestamp policies for rangesranges configured to serve global reads. kv.closed_timestamp.lead_for_global_reads_override takes precedence if set.	false	default
+kv.closed_timestamp.lead_for_global_reads_override	0s	d	t	if nonzero, overrides the lead time that global_read ranges use to publish closed timestamps	0s	default
+kv.closed_timestamp.policy_latency_refresh_interval	4m0s	d	f	interval at which the system refreshes the latency cache based on observed latencies between nodes	4m0s	default
+kv.closed_timestamp.policy_refresh_interval	5m0s	d	f	interval at which the system refreshes closed timestamp policies for leaseholders	5m0s	default
+kv.closed_timestamp.policy_switch_latency_bucket_exceed_threshold	0.2	f	f	the fraction of the closed timestamp policy bucket width which need be exceeded before the closed timestamp policy will be changed	0.2	default
+kv.closed_timestamp.propagation_slack	1s	d	f	a conservative estimate of the amount of time expect for closed timestamps to propagate from a leaseholder to followers. This is taken into account by follower_read_timestamp().	1s	default
+kv.closed_timestamp.side_transport_interval	200ms	d	t	the interval at which the closed timestamp side-transport attempts to advance each range's closed timestamp; set to 0 to disable the side-transport	200ms	default
+kv.closed_timestamp.side_transport_pacing_refresh_interval	10ms	d	t	the refresh interval for the task pacer that controls pacing of sending sidetransport updates to avoid overloading the system when many connections are waiting	10ms	default
+kv.closed_timestamp.side_transport_pacing_smear_interval	1ms	d	t	the smear interval for the task pacer that controls the amount of time each paced batch is going to take when broadcasting sidetransport updates	1ms	default
+kv.closed_timestamp.target_duration	3s	d	t	if nonzero, attempt to provide closed timestamp notifications for timestamps trailing cluster time by approximately this duration	3s	default
+kv.concurrency.long_latch_hold_duration	3s	d	f	the threshold for logging long latch holds	3s	default
+kv.concurrency.optimistic_eval_limited_scans.enabled	true	b	f	when true, limited scans are optimistically evaluated in the sense of not checking for conflicting latches or locks up front for the full key range of the scan, and instead subsequently checking for conflicts only over the key range that was read	true	default
+kv.concurrency.push_pending_from_cache.enabled	true	b	f	whether intents from pending transactions can be resolved using cached clock observations	true	default
+kv.concurrency.slow_latch_request_duration	5s	d	f	the threshold for logging slow latch acquisition attempts	5s	default
+kv.concurrency.virtual_intent_resolution.enabled	false	b	f	whether read-only, non-locking requests should virtually resolve intents	false	default
+kv.consistency_queue.enabled	true	b	f	whether the consistency queue is enabled	true	default
+kv.dist_sender.circuit_breaker.cancellation.enabled	true	b	t	when enabled, in-flight requests will be cancelled when the circuit breaker trips	true	default
+kv.dist_sender.circuit_breaker.cancellation.write_grace_period	10s	d	t	how long after the circuit breaker trips to cancel write requests (these can't retry internally, so should be long enough to allow quorum/lease recovery)	10s	default
+kv.dist_sender.circuit_breaker.probe.interval	3s	d	t	interval between replica probes	3s	default
+kv.dist_sender.circuit_breaker.probe.threshold	3s	d	t	duration of errors or stalls after which a replica will be probed	3s	default
+kv.dist_sender.circuit_breaker.probe.timeout	3s	d	t	timeout for replica probes	3s	default
+kv.dist_sender.circuit_breakers.mode	liveness range only	e	t	set of ranges to trip circuit breakers for failing or stalled replicas [no ranges = 0, liveness range only = 1, all ranges = 2]	liveness range only	default
+kv.dist_sender.concurrency_limit	1536	i	f	maximum number of asynchronous send requests. The default value is computed as the number of vCPUs in a node times 384.	1536	default
+kv.dist_sender.follower_reads_unhealthy.enabled	true	b	f	send follower reads to unhealthy nodes	true	default
+kv.dist_sender.non_transactional_writes_not_idempotent.enabled	false	b	f	when true, non-transactional writes are not retried and may return an ambiguous error	false	default
+kv.dist_sender.proxy.enabled	true	b	f	when true, proxy batch requests that can't be routed directly to the leaseholder	true	default
+kv.dist_sender.sort_locality_first.enabled	true	b	f	sort followers by locality before sorting by latency	true	default
+kv.enqueue_in_mvcc_gc_queue_on_span_config_update.enabled	false	b	f	controls whether replicas are enqueued into the mvcc gc queue for processing, when a span config update occurs which affects the replica	false	default
+kv.enqueue_in_replicate_queue_on_problem.interval	0s	d	f	interval at which problem ranges are enqueued into the replicate queue for processing, outside of the normal scanner interval; a problem range is one which is underreplicated or has a replica on a decommissioning store, disabled when set to 0	0s	default
+kv.enqueue_in_replicate_queue_on_span_config_update.enabled	true	b	f	controls whether replicas are enqueued into the replicate queue for processing, when a span config update occurs, which affects the replica	true	default
+kv.gc.admission_priority	bulk_normal_pri	e	f	the admission priority to use for mvcc gc work [bulk_normal_pri = -30, normal_pri = 0, user_high_pri = 50]	bulk_normal_pri	default
+kv.gc.clear_range_min_keys	2000	i	f	if non zero, gc will issue clear range requests if number of consecutive garbage keys exceeds this threshold	2000	default
+kv.gc.lock_age_threshold	2h0m0s	d	f	locks older than this threshold will be resolved when encountered by the MVCC GC queue	2h0m0s	default
+kv.gc.lock_cleanup_batch_byte_size	1000000	i	f	if non zero, gc will split found locks into batches of this size when trying to resolve them	1000000	default
+kv.gc.lock_cleanup_batch_size	5000	i	f	if non zero, gc will split found locks into batches of this size when trying to resolve them	5000	default
+kv.gc.txn_cleanup_threshold	1h0m0s	d	f	the threshold after which a transaction is considered abandoned and fit for removal, as measured by the maximum of its last heartbeat and timestamp	1h0m0s	default
+kv.gc_ttl.strict_enforcement.enabled	true	b	f	if true, fail to serve requests at timestamps below the TTL even if the data still exists	true	default
+kv.intent_resolver.batch.bypass_admission_control.enabled	false	b	f	determined whether batched intent resolution bypasses admission control	false	default
+kv.intent_resolver.batcher.in_flight_backpressure_limit.enabled	false	b	f	set to true to enable the use of DefaultInFlightBackpressureLimit	false	default
+kv.intent_resolver.send_immediately.bypass_admission_control.enabled	true	b	f	determines whether the sendImmediately option on intent resolution bypasses admission control	true	default
+kv.lease.check_preferences_on_acquisition.enabled	true	b	f	controls whether lease preferences are checked on lease acquisition, if the new lease violates preferences, it is queued for processing	true	default
+kv.lease.eager_acquisition_concurrency	256	i	f	the maximum number of concurrent eager lease acquisitions (0 disables eager acquisition)	256	default
+kv.lease.expiration_leases_only.enabled	false	b	f	only use expiration-based leases never epoch-based ones when there are less than kv.lease.expiration_max_replicas_per_node on the node, (experimental, affects performance)	false	default
+kv.lease.expiration_max_replicas_per_node	0	i	f	maximum number of replicas a node can have before expiration leases are disabled (0 disables this setting)	0	default
+kv.lease.reject_on_leader_unknown.enabled	false	b	f	reject lease requests on a replica that does not know the raft leader	false	default
+kv.lease.transfer_expiration_leases_first.enabled	true	b	f	controls whether we transfer expiration-based leases that are later upgraded to epoch-based ones	true	default
+kv.lease_queue.enabled	true	b	f	whether the lease queue is enabled	true	default
+kv.lease_transfer_read_summary.global_budget	0 B	z	t	controls the maximum number of bytes that will be used to summarize the global segment of the timestamp cache during lease transfers and range merges. A smaller budget will result in loss of precision.	0 B	default
+kv.lease_transfer_read_summary.local_budget	4.0 MiB	z	t	controls the maximum number of bytes that will be used to summarize the local segment of the timestamp cache during lease transfers and range merges. A smaller budget will result in loss of precision.	4.0 MiB	default
+kv.leases.leader_leases.enabled	true	b	f	controls whether leader leases are enabled for ranges which use the raft leader fortification protocol. The setting is private because most users should interact with kv.raft.leader_fortification.fraction_enabled instead. The setting is only available for rare cases where an operator wants to disable leader leases without disabling the raft leader fortification.	true	default
+kv.liveness_range_compact.interval	0s	d	f	interval at which the liveness range is compacted. A value of 0 disables the periodic compaction	0s	default
+kv.lock.exclusive_locks_block_non_locking_reads.enabled	true	b	f	dictates the locking interactions between exclusive locks and non-locking reads	true	default
+kv.lock_table.batch_pushed_lock_resolution.enabled	true	b	f	whether the lock table should allow non-locking readers to defer and batch the resolution of conflicting locks whose holder is known to be pending and have been pushed above the reader's timestamp	true	default
+kv.lock_table.deadlock_detection_or_liveness_push_delay	100ms	d	f	the delay before pushing in order to detect dependency cycles between transactions	100ms	default
+kv.lock_table.default_size	10000	i	f	the default upper bound on the number of locks in a lock table. This setting controls the maximum number of locks that can be held in memory by the lock table before it starts evicting locks to manage memory pressure.	10000	default
+kv.lock_table.discovered_locks_threshold_for_consulting_finalized_txn_cache	200	i	f	the maximum number of discovered locks by a waiter, above which the txn status cacheis consulted and resolvable locks are not added to the lock table -- this should be a smallfraction of the maximum number of locks in the lock table	200	default
+kv.lock_table.maximum_lock_wait_queue_length	0	i	f	the maximum length of a lock wait-queue that read-write requests are willing to enter and wait in. The setting can be used to ensure some level of quality-of-service under severe per-key contention. If set to a non-zero value and an existing lock wait-queue is already equal to or exceeding this length, requests will be rejected eagerly instead of entering the queue and waiting. Set to 0 to disable.	0	default
+kv.lock_table.unreplicated_lock_reliability.lease_transfer.enabled	true	b	f	whether the replica should attempt to keep unreplicated locks during lease transfers	true	default
+kv.lock_table.unreplicated_lock_reliability.max_flush_size	0 B	z	f	maximum size of locks that will be flushed during merge and transfer operations (if 0, defaults to half of the MaxCommandSizeDefault)	0 B	default
+kv.lock_table.unreplicated_lock_reliability.merge.enabled	true	b	f	whether the replica should attempt to keep unreplicated locks during range merges	true	default
+kv.lock_table.unreplicated_lock_reliability.split.enabled	true	b	f	whether the replica should attempt to keep unreplicated locks during range splits	true	default
+kv.log_range_and_node_events.enabled	true	b	t	set to true to transactionally log range events (e.g., split, merge, add/remove voter/non-voter) into system.rangelogand node join and restart events into system.eventolog	true	default
+kv.migration.migrate_application.timeout	1m0s	d	f	timeout for a Migrate request to be applied across all replicas of a range	1m0s	default
+kv.mvcc_gc.queue_high_priority_interval	0s	d	f	how long the mvcc gc queue waits between processing high priority replicas (e.g. after table drops)	0s	default
+kv.mvcc_gc.queue_interval	1s	d	f	how long the mvcc gc queue waits between processing replicas	1s	default
+kv.mvcc_gc_queue.enabled	true	b	f	whether the MVCC GC queue is enabled	true	default
+kv.priority_inversion_requeue_replicate_queue.enabled	true	b	f	whether the requeue replicas should requeue when enqueued for repair action but ended up consider rebalancing during processing	true	default
+kv.prober.bypass_admission_control.enabled	true	b	f	set to bypass admission control queue for kvprober requests; note that dedicated clusters should have this set as users own capacity planning but serverless clusters should not have this set as SREs own capacity planning	true	default
+kv.prober.log_tracing_on_plan_failure.enabled	false	b	f	whether the KV prober should print log traces when planning fails; requires kv.prober.tracing.enabled to be set to true	false	default
+kv.prober.planner.num_steps_to_plan_at_once	100	i	f	the number of Steps to plan at once, where a Step is a decision on what range to probe; the order of the Steps is randomized within each planning run, so setting this to a small number will lead to close-to-lexical probing; already made plans are held in memory, so large values are advised against	100	default
+kv.prober.planner.scan_meta2.timeout	2s	d	f	timeout on scanning meta2 via db.Scan with max rows set to kv.prober.planner.num_steps_to_plan_at_once	2s	default
+kv.prober.quarantine.write.enabled	false	b	f	whether the KV write prober is enabled for the quarantine pool; The quarantine pool holds a separate group of ranges that have previously failed a probe which are continually probed. This helps determine outages for ranges  with a high level of confidence	false	default
+kv.prober.quarantine.write.interval	10s	d	f	how often each node sends a write probe for the quarantine pool to the KV layer on average (jitter is added); note that a very slow read can block kvprober from sending additional probes; kv.prober.write.timeout controls the max time kvprober can be blocked	10s	default
+kv.prober.quarantine_pool_size	100	i	f	the maximum size of the kv prober quarantine pool, where the quarantine pool holds Steps for ranges that have been probed and timed out; If the quarantine pool is full, probes that fail will not be added to  the pool	100	default
+kv.prober.read.enabled	false	b	f	whether the KV read prober is enabled	false	default
+kv.prober.read.interval	1s	d	f	how often each node sends a read probe to the KV layer on average (jitter is added); note that a very slow read can block kvprober from sending additional probes; kv.prober.read.timeout controls the max time kvprober can be blocked	1s	default
+kv.prober.read.timeout	2s	d	f	if this much time elapses without success, a KV read probe will be treated as an error; note that a very slow read can block kvprober from sending additional probesthis setting controls the max time kvprober can be blocked	2s	default
+kv.prober.tracing.enabled	false	b	f	whether the KV prober should collect traces, in order to log info aboutleaseholders of ranges probed	false	default
+kv.prober.write.enabled	false	b	f	whether the KV write prober is enabled	false	default
+kv.prober.write.interval	5s	d	f	how often each node sends a write probe to the KV layer on average (jitter is added); note that a very slow read can block kvprober from sending additional probes; kv.prober.write.timeout controls the max time kvprober can be blocked	5s	default
+kv.prober.write.timeout	4s	d	f	if this much time elapses without success, a KV write probe will be treated as an error; note that a very slow read can block kvprober from sending additional probesthis setting controls the max time kvprober can be blocked	4s	default
+kv.protectedts.max_bytes	1048576	i	f	if non-zero, this limits the number of bytes used by protected timestamp records in the protected timestamps system table. this will be a noop in 24.1 onwards and deprecated in the future	1048576	default
+kv.protectedts.max_spans	32768	i	f	if non-zero the limit of the number of spans which can be protected	32768	default
+kv.protectedts.poll_interval	2m0s	d	f	the interval at which the protectedts subsystem state is polled	2m0s	default
+kv.protectedts.reconciliation.interval	5m0s	d	t	the frequency for reconciling jobs with protected timestamp records	5m0s	default
+kv.query_resolved_timestamp.intent_cleanup_age	10s	d	f	minimum intent age that QueryResolvedTimestamp requests will consider for async intent cleanup	10s	default
+kv.queue.process.guaranteed_time_budget	1m0s	d	f	the guaranteed duration before which the processing of a queue may time out	1m0s	default
+kv.raft.command.max_size	64 MiB	z	f	maximum size of a raft command	64 MiB	default
+kv.raft.command.target_batch_size	64 MiB	z	f	size of a batch of raft commands after which it will be sent without further batching	64 MiB	default
+kv.raft.leader_fortification.fraction_enabled	1	f	t	controls the fraction of ranges for which the raft leader fortification protocol is enabled. Leader fortification is needed for a range to use a Leader lease. Set to 0.0 to disable leader fortification and, by extension, Leader leases. Set to 1.0 to enable leader fortification for all ranges and, by extension, use Leader leases for all ranges which do not require expiration-based leases. Set to a value between 0.0 and 1.0 to gradually roll out Leader leases across the ranges in a cluster.	1	default
+kv.raft.max_concurrent_traces	0	i	f	the maximum number of tracked raft traces, 0 will disable tracing	0	default
+kv.raft.proposal_quota.enabled	true	b	f	set to true to enable waiting for and acquiring quota before issuing Raft proposals, false to disable	true	default
+kv.raft.store_liveness.quiescence.enabled	true	b	f	controls whether store liveness quiescence is enabled	true	default
+kv.raft.trace_to_cockroach_log.enabled	false	b	f	when true, log raft traces to the cockroach log in addition to the trace	false	default
+kv.raft_log.synchronization.unsafe.disabled	false	b	f	disables synchronization of Raft log writes to persistent storage. Setting to true risks data loss or data corruption on process or OS crashes. This not only disables fsync, but also disables flushing writes to the OS buffer. The setting is meant for internal testing only and SHOULD NOT be used in production.	false	default
+kv.raft_log.loosely_coupled_truncation.enabled	false	b	f	set to true to loosely couple the raft log truncation	false	default
+kv.raft_log.non_blocking_synchronization.enabled	true	b	f	set to true to enable non-blocking synchronization on Raft log writes to persistent storage. Setting to true does not risk data loss or data corruption on server crashes, but can reduce write latency.	true	default
+kv.raft_log_queue.enabled	true	b	f	whether the raft log queue is enabled	true	default
+kv.raft_snapshot_queue.enabled	true	b	f	whether the raft snapshot queue is enabled	true	default
+kv.range.backpressure_byte_tolerance	32 MiB	z	f	defines the number of bytes above the product of backpressure_range_size_multiplier and the range_max_size at which backpressure will not apply	32 MiB	default
+kv.range.backpressure_range_size_multiplier	2	f	f	multiple of range_max_bytes that a range is allowed to grow to without splitting before writes to that range are blocked, or 0 to disable	2	default
+kv.range.range_size_hard_cap	8.0 GiB	z	t	hard cap on the maximum size a range is allowed to grow to withoutsplitting before writes to the range are blocked. Takes precedence over all other configurations	8.0 GiB	default
+kv.range_descriptor_cache.size	1000000	i	f	maximum number of entries in the range descriptor cache	1000000	default
+kv.range_merge.queue.enabled	true	b	f	whether the automatic merge queue is enabled	true	default
+kv.range_merge.queue_interval	5s	d	f	how long the merge queue waits between processing replicas	5s	default
+kv.range_merge.skip_external_bytes.enabled	true	b	f	skip the merge queue for external bytes	true	default
+kv.range_split.by_load.enabled	true	b	t	allow automatic splits of ranges based on where load is concentrated	true	default
+kv.range_split.by_load_merge_delay	5m0s	d	f	the delay that range splits created due to load will wait before considering being merged away	5m0s	default
+kv.range_split.estimated_stats_for_external_bytes.enabled	true	b	f	allow splits to use estimated stats when the range being split has external bytes in its underlying store	true	default
+kv.range_split.load_cpu_threshold	500ms	d	t	the CPU use per second over which, the range becomes a candidate for load based splitting	500ms	default
+kv.range_split.load_qps_threshold	2500	i	t	the QPS over which, the range becomes a candidate for load based splitting	2500	default
+kv.range_split.load_sample_reset_duration	30m0s	d	f	the duration after which the load based split sampler will reset its state, regardless of any split suggestions made, when zero, the sampler will never reset	30m0s	default
+kv.rangefeed.buffered_sender.enabled	true	b	f	use buffered sender for all range feeds instead of buffering events separately per client per range	true	default
+kv.rangefeed.buffered_sender.per_registration_max_queue_size	8192	i	f	maximum number of events a single registration can have queued in the event queue (0 for no max)	8192	default
+kv.rangefeed.bulk_delivery.size	2097152	i	f	approx size up to which rangefeeds may buffer events to be delivered in bulk during scans (0=disabled)	2097152	default
+kv.rangefeed.client.stream_startup_rate	100	i	t	controls the rate per second the client will initiate new rangefeed stream for a single range; 0 implies unlimited	100	default
+kv.rangefeed.closed_timestamp_refresh_interval	3s	d	t	the interval at which closed-timestamp updatesare delivered to rangefeeds; set to 0 to use kv.closed_timestamp.side_transport_interval	3s	default
+kv.rangefeed.closed_timestamp_smear_interval	1ms	d	f	the target interval at which the rangefeed updater job wakes up to deliverclosed-timestamp updates to some rangefeeds; set to 0 to use kv.rangefeed.closed_timestamp_refresh_intervalcapped at kv.rangefeed.closed_timestamp_refresh_interval	1ms	default
+kv.rangefeed.concurrent_catchup_iterators	16	i	f	number of rangefeeds catchup iterators a store will allow concurrently before queueing	16	default
+kv.rangefeed.enabled	false	b	t	if set, rangefeed registration is enabled	false	default
+kv.rangefeed.lagging_closed_timestamp_cancel_min_lagging_duration	1m0s	d	f	if a range's closed timestamp is more than `kv.rangefeed.lagging_closed_timestamp_cancel_multiple` of the `kv.closed_timestamp.target_duration` behind the current time,for at least this duration, cancel the rangefeed	1m0s	default
+kv.rangefeed.lagging_closed_timestamp_cancel_multiple	20	i	f	if a range's closed timestamp is more than this multiple of the `kv.closed_timestamp.target_duration` behind the current time,for at least `kv.rangefeed.lagging_closed_timestamp_cancel_min_lagging_duration`, cancel the rangefeed, when set to 0, canceling is disabled	20	default
+kv.rangefeed.max_scan_parallelism	64	i	f	maximum number of concurrent scan requests that can be issued during initial scan	64	default
+kv.rangefeed.memory_budgets.enabled	true	b	f	if set, rangefeed memory budgets are enabled	true	default
+kv.rangefeed.per_consumer_catchup_scan_limit	0	i	f	the number of catchup scan iterators a node will allow on a per-consumer basis, 0 to disable	0	default
+kv.rangefeed.push_txns.barrier.enabled	true	b	f	flush and apply prior writes when a txn push returns an ambiguous abort (disabling may emit premature checkpoints before writes in rare cases)	true	default
+kv.rangefeed.push_txns.enabled	true	b	f	periodically push txn write timestamps to advance rangefeed resolved timestamps	true	default
+kv.replica_circuit_breaker.slow_replication_threshold	1m0s	d	t	duration after which slow proposals trip the per-Replica circuit breaker (zero duration disables breakers)	1m0s	default
+kv.replica_gc_queue.enabled	true	b	f	whether the replica gc queue is enabled	true	default
+kv.replica_raft.leaderless_unavailable_threshold	1m0s	d	t	duration after which leaderless replicas is considered unavailable. Set to 0 to disable leaderless replica availability checks	1m0s	default
+kv.replica_stats.addsst_request_size_factor	50000	i	t	the divisor that is applied to addsstable request sizes, then recorded in a leaseholders QPS; 0 means all requests are treated as cost 1	50000	default
+kv.replicate_queue.enabled	true	b	f	whether the replicate queue is enabled	true	default
+kv.replicate_queue.max_size	9223372036854775807	i	f	maximum number of replicas that can be queued for replicate queue processing; when this limit is exceeded, lower priority (not guaranteed to be the lowest) replicas are dropped from the queue	9223372036854775807	default
+kv.replication_reports.interval	1m0s	d	t	the frequency for generating the replication_constraint_stats, replication_stats_report and replication_critical_localities reports (set to 0 to disable)	1m0s	default
+kv.snapshot.external_files.enabled	false	b	f	enables sending external files as metadata during a snapshot	false	default
+kv.snapshot.ingest_as_write_threshold	100 KiB	z	f	size below which a range snapshot ingestion will be performed as a normal write	100 KiB	default
+kv.snapshot_delegation.max_delegation_attempts	1	i	f	the max number of delegates to attempt for sending snapshots, before falling back to sending from the leaseholder. set to 0 to disable delegated snapshots.	1	default
+kv.snapshot_delegations.queue_limit	3	i	f	the max requests a delegate can queue before rejecting an additional delegation request. set to -1 to allow unlimited requests	3	default
+kv.snapshot_rebalance.max_rate	32 MiB	z	t	the rate limit (bytes/sec) to use for rebalance and upreplication snapshots	32 MiB	default
+kv.snapshot_rebalance.max_sst_size	128 MiB	z	f	maximum size of a rebalance or recovery SST size	128 MiB	default
+kv.snapshot_receiver.checksum_verification.enabled	true	b	f	verify value checksums on receiving a raft snapshot	true	default
+kv.snapshot_receiver.reservation_queue_timeout_fraction	0.4	f	f	the fraction of a snapshot's total timeout that it is allowed to spend queued on the receiver waiting for a reservation	0.4	default
+kv.snapshot_sender.batch_size	256 KiB	z	f	size of key-value batches sent over the network during snapshots	256 KiB	default
+kv.snapshot_sst.sync_size	512 KiB	z	f	threshold after which snapshot SST writes must fsync	512 KiB	default
+kv.split.estimated_mvcc_stats.enabled	true	b	f	if enabled, MVCC stats will be computed estimated (as opposed to computed accurately) during splits	true	default
+kv.split.max_mvcc_stat_bytes_diff	5120000	i	f	defines the max number of bytes that are acceptable for an individual MVCC stat to diverge; needs kv.split.estimated_mvcc_stats.enabled to be true	5120000	default
+kv.split.max_mvcc_stat_count_diff	5000	i	f	defines the max number of units that are acceptable for an individual MVCC stat to diverge; needs kv.split.estimated_mvcc_stats.enabled to be true	5000	default
+kv.split.mvcc_stats_recomputation.enabled	true	b	f	if enabled, MVCC stats will be recomputed at the beginning of a split to prevent stats estimates from drifting	true	default
+kv.split.slow_split_tracing_threshold	2s	d	f	the duration after which a trace of the split is logged	2s	default
+kv.split_queue.enabled	true	b	f	whether the split queue is enabled	true	default
+kv.store.raft_snapshot.apply_limit	1	i	f	number of concurrent snapshot apply requests that can be handled by store	1	default
+kv.store.raft_snapshot.send_limit	2	i	f	number of concurrent snapshot sent requests that can be generated by store	2	default
+kv.store.system_config_update.queue_add_burst	32	i	f	the burst rate at which the store will add all replicas to the split and merge queue due to system config gossip	32	default
+kv.store.system_config_update.queue_add_rate	0.5	f	f	the rate (per second) at which the store will add, all replicas to the split and merge queue due to system config gossip	0.5	default
+kv.store_gossip.capacity_delta_threshold	0.1	f	f	the fraction from the last gossiped store capacity values which need be exceeded before the store will gossip immediately without waiting for the periodic gossip interval, at most kv.store_gossip.max_frequency frequency	0.1	default
+kv.store_gossip.max_frequency	2s	d	f	the maximum frequency at which a store will gossip its store descriptor	2s	default
+kv.store_liveness.enabled	true	b	f	if enabled, store liveness will heartbeat periodically; if disabled, store liveness will still respond to heartbeats and calls to SupportFor	true	default
+kv.store_liveness.heartbeat_smearing.enabled	true	b	f	if enabled, heartbeat sends are smeared across a certain duration, via the transport goroutine, otherwise heartbeat sends are sent when they are enqueued at the sendQueue, bypassing heartbeat smearing	true	default
+kv.store_liveness.heartbeat_smearing.refresh	10ms	d	f	the total time window within which all queued heartbeat messages should be sent; the pacer distributes the work across this duration to complete by the deadline	10ms	default
+kv.store_liveness.heartbeat_smearing.smear	1ms	d	f	the interval between sending successive batches of heartbeats across all send queues	1ms	default
+kv.streamer.concurrency_limit	384	i	f	maximum number of asynchronous requests by a single streamer. The default value is computed as the number of vCPUs in a node times 96.	384	default
+kv.tenant_rate_limiter.burst_limit_seconds	10	f	f	per-tenant burst limit as a multiplier of the rate	10	default
+kv.tenant_rate_limiter.rate_limit	-400	f	f	per-tenant rate limit in KV Compute Units per second if positive, or KV Compute Units per second per CPU if negative	-400	default
+kv.tenant_rate_limiter.read_batch_cost	0.567	f	f	base cost of a read batch in KV Compute Units	0.567	default
+kv.tenant_rate_limiter.read_cost_per_mebibyte	12.77	f	f	cost of a read in KV Compute Units per MiB	12.77	default
+kv.tenant_rate_limiter.read_request_cost	0.0275	f	f	base cost of a read request in KV Compute Units	0.0275	default
+kv.tenant_rate_limiter.write_batch_cost	0.328	f	f	base cost of a write batch in KV Compute Units	0.328	default
+kv.tenant_rate_limiter.write_cost_per_megabyte	43.95	f	f	cost of a write in KV Compute Units per MiB	43.95	default
+kv.tenant_rate_limiter.write_request_cost	0.314	f	f	base cost of a write request in KV Compute Units	0.314	default
+kv.timeseries_maintenance_queue.enabled	true	b	f	whether the timeseries maintenance queue is enabled	true	default
+kv.trace.slow_request_stacks.threshold	30s	d	f	duration spent in processing above any available stack history is appended to its trace, if automatic trace snapshots are enabled	30s	default
+kv.trace.snapshot.enable_threshold	0s	d	f	enables tracing and gathers timing information on all snapshots;snapshots with a duration longer than this threshold will have their trace logged (set to 0 to disable);	0s	default
+kv.transaction.dropping_latches_before_eval.enabled	true	b	f	if enabled, allows certain read-only KV requests to drop latches before they evaluate	true	default
+kv.transaction.internal.max_auto_retries	100	i	f	controls the maximum number of auto-retries an internal KV transaction will perform before aborting and returning an error. Can be set to 0 to disable any retry attempt.	100	default
+kv.transaction.keep_refresh_spans_on_savepoint_rollback.enabled	true	b	f	if enabled, all refresh spans accumulated since a savepoint was created are kept after the savepoint is rolled back	true	default
+kv.transaction.max_intents_and_locks	0	i	t	maximum count of inserts or durable locks for a single transactions, 0 to disable	0	default
+kv.transaction.max_intents_bytes	4194304	i	t	maximum number of bytes used to track locks in transactions	4194304	default
+kv.transaction.max_refresh_spans_bytes	4194304	i	t	maximum number of bytes used to track refresh spans in serializable transactions	4194304	default
+kv.transaction.parallel_commits.enabled	true	b	f	if enabled, transactional commits will be parallelized with transactional writes	true	default
+kv.transaction.randomized_anchor_key.enabled	false	b	t	dictates whether a transactions anchor key is randomized or not	false	default
+kv.transaction.reject_over_max_intents_budget.enabled	false	b	t	if set, transactions that exceed their lock tracking budget (kv.transaction.max_intents_bytes) are rejected instead of having their lock spans imprecisely compressed	false	default
+kv.transaction.write_buffering.enabled	true	b	t	if enabled, transactional writes are buffered on the client	true	default
+kv.transaction.write_buffering.max_buffer_size	4.0 MiB	z	t	if non-zero, defines that maximum size of the buffer that will be used to buffer transactional writes per-transaction	4.0 MiB	default
+kv.transaction.write_buffering.transformations.get.enabled	true	b	f	if enabled, locking get requests with replicated durability are transformed to unreplicated durability	true	default
+kv.transaction.write_buffering.transformations.scans.enabled	true	b	f	if enabled, locking scans and reverse scans with replicated durability are transformed to unreplicated durability	true	default
+kv.transaction.write_pipelining.locking_reads.enabled	true	b	t	if enabled, transactional locking reads are pipelined through Raft consensus	true	default
+kv.transaction.write_pipelining.ranged_writes.enabled	true	b	t	if enabled, transactional ranged writes are pipelined through Raft consensus	true	default
+kv.transaction.write_pipelining.enabled	true	b	t	if enabled, transactional writes are pipelined through Raft consensus	true	default
+kv.transaction.write_pipelining.max_batch_size	128	i	t	if non-zero, defines that maximum size batch that will be pipelined through Raft consensus	128	default
+kvadmission.elastic_control_bulk_low_priority.enabled	true	b	f	determines whether the all low bulk priority requests integrate with elastic CPU control	true	default
+kvadmission.elastic_cpu.duration_per_export_request	100ms	d	f	controls how many CPU tokens are allotted for each export request	100ms	default
+kvadmission.elastic_cpu.duration_per_low_pri_read	10ms	d	f	controls how many CPU tokens are allotted for each internally submitted low priority read request	10ms	default
+kvadmission.elastic_cpu.duration_per_rangefeed_scan_unit	100ms	d	f	controls how many CPU tokens are allotted for each unit of work during rangefeed catchup scans	100ms	default
+kvadmission.flow_control.dispatch.max_bytes	64 MiB	z	f	limits the size of flow control dispatch messages being attached to a single raft message	64 MiB	default
+kvadmission.flow_control.enabled	true	b	f	determines whether we use flow control for replication traffic in KV	true	default
+kvadmission.flow_control.mode	apply_to_all	e	f	determines the 'mode' of flow control we use for replication traffic in KV, if enabled [apply_to_elastic = 0, apply_to_all = 1]	apply_to_all	default
+kvadmission.flow_controller.elastic_tokens_per_stream	8.0 MiB	z	f	flow tokens available for elastic work on a per-stream basis	8.0 MiB	default
+kvadmission.flow_controller.regular_tokens_per_stream	16 MiB	z	f	flow tokens available for regular work on a per-stream basis	16 MiB	default
+kvadmission.flow_controller.token_reset_epoch	0	i	f	escape hatch for administrators to reset all token counters to their default (full) state	0	default
+kvadmission.flow_token.dispatch_interval	1s	d	f	the interval at which the raft transport checks for pending flow token dispatches from idle connections and delivers them	1s	default
+kvadmission.flow_token.drop_interval	30s	d	f	the interval at which the raft transport checks for pending flow token dispatches to nodes we're no longer connected to, in order to drop them; set to 0 to disable the mechanism	30s	default
+kvadmission.raft_transport.connected_store_expiration	5m0s	d	f	the interval at which the raft transport prunes its set of connected stores; set to 0 to disable the mechanism	5m0s	default
+kvadmission.rangefeed_catchup_scan_elastic_control.enabled	true	b	f	determines whether rangefeed catchup scans integrate with the elastic CPU control	true	default
+kvadmission.store.elastic_disk_bandwidth_max_util	0.8	f	f	sets the max utilization for disk bandwidth for elastic traffic	0.8	default
+kvadmission.store.provisioned_bandwidth	0 B	z	t	if set to a non-zero value, this is used as the provisioned bandwidth (in bytes/s), for each store. It can be overridden on a per-store basis using the --store flag. Note that setting the provisioned bandwidth to a positive value may enable disk bandwidth based admission control, since admission.disk_bandwidth_tokens.elastic.enabled defaults to true	0 B	default
+kvadmission.store.snapshot_ingest_bandwidth_control.enabled	true	b	t	if set to true, snapshot ingests will be subject to disk write control in AC	true	default
+kvadmission.store.snapshot_ingest_bandwidth_control.min_rate.enabled	true	b	t	if set to true, snapshot ingests will be admitted at a minimum rate when kvadmission.store.provisioned_bandwidth is set to a non-zero value. Disabling this setting can lead to snapshots being starved out by foreground traffic.	true	default
+kvadmission.use_range_tenant_id_for_non_admin.enabled	true	b	f	when true, and the caller is the system tenant, the tenantID used by admission control for non-admin requests is overridden to the range's tenantID	true	default
+log.channel_compatibility_mode.enabled	false	b	t	when true, logs will to log to their legacy (pre 26.1) logging channels; when false, logs will be logged to new logging channels	false	default
+logical_replication.consumer.batch_size	32	i	f	the number of row updates to attempt in a single KV transaction	32	default
+logical_replication.consumer.flush_chunk_max_size	1000	i	f	maximum number of row updates to pass to a flush worker at once (repeated revisions of a row notwithstanding)	1000	default
+logical_replication.consumer.flush_chunk_min_size	64	i	f	minimum number of row updates to pass to a flush worker at once	64	default
+logical_replication.consumer.flush_worker_per_proc	128	i	f	the maximum number of workers per processor to use to flush each batch	128	default
+logical_replication.consumer.heartbeat_frequency	30s	d	f	controls frequency the stream replication destination cluster sends heartbeat to the source cluster to keep the stream alive	30s	default
+logical_replication.consumer.immediate_mode_writer	crud	s	f	the writer to use when in immediate mode	crud	default
+logical_replication.consumer.job_checkpoint_frequency	10s	d	f	controls the frequency with which the job updates their progress; if 0, disabled	10s	default
+logical_replication.consumer.low_admission_priority.enabled	true	b	f	determines whether the consumer sends KV work as low admission priority	true	default
+logical_replication.consumer.retry_queue_backoff	3s	d	f	minimum delay between retries of items in the retry queue	3s	default
+logical_replication.consumer.retry_queue_duration	1m0s	d	f	maximum time an incoming update can be retried before it is sent to the DLQ	1m0s	default
+logical_replication.consumer.retry_queue_partition_size_limit	16 MiB	z	f	total byte size of all retry queues for all replication streams after which events must be sent to DLQ on failure to apply	16 MiB	default
+logical_replication.consumer.try_optimistic_insert.enabled	true	b	f	determines whether the consumer attempts to execute the 'optimistic' INSERT first (when there was no previous value on the source) which will succeed only if there is no conflict with an existing row	true	default
+logical_replication.consumer.use_swap_mutations.enabled	true	b	f	determines whether the consumer uses swap mutations for update and delete operations	true	default
+logical_replication.deprecated_udf_writer.enabled	false	b	f	enables the UDF-based logical data replication writer (deprecated, will be removed)	false	default
+logical_replication.producer.group_adjacent_spans.enabled	false	b	f	controls whether to attempt adjacent spans in the same stream	false	default
+logical_replication.replan_flow_frequency	10m0s	d	f	frequency at which the consumer job checks to refresh its physical execution plan	10m0s	default
+logical_replication.replan_flow_threshold	0.1	f	f	fraction of nodes in the producer or consumer job that would need to change to refresh the physical execution plan. If set to 0, the physical plan will not automatically refresh.	0.1	default
+logical_replication.stream_batch_size	16 MiB	z	f	target batch size for logical replication stream	16 MiB	default
+obs.ash.buffer_size	1000000	i	f	number of ASH samples to retain in memory	1000000	default
+obs.ash.enabled	false	b	f	enable active session history sampling	false	default
+obs.ash.log_interval	10m0s	d	f	interval between periodic ASH top-N workload summary logs; also used as the lookback window for ASH reports written by the env sampler profiler	10m0s	default
+obs.ash.log_top_n	10	i	f	maximum number of entries in periodic ASH workload summary, ranked by sample count descending	10	default
+obs.ash.report.total_dump_size_limit	32 MiB	z	f	maximum combined disk size of preserved ASH report files	32 MiB	default
+obs.ash.response_limit	10000	i	f	maximum number of ASH samples returned per node in fan-out responses	10000	default
+obs.ash.sample_interval	1s	d	f	interval between ASH samples	1s	default
+obs.clustermetrics.flush.enabled	true	b	f	enables periodic flushing of cluster metrics to storage	true	default
+obs.clustermetrics.flush.interval	10s	d	f	the interval at which cluster metrics are flushed to storage	10s	default
+obs.execution_tracer.duration	10s	d	f	the length of automatic Go execution traces	10s	default
+obs.execution_tracer.interval	0s	d	f	duration between Go execution traces (zero disables)	0s	default
+obs.execution_tracer.total_dump_size_limit	4.0 GiB	z	f	maximum combined disk size of preserved Go execution traces	4.0 GiB	default
+obs.metric_export.codeowner_count.enabled	false	b	f	enables the reporting of per-CODEOWNER metric counts in the Prometheus scrape	false	default
+obs.tablemetadata.automatic_updates.enabled	false	b	t	enables automatic updates of the table metadata cache system.table_metadata	false	default
+obs.tablemetadata.data_valid_duration	20m0s	d	t	the duration for which the data in system.table_metadata is considered valid	20m0s	default
+obs.tablemetadata.update_job_batch_size	20	i	f	the number of tables the update table metadata job will attempt to update in a single batch	20	default
+physical_cluster_replication.reader_system_table_id_offset	1000000000	i	f	the offset added to dynamically allocated system table IDs in the reader tenant	1000000000	default
+physical_replication.consumer.dump_frontier_entries_frequency	0s	d	f	controls the frequency with which the frontier entries are persisted; if 0, disabled	0s	default
+physical_replication.consumer.ingest_split_event.enabled	true	b	f	whether to ingest split events	true	default
+physical_replication.consumer.node_lag_replanning_threshold	5m0s	d	f	the maximum difference in lag tolerated across two destination nodes; if 0, disabled	5m0s	default
+physical_replication.consumer.span_configs.enabled	true	b	f	controls whether we replicate span configurations from the source system tenant to the destination system tenant	true	default
+physical_replication.consumer.timestamp_granularity	5s	d	f	the granularity at which replicated times are quantized to make tracking more efficient	5s	default
+physical_replication.producer.emit_metadata.enabled	true	b	f	whether to emit metadata events	true	default
+physical_replication.producer.timestamp_granularity	5s	d	f	the granularity at which replicated times are quantized to make tracking more efficient	5s	default
+physical_replication.producer.unsafe_debug.discard_all_data.enabled	false	b	f	discard all row data during cluster replication (for experimental debugging purposes only)	false	default
+restore.compacted_backups.enabled	true	b	f	allow restoring from compacted backups	true	default
+restore.frontier_checkpoint_max_bytes	1.0 MiB	z	f	controls the maximum size of the restore checkpoint frontier as a the sum of the (span,timestamp) tuples	1.0 MiB	default
+restore.retry_log_rate	5m0s	d	f	maximum rate at which retryable restore errors are logged to the job messages table	5m0s	default
+restore.retry_max_duration	72h0m0s	d	f	maximum duration a restore job will retry before terminating	72h0m0s	default
+restore.wait_for_span_config_conformance.enabled	false	b	f	if enabled, RESTORE will ensure span config conformance before ingestion	false	default
+rocksdb.min_wal_sync_interval	0s	d	f	minimum duration between syncs of the RocksDB WAL	0s	default
+rpc.batch_stream_pool.enabled	true	b	f	if true, use pooled gRPC streams to execute Batch RPCs	true	default
+rpc.circuit_breaker.enabled	true	b	f	enables stateful management of failed connections, including circuit breaking when in unhealthy state; only use in case of issues - logging may be suboptimal, metrics related to connection errors will not be populated correctly, and the 'rpc.dialback.enabled' setting will be overridden to 'false'	true	default
+rpc.dialback.enabled	true	b	f	if true, require bidirectional RPC connections between nodes to prevent one-way network unavailability	true	default
+scheduler_latency.sample_duration	2.5s	d	f	controls the duration over which each scheduler latency sample is a measurement over	2.5s	default
+scheduler_latency.sample_period	100ms	d	f	controls the duration between consecutive scheduler latency samples	100ms	default
+schedules.backup.gc_protection.enabled	true	b	t	enable chaining of GC protection across backups run as part of a schedule	true	default
+schemachanger.backfiller.buffer_size	32 MiB	z	f	the initial size of the BulkAdder buffer handling index backfills	32 MiB	default
+schemachanger.backfiller.max_buffer_size	512 MiB	z	f	the maximum size of the BulkAdder buffer handling index backfills	512 MiB	default
+schemachanger.backfiller.max_commit_wait_fns	128	i	f	the maximum number of commit-wait functions that the columnBackfiller will accumulate before consuming them to reclaim memory	128	default
+schemachanger.backfiller.split_with_stats.enabled	true	b	f	when enabled the index backfiller will generate split and scatter points based table statistics	true	default
+schemachanger.job.max_retry_backoff	20s	d	f	the exponential back off when retrying jobs for schema changes	20s	default
+security.client_cert.cache_memory_limit	512 MiB	z	f	memory limit for the client certificate expiration cache	512 MiB	default
+security.client_cert.san_required.enabled	false	b	t	mandates a requirement for client certs to contain SAN	false	default
+security.client_cert.subject_required.enabled	false	b	t	mandates a requirement for subject role to be set for db user	false	default
+security.ocsp.mode	off	e	t	use OCSP to check whether TLS certificates are revoked. If the OCSP server is unreachable, in strict mode all certificates will be rejected and in lax mode all certificates will be accepted. [off = 0, lax = 1, strict = 2]	off	default
+security.ocsp.timeout	3s	d	t	timeout before considering the OCSP server unreachable	3s	default
+security.provisioning.jwt.enabled	false	b	f	enables or disables automatic user provisioning for jwt authentication method	false	default
+security.provisioning.ldap.enabled	false	b	t	enables automatic creation of SQL users upon successful LDAP login	false	default
+security.provisioning.oidc.enabled	false	b	f	enables or disables automatic user provisioning for oidc authentication method	false	default
+server.active_query.total_dump_size_limit	64 MiB	z	f	maximum combined disk size of preserved active query profiles	64 MiB	default
+server.admin.table_stats.max_fetcher_concurrency	64	i	f	maximum number of concurrent table stats fetches to run	64	default
+server.auth_log.sql_connections.enabled	false	b	t	if set, log SQL client connect and disconnect events to the SESSIONS log channel (note: may hinder performance on loaded nodes)	false	default
+server.auth_log.sql_sessions.enabled	false	b	t	if set, log verbose SQL session authentication events to the SESSIONS log channel (note: may hinder performance on loaded nodes). Session start and end events are always logged regardless of this setting; disable the SESSIONS log channel to suppress them.	false	default
+server.authentication_cache.enabled	true	b	t	enables a cache used during authentication to avoid lookups to system tables when retrieving per-user authentication-related information	true	default
+server.child_metrics.bugfix_missing_sql_metrics_149481.enabled	true	b	f	fixes bug where certain SQL metrics are not being reported, see: https://github.com/cockroachdb/cockroach/issues/149481	true	default
+server.child_metrics.enabled	false	b	t	enables the exporting of child metrics, additional prometheus time series with extra labels	false	default
+server.child_metrics.include_aggregate.enabled	true	b	t	include the reporting of the aggregate time series when child metrics are enabled. This cluster setting has no effect if child metrics are disabled.	true	default
+server.cidr_mapping_url		s	f	url of a JSON file containing a list of CIDR blocks (file:// or http://)		default
+server.cidr_refresh_interval	0s	d	f	interval at which to refresh the CIDR mapping, 0 means don't refresh	0s	default
+server.clock.forward_jump_check.enabled	false	b	t	if enabled, forward clock jumps > max_offset/2 will cause a panic	false	default
+server.clock.persist_upper_bound_interval	0s	d	t	the interval between persisting the wall time upper bound of the clock. The clock does not generate a wall time greater than the persisted timestamp and will panic if it sees a wall time greater than this value. When cockroach starts, it waits for the wall time to catch-up till this persisted timestamp. This guarantees monotonic wall time across server restarts. Not setting this or setting a value of 0 disables this feature.	0s	default
+server.cockroach_cloud.max_client_connections_per_gateway	-1	i	f	this setting is intended to be used by Cockroach Cloud for limiting connections to serverless clusters. The maximum number of SQL connections per gateway allowed at a given time (note: this will only limit future connection attempts and will not affect already established connections). Negative values result in unlimited number of connections. Cockroach Cloud internal users (including root user) are not affected by this limit.	-1	default
+server.cockroach_cloud.max_client_connections_per_gateway_reason	cluster connections are limited	s	f	a reason to provide in the error message for connections that are denied due to server.cockroach_cloud.max_client_connections_per_gateway	cluster connections are limited	default
+server.consistency_check.interval	24h0m0s	d	f	the time between range consistency checks; set to 0 to disable consistency checking. Note that intervals that are too short can negatively impact performance.	24h0m0s	default
+server.consistency_check.max_rate	8.0 MiB	z	t	the rate limit (bytes/sec) to use for consistency checks; used in conjunction with server.consistency_check.interval to control the frequency of consistency checks. Note that setting this too high can negatively impact performance.	8.0 MiB	default
+server.consistency_check.skip_external_bytes.enabled	true	b	f	skip the consistency queue for external bytes	true	default
+server.controller.default_target_cluster	system	s	f	name of the virtual cluster to use when SQL or HTTP clients don't specify a target cluster	system	default
+server.controller.mux_virtual_cluster_wait.timeout	10s	d	f	amount of time to wait for a default virtual cluster to become available when serving SQL connections (0 to disable)	10s	default
+server.cpu_profile.cpu_usage_combined_threshold	65	i	f	a threshold beyond which if the combined cpu usage is above, then a cpu profile can be triggered. If a value over 100 is set, the profiler will never take a profile and conversely, if a valueof 0 is set, a profile will be taken every time the cpu profileinterval has passed or the provided usage is increasing	65	default
+server.cpu_profile.duration	10s	d	f	the duration for how long a cpu profile is taken	10s	default
+server.cpu_profile.interval	20m0s	d	f	duration after which the high water mark resets and a new cpu profile can be taken	20m0s	default
+server.cpu_profile.total_dump_size_limit	128 MiB	z	f	maximum combined disk size of preserved CPU profiles	128 MiB	default
+server.debug.default_vmodule		s	f	vmodule string (ignored by any server with an explicit one provided at start)		default
+server.eventlog.enabled	true	b	t	if set, logged notable events are also stored in the table system.eventlog	true	default
+server.eventlog.ttl	2160h0m0s	d	t	if nonzero, entries in system.eventlog older than this duration are periodically purged	2160h0m0s	default
+server.failed_reservation.timeout	5s	d	f	the amount of time to consider the store throttled for up-replication after a failed reservation call	5s	default
+server.gc_assist.enabled	true	b	f	set to false to dynamically disable GC assist in the Go runtime (requires CockroachDB's forked Go runtime; no-op otherwise); picks up the GODEBUG gcnoassist flag as its default	true	default
+server.goroutine_dump.num_goroutines_threshold	1000	i	f	a threshold beyond which if number of goroutines increases, then goroutine dump can be triggered	1000	default
+server.goroutine_dump.on_demand.min_interval	10s	d	f	minimum amount of time that must pass between two on-demand goroutine dumps (0 disables rate limiting)	10s	default
+server.goroutine_dump.total_dump_size_limit	500 MiB	z	f	total size of goroutine dumps to be kept. Dumps are GC'ed in the order of creation time. The latest dump is always kept even if its size exceeds the limit.	500 MiB	default
+server.host_based_authentication.configuration		s	t	host-based authentication configuration to use during connection authentication		default
+server.hot_ranges_request.node.timeout	5m0s	d	t	the duration allowed for a single node to return hot range data before the request is cancelled; if set to 0, there is no timeout	5m0s	default
+server.hsts.enabled	false	b	t	if true, HSTS headers will be sent along with all HTTP requests. The headers will contain a max-age setting of one year. Browsers honoring the header will always use HTTPS to access the DB Console. Ensure that TLS is correctly configured prior to enabling.	false	default
+server.http.base_path	/	s	t	path to redirect the user to upon succcessful login	/	default
+server.http.metrics.enabled	false	b	f	enables to collection of http metrics	false	default
+server.identity_map.configuration		s	t	system-identity to database-username mappings		default
+server.instance_id.preallocated_count	10	i	f	number of preallocated instance IDs within the system.sql_instances table	10	default
+server.instance_id.reclaim_interval	10m0s	d	f	interval at which instance IDs are reclaimed and preallocated	10m0s	default
+server.jemalloc.total_dump_size_limit	32 MiB	z	f	maximum combined disk size of preserved jemalloc profiles	32 MiB	default
+server.jemalloc_purge_overhead_percent	20	i	f	a purge of jemalloc dirty pages is issued once the overhead exceeds this percent (0 disables purging)	20	default
+server.jemalloc_purge_period	2m0s	d	f	minimum amount of time that must pass between two jemalloc dirty page purges (0 disables purging)	2m0s	default
+server.jwt_authentication.audience		s	t	sets accepted audience values for JWT logins over the SQL interface		default
+server.jwt_authentication.authorization.enabled	false	b	f	enables role synchronisation based on group claims in JWTs	false	default
+server.jwt_authentication.claim		s	t	sets the JWT claim that is parsed to get the username		default
+server.jwt_authentication.client.timeout	15s	d	t	sets the client timeout for external calls made during JWT authentication (e.g. fetching JWKS, etc.)	15s	default
+server.jwt_authentication.enabled	false	b	t	enables or disables JWT login for the SQL interface	false	default
+server.jwt_authentication.group_claim	groups	s	f	sets the name of the JWT claim that contains groups used for role mapping	groups	default
+server.jwt_authentication.issuers.configuration		s	t	sets accepted issuer values for JWT logins over the SQL interface which can be a single issuer URL string or a JSON string containing an array of issuer URLs or a JSON object containing map of issuer URLS to JWKS URIs		default
+server.jwt_authentication.issuers.custom_ca		s	t	sets the PEM encoded custom root CA for verifying certificates while fetching JWKS		default
+server.jwt_authentication.jwks	"{""keys"":[]}"	s	t	sets the public key set for JWT logins over the SQL interface (JWKS format)	"{""keys"":[]}"	default
+server.jwt_authentication.jwks_auto_fetch.enabled	false	b	t	enables or disables automatic fetching of JWKS from the issuer's well-known endpoint or JWKS URI set in JWTAuthIssuersConfig. If this is enabled, the server.jwt_authentication.jwks will be ignored.	false	default
+server.jwt_authentication.userinfo_group_key	groups	s	f	sets the field name to look for in userinfo JSON that lists groups when groups claim is absent from JWT	groups	default
+server.ldap_authentication.client.tls_certificate		s	t	sets the client certificate PEM for establishing mTLS connection with LDAP server		default
+server.ldap_authentication.client.tls_key		s	t	sets the client key PEM for establishing mTLS connection with LDAP server		default
+server.ldap_authentication.domain.custom_ca		s	t	sets the PEM encoded custom root CA for verifying domain certificates when establishing connection with LDAP server		default
+server.log_gc.max_deletions_per_cycle	1000	i	t	the maximum number of entries to delete on each purge of log-like system tables	1000	default
+server.log_gc.period	1h0m0s	d	t	the period at which log-like system tables are checked for old entries	1h0m0s	default
+server.max_connections_per_gateway	-1	i	t	the maximum number of SQL connections per gateway allowed at a given time (note: this will only limit future connection attempts and will not affect already established connections). Negative values result in unlimited number of connections. Superusers are not affected by this limit.	-1	default
+server.max_open_transactions_per_gateway	-1	i	t	the maximum number of open SQL transactions per gateway allowed at a given time. Negative values result in unlimited number of connections. Superusers are not affected by this limit.	-1	default
+server.mem_monitoring.total_dump_size_limit	4.0 MiB	z	f	maximum combined disk size of preserved mem monitoring profiles	4.0 MiB	default
+server.mem_profile.max_profiles	5	i	f	maximum number of profiles to be kept per ramp-up of memory usage. A ramp-up is defined as a sequence of profiles with increasing usage.	5	default
+server.mem_profile.total_dump_size_limit	512 MiB	z	f	maximum combined disk size of preserved memory profiles	512 MiB	default
+server.mem_stats.total_dump_size_limit	32 MiB	z	f	maximum combined disk size of preserved memstats profiles	32 MiB	default
+server.oidc_authentication.authorization.enabled	false	b	f	enables role synchronization based on group claims in OIDC tokens	false	default
+server.oidc_authentication.autologin.enabled	false	b	t	if true, logged-out visitors to the DB Console will be automatically redirected to the OIDC login endpoint	false	default
+server.oidc_authentication.button_text	Log in with your OIDC provider	s	t	text to show on button on DB Console login page to login with your OIDC provider (only shown if OIDC is enabled)	Log in with your OIDC provider	default
+server.oidc_authentication.claim_json_key		s	t	sets JSON key of principal to extract from payload after OIDC authentication completes (usually email or sid)		default
+server.oidc_authentication.client.timeout	15s	d	t	sets the client timeout for external calls made during OIDC authentication (e.g. authorization code flow, etc.)	15s	default
+server.oidc_authentication.client_id		s	t	sets OIDC client id		default
+server.oidc_authentication.client_secret		s	t	sets OIDC client secret		default
+server.oidc_authentication.enabled	false	b	t	enables or disabled OIDC login for the DB Console	false	default
+server.oidc_authentication.generate_cluster_sso_token.enabled	false	b	f	enables or disables using OIDC to generate JWT auth tokens for cluster SSO	false	default
+server.oidc_authentication.generate_cluster_sso_token.sql_host	localhost	s	f	stores the host name or address to be used for making SQL connections to the cluster, for display purposes only	localhost	default
+server.oidc_authentication.generate_cluster_sso_token.sql_port	26257	i	f	stores the port number to be used for making SQL connections to the cluster, for display purposes only	26257	default
+server.oidc_authentication.generate_cluster_sso_token.use_token	id_token	e	f	selects which OIDC callback token to use for cluster SSO [id_token = 0, access_token = 1]	id_token	default
+server.oidc_authentication.group_claim	groups	s	f	sets the name of the OIDC claim that contains groups used for authorization	groups	default
+server.oidc_authentication.principal_regex	(.+)	s	t	regular expression to apply to extracted principal (see claim_json_key setting) to translate to SQL user (golang regex format, must include 1 grouping to extract)	(.+)	default
+server.oidc_authentication.provider.custom_ca		s	t	sets the PEM encoded custom root CA for verifying certificates while authenticating through the OIDC provider		default
+server.oidc_authentication.provider_url		s	t	sets OIDC provider URL ({provider_url}/.well-known/openid-configuration must resolve)		default
+server.oidc_authentication.redirect_url	https://localhost:8080/oidc/v1/callback	s	t	sets OIDC redirect URL via a URL string or a JSON string containing a required `redirect_urls` key with an object that maps from region keys to URL strings (URLs should point to your load balancer and must route to the path /oidc/v1/callback)	https://localhost:8080/oidc/v1/callback	default
+server.oidc_authentication.scopes	openid	s	t	sets OIDC scopes to include with authentication request (space delimited list of strings, required to start with `openid`)	openid	default
+server.oidc_authentication.tls_insecure_skip_verify.enabled	false	b	t	if true, TLS certificate verification is skipped for connections to the OIDC provider (insecure)	false	default
+server.oidc_authentication.userinfo_group_key	groups	s	f	sets the field name in userinfo JSON containing the groups claim for authorization	groups	default
+server.rangelog.ttl	720h0m0s	d	t	if nonzero, entries in system.rangelog older than this duration are periodically purged	720h0m0s	default
+server.redact_sensitive_settings.enabled	false	b	t	enables or disables the redaction of sensitive settings in the output of SHOW CLUSTER SETTINGS and SHOW ALL CLUSTER SETTINGS for users without the MODIFYCLUSTERSETTING privilege	false	default
+server.rpc.request_metrics.enabled	false	b	f	enables the collection of rpc metrics	false	default
+server.virtual_cluster_authorization.mode	on	e	f	configures how requests are authorized for secondary tenants [on = 0, allow-all = 1, v222 = 2]	on	default
+trace.redact_at_virtual_cluster_boundary.enabled	false	b	f	if enabled, storage/KV trace results are redacted when returned to a virtual cluster	false	default
+server.shutdown.connections.timeout	0s	d	t	the maximum amount of time a server waits for all SQL connections to be closed before proceeding with a drain. (note that the --drain-wait parameter for cockroach node drain may need adjustment after changing this setting)	0s	default
+server.shutdown.initial_wait	0s	d	t	the amount of time a server waits in an unready state before proceeding with a drain (note that the --drain-wait parameter for cockroach node drain may need adjustment after changing this setting. --drain-wait is to specify the duration of the whole draining process, while server.shutdown.initial_wait is to set the wait time for health probes to notice that the node is not ready.)	0s	default
+server.shutdown.jobs.timeout	10s	d	f	the maximum amount of time a server waits for all currently executing jobs to notice drain request and to perform orderly shutdown	10s	default
+server.shutdown.lease_transfer_iteration.timeout	5s	d	t	the timeout for a single iteration of the range lease transfer phase of draining (note that the --drain-wait parameter for cockroach node drain may need adjustment after changing this setting)	5s	default
+server.shutdown.transactions.timeout	10s	d	t	the timeout for waiting for active transactions to finish during a drain (note that the --drain-wait parameter for cockroach node drain may need adjustment after changing this setting)	10s	default
+server.span_stats.node.timeout	1m0s	d	f	the duration allowed for a single node to return span stats data before the request is cancelled; if set to 0, there is no timeout	1m0s	default
+server.span_stats.range_batch_limit	100	i	f	the maximum batch size when fetching ranges statistics for a span	100	default
+server.span_stats.range_desc_page_size	100	i	f	the page size when iterating through range descriptors	100	default
+server.span_stats.span_batch_limit	1000	i	f	the maximum number of spans allowed in a request payload for span statistics	1000	default
+server.sql_tcp_keep_alive.count	3	i	t	maximum number of probes that will be sent out before a connection is dropped because it's unresponsive (Linux and Darwin only). The value 0 is the operating system default.	3	default
+server.sql_tcp_keep_alive.idle	0s	d	t	time with no network activity before sending a TCP keepalive probe (Linux and Darwin only). If 0, the value of server.sql_tcp_keep_alive.interval is used. The value 0 is the operating system default.	0s	default
+server.sql_tcp_keep_alive.interval	10s	d	t	time between keep alive probes and idle time before probes are sent out. The value 0 is the operating system default.	10s	default
+server.sql_tcp_user.timeout	0s	d	t	specifies the maximum amount of time that transmitted data can remain unacknowledged before the underlying TCP connection is forcefully closed. (Linux and Darwin only). The value 0 is the operating system default.	0s	default
+server.sqlliveness.gc_interval	1h0m0s	d	f	duration between attempts to delete extant sessions that have expired	1h0m0s	default
+server.sqlliveness.gc_jitter	0.15	f	f	jitter fraction on the duration between attempts to delete extant sessions that have expired	0.15	default
+server.sqlliveness.heartbeat	5s	d	f	duration heart beats to push session expiration further out in time	5s	default
+server.sqlliveness.heartbeat_jitter	0.1	f	f	jitter fraction for sqlliveness heartbeat interval (0.0 to 0.95)	0.1	default
+server.sqlliveness.storage_session_cache_size	1024	i	f	number of session entries to store in the LRU	1024	default
+server.sqlliveness.ttl	40s	d	f	default sqlliveness session ttl	40s	default
+server.telemetry.hot_ranges_stats.cpu_threshold	250ms	d	f	the cpu time over which the system will automatically begin logging hot ranges	250ms	default
+server.telemetry.hot_ranges_stats.enabled	true	b	f	enable/disable capturing hot ranges statistics to the telemetry logging channel	true	default
+server.telemetry.hot_ranges_stats.interval	4h0m0s	d	f	the time interval to log hot ranges stats	4h0m0s	default
+server.telemetry.hot_ranges_stats.logging_delay	1s	d	f	the time delay between emitting individual hot ranges stats logs	1s	default
+server.time_after_store_suspect	30s	d	f	the amount of time we consider a node suspect for after it becomes unavailable. A suspect node is typically treated the same as an unavailable node.	30s	default
+server.time_after_store_suspect_in_store_liveness	30s	d	f	the amount of time we consider a store suspect for after its support is withdrawn in StoreLiveness. A suspect store is typically treated the same as an unavailable store.	30s	default
+server.time_until_store_dead	5m0s	d	t	the time after which if there is no new gossiped information about a store, it is considered dead	5m0s	default
+server.user_login.cert_password_method.auto_scram_promotion.enabled	true	b	t	whether to automatically promote cert-password authentication to use SCRAM	true	default
+server.user_login.downgrade_scram_stored_passwords_to_bcrypt.enabled	true	b	t	if server.user_login.password_encryption=crdb-bcrypt, this controls whether to automatically re-encode stored passwords using scram-sha-256 to crdb-bcrypt	true	default
+server.user_login.min_password_length	1	i	t	the minimum length accepted for passwords set in cleartext via SQL. Note that a value lower than 1 is ignored: passwords cannot be empty in any case. This setting only applies when adding new users or altering an existing user's password; it will not affect existing logins.	1	default
+server.user_login.password_encryption	scram-sha-256	e	t	which hash method to use to encode cleartext passwords passed via ALTER/CREATE USER/ROLE WITH PASSWORD [crdb-bcrypt = 2, scram-sha-256 = 3]	scram-sha-256	default
+server.user_login.password_hashes.default_cost.crdb_bcrypt	10	i	t	the hashing cost to use when storing passwords supplied as cleartext by SQL clients with the hashing method crdb-bcrypt (allowed range: 4-31)	10	default
+server.user_login.password_hashes.default_cost.scram_sha_256	10610	i	t	the hashing cost to use when storing passwords supplied as cleartext by SQL clients with the hashing method scram-sha-256 (allowed range: 4096-240000000000)	10610	default
+server.user_login.rehash_scram_stored_passwords_on_cost_change.enabled	true	b	t	if server.user_login.password_hashes.default_cost.scram_sha_256 differs from, the cost in a stored hash, this controls whether to automatically re-encode stored passwords using scram-sha-256 with the new default cost	true	default
+server.user_login.session_revival_token.enabled	false	b	f	if set, the cluster is able to create session revival tokens and use them to authenticate a new session	false	default
+server.user_login.store_client_pre_hashed_passwords.enabled	true	b	f	whether the server accepts to store passwords pre-hashed by clients	true	default
+server.user_login.timeout	10s	d	t	timeout after which client authentication times out if some system range is unavailable (0 = no timeout)	10s	default
+server.user_login.upgrade_bcrypt_stored_passwords_to_scram.enabled	true	b	t	if server.user_login.password_encryption=scram-sha-256, this controls whether to automatically re-encode stored passwords using crdb-bcrypt to scram-sha-256	true	default
+server.web_session.purge.ttl	1h0m0s	d	t	if nonzero, entries in system.web_sessions older than this duration are periodically purged	1h0m0s	default
+server.web_session.timeout	168h0m0s	d	t	the duration that a newly created web session will be valid	168h0m0s	default
+spanconfig.bounds.enabled	true	b	t	dictates whether span config bounds are consulted when serving span configs for secondary tenants	true	default
+spanconfig.kvaccessor.batch_size	10000	i	f	number of span config records to access in a single batch	10000	default
+spanconfig.kvsubscriber.metrics_poller_interval	5s	d	f	the interval at which the spanconfig.kvsubscriber.* metrics are kept up-to-date; set to 0 to disable the mechanism	5s	default
+spanconfig.reconciliation_job.check_interval	10m0s	d	f	the frequency at which to check if the span config reconciliation job exists (and to start it if not)	10m0s	default
+spanconfig.reconciliation_job.checkpoint_interval	5s	d	f	the frequency at which the span config reconciliation job checkpoints itself	5s	default
+spanconfig.reconciliation_job.enabled	true	b	f	enable the use of the kv accessor	true	default
+spanconfig.reporter.range_desc_page_size	100	i	f	pa	100	default
+spanconfig.reporter.report_rate_limit	1	f	f	the number of calls per second allowed to SpanConfigConformance	1	default
+spanconfig.range_coalescing.system.enabled	true	b	t	collapse adjacent ranges with the same span configs, for the ranges specific to the system tenant	true	default
+spanconfig.store.fallback_config_override	"{""gcPolicy"":{}}"	p	f	override the fallback used for ranges with no explicit span configs set	"{""gcPolicy"":{}}"	default
+spanconfig.range_coalescing.application.enabled	true	b	t	collapse adjacent ranges with the same span configs across all secondary tenant keyspaces	true	default
+spanconfig.virtual_cluster.max_spans	5000	i	f	limit on the number of span configs that can be set up by a virtual cluster	5000	default
+sql.auth.change_own_password.enabled	false	b	t	controls whether a user is allowed to change their own password, even if they have no other privileges	false	default
+sql.auth.grant_option_for_owner.enabled	true	b	t	determines whether the GRANT OPTION for privileges is implicitly given to the owner of an object	true	default
+sql.auth.grant_option_inheritance.enabled	true	b	t	determines whether the GRANT OPTION for privileges is inherited through role membership	true	default
+sql.auth.public_schema_create_privilege.enabled	true	b	t	determines whether to grant all users the CREATE privileges on the public schema when it is created	true	default
+sql.auth.skip_underlying_view_privilege_checks.enabled	false	b	t	determines whether to skip privilege checks on tables underlying views. When enabled, users with SELECT privileges on a view can query it regardless of their privileges on the underlying tables, and row-level security policies are evaluated as the invoking user rather than the view owner. This restores pre-v26.2 behavior.	false	default
+sql.catalog.allow_leased_descriptors.enabled	true	b	t	if true, catalog views (crdb_internal, information_schema, pg_catalog) can use leased descriptors for improved performance	true	default
+sql.catalog.allow_leased_descriptors.prefetch.enabled	true	b	f	if true, catalog views (crdb_internal, information_schema, pg_catalog) can prefetch leased descriptors for improved performance	true	default
+sql.catalog.descriptor_lease.lock_old_versions.enabled	false	b	f	enables retaining old versions to avoid retries when locked lease timestamps are enabled, at the expense of delaying schema changes	false	default
+sql.catalog.descriptor_lease.max_batch_lease_count	1000	i	f	the maximum number of descriptors to lease in a single batch	1000	default
+sql.catalog.descriptor_lease.use_locked_timestamps.enabled	true	b	f	guarantees transactional version consistency for descriptors used by the lease manager,descriptors used can be intentionally older to support this	true	default
+sql.catalog.descriptor_lease_duration	5m0s	d	f	mean duration of sql descriptor leases, this actual duration is jitterred	5m0s	default
+sql.catalog.descriptor_lease_jitter_fraction	0.05	f	f	mean duration of sql descriptor leases, this actual duration is jitterred	0.05	default
+sql.catalog.descriptor_lease_monitor_range_feed.check_interval	5m0s	d	f	the leasing subsystem will check for checkpoints for the range feed within this interval	5m0s	default
+sql.catalog.descriptor_lease_monitor_range_feed.reset_time	25m0s	d	f	once the range feed has stopped receiving checkpoints for this period of time the range feed will be restarted	25m0s	default
+sql.catalog.descriptor_lease_renewal_cross_validation.enabled	false	b	f	controls if cross validation should be done during lease renewal	false	default
+sql.catalog.descriptor_lease_renewal_fraction	1m0s	d	f	controls the default time before a lease expires when acquisition to renew the lease begins	1m0s	default
+sql.catalog.descriptor_wait_for_initial_version.enabled	true	b	f	enables waiting for the initial version of a descriptor	true	default
+sql.catalog.hydrated_tables.cache_size	128	i	f	number of table descriptor versions retained in the hydratedtables LRU cache	128	default
+sql.catalog.virtual_tables.use_index_lookup_for_descriptors_in_database.enabled	true	b	f	if enabled, virtual tables will do a lookup against the namespace table to find the descriptors in a database instead of scanning all descriptors	true	default
+sql.closed_session_cache.capacity	1000	i	t	the maximum number of sessions in the cache	1000	default
+sql.closed_session_cache.internal_queries.sample_rate	0.01	f	f	determines the sampling rate at which internal queries are included into the closed session cache	0.01	default
+sql.closed_session_cache.time_to_live	3600	i	t	the maximum time to live, in seconds	3600	default
+sql.conn.max_read_buffer_message_size	16 MiB	z	f	maximum buffer size to allow for ingesting sql statements. Connections must be restarted for this to take effect.	16 MiB	default
+sql.contention.event_store.capacity	64 MiB	z	t	the in-memory storage capacity per-node of contention event store	64 MiB	default
+sql.contention.event_store.duration_threshold	0s	d	t	minimum contention duration to cause the contention events to be collected into crdb_internal.transaction_contention_events	0s	default
+sql.contention.event_store.resolution_interval	30s	d	f	the interval at which transaction fingerprint ID resolution is performed (set to 0 to disable)	30s	default
+sql.contention.record_serialization_conflicts.enabled	true	b	t	enables recording 40001 errors with conflicting txn meta as SERIALIZATION_CONFLICTcontention events into crdb_internal.transaction_contention_events	true	default
+sql.contention.txn_id_cache.max_size	64 MiB	z	t	the maximum byte size TxnID cache will use (set to 0 to disable)	64 MiB	default
+sql.copy.fraction_of_max_command_size	0	f	f	determines the fraction of kv.raft.command.max_size that is used when sizing batches of rows when processing COPY commands. Use 0 for default adaptive strategy that considers number of secondary indexes	0	default
+sql.crdb_internal.table_row_statistics.as_of_time	-10s	d	f	historical query time used to build the crdb_internal.table_row_statistics table	-10s	default
+sql.cross_db_fks.enabled	false	b	t	if true, creating foreign key references across databases is allowed	false	default
+sql.cross_db_sequence_owners.enabled	false	b	t	if true, creating sequences owned by tables from other databases is allowed	false	default
+sql.cross_db_sequence_references.enabled	false	b	t	if true, sequences referenced by tables from other databases are allowed	false	default
+sql.cross_db_views.enabled	false	b	t	if true, creating views that refer to other databases is allowed	false	default
+sql.defaults.autocommit_before_ddl.enabled	true	b	f	default value for autocommit_before_ddl session setting; forces transactions to autocommit before running any DDL statement	true	default
+sql.defaults.cost_scans_with_default_col_size.enabled	false	b	t	setting to true uses the same size for all columns to compute scan cost	false	default
+sql.defaults.create_table_with_schema_locked	true	b	f	default value for create_table_with_schema_locked; default value for the create_table_with_schema_locked session setting; controls if new created tables will have schema_locked set	true	default
+sql.defaults.datestyle	iso, mdy	e	t	default value for DateStyle session setting [iso, mdy = 0, iso, dmy = 1, iso, ymd = 2]	iso, mdy	default
+sql.defaults.default_hash_sharded_index_bucket_count	16	i	t	used as bucket count if bucket count is not specified in hash sharded index definition	16	default
+sql.defaults.default_int_size	8	i	t	the size, in bytes, of an INT type	8	default
+sql.defaults.disallow_full_table_scans.enabled	false	b	t	setting to true rejects queries that have planned a full table scan; set large_full_scan_rows > 0 to allow small full table scans estimated to read fewer than large_full_scan_rows	false	default
+sql.defaults.distsql	auto	e	t	default distributed SQL execution mode [off = 0, auto = 1, on = 2, always = 3]	auto	default
+sql.defaults.experimental_alter_column_type.enabled	false	b	t	default value for experimental_alter_column_type session setting; enables the use of ALTER COLUMN TYPE for general conversions	false	default
+sql.defaults.experimental_auto_rehoming.enabled	false	b	f	default value for experimental_enable_auto_rehoming; allows for rows in REGIONAL BY ROW tables to be auto-rehomed on UPDATE	false	default
+sql.defaults.experimental_computed_column_rewrites		s	f	allows rewriting computed column expressions in CREATE TABLE and ALTER TABLE statements; the format is: '(before expression) -> (after expression) [, (before expression) -> (after expression) ...]'		default
+sql.defaults.experimental_distsql_planning	off	e	t	default experimental_distsql_planning mode; enables experimental opt-driven DistSQL planning [off = 0, on = 1]	off	default
+sql.defaults.experimental_enable_unique_without_index_constraints.enabled	false	b	t	default value for experimental_enable_unique_without_index_constraints session setting;disables unique without index constraints by default	false	default
+sql.defaults.experimental_implicit_column_partitioning.enabled	false	b	t	default value for experimental_enable_temp_tables; allows for the use of implicit column partitioning	false	default
+sql.defaults.experimental_temporary_tables.enabled	false	b	t	default value for experimental_enable_temp_tables; allows for use of temporary tables by default	false	default
+sql.defaults.foreign_key_cascades_limit	10000	i	t	default value for foreign_key_cascades_limit session setting; limits the number of cascading operations that run as part of a single query	10000	default
+sql.defaults.idle_in_session_timeout	0s	d	t	default value for the idle_in_session_timeout; default value for the idle_in_session_timeout session setting; controls the duration a session is permitted to idle before the session is terminated; if set to 0, there is no timeout	0s	default
+sql.defaults.idle_in_transaction_session_timeout	0s	d	t	default value for the idle_in_transaction_session_timeout; controls the duration a session is permitted to idle in a transaction before the session is terminated; if set to 0, there is no timeout	0s	default
+sql.defaults.implicit_select_for_update.enabled	true	b	t	default value for enable_implicit_select_for_update session setting; enables FOR UPDATE locking during the row-fetch phase of mutation statements	true	default
+sql.defaults.insert_fast_path.enabled	true	b	t	default value for enable_insert_fast_path session setting; enables a specialized insert path	true	default
+sql.defaults.intervalstyle	postgres	e	t	default value for IntervalStyle session setting [postgres = 0, iso_8601 = 1, sql_standard = 2]	postgres	default
+sql.defaults.large_full_scan_rows	0	f	t	default value for large_full_scan_rows session variable which determines the table size at which full scans are considered large and disallowed when disallow_full_table_scans is set to true; set to 0 to reject all full table or full index scans when disallow_full_table_scans is true	0	default
+sql.defaults.locality_optimized_partitioned_index_scan.enabled	true	b	t	default value for locality_optimized_partitioned_index_scan session setting; enables searching for rows in the current region before searching remote regions	true	default
+sql.defaults.lock_timeout	0s	d	t	default value for the lock_timeout; default value for the lock_timeout session setting; controls the duration a query is permitted to wait while attempting to acquire a lock on a key or while blocking on an existing lock in order to perform a non-locking read on a key; if set to 0, there is no timeout	0s	default
+sql.defaults.multiregion_placement_policy.enabled	false	b	f	default value for enable_multiregion_placement_policy; allows for use of PLACEMENT RESTRICTED	false	default
+sql.defaults.on_update_rehome_row.enabled	true	b	t	default value for on_update_rehome_row; enables ON UPDATE rehome_row() expressions to trigger on updates	true	default
+sql.defaults.optimizer_use_histograms.enabled	true	b	t	default value for optimizer_use_histograms session setting; enables usage of histograms in the optimizer by default	true	default
+sql.defaults.optimizer_use_multicol_stats.enabled	true	b	t	default value for optimizer_use_multicol_stats session setting; enables usage of multi-column stats in the optimizer by default	true	default
+sql.defaults.override_alter_primary_region_in_super_region.enabled	false	b	t	default value for override_alter_primary_region_in_super_region; allows for altering the primary region even if the primary region is a member of a super region	false	default
+sql.defaults.override_multi_region_zone_config.enabled	false	b	t	default value for override_multi_region_zone_config; allows for overriding the zone configs of a multi-region table or database	false	default
+sql.defaults.plan_cache_mode	auto	e	f	default value for plan_cache_mode session setting [force_custom_plan = 0, force_generic_plan = 1, auto = 2]	auto	default
+sql.defaults.prefer_lookup_joins_for_fks.enabled	false	b	t	default value for prefer_lookup_joins_for_fks session setting; causes foreign key operations to use lookup joins when possible	false	default
+sql.defaults.primary_region		s	t	if not empty, all databases created without a PRIMARY REGION will implicitly have the given PRIMARY REGION		default
+sql.defaults.propagate_input_ordering.enabled	false	b	f	default value for the experimental propagate_input_ordering session variable	false	default
+sql.defaults.reorder_joins_limit	8	i	t	default number of joins to reorder	8	default
+sql.defaults.require_explicit_primary_keys.enabled	false	b	t	default value for requiring explicit primary keys in CREATE TABLE statements	false	default
+sql.defaults.results_buffer.size	512 KiB	z	t	default size of the buffer that accumulates results for a statement or a batch of statements before they are sent to the client. This can be overridden on an individual connection with the 'results_buffer_size' parameter. Note that auto-retries generally only happen while no results have been delivered to the client, so reducing this size can increase the number of retriable errors a client receives. On the other hand, increasing the buffer size can increase the delay until the client receives the first result row. Updating the setting only affects new connections. Setting to 0 disables any buffering.	512 KiB	default
+sql.defaults.serial_normalization	rowid	e	t	default handling of SERIAL in table definitions [rowid = 0, virtual_sequence = 1, sql_sequence = 2, sql_sequence_cached = 3, unordered_rowid = 4, sql_sequence_cached_node = 5]	rowid	default
+sql.defaults.serial_sequences_cache_size	256	i	f	the default cache size when the session's serial normalization mode is set to cached sequencesA cache size of 1 means no caching. Any cache size less than 1 is invalid.	256	default
+sql.defaults.statement_timeout	0s	d	t	default value for the statement_timeout; default value for the statement_timeout session setting; controls the duration a query is permitted to run before it is canceled; if set to 0, there is no timeout	0s	default
+sql.defaults.stub_catalog_tables.enabled	true	b	t	default value for stub_catalog_tables session setting	true	default
+sql.defaults.transaction_rows_read_err	0	i	t	the limit for the number of rows read by a SQL transaction which - once exceeded - will fail the transaction (or will trigger a logging event to SQL_INTERNAL_PERF for internal transactions); use 0 to disable	0	default
+sql.defaults.transaction_rows_read_log	0	i	t	the threshold for the number of rows read by a SQL transaction which - once exceeded - will trigger a logging event to SQL_PERF (or SQL_INTERNAL_PERF for internal transactions); use 0 to disable	0	default
+sql.defaults.transaction_rows_written_err	0	i	t	the limit for the number of rows written by a SQL transaction which - once exceeded - will fail the transaction (or will trigger a logging event to SQL_INTERNAL_PERF for internal transactions); use 0 to disable	0	default
+sql.defaults.transaction_rows_written_log	0	i	t	the threshold for the number of rows written by a SQL transaction which - once exceeded - will trigger a logging event to SQL_PERF (or SQL_INTERNAL_PERF for internal transactions); use 0 to disable	0	default
+sql.defaults.use_declarative_schema_changer	on	e	t	default value for use_declarative_schema_changer session setting;disables new schema changer by default [off = 0, on = 1, unsafe = 2, unsafe_always = 3]	on	default
+sql.defaults.vectorize	on	e	t	default vectorize mode [on = 0, on = 1, on = 2, experimental_always = 3, off = 4]	on	default
+sql.defaults.zigzag_join.enabled	false	b	t	default value for enable_zigzag_join session setting; disallows use of zig-zag join by default	false	default
+sql.diagnostics.poll_interval	10s	d	f	rate at which the stmtdiagnostics registries polls for requests, set to zero to disable	10s	default
+sql.distsql.acquire_vec_fds.max_retries	8	i	f	determines the number of retries performed during the acquisition of file descriptors needed for disk-spilling operations, set to 0 for unlimited retries	8	default
+sql.distsql.direct_columnar_scans.enabled	false	b	f	set to true to enable the 'direct' columnar scans in the KV layer	false	default
+sql.distsql.distributed_query_rerun_locally.enabled	true	b	f	determines whether the distributed plans can be rerun locally for some errors	true	default
+sql.distsql.flow_stream.timeout	10s	d	f	amount of time incoming streams wait for a flow to be set up before erroring out	10s	default
+sql.distsql.index_join_streamer.batch_size	8.0 MiB	z	f	size limit on the input rows to construct a single lookup KV batch (by the ColIndexJoin operator when using the Streamer API)	8.0 MiB	default
+sql.distsql.join_reader_index_join_strategy.batch_size	4.0 MiB	z	f	size limit on the input rows to construct a single lookup KV batch (by the joinReader processor and the ColIndexJoin operator (when the latter doesn't use the Streamer API))	4.0 MiB	default
+sql.distsql.join_reader_no_ordering_strategy.batch_size	2.0 MiB	z	f	size limit on the input rows to construct a single lookup KV batch	2.0 MiB	default
+sql.distsql.join_reader_ordering_strategy.batch_size	100 KiB	z	f	size limit on the input rows to construct a single lookup KV batch	100 KiB	default
+sql.distsql.num_runners	16	i	f	determines the number of DistSQL runner goroutines used for issuing SetupFlow RPCs. The default value is computed as the number of vCPUs in a node times 4.	16	default
+sql.distsql.parallelize_checks.concurrency_limit	64	i	f	maximum number of additional goroutines to run checks in parallel. The default value is computed as the number of vCPUs in a node times 16.	64	default
+sql.distsql.parallelize_checks.enabled	true	b	f	determines whether FOREIGN KEY and UNIQUE constraint checks are performed in parallel	true	default
+sql.distsql.parallelize_multi_key_lookup_joins.enabled	false	b	f	determines whether KV batches are executed in parallel for lookup joins in all cases. Enabling this will increase the speed of lookup joins when each input row might get multiple looked up rows at the cost of increased memory usage.	false	default
+sql.distsql.streamer.avg_response_size_multiple	3	f	f	determines the multiple used when calculating the average response size by the streamer component	3	default
+sql.distsql.streamer.initial_avg_response_size	1.0 KiB	z	f	determines the initial estimate used when calculating the average response size by the streamer component	1.0 KiB	default
+sql.distsql.temp_storage.hash_agg.enabled	true	b	f	set to false to disable hash aggregator disk spilling (this will improve performance, but the query might hit the memory limit)	true	default
+sql.distsql.temp_storage.workmem	64 MiB	z	t	maximum amount of memory in bytes a processor can use before falling back to temp storage	64 MiB	default
+sql.distsql.use_streamer.enabled	true	b	f	determines whether the usage of the Streamer API is allowed. Enabling this will increase the speed of lookup/index joins while adhering to memory limits.	true	default
+sql.distsql.vectorize_render_wrapping.max_row_count	128	i	f	determines the maximum number of estimated rows that flow through the render expressions up to which we handle those renders by wrapping a row-by-row processor	128	default
+sql.distsql.vectorize_render_wrapping.min_render_count	16	i	f	determines the minimum number of render expressions for which we fall back to handling renders by wrapping a row-by-row processor	16	default
+sql.distsql_planning.use_gossip.enabled	false	b	f	if enabled, the DistSQL physical planner falls back to gossip-based planning	false	default
+sql.error_tip_system_interface.enabled	false	b	f	if enabled, certain errors contain a tip to use the system interface	false	default
+sql.fingerprint.max_span_parallelism	5	i	f	the maximum number of workers per partition used to issue fingerprint ExportRequests	5	default
+sql.gc_job.idle_wait_duration	1s	d	f	after this duration of waiting for an update, the gc job will mark itself idle	1s	default
+sql.gc_job.wait_for_gc.interval	5m0s	d	f	interval at which the GC job should poll to see if the deleted data has been GC'd	5m0s	default
+sql.guardrails.max_row_size_err	80 MiB	z	t	maximum size of row (or column family if multiple column families are in use) that SQL can write to the database, above which an error is returned; use 0 to disable	80 MiB	default
+sql.guardrails.max_row_size_log	16 MiB	z	t	maximum size of row (or column family if multiple column families are in use) that SQL can write to the database, above which an event is logged to SQL_PERF (or SQL_INTERNAL_PERF if the mutating statement was internal); use 0 to disable	16 MiB	default
+sql.hash_sharded_range_pre_split.max	16	i	t	max pre-split ranges to have when adding hash sharded index to an existing table	16	default
+sql.hints.statement_hints_cache_size	1024	i	f	number of hint entries to store in the LRU	1024	default
+sql.history_retention_job.poll_interval	1m0s	d	f	controls how frequently the history retention job checks if the PTS record should be released	1m0s	default
+sql.index_recommendation.drop_unused_duration	168h0m0s	d	t	the index unused duration at which we begin to recommend dropping the index	168h0m0s	default
+sql.insights.anomaly_detection.enabled	true	b	t	enable per-fingerprint latency recording and anomaly detection	true	default
+sql.insights.anomaly_detection.latency_threshold	50ms	d	t	statements must surpass this threshold to trigger anomaly detection and identification	50ms	default
+sql.insights.anomaly_detection.memory_limit	1.0 MiB	z	t	the maximum amount of memory allowed for tracking statement latencies	1.0 MiB	default
+sql.insights.execution_insights_capacity	1000	i	t	the size of the per-node store of execution insights	1000	default
+sql.insights.high_retry_count.threshold	10	i	t	the number of retries a slow statement must have undergone for its high retry count to be highlighted as a potential problem	10	default
+sql.insights.latency_threshold	100ms	d	t	amount of time after which an executing statement is considered slow. Use 0 to disable.	100ms	default
+sql.inspect.admission_control.enabled	true	b	f	when enabled, INSPECT operations are throttled to minimize impact on foreground query performance; when disabled, INSPECT runs faster but may slow down foreground queries	true	default
+sql.inspect.checkpoint_interval	30s	d	f	the amount of time between INSPECT job checkpoint updates	30s	default
+sql.inspect.fraction_update_interval	10s	d	f	the amount of time between INSPECT job percent complete progress updates	10s	default
+sql.inspect.index_consistency_hash.enabled	true	b	f	if false, the index consistency check skips the hash precheck and always runs the full join	true	default
+sql.inspect.processor_concurrency	0	i	f	sets the number of concurrent processors for INSPECT jobs. 0 uses the default based on GOMAXPROCS. Values above GOMAXPROCS are capped.	0	default
+sql.inspect.uniqueness_check.complex_keys.enabled	false	b	f	if true, the uniqueness check is enabled for INSPECT jobs on indexes where the unique column does not immediately follow the region column	false	default
+sql.instance_info.use_instance_resolver.enabled	true	b	f	use sqlinstance.InstanceInfo instead of NodeDescriptor for SQL instance lookups; enables proper handling of SQL instances in serverless environments	true	default
+sql.internal_executor.attribute_to_user.enabled	true	b	f	controls whether internally-executed queries with the AttributeToUser override should actually be attributed to user or not	true	default
+sql.internal_executor.rows_affected_retry_limit	5	i	f	limit on the number of retries that can be transparently performed by the InternalExecutor's Exec{Ex} methods	5	default
+sql.internal_executor.session_overrides		s	f	comma-separated list of 'variable=value' pairs that change the corresponding session variables used by the InternalExecutor (performed on a best-effort basis)		default
+sql.local_scans.concurrency_limit	1024	i	f	maximum number of additional goroutines for performing scans in local plans	1024	default
+sql.log.admin_audit.enabled	false	b	f	when set, log SQL queries that are executed by a user with admin privileges	false	default
+sql.log.redact_names.enabled	false	b	t	if set, schema object identifers are redacted in SQL statements that appear in event logs	false	default
+sql.log.scan_row_count_misestimate.enabled	false	b	t	when set to true, log a warning when a scan's actual row count differs significantly from the optimizer's estimate	false	default
+sql.log.slow_query.experimental_full_table_scans.enabled	false	b	t	when set to true, statements that perform a full table/index scan will be logged to the slow query log even if they do not meet the latency threshold. Must have the slow query log enabled for this setting to have any effect.	false	default
+sql.log.slow_query.internal_queries.enabled	false	b	t	when set to true, internal queries which exceed the slow query log threshold are logged to a separate log. Must have the slow query log enabled for this setting to have any effect.	false	default
+sql.log.slow_query.latency_threshold	0s	d	t	when set to non-zero, log statements whose service latency exceeds the threshold to a secondary logger on each node	0s	default
+sql.log.user_audit		s	t	user/role-based audit logging configuration		default
+sql.log.user_audit.reduced_config.enabled	false	b	t	enables logic to compute a reduced audit configuration, computing the audit configuration only once at session start instead of at each SQL event. The tradeoff with the increase in performance (~5%), is that changes to the audit configuration (user role memberships/cluster setting) are not reflected within session. Users will need to start a new session to see these changes in their auditing behaviour.	false	default
+sql.metrics.application_name.enabled	false	b	t	when enabled, SQL metrics would export application name as and additional label as part of child metrics. The number of unique label combinations is limited to 5000 by default.	false	default
+sql.metrics.database_name.enabled	false	b	t	when enabled, SQL metrics would export database name as and additional label as part of child metrics. The number of unique label combinations is limited to 5000 by default.	false	default
+sql.metrics.discarded_stats_log.interval	1m0s	d	f	interval between log emissions for discarded statistics due to SQL statistics memory limit	1m0s	default
+sql.metrics.index_usage_stats.enabled	true	b	t	collect per index usage statistics	true	default
+sql.metrics.max_mem_reported_stmt_fingerprints	100000	i	t	the maximum number of reported statement fingerprints stored in memory	100000	default
+sql.metrics.max_mem_reported_txn_fingerprints	100000	i	t	the maximum number of reported transaction fingerprints stored in memory	100000	default
+sql.metrics.max_mem_stmt_fingerprints	7500	i	t	the maximum number of statement fingerprints stored in memory	7500	default
+sql.metrics.max_mem_txn_fingerprints	7500	i	t	the maximum number of transaction fingerprints stored in memory	7500	default
+sql.metrics.statement_details.dump_to_logs.enabled	false	b	t	dump collected statement statistics to node logs when periodically cleared	false	default
+sql.metrics.statement_details.enabled	true	b	t	collect per-statement query statistics	true	default
+sql.metrics.statement_details.gateway_node.enabled	false	b	t	save the gateway node for each statement fingerprint. If false, the value will be stored as 0.	false	default
+sql.metrics.statement_details.index_recommendation_collection.enabled	true	b	t	generate an index recommendation for each fingerprint ID	true	default
+sql.metrics.statement_details.max_mem_reported_idx_recommendations	5000	i	t	the maximum number of reported index recommendation info stored in memory	5000	default
+sql.metrics.statement_details.threshold	0s	d	t	minimum execution time to cause statement statistics to be collected. If configured, no transaction stats are collected.	0s	default
+sql.metrics.transaction_details.enabled	true	b	t	collect per-application transaction statistics	true	default
+sql.metrics.transaction_details.max_statement_ids	1000	i	f	max number of statement fingerprint IDs to store for transaction statistics	1000	default
+sql.metrics.transaction_details.max_statement_stats	100000	i	f	max number of statement statistics that may be associated with transaction statistics	100000	default
+sql.virtual_cluster.feature_access.multiregion.enabled	true	b	f	allow the use of multi-region abstractions and syntax in virtual clusters	true	default
+sql.multiple_modifications_of_table.enabled	false	b	t	if true, allow statements containing multiple INSERT ON CONFLICT, UPSERT, UPDATE, or DELETE subqueries modifying the same table, at the risk of data corruption if the same row is modified multiple times by a single statement (multiple INSERT subqueries without ON CONFLICT cannot cause corruption and are always allowed)	false	default
+sql.multiregion.drop_primary_region.enabled	true	b	t	allows dropping the PRIMARY REGION of a database if it is the last region	true	default
+sql.multiregion.system_database_multiregion.enabled	false	b	f	enable option to set up system database as multi-region	false	default
+sql.mutations.mutation_batch_byte_size	4.0 MiB	z	f	byte size - in key and value lengths -- for mutation batches	4.0 MiB	default
+sql.notices.enabled	true	b	t	enable notices in the server/client protocol being sent	true	default
+sql.optimizer.uniqueness_checks_for_gen_random_uuid.enabled	false	b	t	if enabled, uniqueness checks may be planned for mutations of UUID columns updated with gen_random_uuid(); otherwise, uniqueness is assumed due to near-zero collision probability	false	default
+sql.override.allow_unsafe_internals.enabled	false	b	f	overrides the allow_unsafe_internals session variable behavior as a failsafe in case of emergencies. This setting should not be externally visible.	false	default
+sql.pgwire.max_repeated_error_count	256	i	f	the maximum number of times an error can be received while reading from a network connection before the server aborts the connection	256	default
+sql.prepared_transactions.unsafe.enabled	false	b	f	enables PREPARE TRANSACTION statements (two-phase commit). When a transaction is prepared, it holds its locks indefinitely and cannot be pushed. If the coordinator that initiated the prepare fails to follow up with COMMIT PREPARED or ROLLBACK PREPARED, those locks will be held potentially forever, even across restarts, until the transaction is manually resolved. Use with caution.	false	default
+sql.query_cache.enabled	true	b	f	enable the query cache	true	default
+sql.region_liveness.enabled	false	b	f	enables region liveness for system databases	false	default
+sql.region_liveness.probe.timeout	15s	d	f	set the probing timeout for region liveness, which will be the maximum time a query to a region can take before it starts getting quarantined	15s	default
+sql.restrict_system_interface.enabled	false	b	f	if enabled, certain statements produce errors or warnings when run from the system interface to encourage use of a virtual cluster	false	default
+sql.revert.max_span_parallelism	8	i	f	the maximum number of workers used to issue RevertRange request	8	default
+sql.virtual_cluster.feature_access.manual_range_scatter.enabled	true	b	f	enable the use of ALTER TABLE/INDEX ... SCATTER in virtual clusters	true	default
+sql.schema.approx_max_object_count	20000	i	t	approximate maximum number of schema objects allowed in the cluster; the check uses cached statistics, so the actual count may slightly exceed this limit; set to 0 to disable	20000	default
+sql.schema.auto_unlock.enabled	true	b	t	controls whether DDL operations will attempt to automatically unlock and re-lock schema_locked tables. When this setting is false, DDL on schema_locked tables is blocked unless the user manually unlocks the table first. The schema_locked storage parameter improves changefeed performance by locking the table's schema from the perspective of the changefeed.	true	default
+sql.schema.force_declarative_statements		s	f	forcefully enable or disable declarative schema changer for specific statements		default
+sql.schema.telemetry.recurrence	@weekly	s	t	cron-tab recurrence for SQL schema telemetry job	@weekly	default
+sql.schema.test_object_generator.enabled	true	b	f	enable the generate_test_objects function	true	default
+sql.schema.test_object_generator.non_admin.enabled	false	b	f	allow non-admin users to use the generate_test_objects function	false	default
+sql.schema_changer.batch_flush_threshold_size	32 MiB	z	f	maximum size in bytes of the schema changer's metadata batch before it's flushed to the KV store. This setting should be smaller or equal to kv.raft.command.max_size	32 MiB	default
+sql.schemachanger.strict_planning_sanity_check.enabled	false	b	f	enforce strict sanity checks in the declarative schema changer planner	false	default
+sql.session_transfer.max_session_size	0 B	z	f	if set to non-zero, then serializing a session will fail if it requires morethan the specified size	0 B	default
+sql.show_tables.estimated_row_count.enabled	true	b	f	whether the estimated_row_count is shown on SHOW TABLES. Turning this off will improve SHOW TABLES performance.	true	default
+sql.spatial.experimental_box2d_comparison_operators.enabled	false	b	t	enables the use of certain experimental box2d comparison operators	false	default
+sql.virtual_cluster.feature_access.manual_range_split.enabled	true	b	f	enable the use of ALTER TABLE/INDEX ... SPLIT AT in virtual clusters	true	default
+sql.sqlcommenter.enabled	false	b	t	enables support for sqlcommenter. Key value parsed from sqlcommenter comments will be included in sql insights and sql logs. See https://google.github.io/sqlcommenter/ for more details.	false	default
+sql.statement_bundle.include_all_references.enabled	false	b	f	controls whether all FK reference tables are included	false	default
+sql.stats.activity.flush.enabled	true	b	f	enable the flush to the system statement and transaction activity tables	true	default
+sql.stats.activity.persisted_rows.max	200000	i	t	maximum number of rows of statement and transaction activity that will be persisted in the system tables	200000	default
+sql.stats.activity.top.max	500	i	f	the limit per column for the top number of statistics to be flushed to the activity tables	500	default
+sql.stats.activity.ui.enabled	true	b	f	enable the combined statistics endpoint to get data from the system activity tables	true	default
+sql.stats.aggregation.interval	1h0m0s	d	f	the interval at which we aggregate SQL execution statistics upon flush, this value must be greater than or equal to sql.stats.flush.interval	1h0m0s	default
+sql.stats.associate_stmt_with_txn_fingerprint.enabled	true	b	f	whether to segment per-statement query statistics by transaction fingerprint	true	default
+sql.stats.automatic_collection.enabled	true	b	t	automatic statistics collection mode	true	default
+sql.stats.automatic_collection.fraction_stale_rows	0.2	f	t	target fraction of stale rows per table that will trigger a statistics refresh	0.2	default
+sql.stats.automatic_collection.max_fraction_idle	0.9	f	f	maximum fraction of time that automatic statistics sampler processors are idle	0.9	default
+sql.stats.automatic_collection.min_stale_rows	500	i	t	target minimum number of stale rows per table that will trigger a statistics refresh	500	default
+sql.stats.automatic_extremes_concurrency_limit	128	i	t	determines the maximum number of concurrent automatic partial USING EXTREMES table statistics collection jobs	128	default
+sql.stats.automatic_full_collection.enabled	true	b	t	automatic full statistics collection mode	true	default
+sql.stats.automatic_full_concurrency_limit	2	i	t	determines the maximum number of concurrent automatic full table statistics collection jobs. The default value is computed as the number of vCPUs in a node divided by 2.	2	default
+sql.stats.automatic_job_check_before_creating_job.enabled	true	b	f	set to true to perform the autostats job check before creating the job, instead of in the same transaction as creating the job	true	default
+sql.stats.automatic_partial_collection.enabled	true	b	t	automatic partial statistics collection mode	true	default
+sql.stats.automatic_partial_collection.fraction_stale_rows	0.05	f	t	target fraction of stale rows per table that will trigger a partial statistics refresh	0.05	default
+sql.stats.automatic_partial_collection.min_stale_rows	100	i	t	target minimum number of stale rows per table that will trigger a partial statistics refresh	100	default
+sql.stats.automatic_stats_job_auto_cleanup.enabled	true	b	f	set to true to enable automatic cleanup of completed AUTO CREATE STATISTICS jobs	true	default
+sql.stats.automatic_stats_job_use_locks_table.enabled	true	b	f	set to true to enable the new mechanism of concurrency limiting via the system.table_statistics_locks table	true	default
+sql.stats.canary_fraction	0	f	t	probability that table statistics will use canary mode instead of stable mode for query planning [0.0-1.0]	0	default
+sql.stats.cleanup.recurrence	@hourly	s	t	cron-tab recurrence for SQL Stats cleanup job	@hourly	default
+sql.stats.cleanup.rows_to_delete_per_txn	10000	i	f	number of rows the compaction job deletes from system table per iteration	10000	default
+sql.stats.detailed_latency_metrics.enabled	false	b	t	label latency metrics with the statement fingerprint. Workloads with tens of thousands of distinct query fingerprints should leave this setting false. (experimental, affects performance for workloads with high fingerprint cardinality)	false	default
+sql.stats.error_on_concurrent_create_stats.enabled	false	b	t	set to true to error on concurrent CREATE STATISTICS jobs, instead of skipping them	false	default
+sql.stats.flush.batch_size	10	i	f	the number of rows to flush per upsert	10	default
+sql.stats.flush.enabled	true	b	t	if set, SQL execution statistics are periodically flushed to disk	true	default
+sql.stats.flush.force_cleanup.enabled	false	b	f	if set, older SQL stats are discarded periodically when flushing to persisted tables is disabled	false	default
+sql.stats.flush.interval	10m0s	d	t	the interval at which SQL execution statistics are flushed to disk, this value must be less than or equal to 1 hour	10m0s	default
+sql.stats.flush.jitter	0.15	f	f	jitter fraction on the duration between sql stats flushes	0.15	default
+sql.stats.flush.minimum_interval	0s	d	f	the minimum interval that SQL stats can be flushes to disk. If a flush operation starts within less than the minimum interval, the flush operation will be aborted	0s	default
+sql.stats.forecasts.enabled	true	b	t	when true, enables generation of statistics forecasts by default for all tables	true	default
+sql.stats.forecasts.max_decrease	0.3333333333333333	f	t	the most a prediction is allowed to decrease, expressed as the minimum ratio of the prediction to the lowest prior observation	0.3333333333333333	default
+sql.stats.forecasts.min_goodness_of_fit	0.95	f	t	the minimum R² (goodness of fit) measurement required from all predictive models to use a forecast	0.95	default
+sql.stats.forecasts.min_observations	3	i	t	the mimimum number of observed statistics required to produce a statistics forecast	3	default
+sql.stats.garbage_collection_interval	1h0m0s	d	f	interval between deleting stats for dropped tables, set to 0 to disable	1h0m0s	default
+sql.stats.garbage_collection_limit	1000	i	f	limit on the number of dropped tables that stats are deleted for as part of a single statement	1000	default
+sql.stats.histogram_buckets.count	200	i	t	maximum number of histogram buckets to build during table statistics collection	200	default
+sql.stats.histogram_buckets.include_most_common_values.enabled	true	b	t	whether to include most common values as histogram buckets	true	default
+sql.stats.histogram_buckets.max_fraction_most_common_values	0.1	f	t	maximum fraction of histogram buckets to use for most common values	0.1	default
+sql.stats.histogram_collection.enabled	true	b	t	histogram collection mode	true	default
+sql.stats.histogram_samples.count	0	i	t	number of rows sampled for histogram construction during table statistics collection. Not setting this or setting a value of 0 means that a reasonable sample size will be automatically picked based on the table size.	0	default
+sql.stats.histogram_samples.max	300000	i	f	maximum sample size to be selected when sample size is automatically determined	300000	default
+sql.stats.histogram_samples.min	10000	i	f	minimum sample size to be selected when sample size is automatically determined	10000	default
+sql.stats.limit_table_size.enabled	true	b	f	controls whether we allow statement and transaction statistics tables to grow past sql.stats.persisted_rows.max	true	default
+sql.stats.limit_table_size_check.interval	1h0m0s	d	f	controls what interval the check is done if the statement and transaction statistics tables have grown past sql.stats.persisted_rows.max	1h0m0s	default
+sql.stats.max_timestamp_age	5m0s	d	f	maximum age of timestamp during table statistics collection	5m0s	default
+sql.stats.multi_column_collection.enabled	true	b	t	multi-column statistics collection mode	true	default
+sql.stats.non_default_columns.min_retention_period	24h0m0s	d	t	minimum retention period for table statistics collected on non-default columns	24h0m0s	default
+sql.stats.non_indexed_json_histograms.enabled	false	b	t	set to true to collect table statistics histograms on non-indexed JSON columns	false	default
+sql.stats.persisted_insights.ui.enabled	false	b	f	enable the insights endpoint to get data from the persisted insights tables	false	default
+sql.stats.persisted_rows.max	1000000	i	t	maximum number of rows of statement and transaction statistics that will be persisted in the system tables before compaction begins	1000000	default
+sql.stats.post_events.enabled	false	b	t	if set, an event is logged for every successful CREATE STATISTICS job	false	default
+sql.stats.response.max	20000	i	t	the maximum number of statements and transaction stats returned in a CombinedStatements request	20000	default
+sql.stats.response.show_internal.enabled	false	b	t	controls if statistics for internal executions should be returned by the CombinedStatements and if internal sessions should be returned by the ListSessions endpoints. These endpoints are used to display statistics on the SQL Activity pages	false	default
+sql.stats.statement_fingerprint.format_mask	805306368	i	f	enables setting additional fmt flags for statement fingerprint formatting. Flags set here will be applied in addition to FmtHideConstants	805306368	default
+sql.stats.system_tables.enabled	true	b	t	when true, enables use of statistics on system tables by the query optimizer	true	default
+sql.stats.system_tables_autostats.enabled	true	b	t	when true, enables automatic collection of statistics on system tables	true	default
+sql.stats.virtual_computed_columns.enabled	true	b	t	set to true to collect table statistics on virtual computed columns	true	default
+sql.stmt_diagnostics.bundle_chunk_size	1.0 MiB	z	f	chunk size for statement diagnostic bundles	1.0 MiB	default
+sql.stmt_diagnostics.collect_continuously.enabled	true	b	f	deprecated: continuous collection is now the default behavior when sampling_probability and expires_at are set; this setting will be removed in a future version	true	default
+sql.stmt_diagnostics.in_flight_trace_collector.poll_interval	0s	d	f	determines the interval between polling done by the in-flight trace collector for the statement bundle, set to zero to disable	0s	default
+sql.stmt_diagnostics.max_bundles_per_request	10	i	f	maximum number of diagnostic bundles to collect per continuous request	10	default
+sql.stmt_diagnostics.timeout_trace_collection.enabled	true	b	f	determines whether the in-flight trace collection is performed when building the statement bundle if the timeout is detected	true	default
+sql.tablecache.lease.refresh_limit	500	i	f	maximum number of descriptors to periodically refresh leases for	500	default
+sql.telemetry.capture_index_usage_stats.check_enabled_interval	10m0s	d	f	the scheduled interval time between checks to see if index usage statistics has been enabled	10m0s	default
+sql.telemetry.capture_index_usage_stats.enabled	true	b	f	enable/disable capturing index usage statistics to the telemetry logging channel	true	default
+sql.telemetry.capture_index_usage_stats.interval	8h0m0s	d	f	the scheduled interval time between capturing index usage statistics when capturing index usage statistics is enabled	8h0m0s	default
+sql.telemetry.capture_index_usage_stats.logging_delay	500ms	d	f	the time delay between emitting individual index usage stats logs, this is done to mitigate the log-line limit of 10 logs per second on the telemetry pipeline	500ms	default
+sql.telemetry.query_sampling.enabled	false	b	t	when set to true, executed queries will emit an event on the telemetry logging channel	false	default
+sql.telemetry.query_sampling.internal.enabled	false	b	t	when set to true, internal queries will be sampled in telemetry logging	false	default
+sql.telemetry.query_sampling.internal_console.enabled	true	b	f	when set to true, all internal queries used to populated the UI Consolewill be logged into telemetry	true	default
+sql.telemetry.query_sampling.max_event_frequency	8	i	t	the max event frequency (events per second) at which we sample executions for telemetry, note that it is recommended that this value shares a log-line limit of 10 logs per second on the telemetry pipeline with all other telemetry events. If sampling mode is set to 'transaction', this value is ignored.	8	default
+sql.telemetry.query_sampling.mode	statement	e	t	the execution level used for telemetry sampling. If set to 'statement', events are sampled at the statement execution level. If set to 'transaction', events are sampled at the transaction execution level, i.e. all statements for a transaction will be logged and are counted together as one sampled event (events are still emitted one per statement). [statement = 0, transaction = 1]	statement	default
+sql.telemetry.transaction_sampling.max_event_frequency	8	i	t	the max event frequency (events per second) at which we sample transactions for telemetry. If sampling mode is set to 'statement', this setting is ignored. In practice, this means that we only sample a transaction if 1/max_event_frequency seconds have elapsed since the last transaction was sampled.	8	default
+sql.telemetry.transaction_sampling.statement_events_per_transaction.max	50	i	t	the maximum number of statement events to log for every sampled transaction. Note that statements that are logged by force do not adhere to this limit.	50	default
+sql.temp_object_cleaner.cleanup_interval	30m0s	d	t	how often to clean up orphaned temporary objects	30m0s	default
+sql.temp_object_cleaner.wait_interval	30m0s	d	t	how long after creation a temporary object will be cleaned up	30m0s	default
+sql.explain_analyze.include_ru_estimation.enabled	true	b	f	determines whether EXPLAIN ANALYZE should return an estimate for the query's RU consumption	true	default
+sql.log.all_statements.enabled	false	b	t	set to true to enable logging of all executed statements	false	default
+sql.trace.stmt.enable_threshold	0s	d	t	enables tracing on all statements; statements executing for longer than this duration will have their trace logged (set to 0 to disable); note that enabling this may have a negative performance impact; this setting applies to individual statements within a transaction and is therefore finer-grained than sql.trace.txn.enable_threshold	0s	default
+sql.trace.txn.enable_threshold	0s	d	t	enables transaction traces for transactions exceeding this duration, used with `sql.trace.txn.sample_rate`	0s	default
+sql.trace.txn.include_internal.enabled	true	b	t	enables tracing internal transactions as well as external workload using sample rate and threshold settings	true	default
+sql.trace.txn.jaeger_json_output.enabled	false	b	t	enables Jaeger JSON output for transaction traces in logs	false	default
+sql.trace.txn.sample_rate	1	f	t	enables probabilistic transaction tracing. It should be used in conjunction with `sql.trace.txn.enable_threshold`. A percentage of transactions between 0 and 1.0 will have tracing enabled, and only those which exceed the configured threshold will be logged.	1	default
+sql.schema.preserved_split_count_multiple	4	i	f	set to non-zero to cause TRUNCATE and index backfills to preserve range splits from the table's indexes or copy them from the primary index. The multiple given will be multiplied with the number of nodes in the cluster to produce the number of preserved range splits. This can improve performance when truncating or backfilling an index from a table with significant write traffic.	4	default
+sql.ttl.changefeed_replication.disabled	false	b	t	if true, deletes issued by TTL will not be replicated via changefeeds (this setting will be ignored by changefeeds that have the ignore_disable_changefeed_replication option set; such changefeeds will continue to replicate all TTL deletes)	false	default
+sql.ttl.checkpoint_interval	30s	d	f	the amount of time between row-level TTL checkpoint updates	30s	default
+sql.ttl.default_delete_batch_size	100	i	t	default amount of rows to delete in a single query during a TTL job	100	default
+sql.ttl.default_delete_rate_limit	100	i	t	default delete rate limit (rows per second) per node for each TTL job. Use 0 to signify no rate limit.	100	default
+sql.ttl.default_select_batch_size	500	i	t	default amount of rows to select in a single query during a TTL job	500	default
+sql.ttl.default_select_rate_limit	0	i	t	default select rate limit (rows per second) per node for each TTL job. Use 0 to signify no rate limit.	0	default
+sql.ttl.fraction_update_interval	10s	d	f	the amount of time between row-level TTL percent complete progress updates	10s	default
+sql.ttl.job.enabled	true	b	t	whether the TTL job is enabled	true	default
+sql.ttl.max_kv_auto_retries	10	i	f	the number of times a TTL operation will automatically retry in the KV layer before reducing the batch size	10	default
+sql.ttl.processor_concurrency	0	i	f	override for the TTL job processor concurrency (0 means use default based on GOMAXPROCS, and any value greater than GOMAXPROCS will be capped at GOMAXPROCS)	0	default
+sql.ttl.replan_flow_frequency	2m0s	d	f	how frequently the TTL job checks whether to replan its physical execution flow	2m0s	default
+sql.ttl.replan_flow_threshold	0.1	f	f	the fraction of flow instances that must change (added or updated) before the TTL job is replanned; set to 0 to disable	0.1	default
+sql.ttl.replan_stability_window	2	i	f	number of consecutive replan evaluations required before triggering a replan; set to 1 to disable stability window	2	default
+sql.txn.read_committed_isolation.enabled	true	b	t	set to true to allow transactions to use the READ COMMITTED isolation level if specified by BEGIN/SET commands	true	default
+sql.txn.repeatable_read_isolation.enabled	false	b	t	set to true to allow transactions to use the REPEATABLE READ isolation level if specified by BEGIN/SET commands	false	default
+sql.txn.write_buffering_for_weak_isolation.enabled	false	b	f	set to true to allow write buffering for transactions at weak isolation levels	false	default
+sql.txn_fingerprint_id_cache.capacity	100	i	t	the maximum number of txn fingerprint IDs stored	100	default
+sql.txn_stats.sample_rate	0.01	f	f	the probability that a given transaction will collect execution statistics (displayed in the DB Console)	0.01	default
+sql.vecindex.deterministic_fixups.enabled	false	b	f	set to true to make all background index operations deterministic, for testing	false	default
+sql.vecindex.stalled_op.timeout	100ms	d	t	amount of time before other vector index workers will assist with a stalled background fixup	100ms	default
+sql.virtual_cluster.feature_access.zone_configs_unrestricted.enabled	true	b	f	enable unrestricted usage of ALTER CONFIGURE ZONE in virtual clusters	true	default
+sql.virtual_cluster.feature_access.zone_configs.enabled	true	b	f	enable the use of ALTER CONFIGURE ZONE in virtual clusters	true	default
+sql.zone_configs.default_range_modifiable_by_non_root.enabled	true	b	f	if true, allows non-root users to modify zone config for the default range	true	default
+sql.zone_configs.max_replicas_per_region	0	i	f	the maximum number of replicas that can be configured per region (0 for unlimited); this is only enforced on new zone config modifications	0	default
+sqladmission.elastic_cpu.duration_per_low_pri_read_response	100ms	d	f	controls how many CPU tokens are allotted for handling responses for internally submitted low priority reads	100ms	default
+sqladmission.low_pri_read_response_elastic_control.enabled	true	b	f	determines whether the sql portion of internally submitted reads integrate with elastic CPU controller	true	default
+storage.baseline_deletion_rate	134217728	i	f	the baseline allowed rate of bytes deleted per second by each store	134217728	default
+storage.block_load.node_max_active	7500	i	f	maximum number of outstanding sstable block reads per host	7500	default
+storage.compaction_concurrency	1	i	f	the baseline number of concurrent compactions	1	default
+storage.delete_compaction_excise.enabled	true	b	t	set to false to direct Pebble to not partially excise sstables in delete-only compactions	true	default
+storage.deprecated_compensated_score.enabled	false	b	f	if enabled, this setting reverts the storage engine's compaction picking heuristic	false	default
+storage.ingest_as_flushable.enabled	true	b	f	set to true to enable lazy ingestion of sstables	true	default
+storage.ingest_split.enabled	true	b	t	set to false to disable ingest-time splitting that lowers write-amplification	true	default
+storage.ingestion.value_blocks.enabled	true	b	t	set to true to enable writing of value blocks in ingestion sstables	true	default
+storage.max_compaction_concurrency	0	i	f	the maximum number of concurrent compactions (0 = default); the default value is min(3,numCPUs-1) or what the COCKROACH_CONCURRENT_COMPACTIONS env var specifies; the env var also takes precedence over the cluster setting when the latter is lower	0	default
+storage.max_download_compaction_concurrency	8	i	f	the maximum number of concurrent download compactions	8	default
+storage.max_sync_duration	20s	d	t	maximum duration for disk operations; any operations that take longer than this setting trigger a warning log entry or process crash	20s	default
+storage.max_sync_duration.fatal.enabled	true	b	t	if true, fatal the process when a disk operation exceeds storage.max_sync_duration	true	default
+storage.multi_level_compaction_write_amp_heuristic.enabled	true	b	f	enables multi-level compactions using the write amplification heuristic	true	default
+storage.mvcc.max_conflicts_per_lock_conflict_error	5000	i	f	maximum number of locks returned in errors during evaluation	5000	default
+storage.mvcc.target_bytes_per_lock_conflict_error	8388608	i	f	maximum total lock size returned in errors during evaluation	8388608	default
+storage.readahead_mode.informed	fadv-sequential	e	f	the readahead mode for operations which are known to read through large chunks of data; sys-readahead performs explicit prefetching via the readahead syscall; fadv-sequential lets the OS perform prefetching via fadvise(FADV_SEQUENTIAL) [off = 0, sys-readahead = 1, fadv-sequential = 2]	fadv-sequential	default
+storage.readahead_mode.speculative	fadv-sequential	e	f	the readahead mode that is used automatically when sequential reads are detected; sys-readahead performs explicit prefetching via the readahead syscall; fadv-sequential starts with explicit prefetching via the readahead syscall then automatically switches to OS-driven prefetching via fadvise(FADV_SEQUENTIAL) [off = 0, sys-readahead = 1, fadv-sequential = 2]	fadv-sequential	default
+storage.snapshot.recreate_iter_duration	20s	d	f	the interval after which a storage iterator over a snapshot should be recreated, to reduce memory usage caused by zombie memtables	20s	default
+storage.sstable.compression_algorithm	fastest	e	t	determines the compression algorithm to use for Pebble stores [snappy = 1, zstd = 2, none = 3, minlz = 4, fastest = 5, balanced = 6, good = 7, fast = 8]	fastest	default
+storage.sstable.compression_algorithm_backup_storage	fastest	e	t	determines the compression algorithm to use when compressing sstable data blocks for backup row data storage (fast,balanced,good are experimental); [snappy = 1, zstd = 2, none = 3, minlz = 4, fastest = 5, fast = 6, balanced = 7, good = 8]	fastest	default
+storage.sstable.compression_algorithm_backup_transport	fastest	e	t	determines the compression algorithm to use when compressing sstable data blocks for backup transport (fast,balanced,good are experimental); [snappy = 1, zstd = 2, none = 3, minlz = 4, fastest = 5, fast = 6, balanced = 7, good = 8]	fastest	default
+storage.table_filters	uniform	e	f	table filter configuration: uniform = 10bpk bloom filters on all levels; progressive = bloom filters with level-dependent size [uniform = 0, progressive = 1, progressive_binaryfuse = 2]	uniform	default
+storage.tombstone_dense_compaction_threshold	10	i	f	percentage of tombstone-dense data blocks that trigger a compaction (0 = disabled)	10	default
+storage.transaction.local_timestamps.enabled	true	b	f	if enabled, MVCC keys will be written with local timestamps	true	default
+storage.unhealthy_write_duration	20s	d	t	duration for disk write operations, beyond which the disk will be reported as unhealthy for higher layer actions	20s	default
+storage.value_separation.compaction_garbage_threshold	10	i	f	the max garbage threshold configures the percentage of unreferenced value bytes that begin to trigger blob-file rewrite compactions; 100 disables these compactions	10	default
+storage.value_separation.compaction_garbage_threshold_high_priority	20	i	f	configures the percentage of unreferenced value bytes that trigger high-priority blob-file rewrite compactions	20	default
+storage.value_separation.enabled	true	b	f	whether or not values may be separated into blob files	true	default
+storage.value_separation.latency_tolerant_minimum_size	32	i	f	the minimum size of a value that will be separated into a blob file given the value is latency tolerant (in the range local keyspace)	32	default
+storage.value_separation.max_reference_depth	10	i	f	the max reference depth bounds the number of unique, overlapping blob files referenced within a sstable; lower values improve scan performance but increase write amplification	10	default
+storage.value_separation.minimum_size	256	i	f	the minimum size of a value that will be separated into a blob file	256	default
+storage.value_separation.mvcc_history_minimum_size	1024	i	f	the minimum size of a value that will be separated into a blob file given the value is likely not the latest version of a key	1024	default
+storage.value_separation.rewrite_minimum_age	5m0s	d	f	the minimum age of a blob file before it is eligible for a rewrite compaction	5m0s	default
+storage.wal_failover.unhealthy_op_threshold	100ms	d	t	the latency of a WAL write considered unhealthy and triggers a failover to a secondary WAL location	100ms	default
+physical_replication.consumer.heartbeat_frequency	30s	d	f	controls frequency the stream replication destination cluster sends heartbeat to the source cluster to keep the stream alive	30s	default
+physical_replication.consumer.job_checkpoint_frequency	10s	d	f	controls the frequency with which partitions update their progress; if 0, disabled	10s	default
+stream_replication.lag_check_frequency	3m0s	d	f	frequency at which the consumer job checks for lagging nodes	3m0s	default
+physical_replication.producer.min_checkpoint_frequency	10s	d	f	controls minimum frequency the stream replication source cluster sends checkpoints to the destination cluster	10s	default
+physical_replication.consumer.replan_flow_frequency	10m0s	d	f	frequency at which the consumer job checks to refresh its physical execution plan	10m0s	default
+physical_replication.consumer.replan_flow_threshold	0.1	f	f	fraction of nodes in the producer or consumer job that would need to change to refresh the physical execution plan. If set to 0, the physical plan will not automatically refresh.	0.1	default
+physical_replication.producer.stream_liveness_track_frequency	1m0s	d	f	controls how frequent we check for the liveness of a replication stream producer job	1m0s	default
+tenant_cost_control.cpu_usage_allowance	10ms	d	f	this much CPU usage per second is considered background usage and doesn't contribute to consumption; for example, if it is set to 10ms, that corresponds to 1% of a CPU	10ms	default
+tenant_cost_control.initial_request	1000	f	f	number of tokens to get from server on first request (requires restart)	1000	default
+tenant_cost_control.provisioned_vcpus	0	i	f	number of vcpus available to the virtual cluster	0	default
+tenant_cost_control.token_request_period	10s	d	f	target duration between token bucket requests (requires restart)	10s	default
+tenant_cost_model.cross_region_network_cost		s	f	network cost table for cross-region traffic		default
+tenant_cost_model.estimated_cpu		s	f	parameters for KV CPU prediction model, in json format		default
+tenant_cost_model.external_io_egress_per_mebibyte	1024	f	f	cost of a write to external storage in Request Units per MiB	1024	default
+tenant_cost_model.external_io_ingress_per_mebibyte	0	f	f	cost of a read from external storage in Request Units per MiB	0	default
+tenant_cost_model.pgwire_egress_cost_per_mebibyte	1024	f	f	cost of client <-> SQL ingress/egress per MiB	1024	default
+tenant_cost_model.read_batch_cost	0.5	f	f	base cost of a read batch in Request Units	0.5	default
+tenant_cost_model.read_payload_cost_per_mebibyte	16	f	f	cost of a read payload in Request Units per MiB	16	default
+tenant_cost_model.read_request_cost	0.125	f	f	base cost of a read request in Request Units	0.125	default
+tenant_cost_model.sql_cpu_second_cost	333.3333	f	f	cost of a CPU-second in SQL pods in Request Units	333.3333	default
+tenant_cost_model.write_batch_cost	1	f	f	base cost of a write batch in Request Units	1	default
+tenant_cost_model.write_payload_cost_per_mebibyte	1024	f	f	cost of a write payload in Request Units per MiB	1024	default
+tenant_cost_model.write_request_cost	1	f	f	base cost of a write request in Request Units	1	default
+tenant_cost_control.external_io.byte_usage_allowance	16777216	i	f	controls how many bytes will be read/written before blocking for RUs when writing to external storage	16777216	default
+tenant_global_metrics_exporter_interval	1m0s	d	f	the interval at which a node in the cluster will update the exported global metrics	1m0s	default
+tenant_cost_control.instance_inactivity.timeout	1m0s	d	f	server instances that have not reported consumption for longer than this value are cleaned up; should be at least four times higher than the tenant_cost_control.token_request_period of any tenant	1m0s	default
+timeseries.persist_child_metrics.enabled	false	b	f	enables the collection of high-cardinality child metrics into the time series database	false	default
+timeseries.storage.enabled	true	b	t	if set, periodic timeseries data is stored within the cluster; disabling is not recommended unless you are storing the data elsewhere	true	default
+timeseries.storage.resolution_10s.ttl	240h0m0s	d	t	the maximum age of time series data stored at the 10 second resolution. Data older than this is subject to rollup and deletion.	240h0m0s	default
+timeseries.storage.resolution_1m.ttl	240h0m0s	d	t	the maximum age of time series data stored at the 1 minute resolution. Data older than this is subject to rollup and deletion.	240h0m0s	default
+timeseries.storage.resolution_30m.ttl	2160h0m0s	d	t	the maximum age of time series data stored at the 30 minute resolution. Data older than this is subject to deletion.	2160h0m0s	default
+trace.debug_http_endpoint.enabled	false	b	t	if set, traces for recent requests can be seen at https://<ui>/debug/requests	false	default
+trace.opentelemetry.collector		s	t	address of an OpenTelemetry trace collector to receive traces using the otel gRPC protocol, as <host>:<port>. If no port is specified, 4317 will be used.		default
+trace.redactable.enabled	true	b	f	set to true to enable finer-grainer redactability for unstructured events in traces	true	default
+trace.snapshot.rate	0s	d	t	if non-zero, interval at which background trace snapshots are captured	0s	default
+trace.span.force_verbose_regexp		s	f	a regular expression representing trace span operation names that should be forced into a verbose recording mode. If a span is created whose operation name matches the provided regular expression, the span and all of its children are forced into a verbose recording mode, meaning that the spans will capture all structured logs and events recorded during the lifetime of the span(s). NOTE: the verbose recording mode is known to cause non-trivial amounts of overhead. Using this setting could have a negative impact on cluster latency.		default
+trace.span_registry.enabled	false	b	t	if set, ongoing traces can be seen at https://<ui>/#/debug/tracez	false	default
+trace.structured_bytes_per_span.max	10 KiB	z	f	maximum size of structured log entries per span	10 KiB	default
+trace.structured_bytes_per_trace.max	1.0 MiB	z	f	maximum size of structured log entries per trace recording	1.0 MiB	default
+trace.zipkin.collector		s	t	the address of a Zipkin instance to receive traces, as <host>:<port>. If no port is specified, 9411 will be used.		default
+ui.database_locality_metadata.enabled	true	b	t	if enabled shows extended locality data about databases and tables in DB Console which can be expensive to compute	true	default
+ui.default_timezone		s	t	the default timezone used to format timestamps in the ui		default
+ui.display_timezone	etc/utc	e	t	the timezone used to format timestamps in the ui. This setting is deprecatedand will be removed in a future version. Use the 'ui.default_timezone' setting instead. 'ui.default_timezone' takes precedence over this setting. [etc/utc = 0, america/new_york = 1]	etc/utc	default
+version	26.2	m	t	set the active cluster version in the format '<major>.<minor>'	unsupported	override
