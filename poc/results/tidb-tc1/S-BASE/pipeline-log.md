@@ -116,31 +116,20 @@ jq '.thread_results."128".tpmC_mean,
 - check-all 128 warehouse 全條件通過，無 error
 - TiDB schema：`CLUSTERED PK`，CHARSET=utf8mb4，COLLATE=utf8mb4_bin
 
-### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
+### Execute 結果
 
-> tpmC / tpmTotal / efficiency 為 5 round mean；**NO p50 / p95 / p99 亦為 5 round latency mean**（已驗算對齊：每組 t16/32/64/128 的 p99 mean 與表格值差 ≤ 0.5ms，符合四捨五入誤差）。
->
-> （tpmC：越高越好；NO p99：越低越好；efficiency 遠超 100% 屬正常）
->
-> `range/mean` = `(5 round 最大 tpmC - 最小 tpmC) / 5 round 平均 tpmC`，用來看同一併發水位的 round-to-round 波動；數值越低代表重現性越好。
->
-> `efficiency mean` 為 5 round 的 go-tpc efficiency 平均值。TPC-C 標準模型中的 think time 是使用者看畫面、思考下一步的等待時間；keying time 是使用者輸入訂單、付款等資料的時間。本 PoC 取消這兩種人類操作停頓，worker 送完一筆交易後幾乎立刻送下一筆，讓資料庫持續滿載，因此 efficiency 遠超 100% 屬正常。
+> per-round tpmC + 5-round mean；p99 為 NEW_ORDER 5-round latency mean。
+> `range/mean` = (max − min) / mean，量化 round-to-round 波動。
+> tpmTotal / efficiency / p50 / p95 等補充指標見 [`summary.json`](./vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/summary.json)（效率遠超 100% 屬正常：go-tpc 無 keying/think time，worker 滿載）。
 
-| threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) |
-|---------|-----------|-----------|---------------|-----------------|------------|------------|------------|
-| 16  | **10,074** | 8.3% | 22,367 | 612.0% | 50    | 75    | 94   |
-| 32  | 11,728 | **5.0%** | 26,052 | 712.5% | 88    | 130   | 163  |
-| 64  | 12,744 | 7.9% | 28,317 | 774.2% | 159   | 235   | 305  |
-| 128 | **13,064** | 8.3% | 29,034 | 793.7% | 289   | 469   | 597  |
+per-round tpmC + 5-round mean（W=128、RC、N=5）：
 
-### Round-by-round tpmC（檢驗穩定性）
-
-| Threads | r1 | r2 | r3 | r4 | r5 |
-|---------|-----|-----|-----|-----|-----|
-| 16  | 9803  | 10574 | 9735  | 9907  | 10349 |
-| 32  | 11931 | 11945 | 11358 | 11706 | 11698 |
-| 64  | 12545 | 13195 | 13046 | 12189 | 12744 |
-| 128 | 13637 | 12555 | 12711 | 13433 | 12984 |
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|--------:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16  |  9,803 | 10,574 |  9,735 |  9,907 | 10,349 | **10,073.6** | 8.3 % |  94.0 | 0.0 % |
+| 32  | 11,931 | 11,945 | 11,358 | 11,706 | 11,698 | 11,727.5 | **5.0 %** | 162.8 | 0.0 % |
+| 64  | 12,545 | 13,195 | 13,046 | 12,189 | 12,744 | 12,743.7 | 7.9 % | 305.4 | 0.0 % |
+| 128 | 13,637 | 12,555 | 12,711 | 13,433 | 12,984 | **13,064.1** | 8.3 % | 597.3 | 0.0 % |
 
 - **t32 變異 5.0%**：相對 2026-05-18 15:49 同流程的 18.8% 改善顯著。本輪 t16 的 5 round 等同延長熱身，t32 進入較穩態的 TiKV cache / region 分布。建議所有後續對標保留「先跑低 thread 暖機」模式。
 
@@ -255,25 +244,19 @@ vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t64 為甜點（12,744 tpm
 - check-all 128 warehouse 全條件通過
 - schema 與 rc 完全相同
 
-### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
+### Execute 結果
 
-> tpmC / tpmTotal / efficiency 為 5 round mean；**NO p50 / p95 / p99 亦為 5 round latency mean**。
+> per-round tpmC + 5-round mean；p99 為 NEW_ORDER 5-round latency mean。
+> tpmTotal / efficiency / p50 / p95 補充指標見 [`summary.json`](./vm-1node-rr/tidb-vm-1node-rr-20260519T001949+0800/summary.json)。
 
-| threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) |
-|---------|-----------|-----------|---------------|-----------------|------------|------------|------------|
-| 16  | **11,196** | 16.8% ⚠️ | 24,914 | 680.2% | 42  | 61  | 80  |
-| 32  | 12,831 | **3.4%** | 28,467 | 779.5% | 71  | 105 | 134 |
-| 64  | 13,743 | 6.0%     | 30,560 | 834.9% | 122 | 193 | 246 |
-| 128 | **13,874** | **2.8%** | 30,902 | 842.9% | 235 | 392 | 503 |
+per-round tpmC + 5-round mean（W=128、RR，N=5）：
 
-### Round-by-round tpmC
-
-| Threads | r1 | r2 | r3 | r4 | r5 |
-|---------|-----|-----|-----|-----|-----|
-| 16  | 11041 | 12064 | 11040 | 11652 | **10183** |
-| 32  | 12736 | 12694 | 13130 | 12722 | 12874 |
-| 64  | 13506 | 14059 | 13910 | 13231 | 14010 |
-| 128 | 14041 | 13652 | 13755 | 14012 | 13910 |
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|--------:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16  | 11,041 | 12,064 | 11,040 | 11,652 | **10,183** | **11,196.0** | 16.8 % ⚠️ |  82.2 | 0.0 % |
+| 32  | 12,736 | 12,694 | 13,130 | 12,722 | 12,874 | 12,831.2 | **3.4 %** | 133.4 | 0.0 % |
+| 64  | 13,506 | 14,059 | 13,910 | 13,231 | 14,010 | 13,743.2 | 6.0 % | 246.6 | 0.0 % |
+| 128 | 14,041 | 13,652 | 13,755 | 14,012 | 13,910 | **13,874.2** | **2.8 %** | 503.3 | 0.0 % |
 
 - **t16 r5 突降至 10183**：較 r2 高峰 12064 下降 -15.6%，導致 range/mean 16.8%。其他 thread 組變異 ≤6.0%。可能成因：RR snapshot 在低併發長時段易受 background compaction / region housekeeping 干擾；高併發下 worker 佔滿 CPU，背景活動被排擠到次要 schedule。
 
@@ -439,16 +422,16 @@ TiKV stores
 
 #### Execute 結果（2026-05-29，TS=20260529T132940+0800）
 
-5-round mean tpmC：
+per-round tpmC + 5-round mean（W=128、RC、N=5）：
 
-| threads | tpmC mean | range/mean | NO p99 mean (ms) |
-|--------:|----------:|-----------:|-----------------:|
-| 16  | 11,682 | 18.9% ⚠️ | 83 |
-| 32  | 14,993 | 25.5% ⚠️ | 138 |
-| 64  | 18,516 | 21.2% ⚠️ | 242 |
-| 128 | **19,654** | 7.0% | 456（代表點）|
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|--------:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16  | 11,604.9 | 11,734.8 | 12,305.5 | 12,487.7 | 10,276.5 | 11,681.9 | 18.9 % ⚠️ |  83.1 | 0.0 % |
+| 32  | 15,807.8 | 15,491.5 | 12,706.3 | 16,525.6 | 14,435.2 | 14,993.3 | 25.5 % ⚠️ | 138.4 | 0.0 % |
+| 64  | 19,644.4 | 20,402.8 | 16,486.4 | 17,602.2 | 18,445.0 | 18,516.2 | 21.2 % ⚠️ | 241.6 | 0.0 % |
+| 128 | 19,941.0 | 19,075.2 | 19,357.4 | 19,438.0 | 20,458.8 | **19,654.1** | 7.0 % | 456.4（代表點）| 0.0 % |
 
-代表點 = **t=128 / 19,654 tpmC / NO_p99 = 456 ms**（5-round mean，0 error）。對照 vm-1node-rc（**13,064 tpmC @ t=128**）→ **+50.4% throughput**，量化 TiDB 3-node + RF=1 cluster framework 對單節點 baseline 的 scale-out 紅利（RF=1 無 quorum 寫入，3 TiKV stores 仍能分散 region leader 工作）。t=16/32/64 range/mean 18.9-25.5% 偏高，符合 1s1r RF=1 下 region leader 路由波動的預期；t=128 收斂至 7% 為 worker queue 填滿後的穩態。Source: [`tidb-vm-3node-1s1r-rc-20260529T132940+0800/summary.json`](./vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260529T132940+0800/summary.json)。
+代表點 = **t=128 / 19,654 tpmC / NO_p99 = 456 ms**（5-round mean，0 error）。對照 vm-1node-rc（**13,064 tpmC @ t=128**）→ **+50.4% throughput**，量化 TiDB 3-node + RF=1 cluster framework 對單節點 baseline 的 scale-out 紅利（RF=1 無 quorum 寫入，3 TiKV stores 仍能分散 region leader 工作）。t=16/32/64 range/mean 18.9-25.5% 偏高（t=32 r3=12,706 vs r4=16,526 為主要 outlier），符合 1s1r RF=1 下 region leader 路由波動的預期；t=128 收斂至 7% 為 worker queue 填滿後的穩態。Source: [`tidb-vm-3node-1s1r-rc-20260529T132940+0800/summary.json`](./vm-3node-1s1r-rc/tidb-vm-3node-1s1r-rc-20260529T132940+0800/summary.json)。
 
 ### vm-3node-1s3r-rc
 
@@ -490,9 +473,16 @@ TiKV stores
 |---|---|
 | `20260529T170933+0800` | `vm-3node-1s3r-rc-pd-sched-l0r0/tidb-vm-3node-1s3r-rc-20260529T170933+0800/` |
 
-tpmC 5-round mean：t=16 = 10,856 ／ t=32 = 12,532 ／ t=64 = 13,823 ／ t=128 = **14,130**。
-NEW_ORDER p99 mean：t=128 = 567 ms。
-實際 region peer count = 1（dry-run 階段 actual peer gate 未啟用，未捕捉）。
+per-round tpmC + 5-round mean（W=128、RC、N=5）：
+
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) |
+|--------:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16  | 10,369.1 | 11,485.7 | 11,294.6 | 10,193.5 | 10,936.1 | 10,855.8 | 11.9 % |  85.6 |
+| 32  | 11,545.5 | 12,214.1 | 12,593.3 | 13,523.0 | 12,783.6 | 12,531.9 | 15.8 % | 151.0 |
+| 64  | 13,834.1 | 14,163.7 | 14,570.0 | 12,440.2 | 14,108.5 | 13,823.3 | 15.4 % | 273.5 |
+| 128 | 14,790.1 | 13,429.7 | 13,964.0 | 14,292.4 | 14,171.1 | **14,129.5** |  9.6 % | 567.1 |
+
+實際 region peer count = 1（dry-run 階段 actual peer gate 未啟用，未捕捉）；本 variant 在 PD `replica/leader-schedule-limit=0` 下退化為假 RF=3，不可作 RF=3 真實表現參考。
 
 ##### vm-3node-1s3r-rc-pd-sched-l4r4/（fixed — `replica=4, leader=4`，Fix #11 + D10）
 
@@ -500,9 +490,16 @@ NEW_ORDER p99 mean：t=128 = 567 ms。
 |---|---|
 | `20260530T162428+0800` | `vm-3node-1s3r-rc-pd-sched-l4r4/tidb-vm-3node-1s3r-rc-20260530T162428+0800/` |
 
-tpmC 5-round mean：t=16 = 11,199 ／ t=32 = 14,765 ／ t=64 = 15,309 ／ t=128 = **16,336**。
-NEW_ORDER p99 mean：t=128 = 527 ms。
-實際 region peer count = 3（dry-run `actual-rf-peer-min/-max=3`，9 region 全 RF=3）。
+per-round tpmC + 5-round mean（W=128、RC、N=5）：
+
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) |
+|--------:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16  | 11,888.2 | 10,904.9 | 10,537.6 | 11,149.4 | 11,512.8 | 11,198.6 | 12.1 % |  84.7 |
+| 32  | 14,914.6 | 14,890.0 | 14,279.5 | 14,608.1 | 15,130.7 | 14,764.6 |  5.8 % | 138.4 |
+| 64  | 15,840.3 | 15,952.9 | 17,694.4 | 12,867.9 | 14,191.3 | 15,309.4 | 31.5 % ⚠️ | 275.1 |
+| 128 | 16,185.3 | 16,364.7 | 16,444.7 | 16,381.4 | 16,302.6 | **16,335.7** |  1.6 % | 526.8（代表點）|
+
+實際 region peer count = 3（dry-run `actual-rf-peer-min/-max=3`，9 region 全 RF=3）。t=128 range/mean = 1.6%，是 4 sub-topology 中最穩；t=64 r3=17,694 vs r4=12,868 是 region rebalance 進行中的單發震盪，t=128 已自然收斂。
 跨 cell 對照 → `dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md`。
 
 ### vm-3node-3s1r-rc
@@ -536,16 +533,16 @@ TiKV stores                                      9 張 TPC-C 表，每張 SPLIT 
 
 #### Execute 結果（2026-05-30，TS=20260530T023238+0800）
 
-5-round mean tpmC：
+per-round tpmC + 5-round mean（W=128、RC、N=5）：
 
-| threads | tpmC mean | range/mean | NO p99 mean (ms) |
-|--------:|----------:|-----------:|-----------------:|
-| 16 | 11,052 | 20.5% ⚠️ | 92 |
-| 32 | 14,890 | 15.1% | 143 |
-| 64 | **16,580** | 15.6% | 270（sweet spot）|
-| 128 | 15,842 | 23.8% ⚠️ | 597 |
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|--------:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16  | 11,965.9 |  9,961.3 | 12,226.8 | 10,896.1 | 10,208.8 | 11,051.8 | 20.5 % ⚠️ |  92.3 | 0.0 % |
+| 32  | 13,793.4 | 14,652.1 | 15,593.3 | 14,376.0 | 16,034.9 | 14,889.9 | 15.1 % | 143.4 | 0.0 % |
+| 64  | 17,695.5 | 15,113.3 | 15,721.6 | 17,281.0 | 17,087.9 | **16,579.9** | 15.6 % | 270.1（sweet spot）| 0.0 % |
+| 128 | 14,514.8 | 17,949.1 | 14,177.0 | 16,236.9 | 16,333.2 | 15,842.2 | 23.8 % ⚠️ | 597.3 | 0.0 % |
 
-代表點 = **t=64 / 16,580 tpmC / NO_p99 = 270 ms**（mean tpmC 最大且不撞極端 latency 之平衡點；t=128 latency 翻倍且 range/mean 飆 23.8%）。對照 vm-3node-1s1r（同 RF=1）→ **−15.6% throughput**（t=128 對比），量化 TiDB 在 RF=1 下純 sharding 成本（low 於 YugabyteDB 同位 −12.7%）。t=64 range/mean 15.6% 偏高，可能與 region leader 分布有關。
+代表點 = **t=64 / 16,580 tpmC / NO_p99 = 270 ms**（mean tpmC 最大且不撞極端 latency 之平衡點；t=128 latency 翻倍且 range/mean 飆 23.8%，r1=14,515 vs r2=17,949 為主要震盪源）。對照 vm-3node-1s1r（同 RF=1）→ **−15.6% throughput**（t=128 對比），量化 TiDB 在 RF=1 下純 sharding 成本（low 於 YugabyteDB 同位 −12.7%）。t=64 range/mean 15.6% 偏高，可能與 region leader 分布有關。
 
 ### vm-3node-3s3r-rc
 
@@ -586,11 +583,18 @@ TiKV stores（每節點持有所有 region 的某 replica）
 |---|---|
 | `20260530T061352+0800` | `vm-3node-3s3r-rc-pd-sched-l0r0/tidb-vm-3node-3s3r-rc-20260530T061352+0800/` |
 
-tpmC 5-round mean：t=16 = 14,041 ／ t=32 = 18,130 ／ t=64 = 19,997 ／ t=128 = **20,455**。
-NEW_ORDER p99 mean：t=128 = 423 ms。
+per-round tpmC + 5-round mean（W=128、RC、N=5）：
+
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) |
+|--------:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16  | 13,918.7 | 13,787.7 | 13,481.0 | 14,539.3 | 14,477.6 | 14,040.9 |  7.5 % |  73.8 |
+| 32  | 17,845.4 | 18,273.0 | 18,483.3 | 17,778.0 | 18,272.5 | 18,130.4 |  3.9 % | 123.3 |
+| 64  | 19,773.8 | 20,297.3 | 19,456.5 | 20,385.7 | 20,070.4 | 19,996.7 |  4.6 % | 228.2 |
+| 128 | 20,108.9 | 20,819.7 | 20,204.9 | 20,787.6 | 20,353.8 | **20,455.0** |  3.5 % | 422.8 |
+
 最終 leader 分佈：**27 / 0 / 0**（單 store 集中）；實際 region peer count = 1（假 RF=3）。
 
-> ⚠️ **本 cell 的 tpmC 不可作為 TiDB 3 節點 RF=3 真實表現參考**。所有 raft work 與 region leader 都集中於單一 store，本質上是「3 stores 中只有 1 個在工作」的退化拓樸；高 tpmC 反映「無 raft replication overhead + 單 store local I/O」的人工捷徑，不是真 RF=3 throughput。
+> ⚠️ **本 cell 的 tpmC 不可作為 TiDB 3 節點 RF=3 真實表現參考**。所有 raft work 與 region leader 都集中於單一 store，本質上是「3 stores 中只有 1 個在工作」的退化拓樸；高 tpmC（含 range/mean 3.5% 之高穩定度）反映「無 raft replication overhead + 單 store local I/O」的人工捷徑，不是真 RF=3 throughput。
 
 ##### vm-3node-3s3r-rc-pd-sched-l4r4/（fixed — `replica=4, leader=4`，Fix #11 + D10）
 
@@ -598,9 +602,16 @@ NEW_ORDER p99 mean：t=128 = 423 ms。
 |---|---|
 | `20260531T085812+0800` | `vm-3node-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-3s3r-rc-20260531T085812+0800/` |
 
-tpmC 5-round mean：t=16 = 11,034 ／ t=32 = 13,111 ／ t=64 = 14,733 ／ t=128 = **15,082**。
-NEW_ORDER p99 mean：t=128 = 590 ms。
-最終 leader 分佈：**4 / 15 / 10**（雖未達 ±20% 容差，但已從 27/0/0 顯著收斂）；實際 region peer count = 3。
+per-round tpmC + 5-round mean（W=128、RC、N=5）：
+
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) |
+|--------:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16  | 11,163.1 | 11,278.7 | 10,577.2 | 10,738.1 | 11,414.7 | 11,034.4 |  7.6 % |  85.6 |
+| 32  | 13,850.8 | 13,094.1 | 13,259.0 | 12,679.9 | 12,672.9 | 13,111.3 |  9.0 % | 152.7 |
+| 64  | 15,329.4 | 15,816.5 | 15,877.0 | 12,979.8 | 13,664.3 | 14,733.4 | 19.7 % ⚠️ | 291.9 |
+| 128 | 15,805.3 | 14,053.2 | 14,583.2 | 15,613.2 | 15,353.9 | **15,081.8** | 11.6 % | 590.5 |
+
+最終 leader 分佈：**4 / 15 / 10**（雖未達 ±20% 容差，但已從 27/0/0 顯著收斂）；實際 region peer count = 3。tpmC 比 l0r0 變體低 26.3%，正是 RF=3 真寫入下的 raft replication 成本——l0r0 的 20,455 其實在「跑單機」，l4r4 的 15,082 才是 3-replica quorum 真實表現。
 
 跨 cell 對照（含 disk I/O 證據 RF=3 真生效）→ `dispatch-records/2026-05-31-tidb-schedule-limit-0-vs-4.md`。
 
@@ -654,8 +665,15 @@ NEW_ORDER p99 mean：t=128 = 590 ms。
 |---|---|
 | `20260601T003316+0800` | `vm-3node-haproxy-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-haproxy-3s3r-rc-20260601T003316+0800/` |
 
-tpmC 5-round mean：t=16 = 11,816 ／ t=32 = 17,986 ／ t=64 = 23,034 ／ t=128 = **26,947**。
-NEW_ORDER p99 mean：t=128 = **309 ms**。
+per-round tpmC + 5-round mean（W=128、RC、N=5）：
+
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) |
+|--------:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16  | 11,819.0 | 12,248.3 | 11,026.3 | 11,752.0 | 12,232.5 | 11,815.6 | 10.3 % |  83.9 |
+| 32  | 17,549.4 | 17,949.0 | 17,684.5 | 18,404.4 | 18,340.1 | 17,985.5 |  4.8 % | 104.9 |
+| 64  | 23,442.2 | 23,202.7 | 22,138.2 | 23,141.9 | 23,245.2 | 23,034.0 |  5.7 % | 172.8 |
+| 128 | 26,748.9 | 25,566.6 | 27,290.7 | 27,561.0 | 27,566.3 | **26,946.7** |  7.4 % | **308.7**（代表點）|
+
 最終 leader 分佈：**7 / 14 / 8**（vs direct l4r4 的 4/15/10，最差偏差從 +55% 縮到 +45%）；實際 region peer count = 3。
 Stability：t=128 range/mean = 7.4%（vs direct l4r4 的 11.6%）。
 
