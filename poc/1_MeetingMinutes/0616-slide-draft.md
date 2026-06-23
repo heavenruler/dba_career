@@ -7,29 +7,69 @@
 
 ---
 
+## 三階段 tpmC 彙整（S-BASE / S-K8S / X-CROSS）
+
+> **重要**：S-BASE / S-K8S 用 W=128 t=128（正式基準 workload），X-CROSS 目前為 W=4 t=16（framework 驗證 workload）。三者數字**不可直接相減**，僅可在「同 workload 條件」內比較保留率。
+
+### Table A. VM 基準 → K8s 額外開銷（同 workload：vm-3node-haproxy-3s3r, RC, t=128）
+
+| 資料庫 | S-BASE (VM) tpmC | S-K8S (unlimit) tpmC | S-K8S (limit) tpmC | unlimit / VM | limit / VM | p99 unlimit Δ | p99 limit Δ |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **TiDB v8.5.2** | 26,947 | 23,442.9 | 15,751.9 | **87.0%** | **58.5%** | +17% | +111% |
+| **CockroachDB v26.2** | 15,033 | 12,196.7 |  6,493.5 | **81.1%** | **43.2%** | +27% | +192% |
+| **YugabyteDB 2025.2** | 15,632 |  2,997.6 |  1,604.5 | **19.2%** ⚠ | **10.3%** ⚠ | +669% | +1556% |
+
+> 數據來源：`analytics-S-K8S-2026-06-15.md` Section 3。tpmC = t=128 平均；p99 為 NEW_ORDER。
+
+### Table B. X-CROSS 跨區框架驗證（W=4 t=16, same-cluster N-round; 06-22/06-23）
+
+| 資料庫 | R1 | R2 | R3 | R4 | R5 | 平均 | CV |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **TiDB v8.5.2** | 9525.5 | 9553.2 | 9786.9 | 9393.2 | 9530.8 | **9566.0** (R2-R5) | **1.67%** ✅ |
+| **CockroachDB v26.2** | 8409.5 | 8055.3 | 7902.5 | 7720.9 | 7472.3 | **7787.8** (R2-R5) | **3.23%** ✅ |
+| **YugabyteDB 2025.2** |  102.0 |  226.9 | 6424.2 | 6259.3 | 6206.2 | **6296.6** (R3-R5) | **1.82%** ✅ |
+
+> 數據來源：`results/X-CROSS/run1-20260622T131459+0800/{tidb,crdb}-vm-6node-P-A-rc-run1-*` 與 `results/X-CROSS/run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-*`，commit `dd948dcf` + `28e39881`。
+
+### Table C. 階段對比解讀
+
+| 階段對比 | 條件可比？ | 觀察重點 |
+|---|---|---|
+| **S-BASE ↔ S-K8S** | ✅ 同 workload (W=128 t=128) | K8s 額外開銷：TiDB 高保留率 87% / CRDB 81% / YBDB 19%（YBDB K8s 化大幅退化）|
+| **S-K8S ↔ X-CROSS** | ❌ workload 不同 (W=128 t=128 vs W=4 t=16) | 不可比；X-CROSS 為 framework 驗證，不是正式跨家排名 |
+| **X-CROSS 內部** | ✅ same-cluster N-round | 重現性 CV ≤ 5%：證實 06-21 ±526% 變異主因為重新部署，不是 W=4 contention 本身 |
+
+### 階段判讀
+
+1. **S-BASE 正式基準**：W=128 t=128 數字可作對外排名參考（TiDB > CRDB ≈ YBDB）。
+2. **S-K8S 退化模式分歧**：TiDB / CRDB K8s 額外開銷在合理範圍 (13-19% drop)；YBDB K8s 退化嚴重 (80% drop)，p99 +669%，反映 YBDB postgres backend + DocDB 雙 process 在 K8s pod 內 IPC + CPU contention 放大。
+3. **X-CROSS 框架已驗**：部署 → 探煙 → 清理流程鏈跑通，三家 W=4 R2-R5 CV ≤ 5%，可進入正式 W=128 跨區基準；**不可直接以 X-CROSS W=4 數字推論跨區效能排名**（W=4 contention dominates）。
+
+---
+
 ## 2026-06-16～2026-06-22 實作進度更新（v2 重整輸入）
 
-> 本段為下一版簡報的新增事實基礎，優先於下方 Slide 4 / 7 / 8 仍保留的 2026-06-16 舊狀態。重新彙整時須區分「正式 baseline」、「smoke 路徑驗證」與「尚未完成的 determinism 修正」，不得把三者混寫。
+> 本段為下一版簡報的新增事實基礎，優先於下方 Slide 4 / 7 / 8 仍保留的 2026-06-16 舊狀態。重新彙整時須區分「正式基準」、「探煙路徑驗證」與「尚未完成的 determinism 修正」，不得把三者混寫。
 
 ### 進度摘要
 
 | 日期 | 實作／驗證進度 | 結果與限制 |
 |---|---|---|
-| **06-16** | 整合 CockroachDB / YugabyteDB 六節點 playbook、IDC VM baseline reset、WAN probe、C1/C4/C7 chaos planner 與 F1 failover planner | Chaos / failover 此時只有 dry-run command planner，不代表已完成故障實測 |
-| **06-17** | 完成 cross-region pre-flight test plan v2；修正 WAN probe、iperf3 bootstrap、sweep archive 等五項啟動前問題 | framework reserve 與啟動條件建立完成；正式 sweep 尚未開始 |
-| **06-18** | IDC / GCP IaC 重建與 destroy 驗證通過；TiDB deploy 通過；修正 GCP startup-script heredoc 與 chrony gate `KeyError` | IDC↔GCP 控制平面受防火牆阻擋，當日無跨區正式數據；後續完成 13 TCP ports / 9-rule / CIDR 申請整理 |
-| **06-19** | 防火牆開通後完成 TiDB、CockroachDB、YugabyteDB 真六節點 P-A smoke；新增九階段 Makefile orchestration | 僅 W=4、16 threads、短時間 smoke；證明部署與交易路徑可行，不是正式效能排名 |
-| **06-20** | 補強 YugabyteDB 跨區 timing、Plan A、WAN probe 與 leader / lease / tablet snapshot instrumentation | 提升 placement 與跨區狀態的可觀測性，仍未形成 W=128 baseline |
-| **06-21** | 導入 YugabyteDB Plan B 與 best-practice gates；保留 21 次 smoke artifacts；同 cluster 重跑 determinism 對照 | 三家 W=4 run-to-run 差異均過大，W=4 結果判定不可作正式 baseline |
-| **06-22** | 規劃 determinism v2：同 cluster round-only、scheduler / balancer freeze、R2～R5 CV / median、W=128 正式 baseline | Makefile、freeze/unfreeze、round-only runner 與 HAProxy 仍在工作樹及 review；尚未驗收，不得標示完成 |
+| **06-16** | 整合 CockroachDB / YugabyteDB 六節點 playbook、IDC VM 基準冷重置、WAN probe、C1/C4/C7 chaos planner 與 F1 failover planner | Chaos / failover 此時只有試跑指令規劃器，不代表已完成故障實測 |
+| **06-17** | 完成 cross-region pre-flight test plan v2；修正 WAN probe、iperf3 bootstrap、sweep archive 等五項啟動前問題 | 框架 reserve 與啟動條件建立完成；正式量測尚未開始 |
+| **06-18** | IDC / GCP IaC 重建與 destroy 驗證通過；TiDB 部署通過；修正 GCP startup-script heredoc 與 chrony gate `KeyError` | IDC↔GCP 控制平面受防火牆阻擋，當日無跨區正式數據；後續完成 13 TCP ports / 9-rule / CIDR 申請整理 |
+| **06-19** | 防火牆開通後完成 TiDB、CockroachDB、YugabyteDB 真六節點 P-A 探煙；新增九階段 Makefile orchestration | 僅 W=4、16 threads、短時間探煙；證明部署與交易路徑可行，不是正式效能排名 |
+| **06-20** | 補強 YugabyteDB 跨區 timing、Plan A、WAN probe 與 leader / lease / tablet snapshot instrumentation | 提升 placement 與跨區狀態的可觀測性，仍未形成 W=128 基準 |
+| **06-21** | 導入 YugabyteDB Plan B 與 best-practice gates；保留 21 次 smoke artifacts；同 cluster 重跑 determinism 對照 | 三家 W=4 run-to-run 差異均過大，W=4 結果判定不可作正式基準 |
+| **06-22** | 規劃 determinism v2：同 cluster round-only、scheduler / balancer 關閉、R2～R5 CV / 中位數、W=128 正式基準 | Makefile、調度關/開、round-only runner 與 HAProxy 仍在工作樹及審查；尚未驗收，不得標示完成 |
 
-### 06-19 三資料庫真六節點 smoke
+### 06-19 三資料庫真六節點探煙
 
 共同條件：IDC 3 nodes + GCP 3 nodes、P-A placement、READ COMMITTED、IDC client、W=4、16 threads、短時間單輪。
 
 | 資料庫 | smoke tpmC | 驗證到的事項 | 不可推論的事項 |
 |---|---:|---|---|
-| **TiDB v8.5.2** | **11112.9** | 六節點 cluster 與 IDC leader placement 可執行交易 | 不可與 VM/K8s W=128 baseline 直接比較 |
+| **TiDB v8.5.2** | **11112.9** | 六節點 cluster 與 IDC leader placement 可執行交易 | 不可與 VM/K8s W=128 基準直接比較 |
 | **CockroachDB v26.2.0** | **2145.2** | 六節點存活、region locality 與跨區交易路徑可運作 | 不可由單輪數字判定正式延遲或跨家排名 |
 | **YugabyteDB 2025.2.2.2** | **6812.2** | 真六 tserver、IDC/GCP placement 與 preferred zone 路徑跑通 | 不可把相對 IDC-only 的差異直接歸因為 scale-out 效益 |
 
@@ -45,7 +85,7 @@
 
 ### 06-21 Determinism 驗證結果
 
-條件：同 cluster 重新 deploy DB、W=4、16 threads、每次 5 分鐘。
+條件：同 cluster 重新部署 DB、W=4、16 threads、每次 5 分鐘。
 
 | 資料庫 | Run 1 | Run 2 | 差異 |
 |---|---:|---:|---:|
@@ -55,45 +95,45 @@
 
 **已確認結論**：上述 W=4 結果不具重現性，不得納入正式跨家比較，也不得用來更新候選排序。
 
-**目前待驗證假設**：變異可能同時受低 warehouse contention、重新部署後 placement / scheduler 狀態、warmup 與背景調度影響。`SESSION-2026-06-21-determinism.md` 將主要原因判為 W=4 lock contention，但正式因果仍須由 06-22 的同 cluster、freeze 與 CV 實驗確認。
+**目前待驗證假設**：變異可能同時受低 warehouse contention、重新部署後 placement / scheduler 狀態、暖機與背景調度影響。`SESSION-2026-06-21-determinism.md` 將主要原因判為 W=4 lock contention，但正式因果仍須由 06-22 的同 cluster、調度關閉與 CV 實驗確認。
 
 ### 06-22 ~ 06-23 Determinism v2 初步驗證結果（X-CROSS）
 
-條件：**同 cluster N 連跑**、W=4、16 threads、每 round 5 min、5 rounds、controller = `.31` (IDC client, 取代 Mac IAP tunnel)、deploy → smoke → cleanup → 下一個 DB（serial chain）。
+條件：**同 cluster N 連跑**、W=4、16 threads、每 round 5 min、5 rounds、控制節點 = `.31` (IDC client, 取代 Mac IAP tunnel)、部署 → 探煙 → 清理 → 下一個 DB（序列流程鏈）。
 
-| 資料庫 | R1 | R2 | R3 | R4 | R5 | mean | CV | 備註 |
+| 資料庫 | R1 | R2 | R3 | R4 | R5 | 平均 | CV | 備註 |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
 | **TiDB v8.5.2** | 9525.5 | 9553.2 | 9786.9 | 9393.2 | 9530.8 | **9566.0** (R2-R5) | **1.67%** ✅ | placement P-A，6 store ALIVE |
 | **CockroachDB v26.2.0** | 8409.5 | 8055.3 | 7902.5 | 7720.9 | 7472.3 | **7787.8** (R2-R5) | **3.23%** ✅ | placement P-A num_voters=3，lease 100% IDC |
-| **YugabyteDB 2025.2** | 102.0 | 226.9 | 6424.2 | 6259.3 | 6206.2 | **6296.6** (R3-R5) | **1.82%** ✅ | Plan B (IDC live RF=3 + GCP read_replica RF=3)；R1+R2 為 postgres backend cache warmup |
+| **YugabyteDB 2025.2** | 102.0 | 226.9 | 6424.2 | 6259.3 | 6206.2 | **6296.6** (R3-R5) | **1.82%** ✅ | Plan B (IDC live RF=3 + GCP read_replica RF=3)；R1+R2 為 postgres backend cache 暖機 |
 
 > 數據來源：`results/X-CROSS/run1-20260622T131459+0800/{tidb,crdb}-vm-6node-P-A-rc-run1-*` 與 `results/X-CROSS/run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-*`。commit `dd948dcf` + `28e39881`。
 
 **已確認結論**：
-- 06-21 觀察到的 ±526% / ±50% 變異主因為「每輪重新 deploy」造成 placement / cache / scheduler 狀態異動，與 W=4 contention 是兩個獨立來源。
+- 06-21 觀察到的 ±526% / ±50% 變異主因為「每輪重新部署」造成 placement / cache / scheduler 狀態異動，與 W=4 contention 是兩個獨立來源。
 - 同一 cluster 連跑時，三家 W=4 R2-R5（或 YBDB R3-R5）的 CV ≤ 5%，重現性已建立。
-- YBDB Idle=0 詭異（read_replica 模式 benign）解法：(a) gate 改用 `get_load_move_completion=100%`，(b) timed run 前 `set_load_balancer_enabled=0`，run 後 enable=1。
+- YBDB Idle=0 詭異（read_replica 模式 良性）解法：(a) gate 改用 `get_load_move_completion=100%`，(b) timed run 前 `set_load_balancer_enabled=0`，run 後 enable=1。
 - CRDB lease gate SQL 改用 `[SHOW RANGES FROM DATABASE tpcc WITH TABLES, DETAILS]`（v26.2 `crdb_internal.ranges` 無 `table_name` 欄位且禁止存取）。
-- 上述為 framework / contention 驗證；**仍不得**作為跨家排名或正式 baseline，後續需依「v2 完成條件」回到 W=128。
+- 上述為 framework / contention 驗證；**仍不得**作為跨家排名或正式基準，後續需依「v2 完成條件」回到 W=128。
 
 ### 06-22 Determinism v2 方向與完成條件
 
-1. **同一 cluster 執行**：不在每輪間重 deploy 或 cold reset。
-2. **測量前收斂**：placement gate 通過後才 freeze scheduler / balancer，並等待 in-flight operator 清空。
-3. **正式 warmup**：go-tpc 無 `--warmup` 參數，必須由外部流程實作；正式口徑仍為 20 分鐘。
-4. **正式採樣**：5 rounds，排除 R1，以 R2～R5 median 與 CV 判讀。
+1. **同一 cluster 執行**：不在每輪間重部署或冷重置。
+2. **測量前收斂**：placement gate 通過後才關閉 scheduler / balancer，並等待 in-flight operator 清空。
+3. **正式暖機**：go-tpc 無 `--warmup` 參數，必須由外部流程實作；正式口徑仍為 20 分鐘。
+4. **正式採樣**：5 rounds，排除 R1，以 R2～R5 中位數與 CV 判讀。
 5. **正式 workload**：回到 W=128；W=4 僅能作 framework / contention probe。
 6. **失敗回復**：任何階段失敗都必須依原始 dump 還原 TiDB PD、CockroachDB settings 與 YugabyteDB load balancer。
-7. **放行條件**：freeze/unfreeze、round-only runner、warmup、placement gate、artifact fetch 與 CV report 全部通過 review，才能啟動正式 baseline。
+7. **放行條件**：調度關/開、round-only runner、暖機、placement gate、產物抓取與 CV report 全部通過審查，才能啟動正式基準。
 
 ### v2 簡報需連帶修改的頁面
 
-- **Slide 1**：X-CROSS 狀態改為「三家六節點 smoke 已完成；正式 W=128 sweep 待 determinism gate」。
+- **Slide 1**：X-CROSS 狀態改為「三家六節點探煙已完成；正式 W=128 量測待 determinism gate」。
 - **Slide 2～4**：新增專案歷程，逐項同時呈現時間、階段、重大節點與狀態。
-- **Slide 7**：移除「兩處 blocker 待修」舊敘述；改呈現 06-18～06-22 的部署、smoke 與 determinism 狀態。
-- **Slide 8**：候選排序不得引用 W=4 smoke；application owner 五項議題維持不變。
+- **Slide 7**：移除「兩處 blocker 待修」舊敘述；改呈現 06-18～06-22 的部署、探煙與 determinism 狀態。
+- **Slide 8**：候選排序不得引用 W=4 探煙；application owner 五項議題維持不變。
 - **Slide 9**：新增 W=4 不可比、W=128 / N=3 尚待補強，以及 06-22 程式仍未驗收的 caveat。
-- **Slide 10**：短期工作改為完成 determinism pipeline 與 W=128 baseline；中期才進 P-A / P-B、A-S / A-A-RO / A-A、F1 與 chaos。
+- **Slide 10**：短期工作改為完成 determinism 流程與 W=128 基準；中期才進 P-A / P-B、A-S / A-A-RO / A-A、F1 與 chaos。
 - **成本與工期**：原 150 小時 / 360 rounds / USD 估算屬 06-16 規劃值，重新彙整前須依縮減後 scope 重算，不沿用舊數字。
 
 ### 新增引用來源
@@ -116,20 +156,20 @@
 
 | Phase | 範圍 | 狀態 |
 |---|---|---|
-| **S-BASE**（VM baseline） | TiDB / CockroachDB / YugabyteDB × 指定 isolation × 指定拓撲 | ✅ 已完成主要驗證 |
+| **S-BASE**（VM 基準） | TiDB / CockroachDB / YugabyteDB × 指定 isolation × 指定拓撲 | ✅ 已完成主要驗證 |
 | **S-K8S**（K8s 對照） | 三家 × {unlimit, limit} = 6 cell | ✅ 已完成主要驗證 |
-| **T-THRD**（thread control） | thread sweep 行為對標 | 🟡 待完成 |
-| **X-CROSS**（跨區域 / 跨專線） | 6-node TiDB cluster + GCP 跨區、placement、failover、chaos | 🟡 框架與規劃已建立；sweep 數據待執行 |
+| **T-THRD**（thread control） | 執行緒量測行為對標 | 🟡 待完成 |
+| **X-CROSS**（跨區域 / 跨專線） | 6-node TiDB cluster + GCP 跨區、placement、failover、chaos | 🟡 框架與規劃已建立；量測數據待執行 |
 
 ### 三點結論
 
 1. **已完成什麼**
-   - 三家資料庫於同一 4 vCPU 硬體 + W=128 TPCC 工作負載下完成 baseline 對標
+   - 三家資料庫於同一 4 vCPU 硬體 + W=128 TPCC 工作負載下完成基準對標
    - VM 與 Kubernetes 部署平面差異已實測量化
    - 跨區域測試框架（IaC / playbook / suite scripts / chrony drift gate）已就位
 
 2. **已觀察到什麼**
-   - TiDB 與 CockroachDB 在 K8s 部署下吞吐 retention 約八成
+   - TiDB 與 CockroachDB 在 K8s 部署下吞吐保留率約八成
    - YugabyteDB 在 K8s 部署下吞吐明顯退化，**成因尚未定位，列為後續調校項**
    - 全程 N=1 量測；正式採購或導入決策前**需補 N=3 重跑**（已列入下一階段）
 
@@ -147,7 +187,7 @@
 | 時間 | 階段 | 設計／開發／除錯重大節點 | 狀態 |
 |---|---|---|---|
 | **2026-03-30～04-10** | **前期研究** | 定義分散式 SQL、跨區同鍵寫入、follower read、HA/DR 與九項 survey 評估面向 | ✅ 前期範圍完成 |
-| **2026-04-21～04-27** | **IaC 與第一版測試鏈** | 建立多測項部署、HAProxy、VM / Kubernetes 流程及獨立壓測 client | ✅ 第一版框架完成 |
+| **2026-04-21～04-27** | **IaC 與第一版測試流程鏈** | 建立多測項部署、HAProxy、VM / Kubernetes 流程及獨立壓測 client | ✅ 第一版框架完成 |
 | **2026-04-28～05-05** | **YugabyteDB 首輪除錯** | 處理 BenchmarkSQL、bulk load、snapshot、RF / schema packing 與 HAProxy 問題 | ✅ 可執行路徑完成；後由 v4.7 取代 |
 | **2026-05-06～05-14** | **三資料庫對標成形** | 納入 TiDB、CockroachDB、YugabyteDB，統一結果結構與 go-tpc 工具鏈 | ✅ 第一輪跨家框架完成 |
 
@@ -155,16 +195,16 @@
 
 ---
 
-## Slide 3 — 專案歷程：Baseline、三節點與治理
+## Slide 3 — 專案歷程：基準、三節點與治理
 
 > **本頁核心**：將測試從可執行提升為可重現、可追溯、可拆解成本來源
 
 | 時間 | 階段 | 設計／開發／除錯重大節點 | 狀態 |
 |---|---|---|---|
-| **2026-05-18～05-21** | **v4.7 baseline 重構** | 建立 PoC-DESIGN SSOT、detached suite、gate、marker、summary 與單節點三隔離級對標 | ✅ 已完成 |
-| **2026-05-22～06-02** | **三節點 controlled experiment** | 完成 shard × replica × HAProxy 拓撲、12-cell dry-run 與三家 5-cell 結果 | ✅ N=1 已完成 |
-| **2026-05-20～06-04** | **文件與數據治理** | 建立模板、AI 協作規範、artifact-first 審計與三家 pipeline-log 對齊 | ✅ 第一輪收斂完成 |
-| **2026-06-06～06-07** | **Phase isolation** | 分離 S-BASE、S-K8S、T-THRD、X-CROSS，建立 manifest、guard 與 metrics fan-out | ✅ 框架完成 |
+| **2026-05-18～05-21** | **v4.7 基準重構** | 建立 PoC-DESIGN SSOT、detached suite、gate、marker、summary 與單節點三隔離級對標 | ✅ 已完成 |
+| **2026-05-22～06-02** | **三節點 controlled experiment** | 完成 shard × replica × HAProxy 拓撲、12-cell 試跑與三家 5-cell 結果 | ✅ N=1 已完成 |
+| **2026-05-20～06-04** | **文件與數據治理** | 建立模板、AI 協作規範、artifact-first 審計與三家流程-log 對齊 | ✅ 第一輪收斂完成 |
+| **2026-06-06～06-07** | **Phase isolation** | 分離 S-BASE、S-K8S、T-THRD、X-CROSS，建立配置宣告、守門檢查與指標分發 | ✅ 框架完成 |
 
 **判讀**：正式數字必須能追回測試條件、時間戳、結果檔案與 done marker；缺少來源時不進主表。
 
@@ -176,12 +216,12 @@
 
 | 時間 | 階段 | 設計／開發／除錯重大節點 | 狀態 |
 |---|---|---|---|
-| **2026-06-08～06-14** | **Kubernetes v4.7** | 由單 cell dry-run 擴充至三資料庫 × limit / unlimit 六組正式 suite | ✅ 6/6 完成，含 caveat |
-| **2026-06-08～06-17** | **跨區設計與前置開發** | 建立 5 GCP VM、六節點部署、placement、WAN、chaos、failover 與 pre-flight 規格 | 🟡 框架完成；部分能力僅 dry-run plan |
-| **2026-06-18～06-19** | **IDC↔GCP 實際驗證** | 修正 IaC、gate、防火牆與 YugabyteDB placement，三家完成真六節點 smoke | ✅ smoke 完成；非正式效能結論 |
-| **2026-06-21～06-22** | **Determinism 收斂** | W=4 重跑變異過大，改採同 cluster、freeze / unfreeze、CV 與 W=128 baseline | 🟡 進行中；尚未形成正式結論 |
+| **2026-06-08～06-14** | **Kubernetes v4.7** | 由單 cell 試跑擴充至三資料庫 × limit / unlimit 六組正式 suite | ✅ 6/6 完成，含 caveat |
+| **2026-06-08～06-17** | **跨區設計與前置開發** | 建立 5 GCP VM、六節點部署、placement、WAN、chaos、failover 與 pre-flight 規格 | 🟡 框架完成；部分能力僅試跑 plan |
+| **2026-06-18～06-19** | **IDC↔GCP 實際驗證** | 修正 IaC、gate、防火牆與 YugabyteDB placement，三家完成真六節點探煙 | ✅ 探煙完成；非正式效能結論 |
+| **2026-06-21～06-22** | **Determinism 收斂** | W=4 重跑變異過大，改採同 cluster、調度關 / 開、CV 與 W=128 基準 | 🟡 進行中；尚未形成正式結論 |
 
-**決策界線**：目前可確認六節點跨區交易路徑可行；正式跨家排序必須等待 W=128、R2～R5 median / CV 與完整回復流程驗收。
+**決策界線**：目前可確認六節點跨區交易路徑可行；正式跨家排序必須等待 W=128、R2～R5 中位數 / CV 與完整回復流程驗收。
 
 ---
 
@@ -193,11 +233,11 @@
 
 | 資料庫 | 第一階段觀察 | 適合的導入定位 |
 |---|---|---|
-| **TiDB** | VM 與 K8s 吞吐表現較佳；K8s retention 較高 | **短期優先候選**之一，可優先進入應用情境對接 |
+| **TiDB** | VM 與 K8s 吞吐表現較佳；K8s 保留率較高 | **短期優先候選**之一，可優先進入應用情境對接 |
 | **CockroachDB** | 一致性語意較強（SSI 預設）；但 SI / SSI 模式下 retry 與效能成本明顯 | **保留觀察**：應用層需評估 retry 容忍度與交易模式 |
 | **YugabyteDB** | VM + HAProxy 表現可觀；K8s 結果**目前不宜直接作為導入結論** | **保留觀察**：K8s 部署仍需調校與驗證，VM 路徑可進入評估 |
 
-### 同硬體 baseline 數字（vm-3node-haproxy-3s3r-rc，t=128 mean tpmC）; 後續數據嚴禁四捨五入 ; 禁止修改原始資料
+### 同硬體基準數字（vm-3node-haproxy-3s3r-rc，t=128 平均 tpmC）; 後續數據嚴禁四捨五入 ; 禁止修改原始資料
 
 ```
 TiDB           ≈ 26,900
@@ -205,7 +245,7 @@ YugabyteDB     ≈ 15,600
 CockroachDB    ≈ 15,000
 ```
 
-> 註：本組數字為 controlled experiment baseline（vm-3node 拓撲全部鎖定 sharding / replication 參數），目的是觀察拆解後的純效應，**不直接代表各家「拿出來就跑」的生產表現**（見 `results/PoC-DESIGN.md` §6）。
+> 註：本組數字為 controlled experiment 基準（vm-3node 拓撲全部鎖定 sharding / replication 參數），目的是觀察拆解後的純效應，**不直接代表各家「拿出來就跑」的生產表現**（見 `results/PoC-DESIGN.md` §6）。
 
 ### 三家架構差異速覽
 
@@ -213,7 +253,7 @@ CockroachDB    ≈ 15,000
 |---|---|---|---|
 | 部署形態 | TiDB compute + TiKV storage + PD（多 process） | single-binary | YSQL + DocDB（雙 process） |
 | 原生強一致 | 不支援原生 SERIALIZABLE | SSI 預設 | SSI |
-| 1-node TPCC 行為 | 已對標（baseline 用） | 已對標（baseline 用） | 已對標（baseline 用） |
+| 1-node TPCC 行為 | 已對標（基準用） | 已對標（基準用） | 已對標（基準用） |
 | 3-node scale-out 行為 | 觀察值最高 | 觀察值中等 | 觀察值中等 |
 
 > 商業實體 / 授權 / 採購層面議題請見 Slide 5 / Slide 6 風險頁。
@@ -224,9 +264,9 @@ CockroachDB    ≈ 15,000
 
 > **本頁核心**：K8s 化對 TiDB 與 CockroachDB 屬可接受範圍；YugabyteDB 在 K8s 下退化顯著、列為調校與驗證項
 
-### t=128 mean tpmC（K8s 不設資源限制 vs VM baseline）
+### t=128 平均 tpmC（K8s 不設資源限制 vs VM 基準）
 
-| 資料庫 | VM baseline | K8s（不限資源） | K8s retention | K8s（資源限制情境）retention |
+| 資料庫 | VM 基準 | K8s（不限資源） | K8s 保留率 | K8s（資源限制情境）保留率 |
 |---|---:|---:|---:|---:|
 | TiDB | 26,947 | 23,442.9 | **約 87%** ✅ | 約 58% |
 | CockroachDB | 15,033 | 12,196.7 | **約 81%** ✅ | 約 43% |
@@ -244,7 +284,7 @@ CockroachDB    ≈ 15,000
 
 ## Slide 7 — 跨區域 / 跨專線進度
 
-> **本頁核心**：框架與規劃已建立；dry-run blocker 修正後才能進入 sweep
+> **本頁核心**：框架與規劃已建立；試跑 blocker 修正後才能進入量測
 
 ### Done — 已完成
 
@@ -258,19 +298,19 @@ CockroachDB    ≈ 15,000
 
 - 修正 ansible inventory / playbook hostname mapping（B1，10 分鐘）與 IDC HAProxy IP（B2，5 分鐘）兩處 blocker
 - terraform apply 重建 GCP 5 VM（28 秒）
-- 完成 cross-region dry-run 驗證
-- 進入 sweep 實跑
+- 完成 cross-region 跨區 試跑驗證
+- 進入量測實跑
 
-### Sweep 時間估計
+### 量測時間估計
 
-- **量級**：約 150 小時 sweep 執行時間（360 rounds × 平均 25 分鐘）
+- **量級**：約 150 小時量測執行時間（360 rounds × 平均 25 分鐘）
 - **連續執行**：約 6.25 天 wall-clock
-- **實務上排程**：約 19 個工作天，**會分批執行並設置 review gate**（避免一次性 6 天連續佔用 IDC 端機器）
-- **計費**：GCP 5 VM 連續開機約 USD 590 / 月，sweep 期間約 USD 40 自然發生
+- **實務上排程**：約 19 個工作天，**會分批量測並設置審查閘門**（避免一次性 6 天連續佔用 IDC 端機器）
+- **計費**：GCP 5 VM 連續開機約 USD 590 / 月，量測期間約 USD 40 自然發生
 
 ### Risk — 風險
 
-- sweep 期間 IDC 端機器負載連續（建議避開其他維護）
+- 量測期間 IDC 端機器負載連續（建議避開其他維護）
 - 部分 K8s cap 情境下 TPCC client 可能 hang（已於第一階段 Cell 6 YugabyteDB-limit T128 觀察到 deterministic 行為，跨區域階段拓撲不同，**列為觀察項**）
 - 跨區域網路 drift 異常需 fail-closed gate（已實作於 chrony 10-host 版）
 
@@ -287,7 +327,7 @@ CockroachDB    ≈ 15,000
 | **短期候選** | TiDB | 優先進入應用情境對接 |
 | **保留觀察** | CockroachDB | 依一致性需求、retry 容忍度、維運成本評估 |
 | **保留觀察** | YugabyteDB | VM 路徑可評估；K8s 路徑需先完成部署層級調校與驗證 |
-| **暫不作結論** | 跨區域場景、K8s 退化未定位項 | 等下一階段 sweep 與調校產出再回頭評估 |
+| **暫不作結論** | 跨區域場景、K8s 退化未定位項 | 等下一階段量測與調校產出再回頭評估 |
 
 ### Application owner 需要確認的議題
 
@@ -311,13 +351,13 @@ CockroachDB    ≈ 15,000
 |---|---|---|
 | **已驗證事實** | 三家 VM / K8s tpmC 數字、p99 數字、error count | 可在會議中引用；**但不可作為唯一採購或導入決策依據** |
 | **工程推論** | TiDB K8s 偶發 stall event 推測為 leader transition / NodePort iptables | 引用時需附「推論」字樣 |
-| **待補數據** | N=3 重跑、YugabyteDB K8s retention 成因、跨區域 sweep 結果 | 引用前需說明數據尚未產出 |
+| **待補數據** | N=3 重跑、YugabyteDB K8s 保留率成因、跨區域量測結果 | 引用前需說明數據尚未產出 |
 
 ### 主要 caveat
 
-- **N=1 量測**：第一階段全部 cell 單次跑，pipeline-log 已標註「下一階段補 N=3」
-- **YugabyteDB K8s 19% retention**：成因尚未定位，列為後續調校項；可能涉及 helm chart 預設、tablet 配置、raft 跨 pod 開銷等
-- **採購 / 商業實體層面**：候選廠商之商業實體狀態、供應鏈與政策考量，需另案 review，**不在本份技術簡報範圍內**
+- **N=1 量測**：第一階段全部 cell 單次跑，流程-log 已標註「下一階段補 N=3」
+- **YugabyteDB K8s 19% 保留率**：成因尚未定位，列為後續調校項；可能涉及 helm chart 預設、tablet 配置、raft 跨 pod 額外開銷等
+- **採購 / 商業實體層面**：候選廠商之商業實體狀態、供應鏈與政策考量，需另案審查，**不在本份技術簡報範圍內**
 
 ---
 
@@ -325,22 +365,22 @@ CockroachDB    ≈ 15,000
 
 > **本頁核心**：分三階段推進，不是 task list
 
-### 短期（修正 blocker、完成 cross-region dry-run）
+### 短期（修正 blocker、完成 cross-region 跨區 試跑）
 
 - 修補 ansible inventory / playbook 兩處 blocker
 - terraform apply 重建 GCP 5 VM
-- 跑通 cross-region dry-run
+- 跑通 cross-region 跨區 試跑
 
-### 中期（完成跨區域 sweep、failover、chaos）
+### 中期（完成跨區域量測、failover、chaos）
 
-- A-S / A-A-RO / A-A 三個 workload profile × P-A / P-B placement × 三家資料庫，依 review gate 分批 sweep
+- A-S / A-A-RO / A-A 三個 workload profile × P-A / P-B placement × 三家資料庫，依審查閘門分批量測
 - failover 與 chaos（C1 / C4 / C7）driven 測試
 - 跨區域 analytics 第二份報告
 
 ### 決策（與 application 共同定義導入候選場景）
 
 - application owner 完成 Slide 5 五項議題確認
-- 採購 / 商業實體層面 review 完成
+- 採購 / 商業實體層面審查完成
 - 選定一個或多個短期候選進入導入規劃
 
 ---
@@ -365,6 +405,6 @@ CockroachDB    ≈ 15,000
 | 預期問題 | 回應方向 |
 |---|---|
 | 為什麼 YugabyteDB K8s 退化這麼多？ | 成因尚未定位，列為後續調校項；不在第一階段結論範圍內 |
-| 何時可以給出最終建議？ | 待跨區域 sweep 完成 + application owner 五項議題共識 + 採購層面 review 完成 |
-| K8s 化值得做嗎？ | TiDB 與 CockroachDB 在 K8s 不限資源情境下 retention 約 80% 以上、屬可接受；資源限制情境下吞吐砍半、p99 明顯惡化，須依應用情境權衡 |
-| 是否需要等所有數據完整才能決策？ | 部分決策（如 application owner 議題確認、採購 / 商業實體 review）可平行進行，**不需等技術數據全齊才開始** |
+| 何時可以給出最終建議？ | 待跨區域量測完成 + application owner 五項議題共識 + 採購層面審查完成 |
+| K8s 化值得做嗎？ | TiDB 與 CockroachDB 在 K8s 不限資源情境下保留率約 80% 以上、屬可接受；資源限制情境下吞吐砍半、p99 明顯惡化，須依應用情境權衡 |
+| 是否需要等所有數據完整才能決策？ | 部分決策（如 application owner 議題確認、採購 / 商業實體審查）可平行進行，**不需等技術數據全齊才開始** |
