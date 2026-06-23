@@ -233,27 +233,18 @@ OS gate（本輪 WARN 但不卡）：
 - ANALYZE：`psql ... -c "ANALYZE"` exit 0
 - EXPLAIN dump：warehouse + customer × `EXPLAIN ...` 用 `ysqlsh`（YB 隨附，避 PG ≤11 psql `\d+` relhasoids 問題）
 
-### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
+### Execute 結果（5 round mean；NEW_ORDER latency）
 
-> tpmC / tpmTotal / efficiency 為 5 round mean；**NO p50 / p95 / p99 亦為 5 round latency mean**。`range/mean` 為 `(max - min) / mean` × 100% 看 round-to-round 波動。
+> tpmC / latency / error rate 皆取自 [`summary.json`](./vm-1node-rc/ybdb-vm-1node-rc-20260520T134929+0800/summary.json)；p50 / p95 / tpmTotal / efficiency 補充見 `summary.json`。
 
-| threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) |
-|---------|-----------|-----------|---------------|-----------------|------------|------------|------------|
-| 16  | 10,653 | 2.8% | 23,611 | 647.2% | 58  | 88  | 104  |
-| 32  | **11,436** | 4.2% | 25,437 | 694.8% | 105 | 170 | 216  |
-| 64  | 11,240 | 2.2% | 24,963 | 682.8% | 210 | 339 | 440  |
-| 128 | 10,885 | 4.9% | 24,136 | 661.3% | 416 | 738 | 1000 |
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16 | 10,610 | 10,567 | 10,587 | 10,635 | 10,864 | 10,653 | 2.8% | 104 | 0.0% |
+| 32 | 11,643 | 11,451 | 11,468 | 11,457 | 11,163 | **11,436** | 4.2% | 216 | 0.0% |
+| 64 | 11,283 | 11,373 | 11,289 | 11,123 | 11,133 | 11,240 | 2.2% | 440 | 0.0% |
+| 128 | 11,224 | 10,786 | 10,869 | 10,694 | 10,851 | 10,885 | 4.9% | 1,000 | 0.0% |
 
 > **零 error 全程**：20 round 內 `NEW_ORDER_ERR = 0`、`execute run failed = 0`、`Restart read required = 0`。RC + 雙閘 + tserver gflag 共同確保。
-
-### Round-by-round tpmC（檢驗穩定性）
-
-| Threads | r1 | r2 | r3 | r4 | r5 |
-|---------|-----|-----|-----|-----|-----|
-| 16  | 10610 | 10567 | 10587 | 10635 | 10864 |
-| 32  | 11643 | 11451 | 11468 | 11457 | 11163 |
-| 64  | 11283 | 11373 | 11289 | 11123 | 11133 |
-| 128 | 11224 | 10786 | 10869 | 10694 | 10851 |
 
 - **range/mean 2.2-4.9%**：比 TiDB rc（5.0-8.3%）、CockroachDB rc（4.7-9.1%）都更穩定；YugabyteDB 對 round 邊界 housekeeping 不敏感。
 - r1 並未明顯偏離（t16 r1 10610 vs r5 10864、t128 r1 11224 vs r5 10851）；warmup 20min @ 64t 已把 DocDB tablet cache、PG plan cache、connection pool 全暖完。
@@ -400,27 +391,18 @@ YugabyteDB v2025.2.2.2 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t32
 - Load：`go-tpc tpcc prepare --no-check W=128`
 - Row-count：9 表全對齊 W=128 預期（warehouse 128 / district 1280 / customer 3,840,000 / history 3,840,000 / item 100,000 / stock 12,800,000 / new_order 1,152,000 / orders 3,840,000 / order_line ~38.4M）
 
-### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
+### Execute 結果（5 round mean；NEW_ORDER latency）
 
-> tpmC / tpmTotal / efficiency 為 5 round mean；**NO p50/p95/p99 亦為 5 round latency mean**。efficiency = `tpmTotal / tpmC-理論值（128W × 12.86 = ~1645 per warehouse minute）` × 100%，rr 低於 200% 反映 retry 浪費。
+> tpmC / latency / error rate 皆取自 [`summary.json`](./vm-1node-rr/ybdb-vm-1node-rr-20260520T215216+0800/summary.json)；p50 / p95 / tpmTotal / efficiency 補充見 `summary.json`。
 
-| threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) | NEW_ORDER_ERR / 5min | err TPM |
-|---------|-----------|-----------|---------------|-----------------|------------|------------|------------|----------------------|---------|
-| 16  | 1,846 | 12.7% | 4,114 | 112.2% | 25 | 38  | 61   | 15  | 3.0 |
-| 32  | **1,879** | 5.6% | 4,164 | 114.2% | 25 | 57  | 174  | 31  | 6.2 |
-| 64  | 1,847 | 7.1% | 4,121 | 112.2% | 26 | 101 | 240  | 63  | 12.6 |
-| 128 | 1,714 | 49.1% ⚠️ | 3,819 | 104.1% | 29 | 220 | 1020 | 127 | 25.4 |
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16 | 1,874 | 1,692 | 1,909 | 1,830 | 1,926 | 1,846 | 12.7% | 61 | 0.046% |
+| 32 | 1,848 | 1,870 | 1,952 | 1,854 | 1,872 | **1,879** | 5.6% | 174 | 0.139% |
+| 64 | 1,837 | 1,933 | 1,860 | 1,804 | 1,802 | 1,847 | 7.1% | 240 | 0.244% |
+| 128 | 2,014 | 1,812 | 1,774 | 1,797 | **1,173** | 1,714 | 49.1% ⚠️ | 1,020 | 0.513% ⚠️ |
 
 > **t128 range/mean 49.1%**：r5 collapse 至 1173（r1-r4 為 2014/1812/1774/1797，r5 異常低）— SI hot row 衝突放大 round 邊界 housekeeping 影響。
-
-### Round-by-round tpmC
-
-| Threads | r1 | r2 | r3 | r4 | r5 |
-|---------|-----|-----|-----|-----|-----|
-| 16  | 1874 | 1692 | 1909 | 1830 | 1926 |
-| 32  | 1848 | 1870 | 1952 | 1854 | 1872 |
-| 64  | 1837 | 1933 | 1860 | 1804 | 1802 |
-| 128 | 2014 | 1812 | 1774 | 1797 | **1173** |
 
 ### Error 分析 — **N-1 pattern** 與 CockroachDB rr 完全相同
 
@@ -568,25 +550,18 @@ YugabyteDB v2025.2.2.2 vm-1node RR 在 4 vCPU + single disk 硬體下：
 - 時間：52 min（DROP/CREATE + load 38 min + row-count + quiesce + ANALYZE，比 rc/rr 略長 ~5 min）
 - Row-count：9 表全對齊 W=128 預期（warehouse 128 / district 1280 / customer 3,840,000 / history 3,840,000 / item 100,000 / stock 12,800,000 / new_order 1,152,000 / orders 3,840,000 / order_line ~38.4M）
 
-### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
+### Execute 結果（5 round mean；NEW_ORDER latency）
 
-| threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) | NEW_ORDER_ERR mean | PAYMENT_ERR mean | total err / round |
-|---------|-----------|-----------|---------------|-----------------|------------|------------|------------|--------------------|------------------|-------------------|
-| 16  | 1,096 | 12.1% | 2,428 | 66.6% | 37.3 | 52.4 | 61.2 |  7.2 |  7.4 | 14.6 |
-| 32  | **1,130** | 6.3% | 2,497 | 68.6% | 36.5 | 50.7 | 57.9 | 15.6 | 14.6 | 30.2 |
-| 64  | 1,092 | 8.3% | 2,438 | 66.3% | 37.3 | 51.6 | 61.6 | 35.8 | 22.4 | 58.2 |
-| 128 | 1,129 | **1.8%** | 2,511 | 68.6% | 35.7 | 48.6 | **54.1** | 68.0 | 53.8 | **121.8** |
+> tpmC / latency / error rate 皆取自 [`summary.json`](./vm-1node-strict/ybdb-vm-1node-strict-20260521T091048+0800/summary.json)；p50 / p95 / tpmTotal / efficiency 補充見 `summary.json`。
+
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16 | 1,008 | 1,097 | 1,115 | 1,140 | 1,120 | 1,096 | 12.1% | 61 | 0.131% |
+| 32 | 1,126 | 1,180 | 1,111 | 1,123 | 1,110 | **1,130** | 6.3% | 58 | 0.276% |
+| 64 | 1,105 | 1,114 | 1,108 | 1,024 | 1,107 | 1,092 | 8.3% | 62 | 0.655% ⚠️ |
+| 128 | 1,119 | 1,140 | 1,140 | 1,128 | 1,120 | 1,129 | **1.8%** | **54** | 1.204% ⚠️ |
 
 > **t128 range/mean 1.8%**：strict 在 t128 高併發下反而最穩定（與 rr t128 的 49.1% 雷亂相反）— SSI flat-line throughput 隨機性低。
-
-### Round-by-round tpmC
-
-| Threads | r1 | r2 | r3 | r4 | r5 |
-|---------|------|------|------|------|------|
-| 16  | 1008 | 1097 | 1115 | 1140 | 1120 |
-| 32  | 1126 | 1180 | 1111 | 1123 | 1110 |
-| 64  | 1105 | 1114 | 1108 | 1024 | 1107 |
-| 128 | 1119 | 1140 | 1140 | 1128 | 1120 |
 
 ### Error 分析 — 接近 N-1 但比 rr 少 ~5%
 
