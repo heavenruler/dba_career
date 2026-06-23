@@ -27,7 +27,10 @@
 - TiDB 同硬體下 **RR 是當前最佳組合**（更高吞吐 + 更低 latency + 零 error + 強於 RC 的 isolation 保證）
 - TiDB 不支援原生 SERIALIZABLE，strict 在工具鏈裡只能等價於 RR；跨家 strict 對比時須注意這點不能直比 CockroachDB / YugabyteDB 的 SSI
 - 同硬體下 **TiDB 全面領先 CockroachDB**：rc +48% vs CockroachDB rc、rr +266% vs CockroachDB rr、rr +33% vs CockroachDB strict（CockroachDB 最強配置）
-- 下一步 vm-3node 預期 TiKV 分散 → tpmC 上升，但**比值非線性**（既往觀察：vm-3node 22,841 vs vm-1node 13,064 = 1.75x，非 3x）
+- vm-3node 實測：TiKV 分散後 tpmC 上升，**比值非線性**：
+  - vm-3node-haproxy-3s3r peak 26,947 / vm-1node-rc 13,064 = **2.06x**（haproxy 入口分散後最高）
+  - vm-3node-1s1r direct 19,654 / vm-1node-rc 13,064 = **1.50x**（RF=1 direct 入口最高）
+  - 均非 3x；direct 3s3r fixed 15,082 反而僅 1.15x（Raft 3-replica 寫成本 + .32 single SQL entry hotspot）
 
 ### 完整資料目錄
 
@@ -218,7 +221,7 @@ DB disk%util: 50.8 48.7  48.8     46.1%     ← 磁碟未滿
 
 vm-1node RC 在 PoC v4.7 框架下穩定可重現，**t64 為甜點（12,744 tpmC），t128 已飽和，硬天花板是 .32 的 4 vCPU**（iowait < 5%，disk %util < 51%）。DB-host 端 OS 監控已正式生效，後續所有 baseline 都帶有 saturation 證據可供歸因分析。
 
-本輪資料作為後續 `vm-1node-rr`、`vm-1node-strict`、以及 CockroachDB/YugabyteDB 對標的 baseline。預期 vm-3node 將 TiKV 分散到 3 台後可提升 tpmC，但 **scale-out ratio 不應預設為線性**（既有 vm-3node peak ~22,841 對 vm-1node ~13,064，比值 ~1.75x 而非 3x）；需用同樣的 DB-host 監控驗證 CPU / IO / raft / network 是否成為新瓶頸。
+本輪資料作為後續 `vm-1node-rr`、`vm-1node-strict`、以及 CockroachDB/YugabyteDB 對標的 baseline。vm-3node 將 TiKV 分散到 3 台後 tpmC 確實提升，但 **scale-out ratio 非線性**：實測 vm-3node-haproxy-3s3r peak 26,947 / vm-1node-rc 13,064 = **2.06x**（最高）、vm-3node-1s1r direct 19,654 = **1.50x**、vm-3node-3s3r direct fixed 15,082 = **1.15x**，均非 3x；需用同樣的 DB-host 監控驗證 CPU / IO / raft / network 是否成為新瓶頸。
 
 ---
 
