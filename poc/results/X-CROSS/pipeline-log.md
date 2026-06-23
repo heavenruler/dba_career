@@ -1,0 +1,101 @@
+# X-CROSS Pipeline Log — phase-crossregion
+
+> 本檔是 `phase-crossregion` 的跨區域流程紀錄索引。  
+> 目前 X-CROSS 數據用於 framework / determinism 驗證，不作為正式 W=128 跨家效能排名。
+
+---
+
+## 0. 目錄歸屬
+
+| 目錄 | 角色 | 判讀方式 |
+|---|---|---|
+| `results/X-CROSS/` | phase-crossregion 主要結果目錄 | 採用為 X-CROSS benchmark / smoke / determinism 資料根目錄 |
+| `results/x-cross-tc1/` | chrony gate / preflight 證據 | 只作跨區時間同步與前置檢查佐證，不作為 benchmark 結果目錄 |
+| `results/{db}-tc1/X-CROSS/` | phase registry 規劃中的 per-DB 佈局 | 後續若重構 artifact layout，再由此處接續；目前未作為採用來源 |
+
+目前 `results/X-CROSS/` 內沒有 `summary.json`。本檔引用的 tpmC 皆直接來自各 round 的 `go-tpc-stdout.txt`。
+
+---
+
+## 1. TL;DR
+
+- 2026-06-19 已完成三家資料庫真六節點跨區 smoke，證明 IDC + GCP 路徑可跑通。
+- 2026-06-21 的 W=4 redeploy run-to-run 變異過大，不可作正式結果。
+- 2026-06-22/23 改成 same-cluster N-round 後，三家重現性收斂到 CV <= 5%。
+- 目前 workload 是 W=4、threads=16、每 round 5 分鐘；不同於 S-BASE / S-K8S 的 W=128 正式口徑。
+- 正式 X-CROSS baseline 仍需 W=128、20 分鐘 warmup、R2-R5 median / CV、完整 DB-host metrics 與 `summary.json`。
+
+---
+
+## 2. 已採用資料點
+
+### 2.1 Same-cluster determinism run
+
+| 資料庫 | 採用來源 | R1 | R2 | R3 | R4 | R5 | 採用平均 | CV | 備註 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| TiDB | [`run1-20260622T131459`](./run1-20260622T131459+0800/tidb-vm-6node-P-A-rc-run1-20260622T131459+0800/) | 9,525.5 | 9,553.2 | 9,786.9 | 9,393.2 | 9,530.8 | 9,557.9 | 1.5% | 5 rounds 全採 |
+| CockroachDB | [`run1-20260622T131459`](./run1-20260622T131459+0800/crdb-vm-6node-P-A-rc-run1-20260622T131459+0800/) | 8,409.5 | 8,055.3 | 7,902.5 | 7,720.9 | 7,472.3 | 7,912.1 | 4.5% | 5 rounds 全採 |
+| YugabyteDB | [`run2-20260622T231927`](./run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-20260622T231927+0800/) | 102.0 | 226.9 | 6,424.2 | 6,259.3 | 6,206.2 | 6,296.6 | 1.8% | 只採 R3-R5；R1/R2 為暖機異常 |
+
+取數來源：
+
+- TiDB / CockroachDB：`results/X-CROSS/run1-20260622T131459+0800/*/runs/threads-16/round-*/go-tpc-stdout.txt`
+- YugabyteDB：`results/X-CROSS/run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-20260622T231927+0800/runs/threads-16/round-*/go-tpc-stdout.txt`
+
+### 2.2 2026-06-19 true six-node smoke
+
+| 資料庫 | tpmC | tpmTotal | 驗證到的事項 | 來源 |
+|---|---:|---:|---|---|
+| TiDB | 11,112.9 | 24,967.1 | 真六節點、P-A leader-pinned IDC 可執行 | [`SESSION-2026-06-19-3db-smoke.md`](../../phase-crossregion/SESSION-2026-06-19-3db-smoke.md) |
+| CockroachDB | 2,145.2 | 4,896.0 | 真六節點、region locality 正確 | [`SESSION-2026-06-19-3db-smoke.md`](../../phase-crossregion/SESSION-2026-06-19-3db-smoke.md) |
+| YugabyteDB | 6,812.2 | 15,129.2 | 真六節點、leader-pin IDC、catalog wait 後可執行 | [`SESSION-2026-06-19-3db-smoke.md`](../../phase-crossregion/SESSION-2026-06-19-3db-smoke.md) |
+
+此段只能證明跨區 framework 已跑通；不可與 S-BASE / S-K8S 的 W=128 結果直接比較。
+
+---
+
+## 3. 不採用為正式結果的資料
+
+| 類型 | 位置 | 原因 |
+|---|---|---|
+| 2026-06-21 redeploy run-to-run | [`SESSION-2026-06-21-determinism.md`](../../phase-crossregion/SESSION-2026-06-21-determinism.md) | W=4 且每輪 redeploy；TiDB 1,552.2 -> 9,719.2，CockroachDB 3,929.6 -> 2,365.6，YugabyteDB 41.8 -> 23.0，變異不可作正式 benchmark |
+| YugabyteDB `run1-20260622T131459` | `results/X-CROSS/run1-20260622T131459+0800/ybdb-vm-6node-P-A-rc-run1-*` | round 1 僅 10.1 tpmC，round 2 缺 tpmC 行；改採 run2 的 R3-R5 |
+| `results/x-cross-tc1/` | `results/x-cross-tc1/chrony-gate-*` | 只包含 chrony / gate 檢查；不是 go-tpc suite 結果 |
+| `run2` 內 TiDB / CockroachDB 複製目錄 | `results/X-CROSS/run2-20260622T231927+0800/{tidb,crdb}-vm-6node-P-A-rc-run1-*` | 目錄名仍為 run1，視為 run1 artifact copy，不視為新的 run2 採樣 |
+
+---
+
+## 4. 判讀限制
+
+- workload：W=4、threads=16、5 分鐘 round；不是正式 W=128 workload。
+- 目前沒有 `summary.json`，error rate / latency 統計尚未統一納入。
+- DB-host metrics 與 WAN inline metrics 尚未形成可直接引用的飽和分析。
+- X-CROSS 在 phase registry 中屬 `baseline_eligible=false`，目前只作 cross-region framework / determinism 證據。
+- 若要進入正式跨家排序，必須重跑 W=128 same-cluster suite，並統一 warmup、round 選取、summary 與 metrics。
+
+---
+
+## 5. 下一步
+
+1. 決定 X-CROSS artifact layout 是否維持 `results/X-CROSS/`，或搬回 `results/{db}-tc1/X-CROSS/` per-DB sibling 佈局。
+2. 為 X-CROSS 補 `summary.json` 產生流程，避免後續只靠 raw stdout 手動讀數。
+3. 正式 W=128 測試需固定：same cluster、不 redeploy、placement gate、scheduler / balancer freeze、20 分鐘 warmup、R2-R5 median / CV。
+4. 將 chrony gate / WAN preflight 只作為 X-CROSS 附屬證據，不與 benchmark 結果混放。
+
+---
+
+## 6. 參考
+
+- [`phase-crossregion/SESSION-2026-06-19-3db-smoke.md`](../../phase-crossregion/SESSION-2026-06-19-3db-smoke.md)
+- [`phase-crossregion/SESSION-2026-06-21-determinism.md`](../../phase-crossregion/SESSION-2026-06-21-determinism.md)
+- [`phase-crossregion/SESSION-2026-06-22-determinism-v2.md`](../../phase-crossregion/SESSION-2026-06-22-determinism-v2.md)
+- [`1_MeetingMinutes/0616-slide-draft.md`](../../1_MeetingMinutes/0616-slide-draft.md)
+- [`results/PHASES.md`](../PHASES.md)
+
+---
+
+## 7. 變更紀錄
+
+| 日期 | 內容 |
+|---|---|
+| 2026-06-23 | 建立 X-CROSS pipeline-log，確認 `results/X-CROSS/` 為 phase-crossregion 主資料目錄，`results/x-cross-tc1/` 為 chrony / preflight 證據目錄 |

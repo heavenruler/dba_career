@@ -698,6 +698,17 @@ YugabyteDB v2025.2.2.2 vm-1node strict (SERIALIZABLE / SSI) 在 4 vCPU + single 
 
 yb-master×3 滿足 Raft quorum；yb-tserver×3 滿足 RF=3 placement；client 統一 .32:5433 進入。
 
+### Execute 結果總覽（direct 4 cells）
+
+> 口徑對齊 TiDB / CockroachDB vm-3node 段：代表點採各 sub-topology 的主要觀察併發；完整 per-round thread sweep 見各 cell 的 `Execute 結果` 表。p99 為 NEW_ORDER 5-round latency mean；err 為 all transaction error rate。
+
+| sub-topology | shard / RF | TPCC_TS | 代表併發 | tpmC mean | range/mean | NO p99 mean (ms) | err | N | 判讀 |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---|
+| `1s1r` | 1 / 1 | [`20260524T032814`](./vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260524T032814+0800/) | 32 | 13,702 | 10.9% | 205 | 0.00% | 1 | RF=1 / 1 shard 最小 cluster baseline |
+| `1s3r` | 1 / 3 | [`20260524T074754`](./vm-3node-1s3r-rc/ybdb-vm-3node-1s3r-rc-20260524T074754+0800/) | 128 | 10,228 | 1.9% | 1,034 | 0.00% | 1 | 固定 1 shard，量化 RF=3 quorum 成本 |
+| `3s1r` | 3 / 1 | [`20260524T202219`](./vm-3node-3s1r-rc/ybdb-vm-3node-3s1r-rc-20260524T202219+0800/) | 32 | 11,967 | 3.0% | 203 | 0.00% | 1 | 固定 RF=1，量化 sharding 成本 |
+| `3s3r` | 3 / 3 | [`20260525T031918`](./vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260525T031918+0800/) | 128 | 8,729 | 62.3% | 1,114 | 0.00% | 1 | shard + replica 疊加；高變異 |
+
 ### vm-3node-1s1r-rc
 
 > 1 shard × 1 replica：3-tserver cluster 但 RF=1、每表 1 tablet。對照 vm-1node-rc 量化「cluster framework + remote coord」純成本。
@@ -735,16 +746,18 @@ client → .32:5433 (YSQL gateway 路由 to tablet leader)
 
 #### Execute 結果（2026-05-24，TS=20260524T032814+0800）
 
-5-round mean tpmC（4 thread × 5 round = 20 取樣）：
+> per-round tpmC + 5-round mean（W=128、RC、N=1）。p99 為 NEW_ORDER 5-round latency mean；err 為 all transaction `error_rate_pct`。補充指標見 [`summary.json`](./vm-3node-1s1r-rc/ybdb-vm-3node-1s1r-rc-20260524T032814+0800/summary.json)。
 
-| threads | tpmC mean | tpmC range | NO_p99 mean (ms) | DEL_p99 mean (ms) | DB CPU idle% |
-|--------:|----------:|-----------:|-----------------:|------------------:|-------------:|
-| 16 | 11,491 | 11,360–11,595 | 90 | 117 | 23 |
-| 32 | **13,702** | 12,627–14,118 | 205 | 268 | 9（sweet spot）|
-| 64 | 13,200 | 12,337–14,233 | 396 | 507 | 6 |
-| 128 | 13,725 | 13,462–13,868 | 758 | 1,127 | 4 |
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16 | 11,595 | 11,556 | 11,360 | 11,551 | 11,396 | 11,491 | 2.0% | 90 | 0.00% |
+| 32 | 14,118 | 13,988 | 12,627 | 13,860 | 13,915 | 13,702 | 10.9% | 205 | 0.00% |
+| 64 | 14,112 | 12,337 | 12,389 | 12,931 | 14,233 | 13,200 | 14.4% | 396 | 0.00% |
+| 128 | 13,868 | 13,741 | 13,716 | 13,836 | 13,462 | 13,725 | 3.0% | 758 | 0.00% |
 
-代表點 = **t=32 / 13,702 tpmC / NO_p99 = 205 ms**。對照 vm-1node-rc 11,436 → +20% throughput（cluster framework 不僅無 overhead 反而吃糖，待跨日重採確認是否 host I/O 雜訊影響）。詳見 [results/dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md](../../dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)。
+#### 代表點
+
+**t=32 / 13,702 tpmC / NO p99 = 205 ms**。對照 vm-1node-rc 11,436 → +20% throughput（cluster framework 不僅無 overhead 反而吃糖，待跨日重採確認是否 host I/O 雜訊影響）。詳見 [results/dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md](../../dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md)。
 
 ### vm-3node-1s3r-rc
 
@@ -777,16 +790,18 @@ client → .32:5433
 
 #### Execute 結果（2026-05-24，TS=20260524T074754+0800）
 
-5-round mean tpmC：
+> per-round tpmC + 5-round mean（W=128、RC、N=1）。p99 為 NEW_ORDER 5-round latency mean；err 為 all transaction `error_rate_pct`。補充指標見 [`summary.json`](./vm-3node-1s3r-rc/ybdb-vm-3node-1s3r-rc-20260524T074754+0800/summary.json)。
 
-| threads | tpmC mean | tpmC range | NO_p99 mean (ms) | DEL_p99 mean (ms) | DB CPU idle% |
-|--------:|----------:|-----------:|-----------------:|------------------:|-------------:|
-| 16 | 6,970 | 4,355–7,697 | 144 | 186 | 13 |
-| 32 | 9,394 | 9,084–9,936 | 245 | 349 | 7 |
-| 64 | 10,068 | 9,996–10,196 | 477 | 705 | 5 |
-| 128 | **10,228** | 10,130–10,320 | 1,034 | 1,476 | 4 |
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16 | 7,697 | 7,674 | 4,355 | 7,520 | 7,602 | 6,970 | 47.9% | 144 | 0.00% |
+| 32 | 9,305 | 9,440 | 9,936 | 9,203 | 9,084 | 9,394 | 9.1% | 245 | 0.00% |
+| 64 | 9,996 | 10,116 | 10,002 | 10,196 | 10,031 | 10,068 | 2.0% | 476 | 0.00% |
+| 128 | 10,268 | 10,130 | 10,320 | 10,228 | 10,193 | 10,228 | 1.9% | 1,034 | 0.00% |
 
-代表點 = **t=128 / 10,228 tpmC / NO_p99 = 1,034 ms**。對照 vm-3node-1s1r（同 1-shard、RF=1）→ **−25.5% throughput / +36% NO_p99**，量化 Raft 3-replica 寫入成本。t=16 stddev=1463（warmup 過渡期），t=64-128 stddev≤86 極穩。詳見 analysis report。
+#### 代表點
+
+**t=128 / 10,228 tpmC / NO p99 = 1,034 ms**。對照 vm-3node-1s1r（同 1-shard、RF=1）→ **−25.5% throughput / +36% NO p99**，量化 Raft 3-replica 寫入成本。t=16 range/mean 47.9%（warmup 過渡期），t=64-128 range/mean ≤2.0% 極穩。詳見 analysis report。
 
 ### vm-3node-3s1r-rc
 
@@ -819,16 +834,18 @@ client → .32:5433
 
 #### Execute 結果（2026-05-24，TS=20260524T202219+0800）
 
-5-round mean tpmC：
+> per-round tpmC + 5-round mean（W=128、RC、N=1）。p99 為 NEW_ORDER 5-round latency mean；err 為 all transaction `error_rate_pct`。補充指標見 [`summary.json`](./vm-3node-3s1r-rc/ybdb-vm-3node-3s1r-rc-20260524T202219+0800/summary.json)。
 
-| threads | tpmC mean | tpmC range | NO_p99 mean (ms) | DEL_p99 mean (ms) | DB CPU idle% |
-|--------:|----------:|-----------:|-----------------:|------------------:|-------------:|
-| 16 | 11,180 | 11,024–11,322 | 94 | 123 | 13 |
-| 32 | **11,967** | 11,789–12,148 | 203 | 268 | 7（sweet spot）|
-| 64 | 11,749 | 11,724–11,770 | 436 | 624 | 5 |
-| 128 | 11,691 | 11,612–11,796 | 1,007 | 1,356 | 4 |
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16 | 11,276 | 11,248 | 11,322 | 11,024 | 11,031 | 11,180 | 2.7% | 94 | 0.00% |
+| 32 | 11,986 | 11,951 | 11,961 | 12,148 | 11,789 | 11,967 | 3.0% | 203 | 0.00% |
+| 64 | 11,728 | 11,753 | 11,769 | 11,770 | 11,724 | 11,749 | 0.4% | 436 | 0.00% |
+| 128 | 11,796 | 11,650 | 11,612 | 11,769 | 11,628 | 11,691 | 1.6% | 1,007 | 0.00% |
 
-代表點 = **t=32 / 11,967 tpmC / NO_p99 = 203 ms**。對照 1s1r（同 RF=1、1-shard）→ **−12.7% throughput**，量化 sharding 純成本（cross-tablet coordination）。stddev 在所有 thread 等級 ≤ 142，是 4 cells **最穩**。詳見 analysis report。
+#### 代表點
+
+**t=32 / 11,967 tpmC / NO p99 = 203 ms**。對照 1s1r（同 RF=1、1-shard）→ **−12.7% throughput**，量化 sharding 純成本（cross-tablet coordination）。所有 thread groups range/mean ≤3.0%，是 direct 4 cells 中最穩。詳見 analysis report。
 
 ### vm-3node-3s3r-rc
 
@@ -867,18 +884,22 @@ client → .32:5433
 > - `ansible/playbooks/yugabyte-vm3.yml` 加 `serial: 1` on Join workers
 > - `tests/common/dry-run-confirm.sh` 改 RF-aware cluster health gate（master raft alive = expected_rf；3 tservers ALIVE heartbeating；每 tserver cmdline ≥1 raft master endpoint）
 
-5-round mean tpmC（**post-patch，0 fatal**）：
+> per-round tpmC + 5-round mean（W=128、RC、N=1；post-patch，0 fatal）。p99 為 NEW_ORDER 5-round latency mean；err 為 all transaction `error_rate_pct`。補充指標見 [`summary.json`](./vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260525T031918+0800/summary.json)。
 
-| threads | tpmC mean | tpmC range | NO_p99 mean (ms) | DEL_p99 mean (ms) | DB CPU idle% |
-|--------:|----------:|-----------:|-----------------:|------------------:|-------------:|
-| 16 | 4,776 | 1,517–7,453 | 153 | 196 | 10 |
-| 32 | 6,618 | 5,152–8,666 | 272 | 369 | **42**(!) |
-| 64 | 8,195 | 5,703–9,097 | 567 | 785 | **24**(!) |
-| 128 | **8,729** | 4,409–9,852 | 1,114 | 1,517 | 4 |
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16 | 4,552 | 1,517 | 3,035 | 7,325 | 7,453 | 4,776 | 124.3% | 153 | 0.00% |
+| 32 | 5,654 | 8,458 | 8,666 | 5,161 | 5,152 | 6,618 | 53.1% | 272 | 0.00% |
+| 64 | 9,097 | 8,763 | 8,682 | 8,728 | 5,703 | 8,195 | 41.4% | 567 | 0.00% |
+| 128 | 4,409 | 9,734 | 9,821 | 9,830 | 9,852 | 8,729 | 62.3% | 1,114 | 0.00% |
 
-代表點 = **t=128 / 8,729 tpmC / NO_p99 = 1,114 ms**。對照 1s1r 疊加 RF + shard 雙成本 → **−36.4% throughput / +47% NO_p99**。
+#### 代表點
 
-**警示**：3s3r 在 t=32 / t=64 CPU idle 高達 24-42% 但 throughput 反而 drop，workload 卡 tablet/raft 協調而非 CPU；stddev 在所有 thread 等級 ≥ 1,400，t=16 round-to-round 振幅 4.9×（min=1517 / max=7453）。**本 hardware 4 vCPU 不適合 3s3r 生產配置**，要穩定需 vCPU ≥ 8 或降 tablet 數。詳見 analysis report。
+**t=128 / 8,729 tpmC / NO p99 = 1,114 ms**。對照 1s1r 疊加 RF + shard 雙成本 → **−36.4% throughput / +47% NO p99**。
+
+#### Caveat
+
+3s3r 在 t=32 / t=64 CPU idle 高達 24-42% 但 throughput 反而 drop，workload 卡 tablet/raft 協調而非 CPU；所有 thread groups range/mean ≥41.4%，t=16 round-to-round 振幅 4.9×（min=1,517 / max=7,453）。**本 hardware 4 vCPU 不適合 3s3r 生產配置**，要穩定需 vCPU ≥ 8 或降 tablet 數。詳見 analysis report。
 
 ### vm-3node-haproxy-3s3r-rc（3 shards × RF=3 + HAProxy）
 
@@ -937,16 +958,18 @@ client → .32:5433
 
 #### Execute 結果（2026-05-25，TS=20260525T193740+0800）
 
-5-round mean tpmC：
+> per-round tpmC + 5-round mean（W=128、RC、N=1）。p99 為 NEW_ORDER 5-round latency mean；err 為 all transaction `error_rate_pct`。補充指標見 [`summary.json`](./vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/summary.json)。
 
-| threads | tpmC mean | tpmC range | NO_p99 mean (ms) |
-|--------:|----------:|-----------:|-----------------:|
-| 16 | 7,997 | 7,766.5–8,211.2 | 135 |
-| 32 | 10,664 | 10,308.7–11,221.2 | 220 |
-| 64 | 13,336 | 12,978.3–13,763.9 | 386 |
-| 128 | **15,632** | 15,018.5–16,122.5 | 705 |
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16 | 7,987 | 7,766 | 8,211 | 7,896 | 8,127 | 7,997 | 5.6% | 135 | 0.00% |
+| 32 | 10,461 | 10,930 | 10,400 | 11,221 | 10,309 | 10,664 | 8.6% | 220 | 0.00% |
+| 64 | 13,063 | 13,196 | 13,680 | 12,978 | 13,764 | 13,336 | 5.9% | 386 | 0.00% |
+| 128 | 15,688 | 15,018 | 15,569 | 15,764 | 16,122 | 15,632 | 7.1% | 705 | 0.00% |
 
-代表點 = **t=128 / 15,632 tpmC / NO_p99 = 705 ms**。對照 direct `vm-3node-3s3r-rc` 代表點 **8,729 tpmC / NO_p99 = 1,114 ms**，HAProxy 增加 **+79.1% tpmC**，NO_p99 降低約 **-36.7%**。
+#### 代表點
+
+**t=128 / 15,632 tpmC / NO p99 = 705 ms**。對照 direct `vm-3node-3s3r-rc` 代表點 **8,729 tpmC / NO p99 = 1,114 ms**，HAProxy 增加 **+79.1% tpmC**，NO p99 降低約 **-36.7%**。
 
 #### Caveat
 
