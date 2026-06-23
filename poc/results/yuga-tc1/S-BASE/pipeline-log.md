@@ -49,9 +49,9 @@
 
 | iso | TPCC_TS | 代表併發 | tpmC mean | range/mean | NO p99 mean (ms) | err | N | 判讀 |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| `rc` | [`20260520T134929`](./vm-1node-rc/ybdb-vm-1node-rc-20260520T134929+0800/) | 32 | 11,436 | 4.2% | 216 | 0.000% | 1 | CPU-bound；零 error |
-| `rr` | [`20260520T215216`](./vm-1node-rr/ybdb-vm-1node-rr-20260520T215216+0800/) | 32 | 1,879 | 5.6% | 174 | 0.149% | 1 | SI hot row retry-bound |
-| `strict` | [`20260521T091048`](./vm-1node-strict/ybdb-vm-1node-strict-20260521T091048+0800/) | 32 | 1,130 | 6.3% | 58 | 0.248% | 1 | SSI retry-bound；吞吐最低 |
+| [`rc`](#vm-1node-rc--2026-05-20poc-v47-baseline含-db-host-os-監控) | [`20260520T134929`](./vm-1node-rc/ybdb-vm-1node-rc-20260520T134929+0800/) | 32 | 11,436 | 4.2% | 216 | 0.000% | 1 | CPU-bound；零 error |
+| [`rr`](#vm-1node-rr--2026-05-21poc-v47-snapshot-isolation--retry-storm) | [`20260520T215216`](./vm-1node-rr/ybdb-vm-1node-rr-20260520T215216+0800/) | 32 | 1,879 | 5.6% | 174 | 0.149% | 1 | SI hot row retry-bound |
+| [`strict`](#vm-1node-strict--2026-05-21poc-v47-serializable-isolation--ssi) | [`20260521T091048`](./vm-1node-strict/ybdb-vm-1node-strict-20260521T091048+0800/) | 32 | 1,130 | 6.3% | 58 | 0.248% | 1 | SSI retry-bound；吞吐最低 |
 
 vm-3node 5-cell（1s1r / 1s3r / 3s1r / 3s3r / haproxy-3s3r × RC）已於 2026-05-24 ~ 2026-05-25 完成（5-round mean、N=1；含 `d654824` / `68189bc` / `29b5fc5` 三筆 YugabyteDB vm3 ansible 修補與 RF-aware cluster gate）；詳見下方 `vm-3node 系列` + [4 cells 跨 cell 分析](../../dispatch-records/2026-05-25-vm-3node-ybdb-all4-rc-analysis.md) + [HAProxy vs direct 分析](../../dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)。
 
