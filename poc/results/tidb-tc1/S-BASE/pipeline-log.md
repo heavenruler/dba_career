@@ -1,6 +1,6 @@
 # TiDB TPC-C Pipeline Log — tidb-tc1 / S-BASE
 
-> 本檔僅保留目前 PoC v4.7 最新 VM baseline；舊 VM / HAProxy 歷史段落已備份至 `pipeline-log-old.md`，S-K8S 對照資料另見 [`../S-K8S/pipeline-log.md`](../S-K8S/pipeline-log.md)。
+> 本檔僅保留目前 PoC v4.7 最新 VM baseline；舊 VM / HAProxy 歷史段落已備份至 `archive/pipeline-log-old.md`，S-K8S 對照資料另見 [`../S-K8S/pipeline-log.md`](../S-K8S/pipeline-log.md)。
 
 ---
 
@@ -711,6 +711,6 @@ Stability：t=128 range/mean = 7.4%（vs direct l4r4 的 11.6%）。
 
 ---
 
-## K8s (k8s-3node-unlimit / k8s-3node-limit) — 已移轉至 pipeline-log-old.md
+## K8s (k8s-3node-unlimit / k8s-3node-limit) — 已移轉至 archive/pipeline-log-old.md
 
-> 2026-05-10 的 K8s 結果採單次 10min wrapper 格式，不符合本檔 v4.7 baseline 標準（5-round × 20min warmup × DB-host 雙邊監控），於 2026-05-20 移至 [`pipeline-log-old.md`](./pipeline-log-old.md) 存檔。待 K8s 環境以 v4.7 detached suite 重跑後，將回填正式段落。
+> 2026-05-10 的 K8s 結果採單次 10min wrapper 格式，不符合本檔 v4.7 baseline 標準（5-round × 20min warmup × DB-host 雙邊監控），於 2026-05-20 移至 [`archive/pipeline-log-old.md`](./archive/pipeline-log-old.md) 存檔。待 K8s 環境以 v4.7 detached suite 重跑後，將回填正式段落。

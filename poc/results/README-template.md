@@ -160,4 +160,4 @@
 - 模板與協作規範：[README-template.md](./README-template.md) / [pipeline-log-template.md](./pipeline-log-template.md) / [AI-COLLABORATION.md](./AI-COLLABORATION.md)
 - 審計 prompt：[audit-watch-prompt.md](./audit-watch-prompt.md)
 - 調度紀錄與分析：[dispatch-records/](./dispatch-records/)
-- 歷史 README 備份：[README_old.md](./README_old.md)
+- 歷史 README 備份：[archive/README_old.md](./archive/README_old.md)

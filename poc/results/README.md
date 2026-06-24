@@ -385,8 +385,8 @@ grep '平均時間' <artifact-dir>/runs/threads-<N>/round-<R>/mpstat-db.txt
 - TiDB：[`tidb-tc1/S-BASE/pipeline-log.md`](./tidb-tc1/S-BASE/pipeline-log.md)
 - CockroachDB：[`crdb-tc1/S-BASE/pipeline-log.md`](./crdb-tc1/S-BASE/pipeline-log.md)
 - YugabyteDB：[`yuga-tc1/S-BASE/pipeline-log.md`](./yuga-tc1/S-BASE/pipeline-log.md)
-- CockroachDB 歷史資料（已 deprecated）：[`cockroach-tc1/S-BASE/pipeline-log.md`](./cockroach-tc1/S-BASE/pipeline-log.md)
-- YugabyteDB pre-v4.7 archive：`yuga-tc1-old/S-BASE/pipeline-log.md`
+- CockroachDB 歷史資料（已封存）：[`cockroach-tc1/S-BASE/archive/pipeline-log.md`](./cockroach-tc1/S-BASE/archive/pipeline-log.md)
+- YugabyteDB pre-v4.7 archive：[`yuga-tc1-old/S-BASE/archive/pipeline-log_old.md`](./yuga-tc1-old/S-BASE/archive/pipeline-log_old.md)
 
 ### 設計與會議文件
 
@@ -428,4 +428,4 @@ grep '平均時間' <artifact-dir>/runs/threads-<N>/round-<R>/mpstat-db.txt
 
 ### 歷史備份
 
-- 舊版 README：[`README_old.md`](./README_old.md)
+- 舊版 README：[`archive/README_old.md`](./archive/README_old.md)

@@ -1,6 +1,6 @@
 # <Database> TPC-C Pipeline Log — <db>-tc1 / S-BASE
 
-> 本檔記錄 `<Database>` 在 PoC v4.7 框架下的 S-BASE baseline。舊流程、單次 wrapper 或 deprecated 資料需移至 `pipeline-log_old.md`，避免與 v4.7 baseline 混用。
+> 本檔記錄 `<Database>` 在 PoC v4.7 框架下的 S-BASE baseline。舊流程、單次 wrapper 或 deprecated 資料需移至 `archive/pipeline-log_old.md`，避免與 v4.7 baseline 混用。
 
 ## 使用規則
 
@@ -458,7 +458,7 @@
 
 ## 歷史檔案
 
-- `<pipeline-log_old.md / deprecated path / pre-v4.7 result>`：`<是否納入 baseline，通常不納入。>`
+- `archive/pipeline-log_old.md` / `archive/` 下的 pre-v4.7 result：`<是否納入 baseline，通常不納入。>`
 
 ## 差異分析註解
 
@@ -549,7 +549,7 @@
 | 「下一步」wording 同步 | ✓ | n/a | ✓（F2 改為 `K8s 對照組待重跑`）| — |
 | Forbidden 章節 hit count | 0 | 0 | 0 | F3/F4/F5 完成 |
 | 連續多條 `---` | ✗ | ✗ | ✗（F5 收斂）| — |
-| K8s 收尾段 | ✓ pipeline-log-old.md | ✓ Kubernetes — 未排期 | ✓ yuga-tc1-old | — |
+| K8s 收尾段 | ✓ archive/pipeline-log-old.md | ✓ Kubernetes — 未排期 | ✓ yuga-tc1-old/archive | — |
 | SUMMARY 5-cell 一致性 | ✓ 5/5 | ✓ 5/5 | ✓ 5/5 | audit-2 D8 全 Yes |
 | TL;DR ranking 表欄位 | 8 欄統一（併發=t128 三列）| 8 欄統一（併發=t128 三列）| 8 欄統一（併發=t32 三列）| 三家統一 8-col；併發欄允許 per-row 變動（本批三家各 DB 內三列同 t）；audit-2 F-004 收尾 |
 
