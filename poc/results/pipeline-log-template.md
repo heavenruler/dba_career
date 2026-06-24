@@ -1,6 +1,6 @@
 # <Database> TPC-C Pipeline Log — <db>-tc1 / S-BASE
 
-> 本檔記錄 `<Database>` 在 PoC v4.7 框架下的 S-BASE baseline。舊流程、單次 wrapper 或 deprecated 資料請移至 legacy scope（`cockroach-tc1/` / `yuga-tc1-old/`），原始 raw wrapper 附件可另存 `archive/`，避免與 v4.7 baseline 混用。
+> 本檔記錄 `<Database>` 在 PoC v4.7 框架下的 S-BASE baseline。舊流程、單次 wrapper 或 deprecated 資料請移至 `archive/` 下的歷史 scope，避免與 v4.7 baseline 混用。
 
 ## 使用規則
 
@@ -458,7 +458,7 @@
 
 ## 歷史檔案
 
-- `cockroach-tc1/` / `yuga-tc1-old/` 或 `archive/` 下的 pre-v4.7 result：`<是否納入 baseline，通常不納入。>`
+- `archive/` 下的 pre-v4.7 result：`<是否納入 baseline，通常不納入。>`
 
 ## 差異分析註解
 
@@ -549,13 +549,13 @@
 | 「下一步」wording 同步 | ✓ | n/a | ✓（F2 改為 `K8s 對照組待重跑`）| — |
 | Forbidden 章節 hit count | 0 | 0 | 0 | F3/F4/F5 完成 |
 | 連續多條 `---` | ✗ | ✗ | ✗（F5 收斂）| — |
-| K8s 收尾段 | ✓ `tidb-tc1/S-BASE/pipeline-log.md` | ✓ `crdb-tc1/S-BASE/pipeline-log.md` | ✓ `yuga-tc1/S-BASE/pipeline-log.md` | — |
+| K8s 收尾段 | ✓ `archive/cockroach-tc1/S-BASE/archive/pipeline-log.md` | ✓ `crdb-tc1/S-BASE/pipeline-log.md` | ✓ `archive/yuga-tc1-old/S-BASE/archive/pipeline-log.md` | — |
 | SUMMARY 5-cell 一致性 | ✓ 5/5 | ✓ 5/5 | ✓ 5/5 | audit-2 D8 全 Yes |
 | TL;DR ranking 表欄位 | 8 欄統一（併發=t128 三列）| 8 欄統一（併發=t128 三列）| 8 欄統一（併發=t32 三列）| 三家統一 8-col；併發欄允許 per-row 變動（本批三家各 DB 內三列同 t）；audit-2 F-004 收尾 |
 
 ### 驗證指令
 
-> ⚠️ scope：只驗 active pipeline-log 三份；`results/*/S-BASE/` glob 會掃入 legacy scope `cockroach-tc1` / `yuga-tc1-old`，須以 `-g '!cockroach-tc1/**' -g '!yuga-tc1-old/**'` 或明列三份檔。
+> ⚠️ scope：只驗 active pipeline-log 三份；`results/*/S-BASE/` glob 會掃入 archive scope 的歷史檔，須以 `-g '!archive/**'` 或明列三份檔。
 
 ```bash
 ACTIVE='results/tidb-tc1/S-BASE/pipeline-log.md results/crdb-tc1/S-BASE/pipeline-log.md results/yuga-tc1/S-BASE/pipeline-log.md'
@@ -572,7 +572,7 @@ awk '/^---$/{c++; if(c>=2) print FILENAME ":" NR; next} {c=0}' $ACTIVE
 
 # 過時章節檢查（active scope only）
 rg -n '## v4\.7 重跑檢核項' $ACTIVE
-# 預期：0 行（legacy `yuga-tc1-old/S-BASE/pipeline-log.md` 為合理歷史命中，不掃）
+# 預期：0 行（archive `archive/yuga-tc1-old/S-BASE/archive/pipeline-log.md` 為合理歷史命中，不掃）
 
 # vm-3node TL;DR 子表反例檢查（active scope only）
 rg -n '^### TL;DR — vm-3node' $ACTIVE
