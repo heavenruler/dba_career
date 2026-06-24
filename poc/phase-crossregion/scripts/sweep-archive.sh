@@ -7,15 +7,15 @@
 #
 # 流程（依序，fail-closed）：
 #   1. 驗證 sweep 結果完整性：
-#      find results/*/X-CROSS/ -name '.suite.done' | wc -l == 9（3 DB × 3 profile）
+#      find results/x-cross/ -name '.suite.done' | wc -l == 9（3 DB × 3 profile）
 #      列出 9 cell-tracks；不齊則 fail-closed。
 #   2. GCP client artifact fetch（A-A / A-A-RO 才有）：
 #      rsync /tmp/poc-tpcc/artifacts/X-CROSS/<cell>/ from g-test-poc-5 (port 12215)
-#      → results/<db>-tc1/X-CROSS/<cell>/gcp-side/
+#      → results/x-cross/<cell>/gcp-side/
 #   3. 生成 sweep summary：
 #      results/sweep-summary-<ts>.md：9 cell-tracks tpmC / p99 / error rate / status
 #   4. archive tarball：
-#      tar -czf results/x-cross-sweep-<ts>.tar.gz results/{tidb,cockroach,yuga}-tc1/X-CROSS/...
+#      tar -czf results/x-cross-sweep-<ts>.tar.gz results/x-cross/...
 #      印 size + sha256 checksum
 #   5. GCP VM destroy（除非 --skip-destroy）：
 #      cd iac-gcp && terraform destroy -auto-approve
@@ -95,9 +95,9 @@ run_or_dry() {
 # ---- 1. 驗證 sweep 結果完整性 ----------------------------------------
 echo "[sweep-archive] step 1/7 verify sweep completeness"
 
-# find expects ${db}-tc1/X-CROSS/<cell>/.suite.done 結構
+# find expects results/x-cross/<cell>/.suite.done 結構
 SUITE_DONE_LIST=$(cd "$REPO_ROOT" && \
-  find results -maxdepth 4 -type f -path 'results/*/X-CROSS/*/.suite.done' 2>/dev/null | sort || true)
+  find results -maxdepth 4 -type f -path 'results/x-cross/*/.suite.done' 2>/dev/null | sort || true)
 
 DONE_COUNT=$(printf '%s\n' "$SUITE_DONE_LIST" | grep -c . || true)
 
@@ -244,13 +244,11 @@ fi
 TAR_PATH="$REPO_ROOT/results/x-cross-sweep-${SWEEP_TS}.tar.gz"
 echo "[sweep-archive] step 4/7 archive tarball → $TAR_PATH"
 
-# 收集存在的 db-tc1/X-CROSS 路徑（不存在的不入 tar 以免 fail）
+# 收集 X-CROSS 本機彙整目錄
 TAR_INPUTS=()
-for db in "${EXPECTED_DBS[@]}"; do
-  if [[ -d "$REPO_ROOT/results/${db}-tc1/X-CROSS" ]]; then
-    TAR_INPUTS+=("results/${db}-tc1/X-CROSS")
-  fi
-done
+if [[ -d "$REPO_ROOT/results/x-cross" ]]; then
+  TAR_INPUTS+=("results/x-cross")
+fi
 
 # 也納入 summary.md（execute 後才存在）
 if [[ "$MODE" == "execute" && -f "$SUMMARY_PATH" ]]; then
@@ -259,10 +257,10 @@ fi
 
 if [[ "${#TAR_INPUTS[@]}" -eq 0 ]]; then
   if [[ "$MODE" == "execute" ]]; then
-    echo "[sweep-archive] FAIL: no results/*-tc1/X-CROSS dirs found to archive" >&2
+    echo "[sweep-archive] FAIL: no results/x-cross dir found to archive" >&2
     exit 1
   else
-    echo "[dry-run] step 4: no X-CROSS dirs found；execute would FAIL"
+    echo "[dry-run] step 4: no results/x-cross dir found；execute would FAIL"
   fi
 fi
 

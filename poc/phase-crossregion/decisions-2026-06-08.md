@@ -198,7 +198,7 @@ C1 + C4 + C7 × 3 DB = 9 chaos runs（不含 F1 6 failover runs）
 |---|---|
 | IDC client (.31) | local `/tmp/poc-tpcc/artifacts/X-CROSS/` |
 | GCP client (g-test-poc-5) | local `/tmp/poc-tpcc/artifacts/X-CROSS/` |
-| Post-run consolidate | rsync 兩端 → Mac local `results/<db>-tc1/X-CROSS/` |
+| Post-run consolidate | rsync 兩端 → Mac local `results/x-cross/` |
 
 無需 GCS / S3 / NFS。
 

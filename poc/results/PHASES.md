@@ -17,11 +17,12 @@
 results/{db}-tc1/
 ├── S-BASE/      ← 既有 vm baseline（不可被新 phase 嵌入）
 ├── S-K8S/       ← phase-k8s
-├── T-THRD/      ← phase-threadcontrol
-└── X-CROSS/     ← phase-crossregion
+└── T-THRD/      ← phase-threadcontrol
+
+results/x-cross/ ← phase-crossregion 本機彙整目錄（result_scope 仍為 X-CROSS）
 ```
 
-`S-K8S` / `T-THRD` / `X-CROSS` 必為 `S-BASE` 的 sibling；嚴禁嵌入 `S-BASE/` 下。
+`S-K8S` / `T-THRD` 必為 `S-BASE` 的 sibling；`phase-crossregion` 改採集中式 `results/x-cross/`。三者皆嚴禁嵌入 `S-BASE/` 下。
 
 ## 2. baseline_eligible 與 baseline_family 規則
 
@@ -30,10 +31,10 @@ results/{db}-tc1/
   - `vm` (S-BASE) 與 `k8s` (S-K8S) 不可互相直引；任何 README 主表跨 family 對比須明標 family。
   - `tuning` (T-THRD) 與 `crossregion` (X-CROSS) 為 `baseline_eligible: false`，永不入主表。
 - **forbidden 規則**（落地於 `verify-readme-gates.sh` + `tests/common/lib/guard.sh`）：
-  - `results/README.md` 主表 source list 禁讀 `T-THRD/*` 與 `X-CROSS/*`
+  - `results/README.md` 主表 source list 禁讀 `T-THRD/*`、`x-cross/*` 與 logical scope `X-CROSS/*`
   - `S-K8S/*` 僅可入 README 「K8s 對照」章節，不入 VM 主表
   - 任何 baseline target (`vm1-*` / `vm3-*` / `phase-k8s-*`) 偵測 `TUNING_PROFILE` env 直接 exit 1
-  - `phase-threadcontrol-*` target 偵測 output path 屬 `S-BASE` / `S-K8S` / `X-CROSS` 直接 exit 1
+  - `phase-threadcontrol-*` target 偵測 output path 屬 `S-BASE` / `S-K8S` / `X-CROSS` / `x-cross` 直接 exit 1
 
 ## 3. manifest schema（每 phase 一份 `manifest.yaml`）
 
@@ -57,7 +58,7 @@ metrics_hosts:
   source: topology-derived | inventory | explicit
   kind: vm | k8s-node | k8s-pod | crossregion-vm
   ids: [<logical id list>]           # 例如 [dbhost-1, dbhost-2, dbhost-3]
-artifact_prefix: results/{db}-tc1/{result_scope}/
+artifact_prefix: results/{db}-tc1/{result_scope}/   # phase-crossregion 例外使用 results/x-cross/
 baseline_eligible: true | false
 tuning_profile_id: <id or "default"> # phase-threadcontrol 必填；其他 phase 寫 default
 owner_doc: <path to authoritative source doc>

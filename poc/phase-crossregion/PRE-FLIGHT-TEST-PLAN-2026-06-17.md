@@ -149,7 +149,7 @@
 
 | # | 檢查 | 指令 | 預期 | fail |
 |---|---|---|---|---|
-| J1 | 9 cell-track × 對應 round 數齊全 | `find results/*/X-CROSS/ -name '.suite.done' \| wc -l` | 9（3 DB × 3 profile） | HIGH |
+| J1 | 9 cell-track × 對應 round 數齊全 | `find results/x-cross/ -name '.suite.done' \| wc -l` | 9（3 DB × 3 profile） | HIGH |
 | J2 | summary 對 manifest schema | per-cell `jq` 驗 fields | 全合規 | HIGH |
 | J3 | GCP VM destroy 完 | `cd iac-gcp && terraform state list \| wc -l` | 0 | BLOCKER（節費）|
 | J4 | IAP tunnel 清乾淨 | `lsof -nP -iTCP:12211-12215` | empty | LOW |

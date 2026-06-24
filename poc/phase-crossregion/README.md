@@ -23,7 +23,7 @@ runtime phase（P0 deploy 起）為後續 commit，依 `0602-decisions-track-E.m
 | isolation | `rc` only |
 | W / warmup / threads / rounds | 沿用 baseline（128 / 20min / 16-128 / 5x5min）|
 | metrics_hosts | 6 logical id：`idc-dbhost-{1,2,3}` + `gcp-dbhost-{1,2,3}` |
-| artifact_prefix | `results/{db}-tc1/X-CROSS/` |
+| artifact_prefix | `results/x-cross/` |
 
 詳 [`manifest.yaml`](./manifest.yaml) + [`../results/PHASES.md`](../results/PHASES.md)。
 

@@ -25,7 +25,7 @@ metrics_hosts:
     - gcp-dbhost-1
     - gcp-dbhost-2
     - gcp-dbhost-3
-artifact_prefix: results/{db}-tc1/X-CROSS/
+artifact_prefix: results/x-cross/
 baseline_eligible: false
 tuning_profile_id: default
 owner_doc: 1_MeetingMinutes/0602-decisions-track-E.md

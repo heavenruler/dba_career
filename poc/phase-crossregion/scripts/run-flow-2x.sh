@@ -9,7 +9,7 @@ RUN_SEC=300
 WARMUP_SEC=300
 ROUNDS=5
 THREADS_LIST=16
-RESULT_BASE="results/X-CROSS/run-flow-2x"
+RESULT_BASE="results/x-cross/run-flow-2x"
 MAKEFILE_DIR="$(cd "$(dirname "$0")/../../" && pwd)"  # poc/
 
 # ─── flags ────────────────────────────────────────────────────────────────────
@@ -254,7 +254,7 @@ run_smoke_and_cv() {
     "$T_P85" TPCC_TS="$ts"
 
   log "=== $run_label: calculating CV ==="
-  local fetched_dir="${MAKEFILE_DIR}/results/X-CROSS/${ts}"
+  local fetched_dir="${MAKEFILE_DIR}/results/x-cross/${ts}"
   local cv_json="${rundir}/cv-report.json"
   if [[ $DRY_RUN -eq 1 ]]; then
     log "[DRY-RUN] calc_cv $fetched_dir -> $cv_json"
