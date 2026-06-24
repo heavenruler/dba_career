@@ -9,7 +9,7 @@ RUN_SEC=300
 WARMUP_SEC=300
 ROUNDS=5
 THREADS_LIST=16
-RESULT_BASE="results/x-cross/run-flow-2x"
+RESULT_BASE="results/x-cross/determinism/run-flow-2x"
 MAKEFILE_DIR="$(cd "$(dirname "$0")/../../" && pwd)"  # poc/
 
 # ─── flags ────────────────────────────────────────────────────────────────────
@@ -251,10 +251,10 @@ run_smoke_and_cv() {
 
   log "=== $run_label: fetch artifacts ==="
   run "$run_label fetch artifacts" "$rundir/phase8.5-fetch.log" \
-    "$T_P85" TPCC_TS="$ts"
+    "$T_P85" TPCC_TS="$ts" LOCAL_RESULT_CATEGORY=determinism
 
   log "=== $run_label: calculating CV ==="
-  local fetched_dir="${MAKEFILE_DIR}/results/x-cross/${ts}"
+  local fetched_dir="${MAKEFILE_DIR}/results/x-cross/determinism/${ts}"
   local cv_json="${rundir}/cv-report.json"
   if [[ $DRY_RUN -eq 1 ]]; then
     log "[DRY-RUN] calc_cv $fetched_dir -> $cv_json"

@@ -29,7 +29,7 @@
 | **CockroachDB v26.2** | 8409.5 | 8055.3 | 7902.5 | 7720.9 | 7472.3 | **7787.8** (R2-R5) | **3.23%** ✅ |
 | **YugabyteDB 2025.2** |  102.0 |  226.9 | 6424.2 | 6259.3 | 6206.2 | **6296.6** (R3-R5) | **1.82%** ✅ |
 
-> 數據來源：`results/x-cross/run1-20260622T131459+0800/{tidb,crdb}-vm-6node-P-A-rc-run1-*` 與 `results/x-cross/run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-*`，commit `dd948dcf` + `28e39881`。
+> 數據來源：`results/x-cross/determinism/run1-20260622T131459+0800/{tidb,crdb}-vm-6node-P-A-rc-run1-*` 與 `results/x-cross/determinism/run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-*`，commit `dd948dcf` + `28e39881`。
 
 ### Table C. 階段對比解讀
 
@@ -107,7 +107,7 @@
 | **CockroachDB v26.2.0** | 8409.5 | 8055.3 | 7902.5 | 7720.9 | 7472.3 | **7787.8** (R2-R5) | **3.23%** ✅ | placement P-A num_voters=3，lease 100% IDC |
 | **YugabyteDB 2025.2** | 102.0 | 226.9 | 6424.2 | 6259.3 | 6206.2 | **6296.6** (R3-R5) | **1.82%** ✅ | Plan B (IDC live RF=3 + GCP read_replica RF=3)；R1+R2 為 postgres backend cache 暖機 |
 
-> 數據來源：`results/x-cross/run1-20260622T131459+0800/{tidb,crdb}-vm-6node-P-A-rc-run1-*` 與 `results/x-cross/run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-*`。commit `dd948dcf` + `28e39881`。
+> 數據來源：`results/x-cross/determinism/run1-20260622T131459+0800/{tidb,crdb}-vm-6node-P-A-rc-run1-*` 與 `results/x-cross/determinism/run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-*`。commit `dd948dcf` + `28e39881`。
 
 **已確認結論**：
 - 06-21 觀察到的 ±526% / ±50% 變異主因為「每輪重新部署」造成 placement / cache / scheduler 狀態異動，與 W=4 contention 是兩個獨立來源。

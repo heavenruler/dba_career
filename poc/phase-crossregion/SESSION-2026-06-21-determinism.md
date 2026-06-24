@@ -96,10 +96,10 @@ YBDB  ~400-800  (Plan B read_replica)
 ## 5. 今日 artifacts 已 fetch
 
 ```
-results/x-cross/by-run/
+results/x-cross/smoke/early-runs/
   20260620T213459+0800/  Plan A run (3 DB) - YBDB Plan A backfire
   20260621T054627+0800/  BP run-1 (3 DB)   - Plan B + best-practice gates
   20260621T075351+0800/  BP run-2 (3 DB)   - same cluster re-deploy, determinism test
 ```
 
-可用 `results/x-cross/by-run/<TS>/<db>-vm-6node-P-A-rc-<TS>/` 進一步分析 latency / WAN probe / leader-snapshot。
+可用 `results/x-cross/smoke/early-runs/<TS>/<db>-vm-6node-P-A-rc-<TS>/` 進一步分析 latency / WAN probe / leader-snapshot。

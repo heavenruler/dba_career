@@ -7,7 +7,7 @@
 #
 # 流程（依序，fail-closed）：
 #   1. 驗證 sweep 結果完整性：
-#      find results/x-cross/ -name '.suite.done' | wc -l == 9（3 DB × 3 profile）
+#      find results/x-cross -name '.suite.done' | wc -l == 9（3 DB × 3 profile）
 #      列出 9 cell-tracks；不齊則 fail-closed。
 #   2. GCP client artifact fetch（A-A / A-A-RO 才有）：
 #      rsync /tmp/poc-tpcc/artifacts/X-CROSS/<cell>/ from g-test-poc-5 (port 12215)
@@ -95,9 +95,9 @@ run_or_dry() {
 # ---- 1. 驗證 sweep 結果完整性 ----------------------------------------
 echo "[sweep-archive] step 1/7 verify sweep completeness"
 
-# find expects results/x-cross/<cell>/.suite.done 結構
+# find expects results/x-cross/<category>/<cell>/.suite.done 結構
 SUITE_DONE_LIST=$(cd "$REPO_ROOT" && \
-  find results -maxdepth 4 -type f -path 'results/x-cross/*/.suite.done' 2>/dev/null | sort || true)
+  find results/x-cross -type f -name '.suite.done' 2>/dev/null | sort || true)
 
 DONE_COUNT=$(printf '%s\n' "$SUITE_DONE_LIST" | grep -c . || true)
 

@@ -9,8 +9,10 @@
 
 | 目錄 | 角色 | 判讀方式 |
 |---|---|---|
-| `results/x-cross/` | phase-crossregion 主要結果目錄 | 採用為 X-CROSS benchmark / smoke / determinism 資料根目錄 |
-| `results/x-cross/preflight/` | chrony gate / preflight 證據 | 只作跨區時間同步與前置檢查佐證，不作為 benchmark 結果目錄 |
+| `results/x-cross/preflight/time-sync/` | time server / chrony 同步檢查 | 只作跨區時間同步與前置檢查佐證，不作為 benchmark 結果目錄 |
+| `results/x-cross/dry-run/` | dry-run framework probe | 驗證 wrapper / gate / binary / endpoint；不含正式 go-tpc run |
+| `results/x-cross/smoke/early-runs/` | 早期 smoke / partial run | 可用來追溯建置與路徑修正，不作正式 benchmark 結論 |
+| `results/x-cross/determinism/` | same-cluster determinism 驗證 | 目前唯一可引用的 W=4 重現性觀察來源；仍非 W=128 baseline |
 
 目前 `results/x-cross/` 內沒有 `summary.json`。本檔引用的 tpmC 皆直接來自各 round 的 `go-tpc-stdout.txt`。
 
@@ -32,14 +34,14 @@
 
 | 資料庫 | 採用來源 | R1 | R2 | R3 | R4 | R5 | 採用平均 | CV | 備註 |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| TiDB | [`run1-20260622T131459`](./run1-20260622T131459+0800/tidb-vm-6node-P-A-rc-run1-20260622T131459+0800/) | 9,525.5 | 9,553.2 | 9,786.9 | 9,393.2 | 9,530.8 | 9,557.9 | 1.5% | 5 rounds 全採 |
-| CockroachDB | [`run1-20260622T131459`](./run1-20260622T131459+0800/crdb-vm-6node-P-A-rc-run1-20260622T131459+0800/) | 8,409.5 | 8,055.3 | 7,902.5 | 7,720.9 | 7,472.3 | 7,912.1 | 4.5% | 5 rounds 全採 |
-| YugabyteDB | [`run2-20260622T231927`](./run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-20260622T231927+0800/) | 102.0 | 226.9 | 6,424.2 | 6,259.3 | 6,206.2 | 6,296.6 | 1.8% | 只採 R3-R5；R1/R2 為暖機異常 |
+| TiDB | [`run1-20260622T131459`](./determinism/run1-20260622T131459+0800/tidb-vm-6node-P-A-rc-run1-20260622T131459+0800/) | 9,525.5 | 9,553.2 | 9,786.9 | 9,393.2 | 9,530.8 | 9,557.9 | 1.5% | 5 rounds 全採 |
+| CockroachDB | [`run1-20260622T131459`](./determinism/run1-20260622T131459+0800/crdb-vm-6node-P-A-rc-run1-20260622T131459+0800/) | 8,409.5 | 8,055.3 | 7,902.5 | 7,720.9 | 7,472.3 | 7,912.1 | 4.5% | 5 rounds 全採 |
+| YugabyteDB | [`run2-20260622T231927`](./determinism/run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-20260622T231927+0800/) | 102.0 | 226.9 | 6,424.2 | 6,259.3 | 6,206.2 | 6,296.6 | 1.8% | 只採 R3-R5；R1/R2 為暖機異常 |
 
 取數來源：
 
-- TiDB / CockroachDB：`results/x-cross/run1-20260622T131459+0800/*/runs/threads-16/round-*/go-tpc-stdout.txt`
-- YugabyteDB：`results/x-cross/run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-20260622T231927+0800/runs/threads-16/round-*/go-tpc-stdout.txt`
+- TiDB / CockroachDB：`results/x-cross/determinism/run1-20260622T131459+0800/*/runs/threads-16/round-*/go-tpc-stdout.txt`
+- YugabyteDB：`results/x-cross/determinism/run2-20260622T231927+0800/ybdb-vm-6node-P-A-rc-run2-20260622T231927+0800/runs/threads-16/round-*/go-tpc-stdout.txt`
 
 ### 2.2 2026-06-19 true six-node smoke
 
@@ -58,9 +60,9 @@
 | 類型 | 位置 | 原因 |
 |---|---|---|
 | 2026-06-21 redeploy run-to-run | [`SESSION-2026-06-21-determinism.md`](../../phase-crossregion/SESSION-2026-06-21-determinism.md) | W=4 且每輪 redeploy；TiDB 1,552.2 -> 9,719.2，CockroachDB 3,929.6 -> 2,365.6，YugabyteDB 41.8 -> 23.0，變異不可作正式 benchmark |
-| YugabyteDB `run1-20260622T131459` | `results/x-cross/run1-20260622T131459+0800/ybdb-vm-6node-P-A-rc-run1-*` | round 1 僅 10.1 tpmC，round 2 缺 tpmC 行；改採 run2 的 R3-R5 |
-| `results/x-cross/preflight/` | `results/x-cross/preflight/chrony-gate-*` | 只包含 chrony / gate 檢查；不是 go-tpc suite 結果 |
-| `run2` 內 TiDB / CockroachDB 複製目錄 | `results/x-cross/run2-20260622T231927+0800/{tidb,crdb}-vm-6node-P-A-rc-run1-*` | 目錄名仍為 run1，視為 run1 artifact copy，不視為新的 run2 採樣 |
+| YugabyteDB `run1-20260622T131459` | `results/x-cross/determinism/run1-20260622T131459+0800/ybdb-vm-6node-P-A-rc-run1-*` | round 1 僅 10.1 tpmC，round 2 缺 tpmC 行；改採 run2 的 R3-R5 |
+| `results/x-cross/preflight/time-sync/` | `results/x-cross/preflight/time-sync/chrony-gate-*` | 只包含 chrony / gate 檢查；不是 go-tpc suite 結果 |
+| `run2` 內 TiDB / CockroachDB 複製目錄 | `results/x-cross/determinism/run2-20260622T231927+0800/{tidb,crdb}-vm-6node-P-A-rc-run1-*` | 目錄名仍為 run1，視為 run1 artifact copy，不視為新的 run2 採樣 |
 
 ---
 
@@ -76,7 +78,7 @@
 
 ## 5. 下一步
 
-1. X-CROSS artifact layout 已收斂為 `results/x-cross/`；前期 chrony / preflight 證據集中於 `results/x-cross/preflight/`。
+1. X-CROSS artifact layout 已收斂為 `preflight/time-sync`、`dry-run`、`smoke/early-runs`、`determinism` 四類。
 2. 為 X-CROSS 補 `summary.json` 產生流程，避免後續只靠 raw stdout 手動讀數。
 3. 正式 W=128 測試需固定：same cluster、不 redeploy、placement gate、scheduler / balancer freeze、20 分鐘 warmup、R2-R5 median / CV。
 4. 將 chrony gate / WAN preflight 只作為 X-CROSS 附屬證據，不與 benchmark 結果混放。
@@ -97,5 +99,6 @@
 
 | 日期 | 內容 |
 |---|---|
+| 2026-06-24 | 依用途重整目錄：time-sync、dry-run、early smoke、determinism 分層 |
 | 2026-06-24 | 目錄由 `results/X-CROSS/` 改為 `results/x-cross/`；前期 `results/x-cross-tc1/` 內容彙整至 `results/x-cross/preflight/` |
 | 2026-06-23 | 建立 X-CROSS pipeline-log，確認 `results/x-cross/` 為 phase-crossregion 主資料目錄，`results/x-cross/preflight/` 為 chrony / preflight 證據目錄 |

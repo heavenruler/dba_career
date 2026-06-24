@@ -86,6 +86,8 @@ TIMEOUT_BIN ?= $(shell command -v timeout 2>/dev/null || command -v gtimeout 2>/
 PHASE_NAME         := phase-crossregion
 RESULT_SCOPE       := X-CROSS
 LOCAL_RESULT_SCOPE := x-cross
+LOCAL_RESULT_CATEGORY ?= smoke/early-runs
+LOCAL_RESULT_ROOT := $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(LOCAL_RESULT_CATEGORY)
 BASELINE_FAMILY    := crossregion
 PLACEMENT          ?= P-A
 PROFILE            ?= A-S
@@ -567,14 +569,14 @@ phase8-crdb-result:
 # ===================================================================
 phase8.5-fetch:
 	@echo "==> [start] phase8.5-fetch at $$(date +%Y-%m-%dT%H:%M:%S%z) (timeout=$(TIMEOUT_PHASE85_FETCH)s)"
-	@echo "==> phase8.5-fetch: ssh+tar .31 artifacts → MAC results/x-cross/$(TPCC_TS)/"
+	@echo "==> phase8.5-fetch: ssh+tar .31 artifacts → MAC results/x-cross/$(LOCAL_RESULT_CATEGORY)/$(TPCC_TS)/"
 	@echo "    (uses ssh+tar pipe; macOS openrsync v15+ silently fails on GNU rsync source)"
-	@mkdir -p $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)
+	@mkdir -p $(LOCAL_RESULT_ROOT)/$(TPCC_TS)
 	ssh $(TPCC_CLIENT) "cd $(TPCC_ARTIFACTS)/$(RESULT_SCOPE) && tar czf - ." \
-	  | tar xzf - -C $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/
-	@echo "==> fetched to: $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/"
-	@du -sh $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/ 2>&1
-	@ls $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/ | head -10
+	  | tar xzf - -C $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/
+	@echo "==> fetched to: $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/"
+	@du -sh $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/ 2>&1
+	@ls $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/ | head -10
 	@echo "==> [end]   phase8.5-fetch at $$(date +%Y-%m-%dT%H:%M:%S%z)"
 
 # ===================================================================
@@ -746,9 +748,9 @@ TIDB_PD            ?= $(TIDB_HOST)
 
 phase-freeze-tidb:
 	@echo "==> phase-freeze-tidb: dump PD config then freeze scheduling"
-	@mkdir -p $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)
+	@mkdir -p $(LOCAL_RESULT_ROOT)/$(TPCC_TS)
 	@ssh $(TPCC_CLIENT) "curl -s http://$(TIDB_PD):2379/pd/api/v1/config" \
-	  > $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/pd-config-before.json
+	  > $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/pd-config-before.json
 	@echo "  dumped pd-config-before.json"
 	ssh $(TPCC_CLIENT) " \
 	  tiup ctl:v8.5.2 pd -u http://$(TIDB_PD):2379 config set leader-schedule-limit 0; \
@@ -760,11 +762,11 @@ phase-freeze-tidb:
 
 phase-unfreeze-tidb:
 	@echo "==> phase-unfreeze-tidb: restore PD config from pd-config-before.json"
-	@test -f $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/pd-config-before.json \
-	  || { echo "[unfreeze-tidb] ERROR: pd-config-before.json not found at $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/"; exit 1; }
+	@test -f $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/pd-config-before.json \
+	  || { echo "[unfreeze-tidb] ERROR: pd-config-before.json not found at $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/"; exit 1; }
 	@python3 -c " \
 import json, subprocess, sys; \
-cfg = json.load(open('$(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/pd-config-before.json')); \
+cfg = json.load(open('$(LOCAL_RESULT_ROOT)/$(TPCC_TS)/pd-config-before.json')); \
 sched = cfg.get('schedule', {}); \
 keys = ['leader-schedule-limit','region-schedule-limit','replica-schedule-limit', \
         'merge-schedule-limit','hot-region-schedule-limit']; \
@@ -777,11 +779,11 @@ print('==> pd config restored')"
 	@echo "==> phase-unfreeze-tidb: done"
 
 # --- CRDB freeze/unfreeze ---
-CRDB_FREEZE_DUMP   ?= $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/crdb-cluster-settings-before.sql
+CRDB_FREEZE_DUMP   ?= $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/crdb-cluster-settings-before.sql
 
 phase-freeze-crdb:
 	@echo "==> phase-freeze-crdb: dump cluster settings then freeze rebalancing"
-	@mkdir -p $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)
+	@mkdir -p $(LOCAL_RESULT_ROOT)/$(TPCC_TS)
 	ssh $(TPCC_CLIENT) "ssh root@$(CRDB_HOST) ' \
 	  /usr/local/bin/cockroach sql --insecure --host=$(CRDB_HOST):$(CRDB_PORT) \
 	    --format=tsv -e \
@@ -817,11 +819,11 @@ print('==> crdb settings restored')"
 	@echo "==> phase-unfreeze-crdb: done"
 
 # --- YBDB freeze/unfreeze ---
-YBDB_UNIV_DUMP     ?= $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/ybdb-universe-config-before.json
+YBDB_UNIV_DUMP     ?= $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/ybdb-universe-config-before.json
 
 phase-freeze-ybdb:
 	@echo "==> phase-freeze-ybdb: dump universe config then disable load balancer"
-	@mkdir -p $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)
+	@mkdir -p $(LOCAL_RESULT_ROOT)/$(TPCC_TS)
 	ssh $(TPCC_CLIENT) "ssh root@$(IDC_NODES_HEAD) ' \
 	  /opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_universe_config'" \
 	  > $(YBDB_UNIV_DUMP) 2>&1
@@ -842,8 +844,8 @@ phase-unfreeze-ybdb:
 # Shared var: SMOKE_ROUND (預設 1，loop 時由 caller 傳入)
 SMOKE_ROUND        ?= 1
 
-# 結果目錄結構: results/x-cross/<TPCC_TS>/round-<N>/<db>/
-SMOKE_RESULT_BASE  = $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/round-$(SMOKE_ROUND)
+# 結果目錄結構: results/x-cross/$(LOCAL_RESULT_CATEGORY)/<TPCC_TS>/round-<N>/<db>/
+SMOKE_RESULT_BASE  = $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/round-$(SMOKE_ROUND)
 
 phase-smoke-only-tidb:
 	@echo "DEPRECATED: 用 phase-roundrun-only-tidb 取代 (此 target 仍保留，但含 cold-reset+warmup 的 run.sh，非純 run)"
@@ -926,7 +928,7 @@ WARMUP_ROUND_SEC   ?= 120
 
 phase-warmup-only-tidb:
 	@echo "==> phase-warmup-only-tidb (R0 warmup, 120s, discard) ts=$(TPCC_TS)"
-	@mkdir -p $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)/round-0/tidb
+	@mkdir -p $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/round-0/tidb
 	ssh $(TPCC_CLIENT) " \
 	  rsync -q $(CROSS_SCRIPTS_REMOTE)/run-round-only.sh /tmp/run-round-only.sh 2>/dev/null || true; \
 	  DB=tidb TIDB_HOST=$(TIDB_HOST) TIDB_PORT=$(TIDB_PORT) \
@@ -1075,7 +1077,7 @@ phase-c-cv-report:
 	@echo "==> phase-c-cv-report  TPCC_TS=$(TPCC_TS)"
 	@python3 -c " \
 import os, glob, statistics, re, sys; \
-base = '$(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(TPCC_TS)'; \
+base = '$(LOCAL_RESULT_ROOT)/$(TPCC_TS)'; \
 dbs  = ['tidb', 'crdb', 'ybdb']; \
 print(''); \
 print('  Path C CV Report — TPCC_TS=$(TPCC_TS)'); \
