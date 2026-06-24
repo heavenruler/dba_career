@@ -572,7 +572,7 @@ awk '/^---$/{c++; if(c>=2) print FILENAME ":" NR; next} {c=0}' $ACTIVE
 
 # 過時章節檢查（active scope only）
 rg -n '## v4\.7 重跑檢核項' $ACTIVE
-# 預期：0 行（archive `yuga-tc1-old/S-BASE/pipeline-log.md:129` 為合理歷史命中，不掃）
+# 預期：0 行（archive `yuga-tc1-old/S-BASE/archive/pipeline-log.md:129` 為合理歷史命中，不掃）
 
 # vm-3node TL;DR 子表反例檢查（active scope only）
 rg -n '^### TL;DR — vm-3node' $ACTIVE
