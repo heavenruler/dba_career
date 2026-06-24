@@ -7,7 +7,7 @@
 | DB | vm-1node peak | vm-3node peak | k8s-unlimit peak | k8s-limit peak | 主要觀察 | pipeline log |
 |---|---:|---:|---:|---:|---|---|
 | TiDB | 13,355.4 tpmC | <u>**22,841.0 tpmC**</u> | 18,918.8 tpmC | 11,080.7 tpmC | 三節點 + HAProxy 表現最佳，K8s 約有 17% overhead，limit 後下降 41% | [tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md) |
-| CockroachDB | 8,732.5 tpmC | <u>**14,014.7 tpmC**</u> | 13,982.2 tpmC | 6,749.9 tpmC | K8s 幾乎無損，limit 後下降 52%，HAProxy 比直連更快 | [cockroach-tc1/S-BASE/pipeline-log.md](./cockroach-tc1/S-BASE/pipeline-log.md) |
+| CockroachDB | 8,732.5 tpmC | <u>**14,014.7 tpmC**</u> | 13,982.2 tpmC | 6,749.9 tpmC | K8s 幾乎無損，limit 後下降 52%，HAProxy 比直連更快 | [cockroach-tc1/S-BASE/pipeline-log.md](../cockroach-tc1/S-BASE/pipeline-log.md) |
 | YugabyteDB | 414.7 tpmC | 1,036.7 tpmC | <u>**3,163.6 tpmC**</u> | 1,766.1 tpmC | K8s-unlimit 大幅高於 VM，limit 後下降 44%，關鍵是 2025.2.2 LTS + READ COMMITTED | [yuga-tc1/S-BASE/pipeline-log.md](./yuga-tc1/S-BASE/pipeline-log.md) |
 
 本輪 TiDB / CockroachDB / YugabyteDB 的 VM、K8s-unlimit、K8s-limit 對標測試已完成。
@@ -329,7 +329,7 @@ curl -s http://172.24.40.32:9000/varz | grep yb_num_shards
 ## 參考
 
 - TiDB 本輪測試紀錄: [tidb-tc1/S-BASE/pipeline-log.md](./tidb-tc1/S-BASE/pipeline-log.md)
-- CockroachDB 本輪測試紀錄: [cockroach-tc1/S-BASE/pipeline-log.md](./cockroach-tc1/S-BASE/pipeline-log.md)
+- CockroachDB 本輪測試紀錄: [cockroach-tc1/S-BASE/pipeline-log.md](../cockroach-tc1/S-BASE/pipeline-log.md)
 - YugabyteDB 本輪測試紀錄: [yuga-tc1/S-BASE/pipeline-log.md](./yuga-tc1/S-BASE/pipeline-log.md)
 - TiDB 歷史分析: [results_old/tidb-tc1/S-BASE/compare.md](../results_old/tidb-tc1/S-BASE/compare.md)
 - YugabyteDB 歷史 pipeline log: [results_old/yuga-tc1/S-BASE/pipeline-log.md](../results_old/yuga-tc1/S-BASE/pipeline-log.md)

@@ -1,10 +1,10 @@
-# YugabyteDB TPC-C Pipeline Log — yuga-tc1-old / S-BASE（DEPRECATED ARCHIVE）
+# YugabyteDB TPC-C Pipeline Log — yuga-tc1-old / S-BASE（DEPRECATED / MOVED OUT OF ARCHIVE）
 
 > ⚠️ **本目錄為封存歷史資料，不再更新**。原為 PoC v4.7 框架下 YugabyteDB baseline 的「待重跑」骨架；2026-05-21 三 iso v4.7 重跑完成後，active 紀錄已搬至 [`../../yuga-tc1/S-BASE/pipeline-log.md`](../../yuga-tc1/S-BASE/pipeline-log.md)。
 >
 > 本目錄保留：
 > - 此檔（待重跑骨架原版，便於追溯改寫前狀態）
-> - [`pipeline-log_old.md`](./pipeline-log_old.md) — pre-v4.7 single-run wrapper 結果與 YugabyteDB 2.20 / AlmaLinux 8.10 改造歷史紀錄
+> - [`pipeline-log_old.md`](../../archive/yuga-tc1-old/S-BASE/archive/pipeline-log_old.md) — pre-v4.7 single-run wrapper 結果與 YugabyteDB 2.20 / AlmaLinux 8.10 改造歷史紀錄
 > - 各 pre-v4.7 結果目錄：vm-1node/20260514-1337、k8s-3node-{unlimit,limit}/202605* 等
 
 ---
@@ -144,6 +144,6 @@ SHOW yb_effective_transaction_isolation_level;        -- 底層實際 isolation
 
 ---
 
-## K8s 段 — 已存檔於 pipeline-log_old.md
+## K8s 段 — 已存檔於 archive/pipeline-log_old.md
 
-> 2026-05-13 的 k8s-3node-unlimit / k8s-3node-limit 為 pre-v4.7 單次 10min wrapper 結果，已隨主檔清空動作存檔於 [`pipeline-log_old.md`](./pipeline-log_old.md)。待 K8s 環境以 v4.7 detached suite 重跑後，將回填正式段落。
+> 2026-05-13 的 k8s-3node-unlimit / k8s-3node-limit 為 pre-v4.7 單次 10min wrapper 結果，已隨主檔清空動作存檔於 [`pipeline-log_old.md`](../../archive/yuga-tc1-old/S-BASE/archive/pipeline-log_old.md)。待 K8s 環境以 v4.7 detached suite 重跑後，將回填正式段落。
