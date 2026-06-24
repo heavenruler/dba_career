@@ -16,7 +16,9 @@
 - `註1` 到 `註4` 為全文件共用，不針對單一表格重新編號。
 - 文末固定使用 `<a id="note-1"></a>` anchor，避免 Markdown renderer 對中文 heading anchor 產生差異。
 - `N` 表示獨立重跑次數（不是 round）；`N=1` 為方向性觀察，需 `N=3` 才可作為對外結論基準（同 README N9）。
-- **Phase scope 規則**（2026-06-06 phase isolation framework 後）：本模板僅適用 `S-BASE` (vm baseline)；其他 scope (`S-K8S` / `T-THRD` / `X-CROSS`) 須另寫對應 pipeline-log。`baseline_eligible: false` 的 scope (`T-THRD` / `X-CROSS`) **嚴禁**作為跨家對比的 source（[`PHASES.md`](./PHASES.md) §2）。`S-K8S` 屬 `baseline_family: k8s`，與 `S-BASE` 屬不同 family，不可直引；跨 family 對比須明標。
+- **Phase scope 規則**（2026-06-06 phase isolation framework 後）：本模板主體適用 `S-BASE` (vm baseline)，並於下方補充 `S-K8S` pipeline-log 結構。`baseline_eligible: false` 的 scope (`T-THRD` / `X-CROSS`) **嚴禁**作為跨家對比的 source（[`PHASES.md`](./PHASES.md) §2）。`S-K8S` 屬 `baseline_family: k8s`，與 `S-BASE` 屬不同 family，不可混入 VM 主排名；跨 family 對比須明標 retention / delta 口徑。
+- Execute 總覽表為每份 pipeline-log 的主要入口：`vm-1node`、`vm-3node`、`S-K8S` 都必須有總覽表，且第一欄項目需 link 到本檔對應段落 anchor。
+- `N` 固定表示獨立 suite 重跑次數；若要描述有效 round 數，欄名必須寫 `有效 rounds`，不可用 `N` 代替。
 
 ## 章節骨架與例外（2026-06-04 audit 後新增）
 
@@ -58,7 +60,8 @@
 
 - TL;DR 標題日期格式：`（YYYY-MM-DD/DD）` 無空格、單一斜線 — 反例 `（2026-05-20 / 21）`
 - 「下一步」wording 三家須同步：`K8s 對照組待重跑` 不寫 `Kubernetes 對照組待排程`
-- vm-3node 5-cell 摘要在 §2.6 只出現一次；§7 開頭僅放一行 framing
+- vm-1node / vm-3node / S-K8S 的 `Execute 結果總覽` 必須使用段落 link：例如 [`rc`](#vm-1node-rc)、[`1s1r`](#vm-3node-1s1r-rc)、[`unlimit`](#k8s-unlimit-rc無顯式-kubernetes-resource-limits)
+- vm-3node 5-cell 摘要在 §2.6 只出現一次；§7 開頭可放 `Execute 結果總覽（vm-3node 5 cells）`，不得再放 stale `TL;DR — vm-3node N cells`
 - 失敗 trial（如 F-E FAIL）不入 sub-topology Execute 主表、不入 SUMMARY 5-cell 表；以 `⚠️ ... 不入 canonical` 註腳說明
 
 ## TL;DR — <scope>（<date>）
@@ -100,6 +103,16 @@
 | vm-3node-3s1r / RC | `<yyyyMMddTHHmmss+0800>` | `<tpmC 或 —>` | [`<result-dir>`](./vm-3node-3s1r-rc/<result-dir>/) | [§ vm-3node 系列](#vm-3node-系列4-sub-topology--rcpoc-design-632) |
 | vm-3node-3s3r / RC | `<yyyyMMddTHHmmss+0800>` | `<tpmC 或 —>` | [`<result-dir>`](./vm-3node-3s3r-rc/<result-dir>/) | [§ vm-3node 系列](#vm-3node-系列4-sub-topology--rcpoc-design-632) |
 | vm-3node-haproxy-3s3r / RC | `<yyyyMMddTHHmmss+0800>` | `<tpmC 或 —>` | [`<result-dir>`](./vm-3node-haproxy-3s3r-rc/<result-dir>/) | [§ vm-3node-haproxy-3s3r-rc](#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy) |
+
+### Execute 結果總覽（vm-1node 三 isolation）
+
+> 代表點採各 isolation 的 peak / 主要觀察併發；完整 per-round thread sweep 見各 iso 的 `Execute 結果` 表。p99 為 NEW_ORDER 5-round latency mean；err 為 all transaction error rate。`iso` 欄必須 link 到本檔對應段落。
+
+| iso | TPCC_TS | 代表併發 | tpmC mean | range/mean | NO p99 mean (ms) | err | N | 判讀 |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| [`rc`](#vm-1node-rc) | [`<yyyyMMddTHHmmss>`](./vm-1node-rc/<result-dir>/) | `<t>` | `<tpmC>` | `<pct>` | `<p99>` | `<rate>` | `<1 或 3>` | `<CPU-bound / IO-bound / 零 error / caveat>` |
+| [`rr`](#vm-1node-rr) | [`<yyyyMMddTHHmmss>`](./vm-1node-rr/<result-dir>/) | `<t>` | `<tpmC>` | `<pct>` | `<p99>` | `<rate>` | `<1 或 3>` | `<retry-bound / lock-wait / caveat>` |
+| [`strict`](#vm-1node-strict) | [`<yyyyMMddTHHmmss>`](./vm-1node-strict/<result-dir>/) | `<t>` | `<tpmC 或 —>` | `<pct 或 —>` | `<p99 或 —>` | `<rate 或 —>` | `<1 或 3>` | `<原生 strict / alias / skipped>` |
 
 ## vm-1node-rc
 
@@ -153,7 +166,7 @@
 - ANALYZE / statistics：`<duration / status>`
 - EXPLAIN dump：`<files>`
 
-### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
+### Execute 結果
 
 ### 取數來源
 
@@ -167,20 +180,26 @@
 - 計算口徑：`<5-round mean / median / single run / round-N>`
 - 產出欄位：`tpmC mean / tpmTotal mean / efficiency mean / NO p50 / NO p95 / NO p99 / error count / error rate`
 
-> tpmC / tpmTotal / efficiency 為 5 round mean；NO p50 / p95 / p99 亦為 5 round latency mean。
+> per-round tpmC + 5-round mean（W=128、指定 isolation、指定 N）。p99 為 NEW_ORDER 5-round latency mean；err 為 all transaction `error_rate_pct`。補充指標見 `summary.json`。
 >
 > `range/mean` = `(5 round 最大 tpmC - 最小 tpmC) / 5 round 平均 tpmC`，用來看同一併發水位的 round-to-round 波動。
 >
 > go-tpc 若沒有 think time / keying time，efficiency 遠超 100% 屬正常。
 
-| threads | tpmC mean | range/mean | tpmTotal mean | efficiency mean | NO p50 (ms) | NO p95 (ms) | NO p99 (ms) | error count | error rate |
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 16 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<count>` | `<errors / total 或 %>` |
-| 32 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<count>` | `<errors / total 或 %>` |
-| 64 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<count>` | `<errors / total 或 %>` |
-| 128 | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<value>` | `<count>` | `<errors / total 或 %>` |
+| 16 | `<r1>` | `<r2>` | `<r3>` | `<r4>` | `<r5>` | `<mean>` | `<pct>` | `<p99>` | `<rate>` |
+| 32 | `<r1>` | `<r2>` | `<r3>` | `<r4>` | `<r5>` | `<mean>` | `<pct>` | `<p99>` | `<rate>` |
+| 64 | `<r1>` | `<r2>` | `<r3>` | `<r4>` | `<r5>` | `<mean>` | `<pct>` | `<p99>` | `<rate>` |
+| 128 | `<r1>` | `<r2>` | `<r3>` | `<r4>` | `<r5 或 —>` | `<mean>` | `<pct>` | `<p99>` | `<rate>` |
 
-### Round-by-round tpmC
+### 代表點
+
+**t=<N> / <tpmC> tpmC / NO p99 = <ms> ms**。`<對照說明 / sweet spot / caveat>`。
+
+### Round-by-round tpmC（可選）
+
+> 若 `Execute 結果` 已採 `r1-r5 / mean / range/mean / NO p99 / err` 統一表格，本節可略；若保留，需與 `Execute 結果` 完全一致，避免兩份 per-round 數字漂移。
 
 ### 取數來源
 
@@ -306,7 +325,7 @@
 
 ## vm-3node 系列（4 sub-topology × RC，PoC-DESIGN §6.3.2）
 
-> 本段聚合 4 個 vm-3node 子拓撲（1s1r / 1s3r / 3s1r / 3s3r）在 RC 下的執行紀錄與對標分析；HAProxy 變體獨立於 [§ vm-3node-haproxy-3s3r-rc](#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)。子拓撲命名規則：`<shards>s<replicas>r`（例：`3s3r` = 3 shards × RF=3）。`N=1` / `N=3` 嚴謹性定義見 README [N9](./README.md#note-N9)；shard / replica 變數說明見 [N10](./README.md#note-N10)。
+> 本段聚合 4 個 direct vm-3node 子拓撲（1s1r / 1s3r / 3s1r / 3s3r）與 1 個 HAProxy 變體（haproxy-3s3r）在 RC 下的執行紀錄與對標分析。子拓撲命名規則：`<shards>s<replicas>r`（例：`3s3r` = 3 shards × RF=3）。`N=1` / `N=3` 嚴謹性定義見 README [N9](./README.md#note-N9)；shard / replica 變數說明見 [N10](./README.md#note-N10)。
 
 ### Dry-run anchor 矩陣
 
@@ -317,14 +336,17 @@
 | `3s1r` | `<yyyyMMddTHHmmss+0800>` | 3 | `1 / <actual>` | `READ COMMITTED / <actual>` | `<✅/❌>` |
 | `3s3r` | `<yyyyMMddTHHmmss+0800>` | 3 | `3 / <actual>` | `READ COMMITTED / <actual>` | `<✅/❌>` |
 
-### Execute 結果（t=128 best-of-4 thread groups 代表點；完整 4 thread groups 數據見各結果目錄 `summary.json`）
+### Execute 結果總覽（vm-3node 5 cells）
 
-| sub-topo | tpmC (t=128) | NO p99 (ms) | error rate | DB-host 瓶頸 | 結果目錄 | N |
-|---|---:|---:|---:|---|---|---:|
-| `1s1r` | `<tpmC>` | `<p99>` | `<rate>` | `<bottleneck>` | [`<result-dir>`](./vm-3node-1s1r-rc/<result-dir>/) | `<1 或 3>` |
-| `1s3r` | `<tpmC>` | `<p99>` | `<rate>` | `<bottleneck>` | [`<result-dir>`](./vm-3node-1s3r-rc/<result-dir>/) | `<1 或 3>` |
-| `3s1r` | `<tpmC>` | `<p99>` | `<rate>` | `<bottleneck>` | [`<result-dir>`](./vm-3node-3s1r-rc/<result-dir>/) | `<1 或 3>` |
-| `3s3r` | `<tpmC>` | `<p99>` | `<rate>` | `<bottleneck>` | [`<result-dir>`](./vm-3node-3s3r-rc/<result-dir>/) | `<1 或 3>` |
+> 代表點採各 sub-topology 的主要觀察併發；完整 per-round thread sweep 見各 cell 的 `Execute 結果` 表。p99 為 NEW_ORDER 5-round latency mean；err 為 all transaction error rate。前 4 cells 為 direct 連線，第 5 cell 為 HAProxy 連線分散變體。`sub-topology` 欄必須 link 到本檔對應段落。
+
+| sub-topology | shard / RF | TPCC_TS | 代表併發 | tpmC mean | range/mean | NO p99 mean (ms) | err | N | 判讀 |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---|
+| [`1s1r`](#vm-3node-1s1r-rc) | 1 / 1 | [`<yyyyMMddTHHmmss>`](./vm-3node-1s1r-rc/<result-dir>/) | `<t>` | `<tpmC>` | `<pct>` | `<p99>` | `<rate>` | `<1 或 3>` | `<baseline / caveat>` |
+| [`1s3r`](#vm-3node-1s3r-rc) | 1 / 3 | [`<yyyyMMddTHHmmss>`](./vm-3node-1s3r-rc/<result-dir>/) | `<t>` | `<tpmC>` | `<pct>` | `<p99>` | `<rate>` | `<1 或 3>` | `<RF cost / caveat>` |
+| [`3s1r`](#vm-3node-3s1r-rc) | 3 / 1 | [`<yyyyMMddTHHmmss>`](./vm-3node-3s1r-rc/<result-dir>/) | `<t>` | `<tpmC>` | `<pct>` | `<p99>` | `<rate>` | `<1 或 3>` | `<sharding cost / caveat>` |
+| [`3s3r`](#vm-3node-3s3r-rc) | 3 / 3 | [`<yyyyMMddTHHmmss>`](./vm-3node-3s3r-rc/<result-dir>/) | `<t>` | `<tpmC>` | `<pct>` | `<p99>` | `<rate>` | `<1 或 3>` | `<combined cost / caveat>` |
+| [`haproxy-3s3r`](#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy) | 3 / 3 | [`<yyyyMMddTHHmmss>`](./vm-3node-haproxy-3s3r-rc/<result-dir>/) | `<t>` | `<tpmC>` | `<pct>` | `<p99>` | `<rate>` | `<1 或 3>` | `<HAProxy delta / caveat>` |
 
 ### 跨 cell 分析
 
@@ -342,9 +364,9 @@
 - 關鍵設定：`timeout client/server 1h`、`option clitcpka` / `option srvtcpka`（防 prepare 階段連線斷線）
 - 客戶端連線：`.31 → <HAProxy host>:<port>`，不再直連 DB
 
-### Execute 結果（5 round tpmC 平均；latency 為 5 round mean）
+### Execute 結果
 
-> 複製 `vm-1node-rc` 的 Execute / Round-by-round / DB-host 飽和分析結構填入。
+> 複製 `vm-1node-rc` 的 `Execute 結果` 統一表格（`r1-r5 / mean / range/mean / NO p99 / err`）填入；HAProxy 也不得退回簡化 `mean / range` 表。
 
 ### 對 direct 連線的差異
 
@@ -360,16 +382,79 @@
 - `<例如 DB-host metrics 缺失 / 首次 dispatch 中斷 / N=1 / direct baseline 本身不穩等。>`
 - 完整 HAProxy vs direct 對比分析請見 [`dispatch-records/<日期>-vm-3node-haproxy-vs-direct-3s3r-<db>-analysis.md`](./dispatch-records/)。
 
-## Kubernetes / scale-out 段
+## S-K8S pipeline-log 結構（獨立檔，不寫入 S-BASE）
 
-> Kubernetes 無資源限制、Kubernetes 有資源限制等 scale-out case 請獨立成段。未重跑前不可保留舊數字在主段。
+> `S-K8S` 必須放在 `results/<db>-tc1/S-K8S/pipeline-log.md`；不可回填到 `S-BASE/pipeline-log.md` 的 Kubernetes 段。`S-K8S` 屬 `baseline_family: k8s`，只能和 VM baseline 做 retention / delta，不可混入 VM 排名。
 
-### <case-name>
+### S-K8S H1 與 framing
 
-- 狀態：`<待重跑 / 完成 / 完成，分析待修>`
-- 結果目錄：`<path>`
-- 主要結論：`<一到三點>`
-- caveat：`<是否與 vm-1node 同口徑>`
+```md
+# <Database> TPC-C Pipeline Log — <db>-tc1 / S-K8S
+
+> 本檔僅紀錄 **S-K8S**（Kubernetes 部署平面）<Database> 對照數據；VM baseline 在 [`../S-BASE/pipeline-log.md`](../S-BASE/pipeline-log.md)。取數口徑一律為各 suite 的 `summary.json`。
+```
+
+### S-K8S TL;DR 排行
+
+> TL;DR 排行可放 VM 對照列，但欄位需寫 `有效 rounds`，不要寫 `N`；`N` 僅表示獨立 suite 重跑次數。
+
+| 排名 | variant | tpmC | NO p99 (ms) | err | range/mean | 有效 rounds |
+|---|---|---:|---:|---:|---:|:---:|
+| 🥇 | VM HAProxy 3s3r (S-BASE 對照) | `<tpmC>` | `<p99>` | `<rate>` | `<pct>` | 5 |
+| 🥈 | K8s [`unlimit`](#k8s-unlimit-rc無顯式-kubernetes-resource-limits) RC | `<tpmC>` | `<p99>` | `<rate>` | `<pct>` | `<5 或 caveat>` |
+| 🥉 | K8s [`limit`](#k8s-limit-rckubernetes-resource-limits) RC | `<tpmC>` | `<p99>` | `<rate>` | `<pct>` | `<5 或 4/5 caveat>` |
+
+### S-K8S adopted cases
+
+| variant | TPCC_TS | suite path | markers | summary.json |
+|---|---|---|---|---|
+| K8s [`unlimit`](#k8s-unlimit-rc無顯式-kubernetes-resource-limits) RC | `<yyyyMMddTHHmmss+0800>` | [`<result-dir>/`](./<result-dir>/) | `.suite.done` + `.collect.done` | `<✅ / missing / retrofit date>` |
+| K8s [`limit`](#k8s-limit-rckubernetes-resource-limits) RC | `<yyyyMMddTHHmmss+0800>` | [`<result-dir>/`](./<result-dir>/) | `.suite.done` + `.collect.done` | `<✅ / missing / retrofit date>` |
+
+排除 dry-run / partial setup case 時，另外列排除表，不可刪到無跡可追。
+
+### S-K8S Execute 結果總覽
+
+| variant | resource profile | TPCC_TS | 代表併發 | tpmC mean | range/mean | NO p99 mean (ms) | err | N | 判讀 |
+|---|---|---|---:|---:|---:|---:|---:|---:|---|
+| [`unlimit`](#k8s-unlimit-rc無顯式-kubernetes-resource-limits) | 無顯式 Kubernetes resource limits | [`<yyyyMMddTHHmmss>`](./<result-dir>/) | `<t>` | `<tpmC>` | `<pct>` | `<p99>` | `<rate>` | `<1 或 3>` | `<retention / caveat>` |
+| [`limit`](#k8s-limit-rckubernetes-resource-limits) | Kubernetes resource limits | [`<yyyyMMddTHHmmss>`](./<result-dir>/) | `<t>` | `<tpmC>` | `<pct>` | `<p99>` | `<rate>` | `<1 或 3>` | `<retention / caveat>` |
+
+### S-K8S Thread sweep
+
+每個 variant 使用固定 heading，確保 anchor 穩定：
+
+```md
+### k8s-unlimit-rc（無顯式 Kubernetes resource limits）
+### k8s-limit-rc（Kubernetes resource limits）
+```
+
+表格欄位固定對齊 S-BASE：
+
+| threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 16 | `<r1>` | `<r2>` | `<r3>` | `<r4>` | `<r5>` | `<mean>` | `<pct>` | `<p99>` | `<rate>` |
+| 32 | `<r1>` | `<r2>` | `<r3>` | `<r4>` | `<r5>` | `<mean>` | `<pct>` | `<p99>` | `<rate>` |
+| 64 | `<r1>` | `<r2>` | `<r3>` | `<r4>` | `<r5>` | `<mean>` | `<pct>` | `<p99>` | `<rate>` |
+| 128 | `<r1>` | `<r2>` | `<r3>` | `<r4>` | `<r5 或 —>` | `<mean>` | `<pct>` | `<p99>` | `<rate>` |
+
+若某 thread 只有 4/5 有效 round，該列 `r5` 寫 `—`，並在表格下方以 caveat 說明，不得默默當 5-round baseline。
+
+### S-K8S VM baseline 對標
+
+| 對照 | tpmC retention | NO p99 Δ | error-rate Δ |
+|---|---:|---:|---:|
+| unlimit / VM | `<pct>` | `<pct>` | `<pp>` |
+| limit / VM | `<pct>` | `<pct>` | `<pp>` |
+| limit / unlimit | `<pct>` | `<pct>` | `<pp>` |
+
+公式固定：`retention = K8s / VM`；`Δ = K8s / VM - 1`。
+
+### S-K8S Caveats
+
+- S-K8S 與 S-BASE 屬不同 baseline family；retention 僅量化部署平面開銷。
+- `N=1` 只能作方向性觀察；若只有 partial rounds，需同時標 `有效 rounds` caveat。
+- resource limits / requests、pod placement、NodePort / HAProxy、storage class、DB-host metrics 可用性都需列入 caveat。
 
 ## 歷史檔案
 
