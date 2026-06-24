@@ -77,6 +77,7 @@
 |---|---|
 | [2026-05-31-tidb-schedule-limit-0-vs-4.md](./2026-05-31-tidb-schedule-limit-0-vs-4.md) | PD schedule-limit `l0r0` vs `l4r4` 跨 cell 對照（含 1s3r/3s3r 兩 variant）|
 | [2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md](./2026-06-01-tidb-haproxy-vs-direct-3s3r-l4r4.md) | HAProxy vs direct 3s3r-`l4r4` 對照（含 .32 disk/CPU shift 證據）|
+| [S-K8S pipeline-log](../tidb-tc1/S-K8S/pipeline-log.md) | Kubernetes 變體 v4.7 已完成（unlimit / limit）|
 
 ---
 
@@ -84,5 +85,5 @@
 
 1. **`haproxy-3s3r-l4r4` 補 N=3**（~3h × 3 = 9h）→ 升級為對外可引用 baseline
 2. **`l4r4` mixed state caveat 移入主表註腳**（[`results/README.md §A.4`](../README.md) 已標）
-3. **TiDB Kubernetes 變體 v4.7 重跑**（unlimit / limit 各一）
+3. **TiDB Kubernetes 變體 v4.7** 已完成（unlimit / limit；見 [S-K8S pipeline-log](../tidb-tc1/S-K8S/pipeline-log.md)）
 4. **跨區 IDC↔GCP 規劃**：見 [`1_MeetingMinutes/0602.md §10 跨區 PoC（Track E）`](../../1_MeetingMinutes/0602.md#10-跨區-poctrack-e-詳細設計)

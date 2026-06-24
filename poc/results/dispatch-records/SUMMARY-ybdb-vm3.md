@@ -93,6 +93,7 @@
 | [2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md](./2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md) | HAProxy vs direct 3s3r 對照（+79.1% tpmC、14.7× stability）|
 | [2026-05-31-ybdb-leader-balance-check/](./2026-05-31-ybdb-leader-balance-check/) | Leader balance verification 原始檢查 artifact |
 | [2026-05-31-ybdb-leader-balance-verification.md](./2026-05-31-ybdb-leader-balance-verification.md) | D10 first-hand verification：27 leaders → 9/9/9 per tserver |
+| [S-K8S pipeline-log](../yuga-tc1/S-K8S/pipeline-log.md) | Kubernetes 變體 v4.7 已完成（unlimit / limit）|
 
 ---
 
@@ -100,6 +101,6 @@
 
 1. **`haproxy-3s3r` 補 N=3**（~3h × 3 = 9h）→ 升級為對外可引用 baseline
 2. **DB-host metrics fan-out**（README §A.4 caveat C3）：補 .33/.34 mpstat-db / iostat-1s-db 採集，跨節點負載 / placement skew 看得見
-3. **YugabyteDB Kubernetes 變體 v4.7 重跑**（unlimit / limit 各一）
+3. **YugabyteDB Kubernetes 變體 v4.7** 已完成（unlimit / limit；見 [S-K8S pipeline-log](../yuga-tc1/S-K8S/pipeline-log.md)）
 4. **3s3r 在 vCPU ≥ 8 重做**：驗證「4 vCPU 不適合 3s3r」的硬體假設
 5. **跨區 IDC↔GCP 規劃**：見 [`1_MeetingMinutes/0602.md §10 跨區 PoC（Track E）`](../../1_MeetingMinutes/0602.md#10-跨區-poctrack-e-詳細設計)

@@ -84,6 +84,7 @@
 | 文件 | 焦點 |
 |---|---|
 | [2026-06-02-crdb-vm3-5cell-suite-dispatch.md](./2026-06-02-crdb-vm3-5cell-suite-dispatch.md) | 5-cell suite + F-E root cause / fix / resume journey 完整記錄 |
+| [S-K8S pipeline-log](../crdb-tc1/S-K8S/pipeline-log.md) | Kubernetes 變體 v4.7 已完成（unlimit / limit）|
 
 ---
 
@@ -91,6 +92,6 @@
 
 1. **`haproxy-3s3r` 補 N=3**（~3h × 3 = 9h）→ 升級為對外可引用 baseline
 2. **repo-wide `crdb_internal.*` audit**：稽核其他散落呼叫是否會在 v26.2.0 再次踩到 access restricted（F-A-v2 / F-D / F-E 是已知，其他未知）
-3. **CockroachDB Kubernetes 變體 v4.7 重跑**（unlimit / limit 各一）
+3. **CockroachDB Kubernetes 變體 v4.7** 已完成（unlimit / limit；見 [S-K8S pipeline-log](../crdb-tc1/S-K8S/pipeline-log.md)）
 4. **5-round mean 補上 DB-host metrics 分析**（mpstat-db / iostat-1s-db / sar-net-db 已採，但 README §A.4 caveat C3 註明跨節點 metrics 缺）
 5. **跨區 IDC↔GCP 規劃**：見 [`1_MeetingMinutes/0602.md §10 跨區 PoC（Track E）`](../../1_MeetingMinutes/0602.md#10-跨區-poctrack-e-詳細設計)
