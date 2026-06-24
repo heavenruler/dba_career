@@ -10,11 +10,11 @@
 
 ### t=128 mean tpmC 排行（W=128，NEW_ORDER）
 
-| 排名 | variant | tpmC | NO p99 (ms) | NEW_ORDER err | range/mean | N |
+| 排名 | variant | tpmC | NO p99 (ms) | err | range/mean | 有效 rounds |
 |---|---|---:|---:|---:|---:|:---:|
 | 🥇 | VM HAProxy 3s3r (S-BASE 對照) | **15,632** | 705 | 0.0% | 7.1% | 5 |
-| 🥈 | K8s **unlimit** RC | **2,998** | 5,422 | 0.0% | 4.5% | 5 |
-| 🥉 | K8s **limit** RC | **1,604** | 11,677 | 0.0% | 3.3% | 4/5 caveat |
+| 🥈 | K8s [`unlimit`](#k8s-unlimit-rc無顯式-kubernetes-resource-limits) RC | **2,998** | 5,422 | 0.0% | 4.5% | 5 |
+| 🥉 | K8s [`limit`](#k8s-limit-rckubernetes-resource-limits) RC | **1,604** | 11,677 | 0.0% | 3.3% | 4/5 caveat |
 
 ### 三大觀察
 
@@ -28,8 +28,8 @@
 
 | variant | TPCC_TS | suite path | markers | summary.json |
 |---|---|---|---|---|
-| K8s unlimit RC | 20260612T120138+0800 | [`ybdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260612T120138+0800/`](./ybdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260612T120138+0800/) | `.suite.done` + `.collect.done` | ✅ retrofit 2026-06-23 |
-| K8s limit RC | 20260613T233549+0800 | [`ybdb-k8s-3node-haproxy-3s3r-limit-rc-20260613T233549+0800/`](./ybdb-k8s-3node-haproxy-3s3r-limit-rc-20260613T233549+0800/) | `.suite.done` + `.collect.done` | ✅ retrofit 2026-06-23 |
+| K8s [`unlimit`](#k8s-unlimit-rc無顯式-kubernetes-resource-limits) RC | 20260612T120138+0800 | [`ybdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260612T120138+0800/`](./ybdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260612T120138+0800/) | `.suite.done` + `.collect.done` | ✅ retrofit 2026-06-23 |
+| K8s [`limit`](#k8s-limit-rckubernetes-resource-limits) RC | 20260613T233549+0800 | [`ybdb-k8s-3node-haproxy-3s3r-limit-rc-20260613T233549+0800/`](./ybdb-k8s-3node-haproxy-3s3r-limit-rc-20260613T233549+0800/) | `.suite.done` + `.collect.done` | ✅ retrofit 2026-06-23 |
 
 排除：
 
@@ -40,9 +40,20 @@
 
 ---
 
-## 2. Thread sweep（主表取自 summary.json）
+## 2. Execute 結果總覽（S-K8S 2 variants）
 
-### unlimit（無顯式 Kubernetes resource limits）
+> 口徑對齊 S-BASE：代表點採各 resource variant 的主要觀察併發；完整 per-round thread sweep 見各 variant 的 `Thread sweep` 表。p99 為 NEW_ORDER 5-round latency mean；err 為 all transaction error rate。S-K8S 目前只有 `READ COMMITTED`，拓樸皆為 `k8s-3node-haproxy-3s3r`。
+
+| variant | resource profile | TPCC_TS | 代表併發 | tpmC mean | range/mean | NO p99 mean (ms) | err | N | 判讀 |
+|---|---|---|---:|---:|---:|---:|---:|---:|---|
+| [`unlimit`](#k8s-unlimit-rc無顯式-kubernetes-resource-limits) | 無顯式 Kubernetes resource limits | [`20260612T120138`](./ybdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260612T120138+0800/) | 128 | 2,998 | 4.5% | 5,422 | 0.0% | 1 | 相對 VM HAProxy baseline 保留 19.2% tpmC |
+| [`limit`](#k8s-limit-rckubernetes-resource-limits) | Kubernetes resource limits | [`20260613T233549`](./ybdb-k8s-3node-haproxy-3s3r-limit-rc-20260613T233549+0800/) | 128 | 1,604 | 3.3% | 11,677 | 0.0% | 1 | t128 僅 4/5 有效 round；相對 VM 保留 10.3% tpmC |
+
+---
+
+## 3. Thread sweep（主表取自 summary.json）
+
+### k8s-unlimit-rc（無顯式 Kubernetes resource limits）
 
 > tpmC / latency / error rate 皆取自 [`summary.json`](./ybdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260612T120138+0800/summary.json)；p50 / p95 / tpmTotal / efficiency 補充見 `summary.json`。
 
@@ -53,7 +64,7 @@
 | 64 | 3,005 | 3,095 | 2,998 | 2,961 | 2,923 | 2,996 | 5.7% | 2,107 | 0.0% |
 | 128 | 3,091 | 2,974 | 2,977 | 2,989 | 2,957 | **2,998** | 4.5% | 5,422 | 0.0% |
 
-### limit（Kubernetes resource limits）
+### k8s-limit-rc（Kubernetes resource limits）
 
 > tpmC / latency / error rate 皆取自 [`summary.json`](./ybdb-k8s-3node-haproxy-3s3r-limit-rc-20260613T233549+0800/summary.json)；p50 / p95 / tpmTotal / efficiency 補充見 `summary.json`。
 
@@ -68,7 +79,7 @@
 
 ---
 
-## 3. VM baseline 對標（t=128，NEW_ORDER）
+## 4. VM baseline 對標（t=128，NEW_ORDER）
 
 VM baseline 取 [`../S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/summary.json`](../S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/summary.json) t=128：tpmC 15,632 / NO p99 705 ms / err 0.0%。
 
@@ -82,7 +93,7 @@ VM baseline 取 [`../S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-
 
 ---
 
-## 4. Caveats / 未補項
+## 5. Caveats / 未補項
 
 - S-K8S 與 S-BASE 屬不同 baseline family（k8s vs vm）；retention 僅量化部署平面開銷，不可與 VM 系列同表排名。
 - 兩個 adopted case 皆為 N=1 suite；其中 unlimit 各 thread 有 5 round，limit t128 為 4/5 有效 round。
@@ -92,6 +103,6 @@ VM baseline 取 [`../S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-
 
 ---
 
-## 5. 變更紀錄
+## 6. 變更紀錄
 
 - **2026-06-23**：retrofit `summary.json` 至兩個 suite-done case（呼叫 `tests/common/summary-from-stdout.py`）；建立本 `pipeline-log.md`。
