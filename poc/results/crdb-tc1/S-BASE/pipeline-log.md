@@ -1,6 +1,6 @@
 # CockroachDB TPC-C Pipeline Log — crdb-tc1 / S-BASE
 
-> 本檔為 PoC v4.7 框架下的 CockroachDB baseline。舊版（cockroach-tc1）資料保留在 `cockroach-tc1/S-BASE/archive/pipeline-log.md`，與本檔流程不同（手動部署、無 detached suite wrapper、無 DB-host 雙邊監控），不直接對比。
+> 本檔為 PoC v4.7 框架下的 CockroachDB baseline。舊版（cockroach-tc1）資料保留在 `../../archive/cockroach-tc1/S-BASE/archive/pipeline-log.md`，與本檔流程不同（手動部署、無 detached suite wrapper、無 DB-host 雙邊監控），不直接對比。
 
 ---
 
@@ -910,4 +910,4 @@ client → .32:26257 (gateway 路由 leaseholder for each range)
 
 ## Kubernetes — 見 S-K8S
 
-> CockroachDB Kubernetes 對照組（unlimit / limit 兩變體）已於 2026-06-09 / 06-11 完成 v4.7 detached suite 取數，數據與分析見 [`../S-K8S/pipeline-log.md`](../S-K8S/pipeline-log.md)。舊版 cockroach-tc1 VM 資料保留在 `cockroach-tc1/S-BASE/archive/pipeline-log.md`，與本檔 v4.7 流程不同（手動部署、無 detached suite wrapper、無 DB-host 雙邊監控），不直接對比。
+> CockroachDB Kubernetes 對照組（unlimit / limit 兩變體）已於 2026-06-09 / 06-11 完成 v4.7 detached suite 取數，數據與分析見 [`../S-K8S/pipeline-log.md`](../S-K8S/pipeline-log.md)。舊版 cockroach-tc1 VM 資料保留在 `../../archive/cockroach-tc1/S-BASE/archive/pipeline-log.md`，與本檔 v4.7 流程不同（手動部署、無 detached suite wrapper、無 DB-host 雙邊監控），不直接對比。

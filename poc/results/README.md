@@ -360,7 +360,7 @@ grep '平均時間' <artifact-dir>/runs/threads-<N>/round-<R>/mpstat-db.txt
 |---|---|
 | <a id="note-1"></a>註1 | **差異計算口徑**：所有 Δ tpmC / Δ p99 / `相對 -XX%` 均為 `(本組 - 對照組) / 對照組 × 100%`；error rate 為「失敗交易數 / 全部交易數 × 100%」，全部交易數 = 成功交易數 + 失敗交易數（5 種 TPC-C transaction type 全部加總）。 |
 | <a id="note-2"></a>註2 | **跨家比較限制**：同名 isolation 在三家底層機制不同（TiDB RR=pessimistic SI / CockroachDB RR=preview SI optimistic / YugabyteDB RR=snapshot iso optimistic），不可視為單一變數差異；TiDB strict 在工具鏈上 alias 到 RR，不可直比 CockroachDB / YugabyteDB 原生 SSI。 |
-| <a id="note-3"></a>註3 | **資料品質口徑**：本表所有 v4.7 結果均為 5-round mean（drop round 1 取 round 2-5 中位數的口徑詳見 PoC-DESIGN §8.3），由 [`tests/common/summary-from-stdout.py`](../tests/common/summary-from-stdout.py) 解析 stdout 後落地至各 suite `summary.json`；pre-v4.7 single-run 結果已封存於 `yuga-tc1-old/` 不納入本表。 |
+| <a id="note-3"></a>註3 | **資料品質口徑**：本表所有 v4.7 結果均為 5-round mean（drop round 1 取 round 2-5 中位數的口徑詳見 PoC-DESIGN §8.3），由 [`tests/common/summary-from-stdout.py`](../tests/common/summary-from-stdout.py) 解析 stdout 後落地至各 suite `summary.json`；pre-v4.7 single-run 結果已封存於 `archive/yuga-tc1-old/` 不納入本表。 |
 | <a id="note-4"></a>註4 | **機制歸因限制**：所有「飽和成因」/「strict 反 pattern」/「retry storm」結論主要以 OS 指標（mpstat/iostat）+ artifact 錯誤訊息推論而來；DB-internal 路徑（CockroachDB store metrics、YugabyteDB DocDB tablet metrics、TiDB TiKV wait events）未直接量測，待 trace / statement diagnostics 補強。 |
 
 ## 數據品質註解（補充）
@@ -370,7 +370,7 @@ grep '平均時間' <artifact-dir>/runs/threads-<N>/round-<R>/mpstat-db.txt
 | N1 | 本測試是 TPC-C-derived stress benchmark using go-tpc，非 audited TPC-C，不能與官方 TPC-C 排名直接比較。 |
 | N2 | go-tpc 本輪沒有 think time / keying time，執行緒完成一筆交易後會立即送下一筆，因此 efficiency 超過 100% 屬正常。 |
 | N3 | isolation 必須由 connection string 與 gate 記錄共同確認，避免 driver 或資料庫預設值造成測試口徑偏移（CockroachDB 採 isolation 雙閘 = `isolation-db.txt` + `isolation-driver-verify.txt`；YugabyteDB 採 **triple gate**：① `--ysql_default_transaction_isolation` ② `--yb_enable_read_committed_isolation` ③ active gate `SHOW TRANSACTION ISOLATION LEVEL` + `SELECT yb_get_effective_transaction_isolation_level()`；舊 `SHOW yb_effective_transaction_isolation_level` 已 [deprecated](https://yugabytedb.tips/view-yb-run-time-parameters-values-and-descriptions/)）。 |
-| N4 | v4.7 標準格式：20 分鐘 warmup、每個併發水位 5 round × 5 分鐘、4 thread groups（16/32/64/128）、DB-host 雙邊 OS 監控（mpstat/iostat/vmstat/sar）。TiDB / CockroachDB / YugabyteDB vm-1node 三家全 iso 已採此格式；YugabyteDB vm-3node direct RC 4 cells 已採此格式；YugabyteDB HAProxy 3s3r RC 已完成但 DB-host metrics missing；Kubernetes 重跑尚未排程；YugabyteDB pre-v4.7 single-run 已備份於 yuga-tc1-old/。 |
+| N4 | v4.7 標準格式：20 分鐘 warmup、每個併發水位 5 round × 5 分鐘、4 thread groups（16/32/64/128）、DB-host 雙邊 OS 監控（mpstat/iostat/vmstat/sar）。TiDB / CockroachDB / YugabyteDB vm-1node 三家全 iso 已採此格式；YugabyteDB vm-3node direct RC 4 cells 已採此格式；YugabyteDB HAProxy 3s3r RC 已完成但 DB-host metrics missing；Kubernetes 重跑尚未排程；YugabyteDB pre-v4.7 single-run 已備份於 archive/yuga-tc1-old/。 |
 | N5 | suite marker `.gate.done` / `.prepare.done` / `.gate-isolation.done` / `.run.done` / `.collect.done` / `.suite.done` + `.db-config.done` 代表該案例流程鏈完整。 |
 | N6 | CockroachDB / TiDB / YugabyteDB 三家 vm-1node 全 iso 的 tpmC 與 latency p50/p95/p99 已全為 5-round mean，口徑一致；數據來源為 `runs/threads-*/round-*/go-tpc-stdout.txt` + [`tests/common/summary-from-stdout.py`](../tests/common/summary-from-stdout.py) 解析後落地的 `summary.json`。 |
 | N7 | TiDB 三節點與 Kubernetes 數據已刻意清空，等待 PoC v4.7 重跑後再回填。 |
@@ -385,8 +385,8 @@ grep '平均時間' <artifact-dir>/runs/threads-<N>/round-<R>/mpstat-db.txt
 - TiDB：[`tidb-tc1/S-BASE/pipeline-log.md`](./tidb-tc1/S-BASE/pipeline-log.md)
 - CockroachDB：[`crdb-tc1/S-BASE/pipeline-log.md`](./crdb-tc1/S-BASE/pipeline-log.md)
 - YugabyteDB：[`yuga-tc1/S-BASE/pipeline-log.md`](./yuga-tc1/S-BASE/pipeline-log.md)
-- CockroachDB 歷史資料（已封存）：[`cockroach-tc1/S-BASE/archive/pipeline-log.md`](./cockroach-tc1/S-BASE/archive/pipeline-log.md)
-- YugabyteDB pre-v4.7 archive：[`yuga-tc1-old/S-BASE/archive/pipeline-log_old.md`](./yuga-tc1-old/S-BASE/archive/pipeline-log_old.md)
+- CockroachDB 歷史資料（已封存）：[`archive/cockroach-tc1/S-BASE/archive/pipeline-log.md`](./archive/cockroach-tc1/S-BASE/archive/pipeline-log.md)
+- YugabyteDB pre-v4.7 archive：[`archive/yuga-tc1-old/S-BASE/archive/pipeline-log_old.md`](./archive/yuga-tc1-old/S-BASE/archive/pipeline-log_old.md)
 
 ### 設計與會議文件
 

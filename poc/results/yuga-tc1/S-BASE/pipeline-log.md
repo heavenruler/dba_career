@@ -1,6 +1,6 @@
 # YugabyteDB TPC-C Pipeline Log — yuga-tc1 / S-BASE
 
-> 本檔為 PoC v4.7 框架下的 YugabyteDB baseline（v4.7 detached suite：5-round × 5 min × 4 thread groups + 20 min warmup × DB-host 雙邊監控）。pre-v4.7 single-run wrapper 資料（vm-1node 單次 10min、k8s-3node-{unlimit,limit} 單次、2.20 issue 紀錄、AlmaLinux 8.10 改造紀錄、原 pipeline-log.md / archive/pipeline-log_old.md）整套已備份至 [`../../yuga-tc1-old/archive/`](../../yuga-tc1-old/archive/)，本檔不再保留 pre-v4.7 段落。
+> 本檔為 PoC v4.7 框架下的 YugabyteDB baseline（v4.7 detached suite：5-round × 5 min × 4 thread groups + 20 min warmup × DB-host 雙邊監控）。pre-v4.7 single-run wrapper 資料（vm-1node 單次 10min、k8s-3node-{unlimit,limit} 單次、2.20 issue 紀錄、AlmaLinux 8.10 改造紀錄、原 pipeline-log.md / archive/pipeline-log_old.md）整套已備份至 [`../../archive/yuga-tc1-old/`](../../archive/yuga-tc1-old/)，本檔不再保留 pre-v4.7 段落。
 
 ---
 
@@ -991,6 +991,6 @@ client → .32:5433
 
 ---
 
-## Kubernetes 段 — 已存檔於 yuga-tc1-old/archive
+## Kubernetes 段 — 已存檔於 archive/yuga-tc1-old
 
-> 2026-05-13 的 k8s-3node-unlimit / k8s-3node-limit 為 pre-v4.7 單次 10min wrapper 結果，已隨主檔清空動作備份於 [`../../yuga-tc1-old/archive/`](../../yuga-tc1-old/archive/) ＋ [`archive/pipeline-log_old.md`](../../yuga-tc1-old/archive/pipeline-log_old.md)（pre-v4.7 narrative）。待 Kubernetes 環境以 v4.7 detached suite 重跑後，將回填正式段落。
+> 2026-05-13 的 k8s-3node-unlimit / k8s-3node-limit 為 pre-v4.7 單次 10min wrapper 結果，已隨主檔清空動作備份於 [`../../archive/yuga-tc1-old/`](../../archive/yuga-tc1-old/) ＋ [`../../archive/yuga-tc1-old/S-BASE/archive/pipeline-log_old.md`](../../archive/yuga-tc1-old/S-BASE/archive/pipeline-log_old.md)（pre-v4.7 narrative）。待 Kubernetes 環境以 v4.7 detached suite 重跑後，將回填正式段落。
