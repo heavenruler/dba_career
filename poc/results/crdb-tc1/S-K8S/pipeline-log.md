@@ -1,27 +1,27 @@
 # CockroachDB TPC-C Pipeline Log — crdb-tc1 / S-K8S
 
-> 本檔僅紀錄 **S-K8S**（Kubernetes 部署平面）CockroachDB 對照數據；VM baseline 在 `../S-BASE/pipeline-log.md`、跨家對比見 `1_MeetingMinutes/` 同期會議檔。
-> 取數口徑：`results/crdb-tc1/S-K8S/<case>/summary.json`（由 `tests/common/summary-from-stdout.py v1` 從 `runs/threads-*/round-*/go-tpc-stdout.txt` 解析）。
+> 本檔僅紀錄 **S-K8S**（Kubernetes 部署平面）CockroachDB 對照數據；VM baseline 在 [`../S-BASE/pipeline-log.md`](../S-BASE/pipeline-log.md)、跨家對比見 `1_MeetingMinutes/` 同期會議檔。
+> 取數口徑一律為各 suite 的 `summary.json`（由 [`tests/common/summary-from-stdout.py`](../../../tests/common/summary-from-stdout.py) 從 `runs/threads-*/round-*/go-tpc-stdout.txt` 解析）。
 
 ---
 
-## TL;DR — 兩個 K8s resource variant，N=5 sweep 完成
+## TL;DR — 兩個 Kubernetes resource variant 完成
 
 **核心結論**：同硬體（3 IDC 節點 × cockroach Pod 各 1 + HAProxy frontend）下，K8s `unlimit` 對 VM baseline 保留 **81.1 %** tpmC、p99 +27.1 %；加上 cpu=2 / mem=8Gi 限額後 `limit` 只剩 **43.2 %** tpmC、p99 +191.6 %。
 
-### t=128 mean tpmC 排行（W=128，N=5，NEW_ORDER）
+### t=128 mean tpmC 排行（W=128，NEW_ORDER）
 
-| 排名 | variant | tpmC | p99 (ms) | NEW_ORDER err rate | range/mean | N |
+| 排名 | variant | tpmC | NO p99 (ms) | err | range/mean | 有效 rounds |
 |---|---|---:|---:|---:|---:|:---:|
-| 🥇 | VM HAProxy 3s3r (S-BASE 對照) | **15,033.3** | 718.0 | 0.0 % | 6.9 % | 5 |
-| 🥈 | K8s **unlimit** RC | **12,196.7** | 912.7 | 0.0 % | 5.1 % | 5 |
-| 🥉 | K8s **limit** RC（cpu=2 / mem=8Gi） | **6,493.5** | 2,093.8 | 0.0 % | 6.4 % | 5 |
+| 🥇 | VM HAProxy 3s3r (S-BASE 對照) | **15,033** | 718 | 0.0% | 6.9% | 5 |
+| 🥈 | K8s [`unlimit`](#k8s-unlimit-rc無顯式-kubernetes-resource-limits) RC | **12,197** | 913 | 0.0% | 5.1% | 5 |
+| 🥉 | K8s [`limit`](#k8s-limit-rckubernetes-resource-limits) RC | **6,494** | 2,094 | 0.0% | 6.4% | 5 |
 
 ### 三大觀察
 
 1. **K8s 部署層額外開銷 ≈ 19 %**：unlimit 相對 VM tpmC 保留 81.1 %、p99 +27.1 %。差距來自 pod network（CNI overlay + iptables hop）+ cgroup parent + kube-reserved，非 CockroachDB binary 本身。對比 TiDB 同硬體 unlimit 保留 87 %，CockroachDB 的 K8s 額外開銷略高（推測 Pebble fsync 在 CNI 路徑下對 latency 更敏感）。
 2. **Resource limit 把 t=128 拖到 2 秒級 p99**：limit t=128 mean tpmC = 6,493.5、p99 = 2,094 ms；t=64 → t=128 thread ×2、tpmC 僅 +7.0%、p99 ×1.79。`cpu=2` cap 下 CockroachDB pod 已飽和，加 thread 主要堆排隊深度而非 throughput。但 CockroachDB 不像 TiDB 出現 t=128 < t=64 的反曲，t=128 仍為 limit cell 最高 tpmC，**對外可用 t=128 直接報數**。
-3. **N=5 穩定度可接受**：unlimit cell t=128 range/mean=5.1 %、limit cell t=128 range/mean=6.4 %，皆在內部 15 % 容忍內。低 thread 端 unlimit t=16 range/mean=11.9 % 與 limit t=16=16.1 % 偏高，但不影響 t=128 對外引用。
+3. **5 rounds 穩定度可接受**：unlimit cell t=128 range/mean=5.1 %、limit cell t=128 range/mean=6.4 %，皆在內部 15 % 容忍內。低 thread 端 unlimit t=16 range/mean=11.9 % 與 limit t=16=16.1 % 偏高，但不影響 t=128 對外引用。
 
 ---
 
@@ -29,8 +29,8 @@
 
 | variant | TPCC_TS | suite path | markers | summary.json |
 |---|---|---|---|---|
-| K8s unlimit RC | 20260609T065714+0800 | `crdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260609T065714+0800/` | `.suite.done` + `.collect.done` | ✅ retrofit 2026-06-23 |
-| K8s limit RC | 20260611T132715+0800 | `crdb-k8s-3node-haproxy-3s3r-limit-rc-20260611T132715+0800/` | `.suite.done` + `.collect.done` | ✅ retrofit 2026-06-23 |
+| K8s [`unlimit`](#k8s-unlimit-rc無顯式-kubernetes-resource-limits) RC | 20260609T065714+0800 | [`crdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260609T065714+0800/`](./crdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260609T065714+0800/) | `.suite.done` + `.collect.done` | ✅ retrofit 2026-06-23 |
+| K8s [`limit`](#k8s-limit-rckubernetes-resource-limits) RC | 20260611T132715+0800 | [`crdb-k8s-3node-haproxy-3s3r-limit-rc-20260611T132715+0800/`](./crdb-k8s-3node-haproxy-3s3r-limit-rc-20260611T132715+0800/) | `.suite.done` + `.collect.done` | ✅ retrofit 2026-06-23 |
 
 排除：
 
@@ -41,11 +41,24 @@
 
 ---
 
-## 2. Thread sweep（5-round mean per cell）
+## 2. Execute 結果總覽（S-K8S 2 variants）
+
+> 口徑對齊 S-BASE：代表點採各 resource variant 的主要觀察併發；完整 per-round thread sweep 見各 variant 的 `Thread sweep` 表。p99 為 NEW_ORDER 5-round latency mean；err 為 all transaction error rate。S-K8S 目前只有 `READ COMMITTED`，拓樸皆為 `k8s-3node-haproxy-3s3r`。
+
+| variant | resource profile | TPCC_TS | 代表併發 | tpmC mean | range/mean | NO p99 mean (ms) | err | N | 判讀 |
+|---|---|---|---:|---:|---:|---:|---:|---:|---|
+| [`unlimit`](#k8s-unlimit-rc無顯式-kubernetes-resource-limits) | 無顯式 Kubernetes resource limits | [`20260609T065714`](./crdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260609T065714+0800/) | 128 | 12,197 | 5.1% | 913 | 0.000% | 1 | 相對 VM HAProxy baseline 保留 81.1% tpmC |
+| [`limit`](#k8s-limit-rckubernetes-resource-limits) | Kubernetes resource limits | [`20260611T132715`](./crdb-k8s-3node-haproxy-3s3r-limit-rc-20260611T132715+0800/) | 128 | 6,494 | 6.4% | 2,094 | 0.000% | 1 | cpu=2 / mem=8Gi；p99 放大明顯 |
+
+---
+
+## 3. Thread sweep（主表取自 summary.json）
 
 表頭口徑統一：per-round tpmC + mean + range/mean + NO p99 mean + NEW_ORDER err rate；p50/p95/tpmTotal 等補充指標見對應 `summary.json`。
 
-### unlimit（無 K8s resource limits）
+### k8s-unlimit-rc（無顯式 Kubernetes resource limits）
+
+> tpmC / latency / error rate 皆取自 [`summary.json`](./crdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260609T065714+0800/summary.json)；p50 / p95 / tpmTotal / efficiency 補充見 `summary.json`。
 
 | threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
 |--------:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -54,7 +67,9 @@
 | 64  | 11,552 | 11,489 | 11,711 | 11,586 | 11,556 | 11,578.8 |  1.9 % | 453.0 | 0.0 % |
 | 128 | 11,804 | 12,429 | 12,012 | 12,320 | 12,420 | **12,196.7** | 5.1 % | 912.7 | 0.0 % |
 
-### limit（cpu=2 / mem=8Gi per pod）
+### k8s-limit-rc（Kubernetes resource limits）
+
+> tpmC / latency / error rate 皆取自 [`summary.json`](./crdb-k8s-3node-haproxy-3s3r-limit-rc-20260611T132715+0800/summary.json)；p50 / p95 / tpmTotal / efficiency 補充見 `summary.json`。
 
 | threads | r1 | r2 | r3 | r4 | r5 | mean | range/mean | NO p99 mean (ms) | err |
 |--------:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -69,11 +84,11 @@ t=64 → t=128：thread ×2、tpmC +7.0 %、p99 ×1.79。`cpu=2` cap 下 Cockroa
 
 ---
 
-## 3. VM baseline 對標（t=128，NEW_ORDER）
+## 4. VM baseline 對標（t=128，NEW_ORDER）
 
 公式：retention = K8S / VM；Δ = K8S / VM − 1。
 
-| 對照 | tpmC retention | p99 Δ | error-rate Δ |
+| 對照 | tpmC retention | NO p99 Δ | error-rate Δ |
 |---|---:|---:|---:|
 | unlimit / VM | **81.1 %** | +27.1 % | 0.0 pp |
 | limit / VM | **43.2 %** | +191.6 % | 0.0 pp |
@@ -83,7 +98,7 @@ VM baseline 數值：tpmC 15,033.3 / p99 718.0 / err 0.0 %，來自 `../S-BASE/v
 
 ---
 
-## 4. Caveats / 未補項
+## 5. Caveats / 未補項
 
 - S-K8S 與 S-BASE 屬不同 baseline family（k8s vs vm）；retention 僅量化部署平面開銷，不可與 vm 系列同表排名。
 - CockroachDB unlimit cell 在 4 vCPU 路徑下 latency 對 CNI overlay 較 TiDB 敏感（unlimit p99 +27 % vs TiDB +17 %），推測為 Pebble WAL fsync 在 pod 網路 / cgroup parent 下被放大；本檔未直接量測 store-level metrics。
@@ -92,6 +107,6 @@ VM baseline 數值：tpmC 15,033.3 / p99 718.0 / err 0.0 %，來自 `../S-BASE/v
 
 ---
 
-## 5. 變更紀錄
+## 6. 變更紀錄
 
 - **2026-06-23**：retrofit `summary.json` 至兩個 suite-done case（呼叫 `tests/common/summary-from-stdout.py`）；建立本 `pipeline-log.md`。在此之前 K8s 兩 case 僅有 stdout artifacts，pipeline 上下游若依 `summary.json` 自動匯整會 missing source — 本次補齊。
