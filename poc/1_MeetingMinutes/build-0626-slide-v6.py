@@ -476,14 +476,14 @@ add_bullets(s, Inches(0.6), Inches(5.7), Inches(12.1), Inches(1.5),
             size=12, color=SLATE)
 
 # =========================================================================
-# Slide 10 — Commit 路徑 × 跨區延遲稅 × 一致性
+# Slide 10 — Commit 路徑 × 跨區延遲開銷 × 一致性
 # =========================================================================
 s = prs.slides.add_slide(BLANK)
 set_bg(s, BG_NAVY)
 add_header_footer(s, 10, 17)
-add_title(s, 'Commit 路徑 × 跨區延遲稅 × 一致性')
+add_title(s, 'Commit 路徑 × 跨區延遲開銷 × 一致性')
 add_subtitle(s,
-             '分散式 DB 跨區後，延遲稅集中在 commit 路徑上「必跨 WAN 的節點」且設計機制不同',
+             '分散式 DB 跨區後，延遲開銷集中在 commit 路徑上「必跨 WAN 的節點」且設計機制不同',
              Inches(1.4), color=MUTED, size=14)
 
 GREEN_S = RGBColor(0x27, 0xAE, 0x60)
@@ -495,15 +495,15 @@ cols = [
     ('TiDB',
      ('時序', '中央 PD TSO\n每 txn 取 ts +1 RTT'),
      ('Commit', '2PC (Percolator)\nprewrite → commit'),
-     ('延遲稅集中', 'PD TSO 跨區')),
+     ('延遲開銷集中', 'PD TSO 跨區')),
     ('CockroachDB',
      ('時序', 'HLC（本地時鐘 + counter）\n無 TSO RTT'),
      ('Commit', 'gateway 為 txn coord\nintent → resolve'),
-     ('延遲稅集中', 'leaseholder + intent resolve')),
+     ('延遲開銷集中', 'leaseholder + intent resolve')),
     ('YugabyteDB',
      ('時序', 'HLC（類 CRDB）\n無 TSO RTT'),
      ('Commit', 'YSQL → DocDB tablet\nraft + 狀態表'),
-     ('延遲稅集中', 'YSQL ↔ DocDB IPC\n+ tablet leader 跨區')),
+     ('延遲開銷集中', 'YSQL ↔ DocDB IPC\n+ tablet leader 跨區')),
 ]
 for i, (name, *rows) in enumerate(cols):
     x = Inches(0.6) + (COL_W + gap) * i
