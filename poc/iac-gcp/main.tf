@@ -74,7 +74,7 @@ resource "google_compute_instance" "poc" {
   tags = local.instance_configs[count.index].tags
 
   metadata = {
-    ssh-keys       = "root:${var.ssh_public_key}"
+    ssh-keys       = join("\n", [for k in concat([var.ssh_public_key], var.extra_ssh_public_keys) : "root:${k}"])
     startup-script = <<-EOF
       #!/bin/bash
       set -e

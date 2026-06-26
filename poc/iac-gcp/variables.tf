@@ -15,8 +15,15 @@ variable "service_account_email" {
 }
 
 variable "ssh_public_key" {
-  description = "SSH public key for root login"
+  description = "Primary SSH public key for root login (usually the operator's workstation key)"
   type        = string
+  sensitive   = true
+}
+
+variable "extra_ssh_public_keys" {
+  description = "Additional SSH public keys authorized for root login (e.g. IDC .31 ansible controller). Each entry is a full 'ssh-... AAAA... comment' line."
+  type        = list(string)
+  default     = []
   sensitive   = true
 }
 

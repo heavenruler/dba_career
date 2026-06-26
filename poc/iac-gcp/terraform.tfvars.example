@@ -3,8 +3,13 @@
 # Copy to iac-gcp/terraform.tfvars (already gitignored) and fill with REAL values.
 # Never commit the real terraform.tfvars; never expose credentials in chat / logs / files.
 
-# Required: SSH public key for root login on GCP VMs
+# Required: primary SSH public key for root login on GCP VMs (operator workstation key)
 ssh_public_key = "ssh-ed25519 AAAA... your-key-here"
+
+# Optional: additional SSH public keys (e.g. IDC .31 ansible controller). Full ssh-... lines.
+# extra_ssh_public_keys = [
+#   "ssh-rsa AAAAB3NzaC1yc2EAAAA... root@l-dbm-labroom-1",
+# ]
 
 # Required: root password (used by startup-script for emergency console access).
 # Treat as a secret; rotate as policy demands.
