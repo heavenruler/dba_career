@@ -15,6 +15,7 @@ Error rate口徑 (per F-001 audit decision 2026-05-21):
   * 兩種都 dump，README index 採 all_txn.error_rate_pct (per-thread mean)
 """
 import json
+import hashlib
 import re
 import sys
 from datetime import datetime
@@ -35,6 +36,12 @@ SUMMARY_RE = re.compile(
 SUITE_NAME_RE = re.compile(
     r"(tidb|crdb|ybdb)-(.+?)-(rc|rr|strict)(?:-run\d+)?-(\d{8}T\d{6}\+\d{4})"
 )
+
+PHASE_MANIFESTS = {
+    "S-K8S": "phase-k8s/manifest.yaml",
+    "T-THRD": "phase-threadcontrol/manifest.yaml",
+    "X-CROSS": "phase-crossregion/manifest.yaml",
+}
 
 
 def parse_round(stdout_path):
@@ -126,10 +133,58 @@ def aggregate_thread_group(round_results):
     }
 
 
+def parse_manifest(path):
+    values = {}
+    if not path:
+        return values
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.split("#", 1)[0].strip()
+            if ":" not in line:
+                continue
+            key, value = line.split(":", 1)
+            key = key.strip()
+            value = value.strip().strip("'\"")
+            if key in {"phase", "result_scope", "baseline_family"}:
+                values[key] = value
+    return values
+
+
+def sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def repo_root_from_script():
+    return Path(__file__).resolve().parents[2]
+
+
+def infer_scope_and_manifest(suite_dir):
+    parts = set(suite_dir.resolve().parts)
+    repo_root = repo_root_from_script()
+
+    if "S-BASE" in parts:
+        return {"result_scope": "S-BASE", "baseline_family": "vm"}, None
+
+    for scope, manifest_rel in PHASE_MANIFESTS.items():
+        if scope in parts or (scope == "X-CROSS" and "x-cross" in parts):
+            return {}, repo_root / manifest_rel
+
+    return {}, None
+
+
 def main():
     args = sys.argv[1:]
     warehouses = 128
     skip_rounds = 0
+    phase = None
+    result_scope = None
+    baseline_family = None
+    manifest = None
+    manifest_sha256 = None
     positional = []
     i = 0
     while i < len(args):
@@ -140,13 +195,31 @@ def main():
         elif a == "--skip-rounds":
             skip_rounds = int(args[i + 1])
             i += 2
+        elif a == "--phase":
+            phase = args[i + 1]
+            i += 2
+        elif a == "--result-scope":
+            result_scope = args[i + 1]
+            i += 2
+        elif a == "--baseline-family":
+            baseline_family = args[i + 1]
+            i += 2
+        elif a == "--manifest":
+            manifest = Path(args[i + 1])
+            i += 2
+        elif a == "--manifest-sha256":
+            manifest_sha256 = args[i + 1]
+            i += 2
         else:
             positional.append(a)
             i += 1
 
     if not positional:
         print(
-            f"usage: {sys.argv[0]} [--warehouses N] [--skip-rounds K] <suite_artifact_dir>",
+            "usage: "
+            f"{sys.argv[0]} [--warehouses N] [--skip-rounds K] "
+            "[--phase NAME] [--result-scope SCOPE] [--baseline-family FAMILY] "
+            "[--manifest PATH] [--manifest-sha256 SHA256] <suite_artifact_dir>",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -170,9 +243,45 @@ def main():
         print(f"error: no runs/ in {suite_dir}", file=sys.stderr)
         sys.exit(1)
 
+    inferred, inferred_manifest = infer_scope_and_manifest(suite_dir)
+    if manifest is None:
+        manifest = inferred_manifest
+
+    manifest_values = {}
+    if manifest is not None:
+        if not manifest.is_absolute():
+            manifest = repo_root_from_script() / manifest
+        if manifest.is_file():
+            manifest_values = parse_manifest(manifest)
+            if manifest_sha256 is None:
+                manifest_sha256 = sha256_file(manifest)
+        else:
+            print(f"error: manifest not found: {manifest}", file=sys.stderr)
+            sys.exit(1)
+
+    phase = phase if phase is not None else manifest_values.get("phase")
+    result_scope = (
+        result_scope
+        if result_scope is not None
+        else manifest_values.get("result_scope", inferred.get("result_scope"))
+    )
+    baseline_family = (
+        baseline_family
+        if baseline_family is not None
+        else manifest_values.get("baseline_family", inferred.get("baseline_family"))
+    )
+
+    if result_scope == "S-BASE":
+        phase = None
+        manifest_sha256 = None
+
     threads = sorted(int(d.name.split("-")[1]) for d in runs_dir.glob("threads-*"))
     summary = {
         "schema_version": 1,
+        "phase": phase,
+        "result_scope": result_scope,
+        "baseline_family": baseline_family,
+        "manifest_sha256": manifest_sha256,
         "db": db,
         "topology": topology,
         "iso": iso,
