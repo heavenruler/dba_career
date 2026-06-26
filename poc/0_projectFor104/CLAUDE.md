@@ -1,5 +1,13 @@
 # CLAUDE.md
 
+> [!WARNING]
+> 本文件已過期（deprecated / archive reference only）。Claude Code 現以下列為現行依據：
+> - 全局規則：`~/.claude/CLAUDE.md`
+> - 專案 SSOT：`poc/results/PHASES.md`、`poc/results/PoC-DESIGN.md`、`poc/results/README.md`
+> - 各 phase 目錄：`poc/phase-{base,k8s,threadcontrol,crossregion}/`
+>
+> 本檔內容反映 PoC 初期規劃（survey / test-design / Route A-B-C / TC-MS-01~04 命名），與後續落地（P-A/P-B placement、X-CROSS workload-profiles A-A/A-S/A-A-RO、chaos-c1/c4/c7 + F1）已不一致；僅保留以追溯規劃脈絡，不作為現行執行依據。
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
