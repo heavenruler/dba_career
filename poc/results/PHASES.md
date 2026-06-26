@@ -2,6 +2,21 @@
 
 > SSOT for phase scope mapping. 任何新 phase 必須先在此檔註冊。
 
+## 0. 命名規範速查（canonical naming）
+
+| 維度 | Canonical 形式 | 範例 | 規則 |
+|---|---|---|---|
+| **Logical scope** | UPPERCASE-HYPHEN | `S-BASE` `S-K8S` `T-THRD` `X-CROSS` | manifest `result_scope` 欄、env `RESULT_SCOPE`、JSON metadata 一律此寫法 |
+| **Physical 主目錄**（sibling 結構） | 沿用邏輯名 UPPERCASE | `results/{db}-tc1/S-BASE/` `S-K8S/` `T-THRD/` | 三家各自 sibling，禁嵌套 |
+| **Physical 跨家集中目錄**（X-CROSS only） | lowercase-hyphen | `results/x-cross/` | 跨家不依 `{db}-tc1/` 切；單一目錄 |
+| **Phase family** | `phase-{family}` (lowercase-hyphen) | `phase-k8s` `phase-threadcontrol` `phase-crossregion` | 目錄名、env `PHASE_NAME`、manifest `phase` 欄一致 |
+| **Makefile 內部步驟序次** | `phase{N}` (數字後綴) | `phase1` `phase2` ... `phase9` | 與 phase family 切開；只是 IaC 部署 step ordering，不是 phase 識別碼 |
+| **Placement / Topology 標籤** | `P-{LETTER}` UPPERCASE | `P-A` `P-B` | manifest `placements`、目錄複合名、prose 一律「placement P-A」（不寫「topology P-A」）|
+| **複合 run-id 命名** | `{db}-{infra}-{N}node-{topo}-{iso}-{ts}` | `tidb-vm-6node-P-A-rc-20260622T131459+0800` | 順序固定；分隔符一律 `-`；timestamp 一律 ISO 8601 + 時區 |
+| **manifest 雙欄位寫法** | `result_scope` (logical) + `artifact_prefix` (physical) | `result_scope: X-CROSS` / `artifact_prefix: results/x-cross/` | 邏輯與物理切開；不用單欄混寫 |
+
+> 速查表為 enforcement-spec：driver script、ansible playbook、Makefile target、文件 prose 均依此規則。違反規則由 `tests/common/validate-phase-manifest.sh` + `tests/common/lib/guard.sh` 攔下。
+
 ## 1. Scope 對照表
 
 | result_scope | phase | baseline_family | comparison_scope | baseline_eligible | input source |
@@ -92,9 +107,9 @@ owner_doc: <path to authoritative source doc>
 
 artifact 命名以 `artifact_suffix` 為準，禁用 IP 短碼（pod IP 動態、跨區 IP 碰撞）。
 
-## 5. summary.json 附加 metadata（不破壞 v1 schema）
+## 5. summary.json schema 與 metadata
 
-per-phase 跑出的 `summary.json` 在 top-level 加：
+實際 schema 以 [`tests/common/summary-from-stdout.py`](../tests/common/summary-from-stdout.py) **產出** 為準（v1 為主要 SSOT；本檔僅列 per-phase metadata 附加欄位）：
 
 ```json
 {
@@ -105,14 +120,25 @@ per-phase 跑出的 `summary.json` 在 top-level 加：
   "baseline_eligible": true,
   "tuning_profile_id": "default",
   "manifest_sha256": "<sha256 of manifest.yaml>",
-  "thread_results": { ... }
+  "thread_results": {
+    "<N>": {
+      "tpmC_mean": <5-round mean across R1-R5>,
+      "tpmC_per_round": [r1, r2, r3, r4, r5],
+      "tpmC_range_mean_pct": <(max-min)/mean * 100>,
+      "NEW_ORDER": {"p50_mean_ms": ..., "p95_mean_ms": ..., "p99_mean_ms": ..., "total_count": ..., "error_count": ..., "error_rate_pct": ...},
+      "all_txn":   {"total_count": ..., "error_count": ..., "error_rate_pct": ...}
+    }
+  }
 }
 ```
 
 下游 parser 對未識別欄位採 forward-compatible 忽略；既有 `S-BASE` summary.json 不需 retrofit。
 
+> **取數口徑**：`tpmC_mean` 為 **5-round mean across R1-R5**（與 code 實際輸出一致；歷史 PoC-DESIGN §8.3「median drop round 1」為設計初衷，未落地）。引用 summary.json 為主表來源時，需取 `thread_results.<N>.tpmC_mean` 與 `NEW_ORDER.p99_mean_ms` 配對；不要混用 design-intent 寫法。
+
 ## 6. 變更歷史
 
 | 日期 | 變更 | 來源 |
 |---|---|---|
+| 2026-06-26 | 新增 §0 命名規範速查；§5 schema 對齊 code 實際輸出（`tpmC_mean = R1-R5 mean`，澄清「median drop R1」未落地） | SSOT 收斂 sub-agent audit |
 | 2026-06-06 | 初版 registry 建立 | codex review v2 approve-with-constraints（session `019e38f2`）|

@@ -881,7 +881,7 @@ Phase 8  report       render pipeline-log.md
   for r in 1..5:
     run 5m, 收 go-tpc output + OS monitor + DB log diff + client monitor
     sleep 60s
-  取 round 2-5 median tpmC（丟 round 1）
+  取 round 1-5 mean tpmC（warmup 已 20 分鐘，5 round 全部納入）
 ```
 
 **設計依據**：原本選項是「每 round restart + drop_caches」，但會「低估」三家數字 3–25%（plan cache / metadata / lease 反覆重建），改採折衷拉長 warmup 並保留 round 1 → round 5 的穩態觀察。對應命名：`vm-1node-<iso> / RF=1 / steady-after-cold-reset`。
@@ -894,7 +894,7 @@ Phase 8  report       render pipeline-log.md
 | Phase A vm-1node 正式數據 | 不建議 | tpmC 可能偏低，P95/P99 易混入 cold cache / plan cache / compaction 成本 |
 | Phase B-F vm-3node 正式數據 | 禁止作正式比較 | 會放大 Region/Range/Tablet split、leader/lease placement、Raft cache 尚未穩定的差異 |
 
-若為節省時間把 `WARMUP_SEC` 暫改為 `300`，該次結果必須在 `pipeline-log.md` 與 `summary.json` 標記為 `quick-run` 或 `smoke-test`，不得納入正式 median tpmC / scale-out ratio / HAProxy delta 結論。正式 PoC 數據仍以 `WARMUP_SEC=1200` 為準。
+若為節省時間把 `WARMUP_SEC` 暫改為 `300`，該次結果必須在 `pipeline-log.md` 與 `summary.json` 標記為 `quick-run` 或 `smoke-test`，不得納入正式 5-round mean tpmC / scale-out ratio / HAProxy delta 結論。正式 PoC 數據仍以 `WARMUP_SEC=1200` 為準。
 
 **Warmup threads 調整影響（64 → 128）**：
 
@@ -903,11 +903,13 @@ Phase 8  report       render pipeline-log.md
 | `warmup_threads=64` | 正式 baseline | 壓力足以預熱 cache / plan / connection pool，但不把 warmup 本身變成最高壓測試 |
 | `warmup_threads=128` | 僅限 exploratory / quick-run | 可能更快觸發熱點、compaction、split、Raft/lease 調整，但也可能留下 write backlog / compaction debt |
 
-正式 PoC 固定 `warmup_threads=64`。若改用 `128`，該次結果必須在 `pipeline-log.md` 與 `summary.json` 標記 `warmup_threads=128` 與 `result_scope=exploratory`，不得與 `warmup_threads=64` 的正式結果混算 median tpmC、scale-out ratio 或 HAProxy delta。
+正式 PoC 固定 `warmup_threads=64`。若改用 `128`，該次結果必須在 `pipeline-log.md` 與 `summary.json` 標記 `warmup_threads=128` 與 `result_scope=exploratory`，不得與 `warmup_threads=64` 的正式結果混算 5-round mean tpmC、scale-out ratio 或 HAProxy delta。
 
 ### 8.3 Round 採樣策略
 
-每個 `<db, iso, threads>` 組合跑 5 round × 5 min，**丟 round 1，取 round 2-5 的 median** 為代表 tpmC。本輪 4 個 threads 水位（16/32/64/128）各跑 5 round，每組合共 5 round → 每個 `<db, iso>` 共 20 round。
+每個 `<db, iso, threads>` 組合跑 5 round × 5 min，**取 round 1-5 全部納入計算 mean tpmC**（warmup 20 分鐘已穩態，無需丟 round 1）。本輪 4 個 threads 水位（16/32/64/128）各跑 5 round，每組合共 5 round → 每個 `<db, iso>` 共 20 round。
+
+> 歷史備註：本檔早期版本設計為「丟 round 1，取 round 2-5 的 median」；實際 `tests/common/summary-from-stdout.py` 落地為 R1-R5 mean，pipeline-log 與 README 均以 mean 為準。canonical 寫法已對齊 mean。
 
 ### 8.4 Retry / abort 統計口徑（必明確）
 
@@ -1321,112 +1323,15 @@ artifacts/<db>-vm-1node-<iso>-<ts>/
 
 ## 13. 報告產出規範
 
-### 13.1 pipeline-log.md 必含區塊
+### 13.1 pipeline-log.md 章節骨架
 
-每組產出 `results/<db>-tc1/S-BASE/vm-1node-<iso>/pipeline-log.md`：
+詳 [`pipeline-log-template.md`](./pipeline-log-template.md) — mandatory sections、DB-specific 選項、forbidden sections 全套 layout 規範。本節不重複，避免兩套 skeleton 並存。
 
-```markdown
-## 0. Benchmark boundary 聲明（render-pipeline.sh 自動寫入）
+### 13.2 summary.json schema
 
-> 本測試為 TPC-C-derived stress benchmark using go-tpc，非 audited TPC-C。
-> （CockroachDB vm-1node 額外加 single-node 不適合 perf testing 聲明）
+實際 schema 以 [`tests/common/summary-from-stdout.py`](../tests/common/summary-from-stdout.py) 產出為準；per-phase metadata 附加欄位詳 [`PHASES.md §5`](./PHASES.md)。下游 parser（`render-pipeline.sh` / `verify-readme-gates.sh`）一律讀 `summary.json`，不另立 schema。
 
-## 1. 版本資訊
-- DB 版本 / commit / build date
-- go-tpc 版本 + sha256
-- OS / kernel
-- Test timestamp / duration
-
-## 2. 對齊設定快照
-- Memory budget / WAL durable / Auto-statistics / 隔離級實測值 / pessimistic mode (TiDB)
-
-## 3. Gate 結果
-- OS / chrony offset / cluster health / isolation 驗證 / client saturation / disk
-
-## 4. Prepare 階段
-- prepare 耗時 / check-all 結果 / ANALYZE / EXPLAIN dump / hotspot snapshot / stats snapshot
-
-## 5. Run 結果（每 threads 水位一張表）
-
-### threads = 64（主軸對標）
-
-| Round | tpmC raw | tpmC ex-abort | Mix NewOrder/Pay/OS/Del/SL % | P50 | P95 | P99 | retry | abort | SQLSTATE top | 備註 |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 1 (丟) | ... | ... | ... | ... | ... | ... | ... | ... | ... | warmup recovery |
-| 2 | ... | ... | ... | ... | ... | ... | ... | ... | ... | |
-| 3-5 | ... | | | | | | | | | |
-| **Median (2-5)** | ... | ... | ✓/✗ vs §10.6 minima | ... | ... | ... | ... | ... | ... | 代表值 |
-
-（threads = 16 / 32 / 128 同表結構）
-
-## 6. OS / DB 資源觀察
-- 峰值 CPU%（DB process）/ 峰值 RSS / I/O wait %
-- DB 內部錯誤 / retry 計數 / SQLSTATE histogram
-- Client process 峰值 CPU% / host idle p95
-```
-
-### 13.2 summary.json schema（render-pipeline.sh 唯一資料來源）
-
-```json
-{
-  "meta": {
-    "db": "tidb|crdb|ybdb",
-    "topology": "vm-1node|vm-3node-1s1r|vm-3node-1s3r|vm-3node-3s1r|vm-3node-3s3r|vm-3node-haproxy-3s3r",
-    "iso": "rc|rr|strict",
-    "timestamp": "ISO-8601",
-    "db_version": "string",
-    "gotpc_version": "string",
-    "gotpc_sha256": "string",
-    "kernel": "string",
-    "warehouses": 128
-  },
-  "gates": {
-    "os": "pass|fail",
-    "chrony_offset_ms": 12,
-    "isolation_expected": "READ-COMMITTED|REPEATABLE-READ|read committed|repeatable read|serializable",
-    "isolation_actual": "string",
-    "isolation_pass": true,
-    "cluster_health": "pass|fail",
-    "disk_free_gb": 80
-  },
-  "prepare": {
-    "duration_sec": 1234,
-    "check_all_pass": true,
-    "analyze_pass": true,
-    "hotspot_snapshot": "artifacts/.../hotspot.txt"
-  },
-  "runs": [
-    {
-      "threads": 64,
-      "rounds": [
-        {
-          "round": 1,
-          "valid": false,
-          "invalid_reason": "warmup-recovery (discarded)",
-          "tpmC_raw": 1234.5,
-          "tpmC_ex_abort": 1230.1,
-          "mix": {"NewOrder": 45.2, "Payment": 43.1, "OrderStatus": 4.0, "Delivery": 4.0, "StockLevel": 4.0},
-          "mix_pass": true,
-          "latency_ms": {"p50": 12.3, "p95": 45.6, "p99": 80.1},
-          "retry": 12,
-          "abort": 3,
-          "sqlstate_top": [{"code": "40001", "count": 3}],
-          "client_idle_p95": 65.2,
-          "client_cpu_p95": 280.5
-        }
-      ],
-      "median_round_2_5": {
-        "tpmC_raw": 1230.1,
-        "tpmC_ex_abort": 1225.0,
-        "p99_ms": 81.3,
-        "retry_rate": 0.012
-      }
-    }
-  ]
-}
-```
-
-欄位取不到 → 該欄位填 `null`，並在 `invalid_reason` 補說明。render-pipeline.sh 依此 schema 渲染 markdown，欄位為 `null` 顯示為 `N/A`。
+> 早期 design intent（巢狀 `runs[].rounds[].tpmC_raw + median_round_2_5`）未落地；canonical 為 code 實際輸出（flat `thread_results.<N>.{tpmC_mean, NEW_ORDER, all_txn}`）。需要 per-round 數字時讀 `tpmC_per_round` array。
 
 ### 13.3 RC vs RR vs strict 對照表（三組測完後追加在主 README）
 
@@ -1502,26 +1407,22 @@ MAC (orchestrator)
 
 ### 17.1 四 scope SSOT
 
-詳 [`PHASES.md`](./PHASES.md) registry。
+phase scope 對照、baseline_eligible / baseline_family 規則、forbidden 規則、manifest schema、summary.json metadata schema **全部 canonical 寫法見 [`PHASES.md`](./PHASES.md) §1–§5**。
 
-| scope | phase dir | baseline_family | baseline_eligible | 主用途 |
-|---|---|---|:---:|---|
-| `S-BASE` | （無）| `vm` | ✓ | vm-1node / vm-3node baseline（既有；對應 §16 Phase A–F）|
-| `S-K8S` | [`phase-k8s/`](../phase-k8s/) | `k8s` | ✓ (K8s family only) | Kubernetes 對照組 |
-| `T-THRD` | [`phase-threadcontrol/`](../phase-threadcontrol/) | `tuning` | ✗ | process/thread/admission tuning 隔離 |
-| `X-CROSS` | [`phase-crossregion/`](../phase-crossregion/) | `crossregion` | ✗ | IDC↔GCP 跨區 / 跨專線 PoC |
+本節不重述 registry 內容；僅保留 framework 設計原則與 Make target 規範（§17.4–17.5）。
 
-### 17.2 隔離規則
+### 17.2 隔離原則（rules 詳見 PHASES §2）
 
-1. **路徑** sibling：`results/{db}-tc1/{S-BASE, S-K8S, T-THRD, X-CROSS}/`（不可嵌套）
-2. **主表 source list** 禁讀 `T-THRD/` 與 `X-CROSS/`（落地：`verify-readme-gates.sh` P4f）
-3. **跨 family 對比** 須在 README 明標 `baseline_family`（VM vs K8s 不可直引）
-4. **Make target fail-fast**：[`tests/common/lib/guard.sh`](../tests/common/lib/guard.sh) 四個 `assert_*_target` helper
-5. **threadcontrol 三層 hard gate**：詳 [`phase-threadcontrol/guardrails.md`](../phase-threadcontrol/guardrails.md)
+framework 為 4 個面向的隔離：
+
+- **路徑** sibling 結構，禁嵌套（rules 詳見 `PHASES.md` §1.1）
+- **主表 source list** 過濾規則（落地：`verify-readme-gates.sh` + `PHASES.md` §2）
+- **Make target fail-fast**：[`tests/common/lib/guard.sh`](../tests/common/lib/guard.sh) `assert_*_target` helper
+- **threadcontrol 三層 hard gate**：詳 [`phase-threadcontrol/guardrails.md`](../phase-threadcontrol/guardrails.md)
 
 ### 17.3 manifest schema
 
-每 phase 一份 `manifest.yaml`，schema 詳 [`PHASES.md §3`](./PHASES.md)。驗證 helper：
+詳 [`PHASES.md §3`](./PHASES.md)。驗證 helper：
 
 ```bash
 tests/common/validate-phase-manifest.sh <path-to-manifest.yaml>
