@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "db": "tidb",
+  "topology": "vm-6node-P-A",
+  "iso": "rc",
+  "ts": "20260622T131459+0800",
+  "warehouses": 4,
+  "rounds_per_thread_group": 5,
+  "skip_rounds": 0,
+  "threads_list": [
+    16
+  ],
+  "thread_results": {
+    "16": {
+      "tpmC_mean": 9557.9,
+      "tpmC_per_round": [
+        9525.5,
+        9553.2,
+        9786.9,
+        9393.2,
+        9530.8
+      ],
+      "tpmC_range_mean_pct": 4.1,
+      "tpmTotal_mean": 21240.4,
+      "efficiency_mean_pct": 18580.7,
+      "NEW_ORDER": {
+        "p50_mean_ms": 43.2,
+        "p95_mean_ms": 86.4,
+        "p99_mean_ms": 117.4,
+        "total_count": 238914,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 530935,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    }
+  },
+  "generated_at": "2026-06-26T09:43:50.471795+08:00",
+  "generated_by": "tests/common/summary-from-stdout.py v1",
+  "source_files": "runs/threads-*/round-*/go-tpc-stdout.txt"
+}

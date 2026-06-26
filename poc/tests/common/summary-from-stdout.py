@@ -33,7 +33,7 @@ SUMMARY_RE = re.compile(
     r"\s+95th\(ms\):\s+([\d.]+),\s+99th\(ms\):\s+([\d.]+)"
 )
 SUITE_NAME_RE = re.compile(
-    r"(tidb|crdb|ybdb)-(.+)-(rc|rr|strict)-(\d{8}T\d{6}\+\d{4})"
+    r"(tidb|crdb|ybdb)-(.+?)-(rc|rr|strict)(?:-run\d+)?-(\d{8}T\d{6}\+\d{4})"
 )
 
 
@@ -127,11 +127,31 @@ def aggregate_thread_group(round_results):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print(f"usage: {sys.argv[0]} <suite_artifact_dir>", file=sys.stderr)
+    args = sys.argv[1:]
+    warehouses = 128
+    skip_rounds = 0
+    positional = []
+    i = 0
+    while i < len(args):
+        a = args[i]
+        if a == "--warehouses":
+            warehouses = int(args[i + 1])
+            i += 2
+        elif a == "--skip-rounds":
+            skip_rounds = int(args[i + 1])
+            i += 2
+        else:
+            positional.append(a)
+            i += 1
+
+    if not positional:
+        print(
+            f"usage: {sys.argv[0]} [--warehouses N] [--skip-rounds K] <suite_artifact_dir>",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
-    suite_dir = Path(sys.argv[1])
+    suite_dir = Path(positional[0])
     if not suite_dir.is_dir():
         print(f"error: {suite_dir} not a directory", file=sys.stderr)
         sys.exit(1)
@@ -157,8 +177,9 @@ def main():
         "topology": topology,
         "iso": iso,
         "ts": ts,
-        "warehouses": 128,
+        "warehouses": warehouses,
         "rounds_per_thread_group": 5,
+        "skip_rounds": skip_rounds,
         "threads_list": threads,
         "thread_results": {},
         "generated_at": datetime.now().astimezone().isoformat(),
@@ -170,6 +191,8 @@ def main():
         rounds = sorted(
             (runs_dir / f"threads-{t}").glob("round-*/go-tpc-stdout.txt")
         )
+        if skip_rounds:
+            rounds = rounds[skip_rounds:]
         round_results = [parse_round(r) for r in rounds]
         summary["thread_results"][str(t)] = aggregate_thread_group(round_results)
 

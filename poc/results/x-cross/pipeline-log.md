@@ -14,7 +14,7 @@
 | `results/x-cross/smoke/early-runs/` | 早期 smoke / partial run | 可用來追溯建置與路徑修正，不作正式 benchmark 結論 |
 | `results/x-cross/determinism/` | same-cluster determinism 驗證 | 目前唯一可引用的 W=4 重現性觀察來源；仍非 W=128 baseline |
 
-目前 `results/x-cross/` 內沒有 `summary.json`。本檔引用的 tpmC 皆直接來自各 round 的 `go-tpc-stdout.txt`。
+本檔引用的 tpmC 直接來自各 round 的 `go-tpc-stdout.txt`；同步以 `tests/common/summary-from-stdout.py` 對 `determinism/run1` 與 `run2` 三家 suite-dir 補產 `summary.json`（W=4；YBDB 採 `--skip-rounds 2` 跳過 R1/R2 暖機異常）。
 
 ---
 
@@ -99,6 +99,7 @@
 
 | 日期 | 內容 |
 |---|---|
+| 2026-06-26 | retrofit `summary.json` 至 determinism 三家 suite-dir（W=4；YBDB skip R1/R2）；同步 patch `summary-from-stdout.py` 支援 `--warehouses` / `--skip-rounds` 與 `-run<N>` suffix |
 | 2026-06-24 | 依用途重整目錄：time-sync、dry-run、early smoke、determinism 分層 |
 | 2026-06-24 | 目錄由 `results/X-CROSS/` 改為 `results/x-cross/`；前期 `results/x-cross-tc1/` 內容彙整至 `results/x-cross/preflight/` |
 | 2026-06-23 | 建立 X-CROSS pipeline-log，確認 `results/x-cross/` 為 phase-crossregion 主資料目錄，`results/x-cross/preflight/` 為 chrony / preflight 證據目錄 |
