@@ -2,7 +2,7 @@
 
 > 受眾：C-level / 跨部門主管 / application owner
 > 用途：未動工 placement SQL / 部署前的概念對齊；本份**不是**工程細節文件
-> 對應 spec：`phase-crossregion/topology/P-A.md` / `P-B.md` / `tests/tidb/placement-p-{a,b}.sql`
+> 對應 spec：placement spec at `phase-crossregion/topology/P-A.md` / `P-B.md` / `tests/tidb/placement-p-{a,b}.sql`
 
 ---
 
@@ -116,7 +116,7 @@
 
 ## 7. 引用
 
-- 規格：`phase-crossregion/topology/P-A.md` / `P-B.md`
+- 規格：placement spec at `phase-crossregion/topology/P-A.md` / `P-B.md`
 - SQL：`tests/tidb/placement-p-a.sql` / `placement-p-b.sql`
 - 決策來源：`phase-crossregion/decisions-2026-06-08.md` Q8
 - 跨區 framework 保留依據：`1_MeetingMinutes/2026-06-09-distributed-db-adoption-non-technical.md` D1

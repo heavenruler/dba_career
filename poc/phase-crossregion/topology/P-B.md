@@ -1,5 +1,7 @@
 # P-B Placement — 1-IDC + 1-GCP + 1-arbiter (散，per-shard leader 各區)
 
+Placement spec (P-B).
+
 ## 結構
 
 ```

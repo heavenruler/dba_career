@@ -2,7 +2,7 @@
 
 ## 本輪 scope（T106 commit）
 
-**spec-only**：本 commit 只落 README + manifest + topology × workload spec + chaos plan + WAN baseline measurement plan + inventory template。**不 deploy、不 benchmark、不碰 `iac-gcp/terraform.tfvars` / `terraform.tfstate`**。
+**spec-only**：本 commit 只落 README + manifest + placement × workload spec + chaos plan + WAN baseline measurement plan + inventory template。**不 deploy、不 benchmark、不碰 `iac-gcp/terraform.tfvars` / `terraform.tfstate`**。
 
 runtime phase（P0 deploy 起）為後續 commit，依 `0602-decisions-track-E.md` 8 階段排序執行。
 
@@ -44,8 +44,8 @@ runtime phase（P0 deploy 起）為後續 commit，依 `0602-decisions-track-E.m
 → runtime phase 排序 = P0 → P1 → P2 → P3 → P4 → P5 → P6（chaos plan only）。
 
 placement spec：
-- [`topology/P-A.md`](./topology/P-A.md)
-- [`topology/P-B.md`](./topology/P-B.md)
+- placement spec (P-A) at [`topology/P-A.md`](./topology/P-A.md)
+- placement spec (P-B) at [`topology/P-B.md`](./topology/P-B.md)
 
 workload spec：
 - [`workload-profiles/A-A.md`](./workload-profiles/A-A.md)
@@ -95,7 +95,7 @@ cross-region inventory template：[`inventory/crossregion.ini.template`](./inven
 ## Make target（本輪）
 
 ```
-make phase-crossregion-plan        # read-only echo manifest + 拓樸矩陣 (本 commit 有效)
+make phase-crossregion-plan        # read-only echo manifest + placement 矩陣 (本 commit 有效)
 make phase-crossregion-deploy      # NOT YET IMPLEMENTED (Pre-P0 task 2)
 make phase-crossregion-run         # NOT YET IMPLEMENTED (P0+)
 make phase-crossregion-chaos-plan  # 列出 4 chaos scenario spec 路徑
@@ -113,4 +113,4 @@ make phase-crossregion-chaos-{deploy,run}  # NOT YET IMPLEMENTED
 
 | 日期 | commit | 變更 |
 |---|---|---|
-| 2026-06-06 | （本 commit）| 初版 spec-only：README + manifest + topology × workload 矩陣 + chaos plan + WAN baseline plan + inventory template |
+| 2026-06-06 | （本 commit）| 初版 spec-only：README + manifest + placement × workload 矩陣 + chaos plan + WAN baseline plan + inventory template |

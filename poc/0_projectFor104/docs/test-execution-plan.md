@@ -1,5 +1,8 @@
 # Test Execution Plan
 
+> [!WARNING]
+> 本文件已過期（deprecated / archive reference only）。目前 PoC 執行與結果索引以 `poc/results/PHASES.md`、`poc/results/PoC-DESIGN.md`、`poc/results/README.md` 及各 phase 目錄為準；本文只保留早期規劃脈絡，不作為現行執行依據。
+
 本文件定義「如何執行」測試，對應 `docs/test-design.md`（定義「測什麼」）。
 
 ## 1. 名詞定義

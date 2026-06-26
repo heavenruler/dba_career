@@ -1,5 +1,7 @@
 # P-A Placement — 2-IDC + 1-GCP (majority IDC)
 
+Placement spec (P-A).
+
 ## 結構
 
 ```
