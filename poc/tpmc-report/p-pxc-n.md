@@ -3,24 +3,43 @@
 ## Scope
 
 - Members: p-pxc-n-1, p-pxc-n-2, p-pxc-n-3
-- Observation: 2026-06-26 23:14 +0800 to 2026-06-27 23:14 +0800 (24 hours)
+- Observation: 2026-06-26 23:21 +0800 to 2026-06-27 23:21 +0800 (24 hours)
 - Sampling/rate window: 5 minutes; sustained peak is a rolling three-sample mean.
 - Per-request HTTP timeout: 1 second(s)
 - Cluster totals use only timestamps present for every member.
 - This is a capacity-equivalence input, not an audited TPC-C result.
 
+## Calculation rules
+
+For metric `m`, member `i`, and aligned timestamp `t`:
+
+1. Per-member rate: `x_i(t) = rate(m_i[5m]) * 60`.
+2. Cluster series: `X(t) = x_1(t) + x_2(t) + x_3(t)`; use only timestamps present for all three members.
+3. P50/P95/P99: calculate percentiles over `X(t)`, not by adding member percentiles.
+4. Max 15m avg: maximum rolling mean of three consecutive `X(t)` samples.
+5. Physical/logical ratio: `sum(RW commits_i(t)) / sum(local commits_i(t))`, calculated per timestamp before percentiles.
+
+| Report row | Source metric | Aggregation | Meaning |
+|---|---|---|---|
+| Logical writes originated | `mysql_global_status_wsrep_local_commits` | Sum 3 members | Logical write transactions originating in the cluster |
+| Read-only transactions | `...trx_ro_commits_total` | Sum 3 members | Read workload, kept separate from tpmC-equivalent |
+| Rollbacks | `...trx_rollbacks_total` | Sum 3 members | Cluster rollback activity |
+| Physical RW commits across nodes | `...trx_rw_commits_total` | Sum 3 members | Physical work including replicated commits |
+| Physical rows read across nodes | `mysql_global_status_innodb_row_ops_total{operation="read"}` | Sum 3 members | Physical row-read work handled by all nodes |
+| Observed physical/logical commit-work | RW total / local total | Per timestamp | Diagnostic ratio; not PXC replication factor |
+
 ## Logical and physical demand
 
 | Metric | Unit | P50 | P95 | P99 | Max 15m avg | Peak end | Aligned samples |
 |---|---|---:|---:|---:|---:|---|---:|
-| Logical writes originated | txn/min | 1,273.7 | 4,616.2 | 5,519.2 | 5,447.7 | 06-27 06:04 | 289 |
-| Read-only transactions | txn/min | 57.8 | 317.9 | 620.2 | 1,761.8 | 06-27 03:29 | 289 |
-| Rollbacks | txn/min | 0.0 | 0.0 | 0.0 | 0.1 | 06-27 21:14 | 289 |
-| Physical RW commits across nodes | txn/min | 10,748.7 | 22,674.5 | 26,334.6 | 26,596.1 | 06-27 06:04 | 289 |
-| Physical rows read across nodes | rows/min | 48,413,255.8 | 89,632,482.6 | 117,487,470.1 | 195,076,220.5 | 06-27 03:49 | 289 |
-| Observed physical/logical commit-work | ratio | 8.44 | 11.65 | 12.25 | 12.09 | 06-27 00:59 | 289 |
+| Logical writes originated | txn/min | 1,284.8 | 4,683.5 | 5,470.9 | 5,372.7 | 06-27 06:41 | 289 |
+| Read-only transactions | txn/min | 55.6 | 322.7 | 572.9 | 1,647.3 | 06-27 03:31 | 289 |
+| Rollbacks | txn/min | 0.0 | 0.0 | 0.0 | 0.1 | 06-27 21:16 | 289 |
+| Physical RW commits across nodes | txn/min | 10,908.3 | 22,500.3 | 26,121.8 | 26,247.8 | 06-27 06:06 | 289 |
+| Physical rows read across nodes | rows/min | 48,706,486.5 | 89,406,327.8 | 120,875,373.7 | 188,292,243.2 | 06-27 03:46 | 289 |
+| Observed physical/logical commit-work | ratio | 8.53 | 11.82 | 12.45 | 12.36 | 06-27 01:01 | 289 |
 
-- 24-hour logical-write design candidate: **5,519.2 txn/min** (`max(P99, max 15m avg)`).
+- 24-hour logical-write design candidate: **5,470.9 txn/min** (`max(P99, max 15m avg)`).
 - Write origin concentration: **p-pxc-n-1 = 100.00%** of observed local commits.
 - Capacity-equivalent tpmC remains N/A until benchmark calibration supplies `logical local commits per tpmC`.
 
@@ -46,9 +65,9 @@ A healthy member requires `mysql_up=1`, `wsrep_ready=1`, `wsrep_connected=1`, an
 
 | Member | Local commit P99 | Physical RW P99 | RO P99 | CPU P99 | Memory P99 | Disk write P99 |
 |---|---:|---:|---:|---:|---:|---:|
-| p-pxc-n-1 | 5,519.2 txn/min | 10,908.0 txn/min | 254.0 txn/min | 22.2% | 89.2% | 20.6 MiB/s |
-| p-pxc-n-2 | 0.0 txn/min | 7,871.5 txn/min | 191.3 txn/min | 9.2% | 86.2% | 14.3 MiB/s |
-| p-pxc-n-3 | 0.0 txn/min | 7,856.2 txn/min | 181.0 txn/min | 9.4% | 85.5% | 16.4 MiB/s |
+| p-pxc-n-1 | 5,470.9 txn/min | 10,874.4 txn/min | 259.4 txn/min | 21.9% | 89.2% | 17.1 MiB/s |
+| p-pxc-n-2 | 0.0 txn/min | 7,910.2 txn/min | 172.5 txn/min | 8.7% | 86.2% | 12.6 MiB/s |
+| p-pxc-n-3 | 0.0 txn/min | 7,847.7 txn/min | 166.3 txn/min | 9.0% | 85.5% | 14.0 MiB/s |
 
 ## Interpretation
 
