@@ -178,11 +178,11 @@ def main() -> None:
     )
 
     cluster_metrics = [
-        ("Logical writes originated", "txn/min", stats(aligned_points(local_commits, members), step)),
-        ("Read-only transactions", "txn/min", stats(aligned_points(ro_commits, members), step)),
-        ("Rollbacks", "txn/min", stats(aligned_points(rollbacks, members), step)),
-        ("Physical RW commits across nodes", "txn/min", stats(aligned_points(rw_commits, members), step)),
-        ("Physical rows read across nodes", "rows/min", stats(aligned_points(row_reads, members), step)),
+        ("叢集發起的邏輯寫入", "txn/min", stats(aligned_points(local_commits, members), step)),
+        ("唯讀交易", "txn/min", stats(aligned_points(ro_commits, members), step)),
+        ("交易回滾", "txn/min", stats(aligned_points(rollbacks, members), step)),
+        ("所有節點承受的物理 RW commit", "txn/min", stats(aligned_points(rw_commits, members), step)),
+        ("所有節點承受的物理讀取列數", "rows/min", stats(aligned_points(row_reads, members), step)),
     ]
 
     local_points = dict(aligned_points(local_commits, members))
@@ -260,39 +260,39 @@ def main() -> None:
     ) if logical_stats["p99"] is not None or logical_stats["max15"] is not None else None
 
     lines = [
-        f"# PMM PXC cluster capacity sample: {args.cluster}",
+        f"# PMM PXC 叢集容量範例：{args.cluster}",
         "",
-        "## Scope",
+        "## 資料範圍",
         "",
-        f"- Members: {', '.join(members)}",
-        f"- Observation: {period_start:%Y-%m-%d %H:%M %z} to {period_end:%Y-%m-%d %H:%M %z} ({args.hours} hours)",
-        "- Sampling/rate window: 5 minutes; sustained peak is a rolling three-sample mean.",
-        f"- Per-request HTTP timeout: {args.request_timeout:g} second(s)",
-        "- Cluster totals use only timestamps present for every member.",
-        "- This is a capacity-equivalence input, not an audited TPC-C result.",
+        f"- 成員：{', '.join(members)}",
+        f"- 觀測期間：{period_start:%Y-%m-%d %H:%M %z} 至 {period_end:%Y-%m-%d %H:%M %z}（{args.hours} 小時）",
+        "- 採樣與 rate 視窗：5 分鐘；持續峰值為連續三個樣本的移動平均。",
+        f"- 每個 HTTP request timeout：{args.request_timeout:g} 秒",
+        "- 叢集總量只使用三個成員都有資料的共同時間點。",
+        "- 本報告是容量等效換算的輸入，不是經 TPC 稽核的 TPC-C 成績。",
         "",
-        "## Calculation rules",
+        "## 計算規則",
         "",
-        "For metric `m`, member `i`, and aligned timestamp `t`:",
+        "對 metric `m`、成員 `i` 與對齊後的時間點 `t`：",
         "",
-        "1. Per-member rate: `x_i(t) = rate(m_i[5m]) * 60`.",
-        "2. Cluster series: `X(t) = x_1(t) + x_2(t) + x_3(t)`; use only timestamps present for all three members.",
-        "3. P50/P95/P99: calculate percentiles over `X(t)`, not by adding member percentiles.",
-        "4. Max 15m avg: maximum rolling mean of three consecutive `X(t)` samples.",
-        "5. Physical/logical ratio: `sum(RW commits_i(t)) / sum(local commits_i(t))`, calculated per timestamp before percentiles.",
+        "1. 每台先換算速率：`x_i(t) = rate(m_i[5m]) * 60`。",
+        "2. 同時間點加總：`X(t) = x_1(t) + x_2(t) + x_3(t)`；缺少任一成員資料的時間點不納入。",
+        "3. P50/P95/P99：對加總後的 `X(t)` 計算，不能把三台各自的 percentile 相加。",
+        "4. Max 15m avg：每三個連續 `X(t)` 樣本取平均，再取其中最大值。",
+        "5. 物理/邏輯比值：每個時間點先算 `sum(RW commits_i(t)) / sum(local commits_i(t))`，再計算 percentile。",
         "",
-        "| Report row | Source metric | Aggregation | Meaning |",
+        "| 報告欄位 | 來源 metric | 彙整方式 | 意義 |",
         "|---|---|---|---|",
-        "| Logical writes originated | `mysql_global_status_wsrep_local_commits` | Sum 3 members | Logical write transactions originating in the cluster |",
-        "| Read-only transactions | `...trx_ro_commits_total` | Sum 3 members | Read workload, kept separate from tpmC-equivalent |",
-        "| Rollbacks | `...trx_rollbacks_total` | Sum 3 members | Cluster rollback activity |",
-        "| Physical RW commits across nodes | `...trx_rw_commits_total` | Sum 3 members | Physical work including replicated commits |",
-        "| Physical rows read across nodes | `mysql_global_status_innodb_row_ops_total{operation=\"read\"}` | Sum 3 members | Physical row-read work handled by all nodes |",
-        "| Observed physical/logical commit-work | RW total / local total | Per timestamp | Diagnostic ratio; not PXC replication factor |",
+        "| 叢集發起的邏輯寫入 | `mysql_global_status_wsrep_local_commits` | 三台加總 | 此 PXC 叢集實際發起的邏輯寫入交易 |",
+        "| 唯讀交易 | `...trx_ro_commits_total` | 三台加總 | 讀取工作量，與 tpmC 等效值分開呈現 |",
+        "| 交易回滾 | `...trx_rollbacks_total` | 三台加總 | 整個叢集的回滾活動 |",
+        "| 所有節點承受的物理 RW commit | `...trx_rw_commits_total` | 三台加總 | 包含 wsrep 複寫造成的物理工作 |",
+        "| 所有節點承受的物理讀取列數 | `mysql_global_status_innodb_row_ops_total{operation=\"read\"}` | 三台加總 | 所有節點實際處理的資料列讀取工作 |",
+        "| 觀測到的物理/邏輯 commit-work | RW 總量 / local 總量 | 每個時間點計算 | 容量診斷比值，不是 PXC replication factor |",
         "",
-        "## Logical and physical demand",
+        "## 邏輯需求與物理負載",
         "",
-        "| Metric | Unit | P50 | P95 | P99 | Max 15m avg | Peak end | Aligned samples |",
+        "| 指標 | 單位 | P50 | P95 | P99 | 15 分鐘平均峰值 | 峰值結束時間 | 對齊樣本數 |",
         "|---|---|---:|---:|---:|---:|---|---:|",
     ]
     for label, unit, metric in cluster_metrics:
@@ -303,28 +303,28 @@ def main() -> None:
         )
     lines.extend(
         [
-            f"| Observed physical/logical commit-work | ratio | {common.fmt(amplification['p50'], 2)} | "
+            f"| 觀測到的物理/邏輯 commit-work | ratio | {common.fmt(amplification['p50'], 2)} | "
             f"{common.fmt(amplification['p95'], 2)} | {common.fmt(amplification['p99'], 2)} | "
             f"{common.fmt(amplification['max15'], 2)} | {format_peak(amplification['max15_at'])} | "
             f"{amplification['samples']:,} |",
             "",
-            f"- 24-hour logical-write design candidate: **{common.fmt(design_demand)} txn/min** (`max(P99, max 15m avg)`).",
-            f"- Write origin concentration: **{origin_leader} = {common.fmt(origin_leader_share, 2)}%** of observed local commits.",
-            "- Capacity-equivalent tpmC remains N/A until benchmark calibration supplies `logical local commits per tpmC`.",
+            f"- 24 小時邏輯寫入設計需求候選值：**{common.fmt(design_demand)} txn/min**（`max(P99, 15 分鐘平均峰值)`）。",
+            f"- 寫入來源集中度：觀測到的 local commit 有 **{common.fmt(origin_leader_share, 2)}%** 來自 **{origin_leader}**。",
+            "- 在 benchmark 提供 `每 tpmC 對應的 logical local commits` 校正係數前，容量等效 tpmC 維持 N/A。",
             "",
-            "## HA health",
+            "## HA 健康狀態",
             "",
-            "| Metric | Value |",
+            "| 指標 | 數值 |",
             "|---|---:|",
-            f"| Health telemetry coverage | {common.fmt(100 * len(healthy_counts) / expected_samples, 1)}% ({len(healthy_counts):,}/{expected_samples:,}) |",
-            f"| Quorum available (at least 2 healthy nodes) | {common.fmt(quorum_availability, 3)}% |",
-            f"| All 3 nodes healthy | {common.fmt(all_nodes_healthy, 3)}% |",
+            f"| 健康狀態資料覆蓋率 | {common.fmt(100 * len(healthy_counts) / expected_samples, 1)}% ({len(healthy_counts):,}/{expected_samples:,}) |",
+            f"| Quorum 可用率（至少 2 台健康） | {common.fmt(quorum_availability, 3)}% |",
+            f"| 三台同時健康 | {common.fmt(all_nodes_healthy, 3)}% |",
             "",
-            "A healthy member requires `mysql_up=1`, `wsrep_ready=1`, `wsrep_connected=1`, and `wsrep_local_state=4` (Synced). This is database health, not application/proxy availability.",
+            "健康成員必須同時符合 `mysql_up=1`、`wsrep_ready=1`、`wsrep_connected=1`、`wsrep_local_state=4`（Synced）。這代表資料庫健康狀態，不等同應用程式或 Proxy 可用率。",
             "",
-            "### Current member state",
+            "### 目前成員狀態",
             "",
-            "| Member | up | ready | connected | local state | cluster size |",
+            "| 成員 | up | ready | connected | local state | cluster size |",
             "|---|---:|---:|---:|---:|---:|",
         ]
     )
@@ -338,9 +338,9 @@ def main() -> None:
     lines.extend(
         [
             "",
-            "## Member capacity comparison",
+            "## 成員容量比較",
             "",
-            "| Member | Local commit P99 | Physical RW P99 | RO P99 | CPU P99 | Memory P99 | Disk write P99 |",
+            "| 成員 | Local commit P99 | 物理 RW P99 | RO P99 | CPU P99 | Memory P99 | Disk write P99 |",
             "|---|---:|---:|---:|---:|---:|---:|",
         ]
     )
@@ -360,19 +360,19 @@ def main() -> None:
     lines.extend(
         [
             "",
-            "## Interpretation",
+            "## 判讀說明",
             "",
-            "- Logical write demand is the time-aligned sum of `wsrep_local_commits` across all members.",
-            "- Physical RW commits and row operations include replicated work and must not be used directly as cluster tpmC.",
-            "- The physical/logical commit-work ratio is diagnostic only; it is not the PXC replication factor.",
-            "- Read-only transactions remain separate from write tpmC-equivalent.",
-            "- N-1 sizing must verify that either surviving member can absorb the cluster logical demand; summed CPU percentages are not capacity.",
-            "- The 24-hour range validates collection and report shape. Final sizing requires representative business peaks and benchmark calibration.",
+            "- 邏輯寫入需求是所有成員 `wsrep_local_commits` 在相同時間點的加總。",
+            "- 物理 RW commit 與 row operation 包含複寫工作，不能直接當成叢集 tpmC。",
+            "- 物理/邏輯 commit-work 比值只用於容量診斷，不是 PXC replication factor。",
+            "- 唯讀交易與寫入 tpmC 等效值分開呈現，不合併成單一數字。",
+            "- N-1 容量必須確認任一存活成員能承接整個叢集的邏輯需求；CPU 百分比不能跨節點相加當成容量。",
+            "- 24 小時範圍只驗證資料收集與報告格式；正式 sizing 仍需涵蓋業務尖峰並完成 benchmark 校正。",
             "",
         ]
     )
     if common.WARNINGS:
-        lines.extend(["## Collection warnings", ""])
+        lines.extend(["## 資料收集警告", ""])
         lines.extend(f"- {warning}" for warning in common.WARNINGS)
         lines.append("")
 
