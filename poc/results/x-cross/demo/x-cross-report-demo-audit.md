@@ -117,19 +117,57 @@
 
 ## §6 Promotion checklist（從 demo → 正式 PoC 報告需滿足）
 
-主報告若要從 DEMO / NOT-FOR-DECISION 升級為正式 PoC 採用報告，下列 9 項必須全 PASS：
+依 `decisions-2026-06-08.md` Q12 拍板（2026-06-29）：**#1-#7 為 active task**；**#8 為 per-cell gate**（每 cell `.suite.done` 後立即跑）；**#9 為 final report gate**（最後 cell + 全 PASS 後 flip）。
 
-| # | Promotion condition | 驗證 |
+### Active tasks（#1-#7）
+
+| # | Promotion condition | 驗證 | 拍板狀態（2026-06-29 session）|
+|---:|---|---|---|
+| 1 | W=128 × same-cluster artifact 三家齊（at least P-A × A-S）；**ROUNDS=5 ≠ independent N=5**（per §4 B5）| `results/x-cross/` 下三家 `summary.json` warehouses=128 + R1-R5 完整 | active：先 patch chain → `phase1-wait-via-31`，再三家序列跑 |
+| 2 | P-B placement gate PASS + W=128 baseline 跑完（at least A-S） | `gate-placement-p-b.sh` exit 0 + 三家 P-B summary.json | active：串在 #1 之後 |
+| 3 | IDC-only 6-node paired control 跑完 | 對照組 summary.json 存在；填入 `Δ vs IDC-only` 欄 | **revised**：接受 S-BASE vm-3node 作對照（scale / 設備數不同，明標 caveat） |
+| 4 | Acceptance criteria 由業務 / 架構 owner 拍板 | `decisions-*.md` 增段，含 per-profile threshold | **revised**：**不訂 threshold**，PoC 改 exploratory 不下 go/no-go |
+| 5 | A-S / A-A-RO / A-A 各 profile 業務 owner 指派 | decisions record 含 owner | **revised**：三 profile 都當探查跑，不指 owner（與 #4 一致） |
+| 6 | C1 / C4 spec ↔ planner 故障模型 reconcile + 三家 admin CLI 路徑 DBA confirm | spec or script 修一邊；DBA approve label | active：**以 spec 為主** rename + 重寫 script 內部 |
+| 7 | probe driver + wall-clock wrapper PR merge | `RTO-RPO-methodology` §9 step 2 / 3 滿足 | active：**Claude 寫最小 UPDATE 寫入版**（非僅 SELECT 1），bash + per-DB client，100ms tick |
+
+### Per-cell gate（#8，per Q12）
+
+| # | Gate condition | 觸發時機 | 失敗處理 |
+|---:|---|---|---|
+| 8 | static check 5 項全 PASS（無 fake / 無 `feedback_` ref / 語意一致 / link 全活 / spec-script reconcile）| **每 cell `.suite.done` 後立即跑** | FAIL → cell artifact 標 `incomplete_reason: static-check-fail`；**下家 cell 不可啟動** |
+
+### Final gate（#9）
+
+| # | Gate condition | 觸發時機 |
 |---:|---|---|
-| 1 | W=128 × N=5 × same-cluster artifact 三家齊（at least P-A × A-S）| `results/x-cross/` 下三家 `summary.json` warehouses=128 + R1-R5 完整 |
-| 2 | P-B placement gate PASS + W=128 baseline 跑完（at least A-S） | `gate-placement-p-b.sh` exit 0 + 三家 P-B summary.json |
-| 3 | IDC-only 6-node paired control 跑完（同硬體、同 W、同 profile）| 對照組 summary.json 存在；填入 `Δ vs IDC-only` 欄 |
-| 4 | Acceptance criteria 由業務 / 架構 owner 拍板 | `decisions-*.md` 增段，含 per-profile threshold |
-| 5 | A-S / A-A-RO / A-A 各 profile 業務 owner 指派 | decisions record 含 owner + 取消未指派 profile cell |
-| 6 | C1 / C4 spec ↔ planner 故障模型 reconcile + 三家 admin CLI 路徑 DBA confirm | spec or script 修一邊；DBA approve label |
-| 7 | probe driver + wall-clock wrapper PR merge | `RTO-RPO-methodology` §9 step 2 / 3 滿足 |
-| 8 | static check 5 項全 PASS（無 fake / 無 feedback_ ref / 語意一致 / link 全活 / spec-script reconcile）| audit doc §5 重跑 |
-| 9 | DEMO header 改為 OFFICIAL；版本 + manifest_sha256 + git commit 入 §10 appendix | report header revision |
+| 9 | DEMO header 改為 OFFICIAL；版本 + manifest_sha256 + git commit 入 §10 appendix | 最後一個 cell `.suite.done` + #1-#7 全 PASS + #8 重跑 PASS 後，**單一 commit** flip header |
+
+---
+
+## §7 VM destroy / recreate 嚴謹要求（per `decisions-2026-06-08.md` Q11）
+
+| 規則 | 內容 |
+|---|---|
+| **強制動作** | 三家 DB cell 之間必跑 `make phase1-destroy phase1-apply phase1-wait-via-31`（terraform 雙側完整 destroy + apply）|
+| **不接受替代** | service-level cleanup（systemctl stop + DROP DATABASE + rm -rf）**不可**取代完整 VM rebuild |
+| **順序** | TiDB → PASS → CRDB → PASS → YBDB（per Q9 同 placement 內 DB 順序）|
+| **不適用範圍** | 同家 DB 內 round / thread sweep 不需 VM rebuild；DEV-1x1 framework selfcheck 可降為 service-level cleanup（標 caveat）|
+
+### Trade-off（per Q11 明列 — 非科學必然）
+
+| 利（rebuild） | 弊（rebuild） |
+|---|---|
+| 降低 cross-DB residue bias（systemd / SELinux / cgroup / TCP TIME-WAIT / disk hotness / dnf cache 等）| **增加** between-suite environment variance（GCP API 排班 / vSphere datastore 熱點 / cloud-init drift / dnf mirror latency）|
+
+**屬性**：controlled bias trade — 接受此 trade 因 X-CROSS phase `baseline_eligible: false` + `requires_n: 1`，cell 間隔離性優先於 cell 內統計穩定性。
+
+### Audit hook（待實作）
+
+`summary.json` schema 新增（per Q11）：
+- `prev_suite_done`: 上家 cell `.suite.done` timestamp
+- `vm_rebuild_ts`: 本 cell run 前 VM image creation timestamp
+- wrapper `gate` 第一步驗 `.31` 對 cluster 端 SSH host key — 殘留即視為前家未清乾淨 → fail-closed
 
 ---
 

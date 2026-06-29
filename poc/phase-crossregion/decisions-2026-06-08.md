@@ -286,3 +286,56 @@ Plus F1 (failover) + C1/C4/C7 (chaos) = +15 special runs
 - IDC chronyd 一般 sync 內部 stratum-2/3 source
 - 兩者跨區 drift typically < 50ms（NTP 不需同源即可保 100ms 精度）
 - 邊界情況：IDC NTP server 失效或 GCP metadata service 失效 → drift 飆升 → gate fail-closed 保護
+
+---
+
+## Q11: 三家 DB cell 間 VM destroy / recreate 強制要求
+
+**Decision date**: 2026-06-29
+**Owner**: PoC owner (wn.lin@104.com.tw)
+
+**Decision**: 三家 DB（TiDB / CRDB / YBDB）X-CROSS cell 之間**強制完整 VM destroy + apply**（terraform 雙側）；不接受 service-level cleanup（systemctl stop + DROP DATABASE + rm -rf）取代。
+
+### 規則
+- cell 順序固定 TiDB → PASS → CRDB → PASS → YBDB（per Q9 同 placement 內 DB 順序）
+- 一家 cell `.suite.done` 寫入後，下家 cell 啟動前**必跑** `make phase1-destroy phase1-apply phase1-wait-via-31`
+- 完整 VM rebuild 不可由 ansible cleanup playbook / DROP DATABASE / `rm -rf /var/lib/<db>` 取代
+
+### Rationale（含 trade-off，不寫成科學必然）
+- **降低殘留污染**：上家 DB 的 systemd unit、SELinux context、firewall rule、symlink、`/var/lib/<db>`、cgroup、TCP socket time-wait、disk LBA hotness、dnf cache 等**可能**滲透到下家 cell 量到的數字
+- **同時**：完整 VM rebuild 會**增加 between-suite environment variance**（GCP API 排班 / vSphere datastore 熱點 / 兩側 cloud-init 時間漂移 / dnf mirror latency 變動）。這個變異不能假設為零。
+- 因此本規則的**屬性是 "controlled bias trade"**：用較高 environment variance 換較低 cross-DB residue bias，**非科學必然**。
+- 接受此 trade 是因為 X-CROSS phase 已 `baseline_eligible: false`、`requires_n: 1`（per `manifest.yaml`），cell 內統計穩定性次要於 cell 間隔離性。
+
+### Action
+- `phase-crossregion/Makefile`：no change（`phase1-destroy phase1-apply` 已存在）；wrapper（待實作）必須在 `gate` 第一步驗 `.31` 端對 cluster 端的 SSH 是否還記得舊 host key，殘留即視為前家未清乾淨 → fail-closed
+- demo / audit / report 必引此 Q11 為 SSOT；不再引 `feedback_xcross_serial_per_db` memory（per reviewer §2.7）
+- `summary.json` schema 應在 `controller_provenance` 或新欄位記錄 `prev_suite_done` + `vm_rebuild_ts`（每 cell run 前 VM image creation timestamp），讓 audit 可追
+
+### 不適用範圍
+- 同家 DB 內 round 之間（5-round suite）不需 VM rebuild
+- 同家 DB 內 thread sweep（16/32/64/128）不需 VM rebuild
+- DEV-1x1 framework selfcheck 若僅用於程式 sanity（非性能比較），可降為 service-level cleanup（明標 caveat）
+
+---
+
+## Q12: Promotion checklist gate 觸發時機
+
+**Decision date**: 2026-06-29
+**Owner**: PoC owner
+
+**Decision**: `x-cross-report-demo-audit.md` §6 列的 9 項 promotion checklist 中，**#8 (static check) + #9 (header flip OFFICIAL)** 為**per-stage gates**，**不是 final-only gates**。
+
+### 規則
+- 每完成一個測試階段（每個 cell 寫入 `.suite.done` 後）必須立即跑 #8 static check 5 項；任一條 FAIL → 該 cell artifact 標 `incomplete=true`，下家 cell **不可**啟動
+- #9 header 翻 OFFICIAL 在**最後一個 cell** 完成 + #1-#7 全 PASS + #8 重跑 PASS 後執行；單一 commit 翻 header
+- 等價於：#8 從 9 項中拆出，作為**每 cell promotion gate**；#9 仍為 final report gate
+
+### Rationale
+- 原 audit 把 #8/#9 與作業項目混列同一表，誤導為 final-only。實際上 static check 是廉價驗證（grep + link check），每 cell 跑成本 ~30 sec
+- 早期偵測比晚期偵測便宜：若 cell 1 的 demo 漂移已含 fake/synthetic 殘留，等到 cell 3 才發現代表 cell 1+2 都要重新審查
+
+### Action
+- `x-cross-report-demo-audit.md` §6 重新分類：#1-#7 = active task；#8 = per-cell gate；#9 = final gate
+- demo §14 (11-item promotion gate) 加註 #8 觸發時機
+- wrapper（待實作）在 `summary` stage 後自動跑 static check；FAIL 則 `.suite.done` 標 `incomplete_reason: static-check-fail`

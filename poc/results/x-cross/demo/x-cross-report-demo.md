@@ -140,9 +140,16 @@ TiDB / CRDB / YBDB 三家全在矩陣內。三家絕對 serial（per `decisions-
 | within-suite round | 同 suite 內的 5 個 timed window（每個 5 min） | `ROUNDS=5` per cell |
 | independent suite | 同 cell、不同 ts、各自獨立 artifact root | 目前 = 1（exploratory；`manifest.yaml requires_n:1`）|
 | same-cluster repeat | 同 deploy 內多次跑 suite（不 redeploy） | determinism evidence 為此（W=4）|
-| rebuild repeat | 不同 VM rebuild 之間 | 目前不在 plan；rebuild 雖降低殘留汙染（state / SST / placement label）但同時增加 between-suite environment variance，是 trade-off 而非科學必然 |
+| rebuild repeat | 不同 VM rebuild 之間 | **強制**於三家 DB cell 之間（per `decisions-2026-06-08.md` Q11）；不接受 service-level cleanup 替代 |
 
 → `ROUNDS=5` ≠ independent N=5。Demo / 後續報告若聲稱 independent N=5，**必須**外層 repeat orchestration + 各自獨立 artifact。
+
+→ **三家 DB cell 強制 VM rebuild**（per Q11 拍板 2026-06-29）：
+- 規則：TiDB → PASS → CRDB → PASS → YBDB；每家 cell 之間跑 `make phase1-destroy phase1-apply phase1-wait-via-31`
+- 不接受替代：service-level cleanup（systemctl stop + DROP DATABASE + rm -rf）**不可**取代完整 VM rebuild
+- Trade-off：降低 cross-DB residue bias ↔ 增加 between-suite environment variance（**非科學必然**，是 controlled bias trade）
+- 不適用：同家 DB 內 round / thread sweep 不需 rebuild
+- Audit hook（待實作）：`summary.json` 新增 `prev_suite_done` + `vm_rebuild_ts`；wrapper `gate` 驗 `.31` 對 cluster SSH host key 殘留為 fail-closed 條件
 
 ### 6.4 Correctness gate（preceeds 效能採信）
 
