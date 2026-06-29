@@ -27,7 +27,7 @@ P-A / P-B placement SQL **早已存在**（`tests/{tidb,cockroach,yuga}/placemen
 | step | 內容 | 觸發前先準備 |
 |---|---|---|
 | **1.1** | WAN baseline 量測（B4 hard gate） | `phase-crossregion/scripts/wan-probe.sh` 已存在；需 operator 在 business hour + off-peak 兩時段呼叫，產 `iperf3 / ping / MTU / loss` 紀錄 |
-| **1.2** | 三家 W=128 × N=5 × same-cluster suite | **目前 Makefile 沒有 W=128 X-CROSS suite target**；需 operator 新增（或沿用 `phase6/7/8-*-smoke` 但 override W 參數）。建議新 target：`phase-crossregion-w128-suite`，掛 freeze → warmup 20min → 5 round × 5min → collect |
+| **1.2** | 三家 W=128 × N=5 × same-cluster suite | `phase-crossregion-w128-suite` target 已存在於 `phase-crossregion/Makefile`（commit `5dadbbc1`）。**但內部 chain `phase-crossregion-all` 仍含 `phase1-wait`（IAP tunnel 路徑），不符 .31-only 限制；正式啟用前須切換為 `phase1-wait-via-31` + .31-native wrapper**。`ROUNDS=5` 是同 suite 的 5 個 round（不是 5 個 independent suite）；如需 independent N=5，須外層 repeat orchestration 並各自獨立 artifact。|
 | **1.3** | 跑完 retrofit | 已可重用 `tests/common/summary-from-stdout.py --warehouses 128` |
 | **1.4** | pipeline-log §2 W=128 數據回填 | 由 operator 跑 step 1.3 後填表 |
 | **1.5** | slide v6 W=128 數據回填 | slide 6 / slide 9 三家欄位 |

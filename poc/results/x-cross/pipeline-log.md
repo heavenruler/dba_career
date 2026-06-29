@@ -24,7 +24,7 @@
 - 2026-06-21 的 W=4 redeploy run-to-run 變異過大，不可作正式結果。
 - 2026-06-22/23 改成 same-cluster N-round 後，三家重現性收斂到 CV <= 5%。
 - 目前 workload 是 W=4、threads=16、每 round 5 分鐘；不同於 S-BASE / S-K8S 的 W=128 正式口徑。
-- 正式 X-CROSS baseline 仍需 W=128、20 分鐘 warmup、R2-R5 median / CV、完整 DB-host metrics 與 `summary.json`。
+- 正式 X-CROSS baseline 仍需 W=128、20 分鐘 warmup、**canonical primary = `tpmC_mean = R1-R5 mean` per PHASES.md §5 + `summary-from-stdout.py`**（與 S-BASE / S-K8S 一致）；R2-R5 median / CV 只作為 secondary / sensitivity analysis，不取代 primary。完整 DB-host metrics 與 `summary.json` 必齊。
 
 ---
 
@@ -80,7 +80,7 @@
 
 1. X-CROSS artifact layout 已收斂為 `preflight/time-sync`、`dry-run`、`smoke/early-runs`、`determinism` 四類。
 2. 為 X-CROSS 補 `summary.json` 產生流程，避免後續只靠 raw stdout 手動讀數。
-3. 正式 W=128 測試需固定：same cluster、不 redeploy、placement gate、scheduler / balancer freeze、20 分鐘 warmup、R2-R5 median / CV。
+3. 正式 W=128 測試需固定：same cluster、不 redeploy、placement gate、scheduler / balancer freeze、20 分鐘 warmup；primary estimator = R1-R5 mean（per PHASES §5 / `summary-from-stdout.py`），secondary = R2-R5 median + CV（sensitivity only，不入主表）。
 4. 將 chrony gate / WAN preflight 只作為 X-CROSS 附屬證據，不與 benchmark 結果混放。
 
 ---

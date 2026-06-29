@@ -8,10 +8,10 @@
 
 | Region | Client | TPCC W 分配 | Threads | Endpoint | 行為 |
 |---|---|---|---|---|---|
-| IDC | go-tpc @ idc-dbhost-1 | W=1-128（全）| 16/32/64/128 | idc-haproxy | full TPCC（read + write）|
-| GCP | go-tpc @ gcp-dbhost-1 | W=1-128（全；read-only mode）| 16/32/64/128 | gcp-haproxy（routed to followers）| 只跑 NEW_ORDER/STOCK_LEVEL read paths |
+| IDC | go-tpc @ idc-client (.31) | W=1-128（全）| 16/32/64/128 | idc-haproxy | full TPCC standard mix（read + write）|
+| GCP | go-tpc @ gcp-client (g-test-poc-5) | W=1-128（全；read-only mode）| 16/32/64/128 | gcp-haproxy（routed to followers）| read-only mix `--mix DELIVERY:NEW_ORDER:ORDER_STATUS:PAYMENT:STOCK_LEVEL=0:0:50:0:50`（per `decisions-2026-06-08.md` Q6；GCP 端只跑 ORDER_STATUS + STOCK_LEVEL，**NEW_ORDER 是 write txn，不在 RO mix**）|
 
-→ 兩側 W 重疊但 GCP 走 follower read / stale read。
+→ 兩側 W 重疊但 GCP 走 follower read / stale read（NEW_ORDER 留在 IDC writer 側）。
 
 ## 預期觀察點
 
