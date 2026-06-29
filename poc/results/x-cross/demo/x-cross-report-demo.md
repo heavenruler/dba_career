@@ -11,10 +11,14 @@
 
 | 在範圍 | 不在範圍 |
 |---|---|
-| X-CROSS 七階段 pipeline contract 與 SSOT 引用 | 任何 chaos / RTO / RPO **實跑數據**（方法論引用 only；見 §7） |
-| P-A 與 P-B placement 對比邏輯與 fake 數據 | F1 / C1 / C4 / C7 chaos cell 數據（probe driver 尚未實裝） |
-| A-S / A-A-RO / A-A workload profile 走位 | DB-internal tuning 推薦（T-THRD 範圍） |
-| 排程估時（per memory `feedback_xcross_serial_per_db`） | 跨 baseline_family 排名（X-CROSS↔S-BASE 永禁混入主表） |
+| X-CROSS 七階段 pipeline contract 與 SSOT 引用（§2） | 任何**實跑數據** — 全檔皆 synthetic / planner-only preview |
+| P-A 與 P-B placement 對比邏輯與 fake steady-state 數據（§5）| DB-internal tuning 推薦（T-THRD scope）|
+| A-S / A-A-RO / A-A workload profile 走位（§5 / §8） | 跨 `baseline_family` 排名（X-CROSS↔S-BASE 永禁混入主表）|
+| **Failover / chaos 框架**：F1 / C1 / C4 / C7 fake 數據與量測口徑（§11）| chaos **實跑** — `probe driver` / `wall-clock wrapper` / admin CLI 路徑三項 blocker（§12.5 / NEXT-STEPS §3）未補完，正式 cell fail-closed |
+| **RTO / RPO 口徑**：clock domain × probe granularity × "first OK" + 三家 fake 對比（§12）| RTO / RPO 對外 SLA 承諾（synthetic，僅展示量測 protocol） |
+| **16 維 Professional-Grade Rigor**：統計 / tail latency / 資源 / WAN / placement drift / data integrity / mix / cold reset / lock / replication lag / cost / reproducibility / TOST / schema / hash gate / completeness（§13） | S-BASE / S-K8S / T-THRD 各自 rigor matrix（本檔只涵蓋 X-CROSS）|
+| **11-item promotion gate**（§14）+ anti-pattern 對照（§15） | CI 自動化實作（gate spec 在本檔，code 落地另排 task）|
+| 排程估時（per memory `feedback_xcross_serial_per_db`，§8）| Sprint / 人力 / 預算分派（屬 PM 範疇）|
 
 ---
 
@@ -352,11 +356,11 @@ p99 ms
 | 2 | W=4 deterministic 已驗（artifact 在 `results/x-cross/determinism/run{1,2}/`），W=128 **尚未跑** | `NEXT-STEPS.md` §3 第 1 條 | slide v6 / pipeline-log §1 已標 |
 | 3 | `baseline_eligible: false` | `manifest.yaml` | 永不進 results/README.md 主表（`PHASES.md` §2 forbidden 規則）|
 | 4 | DEV-1x1 `reduced_quorum=true` / `flow_selfcheck=true` | `EXPERIMENT-PROMPTS` §9.1 / §9.2 DEV acceptance | 不可代表 3+3 quorum 行為 |
-| 5 | chaos / RTO / RPO 不在本 demo 範圍 | `RTO-RPO-methodology.md` Status (spec / planner-only) + §9 升級條件 7 項 | 需獨立 probe driver + DBA review + 開閘流程 |
+| 5 | chaos / RTO / RPO **框架 + fake 數據在範圍**（§11 / §12）；**實跑不在範圍** | `RTO-RPO-methodology.md` Status (spec / planner-only) + §9 升級條件 7 項 | 需獨立 probe driver + wall-clock wrapper + DBA review + 開閘流程 |
 | 6 | probe driver 尚未實裝 | `NEXT-STEPS.md` §3 第 2 條；`RTO-RPO-methodology.md` §3.2 / §9 step 2 | go-tpc stdout 1s tick 顆粒度不足以量 RTO < 1s |
 | 7 | wall-clock wrapper 尚未實裝 | `NEXT-STEPS.md` §3 第 3 條；`RTO-RPO-methodology.md` §7.3 | `t_incident` / `t_first_ok` 無工具產生 |
 | 8 | 三家 admin CLI 路徑須 DBA 重新 confirm | `NEXT-STEPS.md` §3 第 4 條；F1.md §47-52 | spec-only |
-| 9 | W=128 X-CROSS suite Makefile target 尚未實裝 | `NEXT-STEPS.md` §2.1 step 1.2 | 需 operator 新增 `phase-crossregion-w128-suite` |
+| 9 | `phase-crossregion-w128-suite` target **已存在**（commit `5dadbbc1`）但內部 chain `phase-crossregion-all` 含 Mac IAP `phase1-wait` | EXPERIMENT-PROMPTS §4 P0 第 1/4 條 + memory `feedback_iap_tunnel_avoid` | 正式跑前必須改走 `phase1-wait-via-31` + .31-native wrapper（§13.15 reproducibility gate / §15 anti-pattern #14）|
 | 10 | TiDB strict / rr 對 X-CROSS 為 P0-stretch | `PoC-DESIGN.md` §6.3 限定 vm-3node 全 RC；`manifest.yaml` isolation:[rc] | 本 demo plan 不含 |
 
 ---
@@ -924,6 +928,7 @@ tpmC% of baseline
 |---|---|
 | 2026-06-29 | 初版 DEMO report — synthetic data，framework 引用整合 |
 | 2026-06-29 | 擴充 §11 Failover / Chaos / §12 RTO-RPO 口徑 / §13 16-維度 Professional-grade rigor / §14 11-item promotion gate / §15 16-項 anti-pattern；補引 `RTO-RPO-methodology` / `F1.md` / `chaos/{C1,C4,C7}.md` / `scripts/chaos/*` / `scripts/gate-placement-p-b.sh` |
+| 2026-06-29 | §0 文件範圍同步擴充後章節（chaos / RTO-RPO / rigor / promotion gate / anti-pattern 改列「在範圍」；實跑仍標「不在範圍」）；§7 caveat #5 / #9 校正避免與 §11-§15 矛盾 |
 
 ---
 
