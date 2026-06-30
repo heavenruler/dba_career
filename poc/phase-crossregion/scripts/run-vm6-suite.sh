@@ -230,6 +230,14 @@ bash "$COMMON_DIR/run.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-ho
 echo "[4/4] collect"
 bash "$COMMON_DIR/collect.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-host "$DB_HOST" --ts "$TS"
 
+echo "[4.5/4] summary.json (summary-from-stdout.py --warehouses ${WAREHOUSES:-4})"
+python3 "$COMMON_DIR/summary-from-stdout.py" \
+  --warehouses "${WAREHOUSES:-4}" \
+  --phase "$PHASE_NAME" \
+  --result-scope "$RESULT_SCOPE" \
+  --baseline-family "$BASELINE_FAMILY" \
+  "$ROOT" || echo "[wrapper] WARN: summary-from-stdout.py failed (non-fatal)"
+
 # F1: write .suite.done atomically via tmp → mv; clear failure trap first
 trap - EXIT
 rm -f "$ROOT/.suite.failed" 2>/dev/null || true
