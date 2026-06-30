@@ -135,6 +135,7 @@ SSH_OPTS           := -o LogLevel=ERROR -o StrictHostKeyChecking=accept-new
         teardown-tidb teardown-ybdb teardown-crdb \
         phase-crossregion-all phase-crossregion-w128-suite phase-crossregion-w128-suite-pb \
         phase-crossregion-promotion-gate \
+        phase-crossregion-tidb-validate phase6-tidb-smoke-dryrun \
         new-idc-vms new-gcp-vms drop-idc-vms drop-gcp-vms \
         gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure gcp-wait-startup \
         inventory-refresh gcp-inventory-refresh inventory-refresh-all ansible-ping \
@@ -152,6 +153,7 @@ help:
 	@echo "  make phase-crossregion-w128-suite           - W=128 × N=5 cross-region P-A baseline (NEXT-STEPS Path 1.2)"
 	@echo "  make phase-crossregion-w128-suite-pb        - W=128 × N=5 cross-region P-B variant (checklist #2)"
 	@echo "  make phase-crossregion-promotion-gate       - Promotion checklist #9 final gate (checklist #1/#2/#7/#8)"
+	@echo "  make phase-crossregion-tidb-validate        - TiDB P-A W=128 workflow validation (DRY_RUN=1, no benchmark)"
 	@echo ""
 	@echo "Phase chain (run in order):"
 	@echo "  make phase1                                 - destroy + apply IDC + GCP VMs + wait startup"
@@ -809,6 +811,50 @@ phase-crossregion-promotion-gate:
 	@bash phase-crossregion/scripts/promotion-gate.sh \
 	  --artifact-dir $(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
 	  --ts $(TPCC_TS)
+
+# ===================================================================
+# TiDB P-A W=128 workflow validation (DRY_RUN=1 — no go-tpc benchmark)
+# Validates: VM rebuild → bootstrap → TiDB deploy → SSH/endpoint/binary/
+#            placement-SQL pre-flight → teardown.
+# Usage:
+#   make phase-crossregion-tidb-validate [TPCC_TS=<ts>]
+# ===================================================================
+phase-crossregion-tidb-validate:
+	@echo "==================================================================="
+	@echo "  phase-crossregion-tidb-validate  TiDB P-A W=128 workflow check"
+	@echo "  TPCC_TS=$(TPCC_TS)  (DRY_RUN=1 — no go-tpc benchmark)"
+	@echo "==================================================================="
+	$(MAKE) phase1             TPCC_TS=$(TPCC_TS)
+	$(MAKE) phase2             TPCC_TS=$(TPCC_TS)
+	$(MAKE) phase3-tidb-deploy TPCC_TS=$(TPCC_TS)
+	$(MAKE) phase6-tidb-smoke-dryrun \
+	  WAREHOUSES=128 ROUNDS=5 WARMUP_SEC=1200 RUN_SEC=300 \
+	  PLACEMENT=P-A PROFILE=A-S \
+	  TPCC_TS=$(TPCC_TS)
+	$(MAKE) teardown-tidb      TPCC_TS=$(TPCC_TS)
+	@echo "==> phase-crossregion-tidb-validate PASS  TPCC_TS=$(TPCC_TS)"
+
+# DRY_RUN=1: SSH/endpoint/go-tpc-binary/placement-SQL check; no gate/prepare/run/collect
+phase6-tidb-smoke-dryrun:
+	@echo "==> [start] phase6-tidb-smoke-dryrun at $$(date +%Y-%m-%dT%H:%M:%S%z)"
+	@echo "==> phase6-tidb-smoke-dryrun ts=$(TPCC_TS) placement=$(PLACEMENT) W=$(WAREHOUSES) N=$(ROUNDS)"
+	@TS=$(TPCC_TS); \
+	ssh $(TPCC_CLIENT) " \
+	  export PHASE_NAME=$(PHASE_NAME) RESULT_SCOPE=$(RESULT_SCOPE) BASELINE_FAMILY=$(BASELINE_FAMILY) \
+	         tuning_profile_id=default \
+	         TPCC_TS=$$TS PLACEMENT=$(PLACEMENT) PROFILE=$(PROFILE) \
+	         DB=tidb CLIENT_ZONE=$(CLIENT_ZONE) GATE_SKIP=1 \
+	         DB_HOST=$(TIDB_HOST) DB_PORT=$(TIDB_PORT) \
+	         WAREHOUSES=$(WAREHOUSES) WARMUP_SEC=$(WARMUP_SEC) \
+	         ROUNDS=$(ROUNDS) THREADS_LIST='$(THREADS_LIST)' RUN_SEC=$(RUN_SEC) ROUND_SLEEP_SEC=0 \
+	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
+	         WAN_PROBE_ENABLED=0 WAN_PROBE_IPERF=0 \
+	         DRY_RUN=1; \
+	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
+	    --db tidb --topology vm-6node-$(PLACEMENT) --ts $$TS"
+	@echo "==> phase6-tidb-smoke-dryrun: reading .dry-run.done artifact"
+	@ssh $(TPCC_CLIENT) "cat $(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS)/.dry-run.done 2>/dev/null || echo '(dry-run.done not found)'"
+	@echo "==> [end] phase6-tidb-smoke-dryrun at $$(date +%Y-%m-%dT%H:%M:%S%z)"
 
 # ===================================================================
 # Sub-rules reused verbatim from Makefile.tc1
