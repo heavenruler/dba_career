@@ -343,12 +343,67 @@ EOF
       fi
       info "placement gate PASS — $reason"
       ;;
-    crdb|ybdb)
-      # Q13 PLANNED：CRDB SHOW RANGES + lease_holder / YBDB yb-admin list_tablets
-      # 完整 gate 待 framework patch 階段；目前 spec-only.
-      echo "TODO (per Q13): $DB placement leader-distribution gate not yet implemented" \
+    crdb)
+      # SHOW RANGES FROM TABLE ... WITH DETAILS → lease_holder_locality
+      # sample 主要 tpcc table (warehouse / district / customer)；leader =
+      # lease_holder；locality string 含 region=idc 或 region=gcp.
+      : > "$GATE_OUT"
+      for t in warehouse district customer; do
+        cockroach sql --insecure --host="$DB_HOST:$PORT" -d "$DBNAME" --format=tsv -e "
+          SHOW RANGES FROM TABLE $t WITH DETAILS;
+        " 2>>"$GATE_OUT" >> "$GATE_OUT" || true
+      done
+      idc_cnt=$(grep -cE 'region=idc' "$GATE_OUT" 2>/dev/null || echo 0)
+      gcp_cnt=$(grep -cE 'region=gcp' "$GATE_OUT" 2>/dev/null || echo 0)
+      total=$((idc_cnt + gcp_cnt))
+      if [[ $total -lt 3 ]]; then
+        verdict="fail-closed"; reason="insufficient-leader-samples (total=$total)"
+      elif [[ "$PLACEMENT_FROM_TOPO" == "P-A" ]]; then
+        idc_pct=$(( idc_cnt * 100 / total ))
+        if [[ $idc_pct -ge 70 ]]; then
+          verdict="pass"; reason="P-A idc_majority idc=$idc_cnt/$total (${idc_pct}%)"
+        else
+          verdict="fail-closed"; reason="P-A idc<70% (idc=$idc_cnt/$total = ${idc_pct}%) — placement policy not effective"
+        fi
+      elif [[ "$PLACEMENT_FROM_TOPO" == "P-B" ]]; then
+        idc_pct=$(( idc_cnt * 100 / total ))
+        if [[ $idc_pct -ge 30 && $idc_pct -le 70 ]]; then
+          verdict="pass"; reason="P-B spread idc=$idc_cnt/$total (${idc_pct}%)"
+        else
+          verdict="fail-closed"; reason="P-B leaders co-located (idc=$idc_cnt/$total = ${idc_pct}%) — degraded"
+        fi
+      else
+        verdict="fail-closed"; reason="unknown-placement TOPO=$TOPO"
+      fi
+      cat > "$GATE_JSON" <<EOF
+{
+  "db": "$DB",
+  "placement": "$PLACEMENT_FROM_TOPO",
+  "verdict": "$verdict",
+  "reason": "$reason",
+  "idc_leader_count": $idc_cnt,
+  "gcp_leader_count": $gcp_cnt,
+  "total_leader_samples": $total,
+  "sample_tables": "warehouse,district,customer",
+  "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
+      if [[ "$verdict" != "pass" ]]; then
+        err "placement gate FAIL — $reason; see $GATE_JSON"
+        exit 1
+      fi
+      info "placement gate PASS — $reason"
+      ;;
+    ybdb)
+      # YBDB 需 yb-admin list_tablets，必須 SSH 到 master node 才有 binary.
+      # prepare.sh 本身假設 direct DB 訪問（psql）；SSH 從這裡執行會增加
+      # auth / key 依賴。canonical impl 見 `phase-crossregion/scripts/
+      # gate-placement-p-b.sh` (CRDB/YBDB 已含 SSH+yb-admin pattern)。
+      # framework patch 階段：將 prepare.sh §6.6 YBDB 委派到 gate-placement-*.sh
+      # 統一處理，不在這裡 inline.
+      echo "TODO (Q13 + framework patch): YBDB placement gate via gate-placement-*.sh delegation" \
         > "$GATE_OUT"
-      info "placement gate SKIPPED (CRDB/YBDB Q13 PLANNED) — TODO log saved"
+      info "placement gate DEFERRED (YBDB needs SSH; canonical = gate-placement-p-b.sh pattern)"
       ;;
   esac
 fi
