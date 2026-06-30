@@ -277,6 +277,82 @@ if [[ "$TOPO" == vm-6node-* ]]; then
   esac
 fi
 
+# ---- 6.6. X-CROSS placement leader-distribution gate（vm-6node only；fail-closed）----
+# Per decisions Q11/Q12 + 0630.md §9.2 + user 2026-06-30 拍板：正式測試前
+# 驗 leader 分布；不符 placement policy 預期則中斷 prepare（避免後續 timed run
+# 量到 placement 沒套住的污染數據）。CRDB/YBDB Q13 PLANNED 階段先 TODO。
+if [[ "$TOPO" == vm-6node-* ]]; then
+  # Parse PLACEMENT from TOPO suffix (vm-6node-P-A / vm-6node-P-B).
+  PLACEMENT_FROM_TOPO=$(echo "$TOPO" | grep -oE 'P-[AB]$' || echo "UNKNOWN")
+  info "X-CROSS placement gate (PLACEMENT=$PLACEMENT_FROM_TOPO)"
+  GATE_OUT="$PREP_DIR/placement-gate-${PLACEMENT_FROM_TOPO}.txt"
+  GATE_JSON="$PREP_DIR/placement-gate-${PLACEMENT_FROM_TOPO}.json"
+  case "$DB" in
+    tidb)
+      # Query leader distribution per region using JSON_CONTAINS on
+      # TIKV_STORE_STATUS.LABEL — robust to JSON formatting variants.
+      mysql -h "$DB_HOST" -P "$PORT" -u "$USER" -B -N -e "
+        SELECT
+          COALESCE(SUM(JSON_CONTAINS(s.LABEL, '{\"key\":\"region\",\"value\":\"idc\"}')), 0) AS idc_cnt,
+          COALESCE(SUM(JSON_CONTAINS(s.LABEL, '{\"key\":\"region\",\"value\":\"gcp\"}')), 0) AS gcp_cnt,
+          COUNT(*) AS total_cnt
+        FROM information_schema.TIKV_REGION_PEERS p
+        JOIN information_schema.TIKV_STORE_STATUS s ON p.STORE_ID = s.STORE_ID
+        JOIN information_schema.TIKV_REGION_STATUS r ON p.REGION_ID = r.REGION_ID
+        WHERE p.IS_LEADER = 1 AND r.DB_NAME = '$DBNAME';
+      " > "$GATE_OUT" 2>&1
+      # Parse tab-separated single row: idc_cnt gcp_cnt total_cnt
+      read -r idc_cnt gcp_cnt total < <(awk 'NR==1 {print $1, $2, $3}' "$GATE_OUT")
+      idc_cnt=${idc_cnt:-0}; gcp_cnt=${gcp_cnt:-0}; total=${total:-0}
+      if [[ $total -lt 3 ]]; then
+        verdict="fail-closed"; reason="insufficient-leader-samples (total=$total, need ≥3)"
+      elif [[ "$PLACEMENT_FROM_TOPO" == "P-A" ]]; then
+        # P-A 預期 IDC majority ≥ 70%
+        idc_pct=$(( idc_cnt * 100 / total ))
+        if [[ $idc_pct -ge 70 ]]; then
+          verdict="pass"; reason="P-A idc_majority idc=$idc_cnt/$total (${idc_pct}%)"
+        else
+          verdict="fail-closed"; reason="P-A idc<70% (idc=$idc_cnt/$total = ${idc_pct}%) — placement policy not effective"
+        fi
+      elif [[ "$PLACEMENT_FROM_TOPO" == "P-B" ]]; then
+        # P-B 預期 leaders 跨區散布；30% ≤ IDC% ≤ 70%
+        idc_pct=$(( idc_cnt * 100 / total ))
+        if [[ $idc_pct -ge 30 && $idc_pct -le 70 ]]; then
+          verdict="pass"; reason="P-B spread idc=$idc_cnt/$total (${idc_pct}%)"
+        else
+          verdict="fail-closed"; reason="P-B leaders co-located (idc=$idc_cnt/$total = ${idc_pct}%) — degraded to P-A behaviour"
+        fi
+      else
+        verdict="fail-closed"; reason="unknown-placement TOPO=$TOPO"
+      fi
+      cat > "$GATE_JSON" <<EOF
+{
+  "db": "$DB",
+  "placement": "$PLACEMENT_FROM_TOPO",
+  "verdict": "$verdict",
+  "reason": "$reason",
+  "idc_leader_count": $idc_cnt,
+  "gcp_leader_count": $gcp_cnt,
+  "total_leader_samples": $total,
+  "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
+      if [[ "$verdict" != "pass" ]]; then
+        err "placement gate FAIL — $reason; see $GATE_JSON"
+        exit 1
+      fi
+      info "placement gate PASS — $reason"
+      ;;
+    crdb|ybdb)
+      # Q13 PLANNED：CRDB SHOW RANGES + lease_holder / YBDB yb-admin list_tablets
+      # 完整 gate 待 framework patch 階段；目前 spec-only.
+      echo "TODO (per Q13): $DB placement leader-distribution gate not yet implemented" \
+        > "$GATE_OUT"
+      info "placement gate SKIPPED (CRDB/YBDB Q13 PLANNED) — TODO log saved"
+      ;;
+  esac
+fi
+
 # ---- 7. SHOW CREATE TABLE + EXPLAIN dump（representative queries）----
 info "schema + EXPLAIN dump"
 case "$DB" in
