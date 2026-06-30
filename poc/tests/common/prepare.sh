@@ -395,15 +395,62 @@ EOF
       info "placement gate PASS — $reason"
       ;;
     ybdb)
-      # YBDB 需 yb-admin list_tablets，必須 SSH 到 master node 才有 binary.
-      # prepare.sh 本身假設 direct DB 訪問（psql）；SSH 從這裡執行會增加
-      # auth / key 依賴。canonical impl 見 `phase-crossregion/scripts/
-      # gate-placement-p-b.sh` (CRDB/YBDB 已含 SSH+yb-admin pattern)。
-      # framework patch 階段：將 prepare.sh §6.6 YBDB 委派到 gate-placement-*.sh
-      # 統一處理，不在這裡 inline.
-      echo "TODO (Q13 + framework patch): YBDB placement gate via gate-placement-*.sh delegation" \
-        > "$GATE_OUT"
-      info "placement gate DEFERRED (YBDB needs SSH; canonical = gate-placement-p-b.sh pattern)"
+      # YBDB: SSH 到 YBDB master → yb-admin list_tablets per sample table →
+      # grep leader host IP → 按 region prefix 算 IDC vs GCP。
+      # 假設 $DB_HOST 為 YBDB master host（與 prepare 連線同台），$YB_MASTER_ADDR
+      # 從 Makefile env passthrough（fallback 為 172.24.40.32:7100,...)。
+      : "${YB_MASTER_ADDR:=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100}"
+      : > "$GATE_OUT"
+      for t in warehouse district customer; do
+        ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
+            root@"$DB_HOST" \
+            "/opt/yugabyte/bin/yb-admin --master_addresses=$YB_MASTER_ADDR \
+             list_tablets ysql.$DBNAME $t 2>/dev/null" \
+            >> "$GATE_OUT" 2>>"$GATE_OUT" || true
+      done
+      # list_tablets 每行 ~= 一個 tablet，leader IP 在欄位中；grep -c 計數
+      # IDC IP prefix (172.24.40.) vs GCP IP prefix (10.160.152.)。
+      idc_cnt=$(grep -cE '172\.24\.40\.(32|33|34)' "$GATE_OUT" 2>/dev/null || echo 0)
+      gcp_cnt=$(grep -cE '10\.160\.152\.(11|12|13)' "$GATE_OUT" 2>/dev/null || echo 0)
+      total=$((idc_cnt + gcp_cnt))
+      if [[ $total -lt 3 ]]; then
+        verdict="fail-closed"; reason="insufficient-leader-samples (total=$total)"
+      elif [[ "$PLACEMENT_FROM_TOPO" == "P-A" ]]; then
+        idc_pct=$(( idc_cnt * 100 / total ))
+        if [[ $idc_pct -ge 70 ]]; then
+          verdict="pass"; reason="P-A idc_majority idc=$idc_cnt/$total (${idc_pct}%)"
+        else
+          verdict="fail-closed"; reason="P-A idc<70% (idc=$idc_cnt/$total = ${idc_pct}%) — placement not effective"
+        fi
+      elif [[ "$PLACEMENT_FROM_TOPO" == "P-B" ]]; then
+        idc_pct=$(( idc_cnt * 100 / total ))
+        if [[ $idc_pct -ge 30 && $idc_pct -le 70 ]]; then
+          verdict="pass"; reason="P-B spread idc=$idc_cnt/$total (${idc_pct}%)"
+        else
+          verdict="fail-closed"; reason="P-B leaders co-located (idc=$idc_cnt/$total = ${idc_pct}%) — degraded"
+        fi
+      else
+        verdict="fail-closed"; reason="unknown-placement TOPO=$TOPO"
+      fi
+      cat > "$GATE_JSON" <<EOF
+{
+  "db": "$DB",
+  "placement": "$PLACEMENT_FROM_TOPO",
+  "verdict": "$verdict",
+  "reason": "$reason",
+  "idc_leader_count": $idc_cnt,
+  "gcp_leader_count": $gcp_cnt,
+  "total_leader_samples": $total,
+  "sample_tables": "warehouse,district,customer",
+  "yb_master_addr": "$YB_MASTER_ADDR",
+  "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
+      if [[ "$verdict" != "pass" ]]; then
+        err "placement gate FAIL — $reason; see $GATE_JSON"
+        exit 1
+      fi
+      info "placement gate PASS — $reason"
       ;;
   esac
 fi
