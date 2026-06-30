@@ -339,3 +339,47 @@ Plus F1 (failover) + C1/C4/C7 (chaos) = +15 special runs
 - `x-cross-report-demo-audit.md` §6 重新分類：#1-#7 = active task；#8 = per-cell gate；#9 = final gate
 - demo §14 (11-item promotion gate) 加註 #8 觸發時機
 - wrapper（待實作）在 `summary` stage 後自動跑 static check；FAIL 則 `.suite.done` 標 `incomplete_reason: static-check-fail`
+
+---
+
+## Q13: 三家 DB 就近讀寫等價設定
+
+**Decision date**: 2026-06-30
+**Owner**: PoC owner
+**Source**: `1_MeetingMinutes/0630.md` §5 / §8（TiDB 為主）+ CRDB / YBDB 官方文件對等性推導 + `phase-crossregion/workload-profiles/A-A-RO.md`
+
+**Decision**: 三家 DB 的「就近讀寫」需透過下表設定才會生效；TL;DR §D 表中「CRDB / YBDB 等價設定」從 INFERRED 升為 **PLANNED**（待 framework patch 階段 prepare stage 落地）。
+
+### 設定對照表
+
+| 機制 | TiDB | CockroachDB | YugabyteDB |
+|---|---|---|---|
+| **Region / Zone label** | TiKV server.labels `region=idc/gcp, zone=...`（已落地 `ansible/playbooks/tidb-vm6.yml:203-208`）| 啟動 flag `--locality=region=idc,zone=...` | tserver flag `--placement_cloud=104 --placement_region=idc/gcp --placement_zone=...` |
+| **Topology labels（PD/cluster 側）** | `replication.location-labels=["region","zone"]`（已落地 tidb-vm6.yml:234）| 同 locality；無另設 | 同 placement_*；無另設 |
+| **就近讀（client session）** | `SET GLOBAL tidb_replica_read='closest-replicas';` | `SET CLUSTER SETTING kv.closed_timestamp.follower_reads_enabled=true;` + 查詢 `SELECT ... AS OF SYSTEM TIME follower_read_timestamp()` | `SET yb_read_from_followers=true;` + `SET yb_follower_read_staleness_ms=30000;` |
+| **Control plane（metadata）就近** | `SET GLOBAL pd_enable_follower_handle_region=ON;`（v8.5+ GA）| 無對應；CRDB metadata 分散在所有 node | 無對應；YBDB master metadata 由 yb-master 處理（已 leader-only）|
+| **TSO / global time 就近** | `SET GLOBAL tidb_enable_tso_follower_proxy=ON;`（**先測再決定**，per 0630.md §6.3）| HLC 無集中 TSO；不適用 | HLC 無集中 TSO；不適用 |
+| **Placement Policy（leader 偏好）** | `CREATE PLACEMENT POLICY ... PRIMARY_REGION='idc' REGIONS='idc,gcp' FOLLOWERS=2;`（per 0630.md §5.1） | `ALTER DATABASE tpcc CONFIGURE ZONE USING lease_preferences='[[+region=idc]]', constraints='[+region=idc, +region=gcp]', num_replicas=3;` | tablespace `placement_blocks` + `yb-admin modify_placement_info '104.idc.vlan241:2,104.gcp.asia-east1-a:1' 3 ...`（已落地 `tests/yuga/`）|
+| **強制本地或 fallback** | `closest-replicas` 是優先策略，不是 fail-closed（per 0630.md §5.3）；本地不可用 → fallback Leader | follower reads 需 staleness ≥ closed timestamp；不足則 fallback leaseholder | `yb_follower_read_staleness_ms` 控 staleness 容忍；ms 太小 → fallback leader |
+
+### 同源 caveat（三家共通）
+
+per 0630.md §5.4 / §10：「就近讀寫」**data plane 優先本地** 是可達；「IDC Request 絕不離開 IDC」**單一強一致 cluster 做不到**。三家在以下情境仍**會跨區**：
+- 寫入路徑：寫入唯一 Region Leader / Range Leaseholder / Tablet Leader；leader 在跨區就跨區
+- Control plane：metadata fallback / TSO / 跨區 raft heartbeat
+- 強一致 follower read：須跨區 ReadIndex / closed timestamp 確認
+- 本地 replica 故障：fallback 到跨區 leader / leaseholder
+
+### Action（與 framework patch 同批做）
+
+- **prepare 階段**新增 SQL 步驟：三家各自 SET 上表「就近讀」設定；保留 SHOW snapshot 進 artifact
+- **dump-actual 階段**新增 SHOW GLOBAL VARIABLES snapshot（per 0630.md §9.4，TiDB；CRDB 對應 `SHOW CLUSTER SETTING ...`；YBDB 對應 `SHOW yb_read_from_followers`）
+- **collect 階段**新增 leader 分布 query：TiDB `TIKV_REGION_PEERS` / CRDB `crdb_internal.ranges` / YBDB `yb-admin list_tablets` per node
+- TL;DR §D 表「CRDB / YBDB 等價設定 INFERRED」更新為 PLANNED（源 = Q13）
+
+### 不在 Q13 範圍（留下個 decision）
+
+- 三家「strong consistent follower read」是否啟用（一致性 vs latency trade-off）
+- CRDB `SET CLUSTER SETTING sql.defaults.experimental_follower_read_timestamp` 預設 staleness
+- YBDB consistency mode：`yb_consistency_level` 對 follower read 的影響
+- 跨 DB「fallback rate」量測規格（per 0630.md §5.3 提的 closest-replicas 不是 fail-closed）

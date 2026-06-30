@@ -107,9 +107,10 @@ per `phase-crossregion/chaos/{C1,C4,C7}.md` spec（**注意 codex F2：C1/C4 spe
 
 → TiDB 跨區部署最佳實踐：[TiDB 異地多活部署](https://docs.pingcap.com/zh/tidb/stable/geo-distributed-deployment-topology/)
 
-CRDB / YBDB 等價就近讀寫設定（**架構層 INFERRED**，待 framework patch 階段 decisions Q13 拍板）：
-- **CRDB**: `--locality=region=...,zone=...` + `lease_preferences=[[+region=idc]]` + `SET CLUSTER SETTING kv.closed_timestamp.follower_reads_enabled=true;` → 透過 `AS OF SYSTEM TIME follower_read_timestamp()` 走 follower
-- **YBDB**: tserver flag `--placement_cloud=104 --placement_region=idc --placement_zone=vlan241` + tablespace placement_blocks + `SET yb_read_from_followers=true; SET yb_follower_read_staleness_ms=30000;`
+CRDB / YBDB 等價就近讀寫設定 **PLANNED**（per `decisions-2026-06-08.md` Q13 拍板 2026-06-30；完整 6 維對照表見 Q13）：
+- **CRDB**: `--locality=region/zone` + `lease_preferences=[[+region=idc]]` + `kv.closed_timestamp.follower_reads_enabled=true` → 查詢 `AS OF SYSTEM TIME follower_read_timestamp()`
+- **YBDB**: tserver flag `--placement_*` + tablespace placement_blocks + `SET yb_read_from_followers=true; SET yb_follower_read_staleness_ms=30000;`
+- **同源 caveat**：三家「IDC Request 絕不離開 IDC」單一強一致 cluster 都做不到（per Q13 §同源 caveat）
 
 ---
 
@@ -417,6 +418,7 @@ IDC vlan241                            asia-east1
 | 2026-06-30 | TL;DR A 表 asymmetric 修正：原 TiDB P-A × 3 + P-B × 1 / CRDB 缺 A-A-RO / YBDB 只有 A-S — 為 demo 疏失（架構上三家都能跑全部 6 cell）。改成完整 3 × 3 × 2 = 9 row 矩陣，每行同時列 P-A 與 P-B tpmC 與 ratio |
 | 2026-06-30 | TL;DR A/B/C 三段減少技術英文：保留 P-A/P-B/A-S/A-A-RO/A-A 等 project tag，其餘加中文括號註釋（F1 planned → F1 計畫性切換 / cutover → 切換期間 / quorum → 法定人數 / split-brain → 雙主腦 等）；C7 補 leader 分布計數細節表，將原 N/A 改為合成示意（IDC 72/72 vs 144/0 退化情境）|
 | 2026-06-30 | 對齊 `1_MeetingMinutes/0630.md` 就近讀寫議題：TL;DR §A 解讀 3/4 加前提（A-A-RO 需 `closest-replicas`；A-A 需 geo-partition），加 §7 control plane cost 永遠跨區 + §8 「就近讀寫嚴格定義」per 0630.md §10；新增 §D「就近讀寫驗證 checklist」7 項（D1-D7）+ CRDB/YBDB 等價設定推導；§10.2 SSOT 補 0630.md + TiDB 官方 geo-deployment / follower-read；audit §4 加 unresolved blocker #11（routing evidence + control plane cost 量測未實作）|
+| 2026-06-30 | TL;DR §D CRDB/YBDB 等價設定從 INFERRED 升為 PLANNED，引 `decisions-2026-06-08.md` Q13（6 維對照表：region/zone label / topology / 就近讀 / control plane 就近 / TSO / Placement Policy）+ 同源 caveat（三家「IDC Request 絕不離開 IDC」單一強一致 cluster 皆做不到）|
 
 ---
 
