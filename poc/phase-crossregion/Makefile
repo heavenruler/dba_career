@@ -316,7 +316,7 @@ phase3-tidb-deploy:
 # ===================================================================
 phase4: phase4-ybdb-deploy phase4-ybdb-fix6n
 
-phase4-ybdb-deploy: phase-cleanup-tidb
+phase4-ybdb-deploy: phase-cleanup-crdb
 	@echo "==> [start] phase4-ybdb-deploy at $$(date +%Y-%m-%dT%H:%M:%S%z) (timeout=$(TIMEOUT_PHASE4_DEPLOY)s)"
 	@echo "==> phase4-ybdb-deploy (placement=$(PLACEMENT)) — controller=.31"
 	ssh $(TPCC_CLIENT) "cd $(ANSIBLE_REMOTE_DIR) && ansible-playbook -i $(ANSIBLE_INV_VIA31) \
@@ -381,7 +381,7 @@ phase4-ybdb-fix6n:
 # ===================================================================
 phase5: phase5-crdb-deploy
 
-phase5-crdb-deploy: phase-cleanup-ybdb
+phase5-crdb-deploy: phase-cleanup-tidb
 	@echo "==> [start] phase5-crdb-deploy at $$(date +%Y-%m-%dT%H:%M:%S%z) (timeout=$(TIMEOUT_PHASE5_DEPLOY)s)"
 	@echo "==> phase5-crdb-deploy (placement=$(PLACEMENT)) — controller=.31"
 	ssh $(TPCC_CLIENT) "cd $(ANSIBLE_REMOTE_DIR) && ansible-playbook -i $(ANSIBLE_INV_VIA31) \
@@ -595,11 +595,16 @@ phase8.5-fetch:
 # ===================================================================
 # ===================================================================
 # Per-DB cleanup phases — 完整解耦，跑下一個 DB test 前清掉上一個
-# 用法：phase6-tidb-smoke → phase-cleanup-tidb → phase4-ybdb-deploy
-#       phase7-ybdb-smoke → phase-cleanup-ybdb → phase5-crdb-deploy
+# 用法（per decisions Q9 / Q11，順序 TiDB → CRDB → YBDB）：
+#   phase6-tidb-smoke → phase-cleanup-tidb → phase5-crdb-deploy
+#   phase8-crdb-smoke → phase-cleanup-crdb → phase4-ybdb-deploy
+#   phase7-ybdb-smoke → phase-cleanup-ybdb → phase9
 # ===================================================================
 phase-cleanup-tidb:
 	bash phase-crossregion/scripts/cleanup-tidb.sh
+
+phase-cleanup-crdb:
+	bash phase-crossregion/scripts/cleanup-crdb.sh
 
 phase-cleanup-ybdb:
 	bash phase-crossregion/scripts/cleanup-ybdb.sh
@@ -653,19 +658,21 @@ phase-crossregion-all:
 	@echo "==================================================================="
 	$(MAKE) phase1                TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase2                TPCC_TS=$(TPCC_TS)
+	# DB cell sequence: TiDB → CRDB → YBDB (per decisions Q9 / Q11)
+	# 注意：phase3/4/5 編號為歷史命名（4=ybdb, 5=crdb），執行順序以 Q9 為準
 	$(MAKE) phase3-tidb-deploy    TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase6-tidb-smoke     TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase6-tidb-result    TPCC_TS=$(TPCC_TS)
 	$(MAKE) teardown-tidb         TPCC_TS=$(TPCC_TS)
+	$(MAKE) phase5-crdb-deploy    TPCC_TS=$(TPCC_TS)
+	$(MAKE) phase8-crdb-smoke     TPCC_TS=$(TPCC_TS)
+	$(MAKE) phase8-crdb-result    TPCC_TS=$(TPCC_TS)
+	$(MAKE) teardown-crdb         TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase4-ybdb-deploy    TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase4-ybdb-fix6n     TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase7-ybdb-smoke     TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase7-ybdb-result    TPCC_TS=$(TPCC_TS)
 	$(MAKE) teardown-ybdb         TPCC_TS=$(TPCC_TS)
-	$(MAKE) phase5-crdb-deploy    TPCC_TS=$(TPCC_TS)
-	$(MAKE) phase8-crdb-smoke     TPCC_TS=$(TPCC_TS)
-	$(MAKE) phase8-crdb-result    TPCC_TS=$(TPCC_TS)
-	$(MAKE) teardown-crdb         TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase9                TPCC_TS=$(TPCC_TS)
 	@echo "==> phase-crossregion-all complete  TPCC_TS=$(TPCC_TS)"
 
