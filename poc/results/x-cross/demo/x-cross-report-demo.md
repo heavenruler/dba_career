@@ -1,4 +1,4 @@
-# X-CROSS Demo Report — DEMO / NOT-FOR-DECISION
+# X-CROSS Exploratory Report — OFFICIAL EXPLORATORY / NOT-AN-ADOPTION-DECISION
 
 > **Status**: framework-only preview。**正文 §1 起不含 fake 數字**；TL;DR 章節含 synthetic illustrative（per user 授權 2026-06-30）量級錨架構合理範圍，非 measurement。未量到的值寫 `TBD (not measured)`。
 > Generated: 2026-06-29 · Updated: 2026-06-30（+TL;DR） · Author: planner-only · 對應 SSOT: `phase-crossregion/manifest.yaml`
@@ -435,4 +435,4 @@ IDC vlan241                            asia-east1
 
 ---
 
-**END — DEMO / NOT-FOR-DECISION; no fake numbers; promotion checklist in `x-cross-report-demo-audit.md` §6.**
+**END — OFFICIAL EXPLORATORY / NOT-AN-ADOPTION-DECISION; no fake numbers; promotion checklist in `x-cross-report-demo-audit.md` §6.**
