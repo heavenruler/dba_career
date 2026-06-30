@@ -133,7 +133,8 @@ SSH_OPTS           := -o LogLevel=ERROR -o StrictHostKeyChecking=accept-new
         phase9 phase9-destroy phase9-tunnels-stop phase8.5-static-check phase8.5-check-receipt \
         phase1-homogeneity phase1-proof \
         teardown-tidb teardown-ybdb teardown-crdb \
-        phase-crossregion-all phase-crossregion-w128-suite \
+        phase-crossregion-all phase-crossregion-w128-suite phase-crossregion-w128-suite-pb \
+        phase-crossregion-promotion-gate \
         new-idc-vms new-gcp-vms drop-idc-vms drop-gcp-vms \
         gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure gcp-wait-startup \
         inventory-refresh gcp-inventory-refresh inventory-refresh-all ansible-ping \
@@ -149,6 +150,8 @@ help:
 	@echo "Meta:"
 	@echo "  make phase-crossregion-all                  - run all 9 phases (TPCC_TS shared across phases)"
 	@echo "  make phase-crossregion-w128-suite           - W=128 × N=5 cross-region P-A baseline (NEXT-STEPS Path 1.2)"
+	@echo "  make phase-crossregion-w128-suite-pb        - W=128 × N=5 cross-region P-B variant (checklist #2)"
+	@echo "  make phase-crossregion-promotion-gate       - Promotion checklist #9 final gate (checklist #1/#2/#7/#8)"
 	@echo ""
 	@echo "Phase chain (run in order):"
 	@echo "  make phase1                                 - destroy + apply IDC + GCP VMs + wait startup"
@@ -745,15 +748,18 @@ phase-crossregion-all:
 	$(MAKE) phase3-tidb-deploy    TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase6-tidb-smoke     TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase6-tidb-result    TPCC_TS=$(TPCC_TS)
+	$(MAKE) phase8.5-static-check TPCC_TS=$(TPCC_TS)   # Q12 per-cell gate #8
 	$(MAKE) teardown-tidb         TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase5-crdb-deploy    TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase8-crdb-smoke     TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase8-crdb-result    TPCC_TS=$(TPCC_TS)
+	$(MAKE) phase8.5-static-check TPCC_TS=$(TPCC_TS)   # Q12 per-cell gate #8
 	$(MAKE) teardown-crdb         TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase4-ybdb-deploy    TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase4-ybdb-fix6n     TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase7-ybdb-smoke     TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase7-ybdb-result    TPCC_TS=$(TPCC_TS)
+	$(MAKE) phase8.5-static-check TPCC_TS=$(TPCC_TS)   # Q12 per-cell gate #8 (all 3 cells)
 	$(MAKE) teardown-ybdb         TPCC_TS=$(TPCC_TS)
 	$(MAKE) phase9                TPCC_TS=$(TPCC_TS)
 	@echo "==> phase-crossregion-all complete  TPCC_TS=$(TPCC_TS)"
@@ -781,6 +787,28 @@ phase-crossregion-w128-suite:
 	  RUN_SEC=300 \
 	  LOCAL_RESULT_CATEGORY=baseline/w128 \
 	  TPCC_TS=$(TPCC_TS)
+
+# Promotion checklist #2: P-B placement variant — same knobs, PLACEMENT=P-B
+phase-crossregion-w128-suite-pb:
+	@echo "==================================================================="
+	@echo "  phase-crossregion-w128-suite-pb  W=128 × N=5 × 3-DB cross-region P-B"
+	@echo "  TPCC_TS=$(TPCC_TS)"
+	@echo "==================================================================="
+	$(MAKE) phase-crossregion-all \
+	  WAREHOUSES=128 \
+	  ROUNDS=5 \
+	  WARMUP_SEC=1200 \
+	  RUN_SEC=300 \
+	  PLACEMENT=P-B \
+	  LOCAL_RESULT_CATEGORY=baseline/w128-pb \
+	  TPCC_TS=$(TPCC_TS)
+
+# Promotion checklist #9 final gate: verify #1/#2/#7/#8 all PASS before header flip
+phase-crossregion-promotion-gate:
+	@echo "==> phase-crossregion-promotion-gate: Promotion checklist #9 final gate"
+	@bash phase-crossregion/scripts/promotion-gate.sh \
+	  --artifact-dir $(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
+	  --ts $(TPCC_TS)
 
 # ===================================================================
 # Sub-rules reused verbatim from Makefile.tc1
