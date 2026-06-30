@@ -243,12 +243,36 @@ if [[ "$TOPO" == vm-6node-* ]]; then
         SHOW GLOBAL VARIABLES LIKE 'tidb_enable_tso_follower_proxy';
       " > "$PREP_DIR/near-read-vars.txt" 2>&1
       ;;
-    crdb|ybdb)
-      # Q13 PLANNED: CRDB closed_timestamp.follower_reads_enabled / YBDB
-      # yb_read_from_followers — pending framework patch 階段落地;
-      # 目前僅標 placeholder 不啟用，避免半實作誤導.
-      echo "TODO (per decisions Q13): $DB near-read setup not yet implemented" \
-        > "$PREP_DIR/near-read-setup.log"
+    crdb)
+      cockroach sql --insecure --host="$DB_HOST:$PORT" -e "
+        SET CLUSTER SETTING kv.closed_timestamp.follower_reads_enabled = true;
+      " 2>&1 | tee "$PREP_DIR/near-read-setup.log"
+      cockroach sql --insecure --host="$DB_HOST:$PORT" -e "
+        SHOW CLUSTER SETTING kv.closed_timestamp.follower_reads_enabled;
+        SHOW CLUSTER SETTING kv.closed_timestamp.target_duration;
+        SHOW CLUSTER SETTING kv.closed_timestamp.side_transport_interval;
+      " > "$PREP_DIR/near-read-vars.txt" 2>&1
+      # CRDB follower read 是查詢層機制（AS OF SYSTEM TIME follower_read_timestamp()）
+      # 不靠 session var 自動啟用；go-tpc 不發 follower-read 查詢時，本設定僅
+      # 啟用機制不改變實際路由。per Q13 同源 caveat：CRDB 「就近讀」需查詢明示。
+      echo "NOTE: CRDB follower read mechanism enabled at cluster level;" \
+        "actual routing requires AS OF SYSTEM TIME follower_read_timestamp() in query." \
+        >> "$PREP_DIR/near-read-setup.log"
+      ;;
+    ybdb)
+      psql "postgres://${USER}@${DB_HOST}:${PORT}/${DBNAME}" -v ON_ERROR_STOP=1 -c "
+        ALTER DATABASE ${DBNAME} SET yb_read_from_followers = true;
+        ALTER DATABASE ${DBNAME} SET yb_follower_read_staleness_ms = 30000;
+      " 2>&1 | tee "$PREP_DIR/near-read-setup.log"
+      psql "postgres://${USER}@${DB_HOST}:${PORT}/${DBNAME}" -v ON_ERROR_STOP=1 -c "
+        SELECT name, setting, source FROM pg_settings
+        WHERE name IN ('yb_read_from_followers', 'yb_follower_read_staleness_ms');
+      " > "$PREP_DIR/near-read-vars.txt" 2>&1
+      # YBDB session var 透過 ALTER DATABASE 設定為新連線預設；既有連線需重連
+      # 才生效。per Q13：30 秒 staleness 為 demo 預設，實際依業務一致性需求拍板。
+      echo "NOTE: YBDB ALTER DATABASE affects new connections only;" \
+        "existing connections won't reflect until reconnect." \
+        >> "$PREP_DIR/near-read-setup.log"
       ;;
   esac
 fi

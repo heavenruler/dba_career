@@ -98,8 +98,8 @@ per `phase-crossregion/chaos/{C1,C4,C7}.md` spec（**注意 codex F2：C1/C4 spe
 | D1 | Placement Policy 已套且 `Scheduling_State=SCHEDULED` | TiDB: `SHOW PLACEMENT FOR DATABASE tpcc;` + `SELECT * FROM information_schema.placement_policies;` | 0630.md §9.1 |
 | D2 | TiKV / TiDB / PD 三層 `zone` label 一致 | `SELECT s.ADDRESS, s.LABEL FROM information_schema.TIKV_STORE_STATUS s;` + ansible playbook server.labels 對齊 | 0630.md §5.2 + `ansible/playbooks/tidb-vm6.yml:203-208`（已落地）|
 | D3 | Leader / replica 實際位置符 Placement Policy | 0630.md §9.2 SQL：JOIN TIKV_REGION_PEERS + TIKV_STORE_STATUS GROUP BY zone | 0630.md §9.2 |
-| D4 | `tidb_replica_read='closest-replicas'` GLOBAL 已 SET | `SHOW GLOBAL VARIABLES LIKE 'tidb_replica_read';` **TiDB PARTIAL**：`tests/common/prepare.sh` §6.5 已自動 SET（2026-06-30 commit）；artifact `near-read-vars.txt` | 0630.md §8 + [TiDB Follower Read](https://docs.pingcap.com/zh/tidb/stable/follower-read/) |
-| D5 | `pd_enable_follower_handle_region=ON` 已 SET | `SHOW GLOBAL VARIABLES LIKE 'pd_enable_follower_handle_region';` **TiDB PARTIAL**：同 D4 一併 SET；CRDB / YBDB 無對應機制 | 0630.md §6.2（TiDB 8.5+ GA）|
+| D4 | 三家就近讀「機制」已 SET（per Q13）| **DONE**：`tests/common/prepare.sh` §6.5 vm-6node-* 自動 SET — TiDB `tidb_replica_read='closest-replicas'`；CRDB `kv.closed_timestamp.follower_reads_enabled=true`；YBDB `ALTER DATABASE ... SET yb_read_from_followers=true`。artifact 三家各自寫入 `near-read-vars.txt`。**注意 caveat**：CRDB 機制啟用但實際路由需查詢層 `AS OF SYSTEM TIME follower_read_timestamp()`；YBDB ALTER DATABASE 對既有連線無效需重連 | 0630.md §8 + Q13 + [TiDB Follower Read](https://docs.pingcap.com/zh/tidb/stable/follower-read/) |
+| D5 | TiDB control plane 就近 `pd_enable_follower_handle_region=ON` 已 SET | **DONE**：同 D4 一併 SET；CRDB / YBDB 無對等機制（metadata 分散結構不同；HLC 無集中 TSO） | 0630.md §6.2（TiDB 8.5+ GA）|
 | D6 | 就近讀真生效（routing 證據） | IDC 與 GCP 各跑同 SQL 對比 latency + Grafana TiDB `KV Request / Read Req Traffic` destination | 0630.md §9.3 |
 | D7 | 跨區流量分類量化 | NetFlow / iptables counter 按 port 分類（4000 / 2379 / 20160 / 26257 / 5433 / 7100 / 9100）| 0630.md §7（10 種跨區流量）|
 
@@ -420,6 +420,7 @@ IDC vlan241                            asia-east1
 | 2026-06-30 | 對齊 `1_MeetingMinutes/0630.md` 就近讀寫議題：TL;DR §A 解讀 3/4 加前提（A-A-RO 需 `closest-replicas`；A-A 需 geo-partition），加 §7 control plane cost 永遠跨區 + §8 「就近讀寫嚴格定義」per 0630.md §10；新增 §D「就近讀寫驗證 checklist」7 項（D1-D7）+ CRDB/YBDB 等價設定推導；§10.2 SSOT 補 0630.md + TiDB 官方 geo-deployment / follower-read；audit §4 加 unresolved blocker #11（routing evidence + control plane cost 量測未實作）|
 | 2026-06-30 | TL;DR §D CRDB/YBDB 等價設定從 INFERRED 升為 PLANNED，引 `decisions-2026-06-08.md` Q13（6 維對照表：region/zone label / topology / 就近讀 / control plane 就近 / TSO / Placement Policy）+ 同源 caveat（三家「IDC Request 絕不離開 IDC」單一強一致 cluster 皆做不到）|
 | 2026-06-30 | TiDB prepare §6.5 加 `tidb_replica_read='closest-replicas'` + `pd_enable_follower_handle_region=ON` 自動 SET（vm-6node-* topology only）+ dump `near-read-vars.txt`；TL;DR §D 表 D4/D5 標 PARTIAL；audit blocker #11 標 TiDB 部分落地、CRDB/YBDB 仍缺 |
+| 2026-06-30 | prepare §6.5 補 CRDB / YBDB 等價 SET：CRDB `SET CLUSTER SETTING kv.closed_timestamp.follower_reads_enabled=true`；YBDB `ALTER DATABASE ... SET yb_read_from_followers=true; SET yb_follower_read_staleness_ms=30000`；各 dump `near-read-vars.txt`；TL;DR §D D4/D5 升為 DONE（caveat 加註：CRDB 需查詢層 AS OF SYSTEM TIME / YBDB ALTER DATABASE 需重連才生效）；audit blocker #11 三家 prepare 機制 SET 落地，仍缺 dump-actual leader 分布 / collect NetFlow / summary.json routing evidence |
 
 ---
 
