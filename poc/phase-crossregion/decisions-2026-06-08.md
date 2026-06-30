@@ -317,6 +317,17 @@ Plus F1 (failover) + C1/C4/C7 (chaos) = +15 special runs
 - 同家 DB 內 thread sweep（16/32/64/128）不需 VM rebuild
 - DEV-1x1 framework selfcheck 若僅用於程式 sanity（非性能比較），可降為 service-level cleanup（明標 caveat）
 
+### 跨 phase 對照禁制（per codex F6）
+
+X-CROSS（vm-6node）與 S-BASE（vm-3node）**節點數 / quorum / 硬體 / topology 都不同**，**不是 paired control**。即使三家 X-CROSS cell 之間都跑 VM rebuild 保隔離，X-CROSS vs S-BASE 仍**禁用以下任一公式**作對外結論：
+- `retain% = X-CROSS / S-BASE × 100`
+- `WAN penalty = S-BASE - X-CROSS`
+- `Δ vs IDC-only = ...`
+
+理由：差距同時包含 (a) 跨區 cost (b) 節點數差（3→6）(c) quorum 模型差。算術無法分離。若 PoC 需量化「跨區 cost」，必須另跑 IDC-only 6-node paired control（同硬體 + 同 quorum + 同 W）；當前 audit blocker #3 已標 TBD。
+
+S-BASE vm-3node 只能作「contextual reference」（per audit blocker #3 revised）。
+
 ---
 
 ## Q12: Promotion checklist gate 觸發時機

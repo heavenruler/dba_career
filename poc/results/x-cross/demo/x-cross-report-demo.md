@@ -431,6 +431,8 @@ IDC vlan241                            asia-east1
 | 2026-06-30 | `tests/common/prepare.sh` §6.6 **補 YBDB placement gate** 完成三家齊全：ssh root@$DB_HOST → `yb-admin --master_addresses=$YB_MASTER_ADDR list_tablets ysql.<db> <table>` → grep leader IP prefix (172.24.40.{32,33,34}=IDC / 10.160.152.{11,12,13}=GCP)；同 P-A 70% / P-B 30-70% 判定 fail-closed。YB_MASTER_ADDR env fallback 預設 IDC 三節點:7100。TL;DR §D D3 升為三家 DONE；audit blocker #11 YBDB gate 落地 |
 | 2026-06-30 | 新增 `tests/common/netflow-snapshot.sh` 跨區流量 connection-count 工具 + `tests/common/run.sh` per-round pre-run / post-run hook（vm-6node-* gated, fail-quiet）：ssh 各 host 跑 `ss -tn state established`，按 (port, remote_region: idc/gcp/other) 計數；涵蓋 ports 4000/2379/2380/20160/26257/5433/7100/9100；artifact `runs/threads-<N>/round-<R>/netflow-{pre-run,post-run}.json`。Caveat: connection count ≠ bytes（idle 連線不算流量）；完整 bytes 量測需 iptables counter，列 framework patch。TL;DR §D D7 升為 DONE（connection-count level）|
 
+| 2026-06-30 | **codex F2 + F6 落地**：(F2) `phase-crossregion/Makefile` `phase-crossregion-all` chain DB 順序 TiDB→YBDB→CRDB 修正為 TiDB→CRDB→YBDB（per Q9/Q11）；cleanup deps wiring 同步（新增 `phase-cleanup-crdb` target）。(F6) S-BASE vm-3node「contextual reference 禁用 retain%/WAN penalty/Δ」**三點落地**：demo §A 既有 + audit §4 #3 強化 + audit §6 #3 revised 強化 + decisions Q11 新增「跨 phase 對照禁制」段（per codex F6）|
+
 ---
 
 **END — DEMO / NOT-FOR-DECISION; no fake numbers; promotion checklist in `x-cross-report-demo-audit.md` §6.**

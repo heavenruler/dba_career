@@ -94,7 +94,7 @@
 |---:|---|---|---|---|
 | 1 | W=128 正式 baseline 未跑 | `manifest.yaml` warehouses:128 是 spec；`results/x-cross/determinism/` 僅 W=4；demo 任何 W=128 結論都是 INFERRED | 跑 `phase-crossregion-w128-suite`（fix chain 改走 `phase1-wait-via-31`）；產出 3 家 same-cluster 5-round artifact + summary.json | TBD |
 | 2 | P-B placement 未跑過 | `results/x-cross/` 全部 artifact `topology=vm-6node-P-A`；P-B SQL 已存在但未 apply 跑 benchmark | apply `tests/{tidb,cockroach,yuga}/placement-p-b.sql` → `gate-placement-p-b.sh` PASS → 跑 W=128 × N=5 | TBD |
-| 3 | IDC-only 6-node paired control 不存在 | 量化 WAN cost 必需的對照組；目前 baseline 為 S-BASE vm-3node，硬體 / topology 不同 | 在同 IDC vlan241 部署 6-node 同硬體，跑 W=128 × N=5（A-S 即可） | TBD |
+| 3 | IDC-only 6-node paired control 不存在；S-BASE vm-3node 僅作 contextual reference | 量化 WAN cost 必需的對照組；目前 baseline 為 S-BASE vm-3node — **節點數/quorum/硬體都不同**，**禁用 retain% / WAN penalty / Δ vs IDC-only 任一公式**（per codex F6）；任何「跨區成本 = X-CROSS − S-BASE」算式皆 invalid，差距同時含跨區 + 節點數差 + quorum 差 | 在同 IDC vlan241 部署 6-node 同硬體，跑 W=128 × N=5（A-S 即可）；解除 contextual reference 限制 | TBD |
 | 4 | chaos / F1 probe driver 未實裝 | `RTO-RPO-methodology.md` §3.2 / §9 step 2；go-tpc stdout 1s tick 顆粒度不足以量 RTO < 1s | 三家最小 SQL probe loop + wall-clock wrapper PR + DBA review label | TBD |
 | 5 | chaos C1 / C4 spec ↔ planner 故障模型互換 | `chaos/{C1,C4}.md` spec 與 planner script 故障模型對換；script header 已自註，但 demo / 後續實跑前須 reconcile | (a) 修 spec 對齊 script，或 (b) 修 script 對齊 spec；DBA + reviewer 決定 | TBD |
 | 6 | acceptance criteria（業務 threshold）缺 | 沒有最低 tpmC / p99 / RTO / RPO threshold → demo 無法下 go/no-go，只能做探索 | 業務 / 架構 owner 提供 per-profile threshold；寫入 `decisions-*.md` | TBD（業務 / 架構）|
@@ -126,7 +126,7 @@
 |---:|---|---|---|
 | 1 | W=128 × same-cluster artifact 三家齊（at least P-A × A-S）；**ROUNDS=5 ≠ independent N=5**（per §4 B5）| `results/x-cross/` 下三家 `summary.json` warehouses=128 + R1-R5 完整 | active：先 patch chain → `phase1-wait-via-31`，再三家序列跑 |
 | 2 | P-B placement gate PASS + W=128 baseline 跑完（at least A-S） | `gate-placement-p-b.sh` exit 0 + 三家 P-B summary.json | active：串在 #1 之後 |
-| 3 | IDC-only 6-node paired control 跑完 | 對照組 summary.json 存在；填入 `Δ vs IDC-only` 欄 | **revised**：接受 S-BASE vm-3node 作對照（scale / 設備數不同，明標 caveat） |
+| 3 | IDC-only 6-node paired control 跑完 | 對照組 summary.json 存在；**禁用 Δ vs IDC-only 算式**（per codex F6） | **revised**：接受 S-BASE vm-3node 作 contextual reference 而非 paired control；scale / quorum / 硬體都不同 → 禁用 retain% / WAN penalty / Δ 任一公式作對外結論 |
 | 4 | Acceptance criteria 由業務 / 架構 owner 拍板 | `decisions-*.md` 增段，含 per-profile threshold | **revised**：**不訂 threshold**，PoC 改 exploratory 不下 go/no-go |
 | 5 | A-S / A-A-RO / A-A 各 profile 業務 owner 指派 | decisions record 含 owner | **revised**：三 profile 都當探查跑，不指 owner（與 #4 一致） |
 | 6 | C1 / C4 spec ↔ planner 故障模型 reconcile + 三家 admin CLI 路徑 DBA confirm | spec or script 修一邊；DBA approve label | active：**以 spec 為主** rename + 重寫 script 內部 |
