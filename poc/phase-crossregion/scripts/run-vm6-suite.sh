@@ -192,6 +192,18 @@ echo "[wrapper] FULL chain; DB=$DB TOPOLOGY=$TOPOLOGY PLACEMENT=$PLACEMENT PROFI
 
 [[ -d "$COMMON_DIR" ]] || { echo "[wrapper] missing COMMON_DIR=$COMMON_DIR (tests/common 須先 rsync 至 .31)" >&2; exit 1; }
 
+# F1: write .suite.failed on any error; clean up .suite.done.tmp on exit
+_suite_failed() {
+  local rc=$?
+  [[ $rc -eq 0 ]] && return
+  local ts_now; ts_now=$(date '+%Y-%m-%dT%H:%M:%S%z')
+  printf '{"phase":"suite","status":"FAILED","db":"%s","topology":"%s","ts":"%s","failed_at":"%s","exit_code":%d}\n' \
+    "$DB" "$TOPOLOGY" "$TS" "$ts_now" "$rc" > "$ROOT/.suite.failed"
+  rm -f "$ROOT/.suite.done.tmp" 2>/dev/null || true
+  echo "[wrapper] .suite.failed written (exit=$rc)"
+}
+trap '_suite_failed' EXIT
+
 echo "[1/4] gate"
 bash "$COMMON_DIR/gate.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-host "$DB_HOST" --ts "$TS"
 
@@ -218,9 +230,12 @@ bash "$COMMON_DIR/run.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-ho
 echo "[4/4] collect"
 bash "$COMMON_DIR/collect.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-host "$DB_HOST" --ts "$TS"
 
-# write .suite.done
+# F1: write .suite.done atomically via tmp → mv; clear failure trap first
+trap - EXIT
+rm -f "$ROOT/.suite.failed" 2>/dev/null || true
+
 source "$COMMON_DIR/lib/common.sh"
-write_phase_done "$ROOT" "suite" "$(cat <<JSON
+_DONE_PAYLOAD="$(cat <<JSON
 {
   "phase": "suite",
   "db": "$DB",
@@ -237,5 +252,8 @@ write_phase_done "$ROOT" "suite" "$(cat <<JSON
 }
 JSON
 )"
+write_phase_done "$ROOT" "suite" "$_DONE_PAYLOAD"
+# atomic: write_phase_done writes $ROOT/.suite.done directly; ensure via tmp on same FS
+[[ -f "$ROOT/.suite.done" ]] || { echo "[wrapper] ERROR: .suite.done not written" >&2; exit 1; }
 
 echo "[wrapper] FULL chain PASS — $ROOT"

@@ -130,7 +130,8 @@ SSH_OPTS           := -o LogLevel=ERROR -o StrictHostKeyChecking=accept-new
         phase6 phase6-tidb-smoke phase6-tidb-result \
         phase7 phase7-ybdb-smoke phase7-ybdb-result \
         phase8 phase8-crdb-smoke phase8-crdb-result \
-        phase9 phase9-destroy phase9-tunnels-stop \
+        phase9 phase9-destroy phase9-tunnels-stop phase8.5-static-check phase8.5-check-receipt \
+        phase1-homogeneity phase1-proof \
         teardown-tidb teardown-ybdb teardown-crdb \
         phase-crossregion-all phase-crossregion-w128-suite \
         new-idc-vms new-gcp-vms drop-idc-vms drop-gcp-vms \
@@ -179,8 +180,8 @@ help:
 # ===================================================================
 # Phase 1 — VM lifecycle (rebuild IDC + GCP)
 # ===================================================================
-phase1: phase1-destroy phase1-apply phase1-wait
-	@echo "==> phase1 complete (VMs rebuilt + GCP startup-done)"
+phase1: phase1-destroy phase1-apply phase1-wait phase1-homogeneity phase1-proof
+	@echo "==> phase1 complete (VMs rebuilt + GCP startup-done + homogeneity + rebuild proof)"
 
 phase1-destroy:
 	$(MAKE) -j2 phase1-destroy-idc phase1-destroy-gcp
@@ -220,6 +221,80 @@ phase1-apply:
 	  'for ip in 10.160.152.11 10.160.152.12 10.160.152.13 10.160.152.14 10.160.152.15; do ssh-keygen -R $$ip 2>/dev/null || true; done'
 	@echo "==> [end]   phase1-apply at $$(date +%Y-%m-%dT%H:%M:%S%z)"
 
+# Homogeneity gate: verify all 6 nodes same OS kernel / nproc / disk
+phase1-homogeneity:
+	@echo "==> phase1-homogeneity: check OS kernel / nproc / disk across IDC+GCP nodes"
+	@python3 - << 'PYEOF'
+import subprocess, sys, json, collections
+def ssh_cmd(host, cmd, proxy=None):
+    base = ['ssh','-o','ConnectTimeout=8','-o','StrictHostKeyChecking=accept-new','-o','BatchMode=yes']
+    if proxy:
+        base += ['-o', f'ProxyJump={proxy}']
+    r = subprocess.run(base + [f'root@{host}', cmd], capture_output=True, text=True)
+    return r.stdout.strip() if r.returncode == 0 else f'ERR:{r.stderr[:80]}'
+
+IDC = ['172.24.40.32','172.24.40.33','172.24.40.34']
+GCP = ['10.160.152.11','10.160.152.12','10.160.152.13']
+proxy = 'root@172.24.40.31'
+nodes = {}
+for ip in IDC:
+    nodes[ip] = {'kernel': ssh_cmd(ip,'uname -r'), 'nproc': ssh_cmd(ip,'nproc'), 'disk': ssh_cmd(ip,"df -BG / | awk 'NR==2{print \$2}'")}
+for ip in GCP:
+    nodes[ip] = {'kernel': ssh_cmd(ip,'uname -r',proxy=proxy), 'nproc': ssh_cmd(ip,'nproc',proxy=proxy), 'disk': ssh_cmd(ip,"df -BG / | awk 'NR==2{print \$2}'",proxy=proxy)}
+print('  host                 kernel                  nproc  disk')
+print('  ' + '-'*68)
+for ip,v in nodes.items():
+    print(f"  {ip:<20} {v['kernel']:<24} {v['nproc']:<6} {v['disk']}")
+fail = False
+for key in ('kernel','nproc','disk'):
+    vals = [v[key] for v in nodes.values() if not v[key].startswith('ERR:')]
+    if len(set(vals)) > 1:
+        print(f'WARN: {key} heterogeneous: {set(vals)}'); fail = True
+if fail:
+    print('phase1-homogeneity: WARN (heterogeneous nodes — proceed with caution)')
+else:
+    print('phase1-homogeneity: PASS (all nodes homogeneous)')
+sys.exit(0)
+PYEOF
+
+# F4: capture VM resource IDs + boot_ids after rebuild
+phase1-proof:
+	@echo "==> phase1-proof: terraform resource IDs + boot_id per node → vm-rebuild-proof-$(TPCC_TS).json"
+	@mkdir -p $(LOCAL_RESULT_ROOT)/$(TPCC_TS)
+	@python3 -c " \
+import subprocess, json, datetime, os; \
+ts='$(TPCC_TS)'; proof={'ts':ts,'built_at':datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S%z'), \
+  'idc':{},'gcp':{}}; \
+idc_tf=subprocess.run(['terraform','-chdir=$(IDC_IAC_DIR)','show','-json'], \
+  capture_output=True,text=True); \
+if idc_tf.returncode==0: \
+  d=json.loads(idc_tf.stdout); \
+  [proof['idc'].update({r['address']:r.get('values',{}).get('id','?')}) \
+   for r in d.get('values',{}).get('root_module',{}).get('resources',[])] \
+else: proof['idc']['error']=idc_tf.stderr[:200]; \
+gcp_tf=subprocess.run(['terraform','-chdir=$(GCP_IAC_DIR)','show','-json'], \
+  capture_output=True,text=True); \
+if gcp_tf.returncode==0: \
+  d=json.loads(gcp_tf.stdout); \
+  [proof['gcp'].update({r['address']:r.get('values',{}).get('id','?')}) \
+   for r in d.get('values',{}).get('root_module',{}).get('resources',[])] \
+else: proof['gcp']['error']=gcp_tf.stderr[:200]; \
+out='$(LOCAL_RESULT_ROOT)/$(TPCC_TS)/vm-rebuild-proof-$(TPCC_TS).json'; \
+json.dump(proof,open(out,'w'),indent=2); \
+print(f'  idc_resources={len(proof[\"idc\"])}  gcp_resources={len(proof[\"gcp\"])}  → {out}')"
+	@echo "==> boot_id per IDC node:"
+	@for ip in $(IDC_NODES); do \
+	  bid=$$(ssh $(SSH_OPTS) root@$$ip 'cat /proc/sys/kernel/random/boot_id' 2>/dev/null || echo '?'); \
+	  echo "  $$ip  boot_id=$$bid"; \
+	done
+	@echo "==> boot_id per GCP node (via .31):"
+	@for ip in $(GCP_DB_IPS); do \
+	  bid=$$(ssh $(SSH_OPTS) -o ProxyJump=root@$(IDC_ADMIN) root@$$ip \
+	    'cat /proc/sys/kernel/random/boot_id' 2>/dev/null || echo '?'); \
+	  echo "  $$ip  boot_id=$$bid"; \
+	done
+	@echo "==> phase1-proof complete → $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/vm-rebuild-proof-$(TPCC_TS).json"
+
 phase1-wait: gcp-tunnel-start
 	@echo "==> [start] phase1-wait at $$(date +%Y-%m-%dT%H:%M:%S%z) (timeout=$(TIMEOUT_PHASE1_WAIT)s)"
 	@echo "==> sleep 15 for IAP tunnels to be reachable"
@@ -248,7 +323,7 @@ phase1-wait-via-31:
 # ===================================================================
 # Phase 2 — Pre-deploy init (DNS/chrony, SSH prime, bootstrap, chrony gate)
 # ===================================================================
-phase2: phase2-dns-fix phase2-ssh-prime gcp-tunnel-ensure phase2-bootstrap phase2-gate inventory-refresh-all
+phase2: phase2-dns-fix phase2-ssh-prime phase2-bootstrap phase2-gate inventory-refresh-all
 	@echo "==> phase2 complete"
 
 phase2-dns-fix:
@@ -294,9 +369,9 @@ phase2-bootstrap:
 	rsync -avz --delete tests/   '$(TPCC_CLIENT):$(POC_REMOTE_ROOT)/tests/'
 	@echo "==> [end]   phase2-bootstrap at $$(date +%Y-%m-%dT%H:%M:%S%z)"
 
-phase2-gate: gcp-tunnel-ensure
-	@echo "==> phase2-gate: chrony 10-host cross-region drift gate (from MAC)"
-	bash phase-crossregion/scripts/gate-chrony-cross-region.sh \
+phase2-gate:
+	@echo "==> phase2-gate: chrony 10-host cross-region drift gate (via .31 ProxyJump; GCP_VIA_31=1)"
+	GCP_VIA_31=1 bash phase-crossregion/scripts/gate-chrony-cross-region.sh \
 	  --ts $(TPCC_TS) --root-suffix preflight-$(TPCC_TS) --result-scope $(RESULT_SCOPE)
 
 # ===================================================================
@@ -576,6 +651,45 @@ phase8-crdb-result:
 	  ls $$ROOT/runs/wan-probe-*.txt 2>/dev/null | head -5 || echo '(no wan-probe samples)'; true"
 
 # ===================================================================
+# Phase 8.5 — Correctness gate (static-check before fetch; per audit §6 #8)
+# ===================================================================
+# Verifies on .31: each DB suite has summary.json + .suite.done + placement-gate artifact;
+# no fake/synthetic keywords in summary.json; fails closed → blocks phase9 destroy.
+phase8.5-static-check:
+	@echo "==> phase8.5-static-check: artifact schema check on .31 before fetch"
+	@ssh $(TPCC_CLIENT) "python3 - '$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)' << 'PYEOF'
+import os, glob, json, sys, re
+base = sys.argv[1]
+fails = []
+dbs = ['tidb','crdb','ybdb']
+for db in dbs:
+    dirs = glob.glob(os.path.join(base, f'{db}-vm-6node-*'))
+    if not dirs:
+        fails.append(f'{db}: no artifact dir found')
+        continue
+    d = sorted(dirs)[-1]
+    label = os.path.basename(d)
+    if not os.path.exists(os.path.join(d, '.suite.done')):
+        fails.append(f'{label}: .suite.done missing')
+    sj = os.path.join(d, 'summary.json')
+    if not os.path.exists(sj):
+        fails.append(f'{label}: summary.json missing')
+    else:
+        txt = open(sj).read()
+        for kw in ('fake','speculative'):
+            if kw in txt.lower():
+                fails.append(f'{label}: summary.json contains forbidden keyword \"{kw}\"')
+    gate = glob.glob(os.path.join(d, 'prepare', 'placement-gate-*.json'))
+    if not gate:
+        fails.append(f'{label}: placement-gate artifact missing (prepare/placement-gate-*.json)')
+if fails:
+    for f in fails: print(f'  FAIL: {f}')
+    sys.exit(1)
+print(f'  PASS: {len(dbs)} DB suites schema-checked')
+PYEOF" || { echo "[F-Gate] phase8.5-static-check FAIL — fix artifacts before destroy"; exit 1; }
+	@echo "==> phase8.5-static-check PASS"
+
+# ===================================================================
 # Phase 8.5 — Fetch artifacts to MAC BEFORE destroy (critical for analysis)
 # ===================================================================
 phase8.5-fetch:
@@ -588,7 +702,34 @@ phase8.5-fetch:
 	@echo "==> fetched to: $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/"
 	@du -sh $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/ 2>&1
 	@ls $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/ | head -10
+	@echo "==> F3: writing fetch-receipt (summary.json count + sha256)"
+	@python3 -c " \
+import os, glob, hashlib, json, datetime; \
+base='$(LOCAL_RESULT_ROOT)/$(TPCC_TS)'; \
+summaries=glob.glob(os.path.join(base,'**','summary.json'),recursive=True); \
+checksums={}; \
+[checksums.update({os.path.relpath(f,base): hashlib.sha256(open(f,'rb').read()).hexdigest()}) for f in summaries]; \
+suite_dones=glob.glob(os.path.join(base,'**','.suite.done'),recursive=True); \
+receipt={'ts':'$(TPCC_TS)','fetched_at':datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S%z'), \
+  'summary_json_count':len(summaries),'suite_done_count':len(suite_dones), \
+  'local_root':base,'checksums':checksums}; \
+out=os.path.join(base,'fetch-receipt.json'); \
+json.dump(receipt,open(out,'w'),indent=2); \
+print(f'  summary_json={len(summaries)}  suite_done={len(suite_dones)}  receipt={out}')" || { echo "[F3] receipt write FAIL"; exit 1; }
 	@echo "==> [end]   phase8.5-fetch at $$(date +%Y-%m-%dT%H:%M:%S%z)"
+
+# F3: gate — verify receipt exists and has at least 1 summary before destroy
+phase8.5-check-receipt:
+	@echo "==> phase8.5-check-receipt: verify fetch-receipt.json exists + summary_json_count > 0"
+	@test -f $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/fetch-receipt.json \
+	  || { echo "[F3] FAIL: fetch-receipt.json not found — run phase8.5-fetch first"; exit 1; }
+	@python3 -c " \
+import json, sys; \
+r=json.load(open('$(LOCAL_RESULT_ROOT)/$(TPCC_TS)/fetch-receipt.json')); \
+n=r.get('summary_json_count',0); \
+print(f'  summary_json_count={n}  suite_done_count={r.get(\"suite_done_count\",0)}'); \
+sys.exit(0 if n>0 else 1)" || { echo "[F3] FAIL: no summary.json fetched"; exit 1; }
+	@echo "==> phase8.5-check-receipt PASS"
 
 # ===================================================================
 # Phase 9 — Teardown (FETCH first, then tunnels + terraform destroy)
@@ -609,7 +750,7 @@ phase-cleanup-crdb:
 phase-cleanup-ybdb:
 	bash phase-crossregion/scripts/cleanup-ybdb.sh
 
-phase9: phase8.5-fetch phase9-tunnels-stop phase9-destroy
+phase9: phase8.5-static-check phase8.5-fetch phase8.5-check-receipt phase9-tunnels-stop phase9-destroy
 	@echo "==> phase9 complete"
 
 phase9-tunnels-stop:

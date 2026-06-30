@@ -3,7 +3,7 @@
 #
 # Cross-region chrony drift gate (per phase-crossregion/decisions-2026-06-08.md Q10).
 #
-# 取樣：10 hosts —— IDC 5 (driver/db×3/haproxy) + GCP 5 (db×3/haproxy/client via IAP tunnel)
+# 取樣：10 hosts —— IDC 5 (driver/db×3/haproxy) + GCP 5 (db×3/haproxy/client via .31 ProxyJump)
 # 每台抓 chronyc tracking 的 Stratum / Last offset / Leap status / Reference ID。
 # Verdict 三條件 (all 必須成立才 PASS)：
 #   1. all 10 Leap == Normal                          (no false-PASS on unsynced host)
@@ -30,6 +30,7 @@
 #   GCP_HOSTS_SPEC             "label=port[,...]"        (override 預設 5 GCP tunnel ports)
 #   GCP_SSH_USER               (default root)
 #   GCP_SSH_KEY                (default $HOME/.ssh/id_rsa)
+#   GCP_VIA_31                 (default 1): use ProxyJump via 172.24.40.31; set 0 for IAP legacy
 
 set -euo pipefail
 
@@ -52,9 +53,16 @@ done
 : "${CHRONY_DRIFT_MS_WORST_MAX:=250}"
 : "${GCP_SSH_USER:=root}"
 : "${GCP_SSH_KEY:=$HOME/.ssh/id_rsa}"
+: "${GCP_VIA_31:=1}"
 
 : "${IDC_HOSTS_SPEC:=idc-driver=root@172.24.40.31,idc-dbhost-1=root@172.24.40.32,idc-dbhost-2=root@172.24.40.33,idc-dbhost-3=root@172.24.40.34,idc-haproxy=root@172.24.47.20}"
-: "${GCP_HOSTS_SPEC:=gcp-poc-1=12211,gcp-poc-2=12212,gcp-poc-3=12213,gcp-poc-4=12214,gcp-poc-5=12215}"
+# GCP_VIA_31=1 (default): probe via ProxyJump through .31; no IAP tunnel required
+# GCP_VIA_31=0 (legacy):   probe via localhost:PORT (IAP tunnel)
+if [[ "${GCP_VIA_31}" == "1" ]]; then
+  : "${GCP_HOSTS_SPEC:=gcp-poc-1=10.160.152.11,gcp-poc-2=10.160.152.12,gcp-poc-3=10.160.152.13,gcp-poc-4=10.160.152.14,gcp-poc-5=10.160.152.15}"
+else
+  : "${GCP_HOSTS_SPEC:=gcp-poc-1=12211,gcp-poc-2=12212,gcp-poc-3=12213,gcp-poc-4=12214,gcp-poc-5=12215}"
+fi
 
 : "${TPCC_ARTIFACTS:=/tmp/poc-tpcc/artifacts/$RESULT_SCOPE}"
 ROOT="$TPCC_ARTIFACTS/$ROOT_SUFFIX"
@@ -88,8 +96,16 @@ done
 
 IFS=',' read -ra GCP_ENTRIES <<< "$GCP_HOSTS_SPEC"
 for entry in "${GCP_ENTRIES[@]}"; do
-  label="${entry%%=*}"; port="${entry#*=}"
-  probe GCP "$label" ssh -i "$GCP_SSH_KEY" -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new -p "$port" "${GCP_SSH_USER}@localhost"
+  label="${entry%%=*}"; target="${entry#*=}"
+  if [[ "${GCP_VIA_31}" == "1" ]]; then
+    # ProxyJump via .31 → GCP direct IP (no IAP tunnel needed)
+    probe GCP "$label" ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
+      -o ProxyJump="root@172.24.40.31" "${GCP_SSH_USER}@${target}"
+  else
+    # Legacy IAP: target = port number, connect to localhost
+    probe GCP "$label" ssh -i "$GCP_SSH_KEY" -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
+      -p "$target" "${GCP_SSH_USER}@localhost"
+  fi
 done
 
 python3 - "$TSV" "$OUT_TXT" "$OUT_MD" "$DONE_JSON" "$TS" "$CHRONY_DRIFT_MS_MAX" "$CHRONY_DRIFT_MS_WORST_MAX" <<'PY' || exit 1
