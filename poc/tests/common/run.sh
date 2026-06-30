@@ -163,6 +163,20 @@ for threads in $THREADS_LIST; do
       ( ssh root@"$CLUSTER_HOST" "sar -n DEV 1 $DUR"  > "$RD/sar-net-db.txt"   2>&1 ) &
       ( for ((i=0; i<RUN_SEC/60+1; i++)); do ssh root@"$CLUSTER_HOST" free -h >> "$RD/free-1m.txt"; sleep 60; done ) &
     fi
+
+    # X-CROSS routing latency probe sidecar (per decisions Q13 + 0630.md §9.3).
+    # IDC-side: from .31 controller (local); 60s sample at round start.
+    # GCP-side TODO: needs probe-iso-latency.sh + DB client deployed on
+    #   g-test-poc-5; framework patch 階段補（同次 ssh g-test-poc-5 拉一份）。
+    # 不阻擋主 workload；fail-quiet 不中斷 timed run（取證 best-effort）。
+    if [[ "$TOPO" == vm-6node-* ]]; then
+      ( bash "$SELF/probe-iso-latency.sh" \
+          --db "$DB" --db-host "$DB_HOST" --port "$PORT" \
+          --user "$USER" --dbname "$DBNAME" \
+          --duration-sec 60 --out-dir "$RD" --label "idc-t${threads}-r${r}" \
+          > "$RD/probe-iso-latency-idc.log" 2>&1 ) || true &
+    fi
+
     MON_PIDS=$(jobs -p)
 
     # go-tpc run (B0-4: $GO_TPC_MIX_ARGS 僅 X-CROSS 啟用，無變化保留空字串)
