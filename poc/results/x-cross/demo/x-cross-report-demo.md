@@ -22,19 +22,19 @@ Evidence-state tags 用法：
 
 **重要 caveat（per codex F6）**：S-BASE vm-3node 與 X-CROSS vm-6node **不是 paired control** — 節點數、quorum、硬體、placement 都不同。下表僅作 **contextual reference**，**禁用 retain% / WAN penalty / Δ 任何算式**作對外結論。
 
-per `phase-crossregion/manifest.yaml` placements 與 workload-profiles：
+per `phase-crossregion/manifest.yaml` placements 與 workload-profiles — **完整 3 × 3 × 2 矩陣**（架構上三家 DB 都能跑全部 profile × placement；先前版本 asymmetric 為 demo 疏失，已補齊）：
 
-| DB | Placement | Profile | X-CROSS 6-node tpmC [SYNTHETIC] | S-BASE 3-node tpmC [SYNTHETIC] | naive ratio | 主要 cost 來源 |
-|---|---|---|---:|---:|---:|---|
-| TiDB | P-A | A-S | ~18,000 | ~22,000 | 0.82 | IDC leader + 1 GCP semi-sync ack；commit overhead 抵掉 ×2 資源 |
-| TiDB | P-A | A-A-RO | ~14,000 | ~22,000 | 0.64 | + GCP read RTT 進 query path |
-| TiDB | P-A | A-A | ~10,000 | ~22,000 | 0.45 | + 兩端寫 Percolator 2PC cross-region |
-| TiDB | P-B | A-S | ~9,000 | ~22,000 | 0.41 | leader 散區；每 commit cross-region raft round-trip |
-| CRDB | P-A | A-S | ~16,500 | ~19,500 | 0.85 | range leaseholder IDC + replication ack |
-| CRDB | P-A | A-A | ~9,500 | ~19,500 | 0.49 | distributed txn cross-region |
-| CRDB | P-B | A-S | ~8,000 | ~19,500 | 0.41 | leaseholder 散區 |
-| YBDB | P-A | A-S | ~15,000 | ~18,000 | 0.83 | DocDB tablet leader IDC + sync replication |
-| YBDB | P-B | A-S | ~7,500 | ~18,000 | 0.42 | tablet leader 散區 + YSQL gateway routing |
+| DB | Profile | P-A tpmC [SYNTHETIC] | P-A ratio vs 3-node | P-B tpmC [SYNTHETIC] | P-B ratio vs 3-node | S-BASE 3-node tpmC [SYNTHETIC] | P-A 主要 cost 來源 | P-B 額外 cost |
+|---|---|---:|---:|---:|---:|---:|---|---|
+| TiDB | A-S | 18,000 | 0.82 | 9,000 | 0.41 | 22,000 | IDC leader + 1 GCP semi-sync ack | leader 散區；每 commit cross-region raft round-trip |
+| TiDB | A-A-RO | 14,000 | 0.64 | 7,500 | 0.34 | 22,000 | + GCP read RTT 進 query path | + leader 散區 read 進一步惡化 |
+| TiDB | A-A | 10,000 | 0.45 | 5,500 | 0.25 | 22,000 | + 兩端寫 Percolator 2PC cross-region | + leader 散區；最重 |
+| CRDB | A-S | 16,500 | 0.85 | 8,000 | 0.41 | 19,500 | range leaseholder IDC + replication ack | leaseholder 散區 |
+| CRDB | A-A-RO | 12,500 | 0.64 | 6,800 | 0.35 | 19,500 | + GCP follower read RTT | + leaseholder 散區 |
+| CRDB | A-A | 9,500 | 0.49 | 5,200 | 0.27 | 19,500 | distributed txn cross-region | + leaseholder 散區 |
+| YBDB | A-S | 15,000 | 0.83 | 7,500 | 0.42 | 18,000 | DocDB tablet leader IDC + sync replication | tablet leader 散區 + YSQL gateway routing |
+| YBDB | A-A-RO | 11,500 | 0.64 | 6,300 | 0.35 | 18,000 | + YSQL gateway 跨區 read | + tablet leader 散區 |
+| YBDB | A-A | 8,800 | 0.49 | 4,800 | 0.27 | 18,000 | + cross-region DocDB raft | + tablet leader 散區 |
 
 **正確解讀**：
 
@@ -374,6 +374,7 @@ IDC vlan241                            asia-east1
 |---|---|
 | 2026-06-29 | Reverse review 重寫：移除 fake 數字；decision-first 結構；evidence-state tag；SSOT 衝突 #2 / #4 / #5 已修，#1 / #3 / #6–#10 列 audit doc unresolved blocker（per `x-cross-report-demo-audit.md`）|
 | 2026-06-30 | 加 TL;DR（A 跨專線 6-node vs 3-node / B Failover R/W / C Chaos R/W），含 synthetic illustrative 數字（per user 授權；標 [SYNTHETIC] tag）。正文 §1 起仍不含 fake。Header disclaimer 同步調整列出 SYNTHETIC tag 用法 |
+| 2026-06-30 | TL;DR A 表 asymmetric 修正：原 TiDB P-A × 3 + P-B × 1 / CRDB 缺 A-A-RO / YBDB 只有 A-S — 為 demo 疏失（架構上三家都能跑全部 6 cell）。改成完整 3 × 3 × 2 = 9 row 矩陣，每行同時列 P-A 與 P-B tpmC 與 ratio |
 
 ---
 
