@@ -125,6 +125,19 @@ go-tpc tpcc run \
   > "$RUNS_DIR/warmup.log" 2>&1
 wan_probe "warmup-post" "$RUNS_DIR"
 
+# ---- 3.5. X-CROSS: deploy probe-iso-latency.sh to GCP client (g-test-poc-5) ----
+# 預設 GCP_PROBE_HOST = g-test-poc-5 (10.160.152.15)；idempotent；fail-quiet
+# 若 caller (phase2-bootstrap) 已 rsync 過則 scp 仍 OK (overwrite same content)。
+if [[ "$TOPO" == vm-6node-* ]]; then
+  : "${GCP_PROBE_HOST:=10.160.152.15}"
+  ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 \
+      root@"$GCP_PROBE_HOST" "mkdir -p /tmp/poc/tests/common" 2>/dev/null || true
+  scp -o BatchMode=yes -o StrictHostKeyChecking=accept-new \
+      "$SELF/probe-iso-latency.sh" \
+      root@"$GCP_PROBE_HOST":/tmp/poc/tests/common/probe-iso-latency.sh \
+      2>/dev/null || true
+fi
+
 # ---- 4. for each threads × round ----------------------------------
 for threads in $THREADS_LIST; do
   for ((r=1; r<=ROUNDS; r++)); do
@@ -165,16 +178,41 @@ for threads in $THREADS_LIST; do
     fi
 
     # X-CROSS routing latency probe sidecar (per decisions Q13 + 0630.md §9.3).
-    # IDC-side: from .31 controller (local); 60s sample at round start.
-    # GCP-side TODO: needs probe-iso-latency.sh + DB client deployed on
-    #   g-test-poc-5; framework patch 階段補（同次 ssh g-test-poc-5 拉一份）。
-    # 不阻擋主 workload；fail-quiet 不中斷 timed run（取證 best-effort）。
+    # 兩端各跑：IDC (.31 controller, local) + GCP (g-test-poc-5 via ssh)；
+    # 60s sample at round start；不阻擋主 workload；fail-quiet (|| true)
+    # 不中斷 timed run（取證 best-effort）。
+    # IDC vs GCP p99 對比 → 證 closest-replicas 真生效（GCP SELECT 1 ~50ms
+    # 即 follower read 沒生效）。
     if [[ "$TOPO" == vm-6node-* ]]; then
+      # IDC-side: local probe to IDC HAProxy / TiDB endpoint.
       ( bash "$SELF/probe-iso-latency.sh" \
           --db "$DB" --db-host "$DB_HOST" --port "$PORT" \
           --user "$USER" --dbname "$DBNAME" \
           --duration-sec 60 --out-dir "$RD" --label "idc-t${threads}-r${r}" \
           > "$RD/probe-iso-latency-idc.log" 2>&1 ) || true &
+
+      # GCP-side: ssh g-test-poc-5 → run probe locally there → scp artifact back.
+      # 假設 probe-iso-latency.sh + DB clients (mysql/cockroach/psql) 已部署到
+      # /tmp/poc/tests/common/ via phase2-bootstrap rsync。若缺則 fail-quiet。
+      # GCP_PROBE_HOST = g-test-poc-5 (go-tpc client host with all 3 DB clients).
+      # GCP_PROBE_DB_HOST default = GCP HAProxy (10.160.152.14) 對齊 GCP-side
+      # near-read 預期；可由 caller 透過 env override.
+      : "${GCP_PROBE_HOST:=10.160.152.15}"
+      : "${GCP_PROBE_DB_HOST:=10.160.152.14}"
+      GCP_REM="/tmp/poc-tpcc/probe-${TS}-t${threads}-r${r}"
+      (
+        ssh -o BatchMode=yes -o ConnectTimeout=5 \
+            -o StrictHostKeyChecking=accept-new \
+            root@"$GCP_PROBE_HOST" \
+            "mkdir -p $GCP_REM && bash /tmp/poc/tests/common/probe-iso-latency.sh \
+              --db $DB --db-host $GCP_PROBE_DB_HOST --port $PORT \
+              --user $USER --dbname $DBNAME \
+              --duration-sec 60 --out-dir $GCP_REM \
+              --label gcp-t${threads}-r${r}"
+        scp -o BatchMode=yes -o StrictHostKeyChecking=accept-new \
+            root@"$GCP_PROBE_HOST":"$GCP_REM/probe-iso-latency-gcp-*" \
+            "$RD/" 2>/dev/null || true
+      ) > "$RD/probe-iso-latency-gcp.log" 2>&1 || true &
     fi
 
     MON_PIDS=$(jobs -p)
