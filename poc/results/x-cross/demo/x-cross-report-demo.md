@@ -1,7 +1,7 @@
 # X-CROSS Demo Report — DEMO / NOT-FOR-DECISION
 
-> **Status**: framework-only preview。本檔不含任何 fake 數字。未量到的值寫 `TBD (not measured)`。
-> Generated: 2026-06-29 · Author: planner-only · 對應 SSOT: `phase-crossregion/manifest.yaml`
+> **Status**: framework-only preview。**正文 §1 起不含 fake 數字**；TL;DR 章節含 synthetic illustrative（per user 授權 2026-06-30）量級錨架構合理範圍，非 measurement。未量到的值寫 `TBD (not measured)`。
+> Generated: 2026-06-29 · Updated: 2026-06-30（+TL;DR） · Author: planner-only · 對應 SSOT: `phase-crossregion/manifest.yaml`
 > Promotion 條件見 `x-cross-report-demo-audit.md` §6（9 項）。
 
 Evidence-state tags 用法：
@@ -10,6 +10,77 @@ Evidence-state tags 用法：
 - **INFERRED**: 邏輯/架構推論，非實測；可能錯
 - **PLANNED**: spec 已寫但未跑
 - **BLOCKED**: 缺前置（owner / driver / FW / spec reconcile），不可推進
+- **SYNTHETIC**: 僅 TL;DR 使用；量級錨架構合理範圍但非 measurement
+
+---
+
+## TL;DR — 三情境快速理解（[SYNTHETIC]）
+
+> ⚠️ 本章節含 **synthetic illustrative** 數字（per user 授權）；量級錨架構推導範圍但**不是 measurement**。正式 cell run-once 後 TL;DR 將以 MEASURED 重寫；正文 §5-§9 至今不含 synthetic。
+
+### A. 跨專線 X-CROSS 6-node vs IDC-only S-BASE 3-node 性能解讀
+
+**重要 caveat（per codex F6）**：S-BASE vm-3node 與 X-CROSS vm-6node **不是 paired control** — 節點數、quorum、硬體、placement 都不同。下表僅作 **contextual reference**，**禁用 retain% / WAN penalty / Δ 任何算式**作對外結論。
+
+per `phase-crossregion/manifest.yaml` placements 與 workload-profiles：
+
+| DB | Placement | Profile | X-CROSS 6-node tpmC [SYNTHETIC] | S-BASE 3-node tpmC [SYNTHETIC] | naive ratio | 主要 cost 來源 |
+|---|---|---|---:|---:|---:|---|
+| TiDB | P-A | A-S | ~18,000 | ~22,000 | 0.82 | IDC leader + 1 GCP semi-sync ack；commit overhead 抵掉 ×2 資源 |
+| TiDB | P-A | A-A-RO | ~14,000 | ~22,000 | 0.64 | + GCP read RTT 進 query path |
+| TiDB | P-A | A-A | ~10,000 | ~22,000 | 0.45 | + 兩端寫 Percolator 2PC cross-region |
+| TiDB | P-B | A-S | ~9,000 | ~22,000 | 0.41 | leader 散區；每 commit cross-region raft round-trip |
+| CRDB | P-A | A-S | ~16,500 | ~19,500 | 0.85 | range leaseholder IDC + replication ack |
+| CRDB | P-A | A-A | ~9,500 | ~19,500 | 0.49 | distributed txn cross-region |
+| CRDB | P-B | A-S | ~8,000 | ~19,500 | 0.41 | leaseholder 散區 |
+| YBDB | P-A | A-S | ~15,000 | ~18,000 | 0.83 | DocDB tablet leader IDC + sync replication |
+| YBDB | P-B | A-S | ~7,500 | ~18,000 | 0.42 | tablet leader 散區 + YSQL gateway routing |
+
+**正確解讀**：
+
+1. **「3→6 node 預期 +50-80%」被跨區 commit cost 抵消** — 6-node IDC-only 同 W 應達 ~33,000-40,000 tpmC（×1.5-1.8 of 3-node），但 X-CROSS 加上 raft commit / lease ack / network RTT 後**淨結果回到 0.4-0.85 × 3-node 區間**。**這不是「6-node 不如 3-node」**，而是「跨區成本 > 額外資源帶來的增益」
+2. **A-S profile 不跨區讀寫**（IDC primary write + GCP standby cold）→ cost 集中在 **commit replication**，user query path 仍 IDC local；TL;DR 表 A-S 行 ratio 較高（0.82-0.85）
+3. **A-A-RO 開啟 GCP read** → cost = replication + read RTT；ratio 降至 ~0.64
+4. **A-A 兩端皆寫** → cost = replication + cross-region distributed txn + key conflict retry；ratio 降至 ~0.45-0.49
+5. **P-A leader 集中 IDC**：commit = IDC 內 raft majority + GCP semi-sync ack（單跨區）；性能 close to local + 1 RTT overhead
+6. **P-B leader 散區**：每 commit = cross-region raft round-trip（必須）→ ratio 降至 ~0.41-0.42（最重）
+
+### B. Failover Scenarios — Read / Write 統計
+
+| Scenario | Trigger | Read 影響 | Write (UPDATE) 影響 | error_rate during | RTO [SYNTHETIC] | RPO | 解讀 |
+|---|---|---|---|---|---:|---:|---|
+| **F1 planned** | controlled leader stepdown via admin CLI (per `failover/F1.md`) | ~1-3s 短暫 stale read（視 consistency mode） | 5-30s write block；切到 new leader | ~5-15% during cutover | TiDB 10-30s / CRDB 5-15s / YBDB 10-20s | **theoretical 0** (raft majority + RC) | planned = SLA 上限最樂觀；運維只能保證 ≥ F1 RTO |
+| **F-unplanned IDC site loss** | IDC link 斷 / power | quorum 視 placement；P-A 寫癱（需手動 promote GCP）；P-B GCP auto-elect | P-A: write 暫停直到手動切；P-B: ~10-60s GCP elect | ~30-50% spike | P-A: TBD（manual）；P-B: 10-60s | TBD（可能 lose in-flight tx） | 災難場景；P-B 理論 RTO 較短但 steady-state cost 重 |
+| **F-replication lag spike** | GCP follower 暫時 desync | 影響小；reader 走 IDC | write 仍 commit；queue 堆積 | <1% | 0 (no failover) | 視 queue depth；穩態 0 | 健康度觀察 |
+
+**閱讀要點**：
+- **RPO=0 是 raft majority + RC theory**，**非實測** — 需 probe driver 量化（per codex F8）
+- error_rate 量到的是 client（go-tpc）看見的 abort/retry，不等於 cluster 內部 commit failure
+- F-unplanned 比 F1 planned 嚴酷；P-A 在 IDC site loss 時**寫癱直到人工介入**，P-B 才有自動 elect
+
+### C. Chaos Engineering Scenarios — Read / Write 統計
+
+per `phase-crossregion/chaos/{C1,C4,C7}.md` spec（**注意 codex F2：C1/C4 spec ↔ script 命名互換，本表以 spec 為主**）：
+
+| Scenario | Spec | Read 影響 | Write 影響 | tpmC drop% [SYNTHETIC] | error_rate spike | RTO | RPO | 解讀 |
+|---|---|---|---|---:|---:|---:|---:|---|
+| **C1** GCP WAN partition (60s 雙向 iptables drop) | `chaos/C1.md` | IDC local read 不受影響 | P-A: 繼續（IDC majority intact）；P-B: ~50% commit fail（leader 跨區） | P-A: -5 to -15%；P-B: -50 to -80% | P-A: <1%；P-B: ~30-50% | N/A（no failover triggered） | 0（partition heal 後 sync） | P-A 抗 partition 最佳；P-B 暴露 split-brain 風險 |
+| **C4** IDC leader die (5-min systemctl stop) | `chaos/C4.md` | brief pause → GCP follower 起 leader → read 切 | brief pause；commit 切 GCP（cross-region 重啟） | -30 to -60% during cutover | 10-30% during cutover | 10-30s | **theoretical 0** | unplanned 版 F1；運維最關注；應與 F1 對比看 detect 機制 |
+| **C7** placement gate fail-closed | `chaos/C7.md`（gate-only） | N/A | N/A | N/A | N/A | N/A | N/A | 驗證 P-B apply 後 leader 真分散；fail = 0 spurious leader in single AZ |
+
+**閱讀要點**：
+- C1 是 partition（無 failover），**RTO 不適用**；關鍵看 `write_success_rate` 與 partition heal 後 sync 速度
+- C4 是 unplanned failover；應與 F1 planned 對比 RTO ratio（理論 unplanned < 2× planned；超出代表 detect 機制有問題）
+- C7 純 boolean spec 驗證，無量化指標
+- **三家 DB chaos 行為差異**（INFERRED）：TiDB（Percolator + PD TSO）/ CRDB（distributed txn）/ YBDB（DocDB tablet）對 partition 與 leader die 反應不同；C4 RTO 應有顯著 DB 差異
+
+---
+
+### Bottom line（必讀 3 條）
+
+1. **「3-node→6-node 資源增益直接抵消」是過簡的口頭禪**；正確分解：cross-region commit ack overhead + read RTT + (A-A 才有的) cross-region distributed txn cost。**workload profile 與 placement 決定 cost 暴露面**，非單純 scale 換 latency
+2. **Failover / Chaos 的 RTO/RPO 目前皆 theoretical**（per codex F8）；正式量化需 **Go-based probe driver** + monotonic clock + commit ACK 機制 — bash + per-DB CLI 100ms tick 精度不足
+3. **P-A vs P-B 取捨**：P-A 守 IDC（WAN partition 抗性 + steady-state 性能優），但 IDC site loss 時失效；P-B 散區（resilience 上限高，steady-state cost 重）。**SLA 取向決定選誰**：可容忍人工介入 / 短時 IDC down → P-A；不可人工介入 / IDC down 必須自動 → P-B
 
 ---
 
@@ -302,6 +373,7 @@ IDC vlan241                            asia-east1
 | 日期 | 內容 |
 |---|---|
 | 2026-06-29 | Reverse review 重寫：移除 fake 數字；decision-first 結構；evidence-state tag；SSOT 衝突 #2 / #4 / #5 已修，#1 / #3 / #6–#10 列 audit doc unresolved blocker（per `x-cross-report-demo-audit.md`）|
+| 2026-06-30 | 加 TL;DR（A 跨專線 6-node vs 3-node / B Failover R/W / C Chaos R/W），含 synthetic illustrative 數字（per user 授權；標 [SYNTHETIC] tag）。正文 §1 起仍不含 fake。Header disclaimer 同步調整列出 SYNTHETIC tag 用法 |
 
 ---
 

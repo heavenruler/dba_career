@@ -109,7 +109,7 @@
 
 | 項目 | 結果 | 細節 |
 |---|---|---|
-| 1. `fake\|synthetic\|speculative` grep | demo 重寫前 ~50 hit；重寫後僅保留 DEMO header 與 audit `Remove` 表 reference | 主報告 §1–§10 各結論不含「realistic fake range」推導 |
+| 1. `fake\|synthetic\|speculative` grep | demo 重寫前 ~50 hit；重寫後僅保留 DEMO header 與 audit `Remove` 表 reference；**2026-06-30 加 TL;DR 章節含 synthetic illustrative（標 `[SYNTHETIC]`）為授權例外，static check 範圍 carve out TL;DR section** | 主報告 §1–§10 各結論不含「realistic fake range」推導；TL;DR 數字僅作快速理解，正式 cell run 後重寫 |
 | 2. `feedback_` grep | demo 重寫後 0 hit；改引 `decisions-2026-06-08.md` Q9 + `crossregion-via31.ini` header | audit doc 引用 review-prompt §2.7 描述用，不作權威 |
 | 3. `DEV-1x1` / `N=5` / `R1-R5` / `R2-R5` 語意一致性 | DEV-1x1 自 demo 移除（不適用 X-CROSS）；N=5 demo 內標明 `ROUNDS=5` ≠ independent N=5；R1-R5 為 primary canonical；R2-R5 為 secondary sensitivity | pipeline-log §1 / §5 與 PHASES §5 一致 |
 | 4. C1 / C4 script vs spec | demo 重寫後不宣稱 planner conforms；§9 blocker #5 明列 spec ↔ planner 故障模型互換 | C7 planner 未在 phase-crossregion/scripts/chaos/ 落地（per `chaos/README.md` 表，C7 planner 為 `chaos-c7-disk-slow-plan.sh`，但目錄列表確認存在）|
