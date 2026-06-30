@@ -225,6 +225,34 @@ case "$DB" in
     ;;
 esac
 
+# ---- 6.5. X-CROSS near-read setup（vm-6node only；per decisions Q13）----
+# Sets data-plane closest-replicas + control-plane follower-region handling.
+# Single-region topology (vm-1node / vm-3node) skipped — no-op gain.
+# Sources: 1_MeetingMinutes/0630.md §5.3 §6.2; TiDB Follower Read 官方文件.
+if [[ "$TOPO" == vm-6node-* ]]; then
+  info "X-CROSS near-read setup (TOPO=$TOPO)"
+  case "$DB" in
+    tidb)
+      mysql -h "$DB_HOST" -P "$PORT" -u "$USER" -e "
+        SET GLOBAL tidb_replica_read = 'closest-replicas';
+        SET GLOBAL pd_enable_follower_handle_region = ON;
+      " 2>&1 | tee "$PREP_DIR/near-read-setup.log"
+      mysql -h "$DB_HOST" -P "$PORT" -u "$USER" -e "
+        SHOW GLOBAL VARIABLES LIKE 'tidb_replica_read';
+        SHOW GLOBAL VARIABLES LIKE 'pd_enable_follower_handle_region';
+        SHOW GLOBAL VARIABLES LIKE 'tidb_enable_tso_follower_proxy';
+      " > "$PREP_DIR/near-read-vars.txt" 2>&1
+      ;;
+    crdb|ybdb)
+      # Q13 PLANNED: CRDB closed_timestamp.follower_reads_enabled / YBDB
+      # yb_read_from_followers — pending framework patch 階段落地;
+      # 目前僅標 placeholder 不啟用，避免半實作誤導.
+      echo "TODO (per decisions Q13): $DB near-read setup not yet implemented" \
+        > "$PREP_DIR/near-read-setup.log"
+      ;;
+  esac
+fi
+
 # ---- 7. SHOW CREATE TABLE + EXPLAIN dump（representative queries）----
 info "schema + EXPLAIN dump"
 case "$DB" in
