@@ -74,7 +74,7 @@ run_query() {
       ;;
     crdb)
       if [[ "$kind" == "select" ]]; then
-        cockroach sql --insecure --host="$DB_HOST:$PORT" -d "$DBNAME" -e "SELECT 1;" >/dev/null 2>&1
+        cockroach sql --insecure --host="$DB_HOST:$PORT" -d "$DBNAME" -e "SELECT 1 AS OF SYSTEM TIME follower_read_timestamp();" >/dev/null 2>&1
       else
         cockroach sql --insecure --host="$DB_HOST:$PORT" -d "$DBNAME" -e \
           "UPDATE warehouse SET w_ytd = w_ytd WHERE w_id = 1;" >/dev/null 2>&1

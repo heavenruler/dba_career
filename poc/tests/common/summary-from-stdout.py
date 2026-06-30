@@ -219,6 +219,37 @@ def collect_region_routing_evidence(suite_dir):
         except (json.JSONDecodeError, OSError) as e:
             evidence["placement_gate"] = {"error": f"failed to parse {gate_json.name}: {e}"}
 
+    # IDC vs GCP probe latency comparison (per decisions Q14 §4).
+    # ratio = IDC_p50 / GCP_p50; <0.7 = locality working; >=0.7 = high-fallback suspect.
+    idc_lat = prep / "probe-iso-latency-idc.json"
+    gcp_lat = prep / "probe-iso-latency-gcp.json"
+    if idc_lat.is_file() and gcp_lat.is_file():
+        try:
+            with open(idc_lat, encoding="utf-8") as f:
+                idc_data = json.load(f)
+            with open(gcp_lat, encoding="utf-8") as f:
+                gcp_data = json.load(f)
+            idc_p50 = idc_data.get("select_1", {}).get("p50_ms")
+            gcp_p50 = gcp_data.get("select_1", {}).get("p50_ms")
+            ratio = None
+            verdict = "INSUFFICIENT-DATA"
+            if idc_p50 not in (None, "null", 0) and gcp_p50 not in (None, "null", 0):
+                try:
+                    r = float(idc_p50) / float(gcp_p50)
+                    ratio = round(r, 3)
+                    verdict = "PASS-DIAG" if r < 0.7 else "WARN-DIAG"
+                except (ZeroDivisionError, ValueError):
+                    pass
+            evidence["probe_latency_comparison"] = {
+                "idc_p50_ms": idc_p50,
+                "gcp_p50_ms": gcp_p50,
+                "ratio": ratio,
+                "verdict": verdict,
+                "interpretation": "ratio=IDC_p50/GCP_p50 <0.7 PASS-DIAG (locality working); >=0.7 WARN-DIAG (high fallback suspect)",
+            }
+        except (json.JSONDecodeError, OSError) as e:
+            evidence["probe_latency_comparison"] = {"error": str(e)}
+
     return evidence if evidence else None
 
 

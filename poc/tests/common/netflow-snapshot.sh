@@ -69,6 +69,26 @@ trap 'rm -f "$TMP"' EXIT
   echo "  \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\","
   echo "  \"hosts\": {"
 
+  # Collect iptables byte counters + interface byte totals via single SSH call.
+  # iptables_to_gcp: sum of byte counters for OUTPUT rules matching GCP CIDR (10.160.152.0/24).
+  #   Returns 0 if no matching rules — add iptables -A OUTPUT -d 10.160.152.0/24 -j ACCEPT
+  #   rules on each host to start counting (Wave 3 NetFlow upgrade).
+  # iface_rx/tx: /proc/net/dev aggregate (all interfaces except lo) — interface-level bytes.
+  get_traffic_bytes() {
+    local h=$1
+    ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
+        root@"$h" '
+      GCP=$(iptables -nvL OUTPUT -x 2>/dev/null \
+        | awk "$8 ~ /^10\.160\.152\./{b+=$2} END{print b+0}")
+      IDC=$(iptables -nvL OUTPUT -x 2>/dev/null \
+        | awk "$8 ~ /^172\.24\./{b+=$2} END{print b+0}")
+      awk -v gcp="$GCP" -v idc="$IDC" "
+        NR>2 { gsub(/:/,\" \"); if (\$1==\"lo\") next; rx+=\$2; tx+=\$10 }
+        END { printf \"%s %s %d %d\n\", gcp, idc, rx+0, tx+0 }
+      " /proc/net/dev
+    ' 2>/dev/null || echo "0 0 0 0"
+  }
+
   host_count=0
   for h in $HOSTS; do
     [[ $host_count -gt 0 ]] && echo ","
@@ -84,6 +104,9 @@ trap 'rm -f "$TMP"' EXIT
       echo " \"error\": \"ssh-failed-or-no-data\" }"
       continue
     fi
+
+    # Collect bytes in parallel with port-count loop (non-blocking).
+    bytes_raw=$(get_traffic_bytes "$h" &)
 
     port_first=1
     for port in $PORTS; do
@@ -118,6 +141,14 @@ trap 'rm -f "$TMP"' EXIT
       \"$port\": {\"idc\": $idc, \"gcp\": $gcp, \"other\": $other}"
       fi
     done
+
+    # Wait for bytes and append traffic_bytes field.
+    wait
+    bytes_raw=$(get_traffic_bytes "$h")
+    read -r tb_gcp tb_idc tb_rx tb_tx <<< "$bytes_raw"
+    [[ $port_first -eq 0 ]] && echo -n ","
+    echo -n "
+      \"traffic_bytes\": {\"iptables_to_gcp_bytes\": ${tb_gcp:-0}, \"iptables_to_idc_bytes\": ${tb_idc:-0}, \"iface_rx_total_bytes\": ${tb_rx:-0}, \"iface_tx_total_bytes\": ${tb_tx:-0}}"
 
     echo -n "
     }"
