@@ -102,6 +102,7 @@
 | 8 | capacity mapping（W=128 ↔ production peak）未對齊 | 無 production demand data → W=128 / thread sweep 對應業務意義不明 | 取 production peak TPS / hotspot 樣本；對應 PoC W 與 thread | TBD |
 | 9 | 三家 admin CLI 路徑 DBA 未 confirm | `F1.md` §47-52；leader stepdown / drain / list_tablets 版本 specific | 對應 cluster 版本（TiDB v8.5 / CRDB v26.2 / YBDB 2025.2）confirm | DBA |
 | 10 | P-B arbiter 抽象未對齊三家實作 | `topology/P-B.md` ASCII 用 `arbiter` 但三家無原生 arbiter 概念 | 改 P-B.md 用各 DB 實際 voter / leaseholder / tablespace 語意 | TBD |
+| 11 | 就近讀寫 routing evidence + control plane cost 量測未實作 | per `1_MeetingMinutes/0630.md` §6 + §9：data plane closest-replicas 設定 + PD metadata/TSO cost + Grafana KV Request routing + NetFlow per-port 分類，現有 prepare/dump-actual/collect 階段皆缺；TL;DR §A 比值在無此證據下為 architectural inference 非 measurement | prepare 加 `SET GLOBAL tidb_replica_read='closest-replicas'` + `pd_enable_follower_handle_region=ON`；dump-actual 加 0630.md §9.4 SHOW VARIABLES snapshot + §9.2 leader 分布 SQL；collect 加 NetFlow port 分類 + IDC vs GCP 同 SQL latency 對比；三家 DB 等價設定寫 decisions Q13 | TBD（與 codex F1-F8 同批做） |
 
 ## §5 Static check 結果
 

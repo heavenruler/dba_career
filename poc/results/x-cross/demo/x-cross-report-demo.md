@@ -40,10 +40,12 @@ per `phase-crossregion/manifest.yaml` placements 與 workload-profiles — **完
 
 1. **「3→6 節點預期 +50-80% 效能」被跨區提交成本抵消** — 6 節點 IDC 內同 W=128 應達 ~33,000-40,000 tpmC（×1.5-1.8 of 3 節點），但 X-CROSS 加上 raft 提交 / lease 確認 / 網路往返後**淨結果回到 0.4-0.85 × 3 節點區間**。**這不是「6 節點不如 3 節點」**，而是「跨區成本 > 額外資源帶來的增益」
 2. **A-S (主動-待命) 模式不跨區讀寫**（IDC 主寫 + GCP 待命冷待）→ 成本集中在「提交複寫」，使用者查詢路徑仍在 IDC 本地；表中 A-S 行比值較高（0.82-0.85）
-3. **A-A-RO (雙活-唯讀) 開啟 GCP 讀流量** → 成本 = 複寫 + 讀取 RTT；比值降至 ~0.64
-4. **A-A (雙活) 兩端皆寫** → 成本 = 複寫 + 跨區分散式交易 + 主鍵衝突重試；比值降至 ~0.45-0.49
+3. **A-A-RO (雙活-唯讀) 開啟 GCP 讀流量** → 成本 = 複寫 + 讀取 RTT；比值降至 ~0.64。**前提**：必須 `SET GLOBAL tidb_replica_read='closest-replicas'`（per `1_MeetingMinutes/0630.md` §5.3 + [TiDB Follower Read 官方文件](https://docs.pingcap.com/zh/tidb/stable/follower-read/)）；default `leader` 模式下 GCP 讀仍跨區到 IDC TiKV Leader → 表中數字不成立
+4. **A-A (雙活) 兩端皆寫** → 成本 = 複寫 + 跨區分散式交易 + 主鍵衝突重試；比值降至 ~0.45-0.49。**前提**：需 **geo-partition + per-region leader** 配置（per 0630.md §5.4：同份資料強一致寫入「GCP 內」不成立；GCP 寫 GCP 必須是不同 partition 的 leader 在 GCP）；無此配置時兩端寫實際都跑 IDC Leader → A-A 與 A-S 數字趨同，table 失準
 5. **P-A (主分布 IDC) leader 集中 IDC**：提交 = IDC 內 raft 多數派 + GCP 半同步確認（單次跨區）；效能接近本地 + 1 次 RTT 額外開銷
 6. **P-B (主跨區分布) leader 跨區分布**：每筆提交 = 跨區 raft 來回（必須）→ 比值降至 ~0.41-0.42（最重）
+7. **Control plane 成本永遠跨區**（per 0630.md §6）：即使 data plane 走 closest-replicas，PD Region metadata fallback 與 TSO request 在 PD Leader 固定 IDC 時仍跨區；GCP TiDB cache miss / Region split / TSO 取號每次 ~50ms 跨區。建議 `pd_enable_follower_handle_region=ON`（TiDB 8.5+ GA）+ 評估 `tidb_enable_tso_follower_proxy`（per 0630.md §6.3）
+8. **「就近讀寫」嚴格定義**（per 0630.md §10 verbatim）：「IDC / GCP Client 先進入當地 TiDB；讀取優先使用當地 TiKV replica；寫入送往資料唯一的 Region Leader；跨專線承載 Raft、PD/TSO control traffic 與必要 fallback。」 **不是**「IDC Request 絕不離開 IDC，GCP Request 絕不離開 GCP」— 單一強一致 cluster 做不到，需獨立 cluster + async replication，或 geo-partition + 對應區域 Leader，或接受 Stale Read
 
 ### B. 故障切換情境 (Failover Scenarios) — 讀 / 寫 (UPDATE) 統計
 
@@ -84,6 +86,30 @@ per `phase-crossregion/chaos/{C1,C4,C7}.md` spec（**注意 codex F2：C1/C4 spe
 - C4 是非計畫性切換；應與 F1 計畫性對比 RTO 比值（理論非計畫性 < 2× 計畫性；超出代表偵測機制有問題）
 - C7 是配置驗證閘（非故障注入），不影響 workload；產出 leader 分布計數 + PASS/FAIL 二元判定
 - **三家 DB 混沌行為差異（INFERRED）**：TiDB（Percolator + PD TSO）/ CRDB（分散式交易）/ YBDB（DocDB tablet）對斷線與 leader 失效反應不同；C4 RTO 應有顯著 DB 差異
+
+---
+
+### D. 就近讀寫驗證 checklist（per `1_MeetingMinutes/0630.md` §9 + TiDB 官方文件）
+
+§A 表所有 ratio 成立的**必要前提**；正式 cell run 前 / 後皆需驗。**少一項則 TL;DR §A 數字 invalid**。
+
+| # | 驗證面 | 證據 | SSOT |
+|---|---|---|---|
+| D1 | Placement Policy 已套且 `Scheduling_State=SCHEDULED` | TiDB: `SHOW PLACEMENT FOR DATABASE tpcc;` + `SELECT * FROM information_schema.placement_policies;` | 0630.md §9.1 |
+| D2 | TiKV / TiDB / PD 三層 `zone` label 一致 | `SELECT s.ADDRESS, s.LABEL FROM information_schema.TIKV_STORE_STATUS s;` + ansible playbook server.labels 對齊 | 0630.md §5.2 + `ansible/playbooks/tidb-vm6.yml:203-208`（已落地）|
+| D3 | Leader / replica 實際位置符 Placement Policy | 0630.md §9.2 SQL：JOIN TIKV_REGION_PEERS + TIKV_STORE_STATUS GROUP BY zone | 0630.md §9.2 |
+| D4 | `tidb_replica_read='closest-replicas'` GLOBAL 已 SET | `SHOW GLOBAL VARIABLES LIKE 'tidb_replica_read';` | 0630.md §8 + [TiDB Follower Read](https://docs.pingcap.com/zh/tidb/stable/follower-read/) |
+| D5 | `pd_enable_follower_handle_region=ON` 已 SET | `SHOW GLOBAL VARIABLES LIKE 'pd_enable_follower_handle_region';` | 0630.md §6.2（TiDB 8.5+ GA）|
+| D6 | 就近讀真生效（routing 證據） | IDC 與 GCP 各跑同 SQL 對比 latency + Grafana TiDB `KV Request / Read Req Traffic` destination | 0630.md §9.3 |
+| D7 | 跨區流量分類量化 | NetFlow / iptables counter 按 port 分類（4000 / 2379 / 20160 / 26257 / 5433 / 7100 / 9100）| 0630.md §7（10 種跨區流量）|
+
+> ⚠️ **D4-D7 目前尚未實作於 prepare / dump-actual / collect 階段**（per 「開工前修正」§B-C，排 framework patch 階段）。本 TL;DR §A 數字在 D4-D7 落地前皆為 architectural inference，非 measurement。
+
+→ TiDB 跨區部署最佳實踐：[TiDB 異地多活部署](https://docs.pingcap.com/zh/tidb/stable/geo-distributed-deployment-topology/)
+
+CRDB / YBDB 等價就近讀寫設定（**架構層 INFERRED**，待 framework patch 階段 decisions Q13 拍板）：
+- **CRDB**: `--locality=region=...,zone=...` + `lease_preferences=[[+region=idc]]` + `SET CLUSTER SETTING kv.closed_timestamp.follower_reads_enabled=true;` → 透過 `AS OF SYSTEM TIME follower_read_timestamp()` 走 follower
+- **YBDB**: tserver flag `--placement_cloud=104 --placement_region=idc --placement_zone=vlan241` + tablespace placement_blocks + `SET yb_read_from_followers=true; SET yb_follower_read_staleness_ms=30000;`
 
 ---
 
@@ -378,6 +404,9 @@ IDC vlan241                            asia-east1
 | `results/x-cross/pipeline-log.md` | X-CROSS pipeline / determinism evidence |
 | `tests/common/summary-from-stdout.py` | summary.json v1 producer；CLI `--warehouses N` / `--skip-rounds K` |
 | `ansible/inventory/crossregion-via31.ini` | .31 controller；IDC↔GCP FW 已開（2026-06-18）；三家 protocol/port |
+| `1_MeetingMinutes/0630.md` | TiDB 資源隔離 + 跨區就近讀寫官方機制與限制；§5 Placement Policy ≠ Request routing / §6 PD/TSO control plane / §8 建議 SQL / §9 驗證程序 / §10 最終結論 |
+| [TiDB Geo-Distributed Deployment](https://docs.pingcap.com/zh/tidb/stable/geo-distributed-deployment-topology/) | 跨區部署官方最佳實踐 |
+| [TiDB Follower Read](https://docs.pingcap.com/zh/tidb/stable/follower-read/) | `tidb_replica_read='closest-replicas'` 設定與限制 |
 
 ### 10.3 變更歷史
 
@@ -387,6 +416,7 @@ IDC vlan241                            asia-east1
 | 2026-06-30 | 加 TL;DR（A 跨專線 6-node vs 3-node / B Failover R/W / C Chaos R/W），含 synthetic illustrative 數字（per user 授權；標 [SYNTHETIC] tag）。正文 §1 起仍不含 fake。Header disclaimer 同步調整列出 SYNTHETIC tag 用法 |
 | 2026-06-30 | TL;DR A 表 asymmetric 修正：原 TiDB P-A × 3 + P-B × 1 / CRDB 缺 A-A-RO / YBDB 只有 A-S — 為 demo 疏失（架構上三家都能跑全部 6 cell）。改成完整 3 × 3 × 2 = 9 row 矩陣，每行同時列 P-A 與 P-B tpmC 與 ratio |
 | 2026-06-30 | TL;DR A/B/C 三段減少技術英文：保留 P-A/P-B/A-S/A-A-RO/A-A 等 project tag，其餘加中文括號註釋（F1 planned → F1 計畫性切換 / cutover → 切換期間 / quorum → 法定人數 / split-brain → 雙主腦 等）；C7 補 leader 分布計數細節表，將原 N/A 改為合成示意（IDC 72/72 vs 144/0 退化情境）|
+| 2026-06-30 | 對齊 `1_MeetingMinutes/0630.md` 就近讀寫議題：TL;DR §A 解讀 3/4 加前提（A-A-RO 需 `closest-replicas`；A-A 需 geo-partition），加 §7 control plane cost 永遠跨區 + §8 「就近讀寫嚴格定義」per 0630.md §10；新增 §D「就近讀寫驗證 checklist」7 項（D1-D7）+ CRDB/YBDB 等價設定推導；§10.2 SSOT 補 0630.md + TiDB 官方 geo-deployment / follower-read；audit §4 加 unresolved blocker #11（routing evidence + control plane cost 量測未實作）|
 
 ---
 
