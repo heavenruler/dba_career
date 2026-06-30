@@ -180,7 +180,7 @@ help:
 # ===================================================================
 # Phase 1 — VM lifecycle (rebuild IDC + GCP)
 # ===================================================================
-phase1: phase1-destroy phase1-apply phase1-wait phase1-homogeneity phase1-proof
+phase1: phase1-destroy phase1-apply phase1-wait-via-31 phase1-homogeneity phase1-proof
 	@echo "==> phase1 complete (VMs rebuilt + GCP startup-done + homogeneity + rebuild proof)"
 
 phase1-destroy:
