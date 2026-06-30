@@ -162,6 +162,66 @@ def repo_root_from_script():
     return Path(__file__).resolve().parents[2]
 
 
+def collect_region_routing_evidence(suite_dir):
+    """Collect near-read setup + placement gate artifacts from prepare/.
+
+    Returns None for non-X-CROSS suites (no prepare/near-read* / no prepare/placement-gate-*).
+    For X-CROSS (vm-6node-*) suites returns:
+      {
+        "near_read_setup": {
+          "log_present": bool,
+          "vars_snapshot": str | None,    # raw content of near-read-vars.txt
+        },
+        "placement_gate": {
+          "verdict": str | None,
+          "reason": str | None,
+          "placement": str | None,        # P-A / P-B
+          "idc_leader_count": int | None,
+          "gcp_leader_count": int | None,
+          "total_leader_samples": int | None,
+          "json_path": str | None,
+        }
+      }
+    """
+    prep = suite_dir / "prepare"
+    if not prep.is_dir():
+        return None
+
+    evidence = {}
+
+    near_read_vars = prep / "near-read-vars.txt"
+    near_read_log = prep / "near-read-setup.log"
+    if near_read_vars.is_file() or near_read_log.is_file():
+        snap = None
+        if near_read_vars.is_file():
+            with open(near_read_vars, encoding="utf-8", errors="replace") as f:
+                snap = f.read().strip()
+        evidence["near_read_setup"] = {
+            "log_present": near_read_log.is_file(),
+            "vars_snapshot": snap,
+        }
+
+    gate_jsons = sorted(prep.glob("placement-gate-*.json"))
+    if gate_jsons:
+        gate_json = gate_jsons[0]
+        try:
+            with open(gate_json, encoding="utf-8") as f:
+                gate_data = json.load(f)
+            evidence["placement_gate"] = {
+                "verdict": gate_data.get("verdict"),
+                "reason": gate_data.get("reason"),
+                "placement": gate_data.get("placement"),
+                "idc_leader_count": gate_data.get("idc_leader_count"),
+                "gcp_leader_count": gate_data.get("gcp_leader_count"),
+                "total_leader_samples": gate_data.get("total_leader_samples"),
+                "json_path": str(gate_json.relative_to(suite_dir)),
+            }
+        except (json.JSONDecodeError, OSError) as e:
+            evidence["placement_gate"] = {"error": f"failed to parse {gate_json.name}: {e}"}
+
+    return evidence if evidence else None
+
+
 def infer_scope_and_manifest(suite_dir):
     parts = set(suite_dir.resolve().parts)
     repo_root = repo_root_from_script()
@@ -294,6 +354,7 @@ def main():
         "generated_at": datetime.now().astimezone().isoformat(),
         "generated_by": "tests/common/summary-from-stdout.py v1",
         "source_files": "runs/threads-*/round-*/go-tpc-stdout.txt",
+        "region_routing_evidence": collect_region_routing_evidence(suite_dir),
     }
 
     for t in threads:
