@@ -224,38 +224,7 @@ phase1-apply:
 # Homogeneity gate: verify all 6 nodes same OS kernel / nproc / disk
 phase1-homogeneity:
 	@echo "==> phase1-homogeneity: check OS kernel / nproc / disk across IDC+GCP nodes"
-	@python3 - << 'PYEOF'
-import subprocess, sys, json, collections
-def ssh_cmd(host, cmd, proxy=None):
-    base = ['ssh','-o','ConnectTimeout=8','-o','StrictHostKeyChecking=accept-new','-o','BatchMode=yes']
-    if proxy:
-        base += ['-o', f'ProxyJump={proxy}']
-    r = subprocess.run(base + [f'root@{host}', cmd], capture_output=True, text=True)
-    return r.stdout.strip() if r.returncode == 0 else f'ERR:{r.stderr[:80]}'
-
-IDC = ['172.24.40.32','172.24.40.33','172.24.40.34']
-GCP = ['10.160.152.11','10.160.152.12','10.160.152.13']
-proxy = 'root@172.24.40.31'
-nodes = {}
-for ip in IDC:
-    nodes[ip] = {'kernel': ssh_cmd(ip,'uname -r'), 'nproc': ssh_cmd(ip,'nproc'), 'disk': ssh_cmd(ip,"df -BG / | awk 'NR==2{print \$2}'")}
-for ip in GCP:
-    nodes[ip] = {'kernel': ssh_cmd(ip,'uname -r',proxy=proxy), 'nproc': ssh_cmd(ip,'nproc',proxy=proxy), 'disk': ssh_cmd(ip,"df -BG / | awk 'NR==2{print \$2}'",proxy=proxy)}
-print('  host                 kernel                  nproc  disk')
-print('  ' + '-'*68)
-for ip,v in nodes.items():
-    print(f"  {ip:<20} {v['kernel']:<24} {v['nproc']:<6} {v['disk']}")
-fail = False
-for key in ('kernel','nproc','disk'):
-    vals = [v[key] for v in nodes.values() if not v[key].startswith('ERR:')]
-    if len(set(vals)) > 1:
-        print(f'WARN: {key} heterogeneous: {set(vals)}'); fail = True
-if fail:
-    print('phase1-homogeneity: WARN (heterogeneous nodes — proceed with caution)')
-else:
-    print('phase1-homogeneity: PASS (all nodes homogeneous)')
-sys.exit(0)
-PYEOF
+	@bash phase-crossregion/scripts/check-homogeneity.sh
 
 # F4: capture VM resource IDs + boot_ids after rebuild
 phase1-proof:
@@ -657,36 +626,8 @@ phase8-crdb-result:
 # no fake/synthetic keywords in summary.json; fails closed → blocks phase9 destroy.
 phase8.5-static-check:
 	@echo "==> phase8.5-static-check: artifact schema check on .31 before fetch"
-	@ssh $(TPCC_CLIENT) "python3 - '$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)' << 'PYEOF'
-import os, glob, json, sys, re
-base = sys.argv[1]
-fails = []
-dbs = ['tidb','crdb','ybdb']
-for db in dbs:
-    dirs = glob.glob(os.path.join(base, f'{db}-vm-6node-*'))
-    if not dirs:
-        fails.append(f'{db}: no artifact dir found')
-        continue
-    d = sorted(dirs)[-1]
-    label = os.path.basename(d)
-    if not os.path.exists(os.path.join(d, '.suite.done')):
-        fails.append(f'{label}: .suite.done missing')
-    sj = os.path.join(d, 'summary.json')
-    if not os.path.exists(sj):
-        fails.append(f'{label}: summary.json missing')
-    else:
-        txt = open(sj).read()
-        for kw in ('fake','speculative'):
-            if kw in txt.lower():
-                fails.append(f'{label}: summary.json contains forbidden keyword \"{kw}\"')
-    gate = glob.glob(os.path.join(d, 'prepare', 'placement-gate-*.json'))
-    if not gate:
-        fails.append(f'{label}: placement-gate artifact missing (prepare/placement-gate-*.json)')
-if fails:
-    for f in fails: print(f'  FAIL: {f}')
-    sys.exit(1)
-print(f'  PASS: {len(dbs)} DB suites schema-checked')
-PYEOF" || { echo "[F-Gate] phase8.5-static-check FAIL — fix artifacts before destroy"; exit 1; }
+	@ssh $(TPCC_CLIENT) "python3 $(CROSS_SCRIPTS_REMOTE)/check-static-artifacts.py '$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)'" \
+		|| { echo "[F-Gate] phase8.5-static-check FAIL — fix artifacts before destroy"; exit 1; }
 	@echo "==> phase8.5-static-check PASS"
 
 # ===================================================================
