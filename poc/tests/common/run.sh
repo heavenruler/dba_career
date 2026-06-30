@@ -217,6 +217,13 @@ for threads in $THREADS_LIST; do
 
     MON_PIDS=$(jobs -p)
 
+    # X-CROSS NetFlow port snapshot (per 0630.md §7)：pre-run + post-run，
+    # 對比可看 timed run 期間哪些 port 跨區 connection 數增加。fail-quiet。
+    if [[ "$TOPO" == vm-6node-* ]]; then
+      bash "$SELF/netflow-snapshot.sh" --out-dir "$RD" --label "pre-run" \
+        > "$RD/netflow-pre-run.log" 2>&1 || true
+    fi
+
     # go-tpc run (B0-4: $GO_TPC_MIX_ARGS 僅 X-CROSS 啟用，無變化保留空字串)
     go-tpc tpcc run \
       -d "$DRIVER" -H "$DB_HOST" -P "$PORT" -U "$USER" -D "$DBNAME" \
@@ -230,6 +237,12 @@ for threads in $THREADS_LIST; do
 
     # wait for monitors to finish (some have 5s buffer)
     wait $MON_PIDS 2>/dev/null || true
+
+    # X-CROSS NetFlow post-run snapshot (per 0630.md §7).
+    if [[ "$TOPO" == vm-6node-* ]]; then
+      bash "$SELF/netflow-snapshot.sh" --out-dir "$RD" --label "post-run" \
+        > "$RD/netflow-post-run.log" 2>&1 || true
+    fi
 
     wan_probe "round-post" "$RD"
 
