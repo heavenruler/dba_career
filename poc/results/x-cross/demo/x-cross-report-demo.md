@@ -22,7 +22,7 @@ Evidence-state tags 用法：
 
 **重要 caveat（per codex F6）**：S-BASE vm-3node 與 X-CROSS vm-6node **不是 paired control** — 節點數、quorum、硬體、placement 都不同。下表僅作 **contextual reference**，**禁用 retain% / WAN penalty / Δ 任何算式**作對外結論。
 
-per `phase-crossregion/manifest.yaml` placements 與 workload-profiles — **完整 3 × 3 × 2 矩陣**（架構上三家 DB 都能跑全部 profile × placement；先前版本 asymmetric 為 demo 疏失，已補齊）：
+per `phase-crossregion/manifest.yaml` placements 與 workload-profiles — **完整 3 × 3 × 2 矩陣**（架構上三家 DB 都能跑全部 profile × placement）：
 
 | DB | Profile | P-A tpmC [SYNTHETIC] | P-A ratio vs 3-node | P-B tpmC [SYNTHETIC] | P-B ratio vs 3-node | S-BASE 3-node tpmC [SYNTHETIC] | P-A 主要 cost 來源 | P-B 額外 cost |
 |---|---|---:|---:|---:|---:|---:|---|---|
