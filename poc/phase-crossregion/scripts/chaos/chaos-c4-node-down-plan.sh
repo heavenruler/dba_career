@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
-# chaos-c1-node-down-plan.sh — planner-only (no execute)
+# chaos-c4-node-down-plan.sh — planner-only (no execute)
 #
-# Spec ground truth: phase-crossregion/chaos/C1.md
-#   Failure model (task-defined mapping): 1 single DB node failure via `systemctl stop`
-#   (Note: C1.md original spec is WAN partition via iptables; REPLAN §6 names this
-#    script "node-down". This planner models a single-node stop — closest analog to
-#    the "leader / voter dies" sub-case discussed in C1.md timeline §Post-injection.)
+# Spec ground truth: phase-crossregion/chaos/C4.md
+#   Failure model: IDC leader die — stop IDC leader node via systemctl stop
+#   to observe leader election RTO per DB family.
 #
 # Behaviour: print the commands that *would* run + expected artifact paths +
 #            expected post-failure behaviour. Does NOT execute any systemctl call.
@@ -45,25 +43,26 @@ done
 [[ ! "$DURATION" =~ ^[0-9]+$ ]] && { echo "ERROR: --duration must be integer seconds" >&2; exit 2; }
 
 case "$DB" in
-  tidb) SVC="tidb-server (or tikv-server / pd-server depending on node role)" ;;
-  crdb) SVC="cockroach" ;;
-  ybdb) SVC="yb-tserver (and/or yb-master)" ;;
+  tidb) SVC="tikv-server (or pd-server for PD leader)" ; RTO_NOTE="~10s (raft-election-timeout = 10 ticks × 1s)" ;;
+  crdb) SVC="cockroach"                                ; RTO_NOTE="~9s (range lease re-election)" ;;
+  ybdb) SVC="yb-tserver (and/or yb-master)"           ; RTO_NOTE="~5-15s (raft heartbeat-based)" ;;
 esac
 
 TS="$(date +%Y%m%dT%H%M%S)"
-PLAN_FILE="chaos-plan-c1-${TS}.txt"
-ARTIFACT_DIR="chaos/C1/${TS}"
+PLAN_FILE="chaos-plan-c4-${TS}.txt"
+ARTIFACT_DIR="chaos/C4/${TS}"
 
 {
   echo "============================================================"
-  echo "chaos-c1-node-down-plan  (PLANNER ONLY — no execution)"
+  echo "chaos-c4-node-down-plan  (PLANNER ONLY — no execution)"
   echo "============================================================"
   echo "generated     : ${TS}"
   echo "db            : ${DB}"
-  echo "target-host   : ${TARGET_HOST}"
+  echo "target-host   : ${TARGET_HOST} (assumed IDC leader node)"
   echo "duration      : ${DURATION}s"
   echo "service       : ${SVC}"
-  echo "spec source   : phase-crossregion/chaos/C1.md"
+  echo "expected RTO  : ${RTO_NOTE}"
+  echo "spec source   : phase-crossregion/chaos/C4.md"
   echo
   echo "------------------------------------------------------------"
   echo "[1] Pre-injection check (would run)"
@@ -94,22 +93,22 @@ ARTIFACT_DIR="chaos/C1/${TS}"
   echo "  ${ARTIFACT_DIR}/plan.txt                 # copy of this plan file"
   echo
   echo "------------------------------------------------------------"
-  echo "[5] Expected behaviour (per spec C1.md)"
+  echo "[5] Expected behaviour (per spec C4.md)"
   echo "------------------------------------------------------------"
-  echo "  P-A  : IDC majority survives; if stopped node is GCP voter,"
-  echo "         per-shard quorum = 2 IDC voters → write continues at"
-  echo "         degraded TPS. If stopped node is IDC leader: leader"
-  echo "         election within ~5-15s (DB-family dependent)."
-  echo "  P-B  : per-shard voter spread; 1 node stop affects shards"
-  echo "         where that node hosts a voter. Surviving voters form"
-  echo "         quorum if arbiter placement allows."
+  echo "  P-A  : IDC majority; leader node dies → 1 IDC voter + 1 GCP voter = quorum;"
+  echo "         leader election within ${RTO_NOTE}; new leader typically IDC."
+  echo "  P-B  : per-shard voter spread; stopping IDC node affects only shards"
+  echo "         where that node hosted the leader. Other shards (GCP leader) unaffected."
   echo
-  echo "  Timeline (per C1.md §Post-injection):"
+  echo "  Timeline (per C4.md):"
   echo "    t=0    inject (systemctl stop)"
-  echo "    t+5s   raft heartbeat timeout"
+  echo "    t+5s   raft heartbeat timeout detected by peers"
   echo "    t+10s  leader election kicks in (per-shard)"
   echo "    t+30s  tpmC stabilises at degraded level"
   echo "    t+${DURATION}s end of injection window"
+  echo
+  echo "  Key metric: Leader election RTO = timestamp diff:"
+  echo "    last write before stop → first write after election"
   echo
   echo "------------------------------------------------------------"
   echo "[6] REMINDER"

@@ -8,11 +8,11 @@
 
 | ID | Spec | Planner script | 故障模型 | 注入機制 |
 |---|---|---|---|---|
-| C1 | [`C1.md`](./C1.md) | [`../scripts/chaos/chaos-c1-node-down-plan.sh`](../scripts/chaos/chaos-c1-node-down-plan.sh) | 單 node 故障（leader 或 voter）| `systemctl stop` DB service |
-| C4 | [`C4.md`](./C4.md) | [`../scripts/chaos/chaos-c4-network-partition-plan.sh`](../scripts/chaos/chaos-c4-network-partition-plan.sh) | IDC ↔ GCP raft 切斷 | `iptables -A INPUT/OUTPUT ... DROP` on raft port |
+| C1 | [`C1.md`](./C1.md) | [`../scripts/chaos/chaos-c1-partition-plan.sh`](../scripts/chaos/chaos-c1-partition-plan.sh) | GCP partition（WAN drop，bi-directional）| `iptables -A INPUT/OUTPUT -s/-d CIDR -j DROP`（全流量，無 port filter）|
+| C4 | [`C4.md`](./C4.md) | [`../scripts/chaos/chaos-c4-node-down-plan.sh`](../scripts/chaos/chaos-c4-node-down-plan.sh) | IDC leader die | `systemctl stop` DB service on IDC leader node |
 | C7 | [`C7.md`](./C7.md) | [`../scripts/chaos/chaos-c7-disk-slow-plan.sh`](../scripts/chaos/chaos-c7-disk-slow-plan.sh) | 磁碟慢（單 node WAL fsync 延遲） | cgroup `blkio.throttle.{read,write}_bps_device` 或 fallback `tc qdisc tbf` |
 
-> 註：planner script 命名與內部模型遵照 `REPLAN-2026-06-15.md` §6（C1=node-down / C4=network-partition / C7=disk-slow）。原 spec C1.md / C4.md / C7.md 內描述的「IDC全死、leader die、WAN partition」等細部模型在 planner 內以註解標示 mapping。
+> 註：planner script 命名與內部模型以 spec 為主（audit-6 2026-06-30 對齊）：C1=WAN partition / C4=IDC leader node-down / C7=disk-slow。
 
 ## 已淘汰
 
