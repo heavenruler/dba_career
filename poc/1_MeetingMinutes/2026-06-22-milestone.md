@@ -271,8 +271,8 @@
 **來源**
 
 - [`2026-06-18-fw-request-net.md`](./2026-06-18-fw-request-net.md)
-- [`SESSION-2026-06-18-iac-verify.md`](../phase-crossregion/SESSION-2026-06-18-iac-verify.md)
-- [`SESSION-2026-06-19-3db-smoke.md`](../phase-crossregion/SESSION-2026-06-19-3db-smoke.md)
+- [`SESSION-HISTORY.md`](../phase-crossregion/SESSION-HISTORY.md) (06-18 iac-verify)
+- [`SESSION-HISTORY.md`](../phase-crossregion/SESSION-HISTORY.md) (06-19 3db-smoke)
 - Git：`61311cd`、`d8af817`、`da3d03a`、`20725d1`
 
 ### M13. Determinism 問題浮現，正式 baseline 重新收斂（2026-06-21～06-22）
@@ -289,8 +289,8 @@
 
 **來源**
 
-- [`SESSION-2026-06-21-determinism.md`](../phase-crossregion/SESSION-2026-06-21-determinism.md)
-- [`SESSION-2026-06-22-determinism-v2.md`](../phase-crossregion/SESSION-2026-06-22-determinism-v2.md)（工作樹未提交，僅作進行中紀錄）
+- [`SESSION-HISTORY.md`](../phase-crossregion/SESSION-HISTORY.md) (06-21 determinism)
+- [`SESSION-HISTORY.md`](../phase-crossregion/SESSION-HISTORY.md) (06-22 determinism-v2)（工作樹未提交，僅作進行中紀錄）
 - Git：`d91b0aa`
 
 ## 4. 除錯歷程歸納

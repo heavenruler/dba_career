@@ -107,7 +107,7 @@ PoC 結束後：可關閉
 附件：
 - 拓樸圖：phase-crossregion/topology/P-A.md / P-B.md
 - 拍板紀錄：1_MeetingMinutes/2026-06-09-distributed-db-adoption-non-technical.md (D1)
-- 驗證紀錄：phase-crossregion/SESSION-2026-06-18-iac-verify.md (今天 FW 確認阻擋)
+- 驗證紀錄：phase-crossregion/SESSION-HISTORY.md (06-18 iac-verify，今天 FW 確認阻擋)
 
 請協助評估開通時程，謝謝。
 

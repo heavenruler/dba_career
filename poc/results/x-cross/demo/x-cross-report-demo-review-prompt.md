@@ -19,7 +19,7 @@
 1. 先讀完下列 SSOT 與實作，不可只讀 demo：
    - `phase-crossregion/manifest.yaml`
    - `phase-crossregion/Makefile`
-   - `phase-crossregion/NEXT-STEPS.md`
+   - `phase-crossregion/README.md`（Phase 狀態表，原 `NEXT-STEPS.md`）
    - `phase-crossregion/decisions-2026-06-08.md`
    - `phase-crossregion/topology/P-A.md`
    - `phase-crossregion/topology/P-B.md`
@@ -42,7 +42,7 @@
 在改報告前，建立一張 conflict table，至少處理以下問題。若能由 repo 靜態證據確定，修正權威文件；不能確定則建立 blocker，不可默默合理化。
 
 1. **DEV-1x1 誤標**：`results/x-cross/determinism/run1`、`run2` 是 true six-node、W=4 same-cluster determinism，不是 DEV-1x1。demo 的相關敘述必須修正。
-2. **W=128 target stale doc**：`phase-crossregion/Makefile` 已有 `phase-crossregion-w128-suite`，但 `NEXT-STEPS.md` 仍寫不存在。同步目前狀態與尚未驗證的限制。
+2. **W=128 target stale doc**：`phase-crossregion/Makefile` 已有 `phase-crossregion-w128-suite`，但 `README.md` Phase 狀態表（原 `NEXT-STEPS.md`）仍寫不存在。同步目前狀態與尚未驗證的限制。
 3. **N=5 語意錯置**：現有 target 只設定 `ROUNDS=5`。這代表同一 suite 的五個 rounds，不等於五個 independent suites。不得把它描述成 independent `N=5`，除非另有外層 repeat orchestration 與獨立 artifacts。
 4. **統計口徑衝突**：`results/PHASES.md` 與 code 定義 canonical `tpmC_mean = R1-R5 mean`；`results/x-cross/pipeline-log.md` 又要求 `R2-R5 median / CV`。先決定 primary estimator 並統一 SSOT。若 code 未改，報告主表必須以實際 schema 為準，其他 robust estimator只能列 secondary analysis。
 5. **A-A-RO 定義錯誤**：`workload-profiles/A-A-RO.md` 把 `NEW_ORDER` 寫成 read path；但決策文件與 `run-vm6-aa.sh` 使用 `ORDER_STATUS + STOCK_LEVEL`。`NEW_ORDER` 是 write transaction。先修正 profile SSOT，並驗證 go-tpc `--mix` 實際是否由 `tests/common/run.sh` 傳入。

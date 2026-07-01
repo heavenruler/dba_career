@@ -354,7 +354,7 @@ W=4 為 framework / contention 驗證 ≠ 正式基準；R2-R5（YBDB R3-R5）CV
 | **CockroachDB v26.2.0** | **2145.2** | 六節點存活、region locality 與跨區交易路徑可運作 | 不可由單輪數字判定正式延遲或跨家排名 |
 | **YugabyteDB 2025.2.2.2** | **6812.2** | 真六 tserver、IDC/GCP placement 與 preferred zone 路徑跑通 | 不可把相對 IDC-only 的差異直接歸因為 scale-out 效益 |
 
-> 數據來源：`phase-crossregion/SESSION-2026-06-19-3db-smoke.md`。本表只能用於「技術路徑已跑通」的證據，不可作為正式 benchmark 結論。
+> 數據來源：`phase-crossregion/SESSION-HISTORY.md`（06-19 3db-smoke）。本表只能用於「技術路徑已跑通」的證據，不可作為正式 benchmark 結論。
 
 ### 06-19 YugabyteDB 重大除錯節點
 
@@ -376,7 +376,7 @@ W=4 為 framework / contention 驗證 ≠ 正式基準；R2-R5（YBDB R3-R5）CV
 
 **已確認結論**：上述 W=4 結果不具重現性，不得納入正式跨家比較，也不得用來更新候選排序。
 
-**目前待驗證假設**：變異可能同時受低 warehouse contention、重新部署後 placement / scheduler 狀態、暖機與背景調度影響。`SESSION-2026-06-21-determinism.md` 將主要原因判為 W=4 lock contention，但正式因果仍須由 06-22 的同 cluster、調度關閉與 CV 實驗確認。
+**目前待驗證假設**：變異可能同時受低 warehouse contention、重新部署後 placement / scheduler 狀態、暖機與背景調度影響。`SESSION-HISTORY.md`（06-21 determinism）將主要原因判為 W=4 lock contention，但正式因果仍須由 06-22 的同 cluster、調度關閉與 CV 實驗確認。
 
 ### 06-22 Determinism v2 方向與完成條件
 
@@ -391,11 +391,11 @@ W=4 為 framework / contention 驗證 ≠ 正式基準；R2-R5（YBDB R3-R5）CV
 ### 新增引用來源
 
 - `phase-crossregion/PRE-FLIGHT-TEST-PLAN-2026-06-17.md`
-- `phase-crossregion/SESSION-2026-06-18-iac-verify.md`
+- `phase-crossregion/SESSION-HISTORY.md`（06-18 iac-verify）
 - `1_MeetingMinutes/2026-06-18-fw-request-net.md`
-- `phase-crossregion/SESSION-2026-06-19-3db-smoke.md`
-- `phase-crossregion/SESSION-2026-06-21-determinism.md`
-- `phase-crossregion/SESSION-2026-06-22-determinism-v2.md`（未提交／進行中，只能引用為工作方向）
+- `phase-crossregion/SESSION-HISTORY.md`（06-19 3db-smoke）
+- `phase-crossregion/SESSION-HISTORY.md`（06-21 determinism）
+- `phase-crossregion/SESSION-HISTORY.md`（06-22 determinism-v2；未提交／進行中，只能引用為工作方向）
 - `1_MeetingMinutes/2026-06-22-milestone.md`
 
 ---

@@ -46,7 +46,7 @@
 | # | 衝突 | 修正前 | 修正後 | repo 修改 |
 |---:|---|---|---|---|
 | 1 | DEV-1x1 誤標 | demo §5 把 `determinism/run1,run2` 描述為 DEV-1x1 W=4 framework selfcheck；§7 caveat 4 也寫 `flow_selfcheck=true` | 實為 true 6-node W=4 same-cluster determinism；per `pipeline-log.md` §1 + §2.1：`results/x-cross/determinism/run{1,2}/` 為「same-cluster N-round 收斂 CV ≤ 5%」 evidence | demo 重寫 §4 inventory 段；無 SSOT 改動 |
-| 2 | W=128 target stale doc | `NEXT-STEPS.md` §2.1 step 1.2 寫「Makefile 沒有 W=128 X-CROSS suite target」 | `Makefile` line 135 已有 `phase-crossregion-w128-suite`；但 chain 進 `phase-crossregion-all` 含 `phase1-wait`（Mac IAP），實際限制為 `.31` controller 路徑 | **已修** `NEXT-STEPS.md` §2.1 step 1.2 — 同步現況 |
+| 2 | W=128 target stale doc | `README.md` Phase 狀態表（原 `NEXT-STEPS.md` §2.1 step 1.2）寫「Makefile 沒有 W=128 X-CROSS suite target」 | `Makefile` line 135 已有 `phase-crossregion-w128-suite`；但 chain 進 `phase-crossregion-all` 含 `phase1-wait`（Mac IAP），實際限制為 `.31` controller 路徑 | **已修** `README.md` Phase 狀態表（原 `NEXT-STEPS.md` §2.1 step 1.2）— 同步現況 |
 | 3 | N=5 語意錯置 | demo §3 / §13.1 把 `requires_n:1` + `ROUNDS=5` 描述為 independent N=5 suite | `manifest.yaml requires_n:1` exploratory；`ROUNDS=5` 是同 suite 5 round（per `summary-from-stdout.py` aggregate_thread_group）；independent N=5 需外層 repeat orchestration | demo 重寫 §6 measurement contract；SSOT 無需改 |
 | 4 | 統計口徑衝突 | `pipeline-log.md` §1 / §5 要求 R2-R5 median / CV；`PHASES.md` §5 + `summary-from-stdout.py` canonical = R1-R5 mean | Primary = R1-R5 mean（per code + PHASES）；R2-R5 median 改列 secondary / sensitivity | **已修** `pipeline-log.md` §1 TL;DR 與 §5 下一步 |
 | 5 | A-A-RO `NEW_ORDER` 寫成 read | `workload-profiles/A-A-RO.md` Client 配置表 GCP 端「只跑 NEW_ORDER/STOCK_LEVEL read paths」 | NEW_ORDER 是 write txn；A-A-RO GCP mix per `decisions-2026-06-08.md` Q6 + `run-vm6-aa.sh` line 96-98 = `0:0:50:0:50`（ORDER_STATUS + STOCK_LEVEL only）| **已修** `workload-profiles/A-A-RO.md` Client 配置表 |
@@ -58,7 +58,7 @@
 
 ### Unified diff（已 apply；未 commit；per parent 統一管 git）
 
-**衝突 #2** — `phase-crossregion/NEXT-STEPS.md`：
+**衝突 #2** — `phase-crossregion/README.md` Phase 狀態表（原 `phase-crossregion/NEXT-STEPS.md`）：
 
 ```diff
 -| **1.2** | 三家 W=128 × N=5 × same-cluster suite | **目前 Makefile 沒有 W=128 X-CROSS suite target**；需 operator 新增（或沿用 `phase6/7/8-*-smoke` 但 override W 參數）。建議新 target：`phase-crossregion-w128-suite`，掛 freeze → warmup 20min → 5 round × 5min → collect |
@@ -114,7 +114,7 @@
 | 2. `feedback_` grep | demo 重寫後 0 hit；改引 `decisions-2026-06-08.md` Q9 + `crossregion-via31.ini` header | audit doc 引用 review-prompt §2.7 描述用，不作權威 |
 | 3. `DEV-1x1` / `N=5` / `R1-R5` / `R2-R5` 語意一致性 | DEV-1x1 自 demo 移除（不適用 X-CROSS）；N=5 demo 內標明 `ROUNDS=5` ≠ independent N=5；R1-R5 為 primary canonical；R2-R5 為 secondary sensitivity | pipeline-log §1 / §5 與 PHASES §5 一致 |
 | 4. C1 / C4 script vs spec | **已修（audit-6 2026-06-30）**：`chaos-c1-partition-plan.sh`（WAN partition iptables）/ `chaos-c4-node-down-plan.sh`（IDC leader die systemctl stop）— 名稱與內部模型已對齊 C1.md / C4.md spec | C7 planner 未在 phase-crossregion/scripts/chaos/ 落地（per `chaos/README.md` 表，C7 planner 為 `chaos-c7-disk-slow-plan.sh`，但目錄列表確認存在）|
-| 5. Repo-relative link 存在性 | demo §10 appendix 列出的 SSOT link 全部 cross-check：`phase-crossregion/manifest.yaml` / `Makefile` / `NEXT-STEPS.md` / `decisions-2026-06-08.md` / `topology/{P-A,P-B}.md` / `workload-profiles/{A-S,A-A-RO,A-A}.md` / `chaos/{README,C1,C4,C7}.md` / `failover/{F1,RTO-RPO-methodology}.md` / `scripts/{gate-placement-p-b.sh, chaos/chaos-c1-partition-plan.sh, chaos/chaos-c4-node-down-plan.sh}` / `tests/common/summary-from-stdout.py` / `results/PHASES.md` / `results/PoC-DESIGN.md` / `results/x-cross/pipeline-log.md` 全部存在 | — |
+| 5. Repo-relative link 存在性 | demo §10 appendix 列出的 SSOT link 全部 cross-check：`phase-crossregion/manifest.yaml` / `Makefile` / `README.md`（Phase 狀態表，原 `NEXT-STEPS.md`）/ `decisions-2026-06-08.md` / `topology/{P-A,P-B}.md` / `workload-profiles/{A-S,A-A-RO,A-A}.md` / `chaos/{README,C1,C4,C7}.md` / `failover/{F1,RTO-RPO-methodology}.md` / `scripts/{gate-placement-p-b.sh, chaos/chaos-c1-partition-plan.sh, chaos/chaos-c4-node-down-plan.sh}` / `tests/common/summary-from-stdout.py` / `results/PHASES.md` / `results/PoC-DESIGN.md` / `results/x-cross/pipeline-log.md` 全部存在 | — |
 
 ## §6 Promotion checklist（從 demo → 正式 PoC 報告需滿足）
 

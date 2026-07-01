@@ -367,7 +367,7 @@ Acceptance：
 - .31 必須直接到達 IDC/GCP 節點 private IP，或使用固定且記錄在 manifest 的非 MAC bastion。若 .31→GCP 沒路由，fail-closed 並先修網路；不得 fallback 到 localhost:122xx。
 - 各 DB 依序執行，禁止同時跑造成 client/網路資源互相污染。
 
-先讀 phase-crossregion manifest/README/NEXT-STEPS、run-vm6-suite.sh、Makefile、topology P-A/P-B、WAN/chrony/placement gates 與 results/x-cross/pipeline-log.md。明確列出現有缺口：wrapper 只支援 TiDB、CRDB/YBDB bypass wrapper、MAC IAP address、summary retrofit、W=128 target 缺失。
+先讀 phase-crossregion manifest/README（Phase 狀態表）、run-vm6-suite.sh、Makefile、topology P-A/P-B、WAN/chrony/placement gates 與 results/x-cross/pipeline-log.md。明確列出現有缺口：wrapper 只支援 TiDB、CRDB/YBDB bypass wrapper、MAC IAP address、summary retrofit、W=128 target 缺失。
 
 先完成 framework：
 1. 建立 .31-native controller entrypoint；確認 .31 具備 repo checkout、Terraform/Ansible、cloud credentials、SSH key與必要 CLI；同步 scripts 到固定 release dir並記 git SHA，不從 MAC 逐步 ssh orchestration。

@@ -335,7 +335,7 @@ TiDB / CRDB / YBDB 三家全在矩陣內。三家絕對 serial（per `decisions-
 | **成本** | steady-state（GCP VM + inter-region egress + storage）vs failover cost（含 RTO 期 unavailable cost）| **MISSING** — 待 acceptance criteria 訂後估 | review-prompt §4.13 |
 | **安全 / 治理** | data residency（IDC ↔ asia-east1）/ 加密 / IAM / 稽核 / 合規 | **MISSING** — 待業務 owner 確認 | review-prompt §4.14 |
 | **WAN** | RTT business-hour vs off-peak；MTU; loss | spec 已寫 [PLANNED]（`scripts/wan-probe.sh`）；W=128 runtime [BLOCKED] | `phase-crossregion/wan/baseline-measurement.md` |
-| **Placement drift** | scheduler / balancer freeze 三家 | spec 已寫 [PLANNED]（`phase-crossregion/freeze/`）；W=128 runtime [BLOCKED] | `NEXT-STEPS.md` §2.1 hard gate |
+| **Placement drift** | scheduler / balancer freeze 三家 | spec 已寫 [PLANNED]（`phase-crossregion/freeze/`）；W=128 runtime [BLOCKED] | `README.md` Phase 狀態表（原 `NEXT-STEPS.md` §2.1 hard gate）|
 | **Chrony** | IDC ↔ GCP drift < 100ms（per `decisions-2026-06-08.md` Q10）| script 落地 [MEASURED]；preflight artifact 存在 | `scripts/gate-chrony-cross-region.sh` |
 
 ---
@@ -389,7 +389,7 @@ IDC vlan241                            asia-east1
 |---|---|
 | `phase-crossregion/manifest.yaml` | result_scope / baseline_family / threads_list / warehouses / isolation / placements / profiles / artifact_prefix |
 | `phase-crossregion/Makefile` | `phase-crossregion-w128-suite` target（exists; chain 需 fix 改走 `phase1-wait-via-31`）|
-| `phase-crossregion/NEXT-STEPS.md` | 已落地 / 待 operator 觸發 / 已知阻擋 |
+| `phase-crossregion/README.md`（Phase 狀態表）| 已落地 / 待 operator 觸發 / 已知阻擋 |
 | `phase-crossregion/decisions-2026-06-08.md` | Q1–Q10 拍板；Q6 A-A-RO mix；Q9 serial per-DB + cell sequence；Q10 chrony |
 | `phase-crossregion/topology/{P-A,P-B}.md` | placement 結構 + 落地指令 + 驗證 gate |
 | `phase-crossregion/workload-profiles/{A-S,A-A-RO,A-A}.md` | client 配置 + 預期觀察 + 搭配 placement |

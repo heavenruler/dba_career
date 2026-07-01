@@ -47,9 +47,9 @@
 
 | 資料庫 | tpmC | tpmTotal | 驗證到的事項 | 來源 |
 |---|---:|---:|---|---|
-| TiDB | 11,112.9 | 24,967.1 | 真六節點、P-A leader-pinned IDC 可執行 | [`SESSION-2026-06-19-3db-smoke.md`](../../phase-crossregion/SESSION-2026-06-19-3db-smoke.md) |
-| CockroachDB | 2,145.2 | 4,896.0 | 真六節點、region locality 正確 | [`SESSION-2026-06-19-3db-smoke.md`](../../phase-crossregion/SESSION-2026-06-19-3db-smoke.md) |
-| YugabyteDB | 6,812.2 | 15,129.2 | 真六節點、leader-pin IDC、catalog wait 後可執行 | [`SESSION-2026-06-19-3db-smoke.md`](../../phase-crossregion/SESSION-2026-06-19-3db-smoke.md) |
+| TiDB | 11,112.9 | 24,967.1 | 真六節點、P-A leader-pinned IDC 可執行 | [`SESSION-HISTORY.md`](../../phase-crossregion/SESSION-HISTORY.md) (06-19) |
+| CockroachDB | 2,145.2 | 4,896.0 | 真六節點、region locality 正確 | [`SESSION-HISTORY.md`](../../phase-crossregion/SESSION-HISTORY.md) (06-19) |
+| YugabyteDB | 6,812.2 | 15,129.2 | 真六節點、leader-pin IDC、catalog wait 後可執行 | [`SESSION-HISTORY.md`](../../phase-crossregion/SESSION-HISTORY.md) (06-19) |
 
 此段只能證明跨區 framework 已跑通；不可與 S-BASE / S-K8S 的 W=128 結果直接比較。
 
@@ -59,7 +59,7 @@
 
 | 類型 | 位置 | 原因 |
 |---|---|---|
-| 2026-06-21 redeploy run-to-run | [`SESSION-2026-06-21-determinism.md`](../../phase-crossregion/SESSION-2026-06-21-determinism.md) | W=4 且每輪 redeploy；TiDB 1,552.2 -> 9,719.2，CockroachDB 3,929.6 -> 2,365.6，YugabyteDB 41.8 -> 23.0，變異不可作正式 benchmark |
+| 2026-06-21 redeploy run-to-run | [`SESSION-HISTORY.md`](../../phase-crossregion/SESSION-HISTORY.md) (06-21) | W=4 且每輪 redeploy；TiDB 1,552.2 -> 9,719.2，CockroachDB 3,929.6 -> 2,365.6，YugabyteDB 41.8 -> 23.0，變異不可作正式 benchmark |
 | YugabyteDB `run1-20260622T131459` | `results/x-cross/determinism/run1-20260622T131459+0800/ybdb-vm-6node-P-A-rc-run1-*` | round 1 僅 10.1 tpmC，round 2 缺 tpmC 行；改採 run2 的 R3-R5 |
 | `results/x-cross/preflight/time-sync/` | `results/x-cross/preflight/time-sync/chrony-gate-*` | 只包含 chrony / gate 檢查；不是 go-tpc suite 結果 |
 | `run2` 內 TiDB / CockroachDB 複製目錄 | `results/x-cross/determinism/run2-20260622T231927+0800/{tidb,crdb}-vm-6node-P-A-rc-run1-*` | 目錄名仍為 run1，視為 run1 artifact copy，不視為新的 run2 採樣 |
@@ -87,9 +87,9 @@
 
 ## 6. 參考
 
-- [`phase-crossregion/SESSION-2026-06-19-3db-smoke.md`](../../phase-crossregion/SESSION-2026-06-19-3db-smoke.md)
-- [`phase-crossregion/SESSION-2026-06-21-determinism.md`](../../phase-crossregion/SESSION-2026-06-21-determinism.md)
-- [`phase-crossregion/SESSION-2026-06-22-determinism-v2.md`](../../phase-crossregion/SESSION-2026-06-22-determinism-v2.md)
+- [`phase-crossregion/SESSION-HISTORY.md`](../../phase-crossregion/SESSION-HISTORY.md) (06-19 3db-smoke)
+- [`phase-crossregion/SESSION-HISTORY.md`](../../phase-crossregion/SESSION-HISTORY.md) (06-21 determinism)
+- [`phase-crossregion/SESSION-HISTORY.md`](../../phase-crossregion/SESSION-HISTORY.md) (06-22 determinism-v2)
 - [`1_MeetingMinutes/0616-slide-draft.md`](../../1_MeetingMinutes/0616-slide-draft.md)
 - [`results/PHASES.md`](../PHASES.md)
 
