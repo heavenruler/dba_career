@@ -69,13 +69,15 @@ trap '_window_failed' EXIT
 
 log "window start  PLACEMENT=$PLACEMENT TS=$TPCC_TS W=$WAREHOUSES N=$ROUNDS threads=[$THREADS_LIST]"
 
-# --- 0. freeze TiDB PD scheduling（steady-state 硬門檻）---
+# --- 0. freeze 改由 wrapper 在 placement 收斂後、timed run 前執行（bug #8：
+#     step-0 提早凍結會讓 P-A leader 無法遷移 → prepare placement gate 必 0% FAIL）---
 [[ -f "$FREEZE_DIR/freeze-tidb.sh" ]] || { echo "missing $FREEZE_DIR/freeze-tidb.sh（Mac 端 detach target 需先 rsync freeze/）" >&2; exit 1; }
-log "step 0: freeze PD scheduling (dump → $ROOT/freeze-state)"
-PD_URL="$PD_URL" DUMP_DIR="$ROOT/freeze-state" bash "$FREEZE_DIR/freeze-tidb.sh"
+export FREEZE_SCRIPT="$FREEZE_DIR/freeze-tidb.sh"
+export UNFREEZE_SCRIPT="$FREEZE_DIR/unfreeze-tidb.sh"
+export PD_URL
 
-# --- 1. full suite（gate→prepare→placement→run→collect→summary→.suite.done）---
-log "step 1: run-vm6-suite.sh (this is the long part: load + warmup + sweep)"
+# --- 1. full suite（gate→prepare→placement 收斂→freeze→run→unfreeze→collect→summary→.suite.done）---
+log "step 1: run-vm6-suite.sh (freeze hook 於 placement 收斂後才凍結)"
 bash "$SELF/run-vm6-suite.sh" --db tidb --topology "vm-6node-${PLACEMENT}" --ts "$TPCC_TS"
 
 # --- 2. P-A only: tpcc leaders 100% IDC gate（P-B 期望 spread，由 prepare.sh §6.6 把關）---
@@ -102,9 +104,10 @@ mysql -h "$DB_HOST" -P "$DB_PORT" -u root -e \
   "SELECT p.STORE_ID, s.ADDRESS, s.LABEL, COUNT(*) AS leader_count FROM information_schema.tikv_region_peers p JOIN information_schema.tikv_store_status s ON p.STORE_ID=s.STORE_ID WHERE p.IS_LEADER=1 GROUP BY p.STORE_ID, s.ADDRESS, s.LABEL;" \
   > "$ROOT/leader-snapshot/leaders-by-store-$(date +%s).txt" 2>&1 || true
 
-# --- 4. unfreeze PD（成功路徑）---
-log "step 4: unfreeze PD scheduling"
-PD_URL="$PD_URL" DUMP_DIR="$ROOT/freeze-state" bash "$FREEZE_DIR/unfreeze-tidb.sh"
+# --- 4. unfreeze 已由 wrapper post-run 執行；此處只驗證 PD 已解凍（fail-closed）---
+log "step 4: verify PD unfrozen"
+cur=$(curl -sf "${PD_URL}/pd/api/v1/config/schedule" | jq -r '."leader-schedule-limit"')
+[[ "$cur" != "0" ]] || { echo "FAIL: PD still frozen (leader-schedule-limit=0) after suite" >&2; exit 1; }
 
 # --- 5. done marker ---
 trap - EXIT

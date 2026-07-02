@@ -26,7 +26,7 @@ rollback() {
     orig=$(jq -r ".[\"${k}\"] // empty" "$DUMP_FILE" 2>/dev/null || true)
     if [[ -n "$orig" ]]; then
       echo "[freeze-tidb] rollback: config set $k $orig" >&2
-      tiup ctl:v8.5.2 pd -u "$PD_URL" config set "$k" "$orig" || true
+      curl -sf -X POST -H "Content-Type: application/json" -d "{\"$k\": $orig}" "${PD_URL}/pd/api/v1/config" >/dev/null || true
     fi
   done
 }
@@ -45,18 +45,25 @@ LIMITS=(
   merge-schedule-limit
 )
 
-# HIGH 1: 使用無前綴 bare key（config set leader-schedule-limit 0）
+# HIGH 1: 使用無前綴 bare key；PD HTTP API 直設（.31 無 tiup，curl 即可）
 for key in "${LIMITS[@]}"; do
   echo "[freeze-tidb] config set $key = 0"
-  tiup ctl:v8.5.2 pd -u "$PD_URL" config set "$key" 0
+  curl -sf -X POST -H 'Content-Type: application/json' \
+    -d "{\"$key\": 0}" "${PD_URL}/pd/api/v1/config" >/dev/null
   CHANGED_KEYS+=("$key")
+done
+
+# verify: 全部 limit 實際歸零（POST 成功 ≠ 生效，fail-closed 驗一次）
+for key in "${LIMITS[@]}"; do
+  cur=$(curl -sf "${PD_URL}/pd/api/v1/config/schedule" | jq -r ".[\"${key}\"]")
+  [[ "$cur" == "0" ]] || { echo "FAIL: $key = $cur (expected 0)" >&2; exit 1; }
 done
 
 # HIGH 2: polling fail-closed — 等待 in-flight operators 清空，超時即 fail
 echo "[freeze-tidb] waiting for in-flight operators to drain (max 150s)..."
 n=1
 for i in $(seq 1 30); do
-  n=$(tiup ctl:v8.5.2 pd -u "$PD_URL" operator show 2>/dev/null | grep -c '^.' || true)
+  n=$(curl -sf "${PD_URL}/pd/api/v1/operators" 2>/dev/null | jq 'length' 2>/dev/null || echo 1)
   [[ "$n" -eq 0 ]] && break
   echo "[freeze-tidb] poll $i/30: $n operator(s) pending, waiting 5s..."
   sleep 5

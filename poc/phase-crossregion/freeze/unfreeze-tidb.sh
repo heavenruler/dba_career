@@ -29,7 +29,15 @@ for key in "${LIMITS[@]}"; do
     exit 1
   fi
   echo "[unfreeze-tidb] config set $key = ${val}"
-  tiup ctl:v8.5.2 pd -u "$PD_URL" config set "$key" "$val"
+  curl -sf -X POST -H 'Content-Type: application/json' \
+    -d "{\"$key\": $val}" "${PD_URL}/pd/api/v1/config" >/dev/null
+done
+
+# verify: 還原值實際生效（fail-closed）
+for key in "${LIMITS[@]}"; do
+  want=$(jq -r ".[\"${key}\"]" "$DUMP_FILE")
+  cur=$(curl -sf "${PD_URL}/pd/api/v1/config/schedule" | jq -r ".[\"${key}\"]")
+  [[ "$cur" == "$want" ]] || { echo "FAIL: $key = $cur (expected $want)" >&2; exit 1; }
 done
 
 echo "[unfreeze-tidb] TiDB unfrozen at $(date)"

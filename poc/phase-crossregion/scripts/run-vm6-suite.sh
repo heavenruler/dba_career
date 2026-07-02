@@ -202,6 +202,11 @@ _suite_failed() {
   printf '{"phase":"suite","status":"FAILED","db":"%s","topology":"%s","ts":"%s","failed_at":"%s","exit_code":%d}\n' \
     "$DB" "$TOPOLOGY" "$TS" "$ts_now" "$rc" > "$ROOT/.suite.failed"
   rm -f "$ROOT/.suite.done.tmp" 2>/dev/null || true
+  # freeze 與 unfreeze 之間失敗 → 兜底解凍（不可留 PD scheduler 永久停擺）
+  if [[ -n "${UNFREEZE_SCRIPT:-}" && -f "$ROOT/freeze-state/pd-config-before.json" ]]; then
+    echo "[wrapper] failure path: best-effort unfreeze"
+    PD_URL="${PD_URL:-http://172.24.40.32:2379}" DUMP_DIR="$ROOT/freeze-state" bash "$UNFREEZE_SCRIPT" || true
+  fi
   echo "[wrapper] .suite.failed written (exit=$rc)"
 }
 trap '_suite_failed' EXIT
@@ -259,6 +264,28 @@ case "$DB" in
     ;;
 esac
 
+# P-A × tidb: leaders 必須先收斂 100% IDC 才能凍結（bug #8 教訓：
+# driver step-0 提早 freeze → leader 無法遷移 → prepare placement gate 必 0% FAIL）
+if [[ "$DB" == "tidb" && "$PLACEMENT" == "P-A" ]]; then
+  echo "[wrapper] pre-freeze gate: wait tpcc region leaders → 100% IDC (max 5 min)"
+  converged=0
+  for i in $(seq 1 30); do
+    pct=$(mysql -h "$DB_HOST" -P "$DB_PORT" -u root -BNe \
+      "SELECT IFNULL(SUM(CASE WHEN s.LABEL LIKE '%idc%' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*),0), 0) FROM information_schema.tikv_region_peers p JOIN information_schema.tikv_store_status s ON p.STORE_ID=s.STORE_ID JOIN information_schema.tikv_region_status r ON p.REGION_ID=r.REGION_ID WHERE p.IS_LEADER=1 AND r.DB_NAME='tpcc';" \
+      2>/dev/null | tail -1 || true)
+    case "$pct" in 100|100.*) echo "  tpcc leaders 100% on IDC"; converged=1; break ;; esac
+    printf '  %2d/30 tpcc leaders on IDC: %s%%\n' "$i" "$pct"
+    sleep 10
+  done
+  [[ "$converged" == "1" ]] || { echo "[wrapper] pre-freeze gate FAIL: leaders not 100% IDC after 5min" >&2; exit 1; }
+fi
+
+# steady-state freeze hook（driver 傳入 FREEZE_SCRIPT；此時 placement 已收斂，凍結安全）
+if [[ -n "${FREEZE_SCRIPT:-}" ]]; then
+  echo "[wrapper] pre-run freeze: $FREEZE_SCRIPT"
+  PD_URL="${PD_URL:-http://172.24.40.32:2379}" DUMP_DIR="$ROOT/freeze-state" bash "$FREEZE_SCRIPT"
+fi
+
 echo "[3/4] run (warmup + sweep, contains gate-isolation)"
 # A-A-RO profile: GCP-side 不參與此 wrapper（read-only follower mix 由 run-vm6-aa.sh 啟）
 # A-A profile : 同步雙側由 run-vm6-aa.sh orchestrate；此 wrapper 純 IDC writer
@@ -266,6 +293,12 @@ if [[ "$PROFILE" == "A-A-RO" || "$PROFILE" == "A-A" ]]; then
   echo "[wrapper] PROFILE=$PROFILE → IDC writer side only; GCP side handled by run-vm6-aa.sh"
 fi
 bash "$COMMON_DIR/run.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-host "$DB_HOST" --ts "$TS"
+
+# steady-state unfreeze（run 結束即解凍；失敗路徑由 _suite_failed trap 兜底）
+if [[ -n "${UNFREEZE_SCRIPT:-}" ]]; then
+  echo "[wrapper] post-run unfreeze: $UNFREEZE_SCRIPT"
+  PD_URL="${PD_URL:-http://172.24.40.32:2379}" DUMP_DIR="$ROOT/freeze-state" bash "$UNFREEZE_SCRIPT" || true
+fi
 
 # ybdb: 對應 B0-3 的 pre-run freeze；run 結束即解凍（同原 phase7 post-run 步驟）
 if [[ "$DB" == "ybdb" ]]; then
