@@ -102,8 +102,9 @@ else
     --result-scope "$RESULT_SCOPE"
 fi
 
-# fan-out CLUSTER_HOSTS (logical_id@addr:port)
-: "${CLUSTER_HOSTS:=idc-dbhost-1@172.24.40.32 idc-dbhost-2@172.24.40.33 idc-dbhost-3@172.24.40.34 gcp-dbhost-1@localhost:12211 gcp-dbhost-2@localhost:12212 gcp-dbhost-3@localhost:12213}"
+# fan-out CLUSTER_HOSTS（wrapper 跑在 .31 → GCP 一律直連內網 IP；
+# 舊預設 localhost:1221x 是 IAP 殘留，會讓 per-round GCP metrics 全漏）
+: "${CLUSTER_HOSTS:=idc-dbhost-1@172.24.40.32 idc-dbhost-2@172.24.40.33 idc-dbhost-3@172.24.40.34 gcp-dbhost-1@10.160.152.11 gcp-dbhost-2@10.160.152.12 gcp-dbhost-3@10.160.152.13}"
 
 export CLUSTER_HOSTS DB DB_HOST DB_PORT TOPOLOGY ISO CLIENT_ZONE \
   PHASE_NAME RESULT_SCOPE BASELINE_FAMILY tuning_profile_id PLACEMENT PROFILE
