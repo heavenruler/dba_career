@@ -137,6 +137,7 @@ SSH_OPTS           := -o LogLevel=ERROR -o StrictHostKeyChecking=accept-new
         phase-crossregion-all phase-crossregion-w128-suite phase-crossregion-w128-suite-pb \
         phase-crossregion-promotion-gate \
         phase-crossregion-tidb-validate phase6-tidb-smoke-dryrun \
+        win-tidb-as-detach win-tidb-as-status \
         new-idc-vms new-gcp-vms drop-idc-vms drop-gcp-vms \
         gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure gcp-wait-startup \
         inventory-refresh gcp-inventory-refresh inventory-refresh-all ansible-ping \
@@ -155,6 +156,8 @@ help:
 	@echo "  make phase-crossregion-w128-suite-pb        - W=128 × N=5 cross-region P-B variant (checklist #2)"
 	@echo "  make phase-crossregion-promotion-gate       - Promotion checklist #9 final gate (checklist #1/#2/#7/#8)"
 	@echo "  make phase-crossregion-tidb-validate        - TiDB P-A W=128 workflow validation (DRY_RUN=1, no benchmark)"
+	@echo "  make win-tidb-as-detach PLACEMENT=P-A|P-B   - TiDB A-S W=128 window detached on .31 (Mac 可關機)"
+	@echo "  make win-tidb-as-status PLACEMENT=... TPCC_TS=... - 查 detached window 進度 / markers"
 	@echo ""
 	@echo "Phase chain (run in order):"
 	@echo "  make phase1                                 - destroy + apply IDC + GCP VMs + wait startup"
@@ -828,6 +831,42 @@ phase6-tidb-smoke-dryrun:
 	@echo "==> phase6-tidb-smoke-dryrun: reading .dry-run.done artifact"
 	@ssh $(TPCC_CLIENT) "cat $(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS)/.dry-run.done 2>/dev/null || echo '(dry-run.done not found)'"
 	@echo "==> [end] phase6-tidb-smoke-dryrun at $$(date +%Y-%m-%dT%H:%M:%S%z)"
+
+# ===================================================================
+# Operator window — TiDB × A-S × W=128 detached on .31（Mac 可關機）
+#
+# 前提：phase1 / phase2 / phase2-gate / phase3-tidb-deploy 已完成（Mac touch）。
+# detach 後長跑段（load+warmup+sweep ~4.5-6.5h）完全在 .31 上，nohup 存活。
+#
+# Usage:
+#   make win-tidb-as-detach PLACEMENT=P-A TPCC_TS=<ts>   # 觸發後 Mac 可關機
+#   make win-tidb-as-status PLACEMENT=P-A TPCC_TS=<ts>   # 回來查進度
+# ===================================================================
+WIN_LOG = /tmp/poc-tpcc/logs/win-tidb-as-$(PLACEMENT)-$(TPCC_TS).log
+
+win-tidb-as-detach:
+	@echo "==> rsync scripts + freeze/ to .31 (driver 依賴)"
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
+	rsync -avz phase-crossregion/freeze/  '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/freeze/'
+	@echo "==> launch detached driver on .31  PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \
+	  nohup env PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS) \
+	    bash $(CROSS_SCRIPTS_REMOTE)/win-tidb-as-w128.sh \
+	    > $(WIN_LOG) 2>&1 < /dev/null & \
+	  echo \"started pid \$$!\""
+	@echo ""
+	@echo "==> detached。Mac 現在可關機。回來後查進度："
+	@echo "    make win-tidb-as-status PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS)"
+
+win-tidb-as-status:
+	@echo "==> window markers (TPCC_TS=$(TPCC_TS) PLACEMENT=$(PLACEMENT))"
+	@ssh $(TPCC_CLIENT) "ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	  for m in .window.done .window.failed .suite.done .suite.failed; do \
+	    [ -f \"\$$ROOT/\$$m\" ] && { echo \"--- \$$m ---\"; cat \"\$$ROOT/\$$m\"; }; \
+	  done; \
+	  [ -f \"\$$ROOT/.window.done\" ] || [ -f \"\$$ROOT/.window.failed\" ] || echo '(window still running)'"
+	@echo "==> driver log tail"
+	@ssh $(TPCC_CLIENT) "tail -20 $(WIN_LOG) 2>/dev/null || echo '(no log yet)'"
 
 # ===================================================================
 # Sub-rules reused verbatim from Makefile.tc1
