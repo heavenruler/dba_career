@@ -48,6 +48,7 @@ IDC_KNOWN          := $(IDC_ADMIN) $(IDC_NODES)
 GCP_PORTS          := 12211 12212 12213 12214 12215
 GCP_DB_PORTS       := 12211 12212 12213
 GCP_DB_IPS         := 10.160.152.11 10.160.152.12 10.160.152.13
+GCP_ALL_IPS        := 10.160.152.11 10.160.152.12 10.160.152.13 10.160.152.14 10.160.152.15
 
 # === TPC-C client / artifacts (vm-1node SSOT §11.2) ===
 TPCC_CLIENT        := root@172.24.40.31
@@ -297,25 +298,24 @@ phase2-dns-fix:
 	    systemctl restart chronyd; sleep 2; chronyc tracking | head -3'; \
 	done
 
+# via-31 only（硬規則：絕不走 IAP localhost:1221x）。
+# .31 → GCP 免推 pubkey：terraform metadata extra_ssh_public_keys 已烘進 VM
+# （phase1-wait-via-31 能從 .31 檢查 READY 即為證明）。
 phase2-ssh-prime:
-	@echo "==> phase2-ssh-prime: known_hosts clean + .31 self-ssh + GCP pubkey push"
+	@echo "==> phase2-ssh-prime: known_hosts clean + .31 self-ssh + .31→GCP prime (via-31; no IAP tunnel)"
 	for ip in $(IDC_KNOWN); do ssh-keygen -R $$ip || true; done
-	for port in $(GCP_PORTS); do ssh-keygen -R "[localhost]:$$port" || true; done
 	ssh $(SSH_OPTS) root@$(IDC_ADMIN) 'true'
-	for port in $(GCP_PORTS); do \
-	  ssh $(SSH_OPTS) -p $$port root@localhost 'true'; \
-	done
 	ssh root@$(IDC_ADMIN) '\
 	  [ -f /root/.ssh/id_rsa ] || ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa; \
 	  grep -qFf /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys 2>/dev/null \
 	    || cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys; \
 	  chmod 600 /root/.ssh/authorized_keys; \
 	  ssh -o StrictHostKeyChecking=accept-new root@172.24.40.31 true'
-	@PUBKEY=$$(ssh root@$(IDC_ADMIN) 'cat /root/.ssh/id_rsa.pub'); \
-	for port in $(GCP_PORTS); do \
-	  ssh -p $$port root@localhost "mkdir -p /root/.ssh; grep -qF \"$$PUBKEY\" /root/.ssh/authorized_keys 2>/dev/null || echo \"$$PUBKEY\" >> /root/.ssh/authorized_keys; chmod 600 /root/.ssh/authorized_keys"; \
-	done
-	ssh root@$(IDC_ADMIN) 'for ip in $(IDC_NODES) $(GCP_DB_IPS); do ssh-keygen -R $$ip 2>/dev/null; done; true'
+	ssh root@$(IDC_ADMIN) 'for ip in $(IDC_NODES) $(GCP_ALL_IPS); do ssh-keygen -R $$ip 2>/dev/null; done; true'
+	ssh root@$(IDC_ADMIN) 'ok=0; for ip in $(GCP_ALL_IPS); do \
+	  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 root@$$ip true && ok=$$((ok+1)); done; \
+	  [ "$$ok" -eq 5 ] || { echo "ssh-prime FAIL: only $$ok/5 GCP reachable from .31"; exit 1; }; \
+	  echo "  .31 → 5/5 GCP primed"'
 
 phase2-bootstrap:
 	@echo "==> [start] phase2-bootstrap at $$(date +%Y-%m-%dT%H:%M:%S%z) (timeout=$(TIMEOUT_PHASE2_BOOTSTRAP)s)"
@@ -669,13 +669,13 @@ phase9-destroy:
 # ===================================================================
 teardown-tidb:
 	@echo "==> teardown-tidb (best-effort)"
-	-cd $(ANSIBLE_DIR) && ansible -i inventory/crossregion.ini crossregion_cluster -m shell -a \
+	-cd $(ANSIBLE_DIR) && ansible -i $(ANSIBLE_INV_VIA31) crossregion_cluster -m shell -a \
 	  '[ -d /root/.tiup/storage/cluster/clusters/tpcc-tidb-vm6 ] && \
 	   /root/.tiup/bin/tiup cluster destroy tpcc-tidb-vm6 --yes 2>&1 | tail -3 || echo no_tidb' -b -o
 
 teardown-ybdb:
 	@echo "==> teardown-ybdb (best-effort)"
-	-cd $(ANSIBLE_DIR) && ansible -i inventory/crossregion.ini crossregion_cluster -m shell -a \
+	-cd $(ANSIBLE_DIR) && ansible -i $(ANSIBLE_INV_VIA31) crossregion_cluster -m shell -a \
 	  'pkill -KILL -x yb-master 2>/dev/null; pkill -KILL -x yb-tserver 2>/dev/null; \
 	   pkill -KILL -x yugabyted-ui 2>/dev/null; \
 	   for pid in $$(pgrep -x python3 2>/dev/null); do \
@@ -685,7 +685,7 @@ teardown-ybdb:
 
 teardown-crdb:
 	@echo "==> teardown-crdb (best-effort)"
-	-cd $(ANSIBLE_DIR) && ansible -i inventory/crossregion.ini crossregion_cluster -m shell -a \
+	-cd $(ANSIBLE_DIR) && ansible -i $(ANSIBLE_INV_VIA31) crossregion_cluster -m shell -a \
 	  'systemctl stop cockroach.service 2>/dev/null; \
 	   for i in $$(seq 1 15); do pgrep -x cockroach >/dev/null || break; sleep 1; done; \
 	   pkill -9 -x cockroach 2>/dev/null; sleep 2; \
