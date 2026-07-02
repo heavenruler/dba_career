@@ -166,11 +166,11 @@ help:
 	@echo "  make phase4-ybdb-deploy                     - Ansible deploy YBDB cluster"
 	@echo "  make phase4-ybdb-fix6n                      - post-deploy: GCP IPv4 advertise + placement_info + preferred_zone"
 	@echo "  make phase4                                 - phase4-ybdb-deploy + phase4-ybdb-fix6n"
-	@echo "  make phase7-ybdb-smoke TPCC_TS=<ts>         - 5-min YBDB smoke (gate/prepare/run/collect direct)"
+	@echo "  make phase7-ybdb-smoke TPCC_TS=<ts>         - 5-min YBDB smoke via run-vm6-suite.sh"
 	@echo "  make phase7-ybdb-result TPCC_TS=<ts>        - parse + print YBDB tpmC / latency"
 	@echo "  make teardown-ybdb                          - kill yb procs + rm /var/yugabyte"
 	@echo "  make phase5-crdb-deploy                     - Ansible deploy CRDB cluster"
-	@echo "  make phase8-crdb-smoke TPCC_TS=<ts>         - 5-min CRDB smoke (gate/prepare/run/collect direct)"
+	@echo "  make phase8-crdb-smoke TPCC_TS=<ts>         - 5-min CRDB smoke via run-vm6-suite.sh"
 	@echo "  make phase8-crdb-result TPCC_TS=<ts>        - parse + print CRDB tpmC / latency"
 	@echo "  make teardown-crdb                          - stop cockroach + rm /var/lib/cockroach"
 	@echo "  make phase9                                 - stop tunnels + terraform destroy (IDC + GCP)"
@@ -496,7 +496,7 @@ phase6-tidb-result:
 	  ls $$ROOT/runs/wan-probe-*.txt 2>/dev/null | head -5 || echo '(no wan-probe samples)'; true"
 
 # ===================================================================
-# Phase 7 — YBDB smoke (bypass suite; gate/prepare/run/collect direct)
+# Phase 7 — YBDB smoke (run-vm6-suite.sh on .31)
 # ===================================================================
 phase7: phase7-ybdb-smoke phase7-ybdb-result
 
@@ -516,23 +516,8 @@ phase7-ybdb-smoke:
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
 	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
 	         YBDB_USER=yugabyte YBDB_DB=tpcc; \
-	  set -e; \
-	  bash $(TPCC_SCRIPTS)/gate.sh    --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS; \
-	  bash $(TPCC_SCRIPTS)/prepare.sh --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS; \
-	  echo '==> post-prepare: gate on load_move_completion=100% (reliable under read_replica; get_is_load_balancer_idle benign-Idle=0 skipped)'; \
-	  converged=0; for i in \$$(seq 1 30); do \
-	    out=\$$(ssh root@$(YBDB_HOST) '/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_load_move_completion' 2>&1); \
-	    case \"\$$out\" in *'Percent complete = 100'*|*'100.'*) echo '  load_move_completion 100% (post-prepare)'; converged=1; break;; esac; \
-	    sleep 10; \
-	  done; \
-	  [ \"\$$converged\" = \"1\" ] || echo '[phase7] WARN: load_move_completion not 100% after 5min; proceeding (0 tablets remaining = benign)'; \
-	  echo '==> pre-run: freeze YBDB load balancer to prevent tablet leader churn during timed run'; \
-	  ssh root@$(YBDB_HOST) '/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) set_load_balancer_enabled 0'; \
-	  echo '  load balancer disabled'; \
-	  bash $(TPCC_SCRIPTS)/run.sh     --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS; \
-	  echo '==> post-run: unfreeze YBDB load balancer'; \
-	  ssh root@$(YBDB_HOST) '/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) set_load_balancer_enabled 1' || true; \
-	  bash $(TPCC_SCRIPTS)/collect.sh --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS"
+	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
+	    --db ybdb --topology vm-6node-$(PLACEMENT) --ts $$TS"
 	@echo "==> phase7-ybdb leader-snapshot (tablet leader counts per tserver)"
 	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/ybdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "mkdir -p $$ROOT/leader-snapshot && \
@@ -560,7 +545,7 @@ phase7-ybdb-result:
 	  ls $$ROOT/runs/wan-probe-*.txt 2>/dev/null | head -5 || echo '(no wan-probe samples)'; true"
 
 # ===================================================================
-# Phase 8 — CRDB smoke (bypass suite; gate/prepare/run/collect direct)
+# Phase 8 — CRDB smoke (run-vm6-suite.sh on .31)
 # ===================================================================
 phase8: phase8-crdb-smoke phase8-crdb-result
 
@@ -580,23 +565,8 @@ phase8-crdb-smoke:
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
 	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
 	         CRDB_USER=root CRDB_DB=tpcc; \
-	  set -e; \
-	  bash $(TPCC_SCRIPTS)/gate.sh    --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS; \
-	  bash $(TPCC_SCRIPTS)/prepare.sh --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS; \
-	  echo '==> post-prepare: apply per-table lease_preferences=IDC (hard leader pin)'; \
-	  ssh root@$(CRDB_HOST) \"awk '/^-- tpcc database 套用/{p=1}p' /root/crdb-vm6-placement-$$(echo $(PLACEMENT) | tr A-Z a-z).sql 2>/dev/null | /usr/local/bin/cockroach sql --insecure --host=$(CRDB_HOST):$(CRDB_PORT) -d tpcc\" || echo '  (warn: per-table CONFIGURE ZONE failed)'; \
-	  echo '==> wait CRDB lease holders → IDC region (max 5 min, deterministic gate)'; \
-	  converged=0; for i in \$$(seq 1 30); do \
-	    pct=\$$(/usr/local/bin/cockroach sql --insecure --host=$(CRDB_HOST):$(CRDB_PORT) -d tpcc --format=csv -e \
-	      \"SELECT IFNULL(ROUND(SUM(CASE WHEN lease_holder_locality LIKE '%region=idc%' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*),0), 1), 0) AS idc_pct FROM [SHOW RANGES FROM DATABASE tpcc WITH TABLES, DETAILS] WHERE table_name IN ('new_order','orders','warehouse','customer','district','history','order_line','item','stock');\" \
-	      2>/dev/null | tail -1); \
-	    case \"\$$pct\" in 100|100.*) echo '  CRDB lease holders 100% on IDC'; converged=1; break;; esac; \
-	    printf '  %2d/30 leases on IDC: %s%%\n' \$$i \"\$$pct\"; \
-	    sleep 10; \
-	  done; \
-	  [ \"\$$converged\" = \"1\" ] || { echo 'gate FAIL: CRDB lease holders not 100% IDC after 5min'; exit 1; }; \
-	  bash $(TPCC_SCRIPTS)/run.sh     --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS; \
-	  bash $(TPCC_SCRIPTS)/collect.sh --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS"
+	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
+	    --db crdb --topology vm-6node-$(PLACEMENT) --ts $$TS"
 	@echo "==> phase8-crdb leader-snapshot (lease holder locality per range)"
 	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/crdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "mkdir -p $$ROOT/leader-snapshot && \
@@ -788,6 +758,7 @@ phase-crossregion-w128-suite:
 	  ROUNDS=5 \
 	  WARMUP_SEC=1200 \
 	  RUN_SEC=300 \
+	  THREADS_LIST='16 32 64 128' \
 	  LOCAL_RESULT_CATEGORY=baseline/w128 \
 	  TPCC_TS=$(TPCC_TS)
 
@@ -802,6 +773,7 @@ phase-crossregion-w128-suite-pb:
 	  ROUNDS=5 \
 	  WARMUP_SEC=1200 \
 	  RUN_SEC=300 \
+	  THREADS_LIST='16 32 64 128' \
 	  PLACEMENT=P-B \
 	  LOCAL_RESULT_CATEGORY=baseline/w128-pb \
 	  TPCC_TS=$(TPCC_TS)

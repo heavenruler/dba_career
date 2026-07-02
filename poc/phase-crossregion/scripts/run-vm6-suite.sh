@@ -15,10 +15,10 @@
 #   TPCC_TS=<ts>
 #   PLACEMENT=P-A|P-B
 #   PROFILE=A-S|A-A-RO|A-A
-#   DB=tidb (this round; crdb / ybdb TODO)
+#   DB=tidb|crdb|ybdb
 #
 # Args:
-#   --db {tidb}  --topology vm-6node-{P-A|P-B}  --ts <ts>
+#   --db {tidb|crdb|ybdb}  --topology vm-6node-{P-A|P-B}  --ts <ts>
 #
 # Side: IDC by default (TPCC client = .31)。GCP side 由 run-vm6-aa.sh 啟動。
 #
@@ -44,7 +44,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-: "${DB:?--db required (tidb only this round; crdb/ybdb TODO)}"
+: "${DB:?--db required (tidb | crdb | ybdb)}"
 : "${TOPOLOGY:?--topology required (vm-6node-P-A | vm-6node-P-B)}"
 : "${TS:?--ts required}"
 
@@ -61,7 +61,7 @@ done
 [[ "$BASELINE_FAMILY" == "crossregion"       ]] || { echo "BASELINE_FAMILY must be crossregion" >&2; exit 1; }
 [[ "$PLACEMENT" =~ ^(P-A|P-B)$            ]] || { echo "PLACEMENT must be P-A | P-B" >&2; exit 1; }
 [[ "$PROFILE"   =~ ^(A-S|A-A-RO|A-A)$     ]] || { echo "PROFILE must be A-S | A-A-RO | A-A" >&2; exit 1; }
-[[ "$DB"        =~ ^tidb$                 ]] || { echo "DB must be tidb (crdb/ybdb TODO this agent)" >&2; exit 1; }
+[[ "$DB"        =~ ^(tidb|crdb|ybdb)$     ]] || { echo "DB must be tidb | crdb | ybdb" >&2; exit 1; }
 
 # DB endpoint: IDC haproxy on 172.24.47.20:4000 (Q3 雙 haproxy 配置；IDC 既有 .47.20)
 # A-A profile 也可從 GCP haproxy (g-test-poc-4:4000) 出發；本 wrapper 默認走 IDC haproxy。
@@ -74,6 +74,8 @@ ISO="${ISO:-rc}"
 # Per-DB env required by tests/common/{prepare,run,collect}.sh
 case "$DB" in
   tidb) export TIDB_PORT="$DB_PORT" TIDB_USER="${TIDB_USER:-root}" TIDB_DB="${TIDB_DB:-tpcc}" ;;
+  crdb) export CRDB_PORT="$DB_PORT" CRDB_USER="${CRDB_USER:-root}" CRDB_DB="${CRDB_DB:-tpcc}" ;;
+  ybdb) export YBDB_PORT="$DB_PORT" YBDB_USER="${YBDB_USER:-yugabyte}" YBDB_DB="${YBDB_DB:-tpcc}" ;;
 esac
 
 # CLIENT_ZONE 必填（zone-local enforce per §3）
@@ -210,14 +212,52 @@ bash "$COMMON_DIR/gate.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-h
 echo "[2/4] prepare"
 bash "$COMMON_DIR/prepare.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-host "$DB_HOST" --ts "$TS"
 
-# B0-3: prepare 完成 tpcc tables 後，才套 ALTER DATABASE + ALTER TABLE 部分
-# (CREATE POLICY 已由 ansible deploy 階段做完；本段只跑 SQL 檔的 "-- tpcc database 套用" 後段)
-if [[ "$DB" == "tidb" ]]; then
-  PLACEMENT_SQL_FILE="/root/tidb-vm6-placement-${PLACEMENT,,}.sql"
-  echo "[wrapper] applying table-level placement from $PLACEMENT_SQL_FILE"
-  ssh -o ConnectTimeout=5 root@172.24.40.32 "awk '/^-- tpcc database 套用/{p=1}p' $PLACEMENT_SQL_FILE | mysql -h 172.24.40.32 -P 4000 -uroot tpcc" \
-    || { echo "[wrapper] placement ALTER fail-closed" >&2; exit 1; }
-fi
+# B0-3: prepare 完成 tpcc tables 後的 per-DB post-prepare placement 步驟
+# (CREATE POLICY / zone config 已由 ansible deploy 階段做完；本段只跑 table-level 後段)
+case "$DB" in
+  tidb)
+    PLACEMENT_SQL_FILE="/root/tidb-vm6-placement-${PLACEMENT,,}.sql"
+    echo "[wrapper] applying table-level placement from $PLACEMENT_SQL_FILE"
+    ssh -o ConnectTimeout=5 root@172.24.40.32 "awk '/^-- tpcc database 套用/{p=1}p' $PLACEMENT_SQL_FILE | mysql -h 172.24.40.32 -P 4000 -uroot tpcc" \
+      || { echo "[wrapper] placement ALTER fail-closed" >&2; exit 1; }
+    ;;
+  crdb)
+    PLACEMENT_SQL_FILE="/root/crdb-vm6-placement-${PLACEMENT,,}.sql"
+    if ssh -o ConnectTimeout=5 root@"$DB_HOST" "test -f $PLACEMENT_SQL_FILE"; then
+      echo "[wrapper] post-prepare: apply per-table lease_preferences=IDC (hard leader pin) from $PLACEMENT_SQL_FILE"
+      ssh root@"$DB_HOST" "awk '/^-- tpcc database 套用/{p=1}p' $PLACEMENT_SQL_FILE 2>/dev/null | /usr/local/bin/cockroach sql --insecure --host=$DB_HOST:$DB_PORT -d tpcc" \
+        || echo "  (warn: per-table CONFIGURE ZONE failed)"
+    else
+      echo "[wrapper] WARN: $PLACEMENT_SQL_FILE not found on $DB_HOST — skip per-table lease pin"
+    fi
+    echo "[wrapper] wait CRDB lease holders → IDC region (max 5 min, deterministic gate)"
+    converged=0
+    for i in $(seq 1 30); do
+      pct=$(/usr/local/bin/cockroach sql --insecure --host="$DB_HOST:$DB_PORT" -d tpcc --format=csv -e \
+        "SELECT IFNULL(ROUND(SUM(CASE WHEN lease_holder_locality LIKE '%region=idc%' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*),0), 1), 0) AS idc_pct FROM [SHOW RANGES FROM DATABASE tpcc WITH TABLES, DETAILS] WHERE table_name IN ('new_order','orders','warehouse','customer','district','history','order_line','item','stock');" \
+        2>/dev/null | tail -1 || true)
+      case "$pct" in 100|100.*) echo "  CRDB lease holders 100% on IDC"; converged=1; break ;; esac
+      printf '  %2d/30 leases on IDC: %s%%\n' "$i" "$pct"
+      sleep 10
+    done
+    [[ "$converged" == "1" ]] || { echo "gate FAIL: CRDB lease holders not 100% IDC after 5min" >&2; exit 1; }
+    ;;
+  ybdb)
+    # ybdb: placement applied at deploy (phase4-ybdb-fix6n); post-prepare = data-move 收斂 + LB freeze
+    : "${YB_MASTER_ADDR:=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100}"
+    echo "[wrapper] post-prepare: gate on load_move_completion=100% (reliable under read_replica; get_is_load_balancer_idle benign-Idle=0 skipped)"
+    converged=0
+    for i in $(seq 1 30); do
+      out=$(ssh root@"$DB_HOST" "/opt/yugabyte/bin/yb-admin --master_addresses=$YB_MASTER_ADDR get_load_move_completion" 2>&1 || true)
+      case "$out" in *'Percent complete = 100'*|*'100.'*) echo "  load_move_completion 100% (post-prepare)"; converged=1; break ;; esac
+      sleep 10
+    done
+    [[ "$converged" == "1" ]] || echo "[wrapper] WARN: load_move_completion not 100% after 5min; proceeding (0 tablets remaining = benign)"
+    echo "[wrapper] pre-run: freeze YBDB load balancer to prevent tablet leader churn during timed run"
+    ssh root@"$DB_HOST" "/opt/yugabyte/bin/yb-admin --master_addresses=$YB_MASTER_ADDR set_load_balancer_enabled 0"
+    echo "  load balancer disabled"
+    ;;
+esac
 
 echo "[3/4] run (warmup + sweep, contains gate-isolation)"
 # A-A-RO profile: GCP-side 不參與此 wrapper（read-only follower mix 由 run-vm6-aa.sh 啟）
@@ -226,6 +266,12 @@ if [[ "$PROFILE" == "A-A-RO" || "$PROFILE" == "A-A" ]]; then
   echo "[wrapper] PROFILE=$PROFILE → IDC writer side only; GCP side handled by run-vm6-aa.sh"
 fi
 bash "$COMMON_DIR/run.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-host "$DB_HOST" --ts "$TS"
+
+# ybdb: 對應 B0-3 的 pre-run freeze；run 結束即解凍（同原 phase7 post-run 步驟）
+if [[ "$DB" == "ybdb" ]]; then
+  echo "[wrapper] post-run: unfreeze YBDB load balancer"
+  ssh root@"$DB_HOST" "/opt/yugabyte/bin/yb-admin --master_addresses=$YB_MASTER_ADDR set_load_balancer_enabled 1" || true
+fi
 
 echo "[4/4] collect"
 bash "$COMMON_DIR/collect.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-host "$DB_HOST" --ts "$TS"
