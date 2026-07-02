@@ -83,7 +83,7 @@
 
 **來源**
 
-- YugabyteDB 歷史流程紀錄：[`results/yuga-tc1-old/`](../results/yuga-tc1-old/)
+- YugabyteDB 歷史流程紀錄：[`results/archive/yuga-tc1-old/`](../results/archive/yuga-tc1-old/)
 - Git：`08aee31`、`8b55da3`、`bca3943`、`19b991e`、`1918e4c`、`db69d42`
 
 ### M4. 三資料庫共同工具鏈與結果索引成形（2026-05-06～05-14）
@@ -180,7 +180,7 @@
 **設計／開發**
 
 - 建立 README 與 pipeline-log 模板，統一章節、表格、註腳、error rate、來源目錄與命名。
-- 建立 [`AI-COLLABORATION.md`](../results/AI-COLLABORATION.md) 與 audit prompt，規定 artifact 為唯一真值、最新 TPCC_TS 優先、不憑空補數字，並要求 Codex/Claude Code 互相校驗。
+- 建立 `AI-COLLABORATION.md` 與 audit prompt，規定 artifact 為唯一真值、最新 TPCC_TS 優先、不憑空補數字，並要求 Codex/Claude Code 互相校驗。（該檔已於 git `24ab57b1` consolidate 時退役）
 - 將 dispatch records 收斂成每資料庫 SUMMARY 與必要分析，並加入 README link verifier 與文件 gate。
 
 **除錯價值**
@@ -190,7 +190,7 @@
 
 **來源**
 
-- [`results/AI-COLLABORATION.md`](../results/AI-COLLABORATION.md)
+- `results/AI-COLLABORATION.md`（已於 git `24ab57b1` consolidate 時退役；內容未搬移）
 - [`results/pipeline-log-template.md`](../results/pipeline-log-template.md)
 - [`results/README-template.md`](../results/README-template.md)
 - Git：`3f5503e`、`df796f5`、`9992ef4`、`57c3e7b`、`eb22cc4`
