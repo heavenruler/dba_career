@@ -102,21 +102,22 @@ resource "google_compute_instance" "poc" {
       sed -i 's/^SELINUX=.*/SELINUX=disabled/' /etc/selinux/config
       systemctl disable --now firewalld || true
 
-      # PowerTools + python3.12 (EPEL 留給 ansible 處理；gproxy 不放 fedoraproject metalink)
+      # 單次 dnf transaction（metadata 只刷一輪；no weak deps；3 次 retry 防 gproxy 瞬斷）
+      # 只留 benchmark 路徑必要包：ansible 要 python3.12、chrony gate 要 chrony、
+      # collect 要 sysstat、endpoint 檢查要 nmap-ncat、iperf3 為 wan-probe opt-in
+      # (WAN_PROBE_IPERF=1；phase-crossregion §6 #4)。EPEL 留給 ansible 處理。
       dnf config-manager --set-enabled powertools
-      dnf -y install python3.12 python3.12-pip
+      for i in 1 2 3; do
+        dnf -y --setopt=install_weak_deps=False install \
+          python3.12 python3.12-pip tar gzip rsync lvm2 \
+          nmap-ncat sysstat chrony iperf3 && break
+        echo "dnf attempt $i failed; retry in 15s"; sleep 15
+      done
+      rpm -q python3.12 chrony sysstat iperf3 >/dev/null || { echo 'dnf install incomplete after 3 attempts' >&2; exit 1; }
       alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100
       alternatives --set python3 /usr/bin/python3.12
 
-      # 共通工具 (僅 BaseOS/AppStream，jq/htop 需 EPEL 故略)
-      # iperf3 為 wan-probe.sh opt-in mode (WAN_PROBE_IPERF=1) 預備 (phase-crossregion §6 #4)
-      dnf -y install tar gzip rsync unzip lvm2 nmap-ncat bind-utils \
-                     git wget tmux vim-enhanced iotop sysstat \
-                     policycoreutils-python-utils perl chrony tuned \
-                     iperf3
-
       systemctl enable --now chronyd
-      systemctl enable --now tuned
 
       # iperf3 server for WAN probe (port 5201; GCP firewall by tag; sweep 結束後 disable)
       # NOTE: outer HCL <<-EOF closes at col 6 → HCL strips 6 → bash sees PROXYEOF /

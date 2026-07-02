@@ -239,27 +239,9 @@ phase1-homogeneity:
 phase1-proof:
 	@echo "==> phase1-proof: terraform resource IDs + boot_id per node → vm-rebuild-proof-$(TPCC_TS).json"
 	@mkdir -p $(LOCAL_RESULT_ROOT)/$(TPCC_TS)
-	@python3 -c " \
-import subprocess, json, datetime, os; \
-ts='$(TPCC_TS)'; proof={'ts':ts,'built_at':datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S%z'), \
-  'idc':{},'gcp':{}}; \
-idc_tf=subprocess.run(['terraform','-chdir=$(IDC_IAC_DIR)','show','-json'], \
-  capture_output=True,text=True); \
-if idc_tf.returncode==0: \
-  d=json.loads(idc_tf.stdout); \
-  [proof['idc'].update({r['address']:r.get('values',{}).get('id','?')}) \
-   for r in d.get('values',{}).get('root_module',{}).get('resources',[])] \
-else: proof['idc']['error']=idc_tf.stderr[:200]; \
-gcp_tf=subprocess.run(['terraform','-chdir=$(GCP_IAC_DIR)','show','-json'], \
-  capture_output=True,text=True); \
-if gcp_tf.returncode==0: \
-  d=json.loads(gcp_tf.stdout); \
-  [proof['gcp'].update({r['address']:r.get('values',{}).get('id','?')}) \
-   for r in d.get('values',{}).get('root_module',{}).get('resources',[])] \
-else: proof['gcp']['error']=gcp_tf.stderr[:200]; \
-out='$(LOCAL_RESULT_ROOT)/$(TPCC_TS)/vm-rebuild-proof-$(TPCC_TS).json'; \
-json.dump(proof,open(out,'w'),indent=2); \
-print(f'  idc_resources={len(proof[\"idc\"])}  gcp_resources={len(proof[\"gcp\"])}  → {out}')"
+	@python3 $(CURDIR)/phase-crossregion/scripts/vm-rebuild-proof.py \
+	  --ts $(TPCC_TS) --idc-dir $(IDC_IAC_DIR) --gcp-dir $(GCP_IAC_DIR) \
+	  --out $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/vm-rebuild-proof-$(TPCC_TS).json
 	@echo "==> boot_id per IDC node:"
 	@for ip in $(IDC_NODES); do \
 	  bid=$$(ssh $(SSH_OPTS) root@$$ip 'cat /proc/sys/kernel/random/boot_id' 2>/dev/null || echo '?'); \
@@ -295,7 +277,7 @@ phase1-wait: gcp-tunnel-start
 #   prerequisite: IDC↔GCP FW 已開、.31 known_hosts 已清舊 GCP fingerprint
 phase1-wait-via-31:
 	@echo "==> phase1-wait-via-31 (bypass IAP tunnel; ssh from .31 → GCP 內 IP)"
-	@$(CURDIR)/phase-crossregion/scripts/check-gcp-via-31.sh
+	@MAX_WAIT_SEC=1200 $(CURDIR)/phase-crossregion/scripts/check-gcp-via-31.sh
 	@echo "==> all 5 GCP nodes READY (via .31)"
 
 # ===================================================================
