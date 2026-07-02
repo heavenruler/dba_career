@@ -595,7 +595,7 @@ phase8-crdb-result:
 # no fake/synthetic keywords in summary.json; fails closed → blocks phase9 destroy.
 phase8.5-static-check:
 	@echo "==> phase8.5-static-check: artifact schema check on .31 before fetch"
-	@ssh $(TPCC_CLIENT) "python3 $(CROSS_SCRIPTS_REMOTE)/check-static-artifacts.py '$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)'" \
+	@ssh $(TPCC_CLIENT) "python3 $(CROSS_SCRIPTS_REMOTE)/check-static-artifacts.py '$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)' --ts '$(TPCC_TS)'" \
 		|| { echo "[F-Gate] phase8.5-static-check FAIL — fix artifacts before destroy"; exit 1; }
 	@echo "==> phase8.5-static-check PASS"
 
