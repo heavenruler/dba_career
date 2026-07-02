@@ -1,4 +1,9 @@
-# WAN Baseline Measurement (B4 Pre-P0 hard gate)
+# WAN Baseline Measurement（原 B4 Pre-P0 hard gate — 已被 Q2 取消）
+
+> **Superseded by [`decisions-2026-06-08.md`](../decisions-2026-06-08.md) Q2**：B4 「RTT p50<50 /
+> p99<200 / BW>100Mbps / loss<1%」**hard gate 已取消**。改為 mrtg 即時觀察 + benchmark 期間
+> 隨 workload inline 採樣（寫入 `runs/threads-N/round-N/wan-probe.txt`；見 `scripts/wan-probe.sh`），
+> 偏離 mrtg 趨勢則記 warn，不再作前置獨立階段 / 不 fail-closed。以下腳本與門檻保留為量測方法參考。
 
 ## 為何必須
 

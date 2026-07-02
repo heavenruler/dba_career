@@ -16,7 +16,7 @@
 |---|---|---|
 | 1 | **本 README** | scope、topology×workload 矩陣、Make 執行方式、phase 狀態 |
 | 2 | [`decisions-2026-06-08.md`](./decisions-2026-06-08.md) | 決策 log of record（Q1–Q14 拍板紀錄）— 「為什麼這樣設計」 |
-| 3 | [`REPLAN-2026-06-15.md`](./REPLAN-2026-06-15.md) | **施工計畫 SSOT**（§0–§7 + 執行順序 + Agent 硬規則）|
+| 3 | [`REPLAN-2026-06-15.md`](./REPLAN-2026-06-15.md) | 施工計畫（**ARCHIVED**；§0–§7 已落地為 scripts，保留 blocker 溯源 + Agent 硬規則 + 執行順序）|
 | 4 | [`P-A-vs-P-B-explainer.md`](./P-A-vs-P-B-explainer.md) | placement 商業級說明（給主管 / app owner）|
 | 5 | `topology/*.md` + `workload-profiles/*.md` | 各 placement / workload 的技術 spec |
 | 6 | [`PRE-FLIGHT-TEST-PLAN-2026-06-17.md`](./PRE-FLIGHT-TEST-PLAN-2026-06-17.md) | 正式 sweep 前環境驗證 checklist（A–J 10 階段）|
@@ -50,7 +50,7 @@
 
 **正交關係**：`placement (P-A/P-B)` 決定 raft voter 位置；`workload (A-A / A-A-RO / A-S / backup / migration)` 決定 client 行為。
 
-|  | P-A (2-IDC + 1-GCP，majority IDC) | P-B (1-IDC + 1-GCP + 1-arbiter，散) |
+|  | P-A (2-IDC + 1-GCP，majority IDC) | P-B (RF=3 全 full voter，跨 IDC/GCP 散置；無 arbiter) |
 |---|---|---|
 | single-writer (IDC) | **P0 deploy + smoke** | — |
 | A/S (active-standby) | **P1**（IDC main, GCP standby）| — |
@@ -113,7 +113,7 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 
 | Phase | 內容 | 狀態 |
 |---|---|---|
-| Pre-P0 | WAN baseline 量測（B4 hard gate）+ chrony drift <100ms gate + placement rule + dry-run gate | ✅ 框架落地（`wan/`, `freeze/`, gate scripts）|
+| Pre-P0 | WAN 隨 workload inline 採樣（per Q2，原 B4 hard gate 已取消）+ chrony drift <100ms gate + placement rule + dry-run gate | ✅ 框架落地（`wan/`, `freeze/`, gate scripts）|
 | P0 | IDC-only 6-node baseline（非必要可跳）| deploy/smoke target 就緒 |
 | P1 | P-A × A-S（W=128 正式）| ⏳ 待 operator 觸發正式 sweep |
 | P2 | P-B × A-A-RO | ⏳ 待觸發（`w128-suite-pb`）|
@@ -123,7 +123,7 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 
 **已知阻擋**（詳 [`SESSION-HISTORY.md`](./SESSION-HISTORY.md) 關鍵結論速查）：
 - `results/x-cross/` 現有數據多為 W=4 same-cluster determinism，**不可作正式跨家排名**（pipeline-log §1 已標註）
-- probe driver（RTO/RPO 量測前置）+ wall-clock wrapper 需確認實裝狀態
+- probe driver + wall-clock wrapper script 已實裝（`scripts/probe-rto-driver/`, `scripts/wall-clock-wrapper.sh`），但尚未串入 Makefile runtime chain（RTO/RPO 實測前置；升級實跑須 PR + DBA review）
 
 ---
 
@@ -141,3 +141,4 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 |---|---|
 | 2026-06-06 | 初版 spec-only：README + manifest + placement × workload 矩陣 + chaos plan + WAN baseline plan + inventory template |
 | 2026-07-01 | 文件彙整：README 改為閱讀脈絡樞紐（加閱讀導引 + 更新 Make targets 與 phase 狀態）；4 份 SESSION 日誌併入 `SESSION-HISTORY.md`；`NEXT-STEPS.md` 進度摺入本檔 phase 狀態表後刪除 |
+| 2026-07-02 | 第二輪審計修正（SQL/artifact 為權威）：P-B 拓撲更正為「RF=3 全 full voter，無 arbiter」（README/methodology/C7 同步）；WAN B4 hard gate 標記為 Q2 已取消；REPLAN 標 ARCHIVED；probe/wall-clock 實裝狀態更新；Makefile SSOT 註解修正 |

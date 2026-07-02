@@ -21,7 +21,8 @@
 #                     rules below are forked copies that diverged from
 #                     Makefile.tc1 — DRY refactor pending.
 #
-# Today's SSOT:       phase-crossregion/SESSION-2026-06-19-3db-smoke.md
+# SSOT:               phase-crossregion/README.md (閱讀入口 + Phase 狀態);
+#                     執行歷史 phase-crossregion/SESSION-HISTORY.md
 # Hard contract:      PHASE_NAME=phase-crossregion, RESULT_SCOPE=X-CROSS,
 #                     BASELINE_FAMILY=crossregion, PLACEMENT=P-A,
 #                     PROFILE=A-S, CLIENT_ZONE=idc, GATE_SKIP=1.

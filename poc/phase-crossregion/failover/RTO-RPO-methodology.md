@@ -77,7 +77,7 @@ S_post = incident 後從新 leader 可查詢到的 (w_id, d_id, o_id) 集合
 ## 2. 四場景指標矩陣
 
 > P-A: 2-IDC + 1-GCP majority IDC；leader 在 IDC。
-> P-B: 1-IDC + 1-GCP + 1-arbiter spread；per-shard leader 散區。
+> P-B: RF=3 全 full voter 跨 IDC/GCP 散置（無 arbiter）；per-shard leader 散區。
 > 詳 `topology/P-A.md` / `topology/P-B.md`。
 
 | 場景 | RTO 適用 | RPO 適用 | 主指標（優先序） | 主要來源 | 通過閾值 |
@@ -94,7 +94,7 @@ S_post = incident 後從新 leader 可查詢到的 (w_id, d_id, o_id) 集合
 | F1 | IDC leader kill → GCP follower 成 leader；2 IDC voter 剩 1 + 1 GCP voter = quorum 仍成立但 latency 升 | per-shard leader 散；只切該 shard，其他 shard leader 不動 |
 | C1 | IDC majority 仍可寫；GCP-side client 走 idc-haproxy fail（路由斷）；**RPO 在 IDC 側為 0** | per-shard 兩區各 voter；partition 後**兩區皆 minority** ⇒ 全 cluster 寫拒；**等同 C7** |
 | C4 | IDC 剩 1 IDC voter + 1 GCP voter = quorum；新 leader 通常仍在 IDC（lease_preferences）| per-shard 只該 shard-X-leader-IDC 失效；其他 shard leader (GCP) 不變 |
-| C7 | IDC 3 voter 全死 → 每 shard 剩 1 GCP voter = minority ⇒ 全 cluster 寫拒 | per-shard 1 IDC voter 死；剩 1 GCP voter + 1 arbiter；視 arbiter 位置決定 quorum |
+| C7 | IDC 3 voter 全死 → 每 shard 剩 1 GCP voter = minority ⇒ 全 cluster 寫拒 | IDC 全死後 per-shard 只剩 GCP-side voter（無 arbiter）；quorum 是否成立依各 shard GCP voter 數而定（三家分布不同：CRDB 2-IDC+1-GCP、YBDB 1-IDC+2-GCP、TiDB PD 自動散） |
 
 ---
 
