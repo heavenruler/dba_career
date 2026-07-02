@@ -278,6 +278,9 @@ phase1-wait: gcp-tunnel-start
 #   prerequisite: IDC↔GCP FW 已開、.31 known_hosts 已清舊 GCP fingerprint
 phase1-wait-via-31:
 	@echo "==> phase1-wait-via-31 (bypass IAP tunnel; ssh from .31 → GCP 內 IP)"
+	@echo "==> clear stale host keys on Mac + .31 (VMs just rebuilt → host keys rotated)"
+	@for ip in $(IDC_KNOWN) $(GCP_ALL_IPS); do ssh-keygen -R $$ip >/dev/null 2>&1 || true; done
+	@ssh $(SSH_OPTS) root@$(IDC_ADMIN) 'for ip in $(IDC_NODES) $(GCP_ALL_IPS); do ssh-keygen -R $$ip >/dev/null 2>&1; done; true'
 	@MAX_WAIT_SEC=1200 $(CURDIR)/phase-crossregion/scripts/check-gcp-via-31.sh
 	@echo "==> all 5 GCP nodes READY (via .31)"
 
@@ -331,8 +334,13 @@ phase2-bootstrap:
 
 phase2-gate:
 	@echo "==> phase2-gate: chrony 10-host cross-region drift gate (via .31 ProxyJump; GCP_VIA_31=1)"
-	GCP_VIA_31=1 bash phase-crossregion/scripts/gate-chrony-cross-region.sh \
-	  --ts $(TPCC_TS) --root-suffix preflight-$(TPCC_TS) --result-scope $(RESULT_SCOPE)
+	@ok=0; for i in 1 2 3; do \
+	  GCP_VIA_31=1 bash phase-crossregion/scripts/gate-chrony-cross-region.sh \
+	    --ts $(TPCC_TS) --root-suffix preflight-$(TPCC_TS) --result-scope $(RESULT_SCOPE) && { ok=1; break; }; \
+	  echo "==> chrony gate attempt $$i FAIL — retry in 60s (快速開機後 chrony 可能未收斂)"; \
+	  [ $$i -lt 3 ] && sleep 60; \
+	done; \
+	[ "$$ok" = "1" ] || { echo "phase2-gate FAIL after 3 attempts"; exit 1; }
 
 # ===================================================================
 # Phase 3 — TiDB deploy

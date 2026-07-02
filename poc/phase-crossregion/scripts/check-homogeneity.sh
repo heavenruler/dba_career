@@ -2,6 +2,7 @@
 # phase-crossregion/scripts/check-homogeneity.sh
 # Homogeneity gate: all 6 nodes same OS kernel / nproc / disk.
 # Exits 0 (WARN on mismatch, not fail — gate is advisory).
+# Exception: any ERR probe (node unreachable) → exit 1 fail-closed.
 set -euo pipefail
 
 : "${IDC_NODES:=172.24.40.32 172.24.40.33 172.24.40.34}"
@@ -47,6 +48,13 @@ check_unique() {
   fi
   return 0
 }
+
+# fail-closed：任何 ERR = 節點不可達（ssh 路徑 / stale host key），不得混入 uniqueness 比對當 PASS
+errs=$(printf '%s\n' "${KERNELS[@]}" "${NPROCS[@]}" "${DISKS[@]}" | grep -c '^ERR$' || true)
+if [[ "$errs" -gt 0 ]]; then
+  echo "phase1-homogeneity: FAIL ($errs probe(s) ERR — unreachable; check ssh path / stale host keys)"
+  exit 1
+fi
 
 fail=0
 check_unique "kernel" "${KERNELS[@]}" || fail=1
