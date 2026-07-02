@@ -215,7 +215,29 @@ echo "[1/4] gate"
 bash "$COMMON_DIR/gate.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-host "$DB_HOST" --ts "$TS"
 
 echo "[2/4] prepare"
+# bug #9: prepare.sh 內建 placement gate（§6.6）在 wrapper B0-3 之前開槍，
+# 而 prepare 的 DROP DATABASE 會消滅任何先掛的 policy attachment。
+# 修法：背景 watcher 等 go-tpc 建完 9 張表就立刻套 placement SQL（tests/common 不可改），
+# gate 前還有 load+quiesce+ANALYZE 數分鐘讓 leader 遷移收斂。
+PLACEMENT_WATCHER_PID=""
+if [[ "$DB" == "tidb" ]]; then
+  (
+    for i in $(seq 1 300); do
+      cnt=$(mysql -h "$DB_HOST" -P "$DB_PORT" -u root -BNe \
+        "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='tpcc'" 2>/dev/null || echo 0)
+      [[ "$cnt" -ge 9 ]] && break
+      sleep 2
+    done
+    echo "[wrapper] placement watcher: 9 tables present — applying placement SQL (pre-gate)"
+    ssh -o ConnectTimeout=5 root@172.24.40.32 \
+      "awk '/^-- tpcc database 套用/{p=1}p' /root/tidb-vm6-placement-${PLACEMENT,,}.sql | mysql -h 172.24.40.32 -P 4000 -uroot tpcc" \
+      && echo "[wrapper] placement watcher: applied OK" \
+      || echo "[wrapper] placement watcher: apply FAILED (gate will fail-closed)" >&2
+  ) &
+  PLACEMENT_WATCHER_PID=$!
+fi
 bash "$COMMON_DIR/prepare.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-host "$DB_HOST" --ts "$TS"
+[[ -n "$PLACEMENT_WATCHER_PID" ]] && { wait "$PLACEMENT_WATCHER_PID" 2>/dev/null || true; }
 
 # B0-3: prepare 完成 tpcc tables 後的 per-DB post-prepare placement 步驟
 # (CREATE POLICY / zone config 已由 ansible deploy 階段做完；本段只跑 table-level 後段)
