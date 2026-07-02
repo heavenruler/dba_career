@@ -675,30 +675,32 @@ phase9-destroy:
 # ===================================================================
 # Per-DB teardown (between phases, before next DB deploys on same VMs)
 # ===================================================================
+# teardown 一律在 .31 上執行（crossregion-via31.ini 設計即為 .31 controller；
+# Mac 直連 10.160.152.x 不通 → GCP 端清掃會漏，污染下一 cell）
 teardown-tidb:
-	@echo "==> teardown-tidb (best-effort)"
-	-cd $(ANSIBLE_DIR) && ansible -i $(ANSIBLE_INV_VIA31) crossregion_cluster -m shell -a \
+	@echo "==> teardown-tidb (best-effort; ansible on .31)"
+	-ssh $(TPCC_CLIENT) "cd $(ANSIBLE_REMOTE_DIR) && ansible -i $(ANSIBLE_INV_VIA31) crossregion_cluster -m shell -a \
 	  '[ -d /root/.tiup/storage/cluster/clusters/tpcc-tidb-vm6 ] && \
-	   /root/.tiup/bin/tiup cluster destroy tpcc-tidb-vm6 --yes 2>&1 | tail -3 || echo no_tidb' -b -o
+	   /root/.tiup/bin/tiup cluster destroy tpcc-tidb-vm6 --yes 2>&1 | tail -3 || echo no_tidb' -b -o"
 
 teardown-ybdb:
-	@echo "==> teardown-ybdb (best-effort)"
-	-cd $(ANSIBLE_DIR) && ansible -i $(ANSIBLE_INV_VIA31) crossregion_cluster -m shell -a \
+	@echo "==> teardown-ybdb (best-effort; ansible on .31)"
+	-ssh $(TPCC_CLIENT) "cd $(ANSIBLE_REMOTE_DIR) && ansible -i $(ANSIBLE_INV_VIA31) crossregion_cluster -m shell -a \
 	  'pkill -KILL -x yb-master 2>/dev/null; pkill -KILL -x yb-tserver 2>/dev/null; \
 	   pkill -KILL -x yugabyted-ui 2>/dev/null; \
-	   for pid in $$(pgrep -x python3 2>/dev/null); do \
-	     cmd=$$(tr "\0" " " < /proc/$$pid/cmdline 2>/dev/null); \
-	     case "$$cmd" in *bin/yugabyted*) kill -KILL $$pid 2>/dev/null ;; esac; \
-	   done; sleep 3; rm -rf /var/yugabyte 2>/dev/null; echo ybdb_clean' -b -o
+	   for pid in \$$(pgrep -x python3 2>/dev/null); do \
+	     cmd=\$$(tr \"\0\" \" \" < /proc/\$$pid/cmdline 2>/dev/null); \
+	     case \"\$$cmd\" in *bin/yugabyted*) kill -KILL \$$pid 2>/dev/null ;; esac; \
+	   done; sleep 3; rm -rf /var/yugabyte 2>/dev/null; echo ybdb_clean' -b -o"
 
 teardown-crdb:
-	@echo "==> teardown-crdb (best-effort)"
-	-cd $(ANSIBLE_DIR) && ansible -i $(ANSIBLE_INV_VIA31) crossregion_cluster -m shell -a \
+	@echo "==> teardown-crdb (best-effort; ansible on .31)"
+	-ssh $(TPCC_CLIENT) "cd $(ANSIBLE_REMOTE_DIR) && ansible -i $(ANSIBLE_INV_VIA31) crossregion_cluster -m shell -a \
 	  'systemctl stop cockroach.service 2>/dev/null; \
-	   for i in $$(seq 1 15); do pgrep -x cockroach >/dev/null || break; sleep 1; done; \
+	   for i in \$$(seq 1 15); do pgrep -x cockroach >/dev/null || break; sleep 1; done; \
 	   pkill -9 -x cockroach 2>/dev/null; sleep 2; \
 	   rm -f /etc/systemd/system/cockroach.service; systemctl daemon-reload; \
-	   rm -rf /var/lib/cockroach 2>/dev/null; echo crdb_clean' -b -o
+	   rm -rf /var/lib/cockroach 2>/dev/null; echo crdb_clean' -b -o"
 
 # ===================================================================
 # Convenience meta — full chain, one shared TPCC_TS across all phases
