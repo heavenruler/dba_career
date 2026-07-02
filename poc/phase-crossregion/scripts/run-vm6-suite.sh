@@ -223,13 +223,20 @@ echo "[2/4] prepare"
 PLACEMENT_WATCHER_PID=""
 if [[ "$DB" == "tidb" ]]; then
   (
+    # 先等 prepare 的 drop-create 完成（確定性訊號：drop-create.log 落地）——
+    # 不能只數表：上一 suite 殘留的 9 張舊表會讓 watcher 提早開火，
+    # apply 撞上 concurrent DROP DATABASE（W=1 rerun 實測 race）
+    for i in $(seq 1 300); do
+      [[ -f "$ROOT/prepare/drop-create.log" ]] && break
+      sleep 2
+    done
     for i in $(seq 1 300); do
       cnt=$(mysql -h "$DB_HOST" -P "$DB_PORT" -u root -BNe \
         "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='tpcc'" 2>/dev/null || echo 0)
       [[ "$cnt" -ge 9 ]] && break
       sleep 2
     done
-    echo "[wrapper] placement watcher: 9 tables present — applying placement SQL (pre-gate)"
+    echo "[wrapper] placement watcher: drop-create done + 9 tables present — applying placement SQL (pre-gate)"
     ssh -o ConnectTimeout=5 root@172.24.40.32 \
       "awk '/^-- tpcc database 套用/{p=1}p' /root/tidb-vm6-placement-${PLACEMENT,,}.sql | mysql -h 172.24.40.32 -P 4000 -uroot tpcc" \
       && echo "[wrapper] placement watcher: applied OK" \
