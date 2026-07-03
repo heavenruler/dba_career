@@ -60,16 +60,20 @@ for key in "${LIMITS[@]}"; do
 done
 
 # HIGH 2: polling fail-closed — 等待 in-flight operators 清空，超時即 fail
-echo "[freeze-tidb] waiting for in-flight operators to drain (max 150s)..."
+# 排水上限可用 FREEZE_DRAIN_MAX_SEC 覆寫（default 150s；每 5s poll 一次）
+DRAIN_MAX_SEC="${FREEZE_DRAIN_MAX_SEC:-150}"
+DRAIN_ITERS=$(( (DRAIN_MAX_SEC + 4) / 5 ))
+(( DRAIN_ITERS < 1 )) && DRAIN_ITERS=1
+echo "[freeze-tidb] waiting for in-flight operators to drain (max ${DRAIN_MAX_SEC}s)..."
 n=1
-for i in $(seq 1 30); do
+for i in $(seq 1 "$DRAIN_ITERS"); do
   n=$(curl -sf "${PD_URL}/pd/api/v1/operators" 2>/dev/null | jq 'length' 2>/dev/null || echo 1)
   [[ "$n" -eq 0 ]] && break
-  echo "[freeze-tidb] poll $i/30: $n operator(s) pending, waiting 5s..."
+  echo "[freeze-tidb] poll $i/$DRAIN_ITERS: $n operator(s) pending, waiting 5s..."
   sleep 5
 done
 if [[ "$n" -ne 0 ]]; then
-  echo "FAIL: operators still pending after 150s ($n remaining)" >&2
+  echo "FAIL: operators still pending after ${DRAIN_MAX_SEC}s ($n remaining)" >&2
   exit 1
 fi
 

@@ -59,6 +59,15 @@
   會 `cd: iac-idc: No such file or directory`——destroy 因 `-` 前綴被 ignored 靜默略過、apply 才炸。
   正確：`make -C <abs>/poc <target>`。
 
+- **bug #14 — ALTER→freeze race：placement ALTER 後立即 freeze 撞排水 fail-closed（07-03）**：
+  wrapper 在 table-level placement ALTER + leader gate 後立即呼叫 freeze-tidb.sh，小資料（W=1）時
+  PD 仍有 1 個 in-flight operator，150s 排水逾時 → suite FAIL。W=128 大資料輪反而不踩（收斂時間長，
+  operators 早清空）——**小 W smoke 比正式輪更容易踩此 race**。修法：wrapper 於 FREEZE_SCRIPT 前
+  加「等 PD operators==0」pre-wait（max 300s fail-closed）；freeze 內 150s 語意不動，另加
+  `FREEZE_DRAIN_MAX_SEC` env 可調。live 驗證 PASS（20260703T143409 W=1 全鏈 DONE）。
+  同場教訓：**gate-isolation 的 tiup start 若中途炸（TiKV 跨區 2min timeout），tidb-server 不會被啟動**
+  ——PD/TiKV Up 但 4000 連線被拒，補救須 `bash -lc "tiup cluster start tpcc-tidb-vm6 --wait-timeout 300"`（login shell，.32 上）。
+
 - **bug #13 — wan-probe.sh GCP 定址殘留 IAP tunnel（07-03）**：wan-probe.sh 的 `ssh_gcp()` 寫死
   `ssh -p 1221x root@localhost`（IAP tunnel 埠轉發），detached 在 .31 跑無 tunnel → GCP chrony/netdev 全 rc=255；
   這是 **bug #11（CLUSTER_HOSTS）的漏網同類**，另一支腳本沒跟著改。同時 netdev 寫死 `WAN_NIC=eth0`，
