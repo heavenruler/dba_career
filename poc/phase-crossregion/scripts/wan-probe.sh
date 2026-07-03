@@ -21,6 +21,10 @@
 #     - **只在 round 間隙跑** — caller 須以 --phase warmup-post 或 sweep-pre 呼叫；
 #       --phase round-pre / round-post **跳過** iperf3 (避免干擾 benchmark)
 #     - 若兩端任一缺 iperf3 binary → warn-only skip
+#     - server 為**臨時起**：測前 ssh 目標端 `iperf3 -s -1`（單次連線即退，timeout 30s 兜底），
+#       測完自動收，不依賴常駐 systemd server
+#     - 埠預設 20170：專線 FW 只開 R8 (20160-20180，TiKV range)，5201 未開通
+#       （fw-request 2026-06-18 行 80「本輪未啟用」）；TiKV 每台僅佔 20160+20180 → 20170 閒置
 #
 # 用法：
 #   wan-probe.sh --phase <warmup|warmup-post|sweep-pre|sweep-post|round-pre|round-post> \
@@ -230,17 +234,19 @@ if [[ "$WAN_PROBE_IPERF" == "1" ]]; then
 
       if [[ "$idc_has" != "yes" || "$gcp_has" != "yes" ]]; then
         # iperf3 為 opt-in 主動壓測，缺 binary 不算 probe 失敗（不寫 failed.txt）——
-        # 只做資訊性 skip。要啟用須先在缺的那端裝 iperf3（目前 IDC 端無）。
+        # 只做資訊性 skip。IDC 端由 phase2 的 idc-iperf3-bootstrap.sh 補裝。
         printf "[wan-probe][info] iperf3 skip: binary missing (idc=%s gcp=%s)\n" "$idc_has" "$gcp_has" >&2
         echo "  [skip] iperf3 binary missing (opt-in，非失敗)  idc=$idc_has  gcp=$gcp_has" >> "$OUT_TXT"
       else
         # 跨區直連：idc-dbhost-1(172.24.40.32) ↔ gcp-dbhost-1(10.160.152.11)，內網 IP 直通。
-        # 需目標端先啟 iperf3 -s（deployment 前置）；未啟則 -c 會回 error JSON（非空，仍留痕）。
+        # server 臨時起（-s -1 單次即退 + timeout 30 兜底），埠用 FW 已開通的 TiKV range 閒置埠。
         : "${IPERF_TARGET_GCP:=10.160.152.11}"  # idc → gcp 連線目標
         : "${IPERF_TARGET_IDC:=172.24.40.32}"   # gcp → idc 連線目標
-        : "${IPERF_PORT:=5201}"
-        # forward: idc-dbhost-1 client → gcp-dbhost-1 server
+        : "${IPERF_PORT:=20170}"                # R8 20160-20180 內閒置埠；5201 專線未開
+        # forward: gcp-dbhost-1 起臨時 server ← idc-dbhost-1 client
         echo "  [forward idc->gcp]  target=$IPERF_TARGET_GCP port=$IPERF_PORT" >> "$OUT_TXT"
+        ssh_gcp "$GCP_DBHOST1_ADDR" "nohup timeout 30 iperf3 -s -1 -p $IPERF_PORT >/dev/null 2>&1 & exit 0" >/dev/null
+        sleep 1
         fwd=$(ssh_idc "$IDC_DBHOST1_ADDR" "iperf3 -c $IPERF_TARGET_GCP -t 5 -p $IPERF_PORT -J 2>&1 || true")
         if [[ -z "$fwd" ]]; then
           note_fail "iperf3 forward returned empty"
@@ -249,8 +255,10 @@ if [[ "$WAN_PROBE_IPERF" == "1" ]]; then
           echo "$fwd" | sed 's/^/    /' >> "$OUT_TXT"
         fi
 
-        # reverse: gcp-dbhost-1 client → idc-dbhost-1 server
+        # reverse: idc-dbhost-1 起臨時 server ← gcp-dbhost-1 client
         echo "  [reverse gcp->idc]  target=$IPERF_TARGET_IDC port=$IPERF_PORT" >> "$OUT_TXT"
+        ssh_idc "$IDC_DBHOST1_ADDR" "nohup timeout 30 iperf3 -s -1 -p $IPERF_PORT >/dev/null 2>&1 & exit 0" >/dev/null
+        sleep 1
         rev=$(ssh_gcp "$GCP_DBHOST1_ADDR" "iperf3 -c $IPERF_TARGET_IDC -t 5 -p $IPERF_PORT -J 2>&1 || true")
         if [[ -z "$rev" ]]; then
           note_fail "iperf3 reverse returned empty"

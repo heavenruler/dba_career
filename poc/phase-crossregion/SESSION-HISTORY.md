@@ -59,6 +59,16 @@
   會 `cd: iac-idc: No such file or directory`——destroy 因 `-` 前綴被 ignored 靜默略過、apply 才炸。
   正確：`make -C <abs>/poc <target>`。
 
+- **iperf3 接線與埠選擇（07-03）**：wan-probe 的 iperf3 一直 skip 有兩層原因——
+  ①IDC 端 binary 未裝（`idc-iperf3-bootstrap.sh` 早存在但未接 Makefile）；
+  ②**專線 FW 沒開 5201**（fw-request 2026-06-18 行 80 明載「本輪未啟用」）——就算裝了 binary，
+  forward/reverse 都會 connect timeout。解法：埠改用 **R8（20160-20180，TiKV range）內閒置的 20170**
+  （TiKV 每台僅佔 20160 service + 20180 status），雙向已通免新 FW 申請；server 改**臨時起**
+  （`iperf3 -s -1` 單次連線即退 + timeout 30 兜底），不留常駐 daemon，避開 bootstrap script
+  自述的 0.0.0.0 常駐監聽安全顧慮。安裝歸屬：GCP=phase1 cloud-init（main.tf 已含+rpm -q verify）、
+  IDC=phase2 新 target `phase2-iperf3-idc`（--install-only，idempotent，rebuild 後自動補）。
+  **未 live 驗證**（改時 VM 已拆）——下個視窗 warmup-post 會自動首驗，屆時當作會炸盯著。
+
 - **bug #14 — ALTER→freeze race：placement ALTER 後立即 freeze 撞排水 fail-closed（07-03）**：
   wrapper 在 table-level placement ALTER + leader gate 後立即呼叫 freeze-tidb.sh，小資料（W=1）時
   PD 仍有 1 個 in-flight operator，150s 排水逾時 → suite FAIL。W=128 大資料輪反而不踩（收斂時間長，

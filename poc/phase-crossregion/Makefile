@@ -287,7 +287,7 @@ phase1-wait-via-31:
 # ===================================================================
 # Phase 2 — Pre-deploy init (DNS/chrony, SSH prime, bootstrap, chrony gate)
 # ===================================================================
-phase2: phase2-dns-fix phase2-ssh-prime phase2-bootstrap phase2-gate inventory-refresh-all
+phase2: phase2-dns-fix phase2-ssh-prime phase2-bootstrap phase2-iperf3-idc phase2-gate inventory-refresh-all
 	@echo "==> phase2 complete"
 
 phase2-dns-fix:
@@ -335,6 +335,12 @@ phase2-bootstrap:
 	rsync -avz --delete ansible/ '$(TPCC_CLIENT):$(ANSIBLE_REMOTE_DIR)/'
 	rsync -avz --delete tests/   '$(TPCC_CLIENT):$(POC_REMOTE_ROOT)/tests/'
 	@echo "==> [end]   phase2-bootstrap at $$(date +%Y-%m-%dT%H:%M:%S%z)"
+
+# iperf3 binary on idc-dbhost-1（wan-probe WAN_PROBE_IPERF=1 前置；GCP 端由 cloud-init 預裝）
+# server 由 wan-probe.sh 測試時臨時起（-s -1 單次即退），不建常駐 unit → --install-only
+phase2-iperf3-idc:
+	@echo "==> phase2-iperf3-idc: install iperf3 binary on idc-dbhost-1 (install-only)"
+	bash phase-crossregion/scripts/idc-iperf3-bootstrap.sh --execute --install-only
 
 phase2-gate:
 	@echo "==> phase2-gate: chrony 10-host cross-region drift gate (via .31 ProxyJump; GCP_VIA_31=1)"

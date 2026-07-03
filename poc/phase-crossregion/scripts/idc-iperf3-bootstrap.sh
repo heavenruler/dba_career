@@ -21,10 +21,15 @@
 #   bash idc-iperf3-bootstrap.sh --dry-run --target 172.24.40.32
 #   bash idc-iperf3-bootstrap.sh --execute --target 172.24.40.32
 #   bash idc-iperf3-bootstrap.sh --execute --target 172.24.40.32 --target 172.24.40.33
+#   bash idc-iperf3-bootstrap.sh --execute --install-only     # 只裝 binary，不建常駐 server
+#
+# --install-only（phase2 接線用的預設模式）：
+#   wan-probe.sh 已改為測試時臨時起 server（iperf3 -s -1，單次即退），
+#   不需常駐 iperf3-server.service —— 避開上述 0.0.0.0:5201 常駐監聽的安全顧慮。
 #
 # Env overrides：
 #   SSH_USER          (default root)
-#   IPERF_PORT        (default 5201)
+#   IPERF_PORT        (default 5201；--install-only 模式不使用)
 #
 # Exit:
 #   0 = PASS
@@ -34,13 +39,15 @@ set -euo pipefail
 
 TARGETS=()
 MODE=""
+INSTALL_ONLY=0
 while [[ $# -gt 0 ]]; do
   case $1 in
     --dry-run)  MODE=dry-run; shift ;;
     --execute)  MODE=execute; shift ;;
+    --install-only) INSTALL_ONLY=1; shift ;;
     --target)   TARGETS+=("$2"); shift 2 ;;
     -h|--help)
-      sed -n '2,30p' "$0"
+      sed -n '2,36p' "$0"
       exit 0
       ;;
     *) echo "unknown arg: $1" >&2; exit 1 ;;
@@ -72,6 +79,12 @@ else
   echo "[remote] installing iperf3 via dnf"
   dnf install -y iperf3
 fi
+REMOTE_EOF
+
+  # --install-only：到此為止（wan-probe 臨時 server 模式不需常駐 unit）
+  [[ "$INSTALL_ONLY" == "1" ]] && return 0
+
+  cat <<'REMOTE_EOF'
 
 # 2. 寫 systemd unit
 cat > /etc/systemd/system/iperf3-server.service <<'UNIT_EOF'
@@ -100,7 +113,7 @@ REMOTE_EOF
 
 REMOTE_SCRIPT=$(build_remote_script | sed "s/__IPERF_PORT__/${IPERF_PORT}/g")
 
-echo "[idc-iperf3-bootstrap] mode=$MODE targets=(${TARGETS[*]}) port=$IPERF_PORT user=$SSH_USER"
+echo "[idc-iperf3-bootstrap] mode=$MODE install_only=$INSTALL_ONLY targets=(${TARGETS[*]}) port=$IPERF_PORT user=$SSH_USER"
 
 for host in "${TARGETS[@]}"; do
   echo "----- target=$host -----"
