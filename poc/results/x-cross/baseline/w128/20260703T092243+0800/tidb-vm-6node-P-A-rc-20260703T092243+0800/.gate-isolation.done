@@ -1,0 +1,14 @@
+{
+  "phase": "gate-isolation",
+  "db": "tidb",
+  "topology": "vm-6node-P-A",
+  "iso": "rc",
+  "ts": "20260703T092243+0800",
+  "db_host": "172.24.40.32",
+  "conn_params": "transaction_isolation=%27READ-COMMITTED%27&tidb_txn_mode=%27pessimistic%27",
+  "isolation_expected": "READ-COMMITTED",
+  "isolation_actual": "READ-COMMITTED",
+  "driver_actual": "READ-COMMITTED",
+  "yb_effective_db": "n/a",
+  "yb_effective_driver": "n/a"
+}

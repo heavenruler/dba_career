@@ -54,6 +54,11 @@
   砍 10 個非必要包）READY 區間 **100–390s**（視 gproxy squid 快取與時段），wait 上限 1200s。
   慢的從來不是 GCP 開機，是 dnf 過 proxy。
 
+- **make 一律從 poc/ 層跑（07-03）**：`poc/Makefile` 是頂層入口（include phase-crossregion/Makefile），
+  recipe 內相對路徑（iac-idc/ansible/results/tests）都以 poc/ 為基準。從 phase-crossregion/ 內跑 make
+  會 `cd: iac-idc: No such file or directory`——destroy 因 `-` 前綴被 ignored 靜默略過、apply 才炸。
+  正確：`make -C <abs>/poc <target>`。
+
 - **bug #13 — wan-probe.sh GCP 定址殘留 IAP tunnel（07-03）**：wan-probe.sh 的 `ssh_gcp()` 寫死
   `ssh -p 1221x root@localhost`（IAP tunnel 埠轉發），detached 在 .31 跑無 tunnel → GCP chrony/netdev 全 rc=255；
   這是 **bug #11（CLUSTER_HOSTS）的漏網同類**，另一支腳本沒跟著改。同時 netdev 寫死 `WAN_NIC=eth0`，
