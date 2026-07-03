@@ -1,0 +1,13 @@
+2026/06/21 08:52:01 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+[Current] DELIVERY - Takes(s): 8.7, Count: 5, TPM: 34.6, Sum(ms): 1609.6, Avg(ms): 323.4, 50th(ms): 436.2, 90th(ms): 469.8, 95th(ms): 469.8, 99th(ms): 469.8, 99.9th(ms): 469.8, Max(ms): 469.8
+[Current] NEW_ORDER - Takes(s): 8.7, Count: 39, TPM: 268.3, Sum(ms): 13367.0, Avg(ms): 343.3, 50th(ms): 352.3, 90th(ms): 604.0, 95th(ms): 771.8, 99th(ms): 906.0, 99.9th(ms): 906.0, Max(ms): 906.0
+[Current] ORDER_STATUS - Takes(s): 8.9, Count: 3, TPM: 20.3, Sum(ms): 606.7, Avg(ms): 203.4, 50th(ms): 226.5, 90th(ms): 318.8, 95th(ms): 318.8, 99th(ms): 318.8, 99.9th(ms): 318.8, Max(ms): 318.8
+[Current] PAYMENT - Takes(s): 8.8, Count: 6, TPM: 40.7, Sum(ms): 2253.8, Avg(ms): 377.5, 50th(ms): 369.1, 90th(ms): 419.4, 95th(ms): 486.5, 99th(ms): 486.5, 99.9th(ms): 486.5, Max(ms): 486.5
+[Current] STOCK_LEVEL - Takes(s): 8.9, Count: 5, TPM: 33.8, Sum(ms): 646.4, Avg(ms): 128.8, 50th(ms): 83.9, 90th(ms): 268.4, 95th(ms): 268.4, 99th(ms): 268.4, 99.9th(ms): 268.4, Max(ms): 268.4
+Finished
+[Summary] DELIVERY - Takes(s): 173.4, Count: 5, TPM: 1.7, Sum(ms): 1609.6, Avg(ms): 323.4, 50th(ms): 436.2, 90th(ms): 469.8, 95th(ms): 469.8, 99th(ms): 469.8, 99.9th(ms): 469.8, Max(ms): 469.8
+[Summary] NEW_ORDER - Takes(s): 173.4, Count: 62, TPM: 21.4, Sum(ms): 2571196.2, Avg(ms): 6091.2, 50th(ms): 536.9, 90th(ms): 16106.1, 95th(ms): 16106.1, 99th(ms): 16106.1, 99.9th(ms): 16106.1, Max(ms): 16106.1
+[Summary] ORDER_STATUS - Takes(s): 173.6, Count: 3, TPM: 1.0, Sum(ms): 606.7, Avg(ms): 203.4, 50th(ms): 226.5, 90th(ms): 318.8, 95th(ms): 318.8, 99th(ms): 318.8, 99.9th(ms): 318.8, Max(ms): 318.8
+[Summary] PAYMENT - Takes(s): 173.6, Count: 47, TPM: 16.2, Sum(ms): 3633392.3, Avg(ms): 13864.0, 50th(ms): 16106.1, 90th(ms): 16106.1, 95th(ms): 16106.1, 99th(ms): 16106.1, 99.9th(ms): 16106.1, Max(ms): 16106.1
+[Summary] STOCK_LEVEL - Takes(s): 173.6, Count: 5, TPM: 1.7, Sum(ms): 646.4, Avg(ms): 128.8, 50th(ms): 83.9, 90th(ms): 268.4, 95th(ms): 268.4, 99th(ms): 268.4, 99.9th(ms): 268.4, Max(ms): 268.4
+tpmC: 21.4, tpmTotal: 42.2, efficiency: 41.7%

@@ -1,0 +1,12 @@
+2026/06/19 03:47:38 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+creating table warehouse
+creating table district
+creating table customer
+creating index idx_customer
+panic: a fatal occurred when preparing data: pq: timed out waiting for postgres backends to catch up
+
+goroutine 25 [running]:
+main.executeWorkload.func3(0x0?)
+	/home/runner/work/go-tpc/go-tpc/cmd/go-tpc/misc.go:138 +0x1de
+created by main.executeWorkload in goroutine 1
+	/home/runner/work/go-tpc/go-tpc/cmd/go-tpc/misc.go:134 +0x35f

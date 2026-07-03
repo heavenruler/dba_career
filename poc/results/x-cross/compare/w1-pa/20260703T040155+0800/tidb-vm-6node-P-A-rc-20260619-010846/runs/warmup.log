@@ -1,0 +1,23 @@
+2026/06/19 01:25:22 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+[Current] DELIVERY - Takes(s): 9.5, Count: 178, TPM: 1121.0, Sum(ms): 25422.4, Avg(ms): 142.7, 50th(ms): 117.4, 90th(ms): 226.5, 95th(ms): 302.0, 99th(ms): 352.3, 99.9th(ms): 402.7, Max(ms): 402.7
+[Current] NEW_ORDER - Takes(s): 9.6, Count: 2033, TPM: 12659.2, Sum(ms): 262026.1, Avg(ms): 128.9, 50th(ms): 96.5, 90th(ms): 285.2, 95th(ms): 318.8, 99th(ms): 419.4, 99.9th(ms): 503.3, Max(ms): 536.9
+[Current] ORDER_STATUS - Takes(s): 9.7, Count: 208, TPM: 1290.7, Sum(ms): 3808.3, Avg(ms): 18.3, 50th(ms): 17.8, 90th(ms): 25.2, 95th(ms): 27.3, 99th(ms): 37.7, 99.9th(ms): 104.9, Max(ms): 104.9
+[Current] PAYMENT - Takes(s): 9.7, Count: 1849, TPM: 11473.3, Sum(ms): 316986.5, Avg(ms): 171.4, 50th(ms): 159.4, 90th(ms): 335.5, 95th(ms): 369.1, 99th(ms): 436.2, 99.9th(ms): 469.8, Max(ms): 520.1
+[Current] STOCK_LEVEL - Takes(s): 9.6, Count: 189, TPM: 1175.2, Sum(ms): 3486.9, Avg(ms): 18.4, 50th(ms): 16.8, 90th(ms): 24.1, 95th(ms): 28.3, 99th(ms): 62.9, 99.9th(ms): 71.3, Max(ms): 71.3
+[Current] DELIVERY - Takes(s): 9.9, Count: 204, TPM: 1232.4, Sum(ms): 28498.9, Avg(ms): 139.9, 50th(ms): 113.2, 90th(ms): 243.3, 95th(ms): 302.0, 99th(ms): 402.7, 99.9th(ms): 453.0, Max(ms): 453.0
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 2072, TPM: 12444.0, Sum(ms): 265243.3, Avg(ms): 128.0, 50th(ms): 71.3, 90th(ms): 352.3, 95th(ms): 419.4, 99th(ms): 486.5, 99.9th(ms): 536.9, Max(ms): 604.0
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 186, TPM: 1117.9, Sum(ms): 2960.2, Avg(ms): 15.9, 50th(ms): 15.2, 90th(ms): 23.1, 95th(ms): 26.2, 99th(ms): 32.5, 99.9th(ms): 54.5, Max(ms): 54.5
+[Current] PAYMENT - Takes(s): 10.0, Count: 2025, TPM: 12152.0, Sum(ms): 340467.7, Avg(ms): 168.2, 50th(ms): 113.2, 90th(ms): 436.2, 95th(ms): 453.0, 99th(ms): 503.3, 99.9th(ms): 570.4, Max(ms): 604.0
+[Current] STOCK_LEVEL - Takes(s): 9.8, Count: 210, TPM: 1291.8, Sum(ms): 3534.1, Avg(ms): 16.8, 50th(ms): 15.2, 90th(ms): 22.0, 95th(ms): 28.3, 99th(ms): 35.7, 99.9th(ms): 92.3, Max(ms): 92.3
+[Current] DELIVERY - Takes(s): 10.0, Count: 188, TPM: 1130.2, Sum(ms): 34747.8, Avg(ms): 184.7, 50th(ms): 117.4, 90th(ms): 436.2, 95th(ms): 570.4, 99th(ms): 671.1, 99.9th(ms): 771.8, Max(ms): 771.8
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 2126, TPM: 12761.5, Sum(ms): 254467.4, Avg(ms): 119.8, 50th(ms): 88.1, 90th(ms): 243.3, 95th(ms): 302.0, 99th(ms): 402.7, 99.9th(ms): 503.3, Max(ms): 570.4
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 188, TPM: 1130.8, Sum(ms): 3040.8, Avg(ms): 16.2, 50th(ms): 15.2, 90th(ms): 22.0, 95th(ms): 28.3, 99th(ms): 41.9, 99.9th(ms): 58.7, Max(ms): 58.7
+[Current] PAYMENT - Takes(s): 10.0, Count: 2093, TPM: 12565.7, Sum(ms): 344665.9, Avg(ms): 164.8, 50th(ms): 159.4, 90th(ms): 302.0, 95th(ms): 335.5, 99th(ms): 436.2, 99.9th(ms): 486.5, Max(ms): 520.1
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 186, TPM: 1118.8, Sum(ms): 3144.4, Avg(ms): 16.9, 50th(ms): 15.7, 90th(ms): 23.1, 95th(ms): 26.2, 99th(ms): 31.5, 99.9th(ms): 46.1, Max(ms): 46.1
+Finished
+[Summary] DELIVERY - Takes(s): 29.7, Count: 571, TPM: 1153.6, Sum(ms): 88754.5, Avg(ms): 155.4, 50th(ms): 117.4, 90th(ms): 285.2, 95th(ms): 369.1, 99th(ms): 570.4, 99.9th(ms): 738.2, Max(ms): 771.8
+[Summary] NEW_ORDER - Takes(s): 29.8, Count: 6264, TPM: 12609.6, Sum(ms): 786056.3, Avg(ms): 125.5, 50th(ms): 83.9, 90th(ms): 285.2, 95th(ms): 352.3, 99th(ms): 453.0, 99.9th(ms): 536.9, Max(ms): 604.0
+[Summary] ORDER_STATUS - Takes(s): 29.8, Count: 583, TPM: 1172.3, Sum(ms): 9821.7, Avg(ms): 16.9, 50th(ms): 16.3, 90th(ms): 24.1, 95th(ms): 27.3, 99th(ms): 39.8, 99.9th(ms): 58.7, Max(ms): 104.9
+[Summary] PAYMENT - Takes(s): 29.8, Count: 5995, TPM: 12054.5, Sum(ms): 1006290.4, Avg(ms): 167.9, 50th(ms): 151.0, 90th(ms): 335.5, 95th(ms): 419.4, 99th(ms): 486.5, 99.9th(ms): 570.4, Max(ms): 604.0
+[Summary] STOCK_LEVEL - Takes(s): 29.8, Count: 586, TPM: 1179.1, Sum(ms): 10184.9, Avg(ms): 17.4, 50th(ms): 15.7, 90th(ms): 24.1, 95th(ms): 28.3, 99th(ms): 44.0, 99.9th(ms): 92.3, Max(ms): 92.3
+tpmC: 12609.6, tpmTotal: 28169.1, efficiency: 24513.2%

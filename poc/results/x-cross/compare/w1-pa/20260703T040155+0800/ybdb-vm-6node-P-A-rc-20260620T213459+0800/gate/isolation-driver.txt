@@ -1,0 +1,9 @@
+2026/06/20 22:23:11 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+[2026-06-20 22:23:33] execute run failed, err exec SELECT c_discount, c_last, c_credit, w_tax FROM customer, warehouse WHERE w_id = ? AND c_w_id = w_id AND c_d_id = ? AND c_id = ?(wID=1,dID=5,cID=1737) failed pq: LookupByIdRpc(tablet: 9ee6ee8da46b484cabd855e033f147b6, num_attempts: 3) failed: LookupByIdRpc(tablet: 9ee6ee8da46b484cabd855e033f147b6, num_attempts: 3) timed out after deadline expired, passed 20.043s of 5.000s
+execute run failed, err exec SELECT c_discount, c_last, c_credit, w_tax FROM customer, warehouse WHERE w_id = ? AND c_w_id = w_id AND c_d_id = ? AND c_id = ?(wID=1,dID=5,cID=1737) failed pq: LookupByIdRpc(tablet: 9ee6ee8da46b484cabd855e033f147b6, num_attempts: 3) failed: LookupByIdRpc(tablet: 9ee6ee8da46b484cabd855e033f147b6, num_attempts: 3) timed out after deadline expired, passed 20.043s of 5.000s
+Finished
+[Summary] NEW_ORDER - Takes(s): 21.2, Count: 11, TPM: 31.1, Sum(ms): 1069.5, Avg(ms): 96.9, 50th(ms): 92.3, 90th(ms): 134.2, 95th(ms): 134.2, 99th(ms): 142.6, 99.9th(ms): 142.6, Max(ms): 142.6
+[Summary] NEW_ORDER_ERR - Takes(s): 21.2, Count: 1, TPM: 2.8, Sum(ms): 20046.7, Avg(ms): 15837.7, 50th(ms): 16106.1, 90th(ms): 16106.1, 95th(ms): 16106.1, 99th(ms): 16106.1, 99.9th(ms): 16106.1, Max(ms): 16106.1
+[Summary] ORDER_STATUS - Takes(s): 20.9, Count: 3, TPM: 8.6, Sum(ms): 87.4, Avg(ms): 29.0, 50th(ms): 22.0, 90th(ms): 48.2, 95th(ms): 48.2, 99th(ms): 48.2, 99.9th(ms): 48.2, Max(ms): 48.2
+[Summary] PAYMENT - Takes(s): 21.3, Count: 5, TPM: 14.1, Sum(ms): 263.8, Avg(ms): 53.2, 50th(ms): 33.6, 90th(ms): 134.2, 95th(ms): 134.2, 99th(ms): 134.2, 99.9th(ms): 134.2, Max(ms): 134.2
+tpmC: 31.1, tpmTotal: 53.8, efficiency: 241.9%

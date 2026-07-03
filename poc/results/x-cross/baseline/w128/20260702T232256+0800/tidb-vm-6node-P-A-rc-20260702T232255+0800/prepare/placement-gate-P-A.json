@@ -1,0 +1,10 @@
+{
+  "db": "tidb",
+  "placement": "P-A",
+  "verdict": "fail-closed",
+  "reason": "P-A idc<70% (idc=0/19 = 0%) — placement policy not effective",
+  "idc_leader_count": 0,
+  "gcp_leader_count": 19,
+  "total_leader_samples": 19,
+  "generated_at": "2026-07-02T15:28:53Z"
+}

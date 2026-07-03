@@ -1,0 +1,24 @@
+=== wan-probe.sh  phase=warmup-post  ts=20260703T040155+0800  2026-07-02T20:30:43Z ===
+WAN_PROBE_IPERF=1  WAN_NIC=eth0
+
+--- chronyc tracking (3 pair × 2 端 = 6 host) ---
+  [IDC/idc-driver    ] stratum=7 last_offset=-0.000026922 leap=Normal
+[gcp-poc-5] (no data, rc=255)
+  [IDC/idc-dbhost-1  ] stratum=7 last_offset=-0.000006821 leap=Normal
+[gcp-poc-1] (no data, rc=255)
+  [IDC/idc-haproxy   ] stratum=7 last_offset=-0.000025007 leap=Normal
+[gcp-poc-4] (no data, rc=255)
+
+--- /proc/net/dev (NIC=eth0) byte counter snapshot ---
+[idc-driver] (no data, rc=0)
+[gcp-poc-5] (no data, rc=255)
+[idc-dbhost-1] (no data, rc=0)
+[gcp-poc-1] (no data, rc=255)
+[idc-haproxy] (no data, rc=0)
+[gcp-poc-4] (no data, rc=255)
+
+--- iperf3 5s TCP idc-dbhost-1 ↔ gcp-dbhost-1 (forward + reverse) ---
+  [skip] iperf3 binary missing  idc=no  gcp=socket: Address family not supported by protocol
+ssh: connect to host localhost port 12211: failure
+
+=== wan-probe done (some probes failed; see /tmp/poc-tpcc/artifacts/X-CROSS/tidb-vm-6node-P-A-rc-20260703T040155+0800/runs/wan-probe-warmup-post.failed.txt) ===

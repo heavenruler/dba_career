@@ -1,0 +1,9 @@
+chronyc GCP gcp-poc-5 (port 12215) failed rc=255
+chronyc GCP gcp-poc-1 (port 12211) failed rc=255
+chronyc GCP gcp-poc-4 (port 12214) failed rc=255
+netdev IDC idc-driver (root@172.24.40.31 nic=eth0) failed rc=0
+netdev GCP gcp-poc-5 (port 12215 nic=eth0) failed rc=255
+netdev IDC idc-dbhost-1 (root@172.24.40.32 nic=eth0) failed rc=0
+netdev GCP gcp-poc-1 (port 12211 nic=eth0) failed rc=255
+netdev IDC idc-haproxy (root@172.24.47.20 nic=eth0) failed rc=0
+netdev GCP gcp-poc-4 (port 12214 nic=eth0) failed rc=255
