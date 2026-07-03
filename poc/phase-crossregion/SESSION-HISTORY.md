@@ -54,6 +54,15 @@
   砍 10 個非必要包）READY 區間 **100–390s**（視 gproxy squid 快取與時段），wait 上限 1200s。
   慢的從來不是 GCP 開機，是 dnf 過 proxy。
 
+- **bug #13 — wan-probe.sh GCP 定址殘留 IAP tunnel（07-03）**：wan-probe.sh 的 `ssh_gcp()` 寫死
+  `ssh -p 1221x root@localhost`（IAP tunnel 埠轉發），detached 在 .31 跑無 tunnel → GCP chrony/netdev 全 rc=255；
+  這是 **bug #11（CLUSTER_HOSTS）的漏網同類**，另一支腳本沒跟著改。同時 netdev 寫死 `WAN_NIC=eth0`，
+  但 **IDC 主網卡是 `ens33`、GCP 才是 `eth0`** → IDC netdev 抓空行（rc=0 卻標 failed）。
+  **修法**：ssh_gcp 改直連內網 IP（.15/.11/.14），比照 CLUSTER_HOSTS；netdev 改 `WAN_NIC=auto` 遠端偵測
+  default-route NIC 逐台適配；iperf3 缺 binary 改資訊性 skip（opt-in 工具缺席≠probe 失敗，不寫 failed.txt，
+  IDC 端目前無 iperf3）。實測 6 host chrony（GCP stratum=3 offset 有值）+ 6 host netdev（rx/tx 有值）全通、
+  `all probes succeeded` 無 failed.txt。修在 local repo，隨下輪 win-tidb-as-detach rsync 生效（未 live 全鏈驗證前當作會炸）。
+
 ---
 
 ## 2026-06-18 — IaC verify

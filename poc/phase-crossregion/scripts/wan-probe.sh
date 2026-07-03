@@ -4,9 +4,12 @@
 # WAN passive sampler + opt-in iperf3 (per REPLAN-2026-06-15.md §4).
 #
 # 取樣 3 對 cross-region host pair (IDC ↔ GCP)：
-#   driver:    idc-driver    (172.24.40.31)  ↔  gcp-poc-5  (port 12215)
-#   db:        idc-dbhost-1  (172.24.40.32)  ↔  gcp-poc-1  (port 12211)
-#   haproxy:   idc-haproxy   (172.24.47.20)  ↔  gcp-poc-4  (port 12214)
+#   driver:    idc-driver    (172.24.40.31)  ↔  gcp-poc-5  (10.160.152.15)
+#   db:        idc-dbhost-1  (172.24.40.32)  ↔  gcp-poc-1  (10.160.152.11)
+#   haproxy:   idc-haproxy   (172.24.47.20)  ↔  gcp-poc-4  (10.160.152.14)
+#
+# GCP 定址：.31 直連 GCP 內網 IP（比照 CLUSTER_HOSTS/run.sh，bug #11）。
+#   舊版走 IAP tunnel localhost:1221x，detached 在 .31 跑時無 tunnel → 全 rc=255；已改直連。
 #
 # 模式：
 #   passive (default)：
@@ -27,13 +30,11 @@
 #   IDC_DRIVER_ADDR   (default root@172.24.40.31)
 #   IDC_DBHOST1_ADDR  (default root@172.24.40.32)
 #   IDC_HAPROXY_ADDR  (default root@172.24.47.20)
-#   GCP_DRIVER_PORT   (default 12215)
-#   GCP_DBHOST1_PORT  (default 12211)
-#   GCP_HAPROXY_PORT  (default 12214)
-#   GCP_SSH_USER      (default root)
-#   GCP_SSH_KEY       (default $HOME/.ssh/id_rsa)
+#   GCP_DRIVER_ADDR   (default root@10.160.152.15  — gcp-poc-5，直連內網 IP)
+#   GCP_DBHOST1_ADDR  (default root@10.160.152.11  — gcp-poc-1)
+#   GCP_HAPROXY_ADDR  (default root@10.160.152.14  — gcp-poc-4)
 #   WAN_PROBE_IPERF   (default 0; set 1 to enable iperf3)
-#   WAN_NIC           (default eth0; NIC to read from /proc/net/dev)
+#   WAN_NIC           (default auto; auto=每台偵測 default-route NIC，IDC=ens33 / GCP=eth0)
 #
 # Output：
 #   <out-dir>/wan-probe-<phase>.txt           # all passive + iperf3 sections appended
@@ -70,13 +71,12 @@ mkdir -p "$OUT_DIR"
 : "${IDC_DRIVER_ADDR:=root@172.24.40.31}"
 : "${IDC_DBHOST1_ADDR:=root@172.24.40.32}"
 : "${IDC_HAPROXY_ADDR:=root@172.24.47.20}"
-: "${GCP_DRIVER_PORT:=12215}"
-: "${GCP_DBHOST1_PORT:=12211}"
-: "${GCP_HAPROXY_PORT:=12214}"
-: "${GCP_SSH_USER:=root}"
-: "${GCP_SSH_KEY:=$HOME/.ssh/id_rsa}"
+# GCP：.31 直連內網 IP（不走 IAP tunnel localhost:1221x — 見 bug #11）
+: "${GCP_DRIVER_ADDR:=root@10.160.152.15}"
+: "${GCP_DBHOST1_ADDR:=root@10.160.152.11}"
+: "${GCP_HAPROXY_ADDR:=root@10.160.152.14}"
 : "${WAN_PROBE_IPERF:=0}"
-: "${WAN_NIC:=eth0}"
+: "${WAN_NIC:=auto}"
 
 OUT_TXT="$OUT_DIR/wan-probe-${PHASE}.txt"
 FAILED_STAMP="$OUT_DIR/wan-probe-${PHASE}.failed.txt"
@@ -93,10 +93,16 @@ ssh_idc() {  # ssh_idc <user@host> <remote-cmd>
       -o BatchMode=yes -o LogLevel=ERROR "$1" "$2" 2>&1
 }
 
-ssh_gcp() {  # ssh_gcp <port> <remote-cmd>
-  ssh -i "$GCP_SSH_KEY" -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
-      -o BatchMode=yes -o LogLevel=ERROR -p "$1" "${GCP_SSH_USER}@localhost" "$2" 2>&1
+ssh_gcp() {  # ssh_gcp <user@host> <remote-cmd> — .31 直連 GCP 內網 IP（與 ssh_idc 同機制）
+  ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
+      -o BatchMode=yes -o LogLevel=ERROR "$1" "$2" 2>&1
 }
+
+# 遠端 netdev 採樣命令：WAN_NIC=auto 時偵測 default-route NIC（IDC=ens33 / GCP=eth0 不同），
+# 否則用指定 NIC；dump /proc/net/dev 該行（欄位 $2=rx_bytes、$10=tx_bytes）。
+# 用 __NIC__ placeholder 避開本地 $WAN_NIC 與遠端 $ 的 escape 衝突。
+NETDEV_CMD='n="__NIC__"; [ "$n" = auto ] && n=$(ip -o -4 route show to default 2>/dev/null | awk "{print \$5; exit}"); n=${n:-eth0}; awk -v nic="$n" "index(\$1, nic\":\")==1 {print}" /proc/net/dev'
+NETDEV_CMD=${NETDEV_CMD/__NIC__/$WAN_NIC}
 
 # ---- header ----------------------------------------------------------
 {
@@ -128,13 +134,13 @@ probe_chrony_idc() {  # <label> <addr>
     "IDC/$label" "${stratum:-?}" "${offset:-?}" "${leap:-?}" >> "$OUT_TXT"
 }
 
-probe_chrony_gcp() {  # <label> <port>
-  local label=$1 port=$2
+probe_chrony_gcp() {  # <label> <addr>
+  local label=$1 addr=$2
   local raw
-  raw=$(ssh_gcp "$port" "chronyc tracking")
+  raw=$(ssh_gcp "$addr" "chronyc tracking")
   local rc=$?
   if [[ $rc -ne 0 || -z "$raw" ]]; then
-    note_fail "chronyc GCP $label (port $port) failed rc=$rc"
+    note_fail "chronyc GCP $label ($addr) failed rc=$rc"
     echo "[$label] (no data, rc=$rc)" >> "$OUT_TXT"
     return
   fi
@@ -148,13 +154,13 @@ probe_chrony_gcp() {  # <label> <port>
 
 # pair 1: driver
 probe_chrony_idc "idc-driver"    "$IDC_DRIVER_ADDR"
-probe_chrony_gcp "gcp-poc-5"     "$GCP_DRIVER_PORT"
+probe_chrony_gcp "gcp-poc-5"     "$GCP_DRIVER_ADDR"
 # pair 2: db
 probe_chrony_idc "idc-dbhost-1"  "$IDC_DBHOST1_ADDR"
-probe_chrony_gcp "gcp-poc-1"     "$GCP_DBHOST1_PORT"
+probe_chrony_gcp "gcp-poc-1"     "$GCP_DBHOST1_ADDR"
 # pair 3: haproxy
 probe_chrony_idc "idc-haproxy"   "$IDC_HAPROXY_ADDR"
-probe_chrony_gcp "gcp-poc-4"     "$GCP_HAPROXY_PORT"
+probe_chrony_gcp "gcp-poc-4"     "$GCP_HAPROXY_ADDR"
 
 echo >> "$OUT_TXT"
 
@@ -166,7 +172,7 @@ echo >> "$OUT_TXT"
 probe_netdev_idc() {  # <label> <addr>
   local label=$1 addr=$2
   local line
-  line=$(ssh_idc "$addr" "awk -v nic='$WAN_NIC' '\$1 ~ nic\":\" {print}' /proc/net/dev")
+  line=$(ssh_idc "$addr" "$NETDEV_CMD")
   local rc=$?
   if [[ $rc -ne 0 || -z "$line" ]]; then
     note_fail "netdev IDC $label ($addr nic=$WAN_NIC) failed rc=$rc"
@@ -182,13 +188,13 @@ probe_netdev_idc() {  # <label> <addr>
     "IDC/$label" "${rx:-?}" "${tx:-?}" >> "$OUT_TXT"
 }
 
-probe_netdev_gcp() {  # <label> <port>
-  local label=$1 port=$2
+probe_netdev_gcp() {  # <label> <addr>
+  local label=$1 addr=$2
   local line
-  line=$(ssh_gcp "$port" "awk -v nic='$WAN_NIC' '\$1 ~ nic\":\" {print}' /proc/net/dev")
+  line=$(ssh_gcp "$addr" "$NETDEV_CMD")
   local rc=$?
   if [[ $rc -ne 0 || -z "$line" ]]; then
-    note_fail "netdev GCP $label (port $port nic=$WAN_NIC) failed rc=$rc"
+    note_fail "netdev GCP $label ($addr nic=$WAN_NIC) failed rc=$rc"
     echo "[$label] (no data, rc=$rc)" >> "$OUT_TXT"
     return
   fi
@@ -200,11 +206,11 @@ probe_netdev_gcp() {  # <label> <port>
 }
 
 probe_netdev_idc "idc-driver"    "$IDC_DRIVER_ADDR"
-probe_netdev_gcp "gcp-poc-5"     "$GCP_DRIVER_PORT"
+probe_netdev_gcp "gcp-poc-5"     "$GCP_DRIVER_ADDR"
 probe_netdev_idc "idc-dbhost-1"  "$IDC_DBHOST1_ADDR"
-probe_netdev_gcp "gcp-poc-1"     "$GCP_DBHOST1_PORT"
+probe_netdev_gcp "gcp-poc-1"     "$GCP_DBHOST1_ADDR"
 probe_netdev_idc "idc-haproxy"   "$IDC_HAPROXY_ADDR"
-probe_netdev_gcp "gcp-poc-4"     "$GCP_HAPROXY_PORT"
+probe_netdev_gcp "gcp-poc-4"     "$GCP_HAPROXY_ADDR"
 
 echo >> "$OUT_TXT"
 
@@ -220,16 +226,18 @@ if [[ "$WAN_PROBE_IPERF" == "1" ]]; then
 
       # 兩端皆需 iperf3 binary
       idc_has=$(ssh_idc "$IDC_DBHOST1_ADDR" "command -v iperf3 >/dev/null 2>&1 && echo yes || echo no")
-      gcp_has=$(ssh_gcp "$GCP_DBHOST1_PORT" "command -v iperf3 >/dev/null 2>&1 && echo yes || echo no")
+      gcp_has=$(ssh_gcp "$GCP_DBHOST1_ADDR" "command -v iperf3 >/dev/null 2>&1 && echo yes || echo no")
 
       if [[ "$idc_has" != "yes" || "$gcp_has" != "yes" ]]; then
-        note_fail "iperf3 binary missing (idc=$idc_has gcp=$gcp_has) → skip"
-        echo "  [skip] iperf3 binary missing  idc=$idc_has  gcp=$gcp_has" >> "$OUT_TXT"
+        # iperf3 為 opt-in 主動壓測，缺 binary 不算 probe 失敗（不寫 failed.txt）——
+        # 只做資訊性 skip。要啟用須先在缺的那端裝 iperf3（目前 IDC 端無）。
+        printf "[wan-probe][info] iperf3 skip: binary missing (idc=%s gcp=%s)\n" "$idc_has" "$gcp_has" >&2
+        echo "  [skip] iperf3 binary missing (opt-in，非失敗)  idc=$idc_has  gcp=$gcp_has" >> "$OUT_TXT"
       else
-        # 假設 gcp-dbhost-1 已預先啟動 iperf3 -s (deployment 前置；見 follow-up)
-        # caller 由 env 提供 target IP/host (跨 region 連線需 tunnel 或 public IP)
-        : "${IPERF_TARGET_GCP:=gcp-dbhost-1-target-unset}"  # idc → gcp 連線目標
-        : "${IPERF_TARGET_IDC:=idc-dbhost-1-target-unset}"  # gcp → idc 連線目標
+        # 跨區直連：idc-dbhost-1(172.24.40.32) ↔ gcp-dbhost-1(10.160.152.11)，內網 IP 直通。
+        # 需目標端先啟 iperf3 -s（deployment 前置）；未啟則 -c 會回 error JSON（非空，仍留痕）。
+        : "${IPERF_TARGET_GCP:=10.160.152.11}"  # idc → gcp 連線目標
+        : "${IPERF_TARGET_IDC:=172.24.40.32}"   # gcp → idc 連線目標
         : "${IPERF_PORT:=5201}"
         # forward: idc-dbhost-1 client → gcp-dbhost-1 server
         echo "  [forward idc->gcp]  target=$IPERF_TARGET_GCP port=$IPERF_PORT" >> "$OUT_TXT"
@@ -243,7 +251,7 @@ if [[ "$WAN_PROBE_IPERF" == "1" ]]; then
 
         # reverse: gcp-dbhost-1 client → idc-dbhost-1 server
         echo "  [reverse gcp->idc]  target=$IPERF_TARGET_IDC port=$IPERF_PORT" >> "$OUT_TXT"
-        rev=$(ssh_gcp "$GCP_DBHOST1_PORT" "iperf3 -c $IPERF_TARGET_IDC -t 5 -p $IPERF_PORT -J 2>&1 || true")
+        rev=$(ssh_gcp "$GCP_DBHOST1_ADDR" "iperf3 -c $IPERF_TARGET_IDC -t 5 -p $IPERF_PORT -J 2>&1 || true")
         if [[ -z "$rev" ]]; then
           note_fail "iperf3 reverse returned empty"
           echo "    (no output)" >> "$OUT_TXT"
