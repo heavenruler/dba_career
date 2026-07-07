@@ -107,7 +107,29 @@ echo '__pycache__/' >> poc/tpmc-report/.gitignore   # 或 repo 根 .gitignore，
 
 驗收：每項附於 PR 描述；共通：`bash -n` 全過、`ansible-playbook --syntax-check`（若環境可用，否則標未驗證）、`make -n` 前後 diff 為空（除預期變更）。
 
+## S9. 【Win-2 prep，Q17 已拍板】PROFILE token 命名實作（與 Win-2 gap#1 A-A 接線綁做）
+
+方案定案見 decisions Q17：A-S token-less（不變）、A-A→`-aa-`、A-A-RO→`-aaro-`，插在 placement 與 `rc` 之間；token 藏 topology 段 → **tests/common 三檔（common.sh/run.sh/summary-from-stdout.py）零改動**。
+
+做法（皆可改檔）：
+1. 引入 `PROFILE` make-var（`PROFILE ?= A-S`）+ 派生 `PROFILE_TOKEN`（A-S→空、A-A→`-aa`、A-A-RO→`-aaro`）。
+2. Makefile ~13 處 `{db}-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS)` → 插入 `$(PROFILE_TOKEN)`（placement 與 ISO 之間）。清單見 decisions Q17 觸點 + 觸點 agent 報告（phase6/7/8 smoke+result、win-*-status、smoke-only×3 已 DEPRECATED 可略）。
+3. `run-vm6-suite.sh:115`、`win-tidb-as-w128.sh:49`(+crdb/ybdb 對應)：同樣依 PROFILE 派生 token 插入 ROOT。
+4. `promotion-gate.sh`：現行 #1/#2 glob（`P-A-rc-*`/`P-B-rc-*`）針對 A-S/P-B baseline **不動**；A-A/A-A-RO 若要納入 promotion 另加對應 glob。
+
+驗收：
+```bash
+# A-S 零迴歸：改前後 make -n 輸出 diff 為空
+make -C poc -n win-tidb-as-status PLACEMENT=P-A TPCC_TS=dummy > /tmp/as-before.txt   # 改前存
+# A-A 生效：
+make -C poc -n <aa-target> PLACEMENT=P-A PROFILE=A-A TPCC_TS=dummy | grep -- '-aa-rc-'
+bash -n phase-crossregion/scripts/{run-vm6-suite,win-tidb-as-w128}.sh
+# tests/common 未被碰：
+git status --short | grep tests/common   # 必須為空
+```
+**綁做**：與 Win-2 gap#1（`run-vm6-aa.sh` 接 Makefile）同一 PR；先驗 FW 涵蓋 .31→GCP client SSH（A-A 雙 client 前置）。
+
 ## 執行順序建議
 
-S1（已完成）→ S3+S6+S7（零風險批，可一次 PR）→ S4 → S5（5d 需等 YBDB smoke 窗口）→ S2（等 R2 拍板）→ S8（最後，量大）。
+S1（已完成）→ S3+S6+S7（零風險批，可一次 PR）→ S4 → S5（5d 需等 YBDB smoke 窗口）→ S2+S2b（Path C 刪除 + main.tf 拆 daemon，R1/R2 已拍板）→ S8（收斂清理）→ **S9（Win-1 三家 A-S 跑完、進 Win-2 前）**。
 每個 PR 合併前在 spike/fix branch 上跑該步驗收命令並貼輸出。

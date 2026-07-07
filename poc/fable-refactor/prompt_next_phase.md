@@ -79,10 +79,10 @@ make -C ... phase9                                             # 正式輪收尾
 順序：Win-1 CRDB → Win-1 YBDB（TiDB 已完）→ **Win-2 前必解四缺口** → Win-2…Win-6 → Wave 5（audit-9 文件盤點可隨時並行）→ Wave 6。
 
 Win-2 前必解四缺口（勿臨場踩雷）：
-1. A-A / A-A-RO 無 Makefile 進入點：`run-vm6-aa.sh` 存在但從未接線；GCP 端 client 路徑需走 .31（先驗 FW 涵蓋 .31→GCP client ssh）
-2. artifact 命名不含 PROFILE：`{db}-vm-6node-{P-A|P-B}-rc-<ts>` 同 placement 不同 profile 會混淆 static-check/promotion glob → 先拍板命名方案（連動 promotion-gate.sh、summary regex、result targets）
-3. 六視窗全矩陣是對既有 3-cell 決策的擴張 → 先補一筆 decisions（Q16）再跑
-4. probe driver（`scripts/probe-rto-driver/`，Go 版）未接 Makefile；promotion #7 要 probe-stats.json（Wave 5 前接線設計，planner 審查後才實跑）
+1. **【仍待做】** A-A / A-A-RO 無 Makefile 進入點：`run-vm6-aa.sh` 存在但從未接線；GCP 端 client 路徑需走 .31（先驗 FW 涵蓋 .31→GCP client ssh）。與 #2 命名實作綁一起做。
+2. **【已拍板 Q17，剩實作】** artifact 命名納入 PROFILE token：A-S 維持 token-less（既有 cell 不改名、Win-1 零改動）、A-A→`aa`、A-A-RO→`aaro`，插在 placement 與 `rc` 之間。**token 藏 topology 段 → tests/common 三檔零改動**。需改可改檔：`run-vm6-suite.sh:115`、`win-tidb-as-w128.sh:49`(+crdb/ybdb)、`Makefile` ~13 處 ROOT（引入 `PROFILE`→`PROFILE_TOKEN` make-var）、`promotion-gate.sh:45/66`（A-A/A-A-RO 另加檢查）。驗收：A-S 路徑 `make -n` 前後不變、A-A dry-run 出 `-aa-rc-` 目錄、`check-static-artifacts.py` glob 仍中。詳 decisions Q17。
+3. **【已拍板 Q16】** 六視窗全矩陣（{P-A,P-B}×{A-S,A-A-RO,A-A}×3家=18 cells）已補 decisions Q16：A-S=主數據候選、A-A/A-A-RO=exploratory-only observed envelope；per-cell rebuild(Q11)、CV R1-R5 mean(Q15)。無需再拍板，照矩陣跑。
+4. **【仍待做】** probe driver（`scripts/probe-rto-driver/`，Go 版）未接 Makefile；promotion #7 要 probe-stats.json（Wave 5 前接線設計，planner 審查後才實跑）
 
 ## Wave 4→6 路線圖（user 指定，依序）
 ```
