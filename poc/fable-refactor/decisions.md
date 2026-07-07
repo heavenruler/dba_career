@@ -70,6 +70,16 @@
 | F8 prepare/run-all 32 檔鏡像 | 有意設計（準備/執行分離）；重構=無被要求的功能變更 |
 | F9 log 函式不共用 | 屬風格統一，非錯誤；「不順手重構無關程式」紅線 |
 | tests/common/* 任何內容 | 不動清單成員（即使 F3 涉及 dry-run-confirm.sh） |
-| iac-gcp/main.tf 5201 daemon（A1） | 正式 IaC + 架構決策（常駐 vs 臨時 server 二選一）須使用者拍板 |
+| ~~iac-gcp/main.tf 5201 daemon（A1）~~ | ~~須使用者拍板~~ → **已於 D9 拍板：拆常駐段** |
 | results/ 內 md 的歷史段落 | 數據紀錄的歷史陳述不回改，只在最新段落勘誤（pipeline-log §4 例外，見 plan S6，因它是「現況陳述」非歷史） |
 | Makefile.tc1 / tunnel.sh | legacy 工具，phase9-tunnels-stop 仍引用 tunnel.sh；刪除涉及執行路徑確認 |
+
+## D9. 使用者拍板（2026-07-07）— R1 / R2 / iperf3 埠
+
+三項健檢待決事項經使用者拍板，覆蓋 D7 捨棄理由與 D8「不修」清單中的兩列：
+
+- **R2 Path C → 刪除**：`phase-warmup-only-{tidb,crdb,ybdb}`、`phase-roundrun-only-*`、Path C orchestrator（Makefile:1268 一帶）、`run-round-only.sh` 全刪；README 提及一併清。理由：健檢確認現部署模式下從未跑通（rsync 缺檔），Wave 4 走 run-vm6-suite 正式路徑已取代。
+- **R1 iperf3 server → 拆常駐**：移除 `iac-gcp/main.tf` 的 `iperf3-server.service` 常駐段（cloud-init 仍裝 iperf3 binary，只是不起常駐 daemon）。貫徹「臨時起」架構，兌現 0.0.0.0 常駐監聽的安全顧慮。
+- **iperf3 埠 5201/20170 → 19999**：使用者裁定改用專用高埠 19999（遠離所有 DB service range 與 OS ephemeral range 32768+）。**關鍵澄清（記錄備查）**：iperf3 對 DB 效率的干擾是「時序」問題非「埠」問題——wan-probe 只在 round 間隙（warmup-post/sweep-pre）跑、量測輪跳過，早已由時序 gate 擋掉；改埠純為衛生/歸因（避免 netflow 誤認、避免與 DB 埠語義混淆）。專線 FW 已知 /24 整段開，埠選擇不受 FW 限制。
+  - **連動**：spike branch `5cd6d6d8` 原改成 20170，落地時直接用 19999；`wan-probe.sh`（IPERF_PORT 預設 + header 註）、`idc-iperf3-bootstrap.sh`（IPERF_PORT 預設）兩處同步 19999。
+**捨棄方案**：R1 選項 B（保留常駐打 5201）——使用者選拆；埠維持 20170——使用者要求離開 TiKV range。

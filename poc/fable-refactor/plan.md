@@ -17,22 +17,25 @@ bash poc/phase-crossregion/scripts/idc-iperf3-bootstrap.sh --dry-run | grep 'por
 grep -c '未開通' poc/phase-crossregion/scripts/wan-probe.sh   # 預期 0
 ```
 
-## S2. 【P0-1】Path C 修復（先向使用者確認 R2：修 or 廢）
+## S2. 【P0-1】Path C **刪除**（R2 已拍板 2026-07-07 = 廢，見 decisions D9）
 
-**若修**（Sonnet 可做）：`phase-crossregion/Makefile` `phase2-bootstrap` 的 rsync 行後加一行：
-```make
-scp -q phase-crossregion/run-round-only.sh '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/run-round-only.sh'
-```
-同時把 `phase-warmup-only-*` 三個 target 的外層 `|| true` 拿掉（保留 rsync 行的 `|| true` 可以，bash 行不可）——消 fail-open。
-**若廢**：刪 `phase-warmup-only-{tidb,crdb,ybdb}`、`phase-roundrun-only-*`、Path C orchestrator（:1268 一帶），及 `run-round-only.sh`；README 若有提及一併清。
+刪 `phase-warmup-only-{tidb,crdb,ybdb}`、`phase-roundrun-only-*`、Path C orchestrator（Makefile:1268 一帶）、`run-round-only.sh`；README/SESSION-HISTORY 若有提及一併清。最小 diff、單獨 commit。
 
-驗收（修）：
+驗收：`grep -rn 'run-round-only\|warmup-only\|roundrun-only' poc/ --include=Makefile --include='*.md' | grep -v results/ | grep -v '\.bak'` 為空；`make -C poc -n phase-crossregion-w128-suite`（或現行正式 target）仍正常展開（確認沒誤刪正式路徑依賴）。
+
+## S2b. 【R1 已拍板】拆 main.tf iperf3 常駐 daemon + 埠統一 19999（見 decisions D9）
+
+- `iac-gcp/main.tf:122-139`：刪 `iperf3-server.service` 常駐段（`systemctl enable --now iperf3-server` 那整塊）；**保留** cloud-init 的 iperf3 binary 安裝（dnf 那行不動）。
+- 埠 19999 統一：`wan-probe.sh`（IPERF_PORT 預設 + header 註，spike 原寫 20170）、`idc-iperf3-bootstrap.sh`（IPERF_PORT 預設）改 19999。
+- 注意：這是正式 IaC 變更，下次 phase1 rebuild 生效；本項與 S1 的 spike 合入合併處理（見 M1 備註）。
+
+驗收：
 ```bash
-grep -n 'run-round-only' poc/phase-crossregion/Makefile   # bootstrap 段出現 scp 行
-make -C poc -n phase2-bootstrap | grep run-round-only      # dry-run 可見傳輸命令
-grep -A8 'phase-warmup-only-tidb:' poc/phase-crossregion/Makefile | grep -c '|| true'  # bash 行不再有
+grep -c 'iperf3-server.service\|enable --now iperf3-server' poc/iac-gcp/main.tf   # 0
+grep -c 'iperf3' poc/iac-gcp/main.tf                                              # >0（binary 安裝still在）
+grep -rn 'IPERF_PORT' poc/phase-crossregion/scripts/{wan-probe,idc-iperf3-bootstrap}.sh | grep 19999
+grep -c '20170\|5201' poc/phase-crossregion/scripts/wan-probe.sh                  # 僅剩勘誤性提及（見 header 註）
 ```
-驗收（廢）：`grep -rn 'run-round-only\|warmup-only\|roundrun-only' poc/ --include=Makefile --include='*.md' | grep -v results/ | grep -v '\.bak'` 為空。
 
 ## S3. 【P1-5 + B 全部】.PHONY 補宣告（Sonnet/Haiku 可做）
 
