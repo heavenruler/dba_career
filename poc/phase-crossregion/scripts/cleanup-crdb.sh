@@ -45,34 +45,34 @@ fail_count=0
 echo "=== IDC nodes ==="
 for ip in $IDC_NODES; do
   echo "--- $ip ---"
-  ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$ip" 'bash -s' <<< "$CLEANUP_CMD" || fail_count=$((fail_count+1))
+  ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$ip" 'bash -s' <<< "$CLEANUP_CMD" || fail_count=$((fail_count+1))
 done
 
-ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$IDC_ADMIN" \
+ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$IDC_ADMIN" \
   "cat > /tmp/cleanup-crdb-remote.sh" <<< "$CLEANUP_CMD"
 
 echo "=== GCP nodes (via $IDC_ADMIN) ==="
 for ip in $GCP_INTERNAL_IPS; do
   echo "--- $ip ---"
-  ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$IDC_ADMIN" \
-    "ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no root@$ip 'bash -s' < /tmp/cleanup-crdb-remote.sh" || fail_count=$((fail_count+1))
+  ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$IDC_ADMIN" \
+    "ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@$ip 'bash -s' < /tmp/cleanup-crdb-remote.sh" || fail_count=$((fail_count+1))
 done
 
 # verify
 echo "==> verify-cleanup: no cockroach process anywhere"
 verify_fail=0
 for ip in $IDC_NODES; do
-  out=$(ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$ip" 'bash -s' <<< "$VERIFY_CMD" 2>&1 | grep -vE "WARNING|post-quantum|upgraded|openssh|Permanently")
+  out=$(ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$ip" 'bash -s' <<< "$VERIFY_CMD" 2>&1 | grep -vE "WARNING|post-quantum|upgraded|openssh|Permanently")
   echo "$out"
   echo "$out" | grep -q "FAIL:" && verify_fail=$((verify_fail+1))
 done
 
-ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$IDC_ADMIN" \
+ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$IDC_ADMIN" \
   "cat > /tmp/verify-crdb.sh" <<< "$VERIFY_CMD"
 
 for ip in $GCP_INTERNAL_IPS; do
-  out=$(ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$IDC_ADMIN" \
-        "ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no root@$ip 'bash -s' < /tmp/verify-crdb.sh" 2>&1 | grep -vE "WARNING|post-quantum|upgraded|openssh|Permanently")
+  out=$(ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$IDC_ADMIN" \
+        "ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@$ip 'bash -s' < /tmp/verify-crdb.sh" 2>&1 | grep -vE "WARNING|post-quantum|upgraded|openssh|Permanently")
   echo "$out"
   echo "$out" | grep -q "FAIL:" && verify_fail=$((verify_fail+1))
 done

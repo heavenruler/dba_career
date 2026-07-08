@@ -7,7 +7,7 @@ set -euo pipefail
 : "${IDC_NODES_HEAD:?IDC_NODES_HEAD is required}"
 : "${DUMP_DIR:?DUMP_DIR is required}"
 
-SSH="ssh -o ConnectTimeout=5 -o BatchMode=yes root@${IDC_NODES_HEAD}"
+SSH="ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@${IDC_NODES_HEAD}"
 YB_ADMIN="/opt/yugabyte/bin/yb-admin --master_addresses=${YB_MASTER_ADDR}"
 
 # HIGH 2: restore original lb state dumped by freeze-ybdb.sh

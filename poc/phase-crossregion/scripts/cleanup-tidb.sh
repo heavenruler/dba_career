@@ -77,7 +77,7 @@ fail_count=0
 echo "=== IDC nodes (direct ssh) ==="
 for ip in $IDC_NODES; do
   echo "--- $ip ---"
-  if ! ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$ip" 'bash -s' <<< "$CLEANUP_CMD"; then
+  if ! ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$ip" 'bash -s' <<< "$CLEANUP_CMD"; then
     echo "  [FAIL] cleanup on $ip exited non-zero"
     fail_count=$((fail_count+1))
   fi
@@ -85,7 +85,7 @@ done
 
 # stage cleanup script on .31 once for GCP execution
 echo "=== GCP nodes (via $IDC_ADMIN) ==="
-if ! ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$IDC_ADMIN" \
+if ! ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$IDC_ADMIN" \
      "cat > /tmp/cleanup-tidb-remote.sh" <<< "$CLEANUP_CMD"; then
   echo "  [FAIL] cannot stage cleanup script on $IDC_ADMIN"
   exit 1
@@ -93,8 +93,8 @@ fi
 
 for ip in $GCP_INTERNAL_IPS; do
   echo "--- $ip ---"
-  if ! ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$IDC_ADMIN" \
-        "ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no root@$ip 'bash -s' < /tmp/cleanup-tidb-remote.sh"; then
+  if ! ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$IDC_ADMIN" \
+        "ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@$ip 'bash -s' < /tmp/cleanup-tidb-remote.sh"; then
     echo "  [FAIL] cleanup on $ip (via $IDC_ADMIN) exited non-zero"
     fail_count=$((fail_count+1))
   fi
@@ -111,20 +111,20 @@ verify_fail=0
 
 echo "=== IDC verify ==="
 for ip in $IDC_NODES; do
-  out=$(ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$ip" 'bash -s' <<< "$VERIFY_CMD" 2>&1 \
+  out=$(ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$ip" 'bash -s' <<< "$VERIFY_CMD" 2>&1 \
         | grep -vE "WARNING|post-quantum|upgraded|openssh|Permanently")
   echo "$out"
   echo "$out" | grep -q "FAIL:" && verify_fail=$((verify_fail+1))
 done
 
 # stage verify script on .31
-ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$IDC_ADMIN" \
+ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$IDC_ADMIN" \
   "cat > /tmp/verify-tidb-cleanup.sh" <<< "$VERIFY_CMD"
 
 echo "=== GCP verify (via $IDC_ADMIN) ==="
 for ip in $GCP_INTERNAL_IPS; do
-  out=$(ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "root@$IDC_ADMIN" \
-        "ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no root@$ip 'bash -s' < /tmp/verify-tidb-cleanup.sh" 2>&1 \
+  out=$(ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new "root@$IDC_ADMIN" \
+        "ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@$ip 'bash -s' < /tmp/verify-tidb-cleanup.sh" 2>&1 \
         | grep -vE "WARNING|post-quantum|upgraded|openssh|Permanently")
   echo "$out"
   echo "$out" | grep -q "FAIL:" && verify_fail=$((verify_fail+1))

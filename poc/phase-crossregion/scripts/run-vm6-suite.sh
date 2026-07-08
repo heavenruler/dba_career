@@ -288,9 +288,9 @@ case "$DB" in
       sleep 10
     done
     [[ "$converged" == "1" ]] || echo "[wrapper] WARN: load_move_completion not 100% after 5min; proceeding (0 tablets remaining = benign)"
-    echo "[wrapper] pre-run: freeze YBDB load balancer to prevent tablet leader churn during timed run"
-    ssh root@"$DB_HOST" "/opt/yugabyte/bin/yb-admin --master_addresses=$YB_MASTER_ADDR set_load_balancer_enabled 0"
-    echo "  load balancer disabled"
+    echo "[wrapper] pre-run: freeze YBDB load balancer (fail-closed idle confirm via freeze-ybdb.sh)"
+    YB_MASTER_ADDR="$YB_MASTER_ADDR" IDC_NODES_HEAD="172.24.40.32" DUMP_DIR="$ROOT/freeze-state" \
+      bash "$SELF/../freeze/freeze-ybdb.sh"
     ;;
 esac
 
@@ -347,8 +347,9 @@ fi
 
 # ybdb: 對應 B0-3 的 pre-run freeze；run 結束即解凍（同原 phase7 post-run 步驟）
 if [[ "$DB" == "ybdb" ]]; then
-  echo "[wrapper] post-run: unfreeze YBDB load balancer"
-  ssh root@"$DB_HOST" "/opt/yugabyte/bin/yb-admin --master_addresses=$YB_MASTER_ADDR set_load_balancer_enabled 1" || true
+  echo "[wrapper] post-run: unfreeze YBDB load balancer via unfreeze-ybdb.sh"
+  YB_MASTER_ADDR="$YB_MASTER_ADDR" IDC_NODES_HEAD="172.24.40.32" DUMP_DIR="$ROOT/freeze-state" \
+    bash "$SELF/../freeze/unfreeze-ybdb.sh" || true
 fi
 
 echo "[4/4] collect"

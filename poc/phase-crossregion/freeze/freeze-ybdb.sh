@@ -9,7 +9,7 @@ set -euo pipefail
 
 mkdir -p "$DUMP_DIR"
 
-SSH="ssh -o ConnectTimeout=5 -o BatchMode=yes root@${IDC_NODES_HEAD}"
+SSH="ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@${IDC_NODES_HEAD}"
 YB_ADMIN="/opt/yugabyte/bin/yb-admin --master_addresses=${YB_MASTER_ADDR}"
 
 # HIGH 3: rollback trap — 若 freeze 中途失敗，自動還原 lb 狀態
