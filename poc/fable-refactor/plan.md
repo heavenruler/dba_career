@@ -17,24 +17,15 @@ bash poc/phase-crossregion/scripts/idc-iperf3-bootstrap.sh --dry-run | grep 'por
 grep -c '未開通' poc/phase-crossregion/scripts/wan-probe.sh   # 預期 0
 ```
 
-## S2. 【P0-1】Path C **刪除**（R2 已拍板 2026-07-07 = 廢，見 decisions D9）
+## S2+S2b. 【已完成，fix/s2-s2b-pathc-daemon @ edd6d5b4】Path C 刪除 + main.tf 拆常駐 + 埠統一 19999
 
-刪 `phase-warmup-only-{tidb,crdb,ybdb}`、`phase-roundrun-only-*`、Path C orchestrator（Makefile:1268 一帶）、`run-round-only.sh`；README/SESSION-HISTORY 若有提及一併清。最小 diff、單獨 commit。
+S2（R2 拍板=刪）：刪 `phase-warmup-only-{tidb,crdb,ybdb}`、`phase-roundrun-only-*`、orchestrator `phase-c-validate-hypothesis`、`phase-c-cv-report`、`run-round-only.sh`；`.PHONY` 同步移除。保留 `phase-freeze-*`/`phase-smoke-only-*`/`phase-leader-gate-tidb-postprepare`（非本鏈成員，`phase-smoke-only-*` 走 `run.sh` 直連未受影響，只更新其 DEPRECATED 提示不再指向已刪目標）。
 
-驗收：`grep -rn 'run-round-only\|warmup-only\|roundrun-only' poc/ --include=Makefile --include='*.md' | grep -v results/ | grep -v '\.bak'` 為空；`make -C poc -n phase-crossregion-w128-suite`（或現行正式 target）仍正常展開（確認沒誤刪正式路徑依賴）。
+S2b（R1 拍板=拆常駐）：`iac-gcp/main.tf` 刪 `iperf3-server.service` 常駐段，保留 binary 安裝。
 
-## S2b. 【R1 已拍板】拆 main.tf iperf3 常駐 daemon + 埠統一 19999（見 decisions D9）
+**併同補做 M1**（spike `5cd6d6d8` 從未真正合入 master，執行前才發現）：`wan-probe.sh`/`idc-iperf3-bootstrap.sh` 的「5201 未開通」錯誤前提改勘誤敘述；`IPERF_PORT` 統一 **19999**（非 spike 原寫的 20170，因 D9 埠已改拍板）。
 
-- `iac-gcp/main.tf:122-139`：刪 `iperf3-server.service` 常駐段（`systemctl enable --now iperf3-server` 那整塊）；**保留** cloud-init 的 iperf3 binary 安裝（dnf 那行不動）。
-- 埠 19999 統一：`wan-probe.sh`（IPERF_PORT 預設 + header 註，spike 原寫 20170）、`idc-iperf3-bootstrap.sh`（IPERF_PORT 預設）改 19999。
-- 注意：這是正式 IaC 變更，下次 phase1 rebuild 生效；本項與 S1 的 spike 合入合併處理（見 M1 備註）。
-
-驗收：
-```bash
-grep -c 'iperf3-server.service\|enable --now iperf3-server' poc/iac-gcp/main.tf   # 0
-grep -c 'iperf3' poc/iac-gcp/main.tf                                              # >0（binary 安裝still在）
-grep -rn 'IPERF_PORT' poc/phase-crossregion/scripts/{wan-probe,idc-iperf3-bootstrap}.sh | grep 19999
-grep -c '20170\|5201' poc/phase-crossregion/scripts/wan-probe.sh                  # 僅剩勘誤性提及（見 header 註）
+驗收（已過）：Path C 殘留 grep = 0；`bash -n` 全過；`terraform validate`+`fmt -check` PASS；`idc-iperf3-bootstrap.sh --dry-run` 確認 unit 埠=19999、`--install-only` 仍只裝 binary；`make -n` 對 `phase-freeze-tidb`/`phase-smoke-only-tidb`/`phase-leader-gate-tidb-postprepare`/`phase-crossregion-w128-suite` 皆展開正常（未誤刪依賴）。**未 live 驗證**：19999 埠+binary-only 需下次 phase1 rebuild 才生效。
 ```
 
 ## S3. 【P1-5 + B 全部】.PHONY 補宣告（Sonnet/Haiku 可做）
@@ -122,5 +113,5 @@ git status --short | grep tests/common   # 必須為空
 
 ## 執行順序建議
 
-S1（已完成 2591f33e）→ S3+S6+S7（已完成 ee3e014f）→ S4（已完成 8195c64d）→ S5（已完成 24a59df5，5d 待 YBDB smoke live 驗）→ **S2+S2b（下一步：Path C 刪除 + main.tf 拆 daemon，R1/R2 已拍板）** → S8（收斂清理）→ S9（Win-1 三家 A-S 跑完、進 Win-2 前）。
+S1（已完成 2591f33e）→ S3+S6+S7（已完成 ee3e014f）→ S4（已完成 8195c64d）→ S5（已完成 24a59df5，5d 待 YBDB smoke live 驗）→ S2+S2b（已完成 edd6d5b4，含補做 M1，19999 埠待 phase1 rebuild live 驗）→ **S8（下一步：收斂清理）** → S9（Win-1 三家 A-S 跑完、進 Win-2 前）。
 每個 PR 合併前在 spike/fix branch 上跑該步驗收命令並貼輸出。
