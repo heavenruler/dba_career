@@ -277,7 +277,7 @@ case "$DB" in
     done
     [[ "$converged" == "1" ]] || { echo "gate FAIL: CRDB lease holders not 100% IDC after 5min" >&2; exit 1; }
     echo "[wrapper] pre-run: freeze CRDB load-based lease rebalancing + range split (via freeze-crdb.sh)"
-    CRDB_HOST="$DB_HOST" DUMP_DIR="$ROOT/freeze-state" bash "$SELF/../freeze/freeze-crdb.sh"
+    CRDB_HOST="$DB_HOST" DUMP_DIR="$ROOT/freeze-state" bash "$SELF/freeze/freeze-crdb.sh"
     ;;
   ybdb)
     # ybdb: placement applied at deploy (phase4-ybdb-fix6n); post-prepare = data-move 收斂 + LB freeze
@@ -292,7 +292,7 @@ case "$DB" in
     [[ "$converged" == "1" ]] || echo "[wrapper] WARN: load_move_completion not 100% after 5min; proceeding (0 tablets remaining = benign)"
     echo "[wrapper] pre-run: freeze YBDB load balancer (fail-closed idle confirm via freeze-ybdb.sh)"
     YB_MASTER_ADDR="$YB_MASTER_ADDR" IDC_NODES_HEAD="172.24.40.32" DUMP_DIR="$ROOT/freeze-state" \
-      bash "$SELF/../freeze/freeze-ybdb.sh"
+      bash "$SELF/freeze/freeze-ybdb.sh"
     ;;
 esac
 
@@ -319,7 +319,7 @@ if [[ -n "${FREEZE_SCRIPT:-}" ]]; then
   # 修法：freeze 前先等 PD operators 自然清空（poll==0，max 300s），把 race 移到
   # freeze 之前；freeze 自身的排水 fail-closed 語意不動（共用 lib-pd-drain.sh）。
   _PD_URL="${PD_URL:-http://172.24.40.32:2379}"
-  source "$SELF/../freeze/lib-pd-drain.sh"
+  source "$SELF/freeze/lib-pd-drain.sh"
   pd_drain_wait "$_PD_URL" 300 "wrapper pre-freeze" || {
     echo "[wrapper] pre-freeze FAIL: PD operators not drained after 300s" >&2
     exit 1
@@ -347,13 +347,13 @@ fi
 if [[ "$DB" == "ybdb" ]]; then
   echo "[wrapper] post-run: unfreeze YBDB load balancer via unfreeze-ybdb.sh"
   YB_MASTER_ADDR="$YB_MASTER_ADDR" IDC_NODES_HEAD="172.24.40.32" DUMP_DIR="$ROOT/freeze-state" \
-    bash "$SELF/../freeze/unfreeze-ybdb.sh" || true
+    bash "$SELF/freeze/unfreeze-ybdb.sh" || true
 fi
 
 # crdb: 對應 case 分支的 pre-run freeze；run 結束即解凍
 if [[ "$DB" == "crdb" ]]; then
   echo "[wrapper] post-run: unfreeze CRDB lease rebalancing + range split via unfreeze-crdb.sh"
-  CRDB_HOST="$DB_HOST" DUMP_DIR="$ROOT/freeze-state" bash "$SELF/../freeze/unfreeze-crdb.sh" || true
+  CRDB_HOST="$DB_HOST" DUMP_DIR="$ROOT/freeze-state" bash "$SELF/freeze/unfreeze-crdb.sh" || true
 fi
 
 echo "[4/4] collect"
