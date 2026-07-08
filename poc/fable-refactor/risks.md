@@ -11,6 +11,9 @@
 ### R3. cleanup-crdb 只清 3 GCP IP 是否正確
 若 CRDB 拓撲確實不碰 .14/.15，現狀正確只是不對稱；若曾在 .14/.15 裝過 HAProxy/client 側組件則有殘留風險。**未驗證**（需 live 環境或部署紀錄確認）。
 
+### R7（新，S5 執行中發現）：`check-gcp-via-31.sh` 亦有 2 處 `StrictHostKeyChecking=no`
+原健檢 P1-3 finding 只點名 cleanup-{tidb,crdb,ybdb}，未涵蓋此檔（掃描盲點）。S5 範圍已鎖定不擴大處理；比照 P1-3 的理由，這裡也該改 `accept-new`，留待下一收斂批次（S8 或新批次）一併修。
+
 ## 修復本身的風險
 
 ### R4. spike POC 未 live 驗證
