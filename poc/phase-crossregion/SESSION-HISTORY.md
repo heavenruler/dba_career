@@ -68,6 +68,9 @@
   自述的 0.0.0.0 常駐監聽安全顧慮。安裝歸屬：GCP=phase1 cloud-init（main.tf 已含+rpm -q verify）、
   IDC=phase2 新 target `phase2-iperf3-idc`（--install-only，idempotent，rebuild 後自動補）。
   **未 live 驗證**（改時 VM 已拆）——下個視窗 warmup-post 會自動首驗，屆時當作會炸盯著。
+  - **（07-03 勘誤）** 上方 ②「專線沒開 5201」前提**實測不成立**——5201 從 .31 亦可達，專線實為 /24↔/24
+    整段放行（非逐埠），詳見文末 2026-07-03 節。改埠 20170（後續 Q17 再改 19999）仍正確，但理由是
+    「離開 TiKV range 的衛生考量」而非「5201 被擋」。
 
 - **bug #14 — ALTER→freeze race：placement ALTER 後立即 freeze 撞排水 fail-closed（07-03）**：
   wrapper 在 table-level placement ALTER + leader gate 後立即呼叫 freeze-tidb.sh，小資料（W=1）時

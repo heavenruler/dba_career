@@ -88,7 +88,7 @@
 ## 4. 判讀限制
 
 - workload：W=4、threads=16、5 分鐘 round；不是正式 W=128 workload。
-- 目前沒有 `summary.json`，error rate / latency 統計尚未統一納入。
+- `summary.json`：determinism 三家（06-26 retrofit）與 baseline/w128（07-03）已有；更早期資料點仍無。error rate / latency 統計已隨 summary.json 納入正式 cell。
 - DB-host metrics 與 WAN inline metrics 尚未形成可直接引用的飽和分析。
 - X-CROSS 在 phase registry 中屬 `baseline_eligible=false`，目前只作 cross-region framework / determinism 證據。
 - 若要進入正式跨家排序，必須重跑 W=128 same-cluster suite，並統一 warmup、round 選取、summary 與 metrics。
@@ -118,6 +118,7 @@
 
 | 日期 | 內容 |
 |---|---|
+| 2026-07-07 | §4 勘誤：`summary.json` 已存在於 determinism（06-26）+ baseline/w128（07-03），修正舊「目前沒有」陳述（Fable 健檢 P3-2） |
 | 2026-07-03 | §2.3 新增 TiDB P-A A-S W=128 正式口徑 cell（20260703T092243；GCP per-round 300/300 齊）；§3 標註 07-02 輪因網路採樣失敗不採用；§0 目錄表補 baseline/w128 與 compare |
 | 2026-06-26 | retrofit `summary.json` 至 determinism 三家 suite-dir（W=4；YBDB skip R1/R2）；同步 patch `summary-from-stdout.py` 支援 `--warehouses` / `--skip-rounds` 與 `-run<N>` suffix |
 | 2026-06-24 | 依用途重整目錄：time-sync、dry-run、early smoke、determinism 分層 |

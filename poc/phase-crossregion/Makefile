@@ -143,7 +143,9 @@ SSH_OPTS           := -o LogLevel=ERROR -o StrictHostKeyChecking=accept-new
         gcp-tunnel-start gcp-tunnel-stop gcp-tunnel-ensure gcp-wait-startup \
         inventory-refresh gcp-inventory-refresh inventory-refresh-all ansible-ping \
         bootstrap-tpcc-client clean-tpcc-artifacts \
-        phase0-preflight phase0-preflight-fix
+        phase0-preflight phase0-preflight-fix \
+        phase8.5-fetch phase2-iperf3-idc phase0-preflight-fix-only-processes \
+        phase-cleanup-tidb phase-cleanup-crdb phase-cleanup-ybdb
 
 # ===================================================================
 # help (default)
