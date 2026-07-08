@@ -23,9 +23,13 @@
 #     - 若兩端任一缺 iperf3 binary → warn-only skip
 #     - server 為**臨時起**：測前 ssh 目標端 `iperf3 -s -1`（單次連線即退，timeout 30s 兜底），
 #       測完自動收，不依賴常駐 systemd server
-#     - 埠預設 19999：專用高埠，離開所有 DB service range 與 OS ephemeral range(32768+)，
-#       流量一眼可辨、免與 netflow 分析混淆（2026-07-07 拍板 D9；5201/20170 皆已實測可達，
-#       改埠純為衛生考量，非因專線被擋——詳 SESSION-HISTORY 07-03 節）
+#     - 埠預設 20170（2026-07-08 D9 revert，取代 07-07 曾改的 19999）：R8 核准 range
+#       (20160-20180，TiKV) 內、且未被真實 TiKV process 佔用的埠（每台僅佔 20160+20180）。
+#       **關鍵發現**：專線對 GCP→IDC 方向是逐埠白名單（只放行 fw-request R1-R9 核准範圍），
+#       非「/24 整段放行」——07-03 的驗證只測過 IDC→GCP 方向。19999（不在任何核准範圍）
+#       實測 GCP→IDC reverse 連線 timeout；20170／26257 等核准範圍內埠皆可雙向通。
+#       IDC→GCP 方向專線本身無此限制（GCP VPC FW 對 172.16.0.0/12 放行 all port）。
+#       詳見 SESSION-HISTORY 07-08 節。
 #
 # 用法：
 #   wan-probe.sh --phase <warmup|warmup-post|sweep-pre|sweep-post|round-pre|round-post> \
@@ -243,7 +247,7 @@ if [[ "$WAN_PROBE_IPERF" == "1" ]]; then
         # server 臨時起（-s -1 單次即退 + timeout 30 兜底），埠用 FW 已開通的 TiKV range 閒置埠。
         : "${IPERF_TARGET_GCP:=10.160.152.11}"  # idc → gcp 連線目標
         : "${IPERF_TARGET_IDC:=172.24.40.32}"   # gcp → idc 連線目標
-        : "${IPERF_PORT:=19999}"                # 專用高埠，離 DB service range 與 ephemeral range
+        : "${IPERF_PORT:=20170}"                # R8 20160-20180 內閒置埠；核准範圍，雙向可通
         # forward: gcp-dbhost-1 起臨時 server ← idc-dbhost-1 client
         echo "  [forward idc->gcp]  target=$IPERF_TARGET_GCP port=$IPERF_PORT" >> "$OUT_TXT"
         ssh_gcp "$GCP_DBHOST1_ADDR" "nohup timeout 30 iperf3 -s -1 -p $IPERF_PORT >/dev/null 2>&1 & exit 0" >/dev/null
@@ -253,6 +257,7 @@ if [[ "$WAN_PROBE_IPERF" == "1" ]]; then
           note_fail "iperf3 forward returned empty"
           echo "    (no output)" >> "$OUT_TXT"
         else
+          echo "$fwd" | grep -q '"error"' && note_fail "iperf3 forward reported error: $(echo "$fwd" | grep -o '"error"[^,}]*')"
           echo "$fwd" | sed 's/^/    /' >> "$OUT_TXT"
         fi
 
@@ -265,6 +270,7 @@ if [[ "$WAN_PROBE_IPERF" == "1" ]]; then
           note_fail "iperf3 reverse returned empty"
           echo "    (no output)" >> "$OUT_TXT"
         else
+          echo "$rev" | grep -q '"error"' && note_fail "iperf3 reverse reported error: $(echo "$rev" | grep -o '"error"[^,}]*')"
           echo "$rev" | sed 's/^/    /' >> "$OUT_TXT"
         fi
       fi

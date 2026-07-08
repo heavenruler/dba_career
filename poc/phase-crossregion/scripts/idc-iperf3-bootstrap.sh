@@ -11,7 +11,7 @@
 #   - 預設 --target 即 .32；如要多台改 --target host1 --target host2 ...
 #
 # 安全考量（必讀）：
-#   - iperf3 -s 監聽 0.0.0.0:$IPERF_PORT（default 19999）；任何能連到該埠都可佔頻寬
+#   - iperf3 -s 監聽 0.0.0.0:$IPERF_PORT（default 20170）；任何能連到該埠都可佔頻寬
 #   - IDC 環境通常 firewall 是 iptables / vendor FW；本 script **不開** firewall rule
 #   - 建議 ops 在 IDC 邊界 FW 限制該埠只接受 GCP VPC peering 來源
 #   - sweep 結束後 stop/disable: systemctl disable --now iperf3-server
@@ -29,7 +29,7 @@
 #
 # Env overrides：
 #   SSH_USER          (default root)
-#   IPERF_PORT        (default 19999，與 wan-probe.sh 對齊；--install-only 模式不使用)
+#   IPERF_PORT        (default 20170，與 wan-probe.sh 對齊；--install-only 模式不使用)
 #
 # Exit:
 #   0 = PASS
@@ -65,7 +65,7 @@ if [[ ${#TARGETS[@]} -eq 0 ]]; then
 fi
 
 : "${SSH_USER:=root}"
-: "${IPERF_PORT:=19999}"
+: "${IPERF_PORT:=20170}"
 
 # 遠端要跑的命令（multi-line；單一 here-doc 透過 ssh stdin 餵）
 build_remote_script() {

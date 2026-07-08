@@ -83,3 +83,20 @@
 - **iperf3 埠 5201/20170 → 19999**：使用者裁定改用專用高埠 19999（遠離所有 DB service range 與 OS ephemeral range 32768+）。**關鍵澄清（記錄備查）**：iperf3 對 DB 效率的干擾是「時序」問題非「埠」問題——wan-probe 只在 round 間隙（warmup-post/sweep-pre）跑、量測輪跳過，早已由時序 gate 擋掉；改埠純為衛生/歸因（避免 netflow 誤認、避免與 DB 埠語義混淆）。專線 FW 已知 /24 整段開，埠選擇不受 FW 限制。
   - **連動**：spike branch `5cd6d6d8` 原改成 20170，落地時直接用 19999；`wan-probe.sh`（IPERF_PORT 預設 + header 註）、`idc-iperf3-bootstrap.sh`（IPERF_PORT 預設）兩處同步 19999。
 **捨棄方案**：R1 選項 B（保留常駐打 5201）——使用者選拆；埠維持 20170——使用者要求離開 TiKV range。
+
+### D9 修正（2026-07-08）：iperf3 埠 19999 → revert 回 20170
+
+**TiDB cross-region smoke live 重跑時發現**：D9 拍板 19999 所依據的「專線 FW 已知 /24 整段開，埠選擇不受 FW 限制」前提**不成立**——那個結論只驗證過 IDC→GCP 方向（07-03），從未測過 GCP→IDC 反向。實測（iperf3 + 原始 `/dev/tcp` TCP handshake 雙重驗證）：
+- 19999（不在任何 fw-request 核准範圍）：GCP→IDC reverse **timeout**
+- 20170（R8 核准範圍 20160-20180 內）：GCP→IDC reverse **正常**（forward 本來就通）
+- 26257（R9 核准範圍，CRDB port）：GCP→IDC reverse **正常**（使用者手動驗證，`Bitrate 124-208 Mbits/sec`）
+
+**結論**：專線對 **GCP→IDC 方向是逐埠白名單**（只放行 fw-request R1-R9 核准範圍），非「/24 整段放行」；IDC→GCP 方向才是整段放行（GCP VPC FW 對 172.16.0.0/12 放行 all port，這條沒錯）。
+
+**裁定：埠改回 20170**。20170 同時滿足「核准範圍內」+「未被真實 TiKV 佔用」（每台 TiKV 只用 20160+20180）兩條件——這正是它當初（D9 之前）被選中的原因。19999 選擇時只考慮了「衛生」（離開 DB port range），沒考慮到「核准範圍」這個更優先的硬約束。
+
+**教訓**：D9 原文寫「專線 FW 已知 /24 整段開」引用的是 07-03 SESSION-HISTORY 的結論，但**那個結論本身只驗證單一方向**，卻被當成雙向通則使用——決策記錄引用既有結論時，必須連同其驗證範圍（方向/條件）一起複製，不能只抄結論本身。
+
+**捨棄方案**：申請新 FW 規則開通 19999——比直接用已核准的 20170 多一道流程且無額外好處（20170 的「落在 DB range 內」缺點是次要的衛生考量，遠不如「連不通」嚴重）。
+
+**順帶修復**：`wan-probe.sh` 的 `note_fail` 只檢查 iperf3 輸出是否為空字串，未檢查 JSON 內的 `"error"` 欄位——iperf3 連線逾時仍會印出格式良好但含 error 的 JSON，導致這次的真實失敗被誤判為成功（"all probes succeeded"）。forward/reverse 兩處都補上 `grep -q '"error"'` 檢查。
