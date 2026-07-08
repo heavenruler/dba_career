@@ -353,8 +353,8 @@ EOF
           SHOW RANGES FROM TABLE $t WITH DETAILS;
         " 2>>"$GATE_OUT" >> "$GATE_OUT" || true
       done
-      idc_cnt=$(grep -cE 'region=idc' "$GATE_OUT" 2>/dev/null); idc_cnt=${idc_cnt:-0}
-      gcp_cnt=$(grep -cE 'region=gcp' "$GATE_OUT" 2>/dev/null); gcp_cnt=${gcp_cnt:-0}
+      idc_cnt=$(grep -cE 'region=idc' "$GATE_OUT" 2>/dev/null || true); idc_cnt=${idc_cnt:-0}
+      gcp_cnt=$(grep -cE 'region=gcp' "$GATE_OUT" 2>/dev/null || true); gcp_cnt=${gcp_cnt:-0}
       total=$((idc_cnt + gcp_cnt))
       if [[ $total -lt 3 ]]; then
         verdict="fail-closed"; reason="insufficient-leader-samples (total=$total)"
@@ -410,8 +410,8 @@ EOF
       done
       # list_tablets 每行 ~= 一個 tablet，leader IP 在欄位中；grep -c 計數
       # IDC IP prefix (172.24.40.) vs GCP IP prefix (10.160.152.)。
-      idc_cnt=$(grep -cE '172\.24\.40\.(32|33|34)' "$GATE_OUT" 2>/dev/null); idc_cnt=${idc_cnt:-0}
-      gcp_cnt=$(grep -cE '10\.160\.152\.(11|12|13)' "$GATE_OUT" 2>/dev/null); gcp_cnt=${gcp_cnt:-0}
+      idc_cnt=$(grep -cE '172\.24\.40\.(32|33|34)' "$GATE_OUT" 2>/dev/null || true); idc_cnt=${idc_cnt:-0}
+      gcp_cnt=$(grep -cE '10\.160\.152\.(11|12|13)' "$GATE_OUT" 2>/dev/null || true); gcp_cnt=${gcp_cnt:-0}
       total=$((idc_cnt + gcp_cnt))
       if [[ $total -lt 3 ]]; then
         verdict="fail-closed"; reason="insufficient-leader-samples (total=$total)"

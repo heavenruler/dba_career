@@ -54,7 +54,7 @@ remote "set -euo pipefail
   runuser -u yugabyte -- yugabyted stop --base_dir=/var/yugabyte || true
   sync
   echo 3 > /proc/sys/vm/drop_caches
-  runuser -u yugabyte -- yugabyted start --base_dir=/var/yugabyte --advertise_address=172.24.40.32 --tserver_flags=${YB_TSERVER_FLAGS}
+  runuser -u yugabyte -- yugabyted start --base_dir=/var/yugabyte --advertise_address=172.24.40.32 --join=172.24.40.33 --tserver_flags=${YB_TSERVER_FLAGS}
   for i in \$(seq 1 60); do
     if ysqlsh -h 172.24.40.32 -p 5433 -U yugabyte -d yugabyte -c 'SELECT 1' >/dev/null 2>&1; then
       exit 0
