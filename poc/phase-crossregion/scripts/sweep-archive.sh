@@ -10,7 +10,8 @@
 #      find results/x-cross -name '.suite.done' | wc -l == 9（3 DB × 3 profile）
 #      列出 9 cell-tracks；不齊則 fail-closed。
 #   2. GCP client artifact fetch（A-A / A-A-RO 才有）：
-#      rsync /tmp/poc-tpcc/artifacts/X-CROSS/<cell>/ from g-test-poc-5 (port 12215)
+#      rsync /tmp/poc-tpcc/artifacts/X-CROSS/<cell>/ from g-test-poc-5 (10.160.152.15，
+#      ProxyJump via .31 172.24.40.31；不走 IAP tunnel)
 #      → results/x-cross/<cell>/gcp-side/
 #   3. 生成 sweep summary：
 #      results/sweep-summary-<ts>.md：9 cell-tracks tpmC / p99 / error rate / status
@@ -30,9 +31,9 @@
 #
 # Env overrides：
 #   REPO_ROOT           (default 由 script 自動推導 = repo root)
-#   GCP_CLIENT_PORT     (default 12215；g-test-poc-5 IAP tunnel)
+#   JUMP_HOST           (default root@172.24.40.31；ProxyJump，不走 IAP tunnel)
+#   GCP_CLIENT_HOST     (default 10.160.152.15；g-test-poc-5 內網 IP)
 #   GCP_CLIENT_USER     (default root)
-#   GCP_CLIENT_SSH_KEY  (default $HOME/.ssh/id_rsa)
 #   GCP_ARTIFACT_BASE   (default /tmp/poc-tpcc/artifacts/X-CROSS)
 #
 # Exit:
@@ -66,9 +67,9 @@ done
 [[ "$MODE" == "dry-run" || "$MODE" == "execute" ]] || \
   { echo "--dry-run or --execute required" >&2; exit 1; }
 
-: "${GCP_CLIENT_PORT:=12215}"
+: "${JUMP_HOST:=root@172.24.40.31}"
+: "${GCP_CLIENT_HOST:=10.160.152.15}"
 : "${GCP_CLIENT_USER:=root}"
-: "${GCP_CLIENT_SSH_KEY:=$HOME/.ssh/id_rsa}"
 : "${GCP_ARTIFACT_BASE:=/tmp/poc-tpcc/artifacts/X-CROSS}"
 
 EXPECTED_DBS=(tidb cockroach yuga)
@@ -150,12 +151,12 @@ for entry in "${CELL_TRACKS[@]:-}"; do
   done
   [[ "$needs_fetch" -eq 0 ]] && continue
 
-  # remote cell dir on g-test-poc-5: $GCP_ARTIFACT_BASE/<cell-name>
+  # remote cell dir on g-test-poc-5: $GCP_ARTIFACT_BASE/<cell-name>（ProxyJump via .31，不走 IAP tunnel）
   cell_name=$(basename "$cell_dir")
-  remote_src="${GCP_CLIENT_USER}@localhost:${GCP_ARTIFACT_BASE}/${cell_name}/"
+  remote_src="${GCP_CLIENT_USER}@${GCP_CLIENT_HOST}:${GCP_ARTIFACT_BASE}/${cell_name}/"
   local_dst="$REPO_ROOT/$cell_dir/gcp-side/"
   rsync_cmd=(rsync -av --partial \
-    -e "ssh -i ${GCP_CLIENT_SSH_KEY} -p ${GCP_CLIENT_PORT} -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10" \
+    -e "ssh -o ProxyJump=${JUMP_HOST} -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10" \
     "$remote_src" "$local_dst")
 
   if [[ "$MODE" == "dry-run" ]]; then
