@@ -678,3 +678,57 @@ YBDB 待排（唯一剩餘）。資料存 `results/x-cross/smoke/early-runs/2026
 
 **Last updated**：2026-07-09 補修 `prepare.sh` grep -c 零匹配算式錯誤（CRDB+YBDB 兩分支，使用者明確 override 禁改清單），Stage 1 進度：TiDB+CRDB 完成，YBDB 待排。
 **Next review**：YBDB smoke（驗證 S5 的 freeze idle 確認路徑首次 live + 本次 grep -c 修正首次 live）；正式 Win-1 CRDB W=128 前記得移除本次 smoke 遺留的低 warehouse 測試資料。
+
+### 2026-07-09 YBDB smoke 首跑（未跑完，抓到 2 個真 bug + 1 個部署層存量 bug）
+
+`phase1` 重建 → `phase2` → `phase4-ybdb-deploy` + `phase4-ybdb-fix6n`（load_move_completion
+100%、6/6 ALIVE、placement idc:3 live + gcp:3 read_replica 皆正確）→ 直接呼叫
+`run-vm6-suite.sh --db ybdb`（無 win-ybdb-as-*.sh wrapper，手動複製 env，同 CRDB 模式）。
+
+**bug（已修）：`prepare.sh` 08-08 二修（`bea9ae1d`）本身仍有 bug**。原修法
+`idc_cnt=$(grep -cE ... 2>/dev/null); idc_cnt=${idc_cnt:-0}` 在 `set -euo pipefail` 下，
+`grep -c` 零匹配時 exit 1，**`var=$(failing_cmd)` 這種 assignment 形式的指令，bash 的
+set -e 語意不比照 if/&&/|| 語境豁免，會在 `${var:-0}` fallback 執行前就直接把整支腳本
+殺死**（`bash -c 'set -e; x=$(grep -c zzz /etc/hostname); echo after'` 可重現：exit 2，
+"after" 永遠不印）。YBDB smoke 100% leader 落 IDC（gcp_cnt 真的 0 筆匹配）直接踩爆，log
+印完 "X-CROSS placement gate" 後無任何錯誤訊息瞬間死亡，`.suite.failed exit_code:1`。
+CRDB 分支先前聲稱的「間接驗證修正邏輯正確」其實從未真正重跑驗證過，這次才現形。
+修法：`$(...)` 內加 `|| true` 吸收 exit code（不影響 grep 本身印出的 stdout；已驗證
+零匹配/正匹配/檔案不存在三種情境皆對）。使用者二次明確 override 禁改清單授權
+（commit `44d95c42`）。
+
+**bug（已修）：`coldreset-ybdb.sh` 首次 live 驗證即炸——cold-reset 造成 master split-brain**。
+`run.sh` 的 YBDB cold-reset 呼叫 `yugabyted start --advertise_address=172.24.40.32
+--tserver_flags=...`，**沒帶 `--join`**。重啟 .32 時被當成全新 single-node cluster
+（`replication_factor=1`、`master_addresses` 只剩自己），與現存 master quorum 分裂，
+之後所有 `LookupByIdRpc` 全部 timeout（"passed 15s of 4.8s deadline"）。修法：加
+`--join=172.24.40.33`（一定要填另一台現存 master，不能填自己，否則不觸發正確的
+peer-discovery 路徑）。使用者明確 override 授權（commit `44d95c42`）。
+
+**未修（部署層存量 bug，範圍外，下次複驗）：master quorum 實際是 4 台，非設計預期
+3 台 IDC-only**。修復上述 cold-reset bug、對 .32 做 wipe+rejoin 過程中，用
+`curl http://<idc-host>:7000/api/v1/masters` 直接查詢才發現：現存 master quorum
+是 `{.32, .33, .34, 10.160.152.12(GCP g-test-poc-2)}` 共 4 台，其中 GCP 那台是
+SESSION-HISTORY 06-19 記錄過的「yugabyted v2 master add 限制」歷史 bug 重演——
+ansible `yugabyte-vm6.yml` 的 join 環節顯然沒有嚴格序列化（IDC .33/.34 先 join、
+GCP 1-3 後 join），讓某台 GCP 節點搶到 master 名額；`phase4-ybdb-fix6n` 的
+DEAD-tserver 清理步驟只處理 tserver 名單，從未檢查/修正 master raft membership，
+因此這個 bug 在全新 `phase1` rebuild 上原封重現，不是本次操作造成的迴歸。當下
+存活 quorum 剛好卡在門檻（3 alive / 4 total = 剛好過半，任何一台再掛就斷
+quorum）——脆弱但當時尚未斷線。診斷過程曾誤 wipe 一台真正的 IDC master（.32），
+確認 RF=3 下 .33/.34 仍持有完整資料副本、純觸發 re-replicate、無資料遺失後才
+執行；使用者最終決定用 `teardown-ybdb` + 全套 `phase4` 重新部署處理，而非手動
+`yb-admin change_master_config REMOVE_SERVER` 精準摘除。重部署跑到「Join
+YugabyteDB workers」中途，使用者改口「先拆全部 VM，稍後重新跑 YBDB smoke」，
+故本輪未跑完（無 tpmC 數字），VM 已全部 destroy。**下次 YBDB smoke 起手式**：
+phase4 完成後、進 run-vm6-suite.sh 之前，先用上述 curl 指令核對 master quorum
+剛好 3 台且都是 IDC，若又是 4 台以上，需在 playbook 或 fix6n 補一道 master
+membership 檢查/修正的 fail-closed gate，不能再假設 ansible 一定生出乾淨 3-master。
+
+**結論**：YBDB Stage 1 smoke 仍未完成（3 家 DB 中最後一家）。2 個腳本 bug 已修
+（`44d95c42`），下次重跑理論上能過這兩關；部署層 master quorum 存量 bug 待下次
+複驗，若重現則需追加修復（不在 tests/common 保護清單內，屬 ansible playbook /
+Makefile fix6n 範圍，改動風險較低）。
+
+**Last updated**：2026-07-09 YBDB smoke 首跑抓到 2 bug（已修）+ 1 部署層存量 bug（待複驗），Stage 1 進度：TiDB+CRDB 完成，YBDB 仍待重跑。
+**Next review**：YBDB smoke 重跑，起手式先核對 master quorum 剛好 3 台 IDC；若過關則 3 家 DB Stage 1 全數完成。
