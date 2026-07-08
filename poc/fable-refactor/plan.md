@@ -51,16 +51,12 @@ done
 make -C poc -n phase8.5-fetch TPCC_TS=dummy > /tmp/before.txt 2>&1  # （修改前先存）
 ```
 
-## S4. 【P0-2】sweep-archive.sh 去 IAP（Sonnet 可做，模仿既有樣板）
+## S4. 【已完成，fix/sweep-archive-via31 @ 8195c64d】sweep-archive.sh 去 IAP（P0-2）
 
-`scripts/sweep-archive.sh` 的 GCP fetch 段改為 via-31 直連（樣板：`wan-probe.sh` 的 `ssh_gcp`，或 Makefile `phase8.5-fetch` 的 `ssh $(TPCC_CLIENT) ssh root@10.160.152.15` 兩跳法）。刪 `GCP_CLIENT_PORT`/12215 預設。
+`scripts/sweep-archive.sh` 跑在 Mac（非 .31，本身還做本機 terraform destroy），故非 wan-probe.sh 的單跳 `ssh_gcp`（那是跑在 .31 上），而是比照 **Mac 側既有 ProxyJump 樣板**（`check-homogeneity.sh` / `gate-chrony-cross-region.sh`）：`ssh -o ProxyJump=root@172.24.40.31 root@10.160.152.15`。新增 `JUMP_HOST`/`GCP_CLIENT_HOST` env，移除 `GCP_CLIENT_PORT`(12215)/`GCP_CLIENT_SSH_KEY`。
 
-驗收：
-```bash
-grep -c '1221[0-9]' poc/phase-crossregion/scripts/sweep-archive.sh   # 0
-bash -n poc/phase-crossregion/scripts/sweep-archive.sh
-```
-（live 驗收待下輪 suite 收檔時實跑一次。）
+驗收（已過）：`bash -n` PASS；`grep 1221x` = 0；合成 `.suite.done` 資料跑 `--dry-run` 全 7 步 PASS，rsync 命令實際印出正確走 ProxyJump→10.160.152.15。
+（live 驗收待下輪真實 sweep 收檔時實跑一次——這是 150h sweep 收尾腳本，目前尚無對應 live 窗口。）
 
 ## S5. 【P0-3 + P1-1 + P1-2 + P1-3】YBDB/cleanup 安全對齊（Sonnet 可做，一步一 commit）
 
@@ -131,5 +127,5 @@ git status --short | grep tests/common   # 必須為空
 
 ## 執行順序建議
 
-S1（已完成）→ S3+S6+S7（零風險批，可一次 PR）→ S4 → S5（5d 需等 YBDB smoke 窗口）→ S2+S2b（Path C 刪除 + main.tf 拆 daemon，R1/R2 已拍板）→ S8（收斂清理）→ **S9（Win-1 三家 A-S 跑完、進 Win-2 前）**。
+S1（已完成 2591f33e）→ S3+S6+S7（已完成 ee3e014f，merge 入 master）→ S4（已完成 8195c64d）→ **S5（下一步，5d 需等 YBDB smoke 窗口）** → S2+S2b（Path C 刪除 + main.tf 拆 daemon，R1/R2 已拍板）→ S8（收斂清理）→ S9（Win-1 三家 A-S 跑完、進 Win-2 前）。
 每個 PR 合併前在 spike/fix branch 上跑該步驗收命令並貼輸出。
