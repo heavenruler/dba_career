@@ -350,13 +350,13 @@
         # tiup cluster display 欄位順序：$1=ID $2=Role $3=Host $4=Ports $5=OS/Arch $6=Status $7=Data Dir $8=Deploy Dir
         up=0
         for i in $(seq 1 60); do
-          up=$(/root/.tiup/bin/tiup cluster display tpcc-tidb-vm3 2>/dev/null \
+          up=$(/root/.tiup/bin/tiup cluster display {{ tidb_cluster_name }} 2>/dev/null \
                 | awk '$2=="tikv" && $6=="Up"' | wc -l)
           if [ "$up" -ge 3 ]; then echo "tikv_up=$up/3"; exit 0; fi
           sleep 5
         done
         echo "timeout: only $up/3 TiKV stores Up after 300s"
-        /root/.tiup/bin/tiup cluster display tpcc-tidb-vm3 2>&1 | tail -20
+        /root/.tiup/bin/tiup cluster display {{ tidb_cluster_name }} 2>&1 | tail -20
         exit 1
       environment:
         PATH: "/root/.tiup/bin:{{ ansible_env.PATH }}"

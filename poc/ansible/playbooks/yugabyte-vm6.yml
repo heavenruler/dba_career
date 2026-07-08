@@ -8,6 +8,8 @@
 #   gcp-dbhost-1 (g-test-poc-1):  yb-master + yb-tserver   ← via IAP tunnel :12211
 #   gcp-dbhost-2 (g-test-poc-2):  yb-master + yb-tserver   ← via IAP tunnel :12212
 #   gcp-dbhost-3 (g-test-poc-3):  yb-master + yb-tserver   ← via IAP tunnel :12213
+# DEPRECATED 上述「via IAP tunnel」為舊拓撲敘述；現行一律 ssh root@172.24.40.31 jump
+# 直連 GCP 內網 IP，絕不走 IAP tunnel（bug #11 修復，見 SESSION-HISTORY）。
 #
 # YBDB locality labels (per Q3 / REPLAN-2026-06-15 §2):
 #   placement_cloud  = 104

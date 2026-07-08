@@ -27,7 +27,8 @@ mkdir -p "$OUT"
 
 # Endpoints
 IDC_HOST=172.24.40.32
-GCP_HOST=10.160.152.13   # via IAP tunnel localhost:12213
+GCP_HOST=10.160.152.13   # DEPRECATED: 舊版走 IAP tunnel localhost:12213；現行硬規則一律
+                         # ssh root@172.24.40.31 jump 直連內網 IP，絕不走 IAP（見 README 硬規則）
 
 # --- 1. iperf3 throughput (forward + reverse) ---
 ssh root@$IDC_HOST 'iperf3 -s -D -p 5201'        # start GCP-side server (one-time)

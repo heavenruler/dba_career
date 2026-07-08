@@ -29,7 +29,7 @@ check_all_ready() {
     "$(cat <<'REMOTE'
 for ip in 10.160.152.11 10.160.152.12 10.160.152.13 10.160.152.14 10.160.152.15; do
   printf "%s: " "$ip"
-  ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no root@$ip \
+  ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@$ip \
     'test -f /var/lib/startup-done && echo READY || echo NOTREADY; hostname -s' 2>/dev/null \
     || echo "UNREACHABLE"
 done
@@ -68,7 +68,7 @@ while true; do
       "$(cat <<'REMOTE'
 for ip in 10.160.152.11 10.160.152.12 10.160.152.13 10.160.152.14 10.160.152.15; do
   printf "%s: " "$ip"
-  ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no root@$ip \
+  ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@$ip \
     'test -f /var/lib/startup-done && echo READY || echo NOTREADY; hostname -s' 2>/dev/null \
     || echo "UNREACHABLE"
 done

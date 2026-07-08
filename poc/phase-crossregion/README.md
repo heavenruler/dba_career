@@ -123,7 +123,8 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 
 **已知阻擋**（詳 [`SESSION-HISTORY.md`](./SESSION-HISTORY.md) 關鍵結論速查）：
 - `results/x-cross/` 現有數據多為 W=4 same-cluster determinism，**不可作正式跨家排名**（pipeline-log §1 已標註）
-- probe driver + wall-clock wrapper script 已實裝（`scripts/probe-rto-driver/`, `scripts/wall-clock-wrapper.sh`），但尚未串入 Makefile runtime chain（RTO/RPO 實測前置；升級實跑須 PR + DBA review）
+- probe driver + wall-clock wrapper script 已實裝（`scripts/probe-rto-driver/`, `scripts/wall-clock-wrapper.sh`），但尚未串入 Makefile runtime chain（RTO/RPO 實測前置；升級實跑須 PR + DBA review）。
+  注意 `scripts/probe-rto-driver.sh`（bash，早期版本）與 `scripts/probe-rto-driver/`（Go，F8 新版，`time.Since()` monotonic + 額外輸出 `probe-stats.json` jitter 統計）**同名雙實作**——接線目標是 **Go 版**，bash 版為前期產物，尚未刪除。
 
 ---
 

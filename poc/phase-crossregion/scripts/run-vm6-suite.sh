@@ -315,17 +315,13 @@ if [[ -n "${FREEZE_SCRIPT:-}" ]]; then
   # W=1 小資料時 table-level placement ALTER 剛下完，PD 還有 in-flight operator，
   # 若立刻 freeze 會撞上 freeze 內 150s fail-closed 排水（ALTER→freeze race）。
   # 修法：freeze 前先等 PD operators 自然清空（poll==0，max 300s），把 race 移到
-  # freeze 之前；freeze 自身的排水 fail-closed 語意不動。
+  # freeze 之前；freeze 自身的排水 fail-closed 語意不動（共用 lib-pd-drain.sh）。
   _PD_URL="${PD_URL:-http://172.24.40.32:2379}"
-  echo "[wrapper] pre-freeze: waiting for PD operators to drain (max 300s)..."
-  _ops=1
-  for _i in $(seq 1 60); do
-    _ops=$(curl -sf "${_PD_URL}/pd/api/v1/operators" 2>/dev/null | jq 'length' 2>/dev/null || echo 1)
-    [[ "$_ops" -eq 0 ]] && { echo "[wrapper] pre-freeze: PD operators drained (poll $_i)"; break; }
-    printf '  pre-freeze %2d/60: %s operator(s) pending, waiting 5s...\n' "$_i" "$_ops"
-    sleep 5
-  done
-  [[ "$_ops" -eq 0 ]] || { echo "[wrapper] pre-freeze FAIL: PD operators not drained after 300s ($_ops remaining)" >&2; exit 1; }
+  source "$SELF/../freeze/lib-pd-drain.sh"
+  pd_drain_wait "$_PD_URL" 300 "wrapper pre-freeze" || {
+    echo "[wrapper] pre-freeze FAIL: PD operators not drained after 300s" >&2
+    exit 1
+  }
 
   echo "[wrapper] pre-run freeze: $FREEZE_SCRIPT"
   PD_URL="$_PD_URL" DUMP_DIR="$ROOT/freeze-state" bash "$FREEZE_SCRIPT"

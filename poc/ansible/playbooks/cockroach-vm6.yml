@@ -11,6 +11,8 @@
 #   gcp-dbhost-1 (10.160.152.11): cockroach node 4                              ← via IAP tunnel :12211
 #   gcp-dbhost-2 (10.160.152.12): cockroach node 5                              ← via IAP tunnel :12212
 #   gcp-dbhost-3 (10.160.152.13): cockroach node 6                              ← via IAP tunnel :12213
+# DEPRECATED 上述「via IAP tunnel」為舊拓撲敘述；現行一律 ssh root@172.24.40.31 jump
+# 直連 GCP 內網 IP，絕不走 IAP tunnel（bug #11 修復，見 SESSION-HISTORY）。
 #
 # Locality labels (per decisions-2026-06-08.md Q3):
 #   --locality=region=idc|gcp,zone=idc-vlan241|gcp-asia-east1-{a,b,c}
