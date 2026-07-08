@@ -625,3 +625,50 @@ smoke 數值非正式基準）。資料存 `results/x-cross/smoke/early-runs/202
 
 **Last updated**：2026-07-08 TiDB smoke 三連跑（2 bug 修復 + 1 方法論教訓 + iperf3 埠 revert），S1-S8 全數驗證無破壞。
 **Next review**：下次 suite 執行時驗證 20170 埠 + error 欄位偵測是否如預期生效；CRDB/YBDB smoke 待排（Stage 1 剩餘項，含 07-08 補接線的 CRDB freeze 首驗）。
+
+### 2026-07-08（續）CRDB cross-region smoke 首跑（趁設備還在，一次抓 3 個新 bug）
+
+前一輪 TiDB smoke 收尾後重建 VM，順道驗證 iperf3 20170 埠 + CRDB freeze 補接線（`d73cac65`）。
+`phase1` 重建 → `phase2`（**驗證 `phase2-bootstrap` 新補的 freeze/ 自動同步生效，這次不用再手動
+rsync**）→ `phase5-crdb-deploy`（一次成功，`cockroach node status` 6/6 live）→ 直接呼叫
+`run-vm6-suite.sh --db crdb`（無 win-crdb-as-*.sh wrapper，手動複製 win-tidb-as-w128.sh 的
+env 設置）。三次嘗試，抓到 3 個此前從未 live 測過的真 bug：
+
+**bug（已修）：CRDB 缺少 TiDB 已有的「早套 placement」watcher**（同 bug #9 病灶，CRDB 版本從未修）。
+`prepare.sh` 內建 §6.6 placement gate 在 wrapper case 分支套用 CRDB per-table lease_preferences
+**之前**就先跑；`run-vm6-suite.sh` 沒有 CRDB 對應的背景 watcher 提早套用（TiDB 有，line 224
+`if [[ "$DB" == "tidb" ]]`），導致 gate 100% 踩到「policy 還沒套用」的窗口期（實測
+idc=5/10=50% FAIL）。修法：新增對稱的 `elif [[ "$DB" == "crdb" ]]` watcher 分支（等
+drop-create.log + 9 張表 → 用 cockroach sql 套 placement SQL）。**live 驗證 PASS**：
+`placement-gate-P-A.txt` 顯示所有 range lease_holder_locality 皆為 `region=idc`。
+
+**bug（已修）：`freeze-crdb.sh` 讀 CRDB `--format=tsv` 布林值格式錯誤**。這個 CRDB 版本
+（v26.2.0）對 BOOL 欄位回傳 postgres 慣例 `t`/`f`，非 `true`/`false`；`freeze-crdb.sh` 的
+驗證 `case ... in true|false)` 因此判定失敗（`unexpected value 't' for lease_rebal`）。
+修法：讀值後立刻 `_normalize_bool`（t→true, f→false）再驗證/寫 dump 檔，讓後續 rollback SQL
+與 `unfreeze-crdb.sh` 全程只看到合法字面量，`unfreeze-crdb.sh` 不用改。**live 驗證 PASS**：
+unfreeze 正確印出 `restoring ... = true`（非 `t`）。
+
+**環境問題（非程式碼 bug）：本機網路（連線名稱含 `warp-svc`，疑似 VPN client）中途斷線**，
+前景 ssh 執行的 CRDB smoke 於 quiesce 5 分鐘結束、進 ANALYZE 瞬間被 SIGPIPE 殺掉
+（`.suite.failed exit_code:141`），本機 ssh session 卡在半開連線狀態收不到結果，誤以為還在
+跑（實際已於 1.5 小時前失敗）。**教訓**：任何超過幾分鐘的 smoke 都該遵守既有紀律
+「長跑一律 nohup detach 在 .31」，不要圖方便前景跑——本次改 nohup 後順利跑完，不再受本機
+網路波動影響。
+
+**bug（已修）：`check-static-artifacts.py` 只認 `placement-gate-*.json`，CRDB 只寫 `.txt`**。
+TiDB 的 `prepare.sh` 分支寫 `.json`（結構化 verdict）+ `.txt`；CRDB 分支只寫 `.txt`（原始
+SHOW RANGES 輸出，無結構化 verdict）——`prepare.sh` 兩個 DB 分支本身實作不對稱（該檔案屬
+tests/common/ 不可改）。修 `check-static-artifacts.py` 改接受 `.json` 或 `.txt` 任一，驗證
+的本意是「gate 真的留了證據」而非強制格式。
+
+**意外發現（未修，範圍外）**：`prepare.sh`（tests/common/ 禁改）placement gate 段有個
+`列 358: 0 0: 表示式語法錯誤` 的 shell 算術小瑕疵，觸發但非阻斷（gate 判定本身正確，
+只是某個百分比列印副作用出錯）。已記錄，禁改清單內不修。
+
+**結論**：CRDB × P-A × A-S 全鏈 PASS（`.suite.done`）：freeze→run→unfreeze→collect 全部正確，
+tpmC=4623.5（W=1 t16 quick smoke，非正式基準）。TiDB + CRDB 兩家皆完成 Stage 1 smoke；
+YBDB 待排（唯一剩餘）。資料存 `results/x-cross/smoke/early-runs/20260708T214141+0800/`。
+
+**Last updated**：2026-07-08 CRDB smoke 首跑（3 bug 修復 + nohup 教訓），Stage 1 進度：TiDB+CRDB 完成，YBDB 待排。
+**Next review**：YBDB smoke（驗證 S5 的 freeze idle 確認路徑首次 live）；正式 Win-1 CRDB W=128 前記得移除本次 smoke 遺留的低 warehouse 測試資料。

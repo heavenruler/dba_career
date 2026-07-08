@@ -46,9 +46,13 @@ for db in dbs:
         for kw in ('fake', 'speculative'):
             if kw in txt.lower():
                 fails.append(f'{label}: summary.json contains forbidden keyword "{kw}"')
-    gate = glob.glob(os.path.join(d, 'prepare', 'placement-gate-*.json'))
+    # TiDB 的 prepare.sh 寫 .json（結構化 verdict）+ .txt；CRDB 只寫 .txt（原始
+    # SHOW RANGES 輸出，無結構化 verdict）— DB 分支本身的既有實作差異（prepare.sh
+    # 屬 tests/common/ 不可改），故兩種副檔名皆接受，只驗證「gate 真的留了證據」。
+    gate = glob.glob(os.path.join(d, 'prepare', 'placement-gate-*.json')) or \
+           glob.glob(os.path.join(d, 'prepare', 'placement-gate-*.txt'))
     if not gate:
-        fails.append(f'{label}: placement-gate artifact missing (prepare/placement-gate-*.json)')
+        fails.append(f'{label}: placement-gate artifact missing (prepare/placement-gate-*.{{json,txt}})')
 
 if checked == 0:
     note = f' (skipped {skipped_dryrun} dry-run-only dir(s))' if skipped_dryrun else ''

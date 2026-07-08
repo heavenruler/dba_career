@@ -40,9 +40,21 @@ trap rollback ERR INT TERM
 # ── dump current values (--format=tsv + tail -1 → pure value, no header/separator) ──
 echo "[freeze-crdb] dumping current cluster settings..."
 
+# CRDB --format=tsv 對 BOOL 欄位回傳 postgres 慣例 t/f（非 true/false）；正規化後
+# 全程（dump 檔、rollback SQL、unfreeze 還原 SQL）統一用 true/false 這個保證合法的
+# SQL 字面量，unfreeze-crdb.sh 不需改動（2026-07-08 CRDB smoke 實測抓到）。
+_normalize_bool() {
+  case "$1" in
+    t|true) echo true ;;
+    f|false) echo false ;;
+    *) echo "$1" ;;
+  esac
+}
+
 ORIG_LEASE_REBAL=$(SQL --format=tsv \
   -e "SHOW CLUSTER SETTING kv.allocator.load_based_lease_rebalancing.enabled;" \
   | tail -1)
+ORIG_LEASE_REBAL=$(_normalize_bool "$ORIG_LEASE_REBAL")
 case "$ORIG_LEASE_REBAL" in
   true|false) ;;
   *) echo "[freeze-crdb] FAIL: unexpected value '${ORIG_LEASE_REBAL}' for lease_rebal" >&2; exit 1 ;;
@@ -52,6 +64,7 @@ printf '%s' "$ORIG_LEASE_REBAL" > "$DUMP_DIR/crdb-lease-rebal-before.tsv"
 ORIG_SPLIT_LOAD=$(SQL --format=tsv \
   -e "SHOW CLUSTER SETTING kv.range_split.by_load_enabled;" \
   | tail -1)
+ORIG_SPLIT_LOAD=$(_normalize_bool "$ORIG_SPLIT_LOAD")
 case "$ORIG_SPLIT_LOAD" in
   true|false) ;;
   *) echo "[freeze-crdb] FAIL: unexpected value '${ORIG_SPLIT_LOAD}' for split_load" >&2; exit 1 ;;

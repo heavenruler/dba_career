@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "phase": "phase-crossregion",
+  "result_scope": "X-CROSS",
+  "baseline_family": "crossregion",
+  "manifest_sha256": "b7256b824aa884207205a045a74c9c1e8da8c3465a5244eb7a4220a58f61d858",
+  "db": "crdb",
+  "topology": "vm-6node-P-A",
+  "iso": "rc",
+  "ts": "20260708T214141+0800",
+  "warehouses": 1,
+  "rounds_per_thread_group": 5,
+  "skip_rounds": 0,
+  "threads_list": [
+    16
+  ],
+  "thread_results": {
+    "16": {
+      "tpmC_mean": 4623.5,
+      "tpmC_per_round": [
+        4623.5
+      ],
+      "tpmC_range_mean_pct": 0.0,
+      "tpmTotal_mean": 10317.0,
+      "efficiency_mean_pct": 35952.6,
+      "NEW_ORDER": {
+        "p50_mean_ms": 52.4,
+        "p95_mean_ms": 352.3,
+        "p99_mean_ms": 1342.2,
+        "total_count": 4772,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 10651,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    }
+  },
+  "generated_at": "2026-07-08T21:54:43.559135+08:00",
+  "generated_by": "tests/common/summary-from-stdout.py v1",
+  "source_files": "runs/threads-*/round-*/go-tpc-stdout.txt",
+  "region_routing_evidence": {
+    "near_read_setup": {
+      "log_present": true,
+      "vars_snapshot": "kv.closed_timestamp.follower_reads.enabled\nt\nNOTICE: \"kv.closed_timestamp.follower_reads_enabled\" is now an alias for \"kv.closed_timestamp.follower_reads.enabled\", the preferred setting name\nkv.closed_timestamp.target_duration\n00:00:03\nkv.closed_timestamp.side_transport_interval\n00:00:00.2"
+    }
+  }
+}

@@ -243,6 +243,28 @@ if [[ "$DB" == "tidb" ]]; then
       || echo "[wrapper] placement watcher: apply FAILED (gate will fail-closed)" >&2
   ) &
   PLACEMENT_WATCHER_PID=$!
+elif [[ "$DB" == "crdb" ]]; then
+  # bug #9 同款問題也發生在 CRDB：prepare.sh 內建 placement gate（§6.6）在 wrapper
+  # B0-3（case crdb 分支）套用 per-table lease_preferences 之前就開槍 — CRDB 缺少
+  # TiDB 已有的早套 watcher（2026-07-08 CRDB smoke 實測抓到：idc=5/10=50% FAIL）。
+  (
+    for i in $(seq 1 300); do
+      [[ -f "$ROOT/prepare/drop-create.log" ]] && break
+      sleep 2
+    done
+    for i in $(seq 1 300); do
+      cnt=$(/usr/local/bin/cockroach sql --insecure --host="$DB_HOST:$DB_PORT" -d tpcc --format=csv -e \
+        "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';" 2>/dev/null | tail -1 || echo 0)
+      [[ "$cnt" -ge 9 ]] && break
+      sleep 2
+    done
+    echo "[wrapper] placement watcher (crdb): drop-create done + 9 tables present — applying placement SQL (pre-gate)"
+    ssh -o ConnectTimeout=5 root@"$DB_HOST" \
+      "awk '/^-- tpcc database 套用/{p=1}p' /root/crdb-vm6-placement-${PLACEMENT,,}.sql | /usr/local/bin/cockroach sql --insecure --host=$DB_HOST:$DB_PORT -d tpcc" \
+      && echo "[wrapper] placement watcher (crdb): applied OK" \
+      || echo "[wrapper] placement watcher (crdb): apply FAILED (gate will fail-closed)" >&2
+  ) &
+  PLACEMENT_WATCHER_PID=$!
 fi
 bash "$COMMON_DIR/prepare.sh" --db "$DB" --iso "$ISO" --topology "$TOPOLOGY" --db-host "$DB_HOST" --ts "$TS"
 [[ -n "$PLACEMENT_WATCHER_PID" ]] && { wait "$PLACEMENT_WATCHER_PID" 2>/dev/null || true; }
