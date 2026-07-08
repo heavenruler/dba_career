@@ -119,24 +119,9 @@ resource "google_compute_instance" "poc" {
 
       systemctl enable --now chronyd
 
-      # iperf3 server for WAN probe (port 5201; GCP firewall by tag; sweep 結束後 disable)
-      # NOTE: outer HCL <<-EOF closes at col 6 → HCL strips 6 → bash sees PROXYEOF /
-      # UNIT_EOF terminators at col 0. col-0 [Unit] would defeat strip; indent to col 6.
-      cat > /etc/systemd/system/iperf3-server.service <<'UNIT_EOF'
-      [Unit]
-      Description=iperf3 server (WAN probe)
-      After=network-online.target
-
-      [Service]
-      ExecStart=/usr/bin/iperf3 -s -p 5201
-      Restart=always
-      RestartSec=5
-
-      [Install]
-      WantedBy=multi-user.target
-      UNIT_EOF
-      systemctl daemon-reload
-      systemctl enable --now iperf3-server.service
+      # iperf3 binary 已裝（上方 dnf）；不起常駐 server —— wan-probe.sh 測試時
+      # 臨時起 `iperf3 -s -1`（單次連線即退），避開 0.0.0.0 常駐監聽的安全顧慮
+      # （2026-07-07 拍板 R1，見 phase-crossregion/fable-refactor/decisions.md D9）
 
       dnf clean all
       touch "$STARTUP_DONE"

@@ -23,8 +23,9 @@
 #     - 若兩端任一缺 iperf3 binary → warn-only skip
 #     - server 為**臨時起**：測前 ssh 目標端 `iperf3 -s -1`（單次連線即退，timeout 30s 兜底），
 #       測完自動收，不依賴常駐 systemd server
-#     - 埠預設 20170：專線 FW 只開 R8 (20160-20180，TiKV range)，5201 未開通
-#       （fw-request 2026-06-18 行 80「本輪未啟用」）；TiKV 每台僅佔 20160+20180 → 20170 閒置
+#     - 埠預設 19999：專用高埠，離開所有 DB service range 與 OS ephemeral range(32768+)，
+#       流量一眼可辨、免與 netflow 分析混淆（2026-07-07 拍板 D9；5201/20170 皆已實測可達，
+#       改埠純為衛生考量，非因專線被擋——詳 SESSION-HISTORY 07-03 節）
 #
 # 用法：
 #   wan-probe.sh --phase <warmup|warmup-post|sweep-pre|sweep-post|round-pre|round-post> \
@@ -242,7 +243,7 @@ if [[ "$WAN_PROBE_IPERF" == "1" ]]; then
         # server 臨時起（-s -1 單次即退 + timeout 30 兜底），埠用 FW 已開通的 TiKV range 閒置埠。
         : "${IPERF_TARGET_GCP:=10.160.152.11}"  # idc → gcp 連線目標
         : "${IPERF_TARGET_IDC:=172.24.40.32}"   # gcp → idc 連線目標
-        : "${IPERF_PORT:=20170}"                # R8 20160-20180 內閒置埠；5201 專線未開
+        : "${IPERF_PORT:=19999}"                # 專用高埠，離 DB service range 與 ephemeral range
         # forward: gcp-dbhost-1 起臨時 server ← idc-dbhost-1 client
         echo "  [forward idc->gcp]  target=$IPERF_TARGET_GCP port=$IPERF_PORT" >> "$OUT_TXT"
         ssh_gcp "$GCP_DBHOST1_ADDR" "nohup timeout 30 iperf3 -s -1 -p $IPERF_PORT >/dev/null 2>&1 & exit 0" >/dev/null

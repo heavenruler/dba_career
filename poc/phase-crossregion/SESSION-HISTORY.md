@@ -547,3 +547,31 @@ CV/Q11 已拍板 ✅、teardown 6/6 ✅、static-check TS-scoped ✅。
 
 **Last updated**：2026-07-03 iperf3 flow 單 VM 實測（機制全驗、JSON 採樣 standby 待 all-phase；專線 FW 實為 /24 整段開）。
 **Next review**：Touch 1（P-A 正式 cell）跑完後填 W=128 N=5 結果；all-phase 兩地 VM 全建後補 iperf3 -J 雙向 JSON 採樣。
+
+### 2026-07-07 Path C 移除 + iperf3 daemon 拆除 + 埠改 19999（Fable 健檢 D9 拍板落地）
+
+Fable 健檢（`fable-refactor/healthcheck-report.md`）挖出的 R1/R2 拍板（decisions D9）於本次落地：
+
+- **Path C 全刪**（R2）：`phase-warmup-only-{tidb,crdb,ybdb}`、`phase-roundrun-only-{tidb,crdb,ybdb}`、
+  orchestrator `phase-c-validate-hypothesis`、CV report `phase-c-cv-report`、`run-round-only.sh` 檔案本身。
+  原因：`phase2-bootstrap` 只 rsync `scripts/` 子目錄，`run-round-only.sh` 在其上一層，遠端必缺檔——
+  這條鏈在現部署模式下從未真正跑通（warmup 段 `\|\| true` 靜默假成功、量測段硬炸）。Wave 4 走
+  `run-vm6-suite.sh` 正式路徑，Path C 無回歸價值。**保留未動**：`phase-freeze-*`/`phase-unfreeze-*`（獨立
+  可重用的凍結工具，非本鏈成員）、`phase-smoke-only-*`（走 `run.sh` 直連，非本鏈成員，只更新其
+  DEPRECATED 提示訊息不再指向已刪目標）、`phase-leader-gate-tidb-postprepare`（通用 gate 工具）。
+- **iperf3 常駐 daemon 拆除**（R1）：`iac-gcp/main.tf` 移除 `iperf3-server.service` 常駐段，cloud-init
+  仍裝 binary。貫徹 wan-probe.sh 早已宣稱的「臨時起 server」架構，兌現 0.0.0.0 常駐監聽的安全顧慮
+  （此前 main.tf 與 wan-probe.sh 的敘述長期不一致，本次補平）。
+- **iperf3 埠改 19999**：5201（main.tf 舊常駐埠）與 20170（wan-probe.sh 原改埠值，落在 TiKV
+  20160-20180 range 內）皆棄用，統一改**專用高埠 19999**（離所有 DB service range 與 OS ephemeral
+  range 32768+）。**澄清**：iperf3 對 benchmark 的干擾早由時序 gate 解決（只在 round 間隙跑，量測輪
+  跳過）——改埠純為衛生/歸因考量，與「哪個埠被 FW 擋」無關（07-03 已證兩者皆可達）。
+
+驗證：`bash -n` 全過、`terraform validate`/`terraform fmt -check` PASS、`idc-iperf3-bootstrap.sh
+--dry-run` 確認 systemd unit 埠=19999、`--dry-run --install-only`（phase2-iperf3-idc 實際模式）確認
+仍只裝 binary 不建常駐 unit、Makefile 正式 target（phase-freeze-tidb/phase-smoke-only-tidb/
+phase-leader-gate-tidb-postprepare/phase-crossregion-w128-suite）`make -n` 皆展開正常（確認未誤刪
+依賴）。**未 live 驗證**：19999 埠與拆常駐後的 cloud-init 需下次 phase1 rebuild 才會實際生效。
+
+**Last updated**：2026-07-07 Path C 移除 + iperf3 daemon 拆除 + 埠改 19999（M1/S2/S2b 落地，D9 拍板兌現）。
+**Next review**：下次 phase1 rebuild 驗 iperf3 binary-only + 19999 埠是否如預期；Win-1 CRDB/YBDB smoke 驗 S5 的 YBDB freeze fail-closed 路徑。

@@ -1062,7 +1062,7 @@ SMOKE_ROUND        ?= 1
 SMOKE_RESULT_BASE  = $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/round-$(SMOKE_ROUND)
 
 phase-smoke-only-tidb:
-	@echo "DEPRECATED: 用 phase-roundrun-only-tidb 取代 (此 target 仍保留，但含 cold-reset+warmup 的 run.sh，非純 run)"
+	@echo "DEPRECATED: legacy target（Path C run-round-only 鏈已刪除，此 target 含 cold-reset+warmup 的 run.sh，非純 run；正式路徑走 run-vm6-suite.sh）"
 	@echo "==> phase-smoke-only-tidb round=$(SMOKE_ROUND) W=$(WAREHOUSES) T=$(THREADS_LIST) S=$(RUN_SEC) ts=$(TPCC_TS)"
 	@mkdir -p $(SMOKE_RESULT_BASE)/tidb
 	@TS=$(TPCC_TS); \
@@ -1085,7 +1085,7 @@ phase-smoke-only-tidb:
 	@echo "==> phase-smoke-only-tidb round=$(SMOKE_ROUND) done → $(SMOKE_RESULT_BASE)/tidb/"
 
 phase-smoke-only-crdb:
-	@echo "DEPRECATED: 用 phase-roundrun-only-crdb 取代 (此 target 仍保留，但含 cold-reset+warmup 的 run.sh，非純 run)"
+	@echo "DEPRECATED: legacy target（Path C run-round-only 鏈已刪除，此 target 含 cold-reset+warmup 的 run.sh，非純 run；正式路徑走 run-vm6-suite.sh）"
 	@echo "==> phase-smoke-only-crdb round=$(SMOKE_ROUND) W=$(WAREHOUSES) T=$(THREADS_LIST) S=$(RUN_SEC) ts=$(TPCC_TS)"
 	@mkdir -p $(SMOKE_RESULT_BASE)/crdb
 	@TS=$(TPCC_TS); \
@@ -1109,7 +1109,7 @@ phase-smoke-only-crdb:
 	@echo "==> phase-smoke-only-crdb round=$(SMOKE_ROUND) done → $(SMOKE_RESULT_BASE)/crdb/"
 
 phase-smoke-only-ybdb:
-	@echo "DEPRECATED: 用 phase-roundrun-only-ybdb 取代 (此 target 仍保留，但含 cold-reset+warmup 的 run.sh，非純 run)"
+	@echo "DEPRECATED: legacy target（Path C run-round-only 鏈已刪除，此 target 含 cold-reset+warmup 的 run.sh，非純 run；正式路徑走 run-vm6-suite.sh）"
 	@echo "==> phase-smoke-only-ybdb round=$(SMOKE_ROUND) W=$(WAREHOUSES) T=$(THREADS_LIST) S=$(RUN_SEC) ts=$(TPCC_TS)"
 	@mkdir -p $(SMOKE_RESULT_BASE)/ybdb
 	@TS=$(TPCC_TS); \
@@ -1133,91 +1133,6 @@ phase-smoke-only-ybdb:
 	@echo "==> phase-smoke-only-ybdb round=$(SMOKE_ROUND) done → $(SMOKE_RESULT_BASE)/ybdb/"
 
 # ===================================================================
-# Path C — 純 run-round-only targets (BLOCKER 2/3: 不含 cold-reset/warmup)
-# 使用 run-round-only.sh：純 go-tpc tpcc run，無 prepare/restart/warmup
-# ===================================================================
-
-# WARMUP_ROUND_SEC: warmup 輪（R0）用短時 120s 跑一次後丟棄
-WARMUP_ROUND_SEC   ?= 120
-
-phase-warmup-only-tidb:
-	@echo "==> phase-warmup-only-tidb (R0 warmup, 120s, discard) ts=$(TPCC_TS)"
-	@mkdir -p $(LOCAL_RESULT_ROOT)/$(TPCC_TS)/round-0/tidb
-	ssh $(TPCC_CLIENT) " \
-	  rsync -q $(CROSS_SCRIPTS_REMOTE)/run-round-only.sh /tmp/run-round-only.sh 2>/dev/null || true; \
-	  DB=tidb TIDB_HOST=$(TIDB_HOST) TIDB_PORT=$(TIDB_PORT) \
-	  SMOKE_ROUND=0 WAREHOUSES=$(WAREHOUSES) RUN_SEC=$(WARMUP_ROUND_SEC) \
-	  THREADS_LIST='$(THREADS_LIST)' \
-	  RESULT_DIR=/tmp/poc-tpcc-warmup-$$$$ \
-	  bash $(CROSS_SCRIPTS_REMOTE)/run-round-only.sh" || true
-	@echo "==> phase-warmup-only-tidb R0 done (result discarded)"
-
-phase-warmup-only-crdb:
-	@echo "==> phase-warmup-only-crdb (R0 warmup, 120s, discard) ts=$(TPCC_TS)"
-	ssh $(TPCC_CLIENT) " \
-	  DB=crdb CRDB_HOST=$(CRDB_HOST) CRDB_PORT=$(CRDB_PORT) \
-	  SMOKE_ROUND=0 WAREHOUSES=$(WAREHOUSES) RUN_SEC=$(WARMUP_ROUND_SEC) \
-	  THREADS_LIST='$(THREADS_LIST)' \
-	  RESULT_DIR=/tmp/poc-tpcc-warmup-$$$$ \
-	  bash $(CROSS_SCRIPTS_REMOTE)/run-round-only.sh" || true
-	@echo "==> phase-warmup-only-crdb R0 done (result discarded)"
-
-phase-warmup-only-ybdb:
-	@echo "==> phase-warmup-only-ybdb (R0 warmup, 120s, discard) ts=$(TPCC_TS)"
-	ssh $(TPCC_CLIENT) " \
-	  DB=ybdb YBDB_HOST=$(YBDB_HOST) YBDB_PORT=$(YBDB_PORT) \
-	  SMOKE_ROUND=0 WAREHOUSES=$(WAREHOUSES) RUN_SEC=$(WARMUP_ROUND_SEC) \
-	  THREADS_LIST='$(THREADS_LIST)' \
-	  RESULT_DIR=/tmp/poc-tpcc-warmup-$$$$ \
-	  bash $(CROSS_SCRIPTS_REMOTE)/run-round-only.sh" || true
-	@echo "==> phase-warmup-only-ybdb R0 done (result discarded)"
-
-# 結果目錄：遠端 client 的 RESULT_DIR
-REMOTE_RESULT_DIR  = /tmp/poc-tpcc-results/$(RESULT_SCOPE)/$(TPCC_TS)
-
-phase-roundrun-only-tidb:
-	@echo "==> phase-roundrun-only-tidb round=$(SMOKE_ROUND) W=$(WAREHOUSES) T='$(THREADS_LIST)' S=$(RUN_SEC) ts=$(TPCC_TS)"
-	ssh $(TPCC_CLIENT) " \
-	  mkdir -p $(REMOTE_RESULT_DIR)/round-$(SMOKE_ROUND)/tidb; \
-	  DB=tidb TIDB_HOST=$(TIDB_HOST) TIDB_PORT=$(TIDB_PORT) \
-	  SMOKE_ROUND=$(SMOKE_ROUND) WAREHOUSES=$(WAREHOUSES) RUN_SEC=$(RUN_SEC) \
-	  THREADS_LIST='$(THREADS_LIST)' \
-	  RESULT_DIR=$(REMOTE_RESULT_DIR) \
-	  bash $(CROSS_SCRIPTS_REMOTE)/run-round-only.sh"
-	@mkdir -p $(SMOKE_RESULT_BASE)/tidb
-	ssh $(TPCC_CLIENT) "tar czf - -C $(REMOTE_RESULT_DIR)/round-$(SMOKE_ROUND)/tidb ." \
-	  | tar xzf - -C $(SMOKE_RESULT_BASE)/tidb/ 2>/dev/null || true
-	@echo "==> phase-roundrun-only-tidb round=$(SMOKE_ROUND) done → $(SMOKE_RESULT_BASE)/tidb/"
-
-phase-roundrun-only-crdb:
-	@echo "==> phase-roundrun-only-crdb round=$(SMOKE_ROUND) W=$(WAREHOUSES) T='$(THREADS_LIST)' S=$(RUN_SEC) ts=$(TPCC_TS)"
-	ssh $(TPCC_CLIENT) " \
-	  mkdir -p $(REMOTE_RESULT_DIR)/round-$(SMOKE_ROUND)/crdb; \
-	  DB=crdb CRDB_HOST=$(CRDB_HOST) CRDB_PORT=$(CRDB_PORT) \
-	  SMOKE_ROUND=$(SMOKE_ROUND) WAREHOUSES=$(WAREHOUSES) RUN_SEC=$(RUN_SEC) \
-	  THREADS_LIST='$(THREADS_LIST)' \
-	  RESULT_DIR=$(REMOTE_RESULT_DIR) \
-	  bash $(CROSS_SCRIPTS_REMOTE)/run-round-only.sh"
-	@mkdir -p $(SMOKE_RESULT_BASE)/crdb
-	ssh $(TPCC_CLIENT) "tar czf - -C $(REMOTE_RESULT_DIR)/round-$(SMOKE_ROUND)/crdb ." \
-	  | tar xzf - -C $(SMOKE_RESULT_BASE)/crdb/ 2>/dev/null || true
-	@echo "==> phase-roundrun-only-crdb round=$(SMOKE_ROUND) done → $(SMOKE_RESULT_BASE)/crdb/"
-
-phase-roundrun-only-ybdb:
-	@echo "==> phase-roundrun-only-ybdb round=$(SMOKE_ROUND) W=$(WAREHOUSES) T='$(THREADS_LIST)' S=$(RUN_SEC) ts=$(TPCC_TS)"
-	ssh $(TPCC_CLIENT) " \
-	  mkdir -p $(REMOTE_RESULT_DIR)/round-$(SMOKE_ROUND)/ybdb; \
-	  DB=ybdb YBDB_HOST=$(YBDB_HOST) YBDB_PORT=$(YBDB_PORT) \
-	  SMOKE_ROUND=$(SMOKE_ROUND) WAREHOUSES=$(WAREHOUSES) RUN_SEC=$(RUN_SEC) \
-	  THREADS_LIST='$(THREADS_LIST)' \
-	  RESULT_DIR=$(REMOTE_RESULT_DIR) \
-	  bash $(CROSS_SCRIPTS_REMOTE)/run-round-only.sh"
-	@mkdir -p $(SMOKE_RESULT_BASE)/ybdb
-	ssh $(TPCC_CLIENT) "tar czf - -C $(REMOTE_RESULT_DIR)/round-$(SMOKE_ROUND)/ybdb ." \
-	  | tar xzf - -C $(SMOKE_RESULT_BASE)/ybdb/ 2>/dev/null || true
-	@echo "==> phase-roundrun-only-ybdb round=$(SMOKE_ROUND) done → $(SMOKE_RESULT_BASE)/ybdb/"
-
-# ===================================================================
 # BLOCKER 4 — TiDB leader gate: post-prepare / pre-freeze
 # JOIN tikv_region_status 過濾 DB_NAME='tpcc'
 # ===================================================================
@@ -1236,123 +1151,13 @@ phase-leader-gate-tidb-postprepare:
 	done; \
 	[ "$$converged" = "1" ] || { echo "[leader-gate-tidb] gate FAIL — tpcc leaders not 100% IDC after 5min"; exit 1; }
 
-# ===================================================================
-# Path C — orchestration: 5 連跑 smoke (hypothesis validation)
-# ===================================================================
-# 前提：cluster 已跑過 phase1~7（deploy + prepare 完成）
-# 跑 5 輪：R1=warmup, R2-R5 取 median
-phase-c-validate-hypothesis:
-	@echo "=================================================================="
-	@echo "  phase-c-validate-hypothesis  TPCC_TS=$(TPCC_TS)"
-	@echo "  prereq: phase1-7 已完成 (deploy + prepare done)"
-	@echo "  W=$(WAREHOUSES)  T='$(THREADS_LIST)'  RUN_SEC=$(RUN_SEC)"
-	@echo "=================================================================="
-	@set -e; \
-	FROZEN_TIDB=0; FROZEN_CRDB=0; FROZEN_YBDB=0; \
-	trap ' \
-	  echo "==> EXIT trap: unfreeze in reverse order (ybdb→crdb→tidb)"; \
-	  if [ "$$FROZEN_YBDB" = "1" ]; then \
-	    $(MAKE) phase-unfreeze-ybdb TPCC_TS=$(TPCC_TS) || echo "[trap] warn: unfreeze-ybdb failed"; \
-	  fi; \
-	  if [ "$$FROZEN_CRDB" = "1" ]; then \
-	    $(MAKE) phase-unfreeze-crdb TPCC_TS=$(TPCC_TS) || echo "[trap] warn: unfreeze-crdb failed"; \
-	  fi; \
-	  if [ "$$FROZEN_TIDB" = "1" ]; then \
-	    $(MAKE) phase-unfreeze-tidb TPCC_TS=$(TPCC_TS) || echo "[trap] warn: unfreeze-tidb failed"; \
-	  fi' EXIT; \
-	echo "==> BLOCKER4: TiDB leader gate (post-prepare, pre-freeze)"; \
-	$(MAKE) phase-leader-gate-tidb-postprepare TPCC_TS=$(TPCC_TS); \
-	echo "==> freeze all DBs"; \
-	$(MAKE) phase-freeze-tidb TPCC_TS=$(TPCC_TS) && FROZEN_TIDB=1; \
-	$(MAKE) phase-freeze-crdb TPCC_TS=$(TPCC_TS) && FROZEN_CRDB=1; \
-	$(MAKE) phase-freeze-ybdb TPCC_TS=$(TPCC_TS) && FROZEN_YBDB=1; \
-	echo "==> R0 warmup (discarded) for each DB"; \
-	$(MAKE) phase-warmup-only-tidb TPCC_TS=$(TPCC_TS) WAREHOUSES=$(WAREHOUSES) THREADS_LIST='$(THREADS_LIST)'; \
-	$(MAKE) phase-warmup-only-crdb TPCC_TS=$(TPCC_TS) WAREHOUSES=$(WAREHOUSES) THREADS_LIST='$(THREADS_LIST)'; \
-	$(MAKE) phase-warmup-only-ybdb TPCC_TS=$(TPCC_TS) WAREHOUSES=$(WAREHOUSES) THREADS_LIST='$(THREADS_LIST)'; \
-	echo "==> R1-R5 measurement rounds"; \
-	for r in 1 2 3 4 5; do \
-	  echo ""; \
-	  echo "=== Path C Round $$r / 5 ==="; \
-	  $(MAKE) phase-roundrun-only-tidb SMOKE_ROUND=$$r TPCC_TS=$(TPCC_TS) \
-	    WAREHOUSES=$(WAREHOUSES) RUN_SEC=$(RUN_SEC) THREADS_LIST='$(THREADS_LIST)' || exit 1; \
-	  $(MAKE) phase-roundrun-only-crdb SMOKE_ROUND=$$r TPCC_TS=$(TPCC_TS) \
-	    WAREHOUSES=$(WAREHOUSES) RUN_SEC=$(RUN_SEC) THREADS_LIST='$(THREADS_LIST)' || exit 1; \
-	  $(MAKE) phase-roundrun-only-ybdb SMOKE_ROUND=$$r TPCC_TS=$(TPCC_TS) \
-	    WAREHOUSES=$(WAREHOUSES) RUN_SEC=$(RUN_SEC) THREADS_LIST='$(THREADS_LIST)' || exit 1; \
-	done; \
-	$(MAKE) phase-c-cv-report TPCC_TS=$(TPCC_TS)
-	@echo "==> phase-c-validate-hypothesis complete  TPCC_TS=$(TPCC_TS)"
-
-# ===================================================================
-# Path C — CV report: 讀 5 round 結果，算 mean/stddev/CV per DB
-# ===================================================================
-phase-c-cv-report:
-	@echo "==> phase-c-cv-report  TPCC_TS=$(TPCC_TS)"
-	@python3 -c " \
-import os, glob, statistics, re, sys; \
-base = '$(LOCAL_RESULT_ROOT)/$(TPCC_TS)'; \
-dbs  = ['tidb', 'crdb', 'ybdb']; \
-print(''); \
-print('  Path C CV Report — TPCC_TS=$(TPCC_TS)'); \
-print('  W=$(WAREHOUSES)  T=$(THREADS_LIST)  RUN_SEC=$(RUN_SEC)  Rounds=5 (R0=warmup/discard, R1-R5 measured, R2-R5 analysis)'); \
-print('  {:<8} {:>8} {:>8} {:>8} {:>8}  {:>10}  {:>8}  note'.format('DB','R2','R3','R4','R5','median(R2-R5)','CV%')); \
-print('  ' + '-'*80); \
-any_incomplete = False; \
-for db in dbs: \
-    tpmc_per_round = {}; \
-    for r in range(1, 6): \
-        pat = os.path.join(base, f'round-{r}', db, 'go-tpc-stdout.txt'); \
-        files = glob.glob(pat); \
-        if not files: \
-            pat2 = os.path.join(base, f'round-{r}', db, '**/go-tpc-stdout.txt'); \
-            files = glob.glob(pat2, recursive=True); \
-        vals = []; \
-        for f in files: \
-            for line in open(f, errors='ignore'): \
-                m = re.search(r'tpmC[=:\s]+([0-9]+\.?[0-9]*)', line, re.I); \
-                if m: vals.append(float(m.group(1))); \
-        tpmc_per_round[r] = max(vals) if vals else None; \
-    r2 = tpmc_per_round.get(2); \
-    r3 = tpmc_per_round.get(3); \
-    r4 = tpmc_per_round.get(4); \
-    r5 = tpmc_per_round.get(5); \
-    analysis = [v for v in [r2, r3, r4, r5] if v is not None]; \
-    missing = 4 - len(analysis); \
-    if missing > 0: \
-        any_incomplete = True; \
-        note = f'INCOMPLETE (missing {missing}/4 rounds)'; \
-        r2s = f\"{r2:.0f}\" if r2 else 'N/A'; \
-        r3s = f\"{r3:.0f}\" if r3 else 'N/A'; \
-        r4s = f\"{r4:.0f}\" if r4 else 'N/A'; \
-        r5s = f\"{r5:.0f}\" if r5 else 'N/A'; \
-        print(f'  {db:<8} {r2s:>8} {r3s:>8} {r4s:>8} {r5s:>8}  {\"N/A\":>10}  {\"N/A\":>8}  {note}'); \
-    else: \
-        med = statistics.median([r2, r3, r4, r5]); \
-        mean = statistics.mean([r2, r3, r4, r5]); \
-        std  = statistics.stdev([r2, r3, r4, r5]); \
-        cv   = std / mean * 100 if mean else 0; \
-        note = 'STABLE' if cv < 5 else ('MARGINAL' if cv < 10 else 'NOISY'); \
-        print(f'  {db:<8} {r2:>8.0f} {r3:>8.0f} {r4:>8.0f} {r5:>8.0f}  {med:>10.0f}  {cv:>7.1f}%  {note}'); \
-print(''); \
-print('  Note: R0 discarded (warmup). R1=first run. R2-R5 analysis window (4 rounds ALL required for STABLE).'); \
-print('        CV<5%=STABLE; 5-10%=MARGINAL; >10%=NOISY; missing any R2-R5 = INCOMPLETE'); \
-if any_incomplete: \
-    print('  WARN: one or more DB has INCOMPLETE data — check round dirs under', base); \
-    sys.exit(1); \
-"
-	@echo "==> phase-c-cv-report done"
-
 # === Path C .PHONY additions ===
 .PHONY: \
   phase-freeze-tidb phase-unfreeze-tidb \
   phase-freeze-crdb phase-unfreeze-crdb \
   phase-freeze-ybdb phase-unfreeze-ybdb \
   phase-smoke-only-tidb phase-smoke-only-crdb phase-smoke-only-ybdb \
-  phase-roundrun-only-tidb phase-roundrun-only-crdb phase-roundrun-only-ybdb \
-  phase-warmup-only-tidb phase-warmup-only-crdb phase-warmup-only-ybdb \
   phase-leader-gate-tidb-postprepare \
-  phase-c-validate-hypothesis phase-c-cv-report \
   phase-cleanup-on-fail \
   phase1-apply-safe phase1-wait-safe phase2-bootstrap-safe \
   phase3-tidb-deploy-safe phase4-ybdb-deploy-safe phase4-ybdb-fix6n-safe \
