@@ -276,6 +276,8 @@ case "$DB" in
       sleep 10
     done
     [[ "$converged" == "1" ]] || { echo "gate FAIL: CRDB lease holders not 100% IDC after 5min" >&2; exit 1; }
+    echo "[wrapper] pre-run: freeze CRDB load-based lease rebalancing + range split (via freeze-crdb.sh)"
+    CRDB_HOST="$DB_HOST" DUMP_DIR="$ROOT/freeze-state" bash "$SELF/../freeze/freeze-crdb.sh"
     ;;
   ybdb)
     # ybdb: placement applied at deploy (phase4-ybdb-fix6n); post-prepare = data-move 收斂 + LB freeze
@@ -346,6 +348,12 @@ if [[ "$DB" == "ybdb" ]]; then
   echo "[wrapper] post-run: unfreeze YBDB load balancer via unfreeze-ybdb.sh"
   YB_MASTER_ADDR="$YB_MASTER_ADDR" IDC_NODES_HEAD="172.24.40.32" DUMP_DIR="$ROOT/freeze-state" \
     bash "$SELF/../freeze/unfreeze-ybdb.sh" || true
+fi
+
+# crdb: 對應 case 分支的 pre-run freeze；run 結束即解凍
+if [[ "$DB" == "crdb" ]]; then
+  echo "[wrapper] post-run: unfreeze CRDB lease rebalancing + range split via unfreeze-crdb.sh"
+  CRDB_HOST="$DB_HOST" DUMP_DIR="$ROOT/freeze-state" bash "$SELF/../freeze/unfreeze-crdb.sh" || true
 fi
 
 echo "[4/4] collect"
