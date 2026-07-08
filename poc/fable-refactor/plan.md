@@ -79,15 +79,18 @@ echo '__pycache__/' >> poc/tpmc-report/.gitignore   # 或 repo 根 .gitignore，
 ```
 驗收：`git ls-files '*.pyc'` 為空；`git status --short` 顯示預期的 D + .gitignore 修改。
 
-## S8. 【P2-1 P2-2 P2-4 P2-5 + P3-4~7】收斂與清理（合併一個 PR，Opus 判讀 + Sonnet 執行）
+## S8. 【已完成，fix/s8-consolidation】收斂與清理
 
-- P2-1：`run-vm6-suite.sh` 的 drain 段改呼叫 `freeze-tidb.sh` 已有的 drain（或抽成 `freeze/lib-pd-drain.sh` 供兩者 source）；統一超時語義（建議取 300s）
-- P2-2：`tidb-vm6.yml:373` hardcode `"3"` 改 `{{ tidb_replicas }}`（vars 檔已有此變數；確認 p-a/p-b vars 值皆 3）
-- P2-4：兩 playbook 的 cluster name/host 抽到 vars（`tidb_cluster_name` 已在 vars？先查，有就引用）
-- P2-5：SSH wrapper 統一——**不強推**（詳 D8 邊界精神）；僅將無 StrictHostKeyChecking 的補上（已含 S5b）
-- P3-4：README 補一句說明 .sh 與 Go 版 probe-rto-driver 的取捨；P3-5/P3-6/P3-7：過時註解與 legacy 標註（只加 DEPRECATED 註記，不刪檔）
+- **P2-1**：新增 `freeze/lib-pd-drain.sh` 共用函式 `pd_drain_wait`，`freeze-tidb.sh`/`run-vm6-suite.sh` 都改呼叫它。**未統一成 300s**——查 SESSION-HISTORY 07-02 節發現 150s(freeze-tidb 內) vs 300s(wrapper pre-freeze) 是 bug #14 修復時的**刻意設計**（明載「freeze 內 150s 語意不動」），故只抽共用 code、保留兩邊各自的超時值。這是對本文件先前「建議取 300s」的修正——原建議未查證這段歷史。
+- **P2-2**：`tidb-vm6.yml` 的 RF-wait 段（task name + shell 內 3 處 `"3"`）改 `{{ tidb_replicas }}`，比照 `tidb-vm3.yml` 既有樣板。
+- **P2-4**：`tidb-vm3.yml` 與 `tidb-vm6.yml` 的 TiKV-wait 段各 2 處 `tiup cluster display tpcc-tidb-vm{3,6}` 硬編碼改 `{{ tidb_cluster_name }}`（**vm3 也有此問題，非僅 vm6**——原 finding 只點名 vm6 不精確）。
+- **P2-5**：不強推統一，維持 S5b 範圍；額外把 R7（`check-gcp-via-31.sh` 2 處 `=no`）一併修為 `accept-new`（risks.md 明載留待 S8）——**全專案 shell 腳本的 `StrictHostKeyChecking=no` 至此歸零**（`ansible/inventory/crossregion-via31.ini` 的 `ansible_ssh_common_args` 另一機制，`UserKnownHostsFile=/dev/null` 使其無狀態累積風險，判斷不同於腳本內 `=no`，未動）。
+- **P3-4**：README.md 補一句說明 `.sh`（早期版）與 Go 版（F8 新版，monotonic + jitter 統計）`probe-rto-driver` 的取捨，接線目標是 Go 版。
+- **P3-5**：`wan/baseline-measurement.md` 已有 supersede 頂部橫幅 + Pending 段落點名兩個不存在腳本（已足夠清楚，未再加註）；IAP tunnel 那行加 DEPRECATED 註記。
+- **P3-6**：**原「孤兒 target 5 個」finding 為誤判，已本體覆核推翻**——`new-idc-vms`/`new-gcp-vms`/`gcp-wait-startup`/`ansible-ping`/`phase0-preflight-fix-only-processes` 皆在 `phase-crossregion/Makefile` 有真實定義與 body（從 `Makefile.tc1` 複製非 include），是合法的 operator 直接呼叫 leaf target，非死碼，**未加任何標記**。playbooks 頂部（tidb/yugabyte/cockroach-vm6.yml）過時 IAP 註解已加 DEPRECATED 說明；**`host-resolution.sh:22` 在 `tests/common/` 禁改清單內，即使只是註解也未觸碰**。
+- **P3-7**：`172.24.40.25`/`.17` 殘留擴大確認為 14 個檔案（原估更少），但全部落在 `tidb/report/`、`tidb/tmp/`——與 phase-crossregion 完全無關的個人歷史 scratch 材料，**判斷不動**（不順手重構無關程式）。
 
-驗收：每項附於 PR 描述；共通：`bash -n` 全過、`ansible-playbook --syntax-check`（若環境可用，否則標未驗證）、`make -n` 前後 diff 為空（除預期變更）。
+驗收（已過）：`bash -n` 全過（含新 lib）；`pd_drain_wait` 用 mock curl/jq 做功能測試（drained + timeout 兩路徑皆驗證正確）；`ansible-playbook --syntax-check`（環境實際可用，非原估的「未驗證」）對 4 個 playbook 全 PASS；`grep StrictHostKeyChecking=no` 於全部 shell 腳本 = 0。
 
 ## S9. 【Win-2 prep，Q17 已拍板】PROFILE token 命名實作（與 Win-2 gap#1 A-A 接線綁做）
 
@@ -113,5 +116,5 @@ git status --short | grep tests/common   # 必須為空
 
 ## 執行順序建議
 
-S1（已完成 2591f33e）→ S3+S6+S7（已完成 ee3e014f）→ S4（已完成 8195c64d）→ S5（已完成 24a59df5，5d 待 YBDB smoke live 驗）→ S2+S2b（已完成 edd6d5b4，含補做 M1，19999 埠待 phase1 rebuild live 驗）→ **S8（下一步：收斂清理）** → S9（Win-1 三家 A-S 跑完、進 Win-2 前）。
+S1（已完成 2591f33e）→ S3+S6+S7（已完成 ee3e014f）→ S4（已完成 8195c64d）→ S5（已完成 24a59df5，5d 待 YBDB smoke live 驗）→ S2+S2b（已完成 edd6d5b4，含補做 M1，19999 埠待 phase1 rebuild live 驗）→ S8（已完成 ae1a55f8）→ **S9（下一步，Win-2 prep：Win-1 三家 A-S 跑完、進 Win-2 前）**。
 每個 PR 合併前在 spike/fix branch 上跑該步驗收命令並貼輸出。
