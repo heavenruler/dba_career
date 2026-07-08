@@ -329,6 +329,7 @@ phase2-bootstrap:
 	  bash $(LOCAL_SCRIPTS)/bootstrap-client.sh
 	ssh $(TPCC_CLIENT) 'mkdir -p $(CROSS_SCRIPTS_REMOTE) $(ANSIBLE_REMOTE_DIR) $(POC_REMOTE_ROOT)/tests'
 	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
+	rsync -avz phase-crossregion/freeze/  '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/freeze/'
 	@echo "==> symlink /tmp/phase-crossregion/scripts (run.sh 以 \$$SELF/../../phase-crossregion/scripts 推導 wan-probe.sh)"
 	ssh $(TPCC_CLIENT) 'mkdir -p /tmp/phase-crossregion && ln -sfn $(CROSS_SCRIPTS_REMOTE) /tmp/phase-crossregion/scripts'
 	@echo "==> manifest.yaml → .31:/tmp/phase-crossregion/ (summary-from-stdout.py 以 parents[2] 推 repo root)"
