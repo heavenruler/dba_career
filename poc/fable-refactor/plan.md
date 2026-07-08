@@ -92,7 +92,9 @@ echo '__pycache__/' >> poc/tpmc-report/.gitignore   # 或 repo 根 .gitignore，
 
 驗收（已過）：`bash -n` 全過（含新 lib）；`pd_drain_wait` 用 mock curl/jq 做功能測試（drained + timeout 兩路徑皆驗證正確）；`ansible-playbook --syntax-check`（環境實際可用，非原估的「未驗證」）對 4 個 playbook 全 PASS；`grep StrictHostKeyChecking=no` 於全部 shell 腳本 = 0。
 
-## S9. 【Win-2 prep，Q17 已拍板】PROFILE token 命名實作（與 Win-2 gap#1 A-A 接線綁做）
+## S9. 【⏸ PENDING（2026-07-08 使用者裁定）】PROFILE token 命名實作（與 Win-2 gap#1 A-A 接線綁做）
+
+**狀態：刻意延後，非遺漏。** 方案已 100% 定案（Q17），做法/驗收皆已寫好，隨時可執行——但實作對象（Makefile ROOT 拼接、`run-vm6-suite.sh`/`win-tidb-as-w128.sh` 的 crdb/ybdb 對應、`promotion-gate.sh`）只在 Win-2（A-A/A-A-RO）開跑前才有意義驗證，Win-1（A-S，目前唯一在跑的 profile）完全不受影響、不需要這個改動。提前做不會被 Win-1 的 A-S smoke/正式跑驗證到，等於是「寫了但沒人驗」的死碼窗口期——延後到 Win-2 prep 才做，做完立刻有 A-A dry-run 可驗，風險更低。
 
 方案定案見 decisions Q17：A-S token-less（不變）、A-A→`-aa-`、A-A-RO→`-aaro-`，插在 placement 與 `rc` 之間；token 藏 topology 段 → **tests/common 三檔（common.sh/run.sh/summary-from-stdout.py）零改動**。
 
@@ -116,5 +118,7 @@ git status --short | grep tests/common   # 必須為空
 
 ## 執行順序建議
 
-S1（已完成 2591f33e）→ S3+S6+S7（已完成 ee3e014f）→ S4（已完成 8195c64d）→ S5（已完成 24a59df5，5d 待 YBDB smoke live 驗）→ S2+S2b（已完成 edd6d5b4，含補做 M1，19999 埠待 phase1 rebuild live 驗）→ S8（已完成 ae1a55f8）→ **S9（下一步，Win-2 prep：Win-1 三家 A-S 跑完、進 Win-2 前）**。
+S1（已完成 2591f33e）→ S3+S6+S7（已完成 ee3e014f）→ S4（已完成 8195c64d）→ S5（已完成 24a59df5，5d 待 YBDB smoke live 驗）→ S2+S2b（已完成 edd6d5b4，含補做 M1，19999 埠待 phase1 rebuild live 驗）→ S8（已完成 ae1a55f8）→ 額外修復 CRDB freeze 接線（d73cac65，2026-07-08 盤點 smoke 前置時發現）→ **S9（⏸ PENDING，Win-2 prep 才做）**。
+
+**S1-S8 + CRDB freeze 修復＝Fable 健檢全部靜態修復完成**。CRDB/YBDB smoke dry-run（Stage 1）現在可以開始，S9 不擋路。
 每個 PR 合併前在 spike/fix branch 上跑該步驗收命令並貼輸出。
