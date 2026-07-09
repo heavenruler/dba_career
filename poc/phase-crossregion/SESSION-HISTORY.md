@@ -732,3 +732,46 @@ Makefile fix6n 範圍，改動風險較低）。
 
 **Last updated**：2026-07-09 YBDB smoke 首跑抓到 2 bug（已修）+ 1 部署層存量 bug（待複驗），Stage 1 進度：TiDB+CRDB 完成，YBDB 仍待重跑。
 **Next review**：YBDB smoke 重跑，起手式先核對 master quorum 剛好 3 台 IDC；若過關則 3 家 DB Stage 1 全數完成。
+
+### 2026-07-09（續）YBDB smoke 二輪重跑 — 抓到 master quorum race 兩次復現 + catalog-wait 連環，中止未完成
+
+前一輪記錄「master quorum 存量 bug 待複驗」，本輪重建 VM 複驗，**兩次全新 phase1
+rebuild + phase4 重部署，master quorum race 皆 100% 重現**（分別是 `10.160.152.12`
+和 `10.160.152.11` 這兩台不同 GCP 節點搶到 master 名額）——確認是 ansible
+`yugabyte-vm6.yml` 的可重現 race，非偶發，且比原判斷更深：直接查 LEADER 的
+`yb-admin list_all_masters`（而非 FOLLOWER 的 HTTP API，其回報的是過期 peer 快取）
+才發現真正 raft quorum 一度只有 2 台（`.32` + 1 台 GCP），`.33`/`.34` 雖本機在跑
+yb-master process 卻從未真正 join 進共識。手動用 `yb-admin change_master_config
+ADD_SERVER`/`REMOVE_SERVER`（注意參數順序是 `<ip> <port> [<uuid>]`，uuid 在最後）
+修復至 `{.32,.33,.34}` 3 台 IDC-only，驗證 tablet 資料無遺失（RF=3 期間其他
+replica 撐著，純觸發 re-replicate）。
+
+修完 master quorum 後重跑，卡在 cold-reset 重啟 `.32`：發現 `/var/yugabyte/conf/
+yugabyted.conf` 的 `current_masters` JSON 快取欄位**不會因 yb-admin CLI 改真實
+raft membership 而自動更新**——`yugabyted start` 用這個過期快取值決定
+`--tserver_master_addrs`，把 `.32` 導向已被移除的 GCP 舊 master 位址，YSQL
+proxy 因此連不到正確 leader 而卡死初始化（port 5433 從未 bind）。手動 `sed`
+校正該欄位 + 重啟後解決。**已修**（`44d95c42` 的 `--join` fix 不足以解這個問題，
+需額外校正快取欄位，本次記錄為完整成因）。
+
+接著 `coldreset-ybdb.sh` 補完 `current_masters` 校正後，prepare 又炸
+`pq: timed out waiting for postgres backends to catch up`（06-19 記錄過的
+catalog-wait 歷史 bug 重演）——查出 `coldreset-ybdb.sh` 的 `YB_TSERVER_FLAGS`
+從未帶 `wait_for_ysql_backends_catalog_version_client_master_rpc_{timeout,
+margin}_ms`（ansible 部署時已幫 `.33`/`.34` 加，但 cold-reset 重啟 `.32` 時遺漏）。
+**已修**（`9f3306fe`，補上與 `.33`/`.34` 一致的 300000/600000 ms）。
+
+補完 flag 後同一 panic 又發生一次（15 分鐘才逾時，比之前久但仍炸），追查發現
+**`.33` 本機 postgres backend 完全死鎖**——連本機 `SELECT 1` 都逾時，且有一堆
+卡在 `[local] startup` 狀態、持續累積從未清掉的 backend process；但同時
+`list_all_tablet_servers` 顯示 `.33` 的 tserver 心跳完全正常。**成因未查完，
+user 於此時下令中止**（改走全拆 VM + 彙整交接文件，轉交 Fable 規劃）。
+
+**結論**：YBDB Stage 1 smoke 本輪仍未完成。3 個腳本修復已 commit（見下），但
+master quorum race 本身**未落回 playbook/fix6n**（2/2 復現率，下次大概率重演）；
+postgres 死鎖成因未查出，不建議直接重跑賭它不會再發生。完整分析、手動修復步驟、
+待查線索、建議路線見 `fable-refactor/ybdb-master-quorum-handoff.md`（交接文件，
+本次新增）。VM 已全拆（`phase9-tunnels-stop phase9-destroy`）。
+
+**Last updated**：2026-07-09 YBDB smoke 二輪重跑，抓到 master quorum race 復現 2/2 + catalog-wait 連環 3 層，postgres 死鎖成因未查完中止，交接 `fable-refactor/ybdb-master-quorum-handoff.md`。
+**Next review**：依交接文件建議路線處理 master quorum race 治本（ansible join 序列化）或治標（fix6n gate + current_masters 動態校正）；`.33` postgres 死鎖成因需先定位才能安全重跑 YBDB smoke。
