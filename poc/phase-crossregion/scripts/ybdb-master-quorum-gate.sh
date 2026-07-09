@@ -36,7 +36,7 @@ YB_ADMIN=/opt/yugabyte/bin/yb-admin
 EXEC_HOST="${EXEC_HOST:-172.24.40.32}"
 DUMP_DIR="${DUMP_DIR:-/tmp/ybdb-quorum-gate}"
 REPAIR_RESTART="${REPAIR_RESTART:-1}"
-SSH="ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
+SSH="ssh -n -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
 
 log() { echo "[quorum-gate $(date +%H:%M:%S)] $*"; }
 yb()  { $SSH root@"$EXEC_HOST" "timeout 90 $YB_ADMIN --master_addresses=$CANDIDATES $*" 2>&1; }
@@ -103,19 +103,11 @@ log "raft membership OK：3 台 IDC-only、1 LEADER"
 
 # ---- 5. 全 6 節點 current_masters 快取校正（防 cold-reset 復活舊 master 位址）----
 for ip in "${ALL_NODES[@]}"; do
-  out=$($SSH root@"$ip" "python3 -" <<PYEOF
-import json
-p = '/var/yugabyte/conf/yugabyted.conf'
-d = json.load(open(p))
-old = d.get('current_masters')
-if old == '$CANON':
-    print('already canonical')
-else:
-    d['current_masters'] = '$CANON'
-    json.dump(d, open(p, 'w'), indent=4)
-    print(old, '->', '$CANON')
-PYEOF
-  ) || { log "FAIL：$ip current_masters 校正失敗"; exit 1; }
+  out=$($SSH root@"$ip" "old=\$(grep -oE '\"current_masters\" *: *\"[^\"]*\"' /var/yugabyte/conf/yugabyted.conf | sed -E 's/.*: *\"([^\"]*)\"/\1/'); \
+    if [ \"\$old\" = '$CANON' ]; then echo 'already canonical'; else \
+    sed -i -E 's|\"current_masters\": *\"[^\"]*\"|\"current_masters\": \"$CANON\"|' /var/yugabyte/conf/yugabyted.conf && \
+    echo \"\$old -> $CANON\"; fi") \
+    || { log "FAIL：$ip current_masters 校正失敗"; exit 1; }
   log "  [$ip] current_masters: $out"
 done
 

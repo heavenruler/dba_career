@@ -1,0 +1,150 @@
+[yugabyted start] 2026-07-09 11:46:02,368 DEBUG:  | 0.1s | Value of saved_data - upgrade_in_progress. False
+[yugabyted start] 2026-07-09 11:46:02,368 DEBUG:  | 0.1s | Value of saved_data - catalog_upgrade_completed. False
+[yugabyted start] 2026-07-09 11:46:02,369 INFO:  | 0.1s | Found directory /opt/yugabyte/bin for file yb-tserver
+[yugabyted start] 2026-07-09 11:46:02,370 INFO:  | 0.1s | Found directory /opt/yugabyte/bin for file post_install.sh
+[yugabyted start] 2026-07-09 11:46:02,370 INFO:  | 0.1s | Running the post-installation script /opt/yugabyte/bin/post_install.sh (may be a no-op)
+[yugabyted start] 2026-07-09 11:46:02,401 INFO:  | 0.1s | Successfully ran the post-installation script.
+[yugabyted start] 2026-07-09 11:46:02,402 INFO:  | 0.1s | About to start master with cmd /opt/yugabyte/bin/yb-master --enable_automatic_tablet_splitting=false --placement_cloud=104 --placement_region=idc --placement_zone=vlan241 --yb_enable_read_committed_isolation=true --stop_on_parent_termination --undefok=stop_on_parent_termination --fs_data_dirs=/var/yugabyte/data --webserver_interface=172.24.40.33 --metrics_snapshotter_tserver_metrics_whitelist=handler_latency_yb_tserver_TabletServerService_Read_count,handler_latency_yb_tserver_TabletServerService_Write_count,handler_latency_yb_tserver_TabletServerService_Read_sum,handler_latency_yb_tserver_TabletServerService_Write_sum,disk_usage,cpu_usage,node_up --yb_num_shards_per_tserver=1 --ysql_num_shards_per_tserver=1 --placement_cloud=cloud1 --placement_region=datacenter1 --placement_zone=rack1 --use_memory_defaults_optimized_for_ysql=true --rpc_bind_addresses=172.24.40.33:7100 --server_broadcast_addresses=172.24.40.33:7100 --replication_factor=1 --server_dump_info_path=/var/yugabyte/data/master-info --master_enable_metrics_snapshotter=true --webserver_port=7000 --instance_uuid_override=248b9a9b080c4eb3b371bed9a887ca0e --enforce_tablet_replica_limits=true --split_respects_tablet_replica_limits=true
+[yugabyted start] 2026-07-09 11:46:02,404 INFO:  | 0.1s | master started running with PID 4224.
+[yugabyted start] 2026-07-09 11:46:02,404 INFO:  | 0.1s | Waiting for master
+[yugabyted start] 2026-07-09 11:46:02,406 DEBUG:  | 0.1s | Tserver 172.24.40.32 returned the following set of the current masters 172.24.40.32:7100.
+[yugabyted start] 2026-07-09 11:46:02,406 INFO:  | 0.1s | run_process: cmd: ['/opt/yugabyte/bin/yb-admin', '--master_addresses', '172.24.40.32:7100', 'list_all_masters']
+[yugabyted start] 2026-07-09 11:46:02,460 INFO:  | 0.2s | run_process returned 0: 
+OUT >>
+Master UUID                      	RPC Host/Port        	State    	Role 	Broadcast Host/Port 
+a1f8fb44914d43378b9b8706f1c1b9aa 	172.24.40.32:7100    	ALIVE    	LEADER 	172.24.40.32:7100   
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:46:02,461 INFO:  | 0.2s | run_process: cmd: ['/opt/yugabyte/bin/yb-admin', '--init_master_addrs', '172.24.40.32:7100', 'change_master_config', 'ADD_SERVER', '172.24.40.33', '7100']
+[yugabyted start] 2026-07-09 11:46:02,461 INFO:  | 0.2s | Running ['/opt/yugabyte/bin/yb-admin', '--init_master_addrs', '172.24.40.32:7100', 'change_master_config', 'ADD_SERVER', '172.24.40.33', '7100']. Total retries: 10, Timeout: 30, Try count: 1
+[yugabyted start] 2026-07-09 11:46:02,461 INFO:  | 0.2s | run_process: cmd: ['/opt/yugabyte/bin/yb-admin', '--init_master_addrs', '172.24.40.32:7100', 'change_master_config', 'ADD_SERVER', '172.24.40.33', '7100']
+[yugabyted start] 2026-07-09 11:46:02,519 INFO:  | 0.2s | run_process returned 0: 
+OUT >>
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:46:02,519 INFO:  | 0.2s | run_process: cmd: ['/opt/yugabyte/bin/yb-admin', '--master_addresses', '172.24.40.32:7100', 'list_all_masters']
+[yugabyted start] 2026-07-09 11:46:02,563 INFO:  | 0.3s | run_process returned 0: 
+OUT >>
+Master UUID                      	RPC Host/Port        	State    	Role 	Broadcast Host/Port 
+a1f8fb44914d43378b9b8706f1c1b9aa 	172.24.40.32:7100    	ALIVE    	LEADER 	172.24.40.32:7100   
+248b9a9b080c4eb3b371bed9a887ca0e 	172.24.40.33:7100    	ALIVE    	NON_PARTICIPANT 	172.24.40.33:7100   
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:46:02,563 INFO:  | 0.3s | Completed setup and wait for master.
+[yugabyted start] 2026-07-09 11:46:02,563 INFO:  | 0.3s | Got full master addrs list: ['172.24.40.33:7100', '172.24.40.32:7100']
+[yugabyted start] 2026-07-09 11:46:02,563 INFO:  | 0.3s | Old master flag is: ['--tserver_master_addrs=172.24.40.32:7100,172.24.40.33:7100'] and new master flag is: --tserver_master_addrs=172.24.40.33:7100,172.24.40.32:7100
+[yugabyted start] 2026-07-09 11:46:02,563 INFO:  | 0.3s | About to start tserver with cmd /opt/yugabyte/bin/yb-tserver --stop_on_parent_termination --undefok=stop_on_parent_termination --fs_data_dirs=/var/yugabyte/data --webserver_interface=172.24.40.33 --metrics_snapshotter_tserver_metrics_whitelist=handler_latency_yb_tserver_TabletServerService_Read_count,handler_latency_yb_tserver_TabletServerService_Write_count,handler_latency_yb_tserver_TabletServerService_Read_sum,handler_latency_yb_tserver_TabletServerService_Write_sum,disk_usage,cpu_usage,node_up --yb_num_shards_per_tserver=1 --ysql_num_shards_per_tserver=1 --placement_cloud=cloud1 --placement_region=datacenter1 --placement_zone=rack1 --use_memory_defaults_optimized_for_ysql=true --rpc_bind_addresses=172.24.40.33:9100 --server_broadcast_addresses=172.24.40.33:9100 --cql_proxy_bind_address=172.24.40.33:9042 --server_dump_info_path=/var/yugabyte/data/tserver-info --start_pgsql_proxy --pgsql_proxy_bind_address=172.24.40.33:5433 --tserver_enable_metrics_snapshotter=true --metrics_snapshotter_interval_ms=11000 --webserver_port=9000 --instance_uuid_override=9c4e6c0b6b3944d89a0bb523e009b6cd --start_redis_proxy=false --placement_uuid=37303801-0862-4175-a83a-6320262f528e --memory_limit_hard_bytes=11811160064 --db_block_cache_size_percentage=50 --durable_wal_write=true --require_durable_wal_write=true --yb_enable_read_committed_isolation=true --ysql_enable_auth=false --ysql_enable_auto_analyze=false --ysql_num_shards_per_tserver=1 --enable_automatic_tablet_splitting=false --wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=300000 --wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=600000 --placement_cloud=104 --placement_region=idc --placement_zone=vlan241 --ysql_pg_conf_csv=yb_enable_cbo=on --tserver_master_addrs=172.24.40.33:7100,172.24.40.32:7100
+[yugabyted start] 2026-07-09 11:46:02,566 INFO:  | 0.3s | tserver started running with PID 4288.
+[yugabyted start] 2026-07-09 11:46:02,567 INFO:  | 0.3s | Waiting for tserver ...
+[yugabyted start] 2026-07-09 11:46:02,567 INFO:  | 0.3s | run_process: cmd: ['/opt/yugabyte/bin/yb-admin', '--master_addresses', '172.24.40.33:7100,172.24.40.32:7100', 'list_all_tablet_servers']
+[yugabyted start] 2026-07-09 11:46:02,619 INFO:  | 0.3s | run_process returned 0: 
+OUT >>
+Tablet Server UUID               RPC Host/Port Heartbeat delay Status   Reads/s  Writes/s Uptime   SST total size  SST uncomp size SST #files      Memory   Broadcast Host/Port 
+4b28b26fe00e4d13a955a01d8c6ee709 172.24.40.32:9100 10.59s          ALIVE    0.00     0.00     0        0 B             0 B             0               0 B      172.24.40.32:9100
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:46:03,119 INFO:  | 0.8s | run_process: cmd: ['/opt/yugabyte/bin/yb-admin', '--master_addresses', '172.24.40.33:7100,172.24.40.32:7100', 'list_all_tablet_servers']
+[yugabyted start] 2026-07-09 11:46:03,240 INFO:  | 0.9s | run_process returned 0: 
+OUT >>
+Tablet Server UUID               RPC Host/Port Heartbeat delay Status   Reads/s  Writes/s Uptime   SST total size  SST uncomp size SST #files      Memory   Broadcast Host/Port 
+4b28b26fe00e4d13a955a01d8c6ee709 172.24.40.32:9100 11.21s          ALIVE    0.00     0.00     0        0 B             0 B             0               0 B      172.24.40.32:9100
+9c4e6c0b6b3944d89a0bb523e009b6cd 172.24.40.33:9100 0.60s           ALIVE    0.00     0.00     0        0 B             0 B             0               0 B      172.24.40.33:9100
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:46:03,240 INFO:  | 0.9s | Found tserver uuid 9c4e6c0b6b3944d89a0bb523e009b6cd in list of tserver uuids ['4b28b26fe00e4d13a955a01d8c6ee709', '9c4e6c0b6b3944d89a0bb523e009b6cd'].
+[yugabyted start] 2026-07-09 11:46:03,240 INFO:  | 0.9s | Completed waiting for tserver.
+[yugabyted start] 2026-07-09 11:46:03,240 INFO:  | 0.9s | run_process: cmd: ['/opt/yugabyte/bin/yb-admin', '--master_addresses', '172.24.40.33:7100,172.24.40.32:7100', 'get_universe_config']
+[yugabyted start] 2026-07-09 11:46:03,281 INFO:  | 1.0s | run_process returned 0: 
+OUT >>
+{"version":1,"replicationInfo":{"liveReplicas":{"numReplicas":1,"placementBlocks":[{"cloudInfo":{"placementCloud":"cloud1","placementRegion":"datacenter1","placementZone":"rack1"},"minNumReplicas":1}],"placementUuid":"MzczMDM4MDEtMDg2Mi00MTc1LWE4M2EtNjMyMDI2MmY1Mjhl"}},"clusterUuid":"28e42e3a-12e7-41bf-8af3-5cfa2edea5ad","universeUuid":"1dd33a5f-c12c-4ea5-970d-352ce5eafdbf"}
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:46:03,374 INFO:  | 1.1s | ✅ Node joined a running cluster with UUID 28e42e3a-12e7-41bf-8af3-5cfa2edea5ad
+[yugabyted start] 2026-07-09 11:46:03,375 INFO:  | 1.1s | Found directory /opt/yugabyte/bin for file yugabyted-ui
+[yugabyted start] 2026-07-09 11:46:03,375 INFO:  | 1.1s | About to start yugabyted-ui with cmd /opt/yugabyte/bin/yugabyted-ui -database_host=172.24.40.33 -master_ui_port=7000 -tserver_ui_port=9000 -data_dir=/var/yugabyte/data -conf_file=/var/yugabyte/conf/yugabyted.conf -warnings=transparent_hugepages|insecure -ysql_port=5433 -ycql_port=9042
+[yugabyted start] 2026-07-09 11:46:03,378 INFO:  | 1.1s | yugabyted-ui started running with PID 4404.
+[yugabyted start] 2026-07-09 11:46:03,477 DEBUG:  | 1.2s | Tserver 172.24.40.32 returned the following set of the current masters 172.24.40.32:7100.
+[yugabyted start] 2026-07-09 11:46:03,477 INFO:  | 1.2s | Master address list updated, new list: 172.24.40.32:7100
+[yugabyted start] 2026-07-09 11:46:03,491 INFO:  | 1.2s | Found directory /opt/yugabyte/postgres/bin for file pg_isready
+[yugabyted start] 2026-07-09 11:46:03,491 INFO:  | 1.2s | run_process: cmd: ['/opt/yugabyte/postgres/bin/pg_isready', '-h', '172.24.40.33', '-p', '5433']
+[yugabyted start] 2026-07-09 11:46:03,491 INFO:  | 1.2s | Running ['/opt/yugabyte/postgres/bin/pg_isready', '-h', '172.24.40.33', '-p', '5433']. Total retries: 10, Timeout: 5, Try count: 1
+[yugabyted start] 2026-07-09 11:46:03,491 INFO:  | 1.2s | run_process: cmd: ['/opt/yugabyte/postgres/bin/pg_isready', '-h', '172.24.40.33', '-p', '5433']
+[yugabyted start] 2026-07-09 11:46:03,494 INFO:  | 1.2s | run_process returned 2: 
+OUT >>
+172.24.40.33:5433 - no response
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:46:03,694 INFO:  | 1.4s | Running ['/opt/yugabyte/postgres/bin/pg_isready', '-h', '172.24.40.33', '-p', '5433']. Total retries: 10, Timeout: 5, Try count: 2
+[yugabyted start] 2026-07-09 11:46:03,695 INFO:  | 1.4s | run_process: cmd: ['/opt/yugabyte/postgres/bin/pg_isready', '-h', '172.24.40.33', '-p', '5433']
+[yugabyted start] 2026-07-09 11:46:03,698 INFO:  | 1.4s | run_process returned 2: 
+OUT >>
+172.24.40.33:5433 - no response
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:46:03,899 INFO:  | 1.6s | Running ['/opt/yugabyte/postgres/bin/pg_isready', '-h', '172.24.40.33', '-p', '5433']. Total retries: 10, Timeout: 5, Try count: 3
+[yugabyted start] 2026-07-09 11:46:03,899 INFO:  | 1.6s | run_process: cmd: ['/opt/yugabyte/postgres/bin/pg_isready', '-h', '172.24.40.33', '-p', '5433']
+[yugabyted start] 2026-07-09 11:46:03,902 INFO:  | 1.6s | run_process returned 2: 
+OUT >>
+172.24.40.33:5433 - no response
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:46:04,102 INFO:  | 1.8s | Running ['/opt/yugabyte/postgres/bin/pg_isready', '-h', '172.24.40.33', '-p', '5433']. Total retries: 10, Timeout: 5, Try count: 4
+[yugabyted start] 2026-07-09 11:46:04,102 INFO:  | 1.8s | run_process: cmd: ['/opt/yugabyte/postgres/bin/pg_isready', '-h', '172.24.40.33', '-p', '5433']
+[yugabyted start] 2026-07-09 11:46:04,292 INFO:  | 2.0s | run_process returned 0: 
+OUT >>
+172.24.40.33:5433 - accepting connections
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:46:04,346 INFO:  | 2.0s | run_process: cmd: ['/opt/yugabyte/bin/yb-admin', '--master_addresses', '172.24.40.32:7100', 'get_universe_config']
+[yugabyted start] 2026-07-09 11:46:04,384 INFO:  | 2.1s | run_process returned 0: 
+OUT >>
+{"version":1,"replicationInfo":{"liveReplicas":{"numReplicas":1,"placementBlocks":[{"cloudInfo":{"placementCloud":"cloud1","placementRegion":"datacenter1","placementZone":"rack1"},"minNumReplicas":1}],"placementUuid":"MzczMDM4MDEtMDg2Mi00MTc1LWE4M2EtNjMyMDI2MmY1Mjhl"}},"clusterUuid":"28e42e3a-12e7-41bf-8af3-5cfa2edea5ad","universeUuid":"1dd33a5f-c12c-4ea5-970d-352ce5eafdbf"}
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:46:04,448 INFO:  | 2.1s | Gathering start callhome payload
+[yugabyted start] 2026-07-09 11:46:04,448 INFO:  | 2.1s | Gathering 'heartbeat_status' callhome payload
+[yugabyted start] 2026-07-09 11:46:04,449 INFO:  | 2.1s | thread-uml: current masters ['172.24.40.32:7100']
+[yugabyted start] 2026-07-09 11:46:04,449 INFO:  | 2.1s | Trying to get cluster creation date from http://172.24.40.32:15433/api/created_on (Timeout=30)
+[yugabyted start] 2026-07-09 11:46:04,450 DEBUG:  | 2.1s | Tserver 172.24.40.32 returned the following set of the current masters 172.24.40.32:7100.
+[yugabyted start] 2026-07-09 11:46:04,452 INFO:  | 2.1s | Got response from http://172.24.40.32:15433/api/created_on: 1783568752
+[yugabyted start] 2026-07-09 11:46:04,514 INFO:  | 2.2s | Found directory /opt/yugabyte/bin for file yb-master
+[yugabyted start] 2026-07-09 11:46:04,514 INFO:  | 2.2s | Found directory /opt/yugabyte/bin for file yb-tserver
+[yugabyted start] 2026-07-09 11:46:04,514 INFO:  | 2.2s | Found directory /opt/yugabyte for file gflag_allowlist.txt
+[yugabyted start] 2026-07-09 11:46:04,515 INFO:  | 2.2s | Filtered 25 master flags: 8 allowed, 17 filtered out
+[yugabyted start] 2026-07-09 11:46:04,515 INFO:  | 2.2s | Filtered 39 tserver flags: 10 allowed, 29 filtered out
+[yugabyted start] 2026-07-09 11:46:04,515 INFO:  | 2.2s | Finished gathering 'start' callhome payload, sending to diagnostics
+[yugabyted start] 2026-07-09 11:46:04,515 INFO:  | 2.2s | Preparing callhome event 'start' for diagnostics
+[yugabyted start] 2026-07-09 11:47:04,451 INFO:  | 62.1s | thread-uml: current masters ['172.24.40.32:7100']
+[yugabyted start] 2026-07-09 11:47:04,452 DEBUG:  | 62.1s | Tserver 172.24.40.32 returned the following set of the current masters 10.160.152.11:7100,10.160.152.13:7100,172.24.40.32:7100.
+[yugabyted start] 2026-07-09 11:47:04,452 INFO:  | 62.1s | thread-uml: master list updated, old list: ['172.24.40.32:7100'] new list: ['10.160.152.11:7100', '10.160.152.13:7100', '172.24.40.32:7100']
+[yugabyted start] 2026-07-09 11:47:04,452 INFO:  | 62.1s | run_process: cmd: ['/opt/yugabyte/bin/yb-ts-cli', '--server_address=172.24.40.33:9100', 'set_flag', 'tserver_master_addrs', '10.160.152.11:7100,10.160.152.13:7100,172.24.40.32:7100', '--force']
+[yugabyted start] 2026-07-09 11:47:04,488 INFO:  | 62.2s | run_process returned 0: 
+OUT >>
+
+<< ERR >>
+
+<<
+[yugabyted start] 2026-07-09 11:47:04,986 INFO:  | 62.7s | Finished gathering 'heartbeat_status' callhome payload, sending to diagnostics
+[yugabyted start] 2026-07-09 11:47:04,986 INFO:  | 62.7s | Preparing callhome event 'heartbeat_status' for diagnostics
