@@ -36,7 +36,7 @@ if [[ "${TOPOLOGY:-}" =~ ^k8s- ]]; then
   die "YBDB NodePort $K3S_HOST:$DB_PORT not reachable post-cold-reset"
 fi
 
-YB_TSERVER_FLAGS="memory_limit_hard_bytes=11811160064,db_block_cache_size_percentage=50,durable_wal_write=true,require_durable_wal_write=true,yb_enable_read_committed_isolation=true,ysql_enable_auth=false,ysql_enable_auto_analyze=false"
+YB_TSERVER_FLAGS="memory_limit_hard_bytes=11811160064,db_block_cache_size_percentage=50,durable_wal_write=true,require_durable_wal_write=true,yb_enable_read_committed_isolation=true,ysql_enable_auth=false,ysql_enable_auto_analyze=false,wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=300000,wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=600000"
 
 # HAProxy 等 proxy 拓樸：db-host 是 proxy（無 yugabyte user）；cold-reset 必須
 # 走實 cluster member。advertise_address 已硬寫 .32，因此 ssh 也跟著 .32。
