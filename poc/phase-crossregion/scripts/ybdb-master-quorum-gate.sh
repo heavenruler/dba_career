@@ -13,9 +13,16 @@
 #   全 6 節點 yugabyted.conf 的 current_masters 快取欄位——該欄位不會因 yb-admin
 #   改了真實 raft membership 而自動更新，若不校正，之後任何 yugabyted stop/start
 #   （coldreset-ybdb.sh 正是）會用舊值把 tserver 導向已不存在的 master 位址，
-#   YSQL proxy 卡死初始化（07-09 實測）。最後對全 6 節點做 YSQL SELECT 1 健檢
-#   （抓 postgres backend 死鎖類問題），預設對 fail 節點做一次 yugabyted 重啟
-#   修復再複檢，仍 fail 則 fail-closed。
+#   YSQL proxy 卡死初始化（07-09 實測）。
+#
+#   conf 校正本身只影響「下次 restart」——從部署以來持續運行、從未重啟過的
+#   process（.33/.34）仍帶著部署當下的殘缺 --tserver_master_addrs（07-09
+#   Stage B 實測：各自缺了 1 台其他 IDC peer，疑為原始「.33 postgres 死鎖」
+#   懸案的真正成因）。故再逐台核對 live tserver_master_addrs 是否與 canonical
+#   一致，缺漏就重啟該台一次（一次僅停 1 台，masters 2/3 majority 不失）。
+#
+#   最後對全 6 節點做 YSQL SELECT 1 健檢，fail 節點先留證據（postgresql-*.log +
+#   backend 清單）再做一次 yugabyted 重啟修復複檢，仍 fail 則 fail-closed。
 #
 # 跑在 .31（jump host；.31 → 全 6 節點 root ssh 已 prime）。冪等：quorum 已正確
 # 時跳過手術，只做 conf 校正 + 健檢。
@@ -109,6 +116,38 @@ for ip in "${ALL_NODES[@]}"; do
     echo \"\$old -> $CANON\"; fi") \
     || { log "FAIL：$ip current_masters 校正失敗"; exit 1; }
   log "  [$ip] current_masters: $out"
+done
+
+# ---- 5.5. 全 6 節點 tserver_master_addrs live flag 校驗（07-09 Stage B 實測發現：
+#      conf 校正只影響「下次 restart」，從未重啟過的既有 process（部署以來持續運行的
+#      .33/.34）仍帶著部署當下的殘缺清單——各自缺了 1 台其他 IDC peer，疑為原始
+#      「.33 postgres 死鎖」懸案的真正成因：leader 一旦漂到自己缺列的那台，
+#      該 tserver 就找不到 leader 而卡死。逐台檢查+缺就重啟一次（IDC 一次僅停 1 台，
+#      2/3 majority 不失；GCP 無 master 角色，restart 不影響 quorum）----
+tserver_master_addrs_of() {
+  $SSH root@"$1" "ps aux | grep yb-tserver | grep -v grep | grep -oE 'tserver_master_addrs=[^ ]*'" 2>/dev/null \
+    | sed -E 's/^tserver_master_addrs=//'
+}
+sorted_csv() { echo "$1" | tr ',' '\n' | sort | tr '\n' ','; }
+join_target_for() { [[ "$1" == "172.24.40.32" ]] && echo "172.24.40.33" || echo "172.24.40.32"; }
+
+canon_sorted=$(sorted_csv "$CANON")
+for ip in "${ALL_NODES[@]}"; do
+  live_sorted=$(sorted_csv "$(tserver_master_addrs_of "$ip")")
+  if [[ "$live_sorted" == "$canon_sorted" ]]; then
+    log "  [$ip] tserver_master_addrs OK"
+    continue
+  fi
+  jt=$(join_target_for "$ip")
+  log "  [$ip] tserver_master_addrs 缺漏（live=[$(tserver_master_addrs_of "$ip")]），restart 讀正確 conf（join=$jt）"
+  $SSH root@"$ip" "runuser -u yugabyte -- yugabyted stop --base_dir=/var/yugabyte" 2>&1 | tail -2 | sed 's/^/    /' || true
+  sleep 3
+  $SSH root@"$ip" "runuser -u yugabyte -- yugabyted start --base_dir=/var/yugabyte --advertise_address=$ip --join=$jt" 2>&1 | tail -3 | sed 's/^/    /' || true
+  sleep 5
+  live2_sorted=$(sorted_csv "$(tserver_master_addrs_of "$ip")")
+  [[ "$live2_sorted" == "$canon_sorted" ]] \
+    || { log "FAIL：$ip restart 後 tserver_master_addrs 仍不對（live=[$(tserver_master_addrs_of "$ip")]）"; exit 1; }
+  log "  [$ip] tserver_master_addrs 修復後 OK"
 done
 
 # ---- 6. 全 6 節點 YSQL 健檢（SELECT 1；抓 postgres backend 死鎖類問題）----
