@@ -389,6 +389,8 @@ phase4-ybdb-fix6n:
 	@echo "    (revisit if Plan B placement still fails; restart logic moved to scripts/fix6n-gcp-restart.sh if needed)"
 	@echo "==> sleep 60 (waiting tserver register)"
 	sleep 60
+	@echo "==> master-quorum gate: enforce 3-IDC-only raft + current_masters conf 校正 + 6/6 YSQL 健檢 (fail-closed)"
+	ssh $(TPCC_CLIENT) "bash $(CROSS_SCRIPTS_REMOTE)/ybdb-master-quorum-gate.sh"
 	@echo "==> remove DEAD tservers from master metadata (best practice: blacklist+remove+unblacklist)"
 	@ssh root@$(IDC_NODES_HEAD) ' \
 	  MASTERS=$(YB_MASTER_ADDR); \
