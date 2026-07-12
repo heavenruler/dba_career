@@ -919,3 +919,8 @@ GCP store 出現**——證實 P-A leader pinning 全程正確，先前的「GCP
 **Next review**：若後續要用本輪 TiDB cell（`20260712T164221+0800`）取代 07-03
 baseline 需更新 `results/x-cross/pipeline-log.md` §2.3；CRDB/YBDB 尚未有同批次
 重跑版本，跨家精確比較仍待补齊。
+
+**（07-12 補記）**：依上述四份數據（TiDB 首輪不採用、CRDB/YBDB 首輪 + TiDB 重跑採用）
+產出 X-CROSS 階段結案報告雛形 `XCROSS-CLOSING-REPORT-DRAFT.md`——全實測數據、
+參數口徑逐項連結原始採樣（summary.json 欄位 / gate / freeze-state / wan-probe /
+leader-snapshot），效度邊界含批次差與 YBDB read-replica 架構語意差異。
