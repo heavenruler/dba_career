@@ -828,3 +828,58 @@ tserver_master_addrs live flag 校驗（解交接問題 3 懸案）。
 
 **Last updated**：2026-07-09 YBDB smoke 執行交辦測試計畫 Stage 0→A→B→C 全過，Stage 1 三家 DB（TiDB+CRDB+YBDB）全數完成。
 **Next review**：Win-1 CRDB/YBDB W=128 前記得移除本輪 smoke 遺留的低 warehouse 測試資料；master-quorum gate 已驗證可重複使用於後續每次 YBDB deploy，往後 phase4-ybdb-fix6n 皆會自動套用不需再手動介入。
+
+### 2026-07-11/12 W=128×N=5×3-DB 正式測試（`phase-crossregion-w128-suite`）首輪，抓到 TiDB t128 tpmC 異常 + leader-snapshot SQL 少 tpcc 過濾的舊 bug
+
+Stage 1 三家 smoke 全過（07-09）後，依 NEXT-STEPS Path 1.2 進入正式 W=128 測試。
+`make phase-crossregion-w128-suite`（TiDB→CRDB→YBDB 同一 VM 生命週期/同一時間窗）
+一次跑完，TPCC_TS=`20260711T215200+0800`，總耗時約 11h17m。
+
+**結果總覽**（t128 主水位）：
+
+| DB | t16 | t32 | t64 | t128 | 全程交易錯誤 |
+|---|---:|---:|---:|---:|---:|
+| TiDB | 2066.3 | 4072.7 | 7425.6 (CV6.3%) | **7576.0 (CV 102.2%)** | 0/1,175,475 |
+| CRDB | 8776.9 | 9963.9 | 10249.7 (CV2.0%) | 10453.5 (CV5.2%) | 0/2,189,931 |
+| YBDB | 7836.8 | 8991.4 | 9727.0 (CV8.9%) | 9581.4 (CV8.6%) | 0/2,000,524 |
+
+CRDB/YBDB 皆正常收斂（CV<10%）；**TiDB t128 五輪 tpmC = `13601.5, 6513.7,
+6030.0, 5855.2, 5879.5`**——round 1 對齊 07-03 baseline 量級（16,808.6 同級距），
+round 2 起腰斬到 ~6000 並穩定盤整，CV 102.2%，不能視為合格的正式 cell。
+
+**排查過程（重要：第一版懷疑「leader 漂到 GCP」是誤判，已修正）**：
+
+1. 一開始比對 post-run leader-snapshot（`leader-snapshot/tidb-region-leaders.txt`）
+   看到 GCP store 反而 leader 數較多（GCP 13 vs IDC 10），懷疑是 PD 在 t128 高負載下
+   把 leader 均衡到 GCP、P-A policy 只在 prepare 時驗一次沒有持續校正——**這個懷疑事後
+   證實是誤判**。
+2. 回頭讀 `Makefile` 才發現：phase6-tidb-smoke 裡有兩條 SQL，一條是跑完全程後的
+   **leader gate**（`phase-crossregion/Makefile:472`，有 `JOIN tikv_region_status ...
+   WHERE r.DB_NAME='tpcc'`，正確只算 tpcc 表的 leader），另一條才是 **leader-snapshot**
+   （`:480-488`，少了 `DB_NAME='tpcc'` 過濾，整個 cluster 的 region 都算進去）。
+3. 查 pipeline log：leader gate 在跑完全部 5 輪×4 檔 threads 之後**第一次輪詢就命中
+   100%**（`TiDB tpcc region leaders 100% on IDC`，沒有任何「XX/30 leaders on IDC: NN%」
+   的中間輸出），代表 tpcc 表的 leader 從頭到尾都沒漂移。leader-snapshot 顯示的 GCP
+   leader 數，其實是系統 schema／未套 placement policy 的其他 region 的 leader
+   （PD 預設對這些 region 做全域 leader 均衡，本來就正常分布到 GCP store，跟 tpcc
+   資料無關）——**不是真正的漂移，是量測腳本本身的 schema bug 造成的誤導訊號**。
+4. 已修正 `Makefile:480-488` 補上 `JOIN tikv_region_status` + `WHERE r.DB_NAME='tpcc'`
+   過濾，跟 gate 查詢一致，避免下次再被系統表雜訊誤導。
+
+**t128 tpmC 腰斬的真正成因仍未確認**：go-tpc 全程無 error/retry/warn，round 1→2 是
+乾淨的 step-function 下降後盤整（不是漸進式衰退），推測是 t128 高並發持續 25 分鐘
+下 TiKV compaction / write-stall 或 buffer pool 由 round 1 殘留的暖態退回真實穩態
+（round 1 數字才是異常偏高，而非 round 2-5 異常偏低），但因 VM 已於 phase9 拆除
+無法回頭查 TiKV metrics 佐證，需靠重跑驗證是否可重現。
+
+**下一步**：重跑一次「只跑 TiDB」的 W=128（同 4 檔 threads、5 rounds、20min warmup，
+不含 CRDB/YBDB，省下 ~7hr），確認 t128 CV 是否恢復正常（<10%）。若可重現，代表
+是需要處理的容量/調校問題（TiKV compaction 或 rate-limiter 設定）；若這次正常，
+判定為單次環境雜訊（例如剛 rebuild 的 VM 磁碟尚未進入穩態），07-03 的
+`16,808.6 tpmC / CV2.4%` 仍是有效的正式 TiDB baseline 直到有新的乾淨 cell 取代。
+
+**Last updated**：2026-07-12 W=128 三家正式測試首輪完成，CRDB/YBDB 收斂正常，
+TiDB t128 CV 異常但排查後排除「leader 漂到 GCP」的誤判（leader-snapshot SQL
+schema bug 已修正），真正成因待重跑驗證。
+**Next review**：TiDB-only W=128 重跑結果出爐後，回填此節判定 t128 異常是否可重現；
+若可重現需另開 TiKV compaction/write-stall 調校議題。

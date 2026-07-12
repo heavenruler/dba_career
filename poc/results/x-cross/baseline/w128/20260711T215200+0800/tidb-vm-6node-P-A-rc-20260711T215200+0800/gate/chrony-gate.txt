@@ -1,0 +1,23 @@
+=== client (.31) chrony tracking ===
+Reference ID    : AC13FE07 (172.19.254.7)
+Stratum         : 7
+Ref time (UTC)  : Sat Jul 11 14:08:24 2026
+System time     : 0.000022816 seconds slow of NTP time
+Last offset     : -0.000000325 seconds
+RMS offset      : 0.000024354 seconds
+Frequency       : 7.602 ppm slow
+Residual freq   : -0.000 ppm
+Skew            : 0.094 ppm
+Root delay      : 0.037589230 seconds
+
+=== db-host (172.24.40.32) chrony tracking ===
+Reference ID    : AC13FE07 (172.19.254.7)
+Stratum         : 7
+Ref time (UTC)  : Sat Jul 11 14:08:25 2026
+System time     : 0.000040755 seconds fast of NTP time
+Last offset     : -0.000011360 seconds
+RMS offset      : 0.000741872 seconds
+Frequency       : 8.927 ppm slow
+Residual freq   : -0.056 ppm
+Skew            : 6.020 ppm
+Root delay      : 0.037482545 seconds

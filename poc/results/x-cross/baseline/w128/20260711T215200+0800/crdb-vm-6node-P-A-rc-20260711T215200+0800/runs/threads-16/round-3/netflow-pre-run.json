@@ -1,0 +1,39 @@
+{
+  "label": "pre-run",
+  "timestamp": "2026-07-11T19:22:26Z",
+  "hosts": {
+    "172.24.40.31": {
+      "traffic_bytes": {"iptables_to_gcp_bytes": 820188931833, "iptables_to_idc_bytes": 1397249383944, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.32": {
+      "26257": {"idc": 8, "gcp": 9, "other": 20},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 112677988140, "iptables_to_idc_bytes": 112159620146, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.33": {
+      "26257": {"idc": 8, "gcp": 10, "other": 18},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 49524521052, "iptables_to_idc_bytes": 52274872937, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.34": {
+      "26257": {"idc": 8, "gcp": 10, "other": 17},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 67761806807, "iptables_to_idc_bytes": 104094436509, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.11": {
+      "26257": {"idc": 11, "gcp": 8, "other": 15},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 24662165845, "iptables_to_idc_bytes": 3081215086, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.12": {
+      "26257": {"idc": 10, "gcp": 6, "other": 20},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 29569912415, "iptables_to_idc_bytes": 1310587464, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.13": {
+      "26257": {"idc": 10, "gcp": 8, "other": 16},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 9270900706, "iptables_to_idc_bytes": 1702871309, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.14": {
+      "traffic_bytes": {"iptables_to_gcp_bytes": 624628854, "iptables_to_idc_bytes": 11927853, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.15": {
+      "traffic_bytes": {"iptables_to_gcp_bytes": 620073004, "iptables_to_idc_bytes": 8570020, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    }
+  }
+}

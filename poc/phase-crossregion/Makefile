@@ -475,7 +475,7 @@ phase6-tidb-smoke:
 	  sleep 10; \
 	done; \
 	[ "$$converged" = "1" ] || { echo "gate FAIL: TiDB tpcc leaders not 100% IDC after 5min"; exit 1; }
-	@echo "==> phase6-tidb leader-snapshot (post-prepare placement verification)"
+	@echo "==> phase6-tidb leader-snapshot (post-run tpcc-scoped placement verification)"
 	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "mkdir -p $$ROOT/leader-snapshot && \
 	  mysql -h $(TIDB_HOST) -P $(TIDB_PORT) -u root -e \"SELECT \
@@ -483,7 +483,8 @@ phase6-tidb-smoke:
 	    COUNT(*) as leader_count \
 	    FROM information_schema.tikv_region_peers p \
 	    JOIN information_schema.tikv_store_status s ON p.STORE_ID=s.STORE_ID \
-	    WHERE p.IS_LEADER=1 \
+	    JOIN information_schema.tikv_region_status r ON p.REGION_ID=r.REGION_ID \
+	    WHERE p.IS_LEADER=1 AND r.DB_NAME='tpcc' \
 	    GROUP BY p.STORE_ID, s.ADDRESS, s.STORE_STATE_NAME, s.LABEL \
 	    ORDER BY leader_count DESC;\" > $$ROOT/leader-snapshot/tidb-region-leaders.txt 2>&1" || true
 	@echo "==> [end]   phase6-tidb-smoke at $$(date +%Y-%m-%dT%H:%M:%S%z)"
