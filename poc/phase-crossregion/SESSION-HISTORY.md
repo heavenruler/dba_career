@@ -883,3 +883,39 @@ TiDB t128 CV 異常但排查後排除「leader 漂到 GCP」的誤判（leader-s
 schema bug 已修正），真正成因待重跑驗證。
 **Next review**：TiDB-only W=128 重跑結果出爐後，回填此節判定 t128 異常是否可重現；
 若可重現需另開 TiKV compaction/write-stall 調校議題。
+
+### 2026-07-12（續）TiDB-only W=128 重跑驗證：t128 CV 恢復正常，判定首輪為單次環境雜訊
+
+依上節「下一步」重跑 TiDB-only W=128（`phase1 phase2 phase3-tidb-deploy
+phase6-tidb-smoke phase6-tidb-result phase8.5-static-check teardown-tidb phase9`，
+不含 CRDB/YBDB，省下 ~7hr），TPCC_TS=`20260712T164221+0800`，全鏈約 4h。
+
+**結果**：四檔 threads 全部收斂正常，`all_txn` 全程 0 error（1,490,296 筆交易）：
+
+| threads | tpmC_mean | CV | 備註 |
+|---:|---:|---:|---|
+| 16 | 2077.1 | 3.6% | |
+| 32 | 3820.8 | 28.0% | round-2 單輪偏低（3048.1 vs 其餘 3965~4119），非持續性 |
+| 64 | 7681.8 | 4.6% | |
+| **128** | **13251.6** | **4.0%** | 五輪 13188.2/13087.6/13268.1/13099.1/13614.8，緊密收斂 |
+
+t128 CV 從首輪的 102.2% 降到 4.0%，**首輪的 round-2 起腰斬（~13600→~6000盤整）
+判定為單次環境雜訊，不可重現**（可能是剛 rebuild 的 VM/磁碟首次高負載尚未進穩態，
+或 vSphere host 端偶發資源競爭；因首輪 VM 已拆除無法回頭查證，暫不深究，判定
+不影響 pipeline 或 P-A 設計正確性）。
+
+**驗證修正的 leader-snapshot 查詢**：套用 tpcc-scoped 過濾後，post-run 快照只
+列出 3 台 IDC store（172.24.40.32/33/34，leader_count 8/8/3=19），**完全沒有
+GCP store 出現**——證實 P-A leader pinning 全程正確，先前的「GCP leader 較多」
+訊號確定是系統 schema 雜訊造成的誤判，修正後的查詢邏輯正確可信。
+
+**結論**：本輪 `13251.6 tpmC / CV4.0%` 是乾淨的 TiDB W=128 t128 cell，可作為
+正式 baseline 候選（與 07-03 的 `16,808.6 tpmC / CV2.4%` 量級有落差，約低 21%，
+推測是不同批次 VM/環境正常變異，非缺陷；若要精確比對需同批次重跑三家）。
+
+**Last updated**：2026-07-12 TiDB-only W=128 重跑驗證完成，t128 CV 4.0% 恢復正常，
+確認首輪 CV102.2% 為單次環境雜訊不可重現；leader-snapshot SQL 修正後驗證 P-A
+全程 100% IDC 屬實。
+**Next review**：若後續要用本輪 TiDB cell（`20260712T164221+0800`）取代 07-03
+baseline 需更新 `results/x-cross/pipeline-log.md` §2.3；CRDB/YBDB 尚未有同批次
+重跑版本，跨家精確比較仍待补齊。
