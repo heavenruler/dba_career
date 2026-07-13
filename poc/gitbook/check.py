@@ -12,9 +12,9 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent
 SUMMARY = ROOT / "SUMMARY.md"
-UNTRACKED_RESULT = "20260711T215200+0800"
 
 LINK_RE = re.compile(r"(?<!!)\[[^]]+\]\(([^)]+)\)")
+IMAGE_RE = re.compile(r"!\[[^]]*\]\(([^)]+)\)")
 PRIVATE_IP_RE = re.compile(
     r"(?<![\d.])(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}"
     r"|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}"
@@ -65,6 +65,20 @@ def check_links(path: Path, text: str, errors: list[str]) -> None:
             errors.append(f"{path.relative_to(ROOT)}: broken link {raw_target}")
 
 
+def check_images(path: Path, text: str, errors: list[str]) -> None:
+    """Images must exist and stay inside gitbook/ (charts are regenerable via `make charts`)."""
+    for raw_target in IMAGE_RE.findall(text):
+        target = unquote(raw_target.split("#", 1)[0].strip())
+        if target.startswith(("http://", "https://")):
+            errors.append(f"{path.relative_to(ROOT)}: external image not allowed {raw_target}")
+            continue
+        resolved = (path.parent / target).resolve()
+        if not resolved.is_file():
+            errors.append(f"{path.relative_to(ROOT)}: missing image {raw_target}")
+        elif ROOT not in resolved.parents:
+            errors.append(f"{path.relative_to(ROOT)}: image outside gitbook/ {raw_target}")
+
+
 def check_fences(path: Path, text: str, errors: list[str]) -> None:
     in_fence = False
     fence_start = 0
@@ -87,8 +101,6 @@ def check_sensitive(path: Path, text: str, errors: list[str]) -> None:
         errors.append(f"{path.relative_to(ROOT)}: contains a private IP address")
     if FORBIDDEN_RE.search(text):
         errors.append(f"{path.relative_to(ROOT)}: contains internal or sensitive identifier")
-    if UNTRACKED_RESULT in text:
-        errors.append(f"{path.relative_to(ROOT)}: cites an untracked result")
 
 
 def main() -> int:
@@ -97,6 +109,7 @@ def main() -> int:
     for path in markdown_files():
         text = path.read_text(encoding="utf-8")
         check_links(path, text, errors)
+        check_images(path, text, errors)
         check_fences(path, text, errors)
         check_metadata(path, text, errors)
         check_sensitive(path, text, errors)

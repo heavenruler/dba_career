@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="470" viewBox="0 0 880 470" font-family="Helvetica,Arial,sans-serif">
+<rect width="880" height="470" fill="white"/>
+<text x="430.0" y="24.0" font-size="15" fill="#222" text-anchor="middle" font-weight="bold" >X-CROSS TiDB P-A/A-S W=128・t=128 逐輪 tpmC（穩定性檢視）</text>
+<line x1="70.0" y1="340.0" x2="830.0" y2="340.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="64.0" y="344.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >0</text>
+<line x1="70.0" y1="272.5" x2="830.0" y2="272.5" stroke="#e0e0e0" stroke-width="1" />
+<text x="64.0" y="276.5" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >5,000</text>
+<line x1="70.0" y1="205.0" x2="830.0" y2="205.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="64.0" y="209.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >10,000</text>
+<line x1="70.0" y1="137.5" x2="830.0" y2="137.5" stroke="#e0e0e0" stroke-width="1" />
+<text x="64.0" y="141.5" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >15,000</text>
+<line x1="70.0" y1="70.0" x2="830.0" y2="70.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="64.0" y="74.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >20,000</text>
+<rect x="95.3" y="114.2" width="34.5" height="225.8" fill="#4e79a7" opacity="1.0"/>
+<rect x="135.9" y="110.9" width="34.5" height="229.1" fill="#4e79a7" opacity="1.0"/>
+<rect x="176.4" y="113.3" width="34.5" height="226.7" fill="#4e79a7" opacity="1.0"/>
+<rect x="216.9" y="106.1" width="34.5" height="233.9" fill="#4e79a7" opacity="1.0"/>
+<rect x="257.5" y="121.0" width="34.5" height="219.0" fill="#4e79a7" opacity="1.0"/>
+<text x="196.7" y="356.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >2026-07-03 正式 cell</text>
+<text x="196.7" y="371.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" >mean 16,809・CV 6.5%</text>
+<rect x="348.7" y="156.4" width="34.5" height="183.6" fill="#b07aa1" opacity="0.55"/>
+<rect x="389.2" y="252.1" width="34.5" height="87.9" fill="#b07aa1" opacity="0.55"/>
+<rect x="429.7" y="258.6" width="34.5" height="81.4" fill="#b07aa1" opacity="0.55"/>
+<rect x="470.3" y="261.0" width="34.5" height="79.0" fill="#b07aa1" opacity="0.55"/>
+<rect x="510.8" y="260.6" width="34.5" height="79.4" fill="#b07aa1" opacity="0.55"/>
+<text x="450.0" y="356.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >2026-07-11 首輪（不採用）</text>
+<text x="450.0" y="371.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" >mean 7,576・CV 102.2%</text>
+<rect x="602.0" y="162.0" width="34.5" height="178.0" fill="#76b7b2" opacity="1.0"/>
+<rect x="642.5" y="163.3" width="34.5" height="176.7" fill="#76b7b2" opacity="1.0"/>
+<rect x="683.1" y="160.9" width="34.5" height="179.1" fill="#76b7b2" opacity="1.0"/>
+<rect x="723.6" y="163.2" width="34.5" height="176.8" fill="#76b7b2" opacity="1.0"/>
+<rect x="764.1" y="156.2" width="34.5" height="183.8" fill="#76b7b2" opacity="1.0"/>
+<text x="703.3" y="356.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >2026-07-12 重跑（採用）</text>
+<text x="703.3" y="371.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" >mean 13,252・CV 4.0%</text>
+<text x="64.0" y="60.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >tpmC</text>
+<text x="12.0" y="409.0" font-size="10" fill="#666666" text-anchor="start" font-weight="normal" >各組皆 N=1・每組 5 根 = R1-R5・首輪 CV 102.2% 經重跑判定為單次環境雜訊（不可重現）</text>
+<text x="12.0" y="423.0" font-size="9" fill="#666666" text-anchor="start" font-weight="normal" >來源: 2026-07-03 正式 cell: results/x-cross/baseline/w128/20260703T092243+0800/tidb-vm-6node-P-A-rc-20260703T092243+0800/summary.json</text>
+<text x="12.0" y="434.0" font-size="9" fill="#666666" text-anchor="start" font-weight="normal" >來源: 2026-07-11 首輪（不採用）: results/x-cross/baseline/w128/20260711T215200+0800/tidb-vm-6node-P-A-rc-20260711T215200+0800/summary.json</text>
+<text x="12.0" y="445.0" font-size="9" fill="#666666" text-anchor="start" font-weight="normal" >來源: 2026-07-12 重跑（採用）: results/x-cross/baseline/w128/20260712T164221+0800/tidb-vm-6node-P-A-rc-20260712T164221+0800/summary.json</text>
+</svg>

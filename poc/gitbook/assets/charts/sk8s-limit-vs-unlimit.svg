@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="460" viewBox="0 0 880 460" font-family="Helvetica,Arial,sans-serif">
+<rect width="880" height="460" fill="white"/>
+<text x="430.0" y="24.0" font-size="15" fill="#222" text-anchor="middle" font-weight="bold" >S-K8S limit vs unlimit・t=128・R1-R5 mean</text>
+<text x="235.0" y="70.0" font-size="13" fill="#222" text-anchor="middle" font-weight="bold" >tpmC（越高越好）</text>
+<line x1="70.0" y1="320.0" x2="400.0" y2="320.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="64.0" y="324.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >0</text>
+<line x1="70.0" y1="260.0" x2="400.0" y2="260.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="64.0" y="264.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >6,250</text>
+<line x1="70.0" y1="200.0" x2="400.0" y2="200.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="64.0" y="204.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >12,500</text>
+<line x1="70.0" y1="140.0" x2="400.0" y2="140.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="64.0" y="144.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >18,750</text>
+<line x1="70.0" y1="80.0" x2="400.0" y2="80.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="64.0" y="84.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >25,000</text>
+<rect x="82.4" y="168.8" width="30.3" height="151.2" fill="#4e79a799" opacity="1.0"/>
+<text x="97.5" y="163.8" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >15,752</text>
+<text x="97.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >limit</text>
+<text x="97.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" >TiDB</text>
+<rect x="137.4" y="94.9" width="30.3" height="225.1" fill="#4e79a7" opacity="1.0"/>
+<text x="152.5" y="89.9" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >23,443</text>
+<text x="152.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >unlimit</text>
+<text x="152.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" ></text>
+<rect x="192.4" y="257.7" width="30.3" height="62.3" fill="#59a14f99" opacity="1.0"/>
+<text x="207.5" y="252.7" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >6,494</text>
+<text x="207.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >limit</text>
+<text x="207.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" >CockroachDB</text>
+<rect x="247.4" y="202.9" width="30.3" height="117.1" fill="#59a14f" opacity="1.0"/>
+<text x="262.5" y="197.9" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >12,197</text>
+<text x="262.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >unlimit</text>
+<text x="262.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" ></text>
+<rect x="302.4" y="304.6" width="30.3" height="15.4" fill="#f28e2b99" opacity="1.0"/>
+<text x="317.5" y="299.6" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >1,604</text>
+<text x="317.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >limit</text>
+<text x="317.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" >YugabyteDB</text>
+<rect x="357.4" y="291.2" width="30.3" height="28.8" fill="#f28e2b" opacity="1.0"/>
+<text x="372.5" y="286.2" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >2,998</text>
+<text x="372.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >unlimit</text>
+<text x="372.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" ></text>
+<text x="64.0" y="70.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >tpmC</text>
+<text x="655.0" y="70.0" font-size="13" fill="#222" text-anchor="middle" font-weight="bold" >NEW_ORDER p99 ms（越低越好）</text>
+<line x1="490.0" y1="320.0" x2="820.0" y2="320.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="484.0" y="324.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >0</text>
+<line x1="490.0" y1="260.0" x2="820.0" y2="260.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="484.0" y="264.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >5,000</text>
+<line x1="490.0" y1="200.0" x2="820.0" y2="200.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="484.0" y="204.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >10,000</text>
+<line x1="490.0" y1="140.0" x2="820.0" y2="140.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="484.0" y="144.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >15,000</text>
+<line x1="490.0" y1="80.0" x2="820.0" y2="80.0" stroke="#e0e0e0" stroke-width="1" />
+<text x="484.0" y="84.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >20,000</text>
+<rect x="502.4" y="312.2" width="30.3" height="7.8" fill="#4e79a799" opacity="1.0"/>
+<text x="517.5" y="307.2" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >651</text>
+<text x="517.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >limit</text>
+<text x="517.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" >TiDB</text>
+<rect x="557.4" y="315.7" width="30.3" height="4.3" fill="#4e79a7" opacity="1.0"/>
+<text x="572.5" y="310.7" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >362</text>
+<text x="572.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >unlimit</text>
+<text x="572.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" ></text>
+<rect x="612.4" y="294.9" width="30.3" height="25.1" fill="#59a14f99" opacity="1.0"/>
+<text x="627.5" y="289.9" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >2,094</text>
+<text x="627.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >limit</text>
+<text x="627.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" >CockroachDB</text>
+<rect x="667.4" y="309.0" width="30.3" height="11.0" fill="#59a14f" opacity="1.0"/>
+<text x="682.5" y="304.0" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >913</text>
+<text x="682.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >unlimit</text>
+<text x="682.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" ></text>
+<rect x="722.4" y="179.9" width="30.3" height="140.1" fill="#f28e2b99" opacity="1.0"/>
+<text x="737.5" y="174.9" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >11,677</text>
+<text x="737.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >limit</text>
+<text x="737.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" >YugabyteDB</text>
+<rect x="777.4" y="254.9" width="30.3" height="65.1" fill="#f28e2b" opacity="1.0"/>
+<text x="792.5" y="249.9" font-size="11" fill="#222" text-anchor="middle" font-weight="bold" >5,422</text>
+<text x="792.5" y="335.0" font-size="11" fill="#222" text-anchor="middle" font-weight="normal" >unlimit</text>
+<text x="792.5" y="349.0" font-size="10" fill="#666666" text-anchor="middle" font-weight="normal" ></text>
+<text x="484.0" y="70.0" font-size="10" fill="#666666" text-anchor="end" font-weight="normal" >ms</text>
+<text x="12.0" y="366.0" font-size="10" fill="#666666" text-anchor="start" font-weight="normal" >N=1・limit/unlimit 是資源宣告控制變數對照，不是產品屬性；throttling/OOM 根因需另證</text>
+<text x="12.0" y="380.0" font-size="9" fill="#666666" text-anchor="start" font-weight="normal" >來源: TiDB limit: results/tidb-tc1/S-K8S/tidb-k8s-3node-haproxy-3s3r-limit-rc-20260608T210453+0800/summary.json</text>
+<text x="12.0" y="391.0" font-size="9" fill="#666666" text-anchor="start" font-weight="normal" >來源: TiDB unlimit: results/tidb-tc1/S-K8S/tidb-k8s-3node-haproxy-3s3r-unlimit-rc-20260608T165403+0800/summary.json</text>
+<text x="12.0" y="402.0" font-size="9" fill="#666666" text-anchor="start" font-weight="normal" >來源: CockroachDB limit: results/crdb-tc1/S-K8S/crdb-k8s-3node-haproxy-3s3r-limit-rc-20260611T132715+0800/summary.json</text>
+<text x="12.0" y="413.0" font-size="9" fill="#666666" text-anchor="start" font-weight="normal" >來源: CockroachDB unlimit: results/crdb-tc1/S-K8S/crdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260609T065714+0800/summary.json</text>
+<text x="12.0" y="424.0" font-size="9" fill="#666666" text-anchor="start" font-weight="normal" >來源: YugabyteDB limit: results/yuga-tc1/S-K8S/ybdb-k8s-3node-haproxy-3s3r-limit-rc-20260613T233549+0800/summary.json</text>
+<text x="12.0" y="435.0" font-size="9" fill="#666666" text-anchor="start" font-weight="normal" >來源: YugabyteDB unlimit: results/yuga-tc1/S-K8S/ybdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260612T120138+0800/summary.json</text>
+</svg>

@@ -4,7 +4,7 @@
 
 **決策影響：** 可用於挑選 K8s family 內的重跑與診斷優先序；不可與 VM `S-BASE` 相除、排名或宣稱平台遷移損益。
 
-**最後驗證：** 2026-07-11。數據均為 `S-K8S`、`N=1`、W=128、RC、20 分鐘 warmup 與 4 個併發水位。一般採每水位 R1-R5 mean；YugabyteDB limit 的 `t=128` 僅 4 個有效 round，必須連同例外揭露。
+**最後驗證：** 2026-07-13。數據均為 `S-K8S`、`N=1`、W=128、RC、20 分鐘 warmup 與 4 個併發水位。一般採每水位 R1-R5 mean；YugabyteDB limit 的 `t=128` 僅 4 個有效 round，必須連同例外揭露。
 
 ## 證據分級
 
@@ -25,6 +25,10 @@ S-K8S 的 family、量測口徑與禁止跨 family 直引規則，以[phase-k8s 
 | TiDB | 15,751.9 / 651.0 ms | 23,442.9 / 362.4 ms | 本工作負載下，需把資源控制與排程狀態列入重跑因子 | [limit](../results/tidb-tc1/S-K8S/tidb-k8s-3node-haproxy-3s3r-limit-rc-20260608T210453+0800/summary.json) / [unlimit](../results/tidb-tc1/S-K8S/tidb-k8s-3node-haproxy-3s3r-unlimit-rc-20260608T165403+0800/summary.json) |
 | CockroachDB | 6,493.5 / 2,093.8 ms | 12,196.7 / 912.7 ms | 此 cell 的尾延遲與吞吐同向變化，根因需由 node/pod 指標驗證 | [limit](../results/crdb-tc1/S-K8S/crdb-k8s-3node-haproxy-3s3r-limit-rc-20260611T132715+0800/summary.json) / [unlimit](../results/crdb-tc1/S-K8S/crdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260609T065714+0800/summary.json) |
 | YugabyteDB | 1,604.5 / 11,676.9 ms（4/5 valid rounds） | 2,997.6 / 5,422.4 ms | 高併發尾延遲需先設 admission、資源與 storage 的診斷 gate | [limit](../results/yuga-tc1/S-K8S/ybdb-k8s-3node-haproxy-3s3r-limit-rc-20260613T233549+0800/summary.json) / [unlimit](../results/yuga-tc1/S-K8S/ybdb-k8s-3node-haproxy-3s3r-unlimit-rc-20260612T120138+0800/summary.json) |
+
+![S-K8S limit 與 unlimit 對照](assets/charts/sk8s-limit-vs-unlimit.svg)
+
+**圖解判讀：** 同色深淺是同一引擎的 limit（淺）/unlimit（深）對照；三家都呈現「宣告 limit 後 tpmC 降、p99 升」的同向變化，但幅度差異的根因（throttling、記憶體回收、storage 或排程）尚未由 node/pod 證據確認，只能作方向性觀察。
 
 ```mermaid
 flowchart LR

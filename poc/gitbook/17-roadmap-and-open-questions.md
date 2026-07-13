@@ -4,7 +4,7 @@
 
 **決策影響：** 將工作排成 evidence gate，而不是以一次 N=1 效能結果決定產品或架構。
 
-**最後驗證：** 2026-07-11。原始資料、測試輸出與 secrets 均不複製到本章；可追溯資料保留於 `results/`。
+**最後驗證：** 2026-07-13。原始資料、測試輸出與 secrets 均不複製到本章；可追溯資料保留於 `results/`。
 
 ## 推進順序
 
@@ -27,6 +27,19 @@ flowchart LR
 | 4 | T-THRD 單因子機制探索 | 具名 profile、config dump、default 對照 | 不回填 baseline |
 | 5 | X-CROSS P-A 後 P-B 的 profile 矩陣 | full rebuild、time/WAN、placement、metrics gate | 不作跨家排名 |
 | 6 | IDC-only 六節點 paired control 與 chaos | 同硬體/quorum/W、RTO/RPO、資料完整性 | 才可討論 WAN cost 與 DR |
+
+```mermaid
+timeline
+    title 推進順序（gate 驅動，非日曆時程）
+    gate 1 資料品質 : scope/summary/觀測完整性稽核
+    gate 2-3 單區 : S-BASE N=1 條件式判讀 : S-K8S limit/unlimit 資源診斷
+    gate 4 機制 : T-THRD 單因子探索（不回填 baseline）
+    gate 5 跨區 : X-CROSS P-A 後 P-B 的 profile 矩陣
+    gate 6 對照 : IDC-only 六節點 paired control 與 chaos
+    決策 : DR / RTO-RPO / 成本審查
+```
+
+**圖解判讀：** 每一段的進入條件是上一段的 gate 完成，不是時間到了就推進；此圖與下表一一對應。
 
 各 phase 的硬性隔離與 `baseline_eligible` 規則見[PHASES](../results/PHASES.md)；跨區執行次序與 cell 範圍見[跨區決策紀錄](../phase-crossregion/decisions-2026-06-08.md)。
 

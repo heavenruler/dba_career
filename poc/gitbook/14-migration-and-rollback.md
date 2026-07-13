@@ -1,6 +1,6 @@
 # 14. 遷移與回滾
 
-> 最後驗證：2026-07-11｜backup 與 migration 為 spec-only；不得描述為已完成的零停機能力。
+> 最後驗證：2026-07-13｜backup 與 migration 為 spec-only；不得描述為已完成的零停機能力。
 
 ## 遷移原則
 
@@ -15,6 +15,28 @@ flowchart LR
   E --> F[觀察窗口]
   F --> G[擴大或回滾]
 ```
+
+```mermaid
+sequenceDiagram
+    participant App as 應用
+    participant Src as 來源 DB
+    participant CDC as CDC/同步
+    participant Dst as 目標 DB
+    App->>Src: 正常讀寫
+    Src->>Dst: 全量載入（基線）
+    Src->>CDC: 增量變更
+    CDC->>Dst: 追平（監測 lag）
+    Note over Src,Dst: 對帳：row count / checksum / 關鍵交易
+    App->>Dst: Canary 流量（可回切）
+    alt 觀察窗口達標
+        App->>Dst: 擴大切換
+    else KPI/對帳未達標
+        App->>Src: 流量切回（回滾）
+        Note over Dst: 隔離目標寫入，啟動 RCA
+    end
+```
+
+**圖解判讀：** 回切能力必須在 canary 前就已演練可用；「觀察窗口達標」的 KPI、lag 與錯誤門檻在下表均為 TBD，未定義前整條時序不得進入 production。
 
 ## 每波 checklist
 

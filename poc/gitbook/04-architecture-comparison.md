@@ -4,7 +4,7 @@
 
 本章以架構型態比較候選系統的決策影響，說明哪些因素需要實測驗證。它不對產品做排名，也不將架構差異直接等同於效能優劣。
 
-**最後驗證日期：2026-07-11**
+**最後驗證日期：2026-07-13**
 
 ## 比較模型
 
@@ -27,6 +27,24 @@ flowchart TB
 | TiDB | TiDB Server、TiKV、PD | Region 與 Raft；SQL 與儲存分層 | SQL 入口分布、Region/Leader 放置、PD 排程與 TiKV 資源 |
 | CockroachDB | 對稱 CockroachDB nodes | Range、Replica、Leaseholder 與 Raft | SQL 入口、Range/Leaseholder 熱點、admission 與再平衡 |
 | YugabyteDB | YB-TServer（YSQL/DocDB）、YB-Master | Tablet、Replica 與 Raft | YSQL backend、Tablet Leader、Master/Load Balancer 與 compaction |
+
+```mermaid
+flowchart TB
+  subgraph T[TiDB：SQL/儲存分層]
+    TA[TiDB Server<br/>無狀態 SQL 層] --> TK[TiKV<br/>Region + Raft 儲存]
+    TP[PD<br/>排程 / TSO / 放置] --- TK
+  end
+  subgraph C[CockroachDB：對稱節點]
+    C1[Node = SQL + 交易協調<br/>+ Range 副本 + Leaseholder]
+    C1 --- C2[Node]
+    C2 --- C3[Node]
+  end
+  subgraph Y[YugabyteDB：整合資料服務]
+    YT[YB-TServer<br/>YSQL API + DocDB Tablet 副本] --- YM[YB-Master<br/>metadata / Load Balancer]
+  end
+```
+
+**圖解判讀：** 三種排列的差異決定了「哪裡會出現熱點、故障時哪一層先受影響、擴容時搬的是什麼」。TiDB 的 SQL 層可獨立擴縮但多一個控制平面（PD）要驗證；CockroachDB 單一 binary 部署最簡但每個節點同時承擔全部角色；YugabyteDB 的資料節點同時服務 API 與儲存、另有 Master 管 metadata。這張圖只描述角色拆分，不隱含優劣。
 
 - [官方能力] **SQL/儲存分層型：** SQL 接入與主要資料儲存可獨立擴縮，另有叢集 metadata、時間戳或排程控制元件。應驗證 SQL 層路由、儲存副本、控制平面可用性與擴縮時的資料平衡。
 - [官方能力] **對稱節點型：** 每個資料節點可接收 SQL、協調交易、路由資料並保存副本。應驗證連線是否均衡進入有效節點、資料範圍與租約/領導者位置是否形成熱點。

@@ -4,7 +4,40 @@
 
 **決策影響：** 可確認跨區 framework、placement 與量測紀律的下一步；不得產生跨區產品排名、WAN penalty 或正式 RTO/RPO 承諾。
 
-**最後驗證：** 2026-07-11。`X-CROSS` 是 `baseline_eligible: false` 的探索 scope，資料原始檔仍留在 `results/x-cross/`。
+**最後驗證：** 2026-07-13。`X-CROSS` 是 `baseline_eligible: false` 的探索 scope，資料原始檔仍留在 `results/x-cross/`。
+
+## 拓樸與 P-A placement
+
+```mermaid
+flowchart LR
+  subgraph IDC[IDC 機房]
+    CL[壓測 client / driver] --> HA[HAProxy 入口]
+    HA --> I1[(idc-dbhost-1)]
+    I2[(idc-dbhost-2)]
+    I3[(idc-dbhost-3)]
+  end
+  subgraph GCP[GCP asia-east1 zone a/b/c]
+    G1[(gcp-dbhost-1)]
+    G2[(gcp-dbhost-2)]
+    G3[(gcp-dbhost-3)]
+  end
+  I1 <-. "WAN 專線：實測 RTT 約 8.5ms、探測頻寬約 190-227 Mbps" .-> G1
+```
+
+```mermaid
+flowchart TB
+  W[寫入交易] --> L
+  subgraph RF3[每筆資料 RF=3（P-A）]
+    L[Leader 副本・pin 在 IDC]
+    F1[Follower 副本・IDC]
+    F2[Follower 副本・GCP]
+  end
+  L -- "raft log（同機房）" --> F1
+  L -- "raft log（跨 WAN，非同步追上）" --> F2
+  L -. "commit quorum = Leader + IDC follower，不等 WAN" .- F1
+```
+
+**圖解判讀：** P-A 的語意是「commit 延遲留在 IDC、GCP 持續收到每筆寫入的複製流」。因此驗收必須同時看三件事：leader/lease 全在 IDC（placement gate）、GCP 節點真的持有資料副本（副本存在 gate）、GCP 端可以就近讀（probe）。只驗第一項會漏掉後兩項的失效——本 scope 已實際發生過一次，見下節。WAN 數字來源：各 suite 的 `runs/wan-probe-warmup.txt`。
 
 ## 證據分級
 
@@ -18,7 +51,17 @@
 
 ## 已有可引用資料
 
-目前唯一 W=128 主資料點是 TiDB、P-A、A-S 的單一 cell：`t=128` 為 16,808.6 tpmC、NEW_ORDER p99 486.5 ms、CV 2.4%、error 0%。這是 `N=1` 的 X-CROSS 內部資料，不構成跨家或跨環境排名。[來源與採樣完整性](../results/x-cross/pipeline-log.md#23-2026-07-03-tidb--p-a--a-s-w128-正式口徑-cell首個)
+W=128 主資料點目前有兩個有效 TiDB cell 與一次重大效度事件：
+
+- [本 PoC 實測｜N=1] 2026-07-03 TiDB P-A/A-S cell：`t=128` 為 16,808.6 tpmC、NEW_ORDER p99 486.5 ms、CV 2.4%、error 0%。[來源與採樣完整性](../results/x-cross/pipeline-log.md#23-2026-07-03-tidb--p-a--a-s-w128-正式口徑-cell首個)
+- [本 PoC 實測｜N=1] 2026-07-11 三家 W=128 批次 + 2026-07-12 TiDB 重跑：TiDB 首輪 `t=128` CV 102.2%（R2 起腰斬）判定為單次環境雜訊——重跑同參數 CV 恢復 4.0%（13,251.6 tpmC），首輪保留備查不採用。兩批為不同 VM 生命週期，與 07-03 cell 的量級差異（約 -21%）屬跨批次變異，引用時須註明批次。
+- [本 PoC 實測｜N=1] **效度事件（2026-07-13 覆核發現）：** 同批 CRDB/YBDB 的 GCP 節點經查**完全沒有 tpcc 資料副本**——CRDB 的 zone config `constraints` list 形式與 `voter_constraints` 自相矛盾、YBDB 的 read-replica 因 tserver 缺 placement_uuid 從未實體化。placement 設定「看似套用成功」但資料面未發生；兩 cell 降級備查，根因修正與重跑前的 fail-closed 副本 gate 見[X-CROSS 結案報告雛形 §6/§7](../phase-crossregion/XCROSS-CLOSING-REPORT-DRAFT.md)與[執行歷史](../phase-crossregion/SESSION-HISTORY.md)。
+
+![X-CROSS TiDB W=128 逐輪 tpmC 三組對照](assets/charts/xcross-w128-tidb-rounds.svg)
+
+**圖解判讀：** 三組各自 N=1、每組五根為 R1-R5。中組（首輪）R1 正常、R2 起腰斬盤整是異常形狀；右組同參數重跑回到緊密收斂，支持「單次環境雜訊、不可重現」的判定。逐輪原始值在各 `summary.json` 的 `thread_results.128.tpmC_per_round`。
+
+以上皆為 `N=1` 的 X-CROSS 內部資料，不構成跨家或跨環境排名。
 
 | 可回答 | 不可回答 | 原因 |
 |---|---|---|

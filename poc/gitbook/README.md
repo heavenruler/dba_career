@@ -63,5 +63,7 @@ flowchart LR
 - 官方文件與本 PoC 結果分開呈現；官方支援不等於實測通過。
 - 資料庫版本、工作負載、硬體、隔離級或拓樸改變時，依 [重測條件](./17-roadmap-and-open-questions.md) 重新判定證據有效性。
 - 發布時以 Git tag 凍結引用版本。
+- 數據圖一律由 `make charts`（`charts.py`，零外部依賴）從已追蹤的 `summary.json` 重新產生到 `assets/charts/`，不得手工修圖；圖註必須帶 `N`、caveat 與來源路徑，數字更新時先改來源再重生圖。
+- 架構與流程圖使用 mermaid code fence（GitHub / VS Code / HonKit-plugin 原生渲染）；圖內只能用邏輯主機名，禁止真實 IP 與雲端 VM 名稱（`make check` 會擋）。
 
-最後驗證日期：2026-07-11
+最後驗證日期：2026-07-13

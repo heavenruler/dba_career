@@ -4,7 +4,7 @@
 
 **決策影響：** 此章只提供 VM 基準家族內的候選工作負載形狀與重跑優先序；不選定產品，也不把結果外推為正式容量承諾。
 
-**最後驗證：** 2026-07-11。原始輸出保留於 `results/`；本文只引用彙整結果檔案。
+**最後驗證：** 2026-07-13。原始輸出保留於 `results/`；本文只引用彙整結果檔案。
 
 ## 證據邊界
 
@@ -36,6 +36,12 @@ flowchart LR
 | YugabyteDB | 15,632.4 | 704.6 | 在此 tablet 與 HAProxy 條件下，應同時檢查入口分散及 leader/tablet 分布 | [summary.json](../results/yuga-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/summary.json) |
 
 這些是單次完整部署、prepare、run、collect 所得結果。五個 round 降低同次執行的隨機波動，但仍統一標示 `N=1`；`N` 的定義見[結果索引 N9](../results/README.md#note-n9)。
+
+![S-BASE t=128 tpmC 與 NEW_ORDER p99](assets/charts/sbase-t128-tpmc-p99.svg)
+
+![S-BASE thread scaling t16 到 t128](assets/charts/sbase-thread-scaling.svg)
+
+**圖解判讀：** 左右兩張子圖必須成對看——tpmC 高而 p99 低才是同向優勢；scaling 曲線呈現的是「同 scope 內各引擎隨併發變化的形狀」，不是容量承諾。圖內數字直接由上表引用的 `summary.json` 產生（`make charts` 可重生），圖註帶有相同的 `N=1` 限制。
 
 ## 條件式適用矩陣
 
