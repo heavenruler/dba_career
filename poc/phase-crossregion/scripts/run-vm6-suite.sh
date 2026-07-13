@@ -334,6 +334,11 @@ if [[ "$DB" == "tidb" && "$PLACEMENT" == "P-A" ]]; then
   [[ "$converged" == "1" ]] || { echo "[wrapper] pre-freeze gate FAIL: leaders not 100% IDC after 5min" >&2; exit 1; }
 fi
 
+# GCP 副本存在 gate（2026-07-13）：fail-closed 驗證 tpcc 資料確實有副本同步到 GCP，
+# 且 leader/lease 全在 IDC。堵 w128 首輪「CRDB/YBDB GCP 零副本靜默通過」問題。
+echo "[wrapper] gcp-replica-gate: verify tpcc data replicated to GCP (fail-closed)"
+bash "$SELF/gcp-replica-gate.sh" --db "$DB" --db-host "$DB_HOST" --db-port "$DB_PORT" --out-dir "$ROOT/gate"
+
 # steady-state freeze hook（driver 傳入 FREEZE_SCRIPT；此時 placement 已收斂，凍結安全）
 if [[ -n "${FREEZE_SCRIPT:-}" ]]; then
   # W=1 小資料時 table-level placement ALTER 剛下完，PD 還有 in-flight operator，

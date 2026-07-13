@@ -407,12 +407,15 @@ phase4-ybdb-fix6n:
 	  for host in $$DEAD_HOSTS; do \
 	    /opt/yugabyte/bin/yb-admin --master_addresses=$$MASTERS change_blacklist REMOVE $$host 2>&1 | tail -1; \
 	  done; true'
-	@echo "==> Plan B: live_replicas=IDC-only RF=3, GCP=read_replica (clean leader pin, no cache stale)"
-	@echo "    (revert Plan A — leader_blacklist causes postgres backend tablet cache stale)"
-	@echo "==> set live_replicas placement = 104.idc.vlan241:3 RF=3"
-	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) modify_placement_info '104.idc.vlan241:3' 3"
-	@echo "==> add GCP as read_replica (asia-east1-a only, RF=3 = 1 replica per GCP tserver)"
-	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) add_read_replica_placement_info '104.gcp.asia-east1-a:3' 3 ybdb_gcp_rr" 2>&1 | tail -3
+	@echo "==> P-A live placement: 2 IDC + 1 GCP voter (RF=3)，leader 由 preferred_zones 固定 IDC"
+	@echo "    (2026-07-13 修正：前版 Plan B 的 read_replica 要求 placement_uuid=ybdb_gcp_rr 的 tserver，"
+	@echo "     但 playbook 從未設此 flag → RR tablet 永不實體化，GCP SST=0B、資料零同步。"
+	@echo "     改 live 2+1 對齊 TiDB/CRDB 語意：quorum 2/3 由 IDC pair 滿足、commit 不等 WAN，"
+	@echo "     GCP zone-a follower 持續收 raft log = IDC CRUD 同步 GCP 可驗。)"
+	-ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) delete_read_replica_placement_info" 2>/dev/null
+	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) modify_placement_info '104.idc.vlan241:2,104.gcp.asia-east1-a:1' 3"
+	@echo "==> set_preferred_zones = IDC（tablet leader 全數固定 IDC）"
+	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) set_preferred_zones 104.idc.vlan241"
 	@echo "==> wait load_balancer Idle=1 sustained for 60s (best practice: not single-sample)"
 	@idle_count=0; for i in $$(seq 1 90); do \
 	  out=$$(ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_is_load_balancer_idle" 2>&1); \
@@ -426,11 +429,11 @@ phase4-ybdb-fix6n:
 	[ $$idle_count -ge 6 ] || echo "[fix6n] WARN: 15min 未 sustained idle, proceed anyway (Idle=0 可能 benign)"
 	@echo "==> verify load_move_completion (must be 100%, hard gate)"
 	@ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_load_move_completion" 2>&1 | tail -2
-	@echo "==> health check: all 6 expected tservers ALIVE (3 IDC + 3 GCP read_replica)"
+	@echo "==> health check: all 6 expected tservers ALIVE (3 IDC + 3 GCP，zone-a 承載 1 live replica)"
 	@alive=$$(ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) list_all_tablet_servers" 2>/dev/null | grep -c ALIVE); \
 	echo "  ALIVE tservers: $$alive (expect 6)"; \
 	[ $$alive -ge 6 ] || { echo "[fix6n] health check FAIL — abort"; exit 1; }
-	@echo "==> verify placement: 1 live (idc:3) + 1 read_replica (gcp:3)"
+	@echo "==> verify placement: live = idc:2 + gcp(asia-east1-a):1, preferred zone = idc"
 	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_universe_config" | python3 -m json.tool | head -50
 	@echo "==> [end]   phase4-ybdb-fix6n at $$(date +%Y-%m-%dT%H:%M:%S%z)"
 
@@ -464,7 +467,8 @@ phase6-tidb-smoke:
 	         WAREHOUSES=$(WAREHOUSES) WARMUP_SEC=$(WARMUP_SEC) \
 	         ROUNDS=$(ROUNDS) THREADS_LIST='$(THREADS_LIST)' RUN_SEC=$(RUN_SEC) ROUND_SLEEP_SEC=$(ROUND_SLEEP_SEC) \
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
-	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1; \
+	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
+	         GCP_PROBE_DB_HOST=10.160.152.11; \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
 	    --db tidb --topology vm-6node-$(PLACEMENT) --ts $$TS"
 	@echo "==> phase6-tidb-post-prepare leader gate: wait tpcc region leaders → IDC (max 5 min)"
@@ -524,6 +528,7 @@ phase7-ybdb-smoke:
 	         ROUNDS=$(ROUNDS) THREADS_LIST='$(THREADS_LIST)' RUN_SEC=$(RUN_SEC) ROUND_SLEEP_SEC=$(ROUND_SLEEP_SEC) \
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
 	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
+	         GCP_PROBE_DB_HOST=10.160.152.11 \
 	         YBDB_USER=yugabyte YBDB_DB=tpcc; \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
 	    --db ybdb --topology vm-6node-$(PLACEMENT) --ts $$TS"
@@ -573,6 +578,7 @@ phase8-crdb-smoke:
 	         ROUNDS=$(ROUNDS) THREADS_LIST='$(THREADS_LIST)' RUN_SEC=$(RUN_SEC) ROUND_SLEEP_SEC=$(ROUND_SLEEP_SEC) \
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
 	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
+	         GCP_PROBE_DB_HOST=10.160.152.11 \
 	         CRDB_USER=root CRDB_DB=tpcc; \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
 	    --db crdb --topology vm-6node-$(PLACEMENT) --ts $$TS"

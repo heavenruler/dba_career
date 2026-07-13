@@ -924,3 +924,52 @@ baseline 需更新 `results/x-cross/pipeline-log.md` §2.3；CRDB/YBDB 尚未有
 產出 X-CROSS 階段結案報告雛形 `XCROSS-CLOSING-REPORT-DRAFT.md`——全實測數據、
 參數口徑逐項連結原始採樣（summary.json 欄位 / gate / freeze-state / wan-probe /
 leader-snapshot），效度邊界含批次差與 YBDB read-replica 架構語意差異。
+
+### 2026-07-13 重大效度發現：CRDB/YBDB 的 GCP 節點零 tpcc 資料 — 三根因修正 + 新 gate（重跑待 approve）
+
+驗證「P-A 的 A/S standby 存在紀錄」時發現 w128 首輪 CRDB/YBDB 的 GCP 節點
+**完全沒有 tpcc 資料**——benchmark 全程等於 IDC-only 3 節點 + 3 台空 GCP 成員，
+「IDC CRUD 同步 GCP」未被驗證。tpmC 數字本身有效（流量本就全走 IDC），但
+CRDB/YBDB 兩個 cell 不符 P-A「GCP 持有副本/就近讀」語意，降級為備查。
+
+**三個根因（全部檔案級證據）**：
+
+1. **CRDB**：`tests/cockroach/placement-p-a.sql` 的 `constraints='[+region=idc]'`
+   （list form＝約束**全部**副本）與 `voter_constraints '{+region=gcp: 1}'` 自相矛盾，
+   allocator 以前者為準 → 3 voters 全 IDC。證據：suite 的 `prepare/schema.txt`
+   顯示 config 有套上，但 `placement-gate-P-A.txt` 的 `replica_localities` 全
+   `{idc,idc,idc}`。**修**：constraints 改 counted form `'{+region=idc: 2}'`
+   （DATABASE + 9 表，經 user 授權修改保護區檔案）。
+2. **YBDB**：fix6n Plan B 的 `add_read_replica_placement_info ... ybdb_gcp_rr`
+   要求 placement_uuid=`ybdb_gcp_rr` 的 tserver，但 `yugabyte-vm6.yml` 從未設
+   placement_uuid flag → **零台 tserver 匹配，RR tablet 永不實體化**。證據：
+   `ybdb-tservers.txt` 三台 GCP SST=0B、sar-net GCP rx≈3kB/s。**修**：fix6n 改
+   live 2 IDC + 1 GCP(zone-a) voter（`modify_placement_info '104.idc.vlan241:2,
+   104.gcp.asia-east1-a:1' 3` + `set_preferred_zones 104.idc.vlan241`），對齊
+   TiDB/CRDB 語意：quorum 2/3 IDC-local commit、GCP follower 持續收 raft log。
+3. **GCP probe fail-quiet**：`run.sh` 的 GCP 端 probe 打 `.14` GCP haproxy，
+   四 suite × 每 round 100% 連線失敗（fail_count≈520、全 null）但 `|| true`
+   吞掉。**修**：Makefile 三個 smoke target 加 `GCP_PROBE_DB_HOST=10.160.152.11`
+   直打 GCP DB 節點（env override，不動保護區 run.sh）。
+
+**新 fail-closed gate（堵靜默通過）**：
+
+- 新增 `scripts/gcp-replica-gate.sh`，接入 `run-vm6-suite.sh` post-prepare
+  （freeze 前）：TiDB 驗 gcp follower>0 且 gcp leader=0（順便落 follower 分布
+  證據，補 TiDB 只存 leader snapshot 的缺口）；CRDB 逐 range 驗 replica_localities
+  含 gcp 且 lease 全 idc；YBDB 驗 universe live placement 含 gcp + GCP tserver
+  SST>0（含 flush retry）。證據落 `gate/gcp-replica-gate-*.txt`。
+- `check-static-artifacts.py` 加驗：gcp-replica-gate 證據檔必須存在；每 suite
+  至少 1 份 `probe-iso-latency-gcp-*.json` 且全部 `select_1.fail_count==0`。
+
+**對照組**：TiDB 本來就正確（policy `REGIONS="idc,gcp"` + MAJORITY_IN_PRIMARY，
+GCP round 級 rx≈1.7MB/s = follower 持續收 log），TiDB#4 cell 維持有效。
+
+**下一步**：user push 修正後 approve 重跑 CRDB+YBDB w128（各 ~4hr）；報告
+§5/§7 已同步標注兩 cell 降級，重跑後回填。
+
+**Last updated**：2026-07-13 CRDB/YBDB GCP 零副本三根因修正完成（constraints
+counted form / fix6n live 2+1 / probe 直打 .11）+ gcp-replica-gate 接入，
+重跑待 user approve。
+**Next review**：重跑後驗 gate 首過（CRDB range 級 gcp 副本、YBDB GCP SST>0、
+probe fail_count=0），更新結案報告 §5 主表與 §7。

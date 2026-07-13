@@ -130,6 +130,16 @@ YBDB 寫入路徑天生少一段跨區複製，屬設計選項差異而非量測
 
 ## 5. 主結果（採用 cell：TiDB#4、CRDB、YBDB）
 
+> **⚠ 2026-07-13 效度警示（CRDB/YBDB 兩 cell 降級為備查）**：後續驗證發現本輪
+> CRDB/YBDB 的 **GCP 節點完全沒有 tpcc 資料**——CRDB `constraints` list-form 把
+> 3 voters 全鎖 IDC（佐證：CRDB [placement-gate-P-A.txt](../results/x-cross/baseline/w128/20260711T215200+0800/crdb-vm-6node-P-A-rc-20260711T215200+0800/prepare/placement-gate-P-A.txt)
+> 的 `replica_localities` 全 idc）；YBDB read-replica 因 tserver 無
+> `placement_uuid=ybdb_gcp_rr` 從未實體化（佐證：[ybdb-tservers.txt](../results/x-cross/baseline/w128/20260711T215200+0800/ybdb-vm-6node-P-A-rc-20260711T215200+0800/leader-snapshot/ybdb-tservers.txt)
+> 三台 GCP SST=0B）。tpmC 數字本身有效（流量本就 100% IDC），但不符 P-A
+> 「GCP 持副本/就近讀」語意，**不可引用為 cross-region 結果**；根因已修
+> （見 SESSION-HISTORY 2026-07-13 節），重跑後回填本表。TiDB#4 不受影響
+> （GCP follower 有實據：round 級 sar-net rx≈1.7MB/s）。
+
 tpmC_mean（R1-R5）；CV = `tpmC_range_mean_pct`；延遲 = NEW_ORDER p50/p95/p99 mean (ms)。
 逐輪原始值：§2.1 各 `summary.json` `thread_results.<t>.tpmC_per_round`；
 逐輪完整輸出：§2.2 各 round `go-tpc-stdout.txt`。
@@ -176,6 +186,11 @@ tpmC_mean（R1-R5）；CV = `tpmC_range_mean_pct`；延遲 = NEW_ORDER p50/p95/p
 
 ## 7. 效度邊界與未竟事項
 
+0. **（最高優先）CRDB/YBDB GCP 零副本**：見 §5 警示框。三根因（CRDB constraints
+   矛盾、YBDB RR placement_uuid 不匹配、GCP probe fail-quiet）已修並新增
+   `gcp-replica-gate.sh` fail-closed 防再犯；CRDB/YBDB w128 重跑待執行，
+   本報告 §5 兩欄屆時以重跑數據取代。GCP 端 near-read probe 四 suite 全 fail
+   （目標 `.14` 連不上）同步修正為直打 GCP DB 節點。
 1. **批次差**：CRDB/YBDB（07-11 批）與採用的 TiDB#4（07-12 批）非同一 VM
    生命週期；三家「同批次」數據僅存在於 07-11 批（但其 TiDB t128 無效）。
    若結案要求嚴格同批次，需再跑一輪三家 suite（~11 hr）。

@@ -53,6 +53,23 @@ for db in dbs:
            glob.glob(os.path.join(d, 'prepare', 'placement-gate-*.txt'))
     if not gate:
         fails.append(f'{label}: placement-gate artifact missing (prepare/placement-gate-*.{{json,txt}})')
+    # GCP 副本存在 gate 證據（2026-07-13 起 run-vm6-suite.sh 必產；缺=gate 沒跑=fail-closed）
+    if not glob.glob(os.path.join(d, 'gate', 'gcp-replica-gate-*.txt')):
+        fails.append(f'{label}: gcp-replica-gate evidence missing (gate/gcp-replica-gate-*.txt)')
+    # GCP 端 near-read probe：w128 首輪四 suite 全 fail_count>0 卻靜默通過 → 斷言 fail-closed。
+    # 每 suite 至少要有 1 份 gcp probe json，且全部 select_1.fail_count == 0。
+    import json as _json
+    probes = glob.glob(os.path.join(d, 'runs', 'threads-*', 'round-*', 'probe-iso-latency-gcp-*.json'))
+    if not probes:
+        fails.append(f'{label}: no probe-iso-latency-gcp-*.json (GCP-side probe never ran)')
+    for p in probes:
+        try:
+            pd = _json.load(open(p))
+            fc = (pd.get('select_1') or {}).get('fail_count')
+            if fc is None or fc > 0:
+                fails.append(f'{label}: GCP probe fail_count={fc} in {os.path.relpath(p, d)}')
+        except Exception as e:
+            fails.append(f'{label}: unreadable probe json {os.path.relpath(p, d)} ({e})')
 
 if checked == 0:
     note = f' (skipped {skipped_dryrun} dry-run-only dir(s))' if skipped_dryrun else ''
