@@ -75,19 +75,21 @@ case "$DB" in
     grep -q '"placementRegion":"gcp"' "$OUT_DIR/gcp-replica-gate-ybdb-universe.json" \
       || { log "FAIL: universe live placement 不含 gcp block"; exit 1; }
     # 2) GCP tserver（資料同步後）SST 必須 > 0；SST 欄格式「10.72 GB」/「0 B」
-    #    flush 可能落後 load 數十秒 → retry 最多 12×10s
+    #    GCP 三台統一 placement_zone（07-13）→ LB 應把 tablet 副本分散 3 台，
+    #    預設要求 3/3 都有資料（GCP_MIN_TS_WITH_DATA 可調）；flush 落後 → retry 12×10s
+    : "${GCP_MIN_TS_WITH_DATA:=3}"
     ok=0
     for i in $(seq 1 12); do
       $YB list_all_tablet_servers > "$OUT_DIR/gcp-replica-gate-ybdb-tservers.txt" 2>&1 || true
       gcp_with_data=$(awk '/10\.160\.152\./ { for (j=1;j<=NF;j++) if ($j=="B"||$j=="KB"||$j=="MB"||$j=="GB") { if (!($(j-1)==0 && $j=="B")) print; break } }' \
         "$OUT_DIR/gcp-replica-gate-ybdb-tservers.txt" | wc -l | tr -d ' ')
-      [[ "$gcp_with_data" -gt 0 ]] && { ok=1; break; }
-      log "  $i/12 GCP tserver SST 仍全為 0 B，等 flush…"
+      [[ "$gcp_with_data" -ge "$GCP_MIN_TS_WITH_DATA" ]] && { ok=1; break; }
+      log "  $i/12 GCP tserver 有資料 $gcp_with_data/$GCP_MIN_TS_WITH_DATA，等 flush/LB…"
       sleep 10
     done
     cat "$OUT_DIR/gcp-replica-gate-ybdb-tservers.txt" >> "$EV"
-    log "ybdb: gcp_tservers_with_sst=$gcp_with_data"
-    [[ "$ok" == "1" ]] || { log "FAIL: 全部 GCP tserver SST=0B（tablet 副本未實體化，資料未同步 GCP）"; exit 1; }
+    log "ybdb: gcp_tservers_with_sst=$gcp_with_data (require >= $GCP_MIN_TS_WITH_DATA)"
+    [[ "$ok" == "1" ]] || { log "FAIL: GCP tserver 有資料台數 $gcp_with_data < $GCP_MIN_TS_WITH_DATA（tablet 副本未分散/未實體化）"; exit 1; }
     ;;
   *) echo "unsupported db: $DB" >&2; exit 2 ;;
 esac

@@ -411,9 +411,11 @@ phase4-ybdb-fix6n:
 	@echo "    (2026-07-13 修正：前版 Plan B 的 read_replica 要求 placement_uuid=ybdb_gcp_rr 的 tserver，"
 	@echo "     但 playbook 從未設此 flag → RR tablet 永不實體化，GCP SST=0B、資料零同步。"
 	@echo "     改 live 2+1 對齊 TiDB/CRDB 語意：quorum 2/3 由 IDC pair 滿足、commit 不等 WAN，"
-	@echo "     GCP zone-a follower 持續收 raft log = IDC CRUD 同步 GCP 可驗。)"
+	@echo "     GCP follower 持續收 raft log = IDC CRUD 同步 GCP 可驗。"
+	@echo "     GCP 三台 tserver 統一 placement_zone=asia-east1（playbook 07-13 改），"
+	@echo "     LB 把各 tablet 的 GCP 副本均衡到 .11/.12/.13 三台。)"
 	-ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) delete_read_replica_placement_info" 2>/dev/null
-	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) modify_placement_info '104.idc.vlan241:2,104.gcp.asia-east1-a:1' 3"
+	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) modify_placement_info '104.idc.vlan241:2,104.gcp.asia-east1:1' 3"
 	@echo "==> set_preferred_zones = IDC（tablet leader 全數固定 IDC）"
 	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) set_preferred_zones 104.idc.vlan241"
 	@echo "==> wait load_balancer Idle=1 sustained for 60s (best practice: not single-sample)"
@@ -429,11 +431,11 @@ phase4-ybdb-fix6n:
 	[ $$idle_count -ge 6 ] || echo "[fix6n] WARN: 15min 未 sustained idle, proceed anyway (Idle=0 可能 benign)"
 	@echo "==> verify load_move_completion (must be 100%, hard gate)"
 	@ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_load_move_completion" 2>&1 | tail -2
-	@echo "==> health check: all 6 expected tservers ALIVE (3 IDC + 3 GCP，zone-a 承載 1 live replica)"
+	@echo "==> health check: all 6 expected tservers ALIVE (3 IDC + 3 GCP，GCP 統一 zone 分擔 tablet 副本)"
 	@alive=$$(ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) list_all_tablet_servers" 2>/dev/null | grep -c ALIVE); \
 	echo "  ALIVE tservers: $$alive (expect 6)"; \
 	[ $$alive -ge 6 ] || { echo "[fix6n] health check FAIL — abort"; exit 1; }
-	@echo "==> verify placement: live = idc:2 + gcp(asia-east1-a):1, preferred zone = idc"
+	@echo "==> verify placement: live = idc:2 + gcp(asia-east1):1, preferred zone = idc"
 	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_universe_config" | python3 -m json.tool | head -50
 	@echo "==> [end]   phase4-ybdb-fix6n at $$(date +%Y-%m-%dT%H:%M:%S%z)"
 

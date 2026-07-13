@@ -454,11 +454,15 @@
     yb_base_dir: /var/yugabyte
     yb_host_primary: "172.24.40.32"
     # Per-host placement_zone resolved from inventory `zone` var
-    # (idc-vlan241 → vlan241; gcp-asia-east1-{a,b,c} → asia-east1-{a,b,c})
+    # (idc-vlan241 → vlan241; gcp 三台統一 → asia-east1)
+    # 2026-07-13：GCP 改統一 zone——yb-admin placement block 是 cloud.region.zone
+    # 粒度，若照實填 a/b/c 三個 zone，P-A 的 1 個 GCP 副本會被 pin 死在單一 zone
+    # 單台 tserver（.12/.13 永遠空）。統一 zone 後 LB 會把各 tablet 的 GCP 副本
+    # 均衡到 3 台。實際 GCP zone 資訊以 inventory zone var 為準（此處僅 YBDB 標籤）。
     yb_placement_cloud: "104"
     yb_placement_region: "{{ region | default('idc') }}"
     yb_placement_zone_raw: "{{ zone | default('idc-vlan241') }}"
-    yb_placement_zone: "{{ yb_placement_zone_raw | regex_replace('^idc-', '') | regex_replace('^gcp-', '') }}"
+    yb_placement_zone: "{{ 'asia-east1' if (region | default('idc')) == 'gcp' else (yb_placement_zone_raw | regex_replace('^idc-', '')) }}"
     yb_master_flags: >-
       enable_automatic_tablet_splitting=false,
       placement_cloud={{ yb_placement_cloud }},
