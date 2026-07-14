@@ -220,6 +220,12 @@ echo "[2/4] prepare"
 # 而 prepare 的 DROP DATABASE 會消滅任何先掛的 policy attachment。
 # 修法：背景 watcher 等 go-tpc 建完 9 張表就立刻套 placement SQL（tests/common 不可改），
 # gate 前還有 load+quiesce+ANALYZE 數分鐘讓 leader 遷移收斂。
+# 2026-07-14：同 TS 重跑時，前次殘留的 drop-create.log / placement-gate 檔會讓
+# watcher 提早開火（撞 concurrent DROP，apply FAIL）、讓 lease enforcer 誤判
+# prepare 已收尾——先清 stale markers（prepare 會全部重新產生）。
+rm -f "$ROOT/prepare/drop-create.log" \
+      "$ROOT/prepare/placement-gate-${PLACEMENT}.json" \
+      "$ROOT/prepare/placement-gate-${PLACEMENT}.txt" 2>/dev/null || true
 PLACEMENT_WATCHER_PID=""
 if [[ "$DB" == "tidb" ]]; then
   (
@@ -259,10 +265,17 @@ elif [[ "$DB" == "crdb" ]]; then
       sleep 2
     done
     echo "[wrapper] placement watcher (crdb): drop-create done + 9 tables present — applying placement SQL (pre-gate)"
-    ssh -o ConnectTimeout=5 root@"$DB_HOST" \
-      "awk '/^-- tpcc database 套用/{p=1}p' /root/crdb-vm6-placement-${PLACEMENT,,}.sql | /usr/local/bin/cockroach sql --insecure --host=$DB_HOST:$DB_PORT -d tpcc" \
-      && echo "[wrapper] placement watcher (crdb): applied OK" \
-      || echo "[wrapper] placement watcher (crdb): apply FAILED (gate will fail-closed)" >&2
+    # apply 加 retry：表剛建齊的瞬間可能仍有 DDL 在途（index 建立中），單發 ALTER
+    # 可能撞 relation-not-ready；每 5s 重試最多 24 次（2 分鐘）
+    applied=0
+    for ai in $(seq 1 24); do
+      if ssh -o ConnectTimeout=5 root@"$DB_HOST" \
+        "awk '/^-- tpcc database 套用/{p=1}p' /root/crdb-vm6-placement-${PLACEMENT,,}.sql | /usr/local/bin/cockroach sql --insecure --host=$DB_HOST:$DB_PORT -d tpcc" >/dev/null 2>&1; then
+        applied=1; echo "[wrapper] placement watcher (crdb): applied OK (attempt $ai)"; break
+      fi
+      sleep 5
+    done
+    [[ "$applied" == "1" ]] || echo "[wrapper] placement watcher (crdb): apply FAILED after retries (gate will fail-closed)" >&2
     # 2026-07-14：constraints counted-form 修正後 GCP 有 voter，新 range 的 lease
     # 靠 preference 被動收斂太慢，prepare.sh 內建 gate（70% 門檻，tests/common 不可改）
     # 會在收斂完成前開槍（實測 idc=11/22=50% FAIL）。改為主動搬移：load 期間持續
