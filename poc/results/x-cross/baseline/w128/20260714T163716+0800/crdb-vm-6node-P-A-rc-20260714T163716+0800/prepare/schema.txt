@@ -1,0 +1,187 @@
+table_name	create_statement
+warehouse	"CREATE TABLE public.warehouse (
+	w_id INT8 NOT NULL,
+	w_name VARCHAR(10) NULL,
+	w_street_1 VARCHAR(20) NULL,
+	w_street_2 VARCHAR(20) NULL,
+	w_city VARCHAR(20) NULL,
+	w_state CHAR(2) NULL,
+	w_zip CHAR(9) NULL,
+	w_tax DECIMAL(4,4) NULL,
+	w_ytd DECIMAL(12,2) NULL,
+	CONSTRAINT warehouse_pkey PRIMARY KEY (w_id ASC)
+) WITH (schema_locked = true);
+ALTER TABLE tpcc.public.warehouse CONFIGURE ZONE USING
+	num_replicas = 3,
+	num_voters = 3,
+	constraints = '{+region=idc: 2}',
+	voter_constraints = '{+region=gcp: 1, +region=idc: 2}',
+	lease_preferences = '[[+region=idc]]';"
+table_name	create_statement
+district	"CREATE TABLE public.district (
+	d_id INT8 NOT NULL,
+	d_w_id INT8 NOT NULL,
+	d_name VARCHAR(10) NULL,
+	d_street_1 VARCHAR(20) NULL,
+	d_street_2 VARCHAR(20) NULL,
+	d_city VARCHAR(20) NULL,
+	d_state CHAR(2) NULL,
+	d_zip CHAR(9) NULL,
+	d_tax DECIMAL(4,4) NULL,
+	d_ytd DECIMAL(12,2) NULL,
+	d_next_o_id INT8 NULL,
+	CONSTRAINT district_pkey PRIMARY KEY (d_w_id ASC, d_id ASC)
+) WITH (schema_locked = true);
+ALTER TABLE tpcc.public.district CONFIGURE ZONE USING
+	num_replicas = 3,
+	num_voters = 3,
+	constraints = '{+region=idc: 2}',
+	voter_constraints = '{+region=gcp: 1, +region=idc: 2}',
+	lease_preferences = '[[+region=idc]]';"
+table_name	create_statement
+customer	"CREATE TABLE public.customer (
+	c_id INT8 NOT NULL,
+	c_d_id INT8 NOT NULL,
+	c_w_id INT8 NOT NULL,
+	c_first VARCHAR(16) NULL,
+	c_middle CHAR(2) NULL,
+	c_last VARCHAR(16) NULL,
+	c_street_1 VARCHAR(20) NULL,
+	c_street_2 VARCHAR(20) NULL,
+	c_city VARCHAR(20) NULL,
+	c_state CHAR(2) NULL,
+	c_zip CHAR(9) NULL,
+	c_phone CHAR(16) NULL,
+	c_since TIMESTAMP NULL,
+	c_credit CHAR(2) NULL,
+	c_credit_lim DECIMAL(12,2) NULL,
+	c_discount DECIMAL(4,4) NULL,
+	c_balance DECIMAL(12,2) NULL,
+	c_ytd_payment DECIMAL(12,2) NULL,
+	c_payment_cnt INT8 NULL,
+	c_delivery_cnt INT8 NULL,
+	c_data VARCHAR(500) NULL,
+	CONSTRAINT customer_pkey PRIMARY KEY (c_w_id ASC, c_d_id ASC, c_id ASC),
+	INDEX idx_customer (c_w_id ASC, c_d_id ASC, c_last ASC, c_first ASC)
+) WITH (schema_locked = true);
+ALTER TABLE tpcc.public.customer CONFIGURE ZONE USING
+	num_replicas = 3,
+	num_voters = 3,
+	constraints = '{+region=idc: 2}',
+	voter_constraints = '{+region=gcp: 1, +region=idc: 2}',
+	lease_preferences = '[[+region=idc]]';"
+table_name	create_statement
+history	"CREATE TABLE public.history (
+	h_c_id INT8 NOT NULL,
+	h_c_d_id INT8 NOT NULL,
+	h_c_w_id INT8 NOT NULL,
+	h_d_id INT8 NOT NULL,
+	h_w_id INT8 NOT NULL,
+	h_date TIMESTAMP NULL,
+	h_amount DECIMAL(6,2) NULL,
+	h_data VARCHAR(24) NULL,
+	rowid INT8 NOT VISIBLE NOT NULL DEFAULT unique_rowid(),
+	CONSTRAINT history_pkey PRIMARY KEY (rowid ASC),
+	INDEX idx_h_w_id (h_w_id ASC),
+	INDEX idx_h_c_w_id (h_c_w_id ASC)
+) WITH (schema_locked = true);
+ALTER TABLE tpcc.public.history CONFIGURE ZONE USING
+	num_replicas = 3,
+	num_voters = 3,
+	constraints = '{+region=idc: 2}',
+	voter_constraints = '{+region=gcp: 1, +region=idc: 2}',
+	lease_preferences = '[[+region=idc]]';"
+table_name	create_statement
+new_order	"CREATE TABLE public.new_order (
+	no_o_id INT8 NOT NULL,
+	no_d_id INT8 NOT NULL,
+	no_w_id INT8 NOT NULL,
+	CONSTRAINT new_order_pkey PRIMARY KEY (no_w_id ASC, no_d_id ASC, no_o_id ASC)
+) WITH (schema_locked = true);
+ALTER TABLE tpcc.public.new_order CONFIGURE ZONE USING
+	num_replicas = 3,
+	num_voters = 3,
+	constraints = '{+region=idc: 2}',
+	voter_constraints = '{+region=gcp: 1, +region=idc: 2}',
+	lease_preferences = '[[+region=idc]]';"
+table_name	create_statement
+orders	"CREATE TABLE public.orders (
+	o_id INT8 NOT NULL,
+	o_d_id INT8 NOT NULL,
+	o_w_id INT8 NOT NULL,
+	o_c_id INT8 NULL,
+	o_entry_d TIMESTAMP NULL,
+	o_carrier_id INT8 NULL,
+	o_ol_cnt INT8 NULL,
+	o_all_local INT8 NULL,
+	CONSTRAINT orders_pkey PRIMARY KEY (o_w_id ASC, o_d_id ASC, o_id ASC),
+	INDEX idx_order (o_w_id ASC, o_d_id ASC, o_c_id ASC, o_id ASC)
+) WITH (schema_locked = true);
+ALTER TABLE tpcc.public.orders CONFIGURE ZONE USING
+	num_replicas = 3,
+	num_voters = 3,
+	constraints = '{+region=idc: 2}',
+	voter_constraints = '{+region=gcp: 1, +region=idc: 2}',
+	lease_preferences = '[[+region=idc]]';"
+table_name	create_statement
+order_line	"CREATE TABLE public.order_line (
+	ol_o_id INT8 NOT NULL,
+	ol_d_id INT8 NOT NULL,
+	ol_w_id INT8 NOT NULL,
+	ol_number INT8 NOT NULL,
+	ol_i_id INT8 NOT NULL,
+	ol_supply_w_id INT8 NULL,
+	ol_delivery_d TIMESTAMP NULL,
+	ol_quantity INT8 NULL,
+	ol_amount DECIMAL(6,2) NULL,
+	ol_dist_info CHAR(24) NULL,
+	CONSTRAINT order_line_pkey PRIMARY KEY (ol_w_id ASC, ol_d_id ASC, ol_o_id ASC, ol_number ASC)
+) WITH (schema_locked = true);
+ALTER TABLE tpcc.public.order_line CONFIGURE ZONE USING
+	num_replicas = 3,
+	num_voters = 3,
+	constraints = '{+region=idc: 2}',
+	voter_constraints = '{+region=gcp: 1, +region=idc: 2}',
+	lease_preferences = '[[+region=idc]]';"
+table_name	create_statement
+item	"CREATE TABLE public.item (
+	i_id INT8 NOT NULL,
+	i_im_id INT8 NULL,
+	i_name VARCHAR(24) NULL,
+	i_price DECIMAL(5,2) NULL,
+	i_data VARCHAR(50) NULL,
+	CONSTRAINT item_pkey PRIMARY KEY (i_id ASC)
+) WITH (schema_locked = true);
+ALTER TABLE tpcc.public.item CONFIGURE ZONE USING
+	num_replicas = 3,
+	num_voters = 3,
+	constraints = '{+region=idc: 2}',
+	voter_constraints = '{+region=gcp: 1, +region=idc: 2}',
+	lease_preferences = '[[+region=idc]]';"
+table_name	create_statement
+stock	"CREATE TABLE public.stock (
+	s_i_id INT8 NOT NULL,
+	s_w_id INT8 NOT NULL,
+	s_quantity INT8 NULL,
+	s_dist_01 CHAR(24) NULL,
+	s_dist_02 CHAR(24) NULL,
+	s_dist_03 CHAR(24) NULL,
+	s_dist_04 CHAR(24) NULL,
+	s_dist_05 CHAR(24) NULL,
+	s_dist_06 CHAR(24) NULL,
+	s_dist_07 CHAR(24) NULL,
+	s_dist_08 CHAR(24) NULL,
+	s_dist_09 CHAR(24) NULL,
+	s_dist_10 CHAR(24) NULL,
+	s_ytd INT8 NULL,
+	s_order_cnt INT8 NULL,
+	s_remote_cnt INT8 NULL,
+	s_data VARCHAR(50) NULL,
+	CONSTRAINT stock_pkey PRIMARY KEY (s_w_id ASC, s_i_id ASC)
+) WITH (schema_locked = true);
+ALTER TABLE tpcc.public.stock CONFIGURE ZONE USING
+	num_replicas = 3,
+	num_voters = 3,
+	constraints = '{+region=idc: 2}',
+	voter_constraints = '{+region=gcp: 1, +region=idc: 2}',
+	lease_preferences = '[[+region=idc]]';"

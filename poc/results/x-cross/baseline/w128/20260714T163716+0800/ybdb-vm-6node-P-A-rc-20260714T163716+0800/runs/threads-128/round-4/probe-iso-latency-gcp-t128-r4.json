@@ -1,0 +1,17 @@
+{
+  "label": "gcp-t128-r4",
+  "db": "ybdb",
+  "db_host": "10.160.152.11",
+  "duration_sec": 60,
+  "controller_host": "g-test-poc-5.asia-east1-a.c.lab-service-project-dba.internal",
+  "select_1": {
+    "p50_ms": 75.206, "p95_ms": 77.136, "p99_ms": 88.503,
+    "samples": 81, "fail_count": 0
+  },
+  "update_1": {
+    "p50_ms": 549.719, "p95_ms": 564.904, "p99_ms": 807.597,
+    "samples": 81, "fail_count": 0
+  },
+  "interpretation_hint": "若 SELECT_1 p99 跨 IDC vs GCP 兩端皆 < 10ms = closest-replicas 生效；GCP 端 ~50ms = follower read 沒生效或 fall back to leader",
+  "generated_at": "2026-07-14T12:30:09Z"
+}

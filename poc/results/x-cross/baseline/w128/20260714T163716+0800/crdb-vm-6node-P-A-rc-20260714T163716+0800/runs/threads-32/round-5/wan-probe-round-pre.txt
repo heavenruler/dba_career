@@ -1,0 +1,22 @@
+=== wan-probe.sh  phase=round-pre  ts=20260714T163716+0800  2026-07-14T17:18:13Z ===
+WAN_PROBE_IPERF=1  WAN_NIC=auto
+
+--- chronyc tracking (3 pair × 2 端 = 6 host) ---
+  [IDC/idc-driver    ] stratum=7 last_offset=-0.000106374 leap=Normal
+  [GCP/gcp-poc-5     ] stratum=3 last_offset=-0.000002528 leap=Normal
+  [IDC/idc-dbhost-1  ] stratum=7 last_offset=-0.000115401 leap=Normal
+  [GCP/gcp-poc-1     ] stratum=3 last_offset=0.000004529 leap=Normal
+  [IDC/idc-haproxy   ] stratum=7 last_offset=-0.000002598 leap=Normal
+  [GCP/gcp-poc-4     ] stratum=3 last_offset=0.000015259 leap=Normal
+
+--- /proc/net/dev (NIC=auto) byte counter snapshot ---
+  [IDC/idc-driver    ] rx_bytes=884266887685 tx_bytes=1526247948131
+  [GCP/gcp-poc-5     ] rx_bytes=1270148813 tx_bytes=16824284
+  [IDC/idc-dbhost-1  ] rx_bytes=144440543671 tx_bytes=182815111923
+  [GCP/gcp-poc-1     ] rx_bytes=45371547775 tx_bytes=15000097917
+  [IDC/idc-haproxy   ] rx_bytes=211764067569 tx_bytes=136143527032
+  [GCP/gcp-poc-4     ] rx_bytes=920580794 tx_bytes=11439966
+
+--- iperf3: SKIP (phase=round-pre 落在 round 內，避免干擾 benchmark) ---
+
+=== wan-probe done (all probes succeeded) ===

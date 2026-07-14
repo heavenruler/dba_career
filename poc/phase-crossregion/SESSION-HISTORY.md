@@ -1101,3 +1101,50 @@ summary.json 的慣性錯誤，已更正；監看 filter 已知漏抓 `execute r
 **Last updated**：2026-07-14 detached 指揮鏈上線；YBDB 乾淨 cell 產出
 （gate/probe 全綠）；發現 status-tablet-leader-on-GCP 問題待下輪 gate 補強；
 CRDB cell 進行中。
+
+### 2026-07-15 CRDB cell 三修後全綠；YBDB+CRDB 兩正式 cell 完成（TS=20260714T163716+0800）
+
+CRDB cell 首跑 placement gate FAIL（idc=11/22=50%）連環抓出三個問題並修復：
+
+1. **lease 被動收斂太慢**（constraints counted-form 修正的副作用：GCP 有 voter
+   後新 range 的 lease 要靠 preference 慢慢搬，prepare 內建 gate 搶先開槍）。
+   修：wrapper watcher 加 lease enforcer——load 期間每 15s 把 lease 在 GCP 的
+   tpcc range `ALTER RANGE ... RELOCATE LEASE` 到該 range 的 IDC replica store
+   （commit `2aa8450b`；RELOCATE 語法活集群實測）。
+2. **同 TS 重跑 stale-marker race**：前次殘留 `drop-create.log` 讓 watcher 提早
+   開火撞 concurrent DROP、殘留 placement-gate 檔讓 enforcer 誤判提前退出。
+   修：prepare 前清 stale markers + watcher apply 加 5s×24 retry（`1b971cd0`）。
+3. **gate 計數 bug（第七問題，藏了整個專案週期）**：`prepare.sh` crdb gate 對
+   `SHOW RANGES WITH DETAILS` 整行 `grep -c`——每行同時含副本與 lease 字串，
+   P-A 帶 GCP 副本後恆 50% FAIL；舊 config 全副本鎖 IDC 行內無 gcp 字串才
+   「碰巧」正確。經 user 授權修 `tests/common/prepare.sh`：計數改
+   lease_holder_locality 單欄查詢，GATE_OUT 原始證據不動（`9dc7c720`）。
+
+三修後：placement gate PASS（idc=11/11=100%）、**gcp-replica-gate CRDB 分支
+首驗 PASS（ranges_missing_gcp_replica=0、gcp_leaseholders=0）**、benchmark
+全程 0 error、20 份 GCP probe 全 fail_count=0、static-check 2 suites PASS、
+driver `.done`。
+
+**兩正式 cell 數據（W=128、P-A、A-S、R1-R5 mean）**：
+
+| threads | YBDB tpmC (range%) | CRDB tpmC (range%) | YBDB err | CRDB err |
+|---:|---:|---:|---:|---:|
+| 16 | 7,207.5 (7.8%) | 9,478.9 (15.2%) | 0 | 0 |
+| 32 | 8,148.7 (41.9%*) | 10,364.3 (6.2%) | 57 | 0 |
+| 64 | 10,904.1 (11.5%) | 10,809.3 (4.7%) | 67 | 0 |
+| 128 | **11,138.6 (10.4%)** | **11,001.1 (4.8%)** | 185 | 0 |
+
+t128 NEW_ORDER p99：YBDB 1,214.7ms / CRDB 959.7ms。
+\* YBDB 錯誤與 t32 dip 輪同源於第六問題（status tablet leader 落 GCP，
+0.011-0.03%），引用需帶 caveat；CRDB 無此問題（txn record 隨 tpcc range，
+lease 全 IDC）。
+
+**收尾**：phase9 fetch 完成（本地 `baseline/w128/20260714T163716+0800/` 已
+去重）、GCP 5 台已拆；**IDC 3 台 destroy 卡 vSphere API 斷線（連兩晚同模式，
+疑夜間網路維護窗），待恢復補跑 `phase9-destroy`**。
+
+**Last updated**：2026-07-15 YBDB+CRDB W=128 正式 cell 完成（detached 指揮鏈
+全程無 Mac 依賴），CRDB 三修（enforcer/stale-race/gate 計數），IDC VM destroy
+待 vSphere 恢復。
+**Next review**：補 IDC destroy；結案報告 §5 已可回填三家有效 cell；YBDB
+第六問題（status tablet leader gate 補強）排入下輪。

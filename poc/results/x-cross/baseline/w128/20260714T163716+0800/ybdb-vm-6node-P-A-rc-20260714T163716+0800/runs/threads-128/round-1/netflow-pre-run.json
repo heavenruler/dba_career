@@ -1,0 +1,52 @@
+{
+  "label": "pre-run",
+  "timestamp": "2026-07-14T12:07:23Z",
+  "hosts": {
+    "172.24.40.31": {
+      "5433": {"idc": 1, "gcp": 0, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 872650294315, "iptables_to_idc_bytes": 1490239829397, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.32": {
+      "5433": {"idc": 8, "gcp": 6, "other": 0},
+      "7100": {"idc": 16, "gcp": 0, "other": 0},
+      "9100": {"idc": 48, "gcp": 31, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 51656490214, "iptables_to_idc_bytes": 82235595609, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.33": {
+      "5433": {"idc": 8, "gcp": 6, "other": 0},
+      "7100": {"idc": 64, "gcp": 24, "other": 0},
+      "9100": {"idc": 60, "gcp": 48, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 39019128454, "iptables_to_idc_bytes": 35263283308, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.34": {
+      "5433": {"idc": 8, "gcp": 6, "other": 0},
+      "7100": {"idc": 16, "gcp": 0, "other": 0},
+      "9100": {"idc": 60, "gcp": 48, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 56545224211, "iptables_to_idc_bytes": 42091071248, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.11": {
+      "5433": {"idc": 6, "gcp": 9, "other": 0},
+      "7100": {"idc": 8, "gcp": 0, "other": 0},
+      "9100": {"idc": 48, "gcp": 31, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 12685985558, "iptables_to_idc_bytes": 1926651383, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.12": {
+      "5433": {"idc": 6, "gcp": 8, "other": 0},
+      "7100": {"idc": 8, "gcp": 0, "other": 0},
+      "9100": {"idc": 48, "gcp": 32, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 8058352448, "iptables_to_idc_bytes": 2201022146, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.13": {
+      "5433": {"idc": 6, "gcp": 8, "other": 0},
+      "7100": {"idc": 8, "gcp": 0, "other": 0},
+      "9100": {"idc": 48, "gcp": 21, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 11407622457, "iptables_to_idc_bytes": 1909752494, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.14": {
+      "traffic_bytes": {"iptables_to_gcp_bytes": 615973724, "iptables_to_idc_bytes": 6506539, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.15": {
+      "traffic_bytes": {"iptables_to_gcp_bytes": 636622860, "iptables_to_idc_bytes": 8920359, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    }
+  }
+}

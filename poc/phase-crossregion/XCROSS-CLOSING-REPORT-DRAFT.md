@@ -1,16 +1,24 @@
 # X-CROSS 階段結案報告（雛形）— IDC↔GCP Cross-Region 3-DB W=128 正式測試
 
-> 狀態：**雛形（draft）**。所有數字取自實際執行的四份 W=128 採樣，無任何模擬/示範資料。
-> 每項參數與結論均以連結指向原始採樣檔案。產出日：2026-07-12（07-13 補逐 DB 連結）。
+> 狀態：**雛形（draft）**。所有數字取自實際執行的 W=128 採樣，無任何模擬/示範資料。
+> 每項參數與結論均以連結指向原始採樣檔案。產出日：2026-07-12（07-15 回填
+> CRDB/YBDB 修正後重測 cell，取代 07-11 批降級數據）。
 
-採樣目錄縮寫（下文連結均出自這四個 suite 目錄）：
+採樣目錄縮寫：
 
 | 縮寫 | 採用 | Suite 目錄 |
 |---|---|---|
 | **TiDB#1**（首輪） | ❌ 備查（t128 CV 102.2%，§6） | [tidb-vm-6node-P-A-rc-20260711T215200+0800](../results/x-cross/baseline/w128/20260711T215200+0800/tidb-vm-6node-P-A-rc-20260711T215200+0800/) |
-| **CRDB** | ✅ | [crdb-vm-6node-P-A-rc-20260711T215200+0800](../results/x-cross/baseline/w128/20260711T215200+0800/crdb-vm-6node-P-A-rc-20260711T215200+0800/) |
-| **YBDB** | ✅ | [ybdb-vm-6node-P-A-rc-20260711T215200+0800](../results/x-cross/baseline/w128/20260711T215200+0800/ybdb-vm-6node-P-A-rc-20260711T215200+0800/) |
+| **CRDB#1** | ❌ 備查（GCP 零副本，§7.0） | [crdb-vm-6node-P-A-rc-20260711T215200+0800](../results/x-cross/baseline/w128/20260711T215200+0800/crdb-vm-6node-P-A-rc-20260711T215200+0800/) |
+| **YBDB#1** | ❌ 備查（GCP 零副本，§7.0） | [ybdb-vm-6node-P-A-rc-20260711T215200+0800](../results/x-cross/baseline/w128/20260711T215200+0800/ybdb-vm-6node-P-A-rc-20260711T215200+0800/) |
 | **TiDB#4**（重跑） | ✅ | [tidb-vm-6node-P-A-rc-20260712T164221+0800](../results/x-cross/baseline/w128/20260712T164221+0800/tidb-vm-6node-P-A-rc-20260712T164221+0800/) |
+| **CRDB#2**（修正後） | ✅ | [crdb-vm-6node-P-A-rc-20260714T163716+0800](../results/x-cross/baseline/w128/20260714T163716+0800/crdb-vm-6node-P-A-rc-20260714T163716+0800/) |
+| **YBDB#2**（修正後） | ✅（帶 §5 caveat） | [ybdb-vm-6node-P-A-rc-20260714T163716+0800](../results/x-cross/baseline/w128/20260714T163716+0800/ybdb-vm-6node-P-A-rc-20260714T163716+0800/) |
+
+CRDB#2/YBDB#2 的關鍵新證據（GCP 副本存在 gate + GCP 端 probe，07-11 批缺漏的兩層）：
+[CRDB gcp-replica-gate](../results/x-cross/baseline/w128/20260714T163716+0800/crdb-vm-6node-P-A-rc-20260714T163716+0800/gate/gcp-replica-gate-crdb.txt)（ranges_missing_gcp_replica=0）・
+[YBDB gcp-replica-gate](../results/x-cross/baseline/w128/20260714T163716+0800/ybdb-vm-6node-P-A-rc-20260714T163716+0800/gate/gcp-replica-gate-ybdb.txt)（3/3 GCP tserver SST>0）・
+GCP 端 probe 各 20 輪全 `fail_count=0`（例：[CRDB t128 r1](../results/x-cross/baseline/w128/20260714T163716+0800/crdb-vm-6node-P-A-rc-20260714T163716+0800/runs/threads-128/round-1/probe-iso-latency-gcp-t128-r1.json)／[YBDB t128 r1](../results/x-cross/baseline/w128/20260714T163716+0800/ybdb-vm-6node-P-A-rc-20260714T163716+0800/runs/threads-128/round-1/probe-iso-latency-gcp-t128-r1.json)）。
 
 ## 1. 目的與範圍
 
@@ -128,37 +136,38 @@ read_replica（`phase4-ybdb-fix6n` Plan B），GCP 不參與 quorum；TiDB/CRDB 
 YBDB 寫入路徑天生少一段跨區複製，屬設計選項差異而非量測誤差。
 佐證：§2.5 YBDB `ybdb-universe-config.txt`。
 
-## 5. 主結果（採用 cell：TiDB#4、CRDB、YBDB）
+## 5. 主結果（採用 cell：TiDB#4、CRDB#2、YBDB#2）
 
-> **⚠ 2026-07-13 效度警示（CRDB/YBDB 兩 cell 降級為備查）**：後續驗證發現本輪
-> CRDB/YBDB 的 **GCP 節點完全沒有 tpcc 資料**——CRDB `constraints` list-form 把
-> 3 voters 全鎖 IDC（佐證：CRDB [placement-gate-P-A.txt](../results/x-cross/baseline/w128/20260711T215200+0800/crdb-vm-6node-P-A-rc-20260711T215200+0800/prepare/placement-gate-P-A.txt)
-> 的 `replica_localities` 全 idc）；YBDB read-replica 因 tserver 無
-> `placement_uuid=ybdb_gcp_rr` 從未實體化（佐證：[ybdb-tservers.txt](../results/x-cross/baseline/w128/20260711T215200+0800/ybdb-vm-6node-P-A-rc-20260711T215200+0800/leader-snapshot/ybdb-tservers.txt)
-> 三台 GCP SST=0B）。tpmC 數字本身有效（流量本就 100% IDC），但不符 P-A
-> 「GCP 持副本/就近讀」語意，**不可引用為 cross-region 結果**；根因已修
-> （見 SESSION-HISTORY 2026-07-13 節），重跑後回填本表。TiDB#4 不受影響
-> （GCP follower 有實據：round 級 sar-net rx≈1.7MB/s）。
+> **2026-07-15 回填**：07-13 效度警示（CRDB#1/YBDB#1 GCP 零副本）之五根因修正
+> 後重測，CRDB#2/YBDB#2 均通過三重驗證：placement gate、gcp-replica-gate
+> （逐 range/tablet 驗 GCP 副本存在）、GCP 端 probe 各 20 輪 fail_count=0。
+> 本表的 CRDB/YBDB 數字**帶真實跨區複製成本**，與 07-11 批（未付 WAN 成本、
+> 已降級）不可比。TiDB#4 為 07-12 批，批次差見 §7.1。
 
 tpmC_mean（R1-R5）；CV = `tpmC_range_mean_pct`；延遲 = NEW_ORDER p50/p95/p99 mean (ms)。
-逐輪原始值：§2.1 各 `summary.json` `thread_results.<t>.tpmC_per_round`；
-逐輪完整輸出：§2.2 各 round `go-tpc-stdout.txt`。
+逐輪原始值：各 `summary.json` `thread_results.<t>.tpmC_per_round`；
+逐輪完整輸出：各 round `go-tpc-stdout.txt`。
 
 | threads | TiDB tpmC (CV) | CRDB tpmC (CV) | YBDB tpmC (CV) |
 |---:|---:|---:|---:|
-| 16 | 2077.1 (3.6%) | 8776.9 (6.6%) | 7836.8 (2.9%) |
-| 32 | 3820.8 (28.0%*) | 9963.9 (5.8%) | 8991.4 (9.3%) |
-| 64 | 7681.8 (4.6%) | 10249.7 (2.0%) | 9727.0 (8.9%) |
-| **128（主水位）** | **13251.6 (4.0%)** | **10453.5 (5.2%)** | **9581.4 (8.6%)** |
+| 16 | 2077.1 (3.6%) | 9478.9 (15.2%) | 7207.5 (7.8%) |
+| 32 | 3820.8 (28.0%*) | 10364.3 (6.2%) | 8148.7 (41.9%†) |
+| 64 | 7681.8 (4.6%) | 10809.3 (4.7%) | 10904.1 (11.5%) |
+| **128（主水位）** | **13251.6 (4.0%)** | **11001.1 (4.8%)** | **11138.6 (10.4%)** |
 
 | t128 延遲 | p50 | p95 | p99 |
 |---|---:|---:|---:|
 | TiDB | 332.2 | 479.8 | 630.8 |
-| CRDB | 379.2 | 765.1 | 993.2 |
-| YBDB | 493.2 | 771.8 | 1060.3 |
+| CRDB | 379.2 | 724.8 | 959.7 |
+| YBDB | 375.8 | 697.9 | 1214.7 |
 
-- 交易錯誤：三家四檔全程 **0 error**（TiDB 1,490,296 / CRDB 2,189,931 /
-  YBDB 2,000,524 筆；§2.1 `thread_results.<t>.all_txn.error_count`）。
+- 交易錯誤：TiDB 與 CRDB 全程 **0 error**（TiDB 1,490,296 / CRDB 2,314,032 筆）；
+  **YBDB t32/t64/t128 共 309 筆錯誤（率 0.011-0.03%）**——†見下：與 t32 dip 輪
+  同源於「transaction status tablet leader 落 GCP」問題（SESSION-HISTORY
+  2026-07-14（續）第六問題）：部分交易的 commit 協調跨 WAN 撞 5s RPC deadline。
+  placement/replica gate 只驗 tpcc 表、系統層 tablet 漏網；引用 YBDB 數字必須
+  帶此 caveat，gate 補強（status tablet leader 檢查 + stepdown）排入下輪。
+  此現象本身是 P-A 語意下系統層跨區成本的真實證據。
 - \* TiDB t32 CV 28.0% 來自單輪 dip（R2=3048.1，其餘 3965-4119），非持續性；
   原始輪值見 TiDB#4 [summary.json](../results/x-cross/baseline/w128/20260712T164221+0800/tidb-vm-6node-P-A-rc-20260712T164221+0800/summary.json) `thread_results.32.tpmC_per_round`
   與 [runs/threads-32/round-2/go-tpc-stdout.txt](../results/x-cross/baseline/w128/20260712T164221+0800/tidb-vm-6node-P-A-rc-20260712T164221+0800/runs/threads-32/round-2/go-tpc-stdout.txt)。
@@ -186,11 +195,14 @@ tpmC_mean（R1-R5）；CV = `tpmC_range_mean_pct`；延遲 = NEW_ORDER p50/p95/p
 
 ## 7. 效度邊界與未竟事項
 
-0. **（最高優先）CRDB/YBDB GCP 零副本**：見 §5 警示框。三根因（CRDB constraints
-   矛盾、YBDB RR placement_uuid 不匹配、GCP probe fail-quiet）已修並新增
-   `gcp-replica-gate.sh` fail-closed 防再犯；CRDB/YBDB w128 重跑待執行，
-   本報告 §5 兩欄屆時以重跑數據取代。GCP 端 near-read probe 四 suite 全 fail
-   （目標 `.14` 連不上）同步修正為直打 GCP DB 節點。
+0. **（已結案 2026-07-15）CRDB/YBDB GCP 零副本**：五根因全數修正並以 CRDB#2/
+   YBDB#2 重測驗證（§5）——CRDB constraints counted-form、YBDB live 2+1 +
+   統一 zone、probe 直打 GCP 節點、probe 主機補裝 DB clients（第五根因：
+   `.15` 從無 client，四 suite probe 全滅實為 command-not-found）、CRDB gate
+   grep 整行計數 bug（第七問題，經授權修 `prepare.sh`）。防再犯機制已入鏈：
+   `gcp-replica-gate.sh`（fail-closed）+ static-check probe 斷言 +
+   `phase2-probe-clients`。**遺留**：YBDB status tablet leader 落 GCP
+   （§5 †，第六問題）gate 補強排入下輪。
 1. **批次差**：CRDB/YBDB（07-11 批）與採用的 TiDB#4（07-12 批）非同一 VM
    生命週期；三家「同批次」數據僅存在於 07-11 批（但其 TiDB t128 無效）。
    若結案要求嚴格同批次，需再跑一輪三家 suite（~11 hr）。
