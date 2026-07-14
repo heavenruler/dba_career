@@ -263,6 +263,28 @@ elif [[ "$DB" == "crdb" ]]; then
       "awk '/^-- tpcc database 套用/{p=1}p' /root/crdb-vm6-placement-${PLACEMENT,,}.sql | /usr/local/bin/cockroach sql --insecure --host=$DB_HOST:$DB_PORT -d tpcc" \
       && echo "[wrapper] placement watcher (crdb): applied OK" \
       || echo "[wrapper] placement watcher (crdb): apply FAILED (gate will fail-closed)" >&2
+    # 2026-07-14：constraints counted-form 修正後 GCP 有 voter，新 range 的 lease
+    # 靠 preference 被動收斂太慢，prepare.sh 內建 gate（70% 門檻，tests/common 不可改）
+    # 會在收斂完成前開槍（實測 idc=11/22=50% FAIL）。改為主動搬移：load 期間持續
+    # 把 lease 在 GCP 的 tpcc range RELOCATE 到該 range 的 IDC replica store，
+    # 直到 prepare 的 gate 證據檔出現（= prepare 已收尾）為止。
+    TBLS="'new_order','orders','warehouse','customer','district','history','order_line','item','stock'"
+    for i in $(seq 1 240); do
+      [[ -f "$ROOT/prepare/placement-gate-${PLACEMENT}.json" || -f "$ROOT/prepare/placement-gate-${PLACEMENT}.txt" ]] && break
+      moved=0
+      while IFS=$'\t' read -r rid store; do
+        [[ -n "$rid" && -n "$store" ]] || continue
+        /usr/local/bin/cockroach sql --insecure --host="$DB_HOST:$DB_PORT" -d tpcc -e \
+          "ALTER RANGE $rid RELOCATE LEASE TO $store;" >/dev/null 2>&1 && moved=$((moved+1))
+      done < <(/usr/local/bin/cockroach sql --insecure --host="$DB_HOST:$DB_PORT" -d tpcc --format=tsv -e \
+        "SELECT r.range_id, x.store FROM [SHOW RANGES FROM DATABASE tpcc WITH TABLES, DETAILS] r,
+           LATERAL (SELECT t.store FROM unnest(r.replicas, r.replica_localities) AS t(store, loc)
+                    WHERE t.loc LIKE '%region=idc%' LIMIT 1) x
+         WHERE r.lease_holder_locality LIKE '%region=gcp%' AND r.table_name IN ($TBLS);" 2>/dev/null | tail -n +2)
+      [[ "$moved" -gt 0 ]] && echo "[wrapper] lease enforcer (crdb): relocated $moved gcp lease(s) → idc (pass $i)"
+      sleep 15
+    done
+    echo "[wrapper] lease enforcer (crdb): done"
   ) &
   PLACEMENT_WATCHER_PID=$!
 fi
