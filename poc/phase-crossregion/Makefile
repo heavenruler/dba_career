@@ -902,6 +902,50 @@ win-tidb-as-status:
 	@ssh $(TPCC_CLIENT) "tail -20 $(WIN_LOG) 2>/dev/null || echo '(no log yet)'"
 
 # ===================================================================
+# Operator window — YBDB→CRDB × W=128 detached on .31（Mac 可關機）
+#
+# 2026-07-14：指揮鏈搬 .31。Mac 端只需先跑 phase1 phase2（VM 重建 + gate +
+# probe clients），detach 後 driver 在 .31 以 make 跑 YBDB cell（deploy→fix6n
+# →smoke→result→static-check→teardown）→（static-check fail-closed 全綠才）
+# CRDB cell。完成後回 Mac 跑 make phase9 TPCC_TS=<ts> 收尾（fetch+destroy）。
+#
+# Usage:
+#   make phase1 phase2 <w128 knobs> TPCC_TS=<ts>
+#   make win-ybdb-crdb-detach TPCC_TS=<ts>       # 觸發後 Mac 可關機
+#   make win-ybdb-crdb-status TPCC_TS=<ts>       # 回來查進度
+#   make phase9 <w128 knobs> TPCC_TS=<ts>        # driver .done 後收尾
+# ===================================================================
+WIN_YC_LOG = /tmp/poc-tpcc/logs/win-ybdb-crdb-$(TPCC_TS).log
+
+win-ybdb-crdb-detach:
+	@echo "==> rsync scripts + freeze/ + Makefile to .31 (driver 依賴)"
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
+	rsync -avz phase-crossregion/freeze/  '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/freeze/'
+	ssh $(TPCC_CLIENT) 'mkdir -p /tmp/poc/phase-crossregion/scripts'
+	rsync -avz phase-crossregion/Makefile '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/Makefile'
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
+	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver 進程"
+	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|go-tpc|win-ybdb-crdb-w128' | grep -v pgrep || true); \
+	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
+	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \
+	  nohup env PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS) \
+	    bash $(CROSS_SCRIPTS_REMOTE)/win-ybdb-crdb-w128.sh \
+	    > $(WIN_YC_LOG) 2>&1 < /dev/null & \
+	  echo \"started pid \$$!\""
+	@echo ""
+	@echo "==> detached。Mac 現在可關機。回來後查進度："
+	@echo "    make win-ybdb-crdb-status TPCC_TS=$(TPCC_TS)"
+
+win-ybdb-crdb-status:
+	@echo "==> window markers (TPCC_TS=$(TPCC_TS))"
+	@ssh $(TPCC_CLIENT) "for m in /tmp/poc-tpcc/logs/win-ybdb-crdb-$(TPCC_TS).done /tmp/poc-tpcc/logs/win-ybdb-crdb-$(TPCC_TS).failed; do \
+	  [ -f \"\$$m\" ] && { echo \"--- \$$m ---\"; cat \"\$$m\"; }; done; \
+	  [ -f /tmp/poc-tpcc/logs/win-ybdb-crdb-$(TPCC_TS).done ] || [ -f /tmp/poc-tpcc/logs/win-ybdb-crdb-$(TPCC_TS).failed ] || echo '(window still running)'"
+	@echo "==> driver log tail"
+	@ssh $(TPCC_CLIENT) "tail -25 $(WIN_YC_LOG) 2>/dev/null || echo '(no log yet)'"
+
+# ===================================================================
 # Sub-rules reused verbatim from Makefile.tc1
 # ===================================================================
 
