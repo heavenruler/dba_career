@@ -353,8 +353,17 @@ EOF
           SHOW RANGES FROM TABLE $t WITH DETAILS;
         " 2>>"$GATE_OUT" >> "$GATE_OUT" || true
       done
-      idc_cnt=$(grep -cE 'region=idc' "$GATE_OUT" 2>/dev/null || true); idc_cnt=${idc_cnt:-0}
-      gcp_cnt=$(grep -cE 'region=gcp' "$GATE_OUT" 2>/dev/null || true); gcp_cnt=${gcp_cnt:-0}
+      # 2026-07-14 修正（user 授權）：不可對整行 grep 計數——WITH DETAILS 每行同時含
+      # replica_localities（副本）與 lease_holder_locality，P-A 有 GCP 副本後每行
+      # 兩邊字串都出現，grep -c 行計數恆 50%。計數改用 lease 單欄查詢；
+      # $GATE_OUT 原始輸出照舊保留作副本分布證據。
+      lease_col=$(for t in warehouse district customer; do
+        cockroach sql --insecure --host="$DB_HOST:$PORT" -d "$DBNAME" --format=tsv -e "
+          SELECT lease_holder_locality FROM [SHOW RANGES FROM TABLE $t WITH DETAILS];
+        " 2>/dev/null | tail -n +2 || true
+      done)
+      idc_cnt=$(grep -cE 'region=idc' <<<"$lease_col" || true); idc_cnt=${idc_cnt:-0}
+      gcp_cnt=$(grep -cE 'region=gcp' <<<"$lease_col" || true); gcp_cnt=${gcp_cnt:-0}
       total=$((idc_cnt + gcp_cnt))
       if [[ $total -lt 3 ]]; then
         verdict="fail-closed"; reason="insufficient-leader-samples (total=$total)"
