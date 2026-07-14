@@ -289,8 +289,21 @@ phase1-wait-via-31:
 # ===================================================================
 # Phase 2 — Pre-deploy init (DNS/chrony, SSH prime, bootstrap, chrony gate)
 # ===================================================================
-phase2: phase2-dns-fix phase2-ssh-prime phase2-bootstrap phase2-iperf3-idc phase2-gate inventory-refresh-all
+phase2: phase2-dns-fix phase2-ssh-prime phase2-bootstrap phase2-iperf3-idc phase2-probe-clients phase2-gate inventory-refresh-all
 	@echo "==> phase2 complete"
+
+# GCP probe host（g-test-poc-5=.15）需要 DB clients 才能跑 probe-iso-latency：
+# tidb=mysql、ybdb=psql、共用 bc；crdb 的 cockroach binary 在 phase5-crdb-deploy
+# 後從 DB 節點複製（deploy 前不存在）。
+# 2026-07-14 根因：VM 每輪重建、從無安裝步驟 → 四個 suite 的 GCP probe 100% fail
+# （command not found，非連線問題），fail-quiet 靜默通過直到 static-check 加斷言才抓到。
+phase2-probe-clients:
+	@echo "==> phase2-probe-clients: install psql/mysql/bc on GCP probe host (fail-closed)"
+	ssh root@$(IDC_ADMIN) "ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@10.160.152.15 ' \
+	  source /etc/profile.d/proxy.sh 2>/dev/null || true; \
+	  dnf install -y -q postgresql mysql bc >/dev/null 2>&1 || dnf install -y -q postgresql mysql bc; \
+	  which psql mysql bc'" \
+	  || { echo "[F-Gate] phase2-probe-clients FAIL — GCP probe 將全滅，中止"; exit 1; }
 
 phase2-dns-fix:
 	@echo "==> phase2-dns-fix: fix DNS + chrony IP server on $(IDC_NODES)"
@@ -449,6 +462,10 @@ phase5-crdb-deploy: phase-cleanup-tidb
 	@echo "==> phase5-crdb-deploy (placement=$(PLACEMENT)) — controller=.31"
 	ssh $(TPCC_CLIENT) "cd $(ANSIBLE_REMOTE_DIR) && ansible-playbook -i $(ANSIBLE_INV_VIA31) \
 	  playbooks/cockroach-vm6.yml -e crdb_placement=$(PLACEMENT)"
+	@echo "==> copy cockroach binary → GCP probe host .15（probe-iso-latency crdb 分支需要；fail-closed）"
+	ssh $(TPCC_CLIENT) "ssh root@$(CRDB_HOST) 'cat /usr/local/bin/cockroach' | \
+	  ssh -o StrictHostKeyChecking=accept-new root@10.160.152.15 'cat > /usr/local/bin/cockroach && chmod +x /usr/local/bin/cockroach && /usr/local/bin/cockroach version | head -2'" \
+	  || { echo "[F-Gate] cockroach binary → .15 FAIL — GCP probe 將全滅，中止"; exit 1; }
 	@echo "==> [end]   phase5-crdb-deploy at $$(date +%Y-%m-%dT%H:%M:%S%z)"
 
 # ===================================================================
