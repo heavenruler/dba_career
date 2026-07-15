@@ -66,4 +66,4 @@ flowchart LR
 - 數據圖一律由 `make charts`（`charts.py`，零外部依賴）從已追蹤的 `summary.json` 重新產生到 `assets/charts/`，不得手工修圖；圖註必須帶 `N`、caveat 與來源路徑，數字更新時先改來源再重生圖。
 - 架構與流程圖使用 mermaid code fence（GitHub / VS Code / HonKit-plugin 原生渲染）；圖內只能用邏輯主機名，禁止真實 IP 與雲端 VM 名稱（`make check` 會擋）。
 
-最後驗證日期：2026-07-13
+最後驗證日期：2026-07-15

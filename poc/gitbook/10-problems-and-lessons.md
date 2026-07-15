@@ -4,7 +4,7 @@
 
 本章將 PoC 過程中已發現的工程問題轉成長期控制措施。重點是讓失敗、排除資料與不確定性可見，而不是把修正後的成功結果當成唯一歷史。
 
-**最後驗證日期：2026-07-13**
+**最後驗證日期：2026-07-15**
 
 ## 問題到控制措施
 
@@ -28,7 +28,9 @@ flowchart TD
 - [本 PoC 實測｜N=1] **前置 Gate 必須 fail-closed。** 副本、資料放置、隔離級、時間同步、必要工具與收集路徑未驗證時，正式量測可產生數字卻不具比較意義。相關修正與里程碑見 [`1_MeetingMinutes/2026-06-22-milestone.md`](../1_MeetingMinutes/2026-06-22-milestone.md)。
 - [本 PoC 實測｜N=1] **可重現性高於單次峰值。** redeploy 與暖機差異曾造成明顯 run-to-run 變異，促成同叢集重現性檢查與設定 freeze。跨區資料的排除與採用規則見 [`results/x-cross/pipeline-log.md`](../results/x-cross/pipeline-log.md)。
 - [本 PoC 實測｜N=1] **失敗 trial 需要可追溯。** 準備流程、排程設定、分片檢查與工具權限等問題均可能讓看似完成的輪次失效；dispatch 摘要保留了修正與影響範圍，例如 [`results/dispatch-records/SUMMARY-crdb-vm3.md`](../results/dispatch-records/SUMMARY-crdb-vm3.md)。
-- [本 PoC 實測｜N=1] **「設定已套用」不等於「資料面已發生」。** 2026-07-13 覆核發現跨區 W=128 批次中，CRDB/YBDB 的 placement 設定看似全數套用成功（SQL 無錯、gate 顯示 PASS），但 GCP 節點實際上零資料副本——CRDB 的 zone config 兩個欄位自相矛盾被 allocator 靜默解成全 IDC；YBDB 的 read-replica 因節點缺一個啟動旗標永遠無法實體化。既有 gate 只驗「leader 在哪」沒驗「副本存在」，缺口靜默通過了整輪 benchmark。修正後新增 fail-closed 的副本存在 gate（逐 range/tablet 驗 GCP 副本 + 資料量非零），詳見[X-CROSS 結案報告雛形](../phase-crossregion/XCROSS-CLOSING-REPORT-DRAFT.md)。這是「官方能力 ≠ 已驗證」在資料面的具體案例：驗收必須驗到效果本身，不能只驗設定動作。
+- [本 PoC 實測｜N=1] **「設定已套用」不等於「資料面已發生」。** 2026-07-13 覆核發現跨區 W=128 批次中，CRDB/YBDB 的 placement 設定看似全數套用成功（SQL 無錯、gate 顯示 PASS），但 GCP 節點實際上零資料副本——CRDB 的 zone config 兩個欄位自相矛盾被 allocator 靜默解成全 IDC；YBDB 的 read-replica 因節點缺一個啟動旗標永遠無法實體化。既有 gate 只驗「leader 在哪」沒驗「副本存在」，缺口靜默通過了整輪 benchmark。修正後新增 fail-closed 的副本存在 gate（逐 range/tablet 驗 GCP 副本 + 資料量非零），並於 07-14/15 重測驗證通過結案，詳見[X-CROSS 結案報告雛形](../phase-crossregion/XCROSS-CLOSING-REPORT-DRAFT.md)。這是「官方能力 ≠ 已驗證」在資料面的具體案例：驗收必須驗到效果本身，不能只驗設定動作。
+- [本 PoC 實測｜N=1] **量測工具鏈本身也要 fail-closed 驗收。** 同一事件鏈再抓到兩個藏更深的問題：(1) GCP 端 near-read 探測在四個 suite 全部失敗（每輪 ~520 次）卻靜默通過——根因不是連線而是**探測主機從未安裝 DB client**（`command not found` 快速失敗被 `|| true` 吞掉），加上 fail-closed 斷言後才現形；(2) CRDB placement gate 的計數邏輯對原始輸出整行 grep，**在舊組態下「碰巧」正確、新組態下恆等 50%**——一個藏了整個專案週期、只因輸入分布改變才暴露的量測 bug。教訓：探測與 gate 也要有「自身有在正常工作」的證明（如 probe 成功樣本數斷言），且任何 grep/計數式驗收都要對「欄位語意」而非「整行文字」。
+- [本 PoC 實測｜N=1] **scope 過濾的盲區會在系統層重演。** TiDB 的 leader 快照因缺 tpcc 過濾把系統 region 雜訊誤判成漂移（假警報）；YugabyteDB 則相反——placement gate 只驗 tpcc 表，**系統層 transaction status tablet 的 leader 落在 GCP 沒被抓到**（真問題），造成 0.011-0.03% 交易跨 WAN 協調逾時。同一個「只看業務表」的過濾決策，在一家產生假警報、在另一家漏掉真問題。教訓：leader/lease 類驗收必須明確決定系統層物件是否納入，兩個方向的錯誤都實際發生過。
 - [機制推論] **觀測不足會放大錯誤歸因。** 只靠 OS 指標與吞吐變化難以確認交易內部等待、鎖、重試或資料放置的因果，因此所有瓶頸敘述需保留替代解釋。
 
 ## 後續防呆
