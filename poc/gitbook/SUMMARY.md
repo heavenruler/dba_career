@@ -5,6 +5,7 @@
 - [02 需求脈絡與評估目標](02-context-and-requirements.md)
 - [03 範圍、非目標與證據規則](03-scope-and-evidence.md)
 - [04 三家架構與拓樸比較](04-architecture-comparison.md)
+- [04A CAP 與交易隔離](04a-cap-and-isolation.md)
 - [05 實驗設計與公平性](05-experiment-design.md)
 - [06 VM Baseline 觀察](06-baseline-findings.md)
 - [07 Kubernetes 觀察](07-kubernetes-findings.md)
