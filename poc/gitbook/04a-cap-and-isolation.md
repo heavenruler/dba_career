@@ -146,6 +146,85 @@ flowchart LR
 
 > **判讀原則：** Raft 是資料庫一致性實作的一部分，不是完整答案。只有在共識、MVCC、分散式提交、讀取協議、placement 與應用重試契約共同成立時，產品才能對外提供可驗證的 SQL 一致性保證。
 
+## TiDB、CockroachDB、YugabyteDB 對照
+
+本節的 `YugabyteDB` 對應專案其他文件使用的 `YBDB`。三家產品本身都是分散式資料庫，因此「單區叢集」與「單區分散式資料庫」不是兩種互斥產品模式。為了能比較同步一致性成本，本章改用三種實際執行範圍：
+
+1. **單區、單一共識群組操作：** 交易只命中一個 TiKV Region、CockroachDB Range 或 YugabyteDB Tablet。
+2. **單區、跨共識群組交易：** 交易跨多個 Region、Range 或 Tablet，需要額外的分散式交易協調。
+3. **跨區單一叢集：** 同一 database cluster 的 voter/replica 分布於不同 region，quorum、leader 與讀取路徑可能跨專線。
+
+以下內容是官方架構能力的對照，不代表本 PoC 已驗證所有路徑。實際結論仍須以指定版本、設定 dump、failure test 與 raw result 為準。
+
+### 同步一致性責任對照
+
+| 比較點 | TiDB | CockroachDB | YugabyteDB |
+|---|---|---|---|
+| 基本資料單位 | TiKV `Region`，每個 Region 的 peers 組成 Raft group | KV `Range`，每個 Range 的 replicas 組成 Raft group | DocDB `Tablet`，每個 Tablet 的 peers 組成 Raft group |
+| 寫入排序角色 | Region leader | Range leaseholder 提案；leader lease 使 leaseholder 與 Raft leader 對齊 | Tablet leader |
+| 同步提交基礎 | Region Raft quorum durable replication | Range Raft quorum replication | Tablet Raft quorum durable replication |
+| 最新資料讀取 | 預設讀 leader；強一致 follower read 以 `ReadIndex` 向 leader 確認 commit index | 預設 strong read 經 leaseholder；特定 Global table 可提供 strong follower read | Strong read 由 tablet leader 處理 |
+| 低延遲舊資料讀取 | stale read 或明確選擇非最新 timestamp，不能和 strong follower read 混稱 | `AS OF SYSTEM TIME` 走 closed timestamp 的 stale follower read | Follower/read-replica 路徑使用較弱、可限制陳舊度的讀取保證 |
+| 跨分片交易 | TSO/MVCC + Percolator-derived 2PC，並有 1PC/Async Commit 等最佳化 | MVCC/write intents + transaction record + Parallel Commits | HLC/MVCC/provisional records + transaction manager/status tablet |
+| 預設同步範圍 | Primary TiKV replicas | Voting Range replicas | Primary cluster 的 voting tablet peers |
+| 非投票／唯讀副本 | TiFlash learner 或 placement 下的 learner 不參與 TiKV voter quorum | Non-voting replicas 不參與 Raft quorum | Read replica cluster 是 observer，不參與 primary Raft quorum |
+
+官方依據：[TiKV multi-Raft 與交易](https://docs.pingcap.com/tidb/stable/tidb-faq/)、[TiDB Follower Read](https://docs.pingcap.com/tidb/stable/follower-read/)、[CockroachDB Replication Layer](https://www.cockroachlabs.com/docs/stable/architecture/replication-layer)、[CockroachDB Transaction Layer](https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer)、[YugabyteDB Replication](https://docs.yugabyte.com/stable/architecture/docdb-replication/replication/)、[YugabyteDB Distributed Transactions](https://docs.yugabyte.com/stable/architecture/transactions/transactions-overview/)。
+
+### 單區叢集：共識仍然存在
+
+單區只代表網路延遲較低，不代表資料退化為單機提交。RF=3 時，三家通常仍以每個 Region、Range 或 Tablet 的多數副本確認作為 durable commit 基礎。
+
+| 產品 | 單一共識群組寫入 | 最新讀取 | 單點故障時的行為 |
+|---|---|---|---|
+| TiDB | TiDB 將 KV request 送到 Region leader，TiKV 以 Raft 複寫 | leader read；follower read 需 `ReadIndex` 後等待本地 apply 到該 commit index | 保有 quorum 時選出新 Region leader；交易層仍可能 retry |
+| CockroachDB | leaseholder 接收 read/propose write，Range 經 quorum commit | 一般 strong read 經 leaseholder | 保有 quorum 時轉移 leader lease；未完成 transaction 可能 retry/resolve intents |
+| YugabyteDB | Tablet leader 將 WAL entry 同步到多數 tablet peers | strong read 經 tablet leader | 保有 quorum 時選出新 Tablet leader；leader lease 防止分割時舊 leader 繼續服務最新讀寫 |
+
+[機制推論] 單區的主要優勢是 quorum RTT 小、clock uncertainty 與網路抖動較容易控制；一致性強度並未因此改變。若把 RF 降成 1，吞吐可能提高，但已不再具有同等的同步副本容錯能力，不能與 RF=3 結果直接比較。
+
+### 單區分散式交易：成本在跨共識群組
+
+當一筆 SQL transaction 跨越多個資料分片時，每個分片仍先各自完成 Raft quorum；交易層再保證所有參與分片以一致結果 commit 或 abort。
+
+| 產品 | 跨分片協調 | 需要額外注意 |
+|---|---|---|
+| TiDB | PD 提供遞增 timestamp；Percolator-derived transaction 進行 prewrite/commit，涉及的每個 Region 都會產生 RPC 與 Raft replication | `Prewrite_region`、`Prewrite_time`、`Commit_time`、lock wait 與 retry；單 Region 交易可能使用 1PC 最佳化 |
+| CockroachDB | transaction coordinator 建立 write intents 與 transaction record；Parallel Commits 讓 intents 跨 Range 平行複寫 | transaction retry、intent resolution、contention、clock synchronization；Serializable 是預設但仍可能回傳 retry error |
+| YugabyteDB | transaction manager 寫 provisional records，並由 transaction status tablet 的 Raft group 決定 commit 狀態 | participant Tablet 數、status Tablet RTT、HLC/clock skew、conflict/restart；單 Tablet transaction 可避開完整 distributed path |
+
+[決策] Shard 數增加不只改變平行度，也會改變一筆交易觸及的共識群組數。測試報告必須同時保存 shard/Region/Range/Tablet 數、transaction participant 數與 retry/abort，否則無法判斷吞吐變化來自資料分散還是分散式提交成本。
+
+### 跨區單一叢集：一致性不變，延遲與可用性邊界改變
+
+三家在跨區 primary cluster 都能以同步 quorum 維持已提交資料的一致性；差異主要在資料放置抽象、寫入協調角色及低延遲讀取選項。
+
+| 產品 | 跨區同步寫入 | 就近且最新讀取 | 就近但可陳舊讀取 | 網路分割時 |
+|---|---|---|---|---|
+| TiDB | Placement Policy 決定 Region leader/follower 位置；quorum 若跨區，commit 承擔跨區 RTT | `closest-replicas` 仍以 `ReadIndex` 與 leader 交互，不能視為純本地讀 | 明確 stale read 才能避開最新值協調 | 有 quorum 的一側可推進；`MAJORITY_IN_PRIMARY` 降低主要區延遲，但 primary region 故障不提供自動 failover |
+| CockroachDB | replication zone／multi-region locality 決定 voting replicas 與 lease preference；Range 寫入需 quorum | 一般 strong read 走 leaseholder；Global table 可用較高寫入成本換各 region strong reads | closed timestamp + `AS OF SYSTEM TIME` 從鄰近 replica 讀歷史一致快照 | 有 Range quorum 的一側可推進；survival goal 與 voter placement 決定可承受的故障範圍 |
+| YugabyteDB | Primary cluster 的 Tablet peers 以 Raft 跨 region 同步；preferred leader/placement 決定 leader 位置 | 仍需 Tablet leader；遠端 client 可能跨區存取 leader | follower read 或非投票 read replica 以陳舊度換本地延遲 | 有 Tablet quorum 的一側選 leader 並推進；observer read replica 不能提供寫入 quorum |
+
+官方依據：[TiDB Placement Rules](https://docs.pingcap.com/tidb/stable/placement-rules-in-sql/)、[CockroachDB Replication Controls](https://www.cockroachlabs.com/docs/stable/configure-replication-zones)、[CockroachDB Follower Reads](https://www.cockroachlabs.com/docs/stable/follower-reads)、[YugabyteDB Synchronous Multi-region](https://docs.yugabyte.com/stable/explore/multi-region-deployments/synchronous-replication-ysql/)、[YugabyteDB Read Replica](https://docs.yugabyte.com/stable/deploy/multi-dc/read-replica-clusters/)。
+
+### 三個容易誤判的差異
+
+1. **就近讀取不一定是純本地讀取。** TiDB strong follower read 仍執行 `ReadIndex`；CockroachDB 一般 strong read 仍走 leaseholder；YugabyteDB strong read 仍走 Tablet leader。要避開跨區協調，通常必須接受明確的 stale/bounded-staleness 契約，或採產品特定的額外寫入成本設計。
+2. **Placement 不等於 request firewall。** TiDB 官方明確指出 Placement Policy 保證 data at rest 的位置，不保證 data in transit 只留在指定 region；CockroachDB locality 與 YugabyteDB placement 也必須配合 client routing、gateway/leader preference 與實測 trace 才能證明流量路徑。
+3. **同步 quorum 不等於所有副本同步完成。** 已提交通常代表多數 voter 已 durable acknowledgment；落後 follower、non-voter 或 observer 仍可能追趕中。故障容忍度取決於 quorum placement，不只取決於 replica 總數。
+
+### 本 PoC 應保存的驗證證據
+
+| 層次 | TiDB | CockroachDB | YugabyteDB |
+|---|---|---|---|
+| 分片與副本 | Region peers、leader、placement policy、`SHOW PLACEMENT` | Range replicas、leaseholder、zone config/locality | Tablet peers、leaders、live/read-replica placement、RF |
+| 最新讀取路徑 | `tidb_replica_read`、TiDB/TiKV zone labels、ReadIndex 相關 metrics | table locality、leaseholder、AOST/closed timestamp 使用狀態 | YSQL/YCQL read mode、preferred leaders、follower/read-replica 設定 |
+| 跨分片交易 | prewrite/commit time、prewrite Region 數、retry/lock | transaction retries、intents、contention、Parallel Commit latency | participant Tablets、status Tablet、conflict/restart、RPC latency |
+| 跨區網路 | leader-to-voter RTT、PD/TSO RTT、client-to-TiDB/TiKV route | gateway-to-leaseholder RTT、Raft quorum RTT、clock offset | client-to-TServer/leader RTT、Tablet quorum RTT、clock skew |
+| 故障測試 | 少數側拒寫、leader transfer、TSO/PD 可用性 | Range quorum、lease transfer、survival goal | Tablet quorum、leader election、observer 不可寫 |
+
+[待驗證] 上表是本 PoC 後續應具備的證據清單；官方能力只證明產品可以如此設定，不證明目前拓樸已正確套用，也不證明三家在相同故障下具有相同 RTO、latency 或 retry 行為。
+
 ## 五種資料一致性模型
 
 以下強弱順序是概念導讀，不表示所有模型都能簡單排成單一線性階梯。特別是 causal 與 sequential 關注的順序約束不同，實際保證須讀產品定義。
