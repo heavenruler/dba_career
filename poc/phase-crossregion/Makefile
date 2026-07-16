@@ -103,6 +103,10 @@ LOCAL_RESULT_ROOT := $(LOCAL_RESULTS)/$(LOCAL_RESULT_SCOPE)/$(LOCAL_RESULT_CATEG
 BASELINE_FAMILY    := crossregion
 PLACEMENT          ?= P-A
 PROFILE            ?= A-S
+# Q17（2026-07-07 拍板）：artifact 目錄 profile token，插在 placement 與 iso 之間。
+# A-S = canonical 無 token（既有目錄名零變動）；A-A → -aa；A-A-RO → -aaro。
+# 用遞迴展開（=）讓 target-specific PROFILE（aaro/aa smoke targets）也能生效。
+PROFILE_TOKEN       = $(if $(filter A-A,$(PROFILE)),-aa,$(if $(filter A-A-RO,$(PROFILE)),-aaro,))
 CLIENT_ZONE        := idc
 GATE_SKIP          := 1
 
@@ -132,6 +136,9 @@ SSH_OPTS           := -o LogLevel=ERROR -o StrictHostKeyChecking=accept-new
         phase6 phase6-tidb-smoke phase6-tidb-result \
         phase7 phase7-ybdb-smoke phase7-ybdb-result \
         phase8 phase8-crdb-smoke phase8-crdb-result \
+        phase6-tidb-aaro-smoke phase6-tidb-aa-smoke \
+        phase7-ybdb-aaro-smoke phase7-ybdb-aa-smoke \
+        phase8-crdb-aaro-smoke phase8-crdb-aa-smoke \
         phase9 phase9-destroy phase9-tunnels-stop phase8.5-static-check phase8.5-check-receipt \
         phase1-homogeneity phase1-proof \
         teardown-tidb teardown-ybdb teardown-crdb \
@@ -178,6 +185,9 @@ help:
 	@echo "  make phase5-crdb-deploy                     - Ansible deploy CRDB cluster"
 	@echo "  make phase8-crdb-smoke TPCC_TS=<ts>         - 5-min CRDB smoke via run-vm6-suite.sh"
 	@echo "  make phase8-crdb-result TPCC_TS=<ts>        - parse + print CRDB tpmC / latency"
+	@echo "  make phase6-tidb-aaro-smoke | phase6-tidb-aa-smoke TPCC_TS=<ts> - TiDB 雙 client A-A-RO / A-A smoke（Q17 目錄 token -aaro/-aa；收尾注入 gcp_side）"
+	@echo "  make phase7-ybdb-aaro-smoke | phase7-ybdb-aa-smoke TPCC_TS=<ts> - YBDB 雙 client A-A-RO / A-A smoke（同上）"
+	@echo "  make phase8-crdb-aaro-smoke | phase8-crdb-aa-smoke TPCC_TS=<ts> - CRDB 雙 client A-A-RO / A-A smoke（同上）"
 	@echo "  make teardown-crdb                          - stop cockroach + rm /var/lib/cockroach"
 	@echo "  make phase9                                 - stop tunnels + terraform destroy (IDC + GCP)"
 	@echo ""
@@ -489,7 +499,7 @@ phase6-tidb-smoke:
 	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
 	         GCP_PROBE_DB_HOST=10.160.152.11; \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
-	    --db tidb --topology vm-6node-$(PLACEMENT) --ts $$TS"
+	    --db tidb --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --ts $$TS"
 	@echo "==> phase6-tidb-post-prepare leader gate: wait tpcc region leaders → IDC (max 5 min)"
 	@converged=0; for i in $$(seq 1 30); do \
 	  pct=$$(ssh $(TPCC_CLIENT) "mysql -h $(TIDB_HOST) -P $(TIDB_PORT) -u root -BNe \"SELECT IFNULL(SUM(CASE WHEN s.LABEL LIKE '%idc%' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*),0), 0) FROM information_schema.tikv_region_peers p JOIN information_schema.tikv_store_status s ON p.STORE_ID=s.STORE_ID JOIN information_schema.tikv_region_status r ON p.REGION_ID=r.REGION_ID WHERE p.IS_LEADER=1 AND r.DB_NAME='tpcc';\"" 2>/dev/null | tail -1); \
@@ -499,7 +509,7 @@ phase6-tidb-smoke:
 	done; \
 	[ "$$converged" = "1" ] || { echo "gate FAIL: TiDB tpcc leaders not 100% IDC after 5min"; exit 1; }
 	@echo "==> phase6-tidb leader-snapshot (post-run tpcc-scoped placement verification)"
-	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "mkdir -p $$ROOT/leader-snapshot && \
 	  mysql -h $(TIDB_HOST) -P $(TIDB_PORT) -u root -e \"SELECT \
 	    p.STORE_ID, s.ADDRESS, s.STORE_STATE_NAME, s.LABEL, \
@@ -514,7 +524,7 @@ phase6-tidb-smoke:
 
 phase6-tidb-result:
 	@echo "==> phase6-tidb-result ts=$(TPCC_TS)"
-	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "echo '--- .run.done ---'; cat $$ROOT/.run.done 2>/dev/null || echo '(missing)'; \
 	  echo '--- [Summary] from go-tpc-stdout.txt (per-round) ---'; \
 	  for f in $$ROOT/runs/threads-*/round-*/go-tpc-stdout.txt; do \
@@ -550,9 +560,9 @@ phase7-ybdb-smoke:
 	         GCP_PROBE_DB_HOST=10.160.152.11 \
 	         YBDB_USER=yugabyte YBDB_DB=tpcc; \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
-	    --db ybdb --topology vm-6node-$(PLACEMENT) --ts $$TS"
+	    --db ybdb --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --ts $$TS"
 	@echo "==> phase7-ybdb leader-snapshot (tablet leader counts per tserver)"
-	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/ybdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/ybdb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "mkdir -p $$ROOT/leader-snapshot && \
 	  ssh root@$(YBDB_HOST) '/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) list_all_tablet_servers' > $$ROOT/leader-snapshot/ybdb-tservers.txt 2>&1 && \
 	  for tbl in warehouse district customer history new_order orders order_line item stock; do \
@@ -564,7 +574,7 @@ phase7-ybdb-smoke:
 
 phase7-ybdb-result:
 	@echo "==> phase7-ybdb-result ts=$(TPCC_TS)"
-	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/ybdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/ybdb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "echo '--- .run.done ---'; cat $$ROOT/.run.done 2>/dev/null || echo '(missing)'; \
 	  echo '--- [Summary] from go-tpc-stdout.txt (per-round) ---'; \
 	  for f in $$ROOT/runs/threads-*/round-*/go-tpc-stdout.txt; do \
@@ -600,9 +610,9 @@ phase8-crdb-smoke:
 	         GCP_PROBE_DB_HOST=10.160.152.11 \
 	         CRDB_USER=root CRDB_DB=tpcc; \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
-	    --db crdb --topology vm-6node-$(PLACEMENT) --ts $$TS"
+	    --db crdb --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --ts $$TS"
 	@echo "==> phase8-crdb leader-snapshot (lease holder locality per range)"
-	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/crdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/crdb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "mkdir -p $$ROOT/leader-snapshot && \
 	  ssh root@$(CRDB_HOST) '/usr/local/bin/cockroach node status --insecure --host=$(CRDB_HOST):$(CRDB_PORT)' > $$ROOT/leader-snapshot/crdb-nodes.txt 2>&1 && \
 	  ssh root@$(CRDB_HOST) \"/usr/local/bin/cockroach sql --insecure --host=$(CRDB_HOST):$(CRDB_PORT) -d tpcc -e \
@@ -616,7 +626,7 @@ phase8-crdb-smoke:
 
 phase8-crdb-result:
 	@echo "==> phase8-crdb-result ts=$(TPCC_TS)"
-	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/crdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/crdb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "echo '--- .run.done ---'; cat $$ROOT/.run.done 2>/dev/null || echo '(missing)'; \
 	  echo '--- [Summary] from go-tpc-stdout.txt (per-round) ---'; \
 	  for f in $$ROOT/runs/threads-*/round-*/go-tpc-stdout.txt; do \
@@ -628,6 +638,73 @@ phase8-crdb-result:
 	  cat $$ROOT/leader-snapshot/crdb-lease-holders.txt 2>/dev/null | head -20 || echo '(no leader-snapshot)'; \
 	  echo '--- WAN probe samples ---'; \
 	  ls $$ROOT/runs/wan-probe-*.txt 2>/dev/null | head -5 || echo '(no wan-probe samples)'; true"
+
+# ===================================================================
+# A-A-RO / A-A dual-client smoke — run-vm6-aa.sh on .31（Q16 Win-2/3 前置）
+#
+# 與 phase7-ybdb-smoke 同款 env 合約；差異：
+#   - PROFILE=A-A-RO|A-A 由 target-specific 變數指定 → 目錄帶 Q17 token（-aaro/-aa）
+#   - 雙 client：IDC=.31（standard mix）+ GCP=g-test-poc-5（.31 直連 .15，不走 IAP；
+#     A-A-RO 走 read-only mix、A-A 同 standard mix）
+#   - 收尾：summary-from-stdout.py（IDC 主表，欄位零變動）→
+#     summary-gcp-side.py 注入頂層 gcp_side（G2/G3，2026-07-15 拍板）
+# 參數: $(1)=db  $(2)=IDC writer host  $(3)=DB port  $(4)=per-DB extra env
+# ===================================================================
+define _aa_smoke_recipe
+	@echo "==> [start] $@ at $$(date +%Y-%m-%dT%H:%M:%S%z)"
+	@echo "==> $@ ts=$(TPCC_TS) placement=$(PLACEMENT) profile=$(PROFILE) token=$(PROFILE_TOKEN)"
+	@TS=$(TPCC_TS); \
+	ssh $(TPCC_CLIENT) " \
+	  export PHASE_NAME=$(PHASE_NAME) RESULT_SCOPE=$(RESULT_SCOPE) BASELINE_FAMILY=$(BASELINE_FAMILY) \
+	         tuning_profile_id=default \
+	         TPCC_TS=$$TS PLACEMENT=$(PLACEMENT) PROFILE=$(PROFILE) \
+	         DB=$(1) CLIENT_ZONE=$(CLIENT_ZONE) GATE_SKIP=$(GATE_SKIP) \
+	         IDC_CLIENT=root@$(IDC_ADMIN) \
+	         GCP_CLIENT_SSH=root@10.160.152.15 GCP_CLIENT_PORT=22 GCP_CLIENT_IP=10.160.152.15 \
+	         IDC_DB_HOST=$(2) IDC_DB_PORT=$(3) \
+	         GCP_DB_HOST=10.160.152.11 GCP_DB_PORT=$(3) \
+	         CLUSTER_HOSTS='idc-dbhost-1@172.24.40.32 idc-dbhost-2@172.24.40.33 idc-dbhost-3@172.24.40.34 gcp-dbhost-1@10.160.152.11 gcp-dbhost-2@10.160.152.12 gcp-dbhost-3@10.160.152.13' \
+	         WAREHOUSES=$(WAREHOUSES) WARMUP_SEC=$(WARMUP_SEC) \
+	         ROUNDS=$(ROUNDS) THREADS_LIST='$(THREADS_LIST)' RUN_SEC=$(RUN_SEC) ROUND_SLEEP_SEC=$(ROUND_SLEEP_SEC) \
+	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
+	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
+	         GCP_PROBE_DB_HOST=10.160.152.11 \
+	         $(4); \
+	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-aa.sh \
+	    --db $(1) --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --ts $$TS"
+	@echo "==> $@ summary: IDC 主表 + gcp_side 注入（G2/G3；summary-gcp-side.py）"
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/$(1)-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
+	ssh $(TPCC_CLIENT) " \
+	  python3 $(TPCC_SCRIPTS)/summary-from-stdout.py --warehouses $(WAREHOUSES) \
+	    --phase $(PHASE_NAME) --result-scope $(RESULT_SCOPE) --baseline-family $(BASELINE_FAMILY) \
+	    $$ROOT && \
+	  python3 $(CROSS_SCRIPTS_REMOTE)/summary-gcp-side.py --profile $(PROFILE) $$ROOT"
+	@echo "==> [end]   $@ at $$(date +%Y-%m-%dT%H:%M:%S%z)"
+endef
+
+phase6-tidb-aaro-smoke: PROFILE = A-A-RO
+phase6-tidb-aaro-smoke:
+	$(call _aa_smoke_recipe,tidb,$(TIDB_HOST),$(TIDB_PORT),TIDB_USER=root TIDB_DB=tpcc)
+
+phase6-tidb-aa-smoke: PROFILE = A-A
+phase6-tidb-aa-smoke:
+	$(call _aa_smoke_recipe,tidb,$(TIDB_HOST),$(TIDB_PORT),TIDB_USER=root TIDB_DB=tpcc)
+
+phase7-ybdb-aaro-smoke: PROFILE = A-A-RO
+phase7-ybdb-aaro-smoke:
+	$(call _aa_smoke_recipe,ybdb,$(YBDB_HOST),$(YBDB_PORT),YBDB_USER=yugabyte YBDB_DB=tpcc)
+
+phase7-ybdb-aa-smoke: PROFILE = A-A
+phase7-ybdb-aa-smoke:
+	$(call _aa_smoke_recipe,ybdb,$(YBDB_HOST),$(YBDB_PORT),YBDB_USER=yugabyte YBDB_DB=tpcc)
+
+phase8-crdb-aaro-smoke: PROFILE = A-A-RO
+phase8-crdb-aaro-smoke:
+	$(call _aa_smoke_recipe,crdb,$(CRDB_HOST),$(CRDB_PORT),CRDB_USER=root CRDB_DB=tpcc)
+
+phase8-crdb-aa-smoke: PROFILE = A-A
+phase8-crdb-aa-smoke:
+	$(call _aa_smoke_recipe,crdb,$(CRDB_HOST),$(CRDB_PORT),CRDB_USER=root CRDB_DB=tpcc)
 
 # ===================================================================
 # Phase 8.5 — Correctness gate (static-check before fetch; per audit §6 #8)
@@ -860,9 +937,9 @@ phase6-tidb-smoke-dryrun:
 	         WAN_PROBE_ENABLED=0 WAN_PROBE_IPERF=0 \
 	         DRY_RUN=1; \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
-	    --db tidb --topology vm-6node-$(PLACEMENT) --ts $$TS"
+	    --db tidb --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --ts $$TS"
 	@echo "==> phase6-tidb-smoke-dryrun: reading .dry-run.done artifact"
-	@ssh $(TPCC_CLIENT) "cat $(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS)/.dry-run.done 2>/dev/null || echo '(dry-run.done not found)'"
+	@ssh $(TPCC_CLIENT) "cat $(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS)/.dry-run.done 2>/dev/null || echo '(dry-run.done not found)'"
 	@echo "==> [end] phase6-tidb-smoke-dryrun at $$(date +%Y-%m-%dT%H:%M:%S%z)"
 
 # ===================================================================
@@ -893,7 +970,7 @@ win-tidb-as-detach:
 
 win-tidb-as-status:
 	@echo "==> window markers (TPCC_TS=$(TPCC_TS) PLACEMENT=$(PLACEMENT))"
-	@ssh $(TPCC_CLIENT) "ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	@ssh $(TPCC_CLIENT) "ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
 	  for m in .window.done .window.failed .suite.done .suite.failed; do \
 	    [ -f \"\$$ROOT/\$$m\" ] && { echo \"--- \$$m ---\"; cat \"\$$ROOT/\$$m\"; }; \
 	  done; \
@@ -1150,9 +1227,9 @@ phase-smoke-only-tidb:
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
 	         WAN_PROBE_ENABLED=0 WAN_PROBE_IPERF=0 \
 	         SMOKE_ROUND=$(SMOKE_ROUND); \
-	  bash $(TPCC_SCRIPTS)/run.sh --db tidb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(TIDB_HOST) --ts $$TS; \
-	  bash $(TPCC_SCRIPTS)/collect.sh --db tidb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(TIDB_HOST) --ts $$TS"
-	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	  bash $(TPCC_SCRIPTS)/run.sh --db tidb --iso $(ISO) --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --db-host $(TIDB_HOST) --ts $$TS; \
+	  bash $(TPCC_SCRIPTS)/collect.sh --db tidb --iso $(ISO) --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --db-host $(TIDB_HOST) --ts $$TS"
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "tar czf - -C $$ROOT/runs ." \
 	  | tar xzf - -C $(SMOKE_RESULT_BASE)/tidb/ 2>/dev/null || true
 	@echo "==> phase-smoke-only-tidb round=$(SMOKE_ROUND) done → $(SMOKE_RESULT_BASE)/tidb/"
@@ -1174,9 +1251,9 @@ phase-smoke-only-crdb:
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
 	         WAN_PROBE_ENABLED=0 WAN_PROBE_IPERF=0 \
 	         CRDB_USER=root CRDB_DB=tpcc SMOKE_ROUND=$(SMOKE_ROUND); \
-	  bash $(TPCC_SCRIPTS)/run.sh --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS; \
-	  bash $(TPCC_SCRIPTS)/collect.sh --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(CRDB_HOST) --ts $$TS"
-	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/crdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	  bash $(TPCC_SCRIPTS)/run.sh --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --db-host $(CRDB_HOST) --ts $$TS; \
+	  bash $(TPCC_SCRIPTS)/collect.sh --db crdb --iso $(ISO) --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --db-host $(CRDB_HOST) --ts $$TS"
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/crdb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "tar czf - -C $$ROOT/runs ." \
 	  | tar xzf - -C $(SMOKE_RESULT_BASE)/crdb/ 2>/dev/null || true
 	@echo "==> phase-smoke-only-crdb round=$(SMOKE_ROUND) done → $(SMOKE_RESULT_BASE)/crdb/"
@@ -1198,9 +1275,9 @@ phase-smoke-only-ybdb:
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
 	         WAN_PROBE_ENABLED=0 WAN_PROBE_IPERF=0 \
 	         YBDB_USER=yugabyte YBDB_DB=tpcc SMOKE_ROUND=$(SMOKE_ROUND); \
-	  bash $(TPCC_SCRIPTS)/run.sh --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS; \
-	  bash $(TPCC_SCRIPTS)/collect.sh --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT) --db-host $(YBDB_HOST) --ts $$TS"
-	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/ybdb-vm-6node-$(PLACEMENT)-$(ISO)-$(TPCC_TS); \
+	  bash $(TPCC_SCRIPTS)/run.sh --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --db-host $(YBDB_HOST) --ts $$TS; \
+	  bash $(TPCC_SCRIPTS)/collect.sh --db ybdb --iso $(ISO) --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --db-host $(YBDB_HOST) --ts $$TS"
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/ybdb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "tar czf - -C $$ROOT/runs ." \
 	  | tar xzf - -C $(SMOKE_RESULT_BASE)/ybdb/ 2>/dev/null || true
 	@echo "==> phase-smoke-only-ybdb round=$(SMOKE_ROUND) done → $(SMOKE_RESULT_BASE)/ybdb/"

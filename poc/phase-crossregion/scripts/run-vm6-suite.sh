@@ -18,7 +18,8 @@
 #   DB=tidb|crdb|ybdb
 #
 # Args:
-#   --db {tidb|crdb|ybdb}  --topology vm-6node-{P-A|P-B}  --ts <ts>
+#   --db {tidb|crdb|ybdb}  --topology vm-6node-{P-A|P-B}[-aa|-aaro]  --ts <ts>
+#   (Q17: profile token 藏 topology 段；A-S 無 token、A-A → -aa、A-A-RO → -aaro)
 #
 # Side: IDC by default (TPCC client = .31)。GCP side 由 run-vm6-aa.sh 啟動。
 #
@@ -62,6 +63,20 @@ done
 [[ "$PLACEMENT" =~ ^(P-A|P-B)$            ]] || { echo "PLACEMENT must be P-A | P-B" >&2; exit 1; }
 [[ "$PROFILE"   =~ ^(A-S|A-A-RO|A-A)$     ]] || { echo "PROFILE must be A-S | A-A-RO | A-A" >&2; exit 1; }
 [[ "$DB"        =~ ^(tidb|crdb|ybdb)$     ]] || { echo "DB must be tidb | crdb | ybdb" >&2; exit 1; }
+
+# Q17（2026-07-07 拍板）: artifact 目錄 profile token 組字檢查（fail-closed）。
+# token 插在 placement 與 iso 之間、藏進 topology 段（tests/common 零改動）：
+#   A-S → vm-6node-{P}（canonical 無 token，既有目錄名零變動）
+#   A-A → vm-6node-{P}-aa；A-A-RO → vm-6node-{P}-aaro
+case "$PROFILE" in
+  A-S)    _EXPECT_TOPO="vm-6node-${PLACEMENT}" ;;
+  A-A)    _EXPECT_TOPO="vm-6node-${PLACEMENT}-aa" ;;
+  A-A-RO) _EXPECT_TOPO="vm-6node-${PLACEMENT}-aaro" ;;
+esac
+[[ "$TOPOLOGY" == "$_EXPECT_TOPO" ]] || {
+  echo "TOPOLOGY=$TOPOLOGY 與 PROFILE=$PROFILE / PLACEMENT=$PLACEMENT 不符（Q17 預期 $_EXPECT_TOPO）— fail-closed" >&2
+  exit 1
+}
 
 # DB endpoint: IDC haproxy on 172.24.47.20:4000 (Q3 雙 haproxy 配置；IDC 既有 .47.20)
 # A-A profile 也可從 GCP haproxy (g-test-poc-4:4000) 出發；本 wrapper 默認走 IDC haproxy。
