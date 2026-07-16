@@ -115,6 +115,7 @@ p50/p95/p99 mean (ms)。逐輪原始值在各 `summary.json` 的
 | **128（主水位）** | **13251.6 (4.0%)** | **11001.1 (4.8%)** | **11138.6 (10.4%)** |
 
 \* 見 §6.1（TiDB t32 單輪下降）。† 見 §6.3（YBDB 錯誤與變異）。
+三家隨 threads 的縮放形狀差異（TiDB 近線性、CRDB/YBDB 早飽和）解讀見 §6.4。
 
 ### 5.2 t128 延遲（NEW_ORDER, ms）
 
@@ -140,7 +141,10 @@ p50/p95/p99 mean (ms)。逐輪原始值在各 `summary.json` 的
 - `觀察`：該下降僅出現一輪，未連續發生。
 - `根因未確認`：現有證據不足以歸因該輪下降。
 - `觀察`：TiDB t16 明顯低於 CRDB/YBDB，t128 反超為三家最高。
-- `機制推論`：低併發劣勢的可能機制為跨區環境下 TSO/2PC 的延遲敏感性，隨併發放大而攤平；未以 transaction trace 直接證實。
+- `實測事實`：TiDB 的 IDC 節點 CPU 大量閒置——t16 時 idc-dbhost-1 idle 79.1%（[mpstat](../results/x-cross/baseline/w128/20260712T164221+0800/tidb-vm-6node-P-A-rc-20260712T164221+0800/runs/threads-16/round-1/mpstat-db-idc-dbhost-1.txt)）；t128 時三台 idle 34.5% / 77.4% / 66.2%（[idc-1](../results/x-cross/baseline/w128/20260712T164221+0800/tidb-vm-6node-P-A-rc-20260712T164221+0800/runs/threads-128/round-1/mpstat-db-idc-dbhost-1.txt)）。t128 仍未資源飽和。
+- `機制推論`：低併發劣勢的可能機制為跨區環境下 TSO/2PC 的延遲敏感性——分層架構每筆交易多跳 RPC（client → HAProxy → tidb-server → PD TSO → TiKV pessimistic 加鎖往返），時間花在等待網路而非 CPU；延遲不隨併發惡化（p50 285→332ms），吞吐即隨 threads 近線性成長。未以 transaction trace 直接證實。
+- `實測事實`（組態）：TiDB 的 HAProxy backend 為 `172.24.40.32:4000, 172.24.40.33:4000, 10.160.152.11:4000`（ansible playbook 定義）——約 1/3 連線的 SQL 層落在 GCP tidb-server，每個 statement 跨 WAN 回 IDC 的 TiKV/PD。
+- `機制推論`：上述組態同時解釋「t16 偏低」與「線性段特別長」——跨 WAN 連線把平均單筆延遲墊高、單 thread 吞吐壓低，但幾乎不消耗 IDC CPU。
 - 附註：`efficiency%` 欄為無 think/keying 口徑，依既有慣例忽略（見 [pipeline-log.md](../results/x-cross/pipeline-log.md) §2.3 效度邊界）。
 
 ### 6.2 CockroachDB
@@ -148,6 +152,8 @@ p50/p95/p99 mean (ms)。逐輪原始值在各 `summary.json` 的
 - `實測事實`：四檔全程 0 error（2,314,032 筆交易）。
 - `觀察`：t16 的 CV 15.2% 高於其他檔位（6.2%/4.7%/4.8%）。
 - `根因未確認`：t16 波動未歸因。
+- `實測事實`：t16 時最熱 IDC 節點已接近飽和——idc-dbhost-1 idle 19.4%、iowait 10.5%（[mpstat](../results/x-cross/baseline/w128/20260714T163716+0800/crdb-vm-6node-P-A-rc-20260714T163716+0800/runs/threads-16/round-1/mpstat-db-idc-dbhost-1.txt)）；t128 時 idle 12.2%（[mpstat](../results/x-cross/baseline/w128/20260714T163716+0800/crdb-vm-6node-P-A-rc-20260714T163716+0800/runs/threads-128/round-1/mpstat-db-idc-dbhost-1.txt)）。
+- `機制推論`：t16 即近飽和可解釋吞吐早平頂（16→128 僅 +16%）與 p99 隨併發放大（122→960ms，×7.9）——增加的併發主要轉為排隊。對稱架構下 SQL 執行、交易協調與儲存疊加在同 3 台 IDC 節點；未以內部 queue 指標直接證實。
 - `實測事實`：placement gate 計數口徑為 07-14 修正後的 lease 單欄版（§8 C1 之修正五）；本 cell 的 gate 值 idc=11/11。
 
 ### 6.3 YugabyteDB 錯誤（309 筆）
@@ -158,6 +164,16 @@ p50/p95/p99 mean (ms)。逐輪原始值在各 `summary.json` 的
 - **尚未證實**：集群已拆除，未在存活期間直接 dump status tablet 的 leader 分布；現有證據不足以建立單一因果鏈，亦不足以排除其他機制。
 - **下一步**（後續驗證）：gcp-replica-gate 增加 status tablet leader 檢查與 `leader_stepdown` 修復，之後重跑驗證錯誤是否歸零。
 - `觀察`：若上述機制成立，此現象是 P-A 語意下系統層跨區成本的實例，對容量與 SLO 評估有參考價值；此判讀依賴前述未證實的機制推論。
+- `實測事實`：最熱 IDC 節點利用率隨併發逼近飽和——idc-dbhost-1 idle 由 t16 43.7% → t64 26.4%（[mpstat](../results/x-cross/baseline/w128/20260714T163716+0800/ybdb-vm-6node-P-A-rc-20260714T163716+0800/runs/threads-64/round-1/mpstat-db-idc-dbhost-1.txt)）→ t128 23.7%（[mpstat](../results/x-cross/baseline/w128/20260714T163716+0800/ybdb-vm-6node-P-A-rc-20260714T163716+0800/runs/threads-128/round-1/mpstat-db-idc-dbhost-1.txt)）；idc-2/3 的 iowait 約 10-14%。
+- `機制推論`：t64 起最熱節點約 75% busy 且 I/O 吃緊，可解釋 t64→t128 成長僅 ×1.02（吞吐平頂）；未以 tserver 內部指標直接證實。
+
+### 6.4 吞吐縮放形狀（跨家觀察）
+
+- `觀察`：threads 每倍增的 tpmC 成長倍率——TiDB ×1.84 / ×2.01 / ×1.72（近線性、t128 未見平頂）；CRDB ×1.09 / ×1.04 / ×1.02（t16 起即平）；YBDB ×1.13 / ×1.34 / ×1.02（t64 平頂）。
+- `實測事實`：對應的資源證據見 §6.1-6.3——TiDB t128 仍大量 CPU 閒置；CRDB t16、YBDB t64 起最熱節點接近飽和。每節點 4 CPU；P-A 下 leader/lease 全在 3 台 IDC 節點，GCP 3 台僅承擔複製。
+- `機制推論`：TiDB 為延遲受限（吞吐 ≈ 併發 ÷ 單筆延遲，延遲近乎不變故隨 threads 線性）；CRDB/YBDB 為資源受限（單筆服務時間短，少量 threads 即吃滿 3 台 IDC 節點，再加併發轉為排隊）。
+- `觀察`：三家最熱節點皆為 idc-dbhost-1——該節點同時是 gateway 焦點與控制面所在（PD leader / YB master / CRDB 首位 backend），有效容量低於 3 台均攤。
+- 判讀限制：形狀差異不構成排名。低併發場景（t16）TiDB 吞吐僅另兩家的 1/4-1/3；「t128 反超」只在本矩陣範圍內成立，TiDB 的實際飽和點未量測（無 t256 資料，不可外推）。
 
 ## 7. 異常案例與採用判定（TiDB#1 → TiDB#2）
 
