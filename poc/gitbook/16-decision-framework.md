@@ -43,6 +43,8 @@ flowchart TD
 | 跨區讀就近、可接受資料陳舊 | placement + stale follower read | locality、staleness、fallback 與 read workload 證據 | 先做 A-A-RO，結果保留 X-CROSS |
 | 跨區雙端寫入或 DR | placement、quorum、failover 與衝突處理 | A-A、chaos、RTO/RPO、IDC-only paired control | 尚不可做正式承諾 |
 
+TiDB 服務整併或拆分時，先套用[單一／多 Cluster 決策樹與 OS 資源分層](08-resource-control.md#一個-tidb-cluster-還是多個)，再選擇要執行的 evidence family；不能用單次 `S-BASE` 吞吐直接決定 Cluster 數量。
+
 ## 證據升級規則
 
 | 等級 | 最低條件 | 可寫的結論 |

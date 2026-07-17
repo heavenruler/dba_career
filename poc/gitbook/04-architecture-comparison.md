@@ -61,6 +61,7 @@ flowchart TB
 ## 決策影響或待驗證
 
 - [決策] 架構審查以「角色責任、故障域、容量擴展、操作面與觀測性」作比較維度，不採單一 benchmark 排行。
+- [決策] TiDB 要採單一或多 Cluster，需再依控制平面、RPO/RTO、維護與 OS/storage 隔離判斷，見[資源控制：一個或多個 TiDB Cluster](08-resource-control.md#一個-tidb-cluster-還是多個)。
 - [待驗證] 對每個候選系統補齊控制平面故障、資料放置收斂、連線路由和背景作業的量測與復原程序。
 - [待驗證] 在目標部署版本重新確認官方支援邊界與營運限制；官方能力來源索引與本地實作對齊見 [`results/PoC-DESIGN.md`](../results/PoC-DESIGN.md)。
 
