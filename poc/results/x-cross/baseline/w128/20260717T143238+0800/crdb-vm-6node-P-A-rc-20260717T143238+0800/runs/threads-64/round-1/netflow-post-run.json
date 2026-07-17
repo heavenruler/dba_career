@@ -1,0 +1,39 @@
+{
+  "label": "post-run",
+  "timestamp": "2026-07-17T16:40:17Z",
+  "hosts": {
+    "172.24.40.31": {
+      "traffic_bytes": {"iptables_to_gcp_bytes": 924301222025, "iptables_to_idc_bytes": 1575876179551, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.32": {
+      "26257": {"idc": 8, "gcp": 12, "other": 23},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 168634705604, "iptables_to_idc_bytes": 245634370848, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.33": {
+      "26257": {"idc": 9, "gcp": 11, "other": 19},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 128502750415, "iptables_to_idc_bytes": 158863439733, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.34": {
+      "26257": {"idc": 8, "gcp": 12, "other": 19},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 148518512238, "iptables_to_idc_bytes": 136175847322, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.11": {
+      "26257": {"idc": 12, "gcp": 10, "other": 19},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 38981438322, "iptables_to_idc_bytes": 9786906987, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.12": {
+      "26257": {"idc": 13, "gcp": 9, "other": 21},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 68719367418, "iptables_to_idc_bytes": 6962800098, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.13": {
+      "26257": {"idc": 11, "gcp": 8, "other": 22},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 36112586020, "iptables_to_idc_bytes": 6456535323, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.14": {
+      "traffic_bytes": {"iptables_to_gcp_bytes": 640648214, "iptables_to_idc_bytes": 18324752, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.15": {
+      "traffic_bytes": {"iptables_to_gcp_bytes": 997303347, "iptables_to_idc_bytes": 33509829, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    }
+  }
+}

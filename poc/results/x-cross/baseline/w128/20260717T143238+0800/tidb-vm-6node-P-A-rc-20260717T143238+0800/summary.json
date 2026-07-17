@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "phase": "phase-crossregion",
+  "result_scope": "X-CROSS",
+  "baseline_family": "crossregion",
+  "manifest_sha256": "b7256b824aa884207205a045a74c9c1e8da8c3465a5244eb7a4220a58f61d858",
+  "db": "tidb",
+  "topology": "vm-6node-P-A",
+  "iso": "rc",
+  "ts": "20260717T143238+0800",
+  "warehouses": 128,
+  "rounds_per_thread_group": 5,
+  "skip_rounds": 0,
+  "threads_list": [
+    16,
+    32,
+    64,
+    128
+  ],
+  "thread_results": {
+    "16": {
+      "tpmC_mean": 1584.4,
+      "tpmC_per_round": [
+        1121.8,
+        1082.1,
+        1894.1,
+        1905.1,
+        1918.8
+      ],
+      "tpmC_range_mean_pct": 52.8,
+      "tpmTotal_mean": 3511.4,
+      "efficiency_mean_pct": 96.2,
+      "NEW_ORDER": {
+        "p50_mean_ms": 335.6,
+        "p95_mean_ms": 738.2,
+        "p99_mean_ms": 1275.1,
+        "total_count": 39634,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 87841,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "32": {
+      "tpmC_mean": 3614.3,
+      "tpmC_per_round": [
+        3693.1,
+        3705.9,
+        3702.6,
+        3227.3,
+        3742.4
+      ],
+      "tpmC_range_mean_pct": 14.3,
+      "tpmTotal_mean": 8039.3,
+      "efficiency_mean_pct": 219.6,
+      "NEW_ORDER": {
+        "p50_mean_ms": 318.8,
+        "p95_mean_ms": 443.0,
+        "p99_mean_ms": 644.3,
+        "total_count": 90393,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 201051,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "64": {
+      "tpmC_mean": 7176.1,
+      "tpmC_per_round": [
+        7186.6,
+        7155.0,
+        7332.1,
+        7185.4,
+        7021.2
+      ],
+      "tpmC_range_mean_pct": 4.3,
+      "tpmTotal_mean": 15966.2,
+      "efficiency_mean_pct": 435.9,
+      "NEW_ORDER": {
+        "p50_mean_ms": 318.8,
+        "p95_mean_ms": 419.4,
+        "p99_mean_ms": 570.4,
+        "total_count": 179461,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 399297,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "128": {
+      "tpmC_mean": 12526.5,
+      "tpmC_per_round": [
+        12933.5,
+        12516.9,
+        12412.1,
+        12548.0,
+        12222.2
+      ],
+      "tpmC_range_mean_pct": 5.7,
+      "tpmTotal_mean": 27840.8,
+      "efficiency_mean_pct": 761.0,
+      "NEW_ORDER": {
+        "p50_mean_ms": 355.7,
+        "p95_mean_ms": 506.7,
+        "p99_mean_ms": 677.8,
+        "total_count": 313151,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 696041,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    }
+  },
+  "generated_at": "2026-07-17T18:31:07.697807+08:00",
+  "generated_by": "tests/common/summary-from-stdout.py v1",
+  "source_files": "runs/threads-*/round-*/go-tpc-stdout.txt",
+  "region_routing_evidence": {
+    "near_read_setup": {
+      "log_present": true,
+      "vars_snapshot": "Variable_name\tValue\ntidb_replica_read\tclosest-replicas\nVariable_name\tValue\npd_enable_follower_handle_region\tON\nVariable_name\tValue\ntidb_enable_tso_follower_proxy\tOFF"
+    },
+    "placement_gate": {
+      "verdict": "pass",
+      "reason": "P-A idc_majority idc=19/19 (100%)",
+      "placement": "P-A",
+      "idc_leader_count": 19,
+      "gcp_leader_count": 0,
+      "total_leader_samples": 19,
+      "json_path": "prepare/placement-gate-P-A.json"
+    }
+  }
+}

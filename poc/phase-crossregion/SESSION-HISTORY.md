@@ -1143,8 +1143,47 @@ lease 全 IDC）。
 去重）、GCP 5 台已拆；**IDC 3 台 destroy 卡 vSphere API 斷線（連兩晚同模式，
 疑夜間網路維護窗），待恢復補跑 `phase9-destroy`**。
 
-**Last updated**：2026-07-15 YBDB+CRDB W=128 正式 cell 完成（detached 指揮鏈
-全程無 Mac 依賴），CRDB 三修（enforcer/stale-race/gate 計數），IDC VM destroy
-待 vSphere 恢復。
-**Next review**：補 IDC destroy；結案報告 §5 已可回填三家有效 cell；YBDB
-第六問題（status tablet leader gate 補強）排入下輪。
+## 2026-07-17/18 — #3 同批三家重跑（win-3db 單鏈、零人工介入）
+
+**目的**：一輪消 O3（非同批）/O9（流程穩定）/TiDB 證據缺口，並驗證 S1
+status-tablet gate（07-17 上線，commit `f779242b`）能否讓 YBDB timeout 歸零。
+
+**執行**：`TPCC_TS=20260717T143238+0800`、PLACEMENT=P-A、W=128×4 檔×5 輪。
+新 driver [win-3db-w128.sh](scripts/win-3db-w128.sh)（commit `abcfa903`）於 .31
+detached 依序 TiDB→YBDB→CRDB，每 cell static-check fail-closed 全綠才進下一家、
+完成即歸檔 `/var/lib/poc-tpcc-archive/`。14:32 發射 → 01:45 `.done`，
+**11h13m 全程零人工介入**（O9 蓋章）。TiDB cell 18:31 PASS、YBDB 22:21 PASS、
+CRDB 01:45 PASS；phase9 fetch（去重後 120M 入 `baseline/w128/20260717T143238+0800/`）
+＋兩側 VM destroy、terraform state 歸零。
+
+**結果**（t128 主水位，range% 口徑）：TiDB 12,526.5（5.7%）0 err、
+CRDB 10,163.4（19.2%，R4 單輪塌 8,673）0 err、YBDB 12,769.5（13.0%）156 err。
+
+**S1 驗證（O1 關鍵證據）**：prepare 後 gate dump 到 **9/16 transaction status
+tablet leader 在 GCP** → `leader_stepdown` → 10s 後 16/16 IDC 才放行
+（[status-tablets 前後 dump](../results/x-cross/baseline/w128/20260717T143238+0800/ybdb-vm-6node-P-A-rc-20260717T143238+0800/gate/gcp-replica-gate-ybdb-status-tablets.txt)）。
+「leader 落 GCP」由機制推論升級為實測事實；`list_tablets system transactions`
+第一形式即成功（dual-form fallback 未動用）。**但錯誤未歸零**：156 筆
+（3/9/59/85 隨併發遞增，特徵仍 ~5.4s ≈ 5s deadline），較 #2 批 309 筆減半。
+解讀：stepdown 為一次性修復；殘餘錯誤指向高併發尾延遲逼近 5s（t128 99.9th
+3.9-4.8s）及/或 run 中漂回（集群已拆不可回溯）。→ 依拍板備援走
+`transaction_rpc_timeout_ms` 5000→15000（下輪 YBDB 驗證）。
+
+**額外收穫**：TiDB 本批補上 gcp-replica-gate（gcp_followers=19/gcp_leaders=0，
+#2 批缺此層）；YBDB tpmC 較 #2 批 +14.6%（跨批觀察，方向與 S1 修復一致）。
+**新單輪異常**（O2 追加，均根因未確認）：TiDB t16 前二輪偏低（~-43%）、
+TiDB t32 R4 小幅下降（與 #2 批 t32 同型態）、YBDB t64 R4 深塌 3,893（與該檔
+59 筆錯誤同檔位）、CRDB t128 R4 塌 8,673。
+
+**工具事故（RTK）**：07-17 首次 phase1 重建被 RTK hook（PreToolUse Bash 命令
+改寫層）腰斬——make ~2 分鐘假性 exit=0、terraform apply 中途被殺，且鑑識命令
+輸出全數失真。已移除 hook；重跑後全綠。教訓：任何改寫命令/輸出的中間層都是
+量測與運維的失真源。
+
+**報告**：07-18 [XCROSS-CLOSING-REPORT-DRAFT.md](XCROSS-CLOSING-REPORT-DRAFT.md)
+改採 #3 批為正式數據（#2 批轉備查、§9.4 保留證據索引）；O3/O9 移 §8.1 結案、
+O8 已結、O1/O2/O4/O6 更新。
+
+**Last updated**：2026-07-18 #3 同批三家零干預完成、報告改採 #3 批。
+**Next review**：YBDB `transaction_rpc_timeout_ms` 15000 重跑（O1 收殘）；
+A-A-RO smoke（程序＋read-tpmTotal 計算驗證）；P-B×A-S（CRDB 先行）。

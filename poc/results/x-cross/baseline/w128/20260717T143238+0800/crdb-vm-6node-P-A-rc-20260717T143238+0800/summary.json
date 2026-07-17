@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "phase": "phase-crossregion",
+  "result_scope": "X-CROSS",
+  "baseline_family": "crossregion",
+  "manifest_sha256": "b7256b824aa884207205a045a74c9c1e8da8c3465a5244eb7a4220a58f61d858",
+  "db": "crdb",
+  "topology": "vm-6node-P-A",
+  "iso": "rc",
+  "ts": "20260717T143238+0800",
+  "warehouses": 128,
+  "rounds_per_thread_group": 5,
+  "skip_rounds": 0,
+  "threads_list": [
+    16,
+    32,
+    64,
+    128
+  ],
+  "thread_results": {
+    "16": {
+      "tpmC_mean": 9573.6,
+      "tpmC_per_round": [
+        9331.1,
+        9679.5,
+        9509.9,
+        9653.9,
+        9693.7
+      ],
+      "tpmC_range_mean_pct": 3.8,
+      "tpmTotal_mean": 21274.7,
+      "efficiency_mean_pct": 581.6,
+      "NEW_ORDER": {
+        "p50_mean_ms": 59.1,
+        "p95_mean_ms": 99.9,
+        "p99_mean_ms": 127.5,
+        "total_count": 239322,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 531815,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "32": {
+      "tpmC_mean": 10515.9,
+      "tpmC_per_round": [
+        11193.7,
+        10777.8,
+        10574.7,
+        10131.5,
+        9901.7
+      ],
+      "tpmC_range_mean_pct": 12.3,
+      "tpmTotal_mean": 23369.8,
+      "efficiency_mean_pct": 638.8,
+      "NEW_ORDER": {
+        "p50_mean_ms": 106.6,
+        "p95_mean_ms": 187.9,
+        "p99_mean_ms": 239.9,
+        "total_count": 262883,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 584218,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "64": {
+      "tpmC_mean": 11075.8,
+      "tpmC_per_round": [
+        10997.8,
+        10759.7,
+        11258.3,
+        11434.5,
+        10928.8
+      ],
+      "tpmC_range_mean_pct": 6.1,
+      "tpmTotal_mean": 24608.2,
+      "efficiency_mean_pct": 672.8,
+      "NEW_ORDER": {
+        "p50_mean_ms": 197.9,
+        "p95_mean_ms": 362.4,
+        "p99_mean_ms": 469.8,
+        "total_count": 276820,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 615085,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "128": {
+      "tpmC_mean": 10163.4,
+      "tpmC_per_round": [
+        10562.0,
+        10628.7,
+        10526.0,
+        8673.0,
+        10427.5
+      ],
+      "tpmC_range_mean_pct": 19.2,
+      "tpmTotal_mean": 22541.5,
+      "efficiency_mean_pct": 617.4,
+      "NEW_ORDER": {
+        "p50_mean_ms": 422.8,
+        "p95_mean_ms": 778.5,
+        "p99_mean_ms": 1020.1,
+        "total_count": 254020,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 563451,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    }
+  },
+  "generated_at": "2026-07-18T01:40:02.599592+08:00",
+  "generated_by": "tests/common/summary-from-stdout.py v1",
+  "source_files": "runs/threads-*/round-*/go-tpc-stdout.txt",
+  "region_routing_evidence": {
+    "near_read_setup": {
+      "log_present": true,
+      "vars_snapshot": "kv.closed_timestamp.follower_reads.enabled\nt\nNOTICE: \"kv.closed_timestamp.follower_reads_enabled\" is now an alias for \"kv.closed_timestamp.follower_reads.enabled\", the preferred setting name\nkv.closed_timestamp.target_duration\n00:00:03\nkv.closed_timestamp.side_transport_interval\n00:00:00.2"
+    },
+    "placement_gate": {
+      "verdict": "pass",
+      "reason": "P-A idc_majority idc=11/11 (100%)",
+      "placement": "P-A",
+      "idc_leader_count": 11,
+      "gcp_leader_count": 0,
+      "total_leader_samples": 11,
+      "json_path": "prepare/placement-gate-P-A.json"
+    }
+  }
+}

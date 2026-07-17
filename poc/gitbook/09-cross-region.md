@@ -53,15 +53,18 @@ flowchart TB
 
 W=128 主資料點：三家各有一個修正後有效 cell（皆 `N=1`）＋一次重大效度事件：
 
-- [本 PoC 實測｜N=1] **三家採用 cell（`t=128` 主水位，帶真實 GCP 複製成本）：**
-  TiDB 13,251.6 tpmC（07-12 批）、CockroachDB 11,001.1（07-14 批，0 error）、
-  YugabyteDB 11,138.6（07-14 批，帶 0.011-0.03% 跨 WAN 協調錯誤 caveat，見下）。
-  三 cell 均通過三重驗證：placement gate、**GCP 副本存在 gate**（逐 range/tablet
-  驗證資料真的到 GCP）、GCP 端 near-read probe 各 20 輪 `fail_count=0`。
-  TiDB 與另兩家非同批次；逐項證據連結見[X-CROSS 結案報告雛形 §2/§5](../phase-crossregion/XCROSS-CLOSING-REPORT-DRAFT.md)。
-- [本 PoC 實測｜N=1] 2026-07-03 TiDB P-A/A-S cell：`t=128` 為 16,808.6 tpmC、CV 2.4%、error 0%——與 07-12 cell 的量級差異（約 -21%）屬跨批次變異，兩者皆有效，引用須註明批次。[來源與採樣完整性](../results/x-cross/pipeline-log.md#23-2026-07-03-tidb--p-a--a-s-w128-正式口徑-cell首個)
+- [本 PoC 實測｜N=1] **三家採用 cell（07-17 同批、`t=128` 主水位，帶真實 GCP 複製成本）：**
+  TiDB 12,526.5 tpmC（0 error）、CockroachDB 10,163.4（0 error）、
+  YugabyteDB 12,769.5（帶 0.0072% 跨 WAN 協調錯誤 caveat，見下）。
+  三家同批同鏈（單一 detached driver 依序跑完，11h13m 零人工介入），均通過
+  三重驗證：placement gate、**GCP 副本存在 gate**（逐 range/tablet 驗證資料
+  真的到 GCP）、GCP 端 near-read probe 各 20 輪 `fail_count=0`。
+  逐項證據連結見[X-CROSS 結案報告雛形 §3/§5](../phase-crossregion/XCROSS-CLOSING-REPORT-DRAFT.md)。
+  前一代採用批（07-12/07-14，TiDB 13,251.6／CRDB 11,001.1／YBDB 11,138.6）
+  轉備查——數據有效但非同批，跨批變異未歸因，引用須註明批次。
+- [本 PoC 實測｜N=1] 2026-07-03 TiDB P-A/A-S cell：`t=128` 為 16,808.6 tpmC、CV 2.4%、error 0%——TiDB t128 跨批走勢 16,808.6（07-03）→ 13,251.6（07-12）→ 12,526.5（07-17），變異未歸因，各批皆有效，引用須註明批次。[來源與採樣完整性](../results/x-cross/pipeline-log.md#23-2026-07-03-tidb--p-a--a-s-w128-正式口徑-cell首個)
 - [本 PoC 實測｜N=1] TiDB 首輪（07-11）`t=128` CV 102.2% 判定為單次環境雜訊（重跑同參數 CV 4.0%），保留備查不採用。
-- [本 PoC 實測｜N=1] **效度事件（2026-07-13 覆核發現，07-14/15 修正後重測結案）：** 07-11 批 CRDB/YBDB 的 GCP 節點經查**完全沒有 tpcc 資料副本**——CRDB 的 zone config `constraints` list 形式與 `voter_constraints` 自相矛盾、YBDB 的 read-replica 因 tserver 缺 placement_uuid 從未實體化，且 GCP 端 probe 因探測主機缺 DB client 四個 suite 全滅卻靜默通過。合計七個根因逐一修正（含藏了整個專案週期的 gate grep 計數 bug），以 fail-closed 副本 gate + probe 斷言重測取得上列採用 cell。**遺留**：YugabyteDB 的 transaction status tablet（系統層）leader 部分落 GCP，造成少量跨 WAN commit 協調錯誤——placement gate 只驗 tpcc 表的盲區再現於系統層，gate 補強排入下輪。全程見[執行歷史](../phase-crossregion/SESSION-HISTORY.md) 2026-07-13～07-15 各節。
+- [本 PoC 實測｜N=1] **效度事件（2026-07-13 覆核發現，07-14/15 修正後重測結案）：** 07-11 批 CRDB/YBDB 的 GCP 節點經查**完全沒有 tpcc 資料副本**——CRDB 的 zone config `constraints` list 形式與 `voter_constraints` 自相矛盾、YBDB 的 read-replica 因 tserver 缺 placement_uuid 從未實體化，且 GCP 端 probe 因探測主機缺 DB client 四個 suite 全滅卻靜默通過。合計七個根因逐一修正（含藏了整個專案週期的 gate grep 計數 bug），以 fail-closed 副本 gate + probe 斷言重測取得上列採用 cell。**遺留與後續**：YugabyteDB 的 transaction status tablet（系統層）leader 部分落 GCP，造成少量跨 WAN commit 協調錯誤——placement gate 只驗 tpcc 表的盲區再現於系統層。07-17 系統層 gate 補強上線並直接證實（prepare 後 9/16 leader 在 GCP、`leader_stepdown` 修復後才開跑），錯誤 309→156 減半但未歸零（殘餘指向高併發尾延遲逼近 5s RPC deadline），timeout 上調驗證排入下輪。全程見[執行歷史](../phase-crossregion/SESSION-HISTORY.md) 2026-07-13～07-18 各節。
 
 ![X-CROSS TiDB W=128 逐輪 tpmC 三組對照](assets/charts/xcross-w128-tidb-rounds.svg)
 
@@ -71,7 +74,7 @@ W=128 主資料點：三家各有一個修正後有效 cell（皆 `N=1`）＋一
 
 | 可回答 | 不可回答 | 原因 |
 |---|---|---|
-| 三家在 P-A/A-S 下的六節點 framework、副本/lease 放置、GCP 同步與 W=128 採樣可完成 | 任兩引擎誰更適合跨區 | scope 不可排名；TiDB 與另兩家非同批、YBDB 帶系統層 caveat |
+| 三家在 P-A/A-S 下的六節點 framework、副本/lease 放置、GCP 同步與 W=128 採樣可完成 | 任兩引擎誰更適合跨區 | scope 不可排名；各 DB N=1、YBDB 帶系統層 caveat |
 | P-A/A-S 是可執行的測試路徑 | 相對 S-BASE 的 WAN penalty | 節點數、quorum、硬體與 topology 都不同，非 paired control |
 | 同 cluster 的低變異可被觀測 | RTO/RPO 或故障可用性 | 尚須獨立 failover/chaos 實驗與量測 |
 

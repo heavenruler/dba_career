@@ -1,0 +1,17 @@
+{
+  "label": "gcp-t32-r5",
+  "db": "tidb",
+  "db_host": "10.160.152.11",
+  "duration_sec": 60,
+  "controller_host": "g-test-poc-5.asia-east1-a.c.lab-service-project-dba.internal",
+  "select_1": {
+    "p50_ms": 13.371, "p95_ms": 14.439, "p99_ms": 15.381,
+    "samples": 388, "fail_count": 0
+  },
+  "update_1": {
+    "p50_ms": 23.944, "p95_ms": 25.931, "p99_ms": 38.881,
+    "samples": 388, "fail_count": 0
+  },
+  "interpretation_hint": "若 SELECT_1 p99 跨 IDC vs GCP 兩端皆 < 10ms = closest-replicas 生效；GCP 端 ~50ms = follower read 沒生效或 fall back to leader",
+  "generated_at": "2026-07-17T09:07:01Z"
+}

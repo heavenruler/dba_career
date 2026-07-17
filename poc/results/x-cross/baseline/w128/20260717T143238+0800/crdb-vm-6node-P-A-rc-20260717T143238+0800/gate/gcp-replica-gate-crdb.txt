@@ -1,0 +1,6 @@
+lease_holder_locality	replicas	count
+region=idc,zone=idc-vlan241	region=idc,zone=idc-vlan241|region=idc,zone=idc-vlan241|region=gcp,zone=gcp-asia-east1-a	17
+region=idc,zone=idc-vlan241	region=idc,zone=idc-vlan241|region=gcp,zone=gcp-asia-east1-c|region=idc,zone=idc-vlan241	16
+region=idc,zone=idc-vlan241	region=idc,zone=idc-vlan241|region=idc,zone=idc-vlan241|region=gcp,zone=gcp-asia-east1-b	13
+[gcp-replica-gate 23:07:13] crdb: ranges_missing_gcp_replica=0 gcp_leaseholders=0
+[gcp-replica-gate 23:07:13] PASS: crdb GCP 副本存在且 leader/lease 全在 IDC（P-A；證據 /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-A-rc-20260717T143238+0800/gate/gcp-replica-gate-crdb.txt）
