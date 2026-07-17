@@ -177,7 +177,7 @@ help:
 	@echo "  make phase6-tidb-result TPCC_TS=<ts>        - parse + print TiDB tpmC / latency"
 	@echo "  make teardown-tidb                          - tiup cluster destroy (best-effort)"
 	@echo "  make phase4-ybdb-deploy                     - Ansible deploy YBDB cluster"
-	@echo "  make phase4-ybdb-fix6n                      - post-deploy: GCP IPv4 advertise + placement_info + preferred_zone"
+	@echo "  make phase4-ybdb-fix6n                      - post-deploy: GCP IPv4 advertise + placement_info + preferred_zone(P-A only；P-B 不 pin leader)"
 	@echo "  make phase4                                 - phase4-ybdb-deploy + phase4-ybdb-fix6n"
 	@echo "  make phase7-ybdb-smoke TPCC_TS=<ts>         - 5-min YBDB smoke via run-vm6-suite.sh"
 	@echo "  make phase7-ybdb-result TPCC_TS=<ts>        - parse + print YBDB tpmC / latency"
@@ -405,7 +405,9 @@ phase4-ybdb-deploy: phase-cleanup-crdb
 # Per SESSION §2.6:
 #   1. GCP yugabyted restart with --advertise_address=<IPv4> to avoid IPv6 fe80 hostname bug
 #   2. sleep 60 (tserver_unresponsive_timeout_ms default)
-#   3. yb-admin modify_placement_info + set_preferred_zones
+#   3. yb-admin modify_placement_info + set_preferred_zones（P-A）
+# PLACEMENT 分流（2026-07-17）：P-A 行為完全不變；P-B 副本布局同 P-A（idc:2+gcp:1）
+# 但不 set_preferred_zones（不 pin leader，讓 LB 自然分散）。quorum gate 兩者照跑。
 phase4-ybdb-fix6n:
 	@echo "==> [start] phase4-ybdb-fix6n at $$(date +%Y-%m-%dT%H:%M:%S%z) (timeout=$(TIMEOUT_PHASE4_FIX6N)s)"
 	@echo "==> phase4-ybdb-fix6n: GCP restart loop skipped — playbook now advertises IPv4 directly via ansible_host"
@@ -430,6 +432,17 @@ phase4-ybdb-fix6n:
 	  for host in $$DEAD_HOSTS; do \
 	    /opt/yugabyte/bin/yb-admin --master_addresses=$$MASTERS change_blacklist REMOVE $$host 2>&1 | tail -1; \
 	  done; true'
+ifeq ($(PLACEMENT),P-B)
+	@echo "==> P-B live placement: 2 IDC + 1 GCP voter (RF=3)，leader 不 pin — 由 LB 自然分散"
+	@echo "    (副本布局與 P-A 完全相同——P-B 差異只在 leader 分散。"
+	@echo "     S3 取捨：yb-admin set_preferred_zones 雖可多 zone 並列，但跨版本對"
+	@echo "     『同優先級多 zone』的 leader 均衡行為保證不足；保守做法 = 完全不設"
+	@echo "     preferred_zones（deploy 為 fresh cluster、無殘留 pin），LB 依 raft 自然"
+	@echo "     分佈 leader，與 prepare.sh P-B gate 30-70% spread 口徑一致。)"
+	-ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) delete_read_replica_placement_info" 2>/dev/null
+	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) modify_placement_info '104.idc.vlan241:2,104.gcp.asia-east1:1' 3"
+	@echo "==> skip set_preferred_zones（P-B：不 pin leader，讓 LB 自然分散）"
+else
 	@echo "==> P-A live placement: 2 IDC + 1 GCP voter (RF=3)，leader 由 preferred_zones 固定 IDC"
 	@echo "    (2026-07-13 修正：前版 Plan B 的 read_replica 要求 placement_uuid=ybdb_gcp_rr 的 tserver，"
 	@echo "     但 playbook 從未設此 flag → RR tablet 永不實體化，GCP SST=0B、資料零同步。"
@@ -441,6 +454,7 @@ phase4-ybdb-fix6n:
 	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) modify_placement_info '104.idc.vlan241:2,104.gcp.asia-east1:1' 3"
 	@echo "==> set_preferred_zones = IDC（tablet leader 全數固定 IDC）"
 	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) set_preferred_zones 104.idc.vlan241"
+endif
 	@echo "==> wait load_balancer Idle=1 sustained for 60s (best practice: not single-sample)"
 	@idle_count=0; for i in $$(seq 1 90); do \
 	  out=$$(ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_is_load_balancer_idle" 2>&1); \
@@ -458,7 +472,11 @@ phase4-ybdb-fix6n:
 	@alive=$$(ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) list_all_tablet_servers" 2>/dev/null | grep -c ALIVE); \
 	echo "  ALIVE tservers: $$alive (expect 6)"; \
 	[ $$alive -ge 6 ] || { echo "[fix6n] health check FAIL — abort"; exit 1; }
+ifeq ($(PLACEMENT),P-B)
+	@echo "==> verify placement: live = idc:2 + gcp(asia-east1):1, preferred zone = (none, P-B)"
+else
 	@echo "==> verify placement: live = idc:2 + gcp(asia-east1):1, preferred zone = idc"
+endif
 	ssh root@$(IDC_NODES_HEAD) "/opt/yugabyte/bin/yb-admin --master_addresses=$(YB_MASTER_ADDR) get_universe_config" | python3 -m json.tool | head -50
 	@echo "==> [end]   phase4-ybdb-fix6n at $$(date +%Y-%m-%dT%H:%M:%S%z)"
 
