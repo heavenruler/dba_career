@@ -1,0 +1,62 @@
+name: Update commit heatmap
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+  schedule:
+    - cron: "17 2 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-commit-heatmap-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Generate commit heatmap
+        run: |
+          python3 scripts/generate_commit_heatmap.py \
+            --branch master \
+            --days 365 \
+            --output assets/commit-heatmap.svg
+
+      - name: Validate SVG XML
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          root = ET.parse("assets/commit-heatmap.svg").getroot()
+          expected = "{http://www.w3.org/2000/svg}svg"
+          if root.tag != expected:
+              raise SystemExit(f"unexpected SVG root element: {root.tag}")
+          PY
+
+      - name: Check for SVG changes
+        id: changes
+        run: |
+          if [ -z "$(git status --porcelain -- assets/commit-heatmap.svg)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push updated SVG
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/commit-heatmap.svg
+          git commit -m "chore: update commit heatmap [skip ci]"
+          git push origin HEAD:master
