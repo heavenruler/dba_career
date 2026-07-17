@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync todo filter_all filter_all_bg filter_status filter_stop filter_log
+.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync upload_collector upload_collector_dry_run todo filter_all filter_all_bg filter_status filter_stop filter_log
 
 TODO_PID := todo.pid
 TODO_OUT := todo.out
@@ -36,6 +36,8 @@ help:
 		'  make ocr_pdf             OCR every needs_ocr doc (image-only PDFs); requires tesseract-lang' \
 		'  make audit_sources       compare manifest, collector PDFs, and extracted text' \
 		'  make build_chunks        build chunks for all extracted/filtered documents (page-tracked)' \
+		'  make upload_collector_dry_run  preview Cloudflare R2 upload for collector PDFs' \
+		'  make upload_collector    upload collector PDFs to Cloudflare R2; requires KB_R2_BUCKET' \
 		'  make clean_generated     delete generated/ rebuildable outputs' \
 		'' \
 		'LLM filtering:' \
@@ -135,6 +137,13 @@ sync: reconcile_manifest extract_pdf ocr_pdf
 	@$(MAKE) audit_sources
 	@$(MAKE) todo
 	@echo "[sync] 完成 — 新增的 PDF 已抽取、OCR、切塊、審核、todo.sh 重生完畢"
+
+upload_collector_dry_run:
+	@DRY_RUN=1 scripts/upload_collector_r2.sh $(if $(DOC_ID),collector/$(DOC_ID).pdf,)
+
+upload_collector:
+	@if [ -z "$$KB_R2_BUCKET" ]; then echo "需要 KB_R2_BUCKET=<bucket>"; exit 1; fi
+	@DRY_RUN=0 scripts/upload_collector_r2.sh $(if $(DOC_ID),collector/$(DOC_ID).pdf,)
 
 # 從 generated/extracted 重生 todo.sh（依現況排序 + 跳過已 filter 的）
 # 可單獨呼叫；make sync 也會自動跑
