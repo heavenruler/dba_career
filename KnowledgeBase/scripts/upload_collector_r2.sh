@@ -90,7 +90,7 @@ for file in "${files[@]}"; do
     continue
   fi
 
-  if wrangler r2 object put "$KB_R2_BUCKET/$key" --file "$file"; then
+  if wrangler r2 object put "$KB_R2_BUCKET/$key" --file "$file" --remote; then
     mkdir -p "$(dirname "$STATE_FILE")"
     printf '%s\t%s\t%s\t%s\t%s\n' "$doc_id" "$sha256" "$size" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$key" >> "$STATE_FILE"
     uploaded=$((uploaded + 1))

@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync upload_collector upload_collector_dry_run todo filter_all filter_all_bg filter_status filter_stop filter_log
+.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync upload_collector upload_collector_dry_run audit_collector_upload todo filter_all filter_all_bg filter_status filter_stop filter_log
 
 TODO_PID := todo.pid
 TODO_OUT := todo.out
@@ -38,6 +38,7 @@ help:
 		'  make build_chunks        build chunks for all extracted/filtered documents (page-tracked)' \
 		'  make upload_collector_dry_run  preview Cloudflare R2 upload for collector PDFs' \
 		'  make upload_collector    upload collector PDFs to Cloudflare R2; requires KB_R2_BUCKET' \
+		'  make audit_collector_upload  compare collector PDFs with collector/uploaded.tsv' \
 		'  make clean_generated     delete generated/ rebuildable outputs' \
 		'' \
 		'LLM filtering:' \
@@ -144,6 +145,9 @@ upload_collector_dry_run:
 upload_collector:
 	@if [ -z "$$KB_R2_BUCKET" ]; then echo "需要 KB_R2_BUCKET=<bucket>"; exit 1; fi
 	@DRY_RUN=0 scripts/upload_collector_r2.sh $(if $(DOC_ID),collector/$(DOC_ID).pdf,)
+
+audit_collector_upload:
+	@python3 scripts/audit_collector_upload_state.py
 
 # 從 generated/extracted 重生 todo.sh（依現況排序 + 跳過已 filter 的）
 # 可單獨呼叫；make sync 也會自動跑
