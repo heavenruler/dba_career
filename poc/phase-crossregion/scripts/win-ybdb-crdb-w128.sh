@@ -48,17 +48,31 @@ trap '_failed' EXIT
 cd "$POC"
 log "window start TS=$TPCC_TS PLACEMENT=$PLACEMENT"
 
+# 2026-07-17 RETRO Tier1-③：/tmp 的 artifacts 在 .31 重開機即滅、fetch 前是唯一份，
+# 且 console 證據曾實際遺失一次——每 cell 完成即刻歸檔第三份到 /tmp 之外，
+# driver log 一併入檔。歸檔失敗 fail-closed（保不住證據就不該繼續燒機時）。
+ARCHIVE=/var/lib/poc-tpcc-archive/$TPCC_TS
+archive_cell() {  # $1 = suite 目錄名
+  mkdir -p "$ARCHIVE"
+  rsync -a "/tmp/poc-tpcc/artifacts/X-CROSS/$1" "$ARCHIVE/" \
+    || { log "FAIL: 歸檔 $1 → $ARCHIVE 失敗"; exit 1; }
+  cp -f "$LOGDIR/win-ybdb-crdb-$TPCC_TS.log" "$ARCHIVE/driver-console.log" 2>/dev/null || true
+  log "archived: $1 → $ARCHIVE/（含 driver console log）"
+}
+
 STAGE="ybdb-cell"
 log "=== YBDB cell: deploy → fix6n → smoke → result → static-check → teardown ==="
 make -f "$MK" phase4-ybdb-deploy phase4-ybdb-fix6n phase7-ybdb-smoke phase7-ybdb-result \
      phase8.5-static-check teardown-ybdb "${KNOBS[@]}"
-log "=== YBDB cell PASS（static-check 含 gcp-replica-gate/probe 斷言全綠）==="
+archive_cell "ybdb-vm-6node-${PLACEMENT}-rc-${TPCC_TS}"
+log "=== YBDB cell PASS（static-check 含 gcp-replica-gate/probe 斷言全綠；已歸檔）==="
 
 STAGE="crdb-cell"
 log "=== CRDB cell: deploy → smoke → result → static-check → teardown ==="
 make -f "$MK" phase5-crdb-deploy phase8-crdb-smoke phase8-crdb-result \
      phase8.5-static-check teardown-crdb "${KNOBS[@]}"
-log "=== CRDB cell PASS ==="
+archive_cell "crdb-vm-6node-${PLACEMENT}-rc-${TPCC_TS}"
+log "=== CRDB cell PASS（已歸檔）==="
 
 STAGE="done"
 printf '{"window":"ybdb-crdb-w128","ts":"%s","status":"DONE","finished_at":"%s"}\n' \

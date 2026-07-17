@@ -56,6 +56,16 @@ for db in dbs:
     # GCP 副本存在 gate 證據（2026-07-13 起 run-vm6-suite.sh 必產；缺=gate 沒跑=fail-closed）
     if not glob.glob(os.path.join(d, 'gate', 'gcp-replica-gate-*.txt')):
         fails.append(f'{label}: gcp-replica-gate evidence missing (gate/gcp-replica-gate-*.txt)')
+    # 缺輪斷言（2026-07-17 RETRO Tier1-②）：summary 端缺輪行為未定義，靜默以
+    # 不足輪數算 mean 會是下一個「量測工具自身失效」——在 fetch 前 fail-closed。
+    # 口徑：4 檔位 × 每檔 5 輪，每輪 go-tpc-stdout.txt 存在且非空、含 tpmC 結算行。
+    for t in ('16', '32', '64', '128'):
+        for r in ('1', '2', '3', '4', '5'):
+            so = os.path.join(d, 'runs', f'threads-{t}', f'round-{r}', 'go-tpc-stdout.txt')
+            if not os.path.isfile(so) or os.path.getsize(so) == 0:
+                fails.append(f'{label}: missing/empty round output runs/threads-{t}/round-{r}/go-tpc-stdout.txt')
+            elif 'tpmC' not in open(so, errors='replace').read()[-4000:]:
+                fails.append(f'{label}: no tpmC summary line in runs/threads-{t}/round-{r}/go-tpc-stdout.txt (round incomplete)')
     # GCP 端 near-read probe：w128 首輪四 suite 全 fail_count>0 卻靜默通過 → 斷言 fail-closed。
     # 每 suite 至少要有 1 份 gcp probe json，且全部 select_1.fail_count == 0。
     import json as _json
