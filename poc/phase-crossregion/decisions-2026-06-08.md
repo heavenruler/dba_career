@@ -518,3 +518,39 @@ GCP 端 go-tpc 紀錄，須先定義彙整口徑避免混側。
 **確認後工項**（跑 A-A-RO 前完成）：
 1. `summary-from-stdout.py`：處理無 NEW_ORDER 輸入不噴錯 + 輸出 `gcp_side` 逐交易型結構。
 2. `run-vm6-aa.sh`：GCP 端 stdout 落檔對齊 G3 佈局。
+
+---
+
+## 下一階段路線拍板（2026-07-17，grilling Q1-Q4）
+
+**Q1（P-A×A-S 交代標準與流程穩定判準）**：採「條件式可交代」——現有三採用
+cell＋明列 caveat/缺口即為有效交付；**流程穩定性驗證＝#3 零干預通過**（#3 =
+O1 gate 補強後的同批三家 P-A×A-S 重跑，一次消 O1+O3+O4+TiDB#2 證據缺口，
+並驗證 timeout issue 歸零）。
+
+**Q1b（YBDB timeout 規避）**：治本優先——O1 gate（status tablet leader 檢查
++ leader_stepdown）成本 S 級，三家 timeout 維持 default 並文檔化，保留
+`transaction_rpc_timeout_ms=5000` 作跨 WAN 協調偵測器。**備援方案存檔**：
+若實測 stepdown 壓不住，`transaction_rpc_timeout_ms` 5000→15000
+（= 2×(換手偵測 3s + lease 2s) + margin；上界 << client_read_write_timeout_ms
+60000）；採用時必須在報告 O1 標注口徑不對稱。
+
+**Q2（P-A 其他 workload）**：不跑正式 cell（P-A×A-A-RO/A-A 六 cells 砍除，
+見 Q4 Tier3）；以 **smoke test 驗證程序＋資訊採集＋計算要求**——重點驗
+`summary-gcp-side.py` 的 read-tpmTotal／逐交易計算是否符合 G1-G6 報表設計，
+不進數據表。
+
+**Q3（P-B script 實作）**：開 subagent 實作 S1（O1 gate 補強）+ S2
+（gcp-replica-gate P-B 判準參數化，30-70% spread）+ S3（fix6n P-B 分支）。
+
+**Q4（實驗設計復盤採納，全文見 RETRO-2026-07-17.md）**：
+- Tier 1（#3 前完成）：①「同批」硬性化——G6 鏈同 DB 必須同 VM 生命週期序列；
+  跨批引用一律 within-batch delta；每批帶 P-A×A-S anchor cell。
+  ② summary parser 缺輪斷言（static-check 加 rounds==5/檔位齊/stdout 非空）。
+  ③ `.31` artifact 搬離 /tmp + 每 cell 完成即刻第三份 rsync + driver/gate
+  console 輸出 tee 進 suite 目錄。
+- Tier 2（backlog）：secondary estimator（median/trimmed/outlier flag，主口徑
+  不動）、IDC probe 對稱斷言、error_count 進 static-check、三家系統層物件
+  一次性盤點、§N 引用 ID 化 + link-lint。
+- Tier 3（範圍）：18 cells 正式降 12（P-A×A-A-RO、P-A×A-A 砍除）；
+  P-B 鏈先單家打通（CRDB）再擴另兩家；failover/chaos 排序待 P-B 後再議。

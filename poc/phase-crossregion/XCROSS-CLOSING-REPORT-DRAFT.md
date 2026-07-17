@@ -195,7 +195,8 @@ p50/p95/p99 mean (ms)。逐輪原始值在各 `summary.json` 的
 
 | ID | 缺口 | 對結果影響 | 是否阻擋結案 | 下一步 |
 |---|---|---|---|---|
-| O1 | YBDB transaction status tablet leader 未被 gate 覆蓋 | YBDB#2 有 309 筆錯誤（0.011-0.03%），引用須附 caveat（§6.3） | 不阻擋（帶 caveat 採用） | gate 補 status tablet leader 檢查 + `leader_stepdown`，重跑驗證 |
+| O1 | YBDB transaction status tablet leader 未被 gate 覆蓋 | YBDB#2 有 309 筆錯誤（0.011-0.03%），引用須附 caveat（§6.3） | 不阻擋（帶 caveat 採用） | gate 補 status tablet leader 檢查 + `leader_stepdown`，重跑驗證；timeout 維持 default（備援：`transaction_rpc_timeout_ms` 5000→15000，採用須標注口徑不對稱，見 decisions 2026-07-17） |
+| O9 | 流程穩定性尚未經「零人工介入」完整輪驗證（CRDB#2 過程含三修） | 不影響既有 cell 效度判定 | 不阻擋 | **#3（O1 補強後同批三家重跑）零干預通過＝流程穩定蓋章**，同時消 O3/O4/TiDB 證據缺口 |
 | O2 | TiDB#1 首輪下降、TiDB#2 t32 單輪下降均根因未確認 | 不影響採用 cell 的有效性判定 | 不阻擋 | 時間允許時以 N=3 重跑檢查重現性 |
 | O3 | 採用三 cell 橫跨兩批：TiDB#2（07-12）vs CRDB#2/YBDB#2（07-14 同批）；且 TiDB#2 量測時 CRDB/YBDB 語意修正尚未存在 | 嚴格同批同語意的三家數據不存在；跨家並讀須註明批次 | 不阻擋條件式引用 | 若結案要求同批：以現行管線（含 gcp-replica-gate + probe 斷言）重跑三家 suite（~11 hr） |
 | O4 | TiDB w128 鏈無 `freeze-state/` dump（凍結有執行、無 before-dump 佐證） | TiDB 凍結證據鏈不完整 | 不阻擋 | TiDB w128 鏈加 dump 步驟後重跑才補齊 |
