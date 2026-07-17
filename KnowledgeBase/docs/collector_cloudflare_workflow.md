@@ -43,25 +43,31 @@ url
 
 ## 3. 上傳 Cloudflare R2
 
-先 dry-run：
+先從 Cloudflare R2 取得一次遠端 object inventory：
+
+```bash
+KB_R2_BUCKET=kb-wn make fetch_collector_inventory
+```
+
+再 dry-run 比對；遠端已存在的 key 一律跳過：
 
 ```bash
 make upload_collector_dry_run
 ```
 
-正式上傳：
+正式批次作業會重新取得 inventory、上傳差集，最後再取得一次 inventory：
 
 ```bash
-KB_R2_BUCKET=<bucket> make upload_collector
+KB_R2_BUCKET=kb-wn make upload_collector
 ```
 
-只上傳新 batch：
+流程只使用 Cloudflare Wrangler OAuth 與 Cloudflare R2 API，不使用 AWS CLI。`collector/r2_inventory.tsv` 是遠端 object list；`collector/uploaded.tsv` 是本機成功上傳紀錄。判斷規則：
 
-```bash
-KB_R2_BUCKET=<bucket> DRY_RUN=0 scripts/upload_collector_r2.sh collector/<doc_id-1>.pdf collector/<doc_id-2>.pdf
-```
+- inventory 有 key 且 size 相同：跳過，不覆寫
+- inventory 有 key 但 size 不同：衝突並停止該檔案
+- inventory 沒有 key：才執行 remote put
 
-上傳腳本會對 `wrangler r2 object put` 強制使用 `--remote`。上傳成功才會寫入 `collector/uploaded.tsv`，下次依 `sha256` 跳過。需要重傳時：
+只有明確需要覆寫時才使用：
 
 ```bash
 KB_R2_BUCKET=<bucket> DRY_RUN=0 FORCE=1 scripts/upload_collector_r2.sh collector/<doc_id>.pdf
@@ -74,14 +80,13 @@ make audit_collector_upload
 python3 scripts/audit_collector_upload_state.py --json
 ```
 
-判準：
+判準以遠端 inventory 為主：
 
-- `collector_pdf_count` 等於目前 PDF 數
-- `missing_upload_state_count=0`
-- `stale_upload_state_count=0`
-- `bad_state_row_count=0`
+- `remote_missing_count=0`
+- `remote_size_mismatch_count=0`
+- `bad_inventory_row_count=0`
 
-注意：這裡驗證的是 remote put 成功後留下的本機 `collector/uploaded.tsv` 狀態檔；若要驗證 R2 遠端物件本身，需再用 `wrangler r2 object get --remote` 或 Cloudflare dashboard 抽查。
+`missing_upload_state_count` 只代表本機歷史紀錄不完整，不再被解讀為遠端未上傳。`remote_present_untracked_count` 代表遠端存在、size 相同，但本機沒有成功上傳紀錄。
 
 ## 5. Commit 範圍
 

@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync upload_collector upload_collector_dry_run audit_collector_upload todo filter_all filter_all_bg filter_status filter_stop filter_log
+.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync fetch_collector_inventory upload_collector upload_collector_dry_run audit_collector_upload todo filter_all filter_all_bg filter_status filter_stop filter_log
 
 TODO_PID := todo.pid
 TODO_OUT := todo.out
@@ -36,8 +36,9 @@ help:
 		'  make ocr_pdf             OCR every needs_ocr doc (image-only PDFs); requires tesseract-lang' \
 		'  make audit_sources       compare manifest, collector PDFs, and extracted text' \
 		'  make build_chunks        build chunks for all extracted/filtered documents (page-tracked)' \
-		'  make upload_collector_dry_run  preview Cloudflare R2 upload for collector PDFs' \
-		'  make upload_collector    upload collector PDFs to Cloudflare R2; requires KB_R2_BUCKET' \
+		'  make fetch_collector_inventory  fetch Cloudflare R2 object list once' \
+		'  make upload_collector_dry_run  compare collector PDFs with R2 inventory' \
+		'  make upload_collector    inventory + diff + upload missing PDFs only' \
 		'  make audit_collector_upload  compare collector PDFs with collector/uploaded.tsv' \
 		'  make clean_generated     delete generated/ rebuildable outputs' \
 		'' \
@@ -139,12 +140,17 @@ sync: reconcile_manifest extract_pdf ocr_pdf
 	@$(MAKE) todo
 	@echo "[sync] 完成 — 新增的 PDF 已抽取、OCR、切塊、審核、todo.sh 重生完畢"
 
+fetch_collector_inventory:
+	@if [ -z "$$KB_R2_BUCKET" ]; then echo "需要 KB_R2_BUCKET=<bucket>"; exit 1; fi
+	@python3 scripts/fetch_r2_inventory.py --bucket "$$KB_R2_BUCKET" --prefix "$${KB_R2_PREFIX:-collector}/"
+
 upload_collector_dry_run:
 	@DRY_RUN=1 scripts/upload_collector_r2.sh $(if $(DOC_ID),collector/$(DOC_ID).pdf,)
 
-upload_collector:
+upload_collector: fetch_collector_inventory
 	@if [ -z "$$KB_R2_BUCKET" ]; then echo "需要 KB_R2_BUCKET=<bucket>"; exit 1; fi
 	@DRY_RUN=0 scripts/upload_collector_r2.sh $(if $(DOC_ID),collector/$(DOC_ID).pdf,)
+	@$(MAKE) fetch_collector_inventory KB_R2_BUCKET="$$KB_R2_BUCKET"
 
 audit_collector_upload:
 	@python3 scripts/audit_collector_upload_state.py
