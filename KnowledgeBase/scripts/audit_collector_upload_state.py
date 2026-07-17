@@ -7,6 +7,7 @@ import csv
 import hashlib
 import json
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -89,6 +90,44 @@ def read_inventory(inventory_file: Path) -> tuple[dict[str, dict], list[dict]]:
                 "last_modified": last_modified,
             }
     return objects, bad_rows
+
+
+def reconcile_state(collector_dir: Path, state_file: Path, inventory_file: Path) -> dict:
+    pdfs = collect_pdfs(collector_dir)
+    state_by_doc, bad_state_rows = read_state(state_file)
+    remote, bad_inventory_rows = read_inventory(inventory_file)
+    if bad_state_rows or bad_inventory_rows:
+        raise ValueError("Fix invalid state/inventory rows before reconciliation")
+
+    additions = []
+    conflicts = []
+    for doc_id, pdf in pdfs.items():
+        key = f"{doc_id}.pdf"
+        remote_object = remote.get(key)
+        if not remote_object:
+            continue
+        if remote_object["size"] != pdf["size"]:
+            conflicts.append(doc_id)
+            continue
+        current_rows = state_by_doc.get(doc_id, [])
+        if any(
+            row["sha256"] == pdf["sha256"]
+            and row["size"] == pdf["size"]
+            and row["key"] in {key, f"collector/{key}"}
+            for row in current_rows
+        ):
+            continue
+        additions.append((doc_id, pdf["sha256"], pdf["size"], key))
+
+    if additions:
+        state_file.parent.mkdir(parents=True, exist_ok=True)
+        reconciled_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        with state_file.open("a", encoding="utf-8", newline="") as fh:
+            writer = csv.writer(fh, delimiter="\t", lineterminator="\n")
+            for doc_id, sha256, size, key in additions:
+                writer.writerow((doc_id, sha256, size, reconciled_at, key))
+
+    return {"added": len(additions), "conflicts": conflicts}
 
 
 def build_report(collector_dir: Path, state_file: Path, inventory_file: Path) -> dict:
@@ -174,7 +213,17 @@ def main() -> int:
     parser.add_argument("--inventory-file", type=Path, default=DEFAULT_INVENTORY_FILE)
     parser.add_argument("--json", action="store_true", help="Print full JSON report.")
     parser.add_argument("--strict", action="store_true", help="Exit nonzero when remote objects are missing or conflict.")
+    parser.add_argument("--reconcile-state", action="store_true", help="Backfill state when remote key and local size match.")
     args = parser.parse_args()
+
+    if args.reconcile_state:
+        try:
+            reconciliation = reconcile_state(args.collector_dir, args.state_file, args.inventory_file)
+        except ValueError as exc:
+            print(f"ERROR: {exc}")
+            return 2
+        print(f"reconciled_state_count={reconciliation['added']}")
+        print(f"reconcile_conflict_count={len(reconciliation['conflicts'])}")
 
     report = build_report(args.collector_dir, args.state_file, args.inventory_file)
     if args.json:

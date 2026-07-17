@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync fetch_collector_inventory upload_collector upload_collector_dry_run audit_collector_upload audit_collector_upload_strict todo filter_all filter_all_bg filter_status filter_stop filter_log
+.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync fetch_collector_inventory upload_collector upload_collector_dry_run audit_collector_upload reconcile_collector_upload_state audit_collector_upload_strict todo filter_all filter_all_bg filter_status filter_stop filter_log
 
 TODO_PID := todo.pid
 TODO_OUT := todo.out
@@ -40,6 +40,7 @@ help:
 		'  make upload_collector_dry_run  compare collector PDFs with R2 inventory' \
 		'  make upload_collector    inventory + diff + upload missing PDFs only' \
 		'  make audit_collector_upload  compare collector PDFs with collector/uploaded.tsv' \
+		'  make reconcile_collector_upload_state  backfill state from matching R2 key + size' \
 		'  make audit_collector_upload_strict  fail unless every collector PDF exists in R2' \
 		'  make clean_generated     delete generated/ rebuildable outputs' \
 		'' \
@@ -155,6 +156,9 @@ upload_collector: fetch_collector_inventory
 
 audit_collector_upload:
 	@python3 scripts/audit_collector_upload_state.py
+
+reconcile_collector_upload_state:
+	@python3 scripts/audit_collector_upload_state.py --reconcile-state
 
 audit_collector_upload_strict:
 	@python3 scripts/audit_collector_upload_state.py --strict

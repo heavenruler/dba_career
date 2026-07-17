@@ -88,6 +88,15 @@ python3 scripts/audit_collector_upload_state.py --json
 make audit_collector_upload_strict
 ```
 
+若遠端物件已存在，但本機 `uploaded.tsv` 缺少歷史紀錄，可依遠端 key 與 size 回補：
+
+```bash
+KB_R2_BUCKET=kb-wn make fetch_collector_inventory
+make reconcile_collector_upload_state
+```
+
+回補只接受遠端 key 存在且 size 與本地 PDF 相同的項目；size 衝突不會寫入 state。
+
 判準以遠端 inventory 為主：
 
 - `remote_missing_count=0`
