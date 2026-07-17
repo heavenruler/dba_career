@@ -203,7 +203,7 @@ p50/p95/p99 mean (ms)。逐輪原始值在各 `summary.json` 的
 | O5 | X-CROSS `baseline_eligible=false` | 數字不得進 S-BASE/S-K8S 跨家正式排名 | 恆定約束（非缺口） | 無（設計如此） |
 | O6 | 與 07-03 TiDB cell（16,808.6 / CV 2.4%，[baseline/w128/20260703T092243+0800/](../results/x-cross/baseline/w128/20260703T092243+0800/)）相比，本輪 TiDB t128 低約 21% | 兩者皆有效 cell；跨批變異未歸因 | 不阻擋 | 引用時註明批次 |
 | O7 | P-B placement、A-A profile、failover 場景未涵蓋 | 本報告僅覆蓋 P-A × A-S | 不阻擋本階段報告；阻擋全矩陣結案 | 依既定順序執行 P-B / A-A-RO / A-A |
-| O8 | 07-14 批 IDC 3 台 VM destroy 待補（vSphere API 夜間斷線，連三晚同模式；GCP 5 台已 destroy） | 不影響本報告數據 | 不阻擋 | vSphere 恢復後補跑 `phase9-destroy` |
+| O8 | ~~07-14 批 IDC 3 台 VM destroy 待補~~ **已結案（2026-07-17）**：vSphere 恢復後補跑 `phase9-destroy`，IDC 3 台全拆、兩側 terraform state 歸零 | 無 | 已解 | 無 |
 
 ## 9. 證據檔索引
 
