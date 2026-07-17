@@ -56,7 +56,7 @@ def cloudflare_account_id(explicit: str | None) -> str:
 
 
 def fetch_objects(account_id: str, bucket: str, prefix: str, token: str) -> list[dict]:
-    query = urllib.parse.urlencode({"prefix": prefix, "limit": REQUEST_LIMIT})
+    query = urllib.parse.urlencode({"prefix": prefix, "per_page": REQUEST_LIMIT})
     url = (
         f"https://api.cloudflare.com/client/v4/accounts/{account_id}"
         f"/r2/buckets/{urllib.parse.quote(bucket, safe='')}/objects?{query}"
