@@ -1056,9 +1056,9 @@ win-3db-detach:
 	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver 進程"
 	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128' | grep -v pgrep || true); \
 	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
-	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS)"
+	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS) DBS='$(DBS)'"
 	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \
-	  nohup env PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS) \
+	  nohup env PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS) DBS='$(DBS)' \
 	    bash $(CROSS_SCRIPTS_REMOTE)/win-3db-w128.sh \
 	    > $(WIN_3DB_LOG) 2>&1 < /dev/null & \
 	  echo \"started pid \$$!\""

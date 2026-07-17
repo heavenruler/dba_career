@@ -18,6 +18,7 @@ set -euo pipefail
 
 : "${TPCC_TS:?TPCC_TS required}"
 PLACEMENT="${PLACEMENT:-P-A}"
+DBS="${DBS:-tidb ybdb crdb}"   # 空白分隔子集，如 DBS=ybdb 單家重跑（O1 收殘輪）
 POC=/tmp/poc
 MK="$POC/phase-crossregion/Makefile"
 LOGDIR=/tmp/poc-tpcc/logs
@@ -43,7 +44,8 @@ _failed() {
 trap '_failed' EXIT
 
 cd "$POC"
-log "window start TS=$TPCC_TS PLACEMENT=$PLACEMENT"
+log "window start TS=$TPCC_TS PLACEMENT=$PLACEMENT DBS=$DBS"
+run_db() { [[ " $DBS " == *" $1 "* ]]; }
 
 # 2026-07-17 RETRO Tier1-③：每 cell 完成即刻歸檔第三份到 /tmp 之外（.31 重開機
 # 即滅、fetch 前是唯一份），driver log 一併入檔。歸檔失敗 fail-closed。
@@ -56,26 +58,32 @@ archive_cell() {  # $1 = suite 目錄名
   log "archived: $1 → $ARCHIVE/（含 driver console log）"
 }
 
-STAGE="tidb-cell"
-log "=== TiDB cell: deploy → smoke → result → static-check → teardown ==="
-make -f "$MK" phase3-tidb-deploy phase6-tidb-smoke phase6-tidb-result \
-     phase8.5-static-check teardown-tidb "${KNOBS[@]}"
-archive_cell "tidb-vm-6node-${PLACEMENT}-rc-${TPCC_TS}"
-log "=== TiDB cell PASS（已歸檔）==="
+if run_db tidb; then
+  STAGE="tidb-cell"
+  log "=== TiDB cell: deploy → smoke → result → static-check → teardown ==="
+  make -f "$MK" phase3-tidb-deploy phase6-tidb-smoke phase6-tidb-result \
+       phase8.5-static-check teardown-tidb "${KNOBS[@]}"
+  archive_cell "tidb-vm-6node-${PLACEMENT}-rc-${TPCC_TS}"
+  log "=== TiDB cell PASS（已歸檔）==="
+fi
 
-STAGE="ybdb-cell"
-log "=== YBDB cell: deploy → fix6n → smoke → result → static-check → teardown ==="
-make -f "$MK" phase4-ybdb-deploy phase4-ybdb-fix6n phase7-ybdb-smoke phase7-ybdb-result \
-     phase8.5-static-check teardown-ybdb "${KNOBS[@]}"
-archive_cell "ybdb-vm-6node-${PLACEMENT}-rc-${TPCC_TS}"
-log "=== YBDB cell PASS（static-check 含 gcp-replica-gate/probe 斷言全綠；已歸檔）==="
+if run_db ybdb; then
+  STAGE="ybdb-cell"
+  log "=== YBDB cell: deploy → fix6n → smoke → result → static-check → teardown ==="
+  make -f "$MK" phase4-ybdb-deploy phase4-ybdb-fix6n phase7-ybdb-smoke phase7-ybdb-result \
+       phase8.5-static-check teardown-ybdb "${KNOBS[@]}"
+  archive_cell "ybdb-vm-6node-${PLACEMENT}-rc-${TPCC_TS}"
+  log "=== YBDB cell PASS（static-check 含 gcp-replica-gate/probe 斷言全綠；已歸檔）==="
+fi
 
-STAGE="crdb-cell"
-log "=== CRDB cell: deploy → smoke → result → static-check → teardown ==="
-make -f "$MK" phase5-crdb-deploy phase8-crdb-smoke phase8-crdb-result \
-     phase8.5-static-check teardown-crdb "${KNOBS[@]}"
-archive_cell "crdb-vm-6node-${PLACEMENT}-rc-${TPCC_TS}"
-log "=== CRDB cell PASS（已歸檔）==="
+if run_db crdb; then
+  STAGE="crdb-cell"
+  log "=== CRDB cell: deploy → smoke → result → static-check → teardown ==="
+  make -f "$MK" phase5-crdb-deploy phase8-crdb-smoke phase8-crdb-result \
+       phase8.5-static-check teardown-crdb "${KNOBS[@]}"
+  archive_cell "crdb-vm-6node-${PLACEMENT}-rc-${TPCC_TS}"
+  log "=== CRDB cell PASS（已歸檔）==="
+fi
 
 STAGE="done"
 printf '{"window":"3db-w128","ts":"%s","status":"DONE","finished_at":"%s"}\n' \

@@ -363,6 +363,8 @@
 #   * Workers join via --join=172.24.40.32 (serial: 1 — same race fix as yugabyte-vm3.yml lines 200-205)
 #   * Each node carries placement_cloud=104,placement_region=idc|gcp,placement_zone=<a|b|c> via tserver_flags
 #   * master_addresses = full 6-node list (3 IDC + 3 GCP) for cross-region quorum
+#   * transaction_rpc_timeout_ms=15000（decisions 2026-07-17 備援：S1 stepdown 後
+#     殘餘 timeout 未歸零，5000 太貼 t128 尾延遲；引用數據須標注三家口徑不對稱）
 - name: Start YugabyteDB cluster — primary (idc-dbhost-1 = 172.24.40.32)
   hosts: 172.24.40.32
   become: true
@@ -392,6 +394,7 @@
       enable_automatic_tablet_splitting=false,
       wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=300000,
       wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=600000,
+      transaction_rpc_timeout_ms=15000,
       placement_cloud=104,
       placement_region=idc,
       placement_zone=vlan241
@@ -480,6 +483,7 @@
       enable_automatic_tablet_splitting=false,
       wait_for_ysql_backends_catalog_version_client_master_rpc_timeout_ms=300000,
       wait_for_ysql_backends_catalog_version_client_master_rpc_margin_ms=600000,
+      transaction_rpc_timeout_ms=15000,
       placement_cloud={{ yb_placement_cloud }},
       placement_region={{ yb_placement_region }},
       placement_zone={{ yb_placement_zone }}
