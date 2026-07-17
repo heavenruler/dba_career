@@ -99,7 +99,7 @@ def write_inventory(path: Path, bucket: str, prefix: str, objects: list[dict]) -
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bucket", required=True)
-    parser.add_argument("--prefix", default="collector/")
+    parser.add_argument("--prefix", default="")
     parser.add_argument("--account-id")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()

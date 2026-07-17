@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync fetch_collector_inventory upload_collector upload_collector_dry_run audit_collector_upload todo filter_all filter_all_bg filter_status filter_stop filter_log
+.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync fetch_collector_inventory upload_collector upload_collector_dry_run audit_collector_upload audit_collector_upload_strict todo filter_all filter_all_bg filter_status filter_stop filter_log
 
 TODO_PID := todo.pid
 TODO_OUT := todo.out
@@ -40,6 +40,7 @@ help:
 		'  make upload_collector_dry_run  compare collector PDFs with R2 inventory' \
 		'  make upload_collector    inventory + diff + upload missing PDFs only' \
 		'  make audit_collector_upload  compare collector PDFs with collector/uploaded.tsv' \
+		'  make audit_collector_upload_strict  fail unless every collector PDF exists in R2' \
 		'  make clean_generated     delete generated/ rebuildable outputs' \
 		'' \
 		'LLM filtering:' \
@@ -142,7 +143,7 @@ sync: reconcile_manifest extract_pdf ocr_pdf
 
 fetch_collector_inventory:
 	@if [ -z "$$KB_R2_BUCKET" ]; then echo "需要 KB_R2_BUCKET=<bucket>"; exit 1; fi
-	@python3 scripts/fetch_r2_inventory.py --bucket "$$KB_R2_BUCKET" --prefix "$${KB_R2_PREFIX:-collector}/"
+	@python3 scripts/fetch_r2_inventory.py --bucket "$$KB_R2_BUCKET" --prefix "$${KB_R2_PREFIX:-}"
 
 upload_collector_dry_run:
 	@DRY_RUN=1 scripts/upload_collector_r2.sh $(if $(DOC_ID),collector/$(DOC_ID).pdf,)
@@ -154,6 +155,9 @@ upload_collector: fetch_collector_inventory
 
 audit_collector_upload:
 	@python3 scripts/audit_collector_upload_state.py
+
+audit_collector_upload_strict:
+	@python3 scripts/audit_collector_upload_state.py --strict
 
 # 從 generated/extracted 重生 todo.sh（依現況排序 + 跳過已 filter 的）
 # 可單獨呼叫；make sync 也會自動跑

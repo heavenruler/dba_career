@@ -106,7 +106,7 @@ def build_report(collector_dir: Path, state_file: Path, inventory_file: Path) ->
 
     for doc_id, pdf in pdfs.items():
         state_rows = state_by_doc.get(doc_id, [])
-        key = f"collector/{doc_id}.pdf"
+        key = f"{doc_id}.pdf"
         remote_object = remote.get(key)
         if not remote_object:
             remote_missing.append(doc_id)
@@ -173,6 +173,7 @@ def main() -> int:
     parser.add_argument("--state-file", type=Path, default=DEFAULT_STATE_FILE)
     parser.add_argument("--inventory-file", type=Path, default=DEFAULT_INVENTORY_FILE)
     parser.add_argument("--json", action="store_true", help="Print full JSON report.")
+    parser.add_argument("--strict", action="store_true", help="Exit nonzero when remote objects are missing or conflict.")
     args = parser.parse_args()
 
     report = build_report(args.collector_dir, args.state_file, args.inventory_file)
@@ -193,11 +194,12 @@ def main() -> int:
         print(f"remote_present_untracked_count={report['remote_present_untracked_count']}")
         print(f"bad_inventory_row_count={report['bad_inventory_row_count']}")
 
-    return 0 if (
+    complete = (
         report["remote_missing_count"] == 0
         and report["remote_size_mismatch_count"] == 0
         and report["bad_inventory_row_count"] == 0
-    ) else 1
+    )
+    return 1 if args.strict and not complete else 0
 
 
 if __name__ == "__main__":

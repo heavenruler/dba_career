@@ -61,6 +61,8 @@ make upload_collector_dry_run
 KB_R2_BUCKET=kb-wn make upload_collector
 ```
 
+物件固定上傳至 bucket root：`kb-wn/<doc_id>.pdf`，不使用 `kb-wn/collector/`。
+
 流程只使用 Cloudflare Wrangler OAuth 與 Cloudflare R2 API，不使用 AWS CLI。`collector/r2_inventory.tsv` 是遠端 object list；`collector/uploaded.tsv` 是本機成功上傳紀錄。判斷規則：
 
 - inventory 有 key 且 size 相同：跳過，不覆寫
@@ -78,6 +80,12 @@ KB_R2_BUCKET=<bucket> DRY_RUN=0 FORCE=1 scripts/upload_collector_r2.sh collector
 ```bash
 make audit_collector_upload
 python3 scripts/audit_collector_upload_state.py --json
+```
+
+一般 audit 只輸出盤點結果，不因缺檔中斷。需要把完整性當成 CI gate 時：
+
+```bash
+make audit_collector_upload_strict
 ```
 
 判準以遠端 inventory 為主：

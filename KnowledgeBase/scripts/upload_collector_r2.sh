@@ -6,7 +6,7 @@ COLLECTOR_DIR="${COLLECTOR_DIR:-$ROOT_DIR/collector}"
 STATE_FILE="${STATE_FILE:-$COLLECTOR_DIR/uploaded.tsv}"
 INVENTORY_FILE="${INVENTORY_FILE:-$COLLECTOR_DIR/r2_inventory.tsv}"
 KB_R2_BUCKET="${KB_R2_BUCKET:-}"
-KB_R2_PREFIX="${KB_R2_PREFIX:-collector}"
+KB_R2_PREFIX="${KB_R2_PREFIX:-}"
 KB_R2_PREFIX="${KB_R2_PREFIX%/}"
 DRY_RUN="${DRY_RUN:-1}"
 FORCE="${FORCE:-0}"
@@ -19,7 +19,7 @@ Required for real upload:
   KB_R2_BUCKET=<bucket>
 
 Optional:
-  KB_R2_PREFIX=collector
+  KB_R2_PREFIX=         default: bucket root
   COLLECTOR_DIR=collector
   STATE_FILE=collector/uploaded.tsv
   INVENTORY_FILE=collector/r2_inventory.tsv
@@ -56,7 +56,11 @@ if [[ "$DRY_RUN" != "1" && ! -s "$INVENTORY_FILE" ]]; then
 fi
 
 if [[ "$DRY_RUN" != "1" ]]; then
-  expected_header="# bucket=$KB_R2_BUCKET"$'\t'"prefix=$KB_R2_PREFIX/"
+  inventory_prefix="$KB_R2_PREFIX"
+  if [[ -n "$inventory_prefix" ]]; then
+    inventory_prefix="$inventory_prefix/"
+  fi
+  expected_header="# bucket=$KB_R2_BUCKET"$'\t'"prefix=$inventory_prefix"
   actual_header="$(head -n 1 "$INVENTORY_FILE")"
   if [[ "$actual_header" != "$expected_header"$'\t'* ]]; then
     echo "ERROR: R2 inventory bucket/prefix does not match upload target" >&2
@@ -98,12 +102,16 @@ for file in "${files[@]}"; do
 
   size="$(wc -c < "$file" | tr -d ' ')"
   sha256="$(sha256_file "$file")"
-  key="$KB_R2_PREFIX/$base"
+  if [[ -n "$KB_R2_PREFIX" ]]; then
+    key="$KB_R2_PREFIX/$base"
+  else
+    key="$base"
+  fi
 
   remote_size="$(awk -F '\t' -v k="$key" '$1 == k { print $2; exit }' "$INVENTORY_FILE" 2>/dev/null || true)"
   state_match=0
   if [[ -f "$STATE_FILE" ]] && awk -F '\t' -v d="$doc_id" -v s="$sha256" -v z="$size" -v k="$key" \
-      '$1 == d && $2 == s && $3 == z && $5 == k { found=1 } END { exit !found }' "$STATE_FILE"; then
+      '$1 == d && $2 == s && $3 == z && ($5 == k || $5 == "collector/" k) { found=1 } END { exit !found }' "$STATE_FILE"; then
     state_match=1
   fi
 
