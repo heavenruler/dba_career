@@ -71,10 +71,10 @@ help:
 commit:
 	mv ~/Downloads/FireShot/* collector ; git add . ; git commit -m "update" ; git push
 
-# 修補 output_with_md5.txt 中遺漏或不正確的 MD5（例如佔位字 nnn）
+# 只修補遺漏、佔位字 nnn 或非法格式；合法既有 doc_id 不改寫
 md5_fix:
 	@python3 scripts/md5_fix.py
-	@echo "已修補 output_with_md5.txt 的 MD5 欄位"
+	@echo "已檢查 output_with_md5.txt 的 doc_id 欄位"
 
 # 從 PDF metadata 反推 orphan PDFs 的 title/url 並補進 output_with_md5.txt
 reconcile_manifest:

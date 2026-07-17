@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+import argparse
 import hashlib
+import re
 import sys
 from pathlib import Path
 
@@ -9,7 +11,10 @@ def compute_md5(text: str) -> str:
 
 
 def main() -> int:
-    path = Path("output_with_md5.txt")
+    parser = argparse.ArgumentParser(description="Repair missing or invalid manifest doc IDs.")
+    parser.add_argument("--path", type=Path, default=Path("output_with_md5.txt"))
+    args = parser.parse_args()
+    path = args.path
     if not path.exists():
         print("找不到 output_with_md5.txt", file=sys.stderr)
         return 1
@@ -29,6 +34,8 @@ def main() -> int:
         blocks.append(current)
 
     out_lines = []
+    repaired = 0
+    preserved_mismatches = 0
     for block in blocks:
         if not block:
             # 空塊，保持分隔
@@ -44,19 +51,23 @@ def main() -> int:
         else:
             correct = old_hash
 
-        if (not old_hash) or (old_hash == "nnn") or (len(old_hash) != 32) or (old_hash != correct):
+        if not re.fullmatch(r"[0-9a-f]{32}", old_hash):
             new_hash = correct
+            repaired += 1
         else:
             new_hash = old_hash
+            if url and old_hash != correct:
+                preserved_mismatches += 1
 
         out_lines.extend([title, url, new_hash, "----"])
 
     path.write_text("\n".join(out_lines) + "\n", encoding="utf-8")
-    print(f"已修補 {len(blocks)} 個區塊並更新 MD5")
+    print(
+        f"已檢查 {len(blocks)} 個區塊；修補 {repaired} 筆；"
+        f"保留 {preserved_mismatches} 筆合法既有 doc_id（與目前 URL MD5 不同）"
+    )
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
