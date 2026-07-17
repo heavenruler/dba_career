@@ -1040,6 +1040,40 @@ win-ybdb-crdb-status:
 	@echo "==> driver log tail"
 	@ssh $(TPCC_CLIENT) "tail -25 $(WIN_YC_LOG) 2>/dev/null || echo '(no log yet)'"
 
+# -------------------------------------------------------------------
+# #3 同批三家重跑：TiDB→YBDB→CRDB × W=128 detached on .31
+# 用法同上（win-3db-detach / win-3db-status），driver = win-3db-w128.sh
+# -------------------------------------------------------------------
+WIN_3DB_LOG = /tmp/poc-tpcc/logs/win-3db-$(TPCC_TS).log
+
+win-3db-detach:
+	@echo "==> rsync scripts + freeze/ + Makefile to .31 (driver 依賴)"
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
+	rsync -avz phase-crossregion/freeze/  '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/freeze/'
+	ssh $(TPCC_CLIENT) 'mkdir -p /tmp/poc/phase-crossregion/scripts'
+	rsync -avz phase-crossregion/Makefile '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/Makefile'
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
+	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver 進程"
+	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128' | grep -v pgrep || true); \
+	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
+	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \
+	  nohup env PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS) \
+	    bash $(CROSS_SCRIPTS_REMOTE)/win-3db-w128.sh \
+	    > $(WIN_3DB_LOG) 2>&1 < /dev/null & \
+	  echo \"started pid \$$!\""
+	@echo ""
+	@echo "==> detached。Mac 現在可關機。回來後查進度："
+	@echo "    make win-3db-status TPCC_TS=$(TPCC_TS)"
+
+win-3db-status:
+	@echo "==> window markers (TPCC_TS=$(TPCC_TS))"
+	@ssh $(TPCC_CLIENT) "for m in /tmp/poc-tpcc/logs/win-3db-$(TPCC_TS).done /tmp/poc-tpcc/logs/win-3db-$(TPCC_TS).failed; do \
+	  [ -f \"\$$m\" ] && { echo \"--- \$$m ---\"; cat \"\$$m\"; }; done; \
+	  [ -f /tmp/poc-tpcc/logs/win-3db-$(TPCC_TS).done ] || [ -f /tmp/poc-tpcc/logs/win-3db-$(TPCC_TS).failed ] || echo '(window still running)'"
+	@echo "==> driver log tail"
+	@ssh $(TPCC_CLIENT) "tail -25 $(WIN_3DB_LOG) 2>/dev/null || echo '(no log yet)'"
+
 # ===================================================================
 # Sub-rules reused verbatim from Makefile.tc1
 # ===================================================================
