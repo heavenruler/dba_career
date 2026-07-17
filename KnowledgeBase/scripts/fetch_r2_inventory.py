@@ -16,6 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = ROOT / "collector" / "r2_inventory.tsv"
+REQUEST_LIMIT = 1000
 
 
 def wrangler_config_path() -> Path:
@@ -55,7 +56,7 @@ def cloudflare_account_id(explicit: str | None) -> str:
 
 
 def fetch_objects(account_id: str, bucket: str, prefix: str, token: str) -> list[dict]:
-    query = urllib.parse.urlencode({"prefix": prefix, "limit": 1000})
+    query = urllib.parse.urlencode({"prefix": prefix, "limit": REQUEST_LIMIT})
     url = (
         f"https://api.cloudflare.com/client/v4/accounts/{account_id}"
         f"/r2/buckets/{urllib.parse.quote(bucket, safe='')}/objects?{query}"
@@ -74,8 +75,8 @@ def fetch_objects(account_id: str, bucket: str, prefix: str, token: str) -> list
     if not payload.get("success") or not isinstance(payload.get("result"), list):
         raise RuntimeError(f"Cloudflare R2 list failed: {payload.get('errors', payload)}")
     objects = payload["result"]
-    if len(objects) >= 1000:
-        raise RuntimeError("R2 inventory reached the 1000-object limit; add cursor pagination")
+    if len(objects) >= REQUEST_LIMIT:
+        raise RuntimeError(f"R2 inventory reached the {REQUEST_LIMIT}-object limit; add cursor pagination")
     return objects
 
 
@@ -110,7 +111,10 @@ def main() -> int:
     except (RuntimeError, subprocess.SubprocessError, json.JSONDecodeError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
-    print(f"R2 inventory: bucket={args.bucket} prefix={args.prefix} objects={len(objects)} output={args.output}")
+    print(
+        f"R2 inventory: bucket={args.bucket} prefix={args.prefix} "
+        f"returned_objects={len(objects)} request_limit={REQUEST_LIMIT} output={args.output}"
+    )
     return 0
 
 
