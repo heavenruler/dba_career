@@ -416,6 +416,8 @@ phase4-ybdb-fix6n:
 	sleep 60
 	@echo "==> master-quorum gate: enforce 3-IDC-only raft + current_masters conf 校正 + 6/6 YSQL 健檢 (fail-closed)"
 	ssh $(TPCC_CLIENT) "bash $(CROSS_SCRIPTS_REMOTE)/ybdb-master-quorum-gate.sh"
+	@echo "==> runtime gflag enforce+verify: transaction_rpc_timeout_ms=15000（yugabyted --tserver_flags 對部分 runtime flag 不生效，0717/0718 varz 實證；fail-closed）"
+	ssh $(TPCC_CLIENT) "bash $(CROSS_SCRIPTS_REMOTE)/ybdb-runtime-gflags.sh"
 	@echo "==> remove DEAD tservers from master metadata (best practice: blacklist+remove+unblacklist)"
 	@ssh root@$(IDC_NODES_HEAD) ' \
 	  MASTERS=$(YB_MASTER_ADDR); \

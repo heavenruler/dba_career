@@ -365,6 +365,10 @@
 #   * master_addresses = full 6-node list (3 IDC + 3 GCP) for cross-region quorum
 #   * transaction_rpc_timeout_ms=15000（decisions 2026-07-17 備援：S1 stepdown 後
 #     殘餘 timeout 未歸零，5000 太貼 t128 尾延遲；引用數據須標注三家口徑不對稱）
+#     ⚠ 2026-07-18 實證：yugabyted start 對此 flag（及 enable_automatic_tablet_splitting）
+#     不生效（varz 仍 default；同串 memory_limit 等正常）——實際生效靠
+#     phase4-ybdb-fix6n 的 ybdb-runtime-gflags.sh runtime set_flag＋varz 驗證（fail-closed）。
+#     此處保留宣告以表意圖，勿以為它已套用。
 - name: Start YugabyteDB cluster — primary (idc-dbhost-1 = 172.24.40.32)
   hosts: 172.24.40.32
   become: true

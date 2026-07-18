@@ -2,6 +2,12 @@
 
 > 本檔是 `phase-crossregion` 的跨區域流程紀錄索引。  
 > 目前 X-CROSS 數據用於 framework / determinism 驗證，不作為正式 W=128 跨家效能排名。
+>
+> **涵蓋範圍（2026-07-18 註）**：本檔詳載 2026-06-19～07-03 早期驗證階段。
+> **07-11 起的 W=128 批次（07-11 首輪／07-12／07-14／07-17 同批三家）之採用/備查
+> 登記與逐項證據，以 [XCROSS-CLOSING-REPORT-DRAFT.md §3/§8/§9](../../phase-crossregion/XCROSS-CLOSING-REPORT-DRAFT.md) 為準**；
+> 本檔 §2.3 的 07-03 TiDB cell（16,808.6，樣本 CV 口徑）已被後續批次取代為備查
+> （跨批變異未歸因，見結案報告 §8 O6），引用須註明批次與口徑。
 
 ---
 

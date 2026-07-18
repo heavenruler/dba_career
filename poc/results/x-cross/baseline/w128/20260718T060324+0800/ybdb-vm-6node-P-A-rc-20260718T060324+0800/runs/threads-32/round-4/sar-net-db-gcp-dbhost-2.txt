@@ -1,0 +1,1225 @@
+Linux 4.18.0-553.144.1.el8_10.x86_64 (g-test-poc-2) 	07/18/26 	_x86_64_	(4 CPU)
+
+00:26:16        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:17           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:26:17         eth0     94.00     66.00     15.65     10.64      0.00      0.00      0.00      0.00
+
+00:26:17        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:18           lo     15.00     15.00      1.18      1.18      0.00      0.00      0.00      0.00
+00:26:18         eth0    106.00    105.00     25.73     15.62      0.00      0.00      0.00      0.00
+
+00:26:18        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:19           lo      5.00      5.00      0.41      0.41      0.00      0.00      0.00      0.00
+00:26:19         eth0    107.00     78.00     30.41     13.79      0.00      0.00      0.00      0.00
+
+00:26:19        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:20           lo     12.00     12.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:26:20         eth0    113.00     85.00     25.07     13.63      0.00      0.00      0.00      0.00
+
+00:26:20        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:21           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:26:21         eth0    100.00     89.00     16.83     14.65      0.00      0.00      0.00      0.00
+
+00:26:21        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:22           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:26:22         eth0     70.00     54.00     11.95      9.03      0.00      0.00      0.00      0.00
+
+00:26:22        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:23           lo     18.00     18.00      1.40      1.40      0.00      0.00      0.00      0.00
+00:26:23         eth0     86.00     71.00     14.09     10.23      0.00      0.00      0.00      0.00
+
+00:26:23        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:24           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:26:24         eth0    129.00    107.00     20.23     18.69      0.00      0.00      0.00      0.00
+
+00:26:24        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:25           lo     14.00     14.00      1.05      1.05      0.00      0.00      0.00      0.00
+00:26:25         eth0    109.00     97.00     18.27     15.30      0.00      0.00      0.00      0.00
+
+00:26:25        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:26           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:26:26         eth0     88.00     68.00     15.47     15.00      0.00      0.00      0.00      0.00
+
+00:26:26        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:27           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:26:27         eth0     90.00     63.00     15.75     10.51      0.00      0.00      0.00      0.00
+
+00:26:27        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:28           lo     15.00     15.00      1.18      1.18      0.00      0.00      0.00      0.00
+00:26:28         eth0     87.00     77.00     13.98     11.21      0.00      0.00      0.00      0.00
+
+00:26:28        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:29           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:26:29         eth0    129.00    110.00     29.10     19.03      0.00      0.00      0.00      0.00
+
+00:26:29        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:30           lo     12.00     12.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:26:30         eth0     87.00     72.00     24.01     11.22      0.00      0.00      0.00      0.00
+
+00:26:30        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:31           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:26:31         eth0     85.00     72.00     14.10     11.85      0.00      0.00      0.00      0.00
+
+00:26:31        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:32           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:26:32         eth0     86.00     73.00     14.22     12.15      0.00      0.00      0.00      0.00
+
+00:26:32        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:33           lo     18.00     18.00      1.50      1.50      0.00      0.00      0.00      0.00
+00:26:33         eth0    107.00     83.00     18.43     12.21      0.00      0.00      0.00      0.00
+
+00:26:33        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:34           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:26:34         eth0    137.00    115.00     20.66     19.28      0.00      0.00      0.00      0.00
+
+00:26:34        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:35           lo     14.00     14.00      1.05      1.05      0.00      0.00      0.00      0.00
+00:26:35         eth0    110.00     77.00     19.14     12.11      0.00      0.00      0.00      0.00
+
+00:26:35        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:36           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:26:36         eth0     95.00     68.00     16.47     10.87      0.00      0.00      0.00      0.00
+
+00:26:36        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:37           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:26:37         eth0    112.00     79.00     20.15     16.29      0.00      0.00      0.00      0.00
+
+00:26:37        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:38           lo     15.00     15.00      1.18      1.18      0.00      0.00      0.00      0.00
+00:26:38         eth0    112.00     85.00     19.23     12.93      0.00      0.00      0.00      0.00
+
+00:26:38        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:39           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:26:39         eth0    124.00     93.00     19.49     15.47      0.00      0.00      0.00      0.00
+
+00:26:39        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:40           lo     12.00     12.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:26:40         eth0    100.00     78.00     26.07     11.99      0.00      0.00      0.00      0.00
+
+00:26:40        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:41           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:26:41         eth0     82.00     63.00     23.85     10.00      0.00      0.00      0.00      0.00
+
+00:26:41        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:42           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:26:42         eth0    120.00     98.00     20.22     15.83      0.00      0.00      0.00      0.00
+
+00:26:42        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:43           lo     18.00     18.00      1.40      1.40      0.00      0.00      0.00      0.00
+00:26:43         eth0     94.00     74.00     15.88     10.99      0.00      0.00      0.00      0.00
+
+00:26:43        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:44           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:26:44         eth0    105.00     80.00     15.53     13.50      0.00      0.00      0.00      0.00
+
+00:26:44        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:45           lo     18.00     18.00      1.26      1.26      0.00      0.00      0.00      0.00
+00:26:45         eth0     93.00     69.00     15.49     10.28      0.00      0.00      0.00      0.00
+
+00:26:45        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:46           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:26:46         eth0     93.00     83.00     16.12     14.23      0.00      0.00      0.00      0.00
+
+00:26:46        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:47           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:26:47         eth0     92.00     70.00     15.45     10.89      0.00      0.00      0.00      0.00
+
+00:26:47        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:48           lo     15.00     15.00      1.18      1.18      0.00      0.00      0.00      0.00
+00:26:48         eth0    119.00    108.00     20.12     20.25      0.00      0.00      0.00      0.00
+
+00:26:48        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:49           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:26:49         eth0    103.00     79.00     15.12     13.40      0.00      0.00      0.00      0.00
+
+00:26:49        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:50           lo     12.00     12.00      0.97      0.97      0.00      0.00      0.00      0.00
+00:26:50         eth0     98.00     70.00     16.75     11.02      0.00      0.00      0.00      0.00
+
+00:26:50        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:51           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:26:51         eth0    115.00     82.00     29.29     12.96      0.00      0.00      0.00      0.00
+
+00:26:51        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:52           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:26:52         eth0     89.00     73.00     24.21     11.38      0.00      0.00      0.00      0.00
+
+00:26:52        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:53           lo     18.00     18.00      1.40      1.40      0.00      0.00      0.00      0.00
+00:26:53         eth0    103.00     93.00     17.25     14.10      0.00      0.00      0.00      0.00
+
+00:26:53        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:54           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:26:54         eth0    123.00     90.00     19.33     15.31      0.00      0.00      0.00      0.00
+
+00:26:54        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:55           lo     14.00     14.00      1.05      1.05      0.00      0.00      0.00      0.00
+00:26:55         eth0    100.00     70.00     17.36     10.92      0.00      0.00      0.00      0.00
+
+00:26:55        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:56           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:26:56         eth0     88.00     67.00     15.28     10.70      0.00      0.00      0.00      0.00
+
+00:26:56        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:57           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:26:57         eth0     83.00     64.00     13.88     10.25      0.00      0.00      0.00      0.00
+
+00:26:57        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:58           lo     15.00     15.00      1.27      1.27      0.00      0.00      0.00      0.00
+00:26:58         eth0    112.00     89.00     18.55     12.79      0.00      0.00      0.00      0.00
+
+00:26:58        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:26:59           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:26:59         eth0    105.00     83.00     15.94     18.06      0.00      0.00      0.00      0.00
+
+00:26:59        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:00           lo     12.00     12.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:27:00         eth0     94.00     88.00     15.64     14.61      0.00      0.00      0.00      0.00
+
+00:27:00        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:01           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:27:01         eth0    131.00    103.00     25.17     27.01      0.00      0.00      0.00      0.00
+
+00:27:01        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:02           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:27:02         eth0     82.00     63.00     21.98     10.04      0.00      0.00      0.00      0.00
+
+00:27:02        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:03           lo     18.00     18.00      1.40      1.40      0.00      0.00      0.00      0.00
+00:27:03         eth0    129.00    117.00     30.47     17.63      0.00      0.00      0.00      0.00
+
+00:27:03        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:04           lo      6.00      6.00      0.66      0.66      0.00      0.00      0.00      0.00
+00:27:04         eth0    112.00     84.00     17.31     14.52      0.00      0.00      0.00      0.00
+
+00:27:04        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:05           lo     14.00     14.00      1.05      1.05      0.00      0.00      0.00      0.00
+00:27:05         eth0     81.00     63.00     13.63      9.99      0.00      0.00      0.00      0.00
+
+00:27:05        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:06           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:27:06         eth0     82.00     67.00     14.09     10.83      0.00      0.00      0.00      0.00
+
+00:27:06        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:07           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:27:07         eth0     93.00     77.00     15.81     12.82      0.00      0.00      0.00      0.00
+
+00:27:07        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:08           lo     15.00     15.00      1.18      1.18      0.00      0.00      0.00      0.00
+00:27:08         eth0    112.00     99.00     18.96     13.10      0.00      0.00      0.00      0.00
+
+00:27:08        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:09           lo      5.00      5.00      0.61      0.61      0.00      0.00      0.00      0.00
+00:27:09         eth0    143.00    130.00     22.49     23.17      0.00      0.00      0.00      0.00
+
+00:27:09        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:10           lo     12.00     12.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:27:10         eth0     85.00     68.00     15.26     14.89      0.00      0.00      0.00      0.00
+
+00:27:10        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:11           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:27:11         eth0    113.00     88.00     21.23     15.71      0.00      0.00      0.00      0.00
+
+00:27:11        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:12           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:27:12         eth0    101.00     72.00     17.39     11.33      0.00      0.00      0.00      0.00
+
+00:27:12        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:13           lo     18.00     18.00      1.40      1.40      0.00      0.00      0.00      0.00
+00:27:13         eth0    126.00    112.00     29.80     17.05      0.00      0.00      0.00      0.00
+
+00:27:13        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:14           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:27:14         eth0    104.00     83.00     24.75     13.80      0.00      0.00      0.00      0.00
+
+00:27:14        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:15           lo     14.00     14.00      1.05      1.05      0.00      0.00      0.00      0.00
+00:27:15         eth0     85.00     59.00     18.42      9.53      0.00      0.00      0.00      0.00
+
+00:27:15        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:16           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:27:16         eth0     95.00     89.00     19.86     15.10      0.00      0.00      0.00      0.00
+
+00:27:16        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:17           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:27:17         eth0    106.00     83.00     19.35     14.84      0.00      0.00      0.00      0.00
+
+00:27:17        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:18           lo     15.00     15.00      1.18      1.18      0.00      0.00      0.00      0.00
+00:27:18         eth0     95.00     81.00     15.38     11.46      0.00      0.00      0.00      0.00
+
+00:27:18        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:19           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:27:19         eth0    116.00     88.00     20.71     14.50      0.00      0.00      0.00      0.00
+
+00:27:19        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:20           lo     12.00     12.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:27:20         eth0     90.00     68.00     20.71     10.99      0.00      0.00      0.00      0.00
+
+00:27:20        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:21           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:27:21         eth0     88.00     67.00     15.50     14.44      0.00      0.00      0.00      0.00
+
+00:27:21        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:22           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:27:22         eth0     74.00     60.00     12.45      9.84      0.00      0.00      0.00      0.00
+
+00:27:22        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:23           lo     18.00     18.00      1.40      1.40      0.00      0.00      0.00      0.00
+00:27:23         eth0     85.00     75.00     13.46     10.51      0.00      0.00      0.00      0.00
+
+00:27:23        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:24           lo      6.00      6.00      0.49      0.49      0.00      0.00      0.00      0.00
+00:27:24         eth0    111.00     83.00     25.93     13.78      0.00      0.00      0.00      0.00
+
+00:27:24        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:25           lo     18.00     18.00      1.63      1.63      0.00      0.00      0.00      0.00
+00:27:25         eth0   1279.00   1342.00    337.56    287.61      0.00      0.00      0.00      0.00
+
+00:27:25        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:26           lo      3.00      3.00      0.72      0.72      0.00      0.00      0.00      0.00
+00:27:26         eth0   1652.00   1754.00    435.64    377.62      0.00      0.00      0.00      0.00
+
+00:27:26        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:27           lo      6.00      6.00      1.03      1.03      0.00      0.00      0.00      0.00
+00:27:27         eth0   1647.00   1766.00    434.42    384.31      0.00      0.00      0.00      0.00
+
+00:27:27        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:28           lo     15.00     15.00      2.48      2.48      0.00      0.00      0.00      0.00
+00:27:28         eth0   1686.00   1765.00    428.72    375.45      0.00      0.00      0.00      0.00
+
+00:27:28        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:29           lo      5.00      5.00      1.48      1.48      0.00      0.00      0.00      0.00
+00:27:29         eth0   1722.00   1869.00    452.19    405.68      0.00      0.00      0.00      0.00
+
+00:27:29        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:30           lo     12.00     12.00      1.12      1.12      0.00      0.00      0.00      0.00
+00:27:30         eth0   1618.00   1759.00    431.79    378.12      0.00      0.00      0.00      0.00
+
+00:27:30        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:31           lo      3.00      3.00      2.20      2.20      0.00      0.00      0.00      0.00
+00:27:31         eth0   1593.00   1681.00    407.45    363.27      0.00      0.00      0.00      0.00
+
+00:27:31        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:32           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:27:32         eth0   1544.00   1614.00    402.02    353.69      0.00      0.00      0.00      0.00
+
+00:27:32        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:33           lo     18.00     18.00      1.88      1.88      0.00      0.00      0.00      0.00
+00:27:33         eth0   1603.00   1754.00    423.53    372.74      0.00      0.00      0.00      0.00
+
+00:27:33        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:34           lo      6.00      6.00      0.72      0.72      0.00      0.00      0.00      0.00
+00:27:34         eth0   1535.00   1679.00    407.44    359.19      0.00      0.00      0.00      0.00
+
+00:27:34        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:35           lo     14.00     14.00      4.00      4.00      0.00      0.00      0.00      0.00
+00:27:35         eth0   1686.00   1827.00    456.93    401.38      0.00      0.00      0.00      0.00
+
+00:27:35        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:36           lo      3.00      3.00      1.07      1.07      0.00      0.00      0.00      0.00
+00:27:36         eth0   1568.00   1765.00    442.51    372.13      0.00      0.00      0.00      0.00
+
+00:27:36        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:37           lo      6.00      6.00      0.75      0.75      0.00      0.00      0.00      0.00
+00:27:37         eth0   1577.00   1722.00    434.99    370.43      0.00      0.00      0.00      0.00
+
+00:27:37        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:38           lo     15.00     15.00      1.97      1.97      0.00      0.00      0.00      0.00
+00:27:38         eth0   1652.00   1785.00    441.65    384.16      0.00      0.00      0.00      0.00
+
+00:27:38        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:39           lo      5.00      5.00      1.18      1.18      0.00      0.00      0.00      0.00
+00:27:39         eth0   1727.00   1820.00    449.07    398.08      0.00      0.00      0.00      0.00
+
+00:27:39        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:40           lo     12.00     12.00      1.22      1.22      0.00      0.00      0.00      0.00
+00:27:40         eth0   1647.00   1707.00    425.36    367.14      0.00      0.00      0.00      0.00
+
+00:27:40        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:41           lo      3.00      3.00      1.01      1.01      0.00      0.00      0.00      0.00
+00:27:41         eth0   1541.00   1675.00    423.44    361.09      0.00      0.00      0.00      0.00
+
+00:27:41        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:42           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:27:42         eth0   1665.00   1822.00    443.36    384.61      0.00      0.00      0.00      0.00
+
+00:27:42        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:43           lo     18.00     18.00      1.87      1.87      0.00      0.00      0.00      0.00
+00:27:43         eth0   1700.00   1862.00    455.71    394.93      0.00      0.00      0.00      0.00
+
+00:27:43        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:44           lo      6.00      6.00      1.82      1.82      0.00      0.00      0.00      0.00
+00:27:44         eth0   1720.00   1855.00    446.88    399.22      0.00      0.00      0.00      0.00
+
+00:27:44        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:45           lo     14.00     14.00      1.68      1.68      0.00      0.00      0.00      0.00
+00:27:45         eth0   1472.00   1610.00    413.28    341.48      0.00      0.00      0.00      0.00
+
+00:27:45        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:46           lo      3.00      3.00      1.20      1.20      0.00      0.00      0.00      0.00
+00:27:46         eth0   1686.00   1777.00    459.85    389.58      0.00      0.00      0.00      0.00
+
+00:27:46        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:47           lo      6.00      6.00      0.86      0.86      0.00      0.00      0.00      0.00
+00:27:47         eth0   1484.00   1575.00    415.74    340.44      0.00      0.00      0.00      0.00
+
+00:27:47        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:48           lo     15.00     15.00      2.01      2.01      0.00      0.00      0.00      0.00
+00:27:48         eth0   1579.00   1710.00    427.83    361.47      0.00      0.00      0.00      0.00
+
+00:27:48        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:49           lo      5.00      5.00      1.15      1.15      0.00      0.00      0.00      0.00
+00:27:49         eth0   1578.00   1716.00    423.28    374.20      0.00      0.00      0.00      0.00
+
+00:27:49        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:50           lo     12.00     12.00      1.62      1.62      0.00      0.00      0.00      0.00
+00:27:50         eth0   1799.00   1912.00    471.59    425.12      0.00      0.00      0.00      0.00
+
+00:27:50        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:51           lo      3.00      3.00      0.87      0.87      0.00      0.00      0.00      0.00
+00:27:51         eth0   1551.00   1652.00    414.92    356.45      0.00      0.00      0.00      0.00
+
+00:27:51        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:52           lo      5.00      5.00      1.01      1.01      0.00      0.00      0.00      0.00
+00:27:52         eth0   1800.00   1935.00    487.97    436.46      0.00      0.00      0.00      0.00
+
+00:27:52        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:53           lo     18.00     18.00      2.82      2.82      0.00      0.00      0.00      0.00
+00:27:53         eth0   1699.00   1813.00    449.33    392.98      0.00      0.00      0.00      0.00
+
+00:27:53        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:54           lo      6.00      6.00      0.94      0.94      0.00      0.00      0.00      0.00
+00:27:54         eth0   1586.00   1653.00    425.81    358.47      0.00      0.00      0.00      0.00
+
+00:27:54        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:55           lo     16.00     16.00      2.61      2.61      0.00      0.00      0.00      0.00
+00:27:55         eth0   1714.00   1834.00    463.92    406.18      0.00      0.00      0.00      0.00
+
+00:27:55        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:56           lo      3.00      3.00      0.61      0.61      0.00      0.00      0.00      0.00
+00:27:56         eth0   1745.00   1842.00    469.84    403.28      0.00      0.00      0.00      0.00
+
+00:27:56        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:57           lo      6.00      6.00      1.38      1.38      0.00      0.00      0.00      0.00
+00:27:57         eth0   1699.00   1916.00    462.95    413.84      0.00      0.00      0.00      0.00
+
+00:27:57        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:58           lo     15.00     15.00      2.29      2.29      0.00      0.00      0.00      0.00
+00:27:58         eth0   1630.00   1800.00    438.53    376.86      0.00      0.00      0.00      0.00
+
+00:27:58        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:27:59           lo      5.00      5.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:27:59         eth0   1552.00   1658.00    406.20    346.13      0.00      0.00      0.00      0.00
+
+00:27:59        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:00           lo     12.00     12.00      1.84      1.84      0.00      0.00      0.00      0.00
+00:28:00         eth0   1393.00   1515.00    380.79    318.03      0.00      0.00      0.00      0.00
+
+00:28:00        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:01           lo      3.00      3.00      0.80      0.80      0.00      0.00      0.00      0.00
+00:28:01         eth0   1300.00   1376.00    329.01    289.85      0.00      0.00      0.00      0.00
+
+00:28:01        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:02           lo      7.00      7.00      1.65      1.65      0.00      0.00      0.00      0.00
+00:28:02         eth0   1323.00   1383.00    336.14    296.66      0.00      0.00      0.00      0.00
+
+00:28:02        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:03           lo     18.00     18.00      2.04      2.04      0.00      0.00      0.00      0.00
+00:28:03         eth0   1529.00   1670.00    392.78    352.64      0.00      0.00      0.00      0.00
+
+00:28:03        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:04           lo      6.00      6.00      1.43      1.43      0.00      0.00      0.00      0.00
+00:28:04         eth0   1683.00   1782.00    419.35    378.42      0.00      0.00      0.00      0.00
+
+00:28:04        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:05           lo     13.86     13.86      2.24      2.24      0.00      0.00      0.00      0.00
+00:28:05         eth0   1740.59   1861.39    464.10    418.36      0.00      0.00      0.00      0.00
+
+00:28:05        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:06           lo      3.00      3.00      0.74      0.74      0.00      0.00      0.00      0.00
+00:28:06         eth0   1601.00   1731.00    425.25    365.99      0.00      0.00      0.00      0.00
+
+00:28:06        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:07           lo      6.00      6.00      1.31      1.31      0.00      0.00      0.00      0.00
+00:28:07         eth0   1784.00   1902.00    470.71    422.62      0.00      0.00      0.00      0.00
+
+00:28:07        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:08           lo     15.00     15.00      2.12      2.12      0.00      0.00      0.00      0.00
+00:28:08         eth0   1754.00   1886.00    474.62    415.75      0.00      0.00      0.00      0.00
+
+00:28:08        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:09           lo      5.00      5.00      1.17      1.17      0.00      0.00      0.00      0.00
+00:28:09         eth0   1659.00   1813.00    451.60    396.48      0.00      0.00      0.00      0.00
+
+00:28:09        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:10           lo     12.00     12.00      1.68      1.68      0.00      0.00      0.00      0.00
+00:28:10         eth0   1697.00   1786.00    445.71    389.85      0.00      0.00      0.00      0.00
+
+00:28:10        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:11           lo      3.00      3.00      1.69      1.69      0.00      0.00      0.00      0.00
+00:28:11         eth0   1593.00   1746.00    440.45    376.85      0.00      0.00      0.00      0.00
+
+00:28:11        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:12           lo      5.00      5.00      1.93      1.93      0.00      0.00      0.00      0.00
+00:28:12         eth0   1612.00   1760.00    435.42    377.03      0.00      0.00      0.00      0.00
+
+00:28:12        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:13           lo     18.00     18.00      2.36      2.36      0.00      0.00      0.00      0.00
+00:28:13         eth0   1496.00   1639.00    406.28    349.37      0.00      0.00      0.00      0.00
+
+00:28:13        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:14           lo      6.00      6.00      1.08      1.08      0.00      0.00      0.00      0.00
+00:28:14         eth0   1591.00   1708.00    435.59    363.84      0.00      0.00      0.00      0.00
+
+00:28:14        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:15           lo     14.00     14.00      1.43      1.43      0.00      0.00      0.00      0.00
+00:28:15         eth0   1708.00   1780.00    458.89    399.38      0.00      0.00      0.00      0.00
+
+00:28:15        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:16           lo      3.00      3.00      1.19      1.19      0.00      0.00      0.00      0.00
+00:28:16         eth0   1678.00   1752.00    445.31    382.21      0.00      0.00      0.00      0.00
+
+00:28:16        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:17           lo      6.00      6.00      0.90      0.90      0.00      0.00      0.00      0.00
+00:28:17         eth0   1643.00   1754.00    437.98    399.46      0.00      0.00      0.00      0.00
+
+00:28:17        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:18           lo     15.00     15.00      1.83      1.83      0.00      0.00      0.00      0.00
+00:28:18         eth0   1670.00   1783.00    454.04    379.34      0.00      0.00      0.00      0.00
+
+00:28:18        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:19           lo      5.00      5.00      1.35      1.35      0.00      0.00      0.00      0.00
+00:28:19         eth0   1731.00   1879.00    487.12    396.87      0.00      0.00      0.00      0.00
+
+00:28:19        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:20           lo     12.00     12.00      1.38      1.38      0.00      0.00      0.00      0.00
+00:28:20         eth0   1625.00   1790.00    456.17    390.37      0.00      0.00      0.00      0.00
+
+00:28:20        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:21           lo      3.00      3.00      0.43      0.43      0.00      0.00      0.00      0.00
+00:28:21         eth0   1630.00   1730.00    431.81    368.99      0.00      0.00      0.00      0.00
+
+00:28:21        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:22           lo      5.00      5.00      1.48      1.48      0.00      0.00      0.00      0.00
+00:28:22         eth0   1747.00   1890.00    483.51    422.93      0.00      0.00      0.00      0.00
+
+00:28:22        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:23           lo     18.00     18.00      1.98      1.98      0.00      0.00      0.00      0.00
+00:28:23         eth0   1734.00   1882.00    457.51    400.78      0.00      0.00      0.00      0.00
+
+00:28:23        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:24           lo      6.00      6.00      0.95      0.95      0.00      0.00      0.00      0.00
+00:28:24         eth0   1714.00   1910.00    464.73    409.38      0.00      0.00      0.00      0.00
+
+00:28:24        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:25           lo     20.00     20.00      2.75      2.75      0.00      0.00      0.00      0.00
+00:28:25         eth0   1625.00   1733.00    428.43    377.61      0.00      0.00      0.00      0.00
+
+00:28:25        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:26           lo      3.00      3.00      0.52      0.52      0.00      0.00      0.00      0.00
+00:28:26         eth0   1365.00   1450.00    354.48    305.37      0.00      0.00      0.00      0.00
+
+00:28:26        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:27           lo      6.00      6.00      1.12      1.12      0.00      0.00      0.00      0.00
+00:28:27         eth0   1825.00   1954.00    477.01    434.24      0.00      0.00      0.00      0.00
+
+00:28:27        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:28           lo     15.00     15.00      2.04      2.04      0.00      0.00      0.00      0.00
+00:28:28         eth0   1659.00   1774.00    455.56    386.36      0.00      0.00      0.00      0.00
+
+00:28:28        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:29           lo      5.00      5.00      0.65      0.65      0.00      0.00      0.00      0.00
+00:28:29         eth0   1729.00   1878.00    461.80    408.50      0.00      0.00      0.00      0.00
+
+00:28:29        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:30           lo     12.00     12.00      1.79      1.79      0.00      0.00      0.00      0.00
+00:28:30         eth0   1600.00   1717.00    433.87    375.64      0.00      0.00      0.00      0.00
+
+00:28:30        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:31           lo      3.00      3.00      1.14      1.14      0.00      0.00      0.00      0.00
+00:28:31         eth0   1660.00   1768.00    445.09    378.36      0.00      0.00      0.00      0.00
+
+00:28:31        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:32           lo      5.00      5.00      0.66      0.66      0.00      0.00      0.00      0.00
+00:28:32         eth0   1397.00   1447.00    381.61    300.13      0.00      0.00      0.00      0.00
+
+00:28:32        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:33           lo     18.00     18.00      2.10      2.10      0.00      0.00      0.00      0.00
+00:28:33         eth0   1657.00   1807.00    452.88    387.23      0.00      0.00      0.00      0.00
+
+00:28:33        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:34           lo      6.00      6.00      1.24      1.24      0.00      0.00      0.00      0.00
+00:28:34         eth0   1720.00   1850.00    468.88    406.37      0.00      0.00      0.00      0.00
+
+00:28:34        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:35           lo     14.00     14.00      1.53      1.53      0.00      0.00      0.00      0.00
+00:28:35         eth0   1840.00   1906.00    473.90    436.27      0.00      0.00      0.00      0.00
+
+00:28:35        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:36           lo      3.00      3.00      0.83      0.83      0.00      0.00      0.00      0.00
+00:28:36         eth0   1528.00   1675.00    416.24    363.12      0.00      0.00      0.00      0.00
+
+00:28:36        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:37           lo      6.00      6.00      2.43      2.43      0.00      0.00      0.00      0.00
+00:28:37         eth0   1755.00   1859.00    456.57    409.87      0.00      0.00      0.00      0.00
+
+00:28:37        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:38           lo     15.00     15.00      2.37      2.37      0.00      0.00      0.00      0.00
+00:28:38         eth0   1816.00   1926.00    489.86    425.45      0.00      0.00      0.00      0.00
+
+00:28:38        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:39           lo      5.00      5.00      0.90      0.90      0.00      0.00      0.00      0.00
+00:28:39         eth0   1510.00   1686.00    418.83    358.79      0.00      0.00      0.00      0.00
+
+00:28:39        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:40           lo     12.00     12.00      1.75      1.75      0.00      0.00      0.00      0.00
+00:28:40         eth0   1564.00   1678.00    414.66    362.58      0.00      0.00      0.00      0.00
+
+00:28:40        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:41           lo      3.00      3.00      0.89      0.89      0.00      0.00      0.00      0.00
+00:28:41         eth0   1580.00   1698.00    451.19    367.05      0.00      0.00      0.00      0.00
+
+00:28:41        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:42           lo      5.00      5.00      1.06      1.06      0.00      0.00      0.00      0.00
+00:28:42         eth0   1588.00   1747.00    445.99    375.55      0.00      0.00      0.00      0.00
+
+00:28:42        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:43           lo     18.00     18.00      1.90      1.90      0.00      0.00      0.00      0.00
+00:28:43         eth0   1674.00   1846.00    459.53    401.90      0.00      0.00      0.00      0.00
+
+00:28:43        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:44           lo      8.00      8.00      1.39      1.39      0.00      0.00      0.00      0.00
+00:28:44         eth0   1808.00   1919.00    469.56    420.86      0.00      0.00      0.00      0.00
+
+00:28:44        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:45           lo     14.00     14.00      1.61      1.61      0.00      0.00      0.00      0.00
+00:28:45         eth0   1794.00   1884.00    477.14    430.67      0.00      0.00      0.00      0.00
+
+00:28:45        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:46           lo      3.00      3.00      0.69      0.69      0.00      0.00      0.00      0.00
+00:28:46         eth0   1734.00   1904.00    470.31    422.30      0.00      0.00      0.00      0.00
+
+00:28:46        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:47           lo      6.00      6.00      1.54      1.54      0.00      0.00      0.00      0.00
+00:28:47         eth0   1724.00   1828.00    458.10    406.47      0.00      0.00      0.00      0.00
+
+00:28:47        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:48           lo     15.00     15.00      1.45      1.45      0.00      0.00      0.00      0.00
+00:28:48         eth0   1652.00   1866.00    452.39    411.98      0.00      0.00      0.00      0.00
+
+00:28:48        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:49           lo      5.00      5.00      2.63      2.63      0.00      0.00      0.00      0.00
+00:28:49         eth0   1764.00   1886.00    476.91    417.47      0.00      0.00      0.00      0.00
+
+00:28:49        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:50           lo     12.00     12.00      1.33      1.33      0.00      0.00      0.00      0.00
+00:28:50         eth0   1731.00   1822.00    454.16    411.31      0.00      0.00      0.00      0.00
+
+00:28:50        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:51           lo      3.00      3.00      1.23      1.23      0.00      0.00      0.00      0.00
+00:28:51         eth0   1616.00   1761.00    441.70    382.70      0.00      0.00      0.00      0.00
+
+00:28:51        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:52           lo      5.00      5.00      1.27      1.27      0.00      0.00      0.00      0.00
+00:28:52         eth0   1654.00   1727.00    438.61    381.41      0.00      0.00      0.00      0.00
+
+00:28:52        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:53           lo     18.00     18.00      2.34      2.34      0.00      0.00      0.00      0.00
+00:28:53         eth0   1648.00   1783.00    451.95    392.43      0.00      0.00      0.00      0.00
+
+00:28:53        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:54           lo      6.00      6.00      1.61      1.61      0.00      0.00      0.00      0.00
+00:28:54         eth0   1653.00   1779.00    446.41    383.05      0.00      0.00      0.00      0.00
+
+00:28:54        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:55           lo     18.00     18.00      1.68      1.68      0.00      0.00      0.00      0.00
+00:28:55         eth0   1578.00   1775.00    434.36    375.38      0.00      0.00      0.00      0.00
+
+00:28:55        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:56           lo      3.00      3.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:28:56         eth0   1804.00   1957.00    486.24    425.04      0.00      0.00      0.00      0.00
+
+00:28:56        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:57           lo      6.00      6.00      1.97      1.97      0.00      0.00      0.00      0.00
+00:28:57         eth0   1633.00   1829.00    438.92    397.44      0.00      0.00      0.00      0.00
+
+00:28:57        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:58           lo     15.00     15.00      1.75      1.75      0.00      0.00      0.00      0.00
+00:28:58         eth0   1661.00   1873.00    460.32    410.43      0.00      0.00      0.00      0.00
+
+00:28:58        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:28:59           lo      5.00      5.00      1.35      1.35      0.00      0.00      0.00      0.00
+00:28:59         eth0   1682.00   1835.00    450.71    396.33      0.00      0.00      0.00      0.00
+
+00:28:59        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:00           lo     12.00     12.00      1.42      1.42      0.00      0.00      0.00      0.00
+00:29:00         eth0   1770.00   1833.00    465.28    412.86      0.00      0.00      0.00      0.00
+
+00:29:00        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:01           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:29:01         eth0   1678.00   1801.00    449.63    391.47      0.00      0.00      0.00      0.00
+
+00:29:01        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:02           lo      5.00      5.00      0.88      0.88      0.00      0.00      0.00      0.00
+00:29:02         eth0   1522.00   1702.00    428.60    359.43      0.00      0.00      0.00      0.00
+
+00:29:02        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:03           lo     18.00     18.00      1.46      1.46      0.00      0.00      0.00      0.00
+00:29:03         eth0   1520.00   1610.00    418.61    343.72      0.00      0.00      0.00      0.00
+
+00:29:03        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:04           lo      6.00      6.00      0.88      0.88      0.00      0.00      0.00      0.00
+00:29:04         eth0   1830.00   1963.00    494.37    439.86      0.00      0.00      0.00      0.00
+
+00:29:04        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:05           lo     14.00     14.00      1.67      1.67      0.00      0.00      0.00      0.00
+00:29:05         eth0   1753.00   1898.00    469.53    414.17      0.00      0.00      0.00      0.00
+
+00:29:05        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:06           lo      3.00      3.00      0.51      0.51      0.00      0.00      0.00      0.00
+00:29:06         eth0   1525.00   1670.00    413.10    366.55      0.00      0.00      0.00      0.00
+
+00:29:06        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:07           lo      6.00      6.00      1.01      1.01      0.00      0.00      0.00      0.00
+00:29:07         eth0   1628.00   1701.00    428.29    377.57      0.00      0.00      0.00      0.00
+
+00:29:07        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:08           lo     15.00     15.00      2.81      2.81      0.00      0.00      0.00      0.00
+00:29:08         eth0   1763.00   1884.00    456.87    411.44      0.00      0.00      0.00      0.00
+
+00:29:08        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:09           lo      5.00      5.00      0.61      0.61      0.00      0.00      0.00      0.00
+00:29:09         eth0   1818.00   1892.00    475.81    420.42      0.00      0.00      0.00      0.00
+
+00:29:09        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:10           lo     16.00     16.00      1.83      1.83      0.00      0.00      0.00      0.00
+00:29:10         eth0   1623.00   1757.00    431.99    376.11      0.00      0.00      0.00      0.00
+
+00:29:10        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:11           lo      3.00      3.00      1.30      1.30      0.00      0.00      0.00      0.00
+00:29:11         eth0   1668.00   1805.00    450.96    391.52      0.00      0.00      0.00      0.00
+
+00:29:11        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:12           lo      5.00      5.00      1.61      1.61      0.00      0.00      0.00      0.00
+00:29:12         eth0   1745.00   1856.00    465.23    397.55      0.00      0.00      0.00      0.00
+
+00:29:12        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:13           lo     18.00     18.00      2.21      2.21      0.00      0.00      0.00      0.00
+00:29:13         eth0   1721.00   1876.00    458.33    395.64      0.00      0.00      0.00      0.00
+
+00:29:13        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:14           lo      6.00      6.00      1.35      1.35      0.00      0.00      0.00      0.00
+00:29:14         eth0   1694.00   1824.00    460.61    390.21      0.00      0.00      0.00      0.00
+
+00:29:14        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:15           lo     14.00     14.00      1.37      1.37      0.00      0.00      0.00      0.00
+00:29:15         eth0   1721.00   1864.00    474.44    406.26      0.00      0.00      0.00      0.00
+
+00:29:15        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:16           lo      3.00      3.00      1.33      1.33      0.00      0.00      0.00      0.00
+00:29:16         eth0   1667.00   1794.00    456.70    402.56      0.00      0.00      0.00      0.00
+
+00:29:16        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:17           lo      6.00      6.00      1.11      1.11      0.00      0.00      0.00      0.00
+00:29:17         eth0   1816.00   1879.00    461.46    408.65      0.00      0.00      0.00      0.00
+
+00:29:17        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:18           lo     15.00     15.00      1.88      1.88      0.00      0.00      0.00      0.00
+00:29:18         eth0   1656.00   1862.00    463.93    398.13      0.00      0.00      0.00      0.00
+
+00:29:18        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:19           lo      5.00      5.00      0.96      0.96      0.00      0.00      0.00      0.00
+00:29:19         eth0   1685.00   1805.00    454.33    388.06      0.00      0.00      0.00      0.00
+
+00:29:19        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:20           lo     12.00     12.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:29:20         eth0    639.00    671.00    164.05    145.82      0.00      0.00      0.00      0.00
+
+00:29:20        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:21           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:29:21         eth0    832.00    799.00    189.53    153.78      0.00      0.00      0.00      0.00
+
+00:29:21        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:22           lo      5.00      5.00      1.60      1.60      0.00      0.00      0.00      0.00
+00:29:22         eth0    874.00    812.00    204.13    170.10      0.00      0.00      0.00      0.00
+
+00:29:22        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:23           lo     18.00     18.00      1.40      1.40      0.00      0.00      0.00      0.00
+00:29:23         eth0    724.00    660.00    179.30    135.78      0.00      0.00      0.00      0.00
+
+00:29:23        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:24           lo      6.00      6.00      0.88      0.88      0.00      0.00      0.00      0.00
+00:29:24         eth0   1391.00   1391.00    322.62    286.26      0.00      0.00      0.00      0.00
+
+00:29:24        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:25           lo     14.00     14.00      2.34      2.34      0.00      0.00      0.00      0.00
+00:29:25         eth0   1368.00   1348.00    342.26    283.93      0.00      0.00      0.00      0.00
+
+00:29:25        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:26           lo      3.00      3.00      0.40      0.40      0.00      0.00      0.00      0.00
+00:29:26         eth0   1308.00   1317.00    331.79    264.75      0.00      0.00      0.00      0.00
+
+00:29:26        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:27           lo      6.00      6.00      1.04      1.04      0.00      0.00      0.00      0.00
+00:29:27         eth0   1526.00   1536.00    374.31    322.43      0.00      0.00      0.00      0.00
+
+00:29:27        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:28           lo     15.00     15.00      1.87      1.87      0.00      0.00      0.00      0.00
+00:29:28         eth0   1290.00   1229.00    301.52    250.52      0.00      0.00      0.00      0.00
+
+00:29:28        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:29           lo      5.00      5.00      1.23      1.23      0.00      0.00      0.00      0.00
+00:29:29         eth0   1413.00   1394.00    347.46    284.41      0.00      0.00      0.00      0.00
+
+00:29:29        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:30           lo     12.00     12.00      0.88      0.88      0.00      0.00      0.00      0.00
+00:29:30         eth0   1378.00   1406.00    331.86    297.18      0.00      0.00      0.00      0.00
+
+00:29:30        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:31           lo      3.00      3.00      1.62      1.62      0.00      0.00      0.00      0.00
+00:29:31         eth0   1342.00   1392.00    335.29    287.98      0.00      0.00      0.00      0.00
+
+00:29:31        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:32           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:29:32         eth0   1499.00   1505.00    363.65    311.25      0.00      0.00      0.00      0.00
+
+00:29:32        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:33           lo     18.00     18.00      1.47      1.47      0.00      0.00      0.00      0.00
+00:29:33         eth0   1033.00   1032.00    246.93    209.77      0.00      0.00      0.00      0.00
+
+00:29:33        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:34           lo      6.00      6.00      0.58      0.58      0.00      0.00      0.00      0.00
+00:29:34         eth0   1278.00   1275.00    299.21    260.01      0.00      0.00      0.00      0.00
+
+00:29:34        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:35           lo     14.00     14.00      1.88      1.88      0.00      0.00      0.00      0.00
+00:29:35         eth0   1385.00   1396.00    346.88    291.56      0.00      0.00      0.00      0.00
+
+00:29:35        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:36           lo      3.00      3.00      0.46      0.46      0.00      0.00      0.00      0.00
+00:29:36         eth0   1289.00   1277.00    314.00    263.76      0.00      0.00      0.00      0.00
+
+00:29:36        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:37           lo      6.00      6.00      0.64      0.64      0.00      0.00      0.00      0.00
+00:29:37         eth0   1288.00   1314.00    324.35    270.22      0.00      0.00      0.00      0.00
+
+00:29:37        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:38           lo     15.00     15.00      1.39      1.39      0.00      0.00      0.00      0.00
+00:29:38         eth0   1247.00   1208.00    303.15    249.48      0.00      0.00      0.00      0.00
+
+00:29:38        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:39           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:29:39         eth0   1531.00   1562.00    362.69    323.97      0.00      0.00      0.00      0.00
+
+00:29:39        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:40           lo     14.00     14.00      2.86      2.86      0.00      0.00      0.00      0.00
+00:29:40         eth0   1266.00   1222.00    299.89    248.77      0.00      0.00      0.00      0.00
+
+00:29:40        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:41           lo      3.00      3.00      0.43      0.43      0.00      0.00      0.00      0.00
+00:29:41         eth0   1065.00    990.00    271.56    204.02      0.00      0.00      0.00      0.00
+
+00:29:41        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:42           lo      5.00      5.00      1.26      1.26      0.00      0.00      0.00      0.00
+00:29:42         eth0   1328.00   1277.00    297.17    268.95      0.00      0.00      0.00      0.00
+
+00:29:42        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:43           lo     18.00     18.00      1.77      1.77      0.00      0.00      0.00      0.00
+00:29:43         eth0   1295.00   1325.00    315.58    267.42      0.00      0.00      0.00      0.00
+
+00:29:43        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:44           lo      6.00      6.00      1.58      1.58      0.00      0.00      0.00      0.00
+00:29:44         eth0   1372.00   1390.00    344.72    284.97      0.00      0.00      0.00      0.00
+
+00:29:44        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:45           lo     14.00     14.00      1.21      1.21      0.00      0.00      0.00      0.00
+00:29:45         eth0   1304.00   1257.00    311.89    260.03      0.00      0.00      0.00      0.00
+
+00:29:45        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:46           lo      3.00      3.00      2.18      2.18      0.00      0.00      0.00      0.00
+00:29:46         eth0   1299.00   1308.00    322.43    269.78      0.00      0.00      0.00      0.00
+
+00:29:46        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:47           lo      6.00      6.00      0.75      0.75      0.00      0.00      0.00      0.00
+00:29:47         eth0   1341.00   1380.00    342.55    283.05      0.00      0.00      0.00      0.00
+
+00:29:47        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:48           lo     15.00     15.00      1.18      1.18      0.00      0.00      0.00      0.00
+00:29:48         eth0   1331.00   1340.00    330.28    267.09      0.00      0.00      0.00      0.00
+
+00:29:48        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:49           lo      5.00      5.00      0.83      0.83      0.00      0.00      0.00      0.00
+00:29:49         eth0   1368.00   1331.00    307.01    275.88      0.00      0.00      0.00      0.00
+
+00:29:49        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:50           lo     12.00     12.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:29:50         eth0   1192.00   1172.00    284.49    237.47      0.00      0.00      0.00      0.00
+
+00:29:50        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:51           lo      3.00      3.00      0.56      0.56      0.00      0.00      0.00      0.00
+00:29:51         eth0   1453.00   1467.00    340.00    304.34      0.00      0.00      0.00      0.00
+
+00:29:51        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:52           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:29:52         eth0   1246.00   1274.00    298.47    264.68      0.00      0.00      0.00      0.00
+
+00:29:52        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:53           lo     18.00     18.00      1.57      1.57      0.00      0.00      0.00      0.00
+00:29:53         eth0   1329.00   1334.00    320.26    274.60      0.00      0.00      0.00      0.00
+
+00:29:53        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:54           lo      6.00      6.00      0.66      0.66      0.00      0.00      0.00      0.00
+00:29:54         eth0   1246.00   1261.00    293.07    262.84      0.00      0.00      0.00      0.00
+
+00:29:54        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:55           lo     14.00     14.00      1.66      1.66      0.00      0.00      0.00      0.00
+00:29:55         eth0   1430.00   1450.00    331.84    298.87      0.00      0.00      0.00      0.00
+
+00:29:55        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:56           lo      3.00      3.00      3.26      3.26      0.00      0.00      0.00      0.00
+00:29:56         eth0   1426.00   1466.00    339.06    295.20      0.00      0.00      0.00      0.00
+
+00:29:56        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:57           lo      6.00      6.00      0.58      0.58      0.00      0.00      0.00      0.00
+00:29:57         eth0   1468.00   1458.00    337.30    304.91      0.00      0.00      0.00      0.00
+
+00:29:57        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:58           lo     15.00     15.00      1.68      1.68      0.00      0.00      0.00      0.00
+00:29:58         eth0   1406.00   1409.00    339.14    291.37      0.00      0.00      0.00      0.00
+
+00:29:58        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:29:59           lo      5.00      5.00      1.05      1.05      0.00      0.00      0.00      0.00
+00:29:59         eth0   1280.00   1216.00    308.22    257.47      0.00      0.00      0.00      0.00
+
+00:29:59        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:00           lo     12.00     12.00      2.74      2.74      0.00      0.00      0.00      0.00
+00:30:00         eth0   1374.00   1406.00    330.22    279.10      0.00      0.00      0.00      0.00
+
+00:30:00        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:01           lo      3.00      3.00      2.35      2.35      0.00      0.00      0.00      0.00
+00:30:01         eth0   1286.00   1319.00    324.67    269.48      0.00      0.00      0.00      0.00
+
+00:30:01        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:02           lo      5.00      5.00      1.32      1.32      0.00      0.00      0.00      0.00
+00:30:02         eth0   1307.00   1277.00    299.28    256.67      0.00      0.00      0.00      0.00
+
+00:30:02        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:03           lo     18.00     18.00      5.33      5.33      0.00      0.00      0.00      0.00
+00:30:03         eth0   1218.00   1195.00    280.68    236.83      0.00      0.00      0.00      0.00
+
+00:30:03        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:04           lo      6.00      6.00      2.26      2.26      0.00      0.00      0.00      0.00
+00:30:04         eth0   1409.00   1366.00    328.27    286.93      0.00      0.00      0.00      0.00
+
+00:30:04        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:05           lo     14.00     14.00      1.33      1.33      0.00      0.00      0.00      0.00
+00:30:05         eth0   1166.00   1134.00    276.81    229.86      0.00      0.00      0.00      0.00
+
+00:30:05        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:06           lo      3.00      3.00      0.71      0.71      0.00      0.00      0.00      0.00
+00:30:06         eth0   1290.00   1268.00    308.24    270.12      0.00      0.00      0.00      0.00
+
+00:30:06        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:07           lo      6.00      6.00      1.13      1.13      0.00      0.00      0.00      0.00
+00:30:07         eth0   1375.00   1396.00    328.77    283.91      0.00      0.00      0.00      0.00
+
+00:30:07        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:08           lo     15.00     15.00      1.59      1.59      0.00      0.00      0.00      0.00
+00:30:08         eth0   1458.00   1530.00    345.42    298.99      0.00      0.00      0.00      0.00
+
+00:30:08        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:09           lo      5.00      5.00      0.87      0.87      0.00      0.00      0.00      0.00
+00:30:09         eth0   1330.00   1308.00    334.04    265.92      0.00      0.00      0.00      0.00
+
+00:30:09        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:10           lo     14.00     14.00      1.23      1.23      0.00      0.00      0.00      0.00
+00:30:10         eth0   1337.00   1408.00    334.02    288.64      0.00      0.00      0.00      0.00
+
+00:30:10        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:11           lo      3.00      3.00      2.12      2.12      0.00      0.00      0.00      0.00
+00:30:11         eth0   1355.00   1362.00    332.88    284.64      0.00      0.00      0.00      0.00
+
+00:30:11        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:12           lo      5.00      5.00      0.54      0.54      0.00      0.00      0.00      0.00
+00:30:12         eth0   1429.00   1433.00    342.24    292.00      0.00      0.00      0.00      0.00
+
+00:30:12        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:13           lo     18.00     18.00      2.82      2.82      0.00      0.00      0.00      0.00
+00:30:13         eth0   1099.00   1088.00    276.77    223.51      0.00      0.00      0.00      0.00
+
+00:30:13        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:14           lo      6.00      6.00      0.84      0.84      0.00      0.00      0.00      0.00
+00:30:14         eth0   1172.00   1136.00    294.20    231.40      0.00      0.00      0.00      0.00
+
+00:30:14        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:15           lo     14.00     14.00      2.83      2.83      0.00      0.00      0.00      0.00
+00:30:15         eth0   1257.00   1319.00    316.18    271.15      0.00      0.00      0.00      0.00
+
+00:30:15        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:16           lo      3.00      3.00      0.34      0.34      0.00      0.00      0.00      0.00
+00:30:16         eth0   1419.00   1435.00    335.75    307.48      0.00      0.00      0.00      0.00
+
+00:30:16        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:17           lo      6.00      6.00      2.05      2.05      0.00      0.00      0.00      0.00
+00:30:17         eth0   1342.00   1319.00    325.86    277.08      0.00      0.00      0.00      0.00
+
+00:30:17        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:18           lo     15.00     15.00      1.34      1.34      0.00      0.00      0.00      0.00
+00:30:18         eth0   1354.00   1368.00    318.26    271.98      0.00      0.00      0.00      0.00
+
+00:30:18        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:19           lo      5.00      5.00      1.10      1.10      0.00      0.00      0.00      0.00
+00:30:19         eth0   1287.00   1291.00    302.45    268.50      0.00      0.00      0.00      0.00
+
+00:30:19        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:20           lo     12.00     12.00      1.30      1.30      0.00      0.00      0.00      0.00
+00:30:20         eth0   1375.00   1356.00    336.81    285.02      0.00      0.00      0.00      0.00
+
+00:30:20        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:21           lo      3.00      3.00      0.42      0.42      0.00      0.00      0.00      0.00
+00:30:21         eth0   1538.00   1506.00    374.80    315.62      0.00      0.00      0.00      0.00
+
+00:30:21        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:22           lo      5.00      5.00      3.06      3.06      0.00      0.00      0.00      0.00
+00:30:22         eth0   1427.00   1407.00    343.25    292.33      0.00      0.00      0.00      0.00
+
+00:30:22        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:23           lo     18.00     18.00      1.54      1.54      0.00      0.00      0.00      0.00
+00:30:23         eth0   1229.00   1246.00    290.19    254.76      0.00      0.00      0.00      0.00
+
+00:30:23        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:24           lo      6.00      6.00      2.16      2.16      0.00      0.00      0.00      0.00
+00:30:24         eth0   1132.00   1103.00    271.01    228.49      0.00      0.00      0.00      0.00
+
+00:30:24        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:25           lo     18.00     18.00      1.43      1.43      0.00      0.00      0.00      0.00
+00:30:25         eth0   1100.00   1104.00    251.41    225.52      0.00      0.00      0.00      0.00
+
+00:30:25        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:26           lo      3.00      3.00      1.79      1.79      0.00      0.00      0.00      0.00
+00:30:26         eth0    959.00   1008.00    222.27    199.50      0.00      0.00      0.00      0.00
+
+00:30:26        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:27           lo      6.00      6.00      1.62      1.62      0.00      0.00      0.00      0.00
+00:30:27         eth0    586.00    682.00    153.80    125.56      0.00      0.00      0.00      0.00
+
+00:30:27        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:28           lo     15.00     15.00      1.31      1.31      0.00      0.00      0.00      0.00
+00:30:28         eth0    818.00    900.00    193.61    171.16      0.00      0.00      0.00      0.00
+
+00:30:28        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:29           lo      5.00      5.00      1.71      1.71      0.00      0.00      0.00      0.00
+00:30:29         eth0    596.00    628.00    138.00    112.72      0.00      0.00      0.00      0.00
+
+00:30:29        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:30           lo     12.00     12.00      2.54      2.54      0.00      0.00      0.00      0.00
+00:30:30         eth0    588.00    684.00    143.44    126.73      0.00      0.00      0.00      0.00
+
+00:30:30        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:31           lo      3.00      3.00      1.54      1.54      0.00      0.00      0.00      0.00
+00:30:31         eth0    578.00    649.00    143.74    122.12      0.00      0.00      0.00      0.00
+
+00:30:31        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:32           lo      5.00      5.00      0.60      0.60      0.00      0.00      0.00      0.00
+00:30:32         eth0   1020.00   1071.00    253.86    214.71      0.00      0.00      0.00      0.00
+
+00:30:32        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:33           lo     18.00     18.00      1.40      1.40      0.00      0.00      0.00      0.00
+00:30:33         eth0   1241.00   1218.00    306.00    246.53      0.00      0.00      0.00      0.00
+
+00:30:33        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:34           lo      6.00      6.00      0.66      0.66      0.00      0.00      0.00      0.00
+00:30:34         eth0   1113.00   1080.00    255.51    221.48      0.00      0.00      0.00      0.00
+
+00:30:34        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:35           lo     14.00     14.00      1.05      1.05      0.00      0.00      0.00      0.00
+00:30:35         eth0   1335.00   1311.00    314.07    274.58      0.00      0.00      0.00      0.00
+
+00:30:35        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:36           lo      3.00      3.00      0.95      0.95      0.00      0.00      0.00      0.00
+00:30:36         eth0   1423.00   1447.00    329.56    300.24      0.00      0.00      0.00      0.00
+
+00:30:36        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:37           lo      6.00      6.00      0.94      0.94      0.00      0.00      0.00      0.00
+00:30:37         eth0   1526.00   1541.00    361.96    325.61      0.00      0.00      0.00      0.00
+
+00:30:37        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:38           lo     15.00     15.00      1.34      1.34      0.00      0.00      0.00      0.00
+00:30:38         eth0   1357.00   1391.00    326.65    272.07      0.00      0.00      0.00      0.00
+
+00:30:38        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:39           lo      5.00      5.00      1.38      1.38      0.00      0.00      0.00      0.00
+00:30:39         eth0   1314.00   1335.00    319.16    282.25      0.00      0.00      0.00      0.00
+
+00:30:39        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:40           lo     12.00     12.00      1.55      1.55      0.00      0.00      0.00      0.00
+00:30:40         eth0   1092.00   1041.00    249.89    213.61      0.00      0.00      0.00      0.00
+
+00:30:40        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:41           lo      3.00      3.00      0.43      0.43      0.00      0.00      0.00      0.00
+00:30:41         eth0   1302.00   1294.00    310.81    269.15      0.00      0.00      0.00      0.00
+
+00:30:41        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:42           lo      5.00      5.00      0.52      0.52      0.00      0.00      0.00      0.00
+00:30:42         eth0   1442.00   1485.00    356.90    308.36      0.00      0.00      0.00      0.00
+
+00:30:42        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:43           lo     18.00     18.00      1.40      1.40      0.00      0.00      0.00      0.00
+00:30:43         eth0   1283.00   1220.00    309.88    248.71      0.00      0.00      0.00      0.00
+
+00:30:43        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:44           lo      6.00      6.00      1.20      1.20      0.00      0.00      0.00      0.00
+00:30:44         eth0   1395.00   1405.00    326.26    290.72      0.00      0.00      0.00      0.00
+
+00:30:44        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:45           lo     14.00     14.00      4.43      4.43      0.00      0.00      0.00      0.00
+00:30:45         eth0   1307.00   1323.00    313.82    270.17      0.00      0.00      0.00      0.00
+
+00:30:45        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:46           lo      3.00      3.00      0.65      0.65      0.00      0.00      0.00      0.00
+00:30:46         eth0   1456.00   1466.00    351.69    304.37      0.00      0.00      0.00      0.00
+
+00:30:46        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:47           lo      6.00      6.00      0.58      0.58      0.00      0.00      0.00      0.00
+00:30:47         eth0   1358.00   1425.00    338.79    288.54      0.00      0.00      0.00      0.00
+
+00:30:47        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:48           lo     15.00     15.00      1.18      1.18      0.00      0.00      0.00      0.00
+00:30:48         eth0   1246.00   1222.00    289.08    251.93      0.00      0.00      0.00      0.00
+
+00:30:48        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:49           lo      5.00      5.00      0.37      0.37      0.00      0.00      0.00      0.00
+00:30:49         eth0   1323.00   1329.00    320.74    272.33      0.00      0.00      0.00      0.00
+
+00:30:49        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:50           lo     12.00     12.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:30:50         eth0   1294.00   1314.00    309.31    264.62      0.00      0.00      0.00      0.00
+
+00:30:50        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:51           lo      3.00      3.00      1.74      1.74      0.00      0.00      0.00      0.00
+00:30:51         eth0   1437.00   1478.00    355.78    303.79      0.00      0.00      0.00      0.00
+
+00:30:51        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:52           lo      5.00      5.00      0.51      0.51      0.00      0.00      0.00      0.00
+00:30:52         eth0   1207.00   1296.00    302.59    265.50      0.00      0.00      0.00      0.00
+
+00:30:52        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:53           lo     18.00     18.00      1.88      1.88      0.00      0.00      0.00      0.00
+00:30:53         eth0   1265.00   1280.00    306.10    260.44      0.00      0.00      0.00      0.00
+
+00:30:53        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:54           lo      6.00      6.00      0.86      0.86      0.00      0.00      0.00      0.00
+00:30:54         eth0   1121.00   1088.00    270.37    220.90      0.00      0.00      0.00      0.00
+
+00:30:54        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:55           lo     14.00     14.00      1.21      1.21      0.00      0.00      0.00      0.00
+00:30:55         eth0   1284.00   1245.00    311.69    251.36      0.00      0.00      0.00      0.00
+
+00:30:55        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:56           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:30:56         eth0   1332.00   1331.00    308.45    271.13      0.00      0.00      0.00      0.00
+
+00:30:56        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:57           lo      6.00      6.00      1.39      1.39      0.00      0.00      0.00      0.00
+00:30:57         eth0   1108.00   1067.00    269.64    229.82      0.00      0.00      0.00      0.00
+
+00:30:57        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:58           lo     15.00     15.00      2.24      2.24      0.00      0.00      0.00      0.00
+00:30:58         eth0   1402.00   1419.00    345.15    289.60      0.00      0.00      0.00      0.00
+
+00:30:58        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:30:59           lo      5.00      5.00      0.54      0.54      0.00      0.00      0.00      0.00
+00:30:59         eth0   1263.00   1266.00    293.74    255.78      0.00      0.00      0.00      0.00
+
+00:30:59        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:00           lo     11.88     11.88      0.80      0.80      0.00      0.00      0.00      0.00
+00:31:00         eth0   1317.82   1290.10    303.65    258.92      0.00      0.00      0.00      0.00
+
+00:31:00        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:01           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:31:01         eth0   1522.00   1545.00    362.02    322.40      0.00      0.00      0.00      0.00
+
+00:31:01        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:02           lo      5.00      5.00      0.52      0.52      0.00      0.00      0.00      0.00
+00:31:02         eth0   1283.00   1229.00    310.68    258.48      0.00      0.00      0.00      0.00
+
+00:31:02        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:03           lo     18.00     18.00      1.40      1.40      0.00      0.00      0.00      0.00
+00:31:03         eth0   1083.00   1082.00    257.93    217.44      0.00      0.00      0.00      0.00
+
+00:31:03        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:04           lo      6.00      6.00      0.56      0.56      0.00      0.00      0.00      0.00
+00:31:04         eth0   1276.00   1283.00    306.54    261.55      0.00      0.00      0.00      0.00
+
+00:31:04        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:05           lo     14.00     14.00      1.89      1.89      0.00      0.00      0.00      0.00
+00:31:05         eth0   1379.00   1403.00    337.73    286.17      0.00      0.00      0.00      0.00
+
+00:31:05        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:06           lo      3.00      3.00      0.98      0.98      0.00      0.00      0.00      0.00
+00:31:06         eth0   1383.00   1364.00    328.15    275.03      0.00      0.00      0.00      0.00
+
+00:31:06        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:07           lo      6.00      6.00      0.63      0.63      0.00      0.00      0.00      0.00
+00:31:07         eth0   1250.00   1250.00    295.31    257.90      0.00      0.00      0.00      0.00
+
+00:31:07        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:08           lo     15.00     15.00      1.18      1.18      0.00      0.00      0.00      0.00
+00:31:08         eth0   1294.00   1283.00    310.16    261.63      0.00      0.00      0.00      0.00
+
+00:31:08        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:09           lo      5.00      5.00      1.62      1.62      0.00      0.00      0.00      0.00
+00:31:09         eth0   1254.00   1262.00    316.76    261.05      0.00      0.00      0.00      0.00
+
+00:31:09        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:10           lo     12.00     12.00      1.13      1.13      0.00      0.00      0.00      0.00
+00:31:10         eth0   1405.00   1427.00    333.07    288.42      0.00      0.00      0.00      0.00
+
+00:31:10        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:11           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:31:11         eth0   1291.00   1247.00    301.86    260.26      0.00      0.00      0.00      0.00
+
+00:31:11        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:12           lo      2.00      2.00      0.11      0.11      0.00      0.00      0.00      0.00
+00:31:12         eth0   1377.00   1396.00    319.62    292.20      0.00      0.00      0.00      0.00
+
+00:31:12        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:13           lo     18.00     18.00      1.40      1.40      0.00      0.00      0.00      0.00
+00:31:13         eth0   1497.00   1535.00    347.70    318.19      0.00      0.00      0.00      0.00
+
+00:31:13        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:14           lo      6.00      6.00      0.75      0.75      0.00      0.00      0.00      0.00
+00:31:14         eth0   1319.00   1294.00    296.27    271.47      0.00      0.00      0.00      0.00
+
+00:31:14        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:15           lo     14.00     14.00      1.11      1.11      0.00      0.00      0.00      0.00
+00:31:15         eth0   1311.00   1323.00    334.55    272.01      0.00      0.00      0.00      0.00
+
+00:31:15        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:16           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:31:16         eth0   1347.00   1368.00    316.82    281.69      0.00      0.00      0.00      0.00
+
+00:31:16        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:17           lo      9.00      9.00      0.65      0.65      0.00      0.00      0.00      0.00
+00:31:17         eth0   1342.00   1354.00    327.51    282.81      0.00      0.00      0.00      0.00
+
+00:31:17        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:18           lo     15.00     15.00      2.09      2.09      0.00      0.00      0.00      0.00
+00:31:18         eth0   1430.00   1507.00    347.48    304.21      0.00      0.00      0.00      0.00
+
+00:31:18        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:19           lo      3.00      3.00      3.59      3.59      0.00      0.00      0.00      0.00
+00:31:19         eth0   1360.00   1431.00    339.69    290.03      0.00      0.00      0.00      0.00
+
+00:31:19        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:20           lo     12.00     12.00      0.81      0.81      0.00      0.00      0.00      0.00
+00:31:20         eth0   1218.00   1199.00    293.82    241.16      0.00      0.00      0.00      0.00
+
+00:31:20        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+00:31:21           lo      3.00      3.00      0.27      0.27      0.00      0.00      0.00      0.00
+00:31:21         eth0   1368.00   1379.00    345.83    278.91      0.00      0.00      0.00      0.00
+
+Average:        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil
+Average:           lo      8.80      8.80      1.21      1.21      0.00      0.00      0.00      0.00
+Average:         eth0   1151.95   1196.40    293.19    252.67      0.00      0.00      0.00      0.00

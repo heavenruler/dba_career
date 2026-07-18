@@ -1,0 +1,17 @@
+{
+  "label": "idc-t32-r3",
+  "db": "ybdb",
+  "db_host": "172.24.40.32",
+  "duration_sec": 60,
+  "controller_host": "l-dbm-labroom-1.db.104dc-dev.com",
+  "select_1": {
+    "p50_ms": 20.309, "p95_ms": 24.351, "p99_ms": 28.999,
+    "samples": 293, "fail_count": 0
+  },
+  "update_1": {
+    "p50_ms": 71.438, "p95_ms": 93.552, "p99_ms": 111.755,
+    "samples": 293, "fail_count": 0
+  },
+  "interpretation_hint": "若 SELECT_1 p99 跨 IDC vs GCP 兩端皆 < 10ms = closest-replicas 生效；GCP 端 ~50ms = follower read 沒生效或 fall back to leader",
+  "generated_at": "2026-07-18T00:19:59Z"
+}

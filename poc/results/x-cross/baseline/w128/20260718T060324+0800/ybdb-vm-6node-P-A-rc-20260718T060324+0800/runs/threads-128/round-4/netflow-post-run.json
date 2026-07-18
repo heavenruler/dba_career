@@ -1,0 +1,45 @@
+{
+  "label": "post-run",
+  "timestamp": "2026-07-18T01:44:04Z",
+  "hosts": {
+    "172.24.40.31": {
+      "traffic_bytes": {"iptables_to_gcp_bytes": 939516934410, "iptables_to_idc_bytes": 1594047539531, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.32": {
+      "7100": {"idc": 16, "gcp": 0, "other": 0},
+      "9100": {"idc": 34, "gcp": 48, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 52747791026, "iptables_to_idc_bytes": 86203469935, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.33": {
+      "7100": {"idc": 16, "gcp": 0, "other": 0},
+      "9100": {"idc": 34, "gcp": 48, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 69110527348, "iptables_to_idc_bytes": 46901400960, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "172.24.40.34": {
+      "7100": {"idc": 64, "gcp": 24, "other": 0},
+      "9100": {"idc": 34, "gcp": 48, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 29175742313, "iptables_to_idc_bytes": 31158125226, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.11": {
+      "7100": {"idc": 8, "gcp": 0, "other": 0},
+      "9100": {"idc": 48, "gcp": 13, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 19474342815, "iptables_to_idc_bytes": 1058618503, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.12": {
+      "7100": {"idc": 8, "gcp": 0, "other": 0},
+      "9100": {"idc": 48, "gcp": 27, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 5091525813, "iptables_to_idc_bytes": 2683761438, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.13": {
+      "7100": {"idc": 8, "gcp": 0, "other": 0},
+      "9100": {"idc": 48, "gcp": 20, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 10617445835, "iptables_to_idc_bytes": 4378299499, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.14": {
+      "traffic_bytes": {"iptables_to_gcp_bytes": 622193801, "iptables_to_idc_bytes": 7211351, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    },
+    "10.160.152.15": {
+      "traffic_bytes": {"iptables_to_gcp_bytes": 643506304, "iptables_to_idc_bytes": 10224892, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    }
+  }
+}

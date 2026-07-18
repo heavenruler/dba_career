@@ -1,0 +1,64 @@
+== [07:07:28] try: list_tablets system transactions 0
+Tablet-UUID                      	Range                                                    	Leader-IP       	Leader-UUID
+7b3cd86e666d4e4bbee2a263820071d0 	hash_split: [0x0000, 0x0AA9]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+216a34ddd5fb47f4b70e40ab8f3c0e00 	hash_split: [0x0AAA, 0x1554]                             	10.160.152.12:9100 	b9adf0d42fba4ec1951c11fcabf261d4
+c2d4d3ec40bc4b309fda80fde1a72385 	hash_split: [0x1555, 0x1FFF]                             	10.160.152.13:9100 	43c747c2add84e8bb3baa650e5b24bad
+fe0a9143c749487daf6fe4fedbfd9e3c 	hash_split: [0x2000, 0x2AA9]                             	10.160.152.11:9100 	e9e197a925ae4302bbf71f67bfd00edb
+4ae87f4bfa0a41489d52b161df4dea39 	hash_split: [0x2AAA, 0x3554]                             	10.160.152.13:9100 	43c747c2add84e8bb3baa650e5b24bad
+849a548cc6594e5aa25a744a645b01c2 	hash_split: [0x3555, 0x3FFF]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+885b60c2c8c040fda9ab65cfce6da235 	hash_split: [0x4000, 0x4AA9]                             	172.24.40.32:9100 	75edf89144584ef8ac4e81b058494be3
+dba3c564be4f4f1993d04546be7de5ae 	hash_split: [0x4AAA, 0x5554]                             	172.24.40.32:9100 	75edf89144584ef8ac4e81b058494be3
+6e3ec8583c884a3e8087d9a4c7a65bd3 	hash_split: [0x5555, 0x5FFF]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+2ffad0c9cf30403c952208cbcac1c94f 	hash_split: [0x6000, 0x6AA9]                             	172.24.40.32:9100 	75edf89144584ef8ac4e81b058494be3
+ed1d6425576b4f8ab10dc345a6a5283d 	hash_split: [0x6AAA, 0x7554]                             	10.160.152.13:9100 	43c747c2add84e8bb3baa650e5b24bad
+ec8734d621bc48758bc124f24d24ca74 	hash_split: [0x7555, 0x7FFF]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+1643c1a681a240ec9fc675c6dca96ce7 	hash_split: [0x8000, 0x8AA9]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+327756c4bbee40bc8f4837541803825e 	hash_split: [0x8AAA, 0x9554]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+b218f8ffdb8c4a48bc0f68ba0b2cac01 	hash_split: [0x9555, 0x9FFF]                             	10.160.152.11:9100 	e9e197a925ae4302bbf71f67bfd00edb
+66190cf870894569ad3600e415fb4448 	hash_split: [0xA000, 0xAAA9]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+5d2182cf882649f9869cfe3681591025 	hash_split: [0xAAAA, 0xB554]                             	10.160.152.11:9100 	e9e197a925ae4302bbf71f67bfd00edb
+2d6bf80dedf942f68944a9c8f80fcc18 	hash_split: [0xB555, 0xBFFF]                             	10.160.152.12:9100 	b9adf0d42fba4ec1951c11fcabf261d4
+f60f01498b274bbebf20eb9b83a9e35d 	hash_split: [0xC000, 0xCAA9]                             	172.24.40.32:9100 	75edf89144584ef8ac4e81b058494be3
+78b506df3aa64bbb91e99f52a6c5aacf 	hash_split: [0xCAAA, 0xD554]                             	10.160.152.12:9100 	b9adf0d42fba4ec1951c11fcabf261d4
+1daf5f824d884ae496633df2a122af5e 	hash_split: [0xD555, 0xDFFF]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+89456ddb426a4d869b8cbc791e022a18 	hash_split: [0xE000, 0xEAA9]                             	10.160.152.11:9100 	e9e197a925ae4302bbf71f67bfd00edb
+8b9e75c6ca6b41a69c2d98dfb70ce412 	hash_split: [0xEAAA, 0xF554]                             	10.160.152.13:9100 	43c747c2add84e8bb3baa650e5b24bad
+af85390bf8d643e2ac6121dc78f4dffd 	hash_split: [0xF555, 0xFFFF]                             	10.160.152.12:9100 	b9adf0d42fba4ec1951c11fcabf261d4
+== [07:07:29] leader_stepdown 216a34ddd5fb47f4b70e40ab8f3c0e00
+== [07:07:29] leader_stepdown c2d4d3ec40bc4b309fda80fde1a72385
+== [07:07:29] leader_stepdown fe0a9143c749487daf6fe4fedbfd9e3c
+== [07:07:29] leader_stepdown 4ae87f4bfa0a41489d52b161df4dea39
+== [07:07:29] leader_stepdown ed1d6425576b4f8ab10dc345a6a5283d
+== [07:07:30] leader_stepdown b218f8ffdb8c4a48bc0f68ba0b2cac01
+== [07:07:30] leader_stepdown 5d2182cf882649f9869cfe3681591025
+== [07:07:30] leader_stepdown 2d6bf80dedf942f68944a9c8f80fcc18
+== [07:07:30] leader_stepdown 78b506df3aa64bbb91e99f52a6c5aacf
+== [07:07:30] leader_stepdown 89456ddb426a4d869b8cbc791e022a18
+== [07:07:31] leader_stepdown 8b9e75c6ca6b41a69c2d98dfb70ce412
+== [07:07:31] leader_stepdown af85390bf8d643e2ac6121dc78f4dffd
+== [07:07:41] try: list_tablets system transactions 0
+Tablet-UUID                      	Range                                                    	Leader-IP       	Leader-UUID
+7b3cd86e666d4e4bbee2a263820071d0 	hash_split: [0x0000, 0x0AA9]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+216a34ddd5fb47f4b70e40ab8f3c0e00 	hash_split: [0x0AAA, 0x1554]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+c2d4d3ec40bc4b309fda80fde1a72385 	hash_split: [0x1555, 0x1FFF]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+fe0a9143c749487daf6fe4fedbfd9e3c 	hash_split: [0x2000, 0x2AA9]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+4ae87f4bfa0a41489d52b161df4dea39 	hash_split: [0x2AAA, 0x3554]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+849a548cc6594e5aa25a744a645b01c2 	hash_split: [0x3555, 0x3FFF]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+885b60c2c8c040fda9ab65cfce6da235 	hash_split: [0x4000, 0x4AA9]                             	172.24.40.32:9100 	75edf89144584ef8ac4e81b058494be3
+dba3c564be4f4f1993d04546be7de5ae 	hash_split: [0x4AAA, 0x5554]                             	172.24.40.32:9100 	75edf89144584ef8ac4e81b058494be3
+6e3ec8583c884a3e8087d9a4c7a65bd3 	hash_split: [0x5555, 0x5FFF]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+2ffad0c9cf30403c952208cbcac1c94f 	hash_split: [0x6000, 0x6AA9]                             	172.24.40.32:9100 	75edf89144584ef8ac4e81b058494be3
+ed1d6425576b4f8ab10dc345a6a5283d 	hash_split: [0x6AAA, 0x7554]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+ec8734d621bc48758bc124f24d24ca74 	hash_split: [0x7555, 0x7FFF]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+1643c1a681a240ec9fc675c6dca96ce7 	hash_split: [0x8000, 0x8AA9]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+327756c4bbee40bc8f4837541803825e 	hash_split: [0x8AAA, 0x9554]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+b218f8ffdb8c4a48bc0f68ba0b2cac01 	hash_split: [0x9555, 0x9FFF]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+66190cf870894569ad3600e415fb4448 	hash_split: [0xA000, 0xAAA9]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+5d2182cf882649f9869cfe3681591025 	hash_split: [0xAAAA, 0xB554]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+2d6bf80dedf942f68944a9c8f80fcc18 	hash_split: [0xB555, 0xBFFF]                             	172.24.40.32:9100 	75edf89144584ef8ac4e81b058494be3
+f60f01498b274bbebf20eb9b83a9e35d 	hash_split: [0xC000, 0xCAA9]                             	172.24.40.32:9100 	75edf89144584ef8ac4e81b058494be3
+78b506df3aa64bbb91e99f52a6c5aacf 	hash_split: [0xCAAA, 0xD554]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+1daf5f824d884ae496633df2a122af5e 	hash_split: [0xD555, 0xDFFF]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4
+89456ddb426a4d869b8cbc791e022a18 	hash_split: [0xE000, 0xEAA9]                             	172.24.40.32:9100 	75edf89144584ef8ac4e81b058494be3
+8b9e75c6ca6b41a69c2d98dfb70ce412 	hash_split: [0xEAAA, 0xF554]                             	172.24.40.34:9100 	d170857263864c819263b580f993a804
+af85390bf8d643e2ac6121dc78f4dffd 	hash_split: [0xF555, 0xFFFF]                             	172.24.40.33:9100 	90f25f711b264a4ca6e0bd1e19a655c4

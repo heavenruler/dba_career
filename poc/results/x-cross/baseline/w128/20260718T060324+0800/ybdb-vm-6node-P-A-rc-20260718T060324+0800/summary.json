@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "phase": "phase-crossregion",
+  "result_scope": "X-CROSS",
+  "baseline_family": "crossregion",
+  "manifest_sha256": "b7256b824aa884207205a045a74c9c1e8da8c3465a5244eb7a4220a58f61d858",
+  "db": "ybdb",
+  "topology": "vm-6node-P-A",
+  "iso": "rc",
+  "ts": "20260718T060324+0800",
+  "warehouses": 128,
+  "rounds_per_thread_group": 5,
+  "skip_rounds": 0,
+  "threads_list": [
+    16,
+    32,
+    64,
+    128
+  ],
+  "thread_results": {
+    "16": {
+      "tpmC_mean": 5643.6,
+      "tpmC_per_round": [
+        5810.7,
+        5882.6,
+        5884.7,
+        5769.7,
+        4870.1
+      ],
+      "tpmC_range_mean_pct": 18.0,
+      "tpmTotal_mean": 12554.9,
+      "efficiency_mean_pct": 342.9,
+      "NEW_ORDER": {
+        "p50_mean_ms": 80.5,
+        "p95_mean_ms": 131.7,
+        "p99_mean_ms": 315.4,
+        "total_count": 140949,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 313585,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "32": {
+      "tpmC_mean": 6520.4,
+      "tpmC_per_round": [
+        6293.8,
+        6591.0,
+        6685.1,
+        6312.1,
+        6720.1
+      ],
+      "tpmC_range_mean_pct": 6.5,
+      "tpmTotal_mean": 14500.4,
+      "efficiency_mean_pct": 396.1,
+      "NEW_ORDER": {
+        "p50_mean_ms": 113.2,
+        "p95_mean_ms": 203.0,
+        "p99_mean_ms": 357.3,
+        "total_count": 162723,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 361933,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "64": {
+      "tpmC_mean": 9204.9,
+      "tpmC_per_round": [
+        9083.3,
+        9225.7,
+        9166.1,
+        9391.5,
+        9157.9
+      ],
+      "tpmC_range_mean_pct": 3.3,
+      "tpmTotal_mean": 20489.8,
+      "efficiency_mean_pct": 559.2,
+      "NEW_ORDER": {
+        "p50_mean_ms": 162.8,
+        "p95_mean_ms": 268.4,
+        "p99_mean_ms": 409.4,
+        "total_count": 229187,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 510348,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    },
+    "128": {
+      "tpmC_mean": 11015.7,
+      "tpmC_per_round": [
+        11078.7,
+        10804.9,
+        11018.4,
+        10956.1,
+        11220.3
+      ],
+      "tpmC_range_mean_pct": 3.8,
+      "tpmTotal_mean": 24465.1,
+      "efficiency_mean_pct": 669.2,
+      "NEW_ORDER": {
+        "p50_mean_ms": 255.0,
+        "p95_mean_ms": 523.4,
+        "p99_mean_ms": 899.2,
+        "total_count": 273943,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 608700,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    }
+  },
+  "generated_at": "2026-07-18T09:52:02.780331+08:00",
+  "generated_by": "tests/common/summary-from-stdout.py v1",
+  "source_files": "runs/threads-*/round-*/go-tpc-stdout.txt",
+  "region_routing_evidence": {
+    "near_read_setup": {
+      "log_present": true,
+      "vars_snapshot": "name              | setting |  source  \n-------------------------------+---------+----------\n yb_follower_read_staleness_ms | 30000   | database\n yb_read_from_followers        | on      | database\n(2 rows)"
+    },
+    "placement_gate": {
+      "verdict": "pass",
+      "reason": "P-A idc_majority idc=3/3 (100%)",
+      "placement": "P-A",
+      "idc_leader_count": 3,
+      "gcp_leader_count": 0,
+      "total_leader_samples": 3,
+      "json_path": "prepare/placement-gate-P-A.json"
+    }
+  }
+}

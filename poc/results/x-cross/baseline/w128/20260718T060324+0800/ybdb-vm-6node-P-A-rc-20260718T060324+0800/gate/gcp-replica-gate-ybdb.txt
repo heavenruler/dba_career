@@ -1,0 +1,11 @@
+Tablet Server UUID               RPC Host/Port Heartbeat delay Status   Reads/s  Writes/s Uptime   SST total size  SST uncomp size SST #files      Memory   Broadcast Host/Port 
+43c747c2add84e8bb3baa650e5b24bad 10.160.152.13:9100 0.55s           ALIVE    0.00     0.00     3557     2.38 GB         3.18 GB         8               373.03 MB 10.160.152.13:9100
+75edf89144584ef8ac4e81b058494be3 172.24.40.32:9100 0.15s           ALIVE    0.00     0.20     3451     6.82 GB         9.54 GB         22              3.63 GB  172.24.40.32:9100
+90f25f711b264a4ca6e0bd1e19a655c4 172.24.40.33:9100 0.07s           ALIVE    6.39     0.20     3435     8.61 GB         14.32 GB        29              6.64 GB  172.24.40.33:9100
+b9adf0d42fba4ec1951c11fcabf261d4 10.160.152.12:9100 0.10s           ALIVE    0.00     0.00     3563     374.51 MB       1.02 GB         7               323.32 MB 10.160.152.12:9100
+d170857263864c819263b580f993a804 172.24.40.34:9100 0.89s           ALIVE    8.59     0.00     3419     2.49 GB         6.76 GB         16              6.21 GB  172.24.40.34:9100
+e9e197a925ae4302bbf71f67bfd00edb 10.160.152.11:9100 0.39s           ALIVE    0.00     0.00     3569     6.22 GB         11.11 GB        15              621.76 MB 10.160.152.11:9100
+[gcp-replica-gate 07:07:28] ybdb: gcp_tservers_with_sst=3 (require >= 3)
+[gcp-replica-gate 07:07:29]   1/6 status tablet leader 在 GCP 12/24 → leader_stepdown 修復
+[gcp-replica-gate 07:07:41] ybdb: status_tablet_leaders idc=24 gcp=0 total=24 (P-A require gcp=0)
+[gcp-replica-gate 07:07:41] PASS: ybdb GCP 副本存在且 leader/lease 全在 IDC（P-A；證據 /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260718T060324+0800/gate/gcp-replica-gate-ybdb.txt）

@@ -1,0 +1,6 @@
+             name              | setting |  source  
+-------------------------------+---------+----------
+ yb_follower_read_staleness_ms | 30000   | database
+ yb_read_from_followers        | on      | database
+(2 rows)
+
