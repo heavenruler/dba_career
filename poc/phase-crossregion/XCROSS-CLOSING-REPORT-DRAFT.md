@@ -178,7 +178,8 @@ p50/p95/p99 mean (ms)。錯誤率 = `error_count / total_count`，分母為**成
 - **實測事實（raft 層直接證據）**：156 筆中 **10 筆錯誤訊息為 `Not the leader (tablet server error 15)`**（t32/R3=4、t64/R2=5、t64/R4=1）——證明 **run 中 transaction status tablet leader 確實發生過變動**（可從 raw stdout 驗證；不可回溯的只是「新 leader 是否落在 GCP」）。
 - **實測事實**：錯誤的輪分布高度陣發、非均勻——t16 全部 3 筆在 R5、t32 全部 9 筆在 R3、t64 分 R2=16／R4=43、t128 分 R1=23／R3=59／R4=1／R5=2。
 - **機制推論**（殘餘錯誤的候選解釋，未定案）：(a) 高併發尾延遲逼近 5s deadline——但 t128 錯誤輪的 NEW_ORDER 99.9th 實為 2.7-3.6s、未達 5s（4.3s 出現在 t64 R4），僅 >99.9th 的極端尾端踩線，支持度偏弱；(b) run 中 status tablet leader 變動（含可能漂回 GCP）——`Not the leader` 訊息與陣發式輪分布均較支持此向，但變動後的 leader 位置無 dump、無法定案。兩者不互斥，均待單變量驗證。
-- **下一步**（後續驗證，已拍板）：依 decisions 2026-07-17 的備援路徑，將 `transaction_rpc_timeout_ms` 5000→15000 後重跑驗證歸零（若錯誤未顯著下降，反駁純尾延遲假說、指向 (b)）；採用該設定的數據須標注三家 timeout 口徑不對稱。進階單變量實驗：run 中定期 poll status tablet leader 分布，與錯誤時間戳比對。
+- **07-18 驗證輪結果**（`實測事實`，證據見 §9.5）：YBDB 單家重跑 **0/1,794,566 錯誤**——但 varz 證實 `transaction_rpc_timeout_ms` 仍為 5000（yugabyted 啟動宣告未生效），timeout 單變量實驗**尚未真正執行**。同設定下錯誤 156→0 構成自然對照：錯誤為陣發／批間變動，與候選 (b) 一致、削弱「5000 必然踩線」。
+- **下一步**：runtime set_flag 修法已入 fix6n（`Implemented, pending validation`）；「真 15000」是否專輪驗證未拍板（單輪無鑑別力——0 錯誤在 5000 下也會出現，見 §8.2 O1）。進階單變量實驗：run 中定期 poll status tablet leader 分布，與錯誤時間戳比對。
 - `觀察`：t64 R4=3892.8 深塌（其餘四輪 10698-12166，t64 CV 81.1%）——59 筆錯誤中 43 筆在 R4、16 筆在吞吐正常的 R2；R2 有錯誤而無塌陷反證「錯誤量→塌陷」的直接因果，且失敗交易占比（<0.25%）在量級上不足以解釋 -66% 降幅，兩者更可能是同一上游短暫不穩的並發症狀（`機制推論`，未定案）。
 - `觀察`：S1 修復後 YBDB t128 tpmC 12,769.5 較 #2 批 11,138.6 高 +14.6%、錯誤 309→156——均屬**跨批比較**（VM 世代、driver、執行順序皆不同；[RETRO-2026-07-17.md](RETRO-2026-07-17.md) 記錄 TiDB 同參數跨批差可達 21%），量級落在已知批次噪音帶內，不能歸因於 S1 修復；方向與「commit 協調不再跨 WAN」一致僅供參考。
 - `實測事實`：最熱 IDC 節點利用率隨併發逼近飽和——idc-dbhost-1 idle 由 t16 45.4%（[mpstat](../results/x-cross/baseline/w128/20260717T143238+0800/ybdb-vm-6node-P-A-rc-20260717T143238+0800/runs/threads-16/round-1/mpstat-db-idc-dbhost-1.txt)）→ t128 26.7%（[mpstat](../results/x-cross/baseline/w128/20260717T143238+0800/ybdb-vm-6node-P-A-rc-20260717T143238+0800/runs/threads-128/round-1/mpstat-db-idc-dbhost-1.txt)）。
@@ -270,6 +271,28 @@ p50/p95/p99 mean (ms)。錯誤率 = `error_count / total_count`，分母為**成
 - summary.json：TiDB#2 [json](../results/x-cross/baseline/w128/20260712T164221+0800/tidb-vm-6node-P-A-rc-20260712T164221+0800/summary.json)（t128 13,251.6 / CV 4.0%）・CRDB#2 [json](../results/x-cross/baseline/w128/20260714T163716+0800/crdb-vm-6node-P-A-rc-20260714T163716+0800/summary.json)（11,001.1 / 4.8%）・YBDB#2 [json](../results/x-cross/baseline/w128/20260714T163716+0800/ybdb-vm-6node-P-A-rc-20260714T163716+0800/summary.json)（11,138.6 / 10.4%；309 錯誤 = 0.0149%）
 - GCP replica gate：CRDB#2 [txt](../results/x-cross/baseline/w128/20260714T163716+0800/crdb-vm-6node-P-A-rc-20260714T163716+0800/gate/gcp-replica-gate-crdb.txt)・YBDB#2 [txt](../results/x-cross/baseline/w128/20260714T163716+0800/ybdb-vm-6node-P-A-rc-20260714T163716+0800/gate/gcp-replica-gate-ybdb.txt)；TiDB#2 無此層（gate 晚於該批引入）
 - 完整證據矩陣見本報告 git 歷史版本（07-15 版 §9.1）；suite 目錄連結見 §3 備查列。
+
+### 9.5 O1 驗證輪（07-18，YBDB 單家）證據
+
+定位：O1 驗證用途、**非採用 cell**（採用仍為 YBDB#3）；引用須註明「驗證輪」。
+`TPCC_TS=20260718T060324+0800`，同 P-A×A-S×W128 口徑，driver `DBS=ybdb` 單家。
+
+| threads | tpmC mean (range%) | NEW_ORDER p99 (ms) | errors |
+|---:|---:|---:|---:|
+| 16 | 5,643.6 (18.0%) | 315.4 | 0 |
+| 32 | 6,520.4 (6.5%) | 357.3 | 0 |
+| 64 | 9,204.9 (3.3%) | 409.4 | 0 |
+| 128 | 11,015.7 (3.8%) | 899.2 | 0 |
+
+全批 **0/1,794,566 錯誤**（raw stdout `_ERR` 與 `execute run failed` 均 0 命中）。
+`觀察`：各檔位較 #3 批低 13-30%（t32 -30% 為最大擺動）但變異更緊——跨批變動的
+又一數據點（§8 O6 口徑，未歸因）。
+
+- summary.json：[json](../results/x-cross/baseline/w128/20260718T060324+0800/ybdb-vm-6node-P-A-rc-20260718T060324+0800/summary.json)・raw：[runs/](../results/x-cross/baseline/w128/20260718T060324+0800/ybdb-vm-6node-P-A-rc-20260718T060324+0800/runs/)
+- placement gate：[json](../results/x-cross/baseline/w128/20260718T060324+0800/ybdb-vm-6node-P-A-rc-20260718T060324+0800/prepare/placement-gate-P-A.json)（idc=3/3）・GCP replica gate：[txt](../results/x-cross/baseline/w128/20260718T060324+0800/ybdb-vm-6node-P-A-rc-20260718T060324+0800/gate/gcp-replica-gate-ybdb.txt)（PASS）
+- S1 status tablets：[前後 dump](../results/x-cross/baseline/w128/20260718T060324+0800/ybdb-vm-6node-P-A-rc-20260718T060324+0800/gate/gcp-replica-gate-ybdb-status-tablets.txt)（本輪 12/24 leader 在 GCP → stepdown → 24/24 IDC）
+- **flag 未生效的直接證據**：[effective-config.txt](../results/x-cross/baseline/w128/20260718T060324+0800/ybdb-vm-6node-P-A-rc-20260718T060324+0800/db-config/effective-config.txt)（`transaction_rpc_timeout_ms=5000`；`enable_automatic_tablet_splitting=true` 同樣未套用宣告值，而同串 `memory_limit_hard_bytes` 等正常——yugabyted `--tserver_flags` 對部分 runtime flag 不生效）
+- GCP probe 20 輪全 `fail_count=0`・批次證據：[vm-rebuild-proof](../results/x-cross/baseline/w128/20260718T060324+0800/vm-rebuild-proof-20260718T060023+0800.json)（proof TS=phase1 時戳，同批重建）・[fetch-receipt](../results/x-cross/baseline/w128/20260718T060324+0800/fetch-receipt.json)
 
 ## 10. 追溯紀錄
 
