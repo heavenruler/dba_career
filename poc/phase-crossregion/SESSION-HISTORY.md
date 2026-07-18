@@ -36,9 +36,9 @@
     cv = stdev / mean             # → 印成 CV%
     ```
     **口徑注意（07-18 補注）**：上式為樣本標準差 CV（06-22 era／pipeline-log 舊口徑）。
-    07-11 起的 w128 suite 與結案報告改用 `tpmC_range_mean_pct` = (max−min)/mean 並沿稱「CV」
-    ——兩者對同組數據可差 2-3 倍（如 YBDB t64：range% 81.1% vs 樣本 CV 35.1%），
-    比對數字前先確認口徑（報告 §5 有明文聲明）。
+    07-11 起的 w128 suite 用 `tpmC_range_mean_pct` = (max−min)/mean——兩者對同組
+    數據可差 2-3 倍（如 YBDB t64：range% 81.1% vs 樣本 CV 35.1%）。結案報告
+    07-18 起統一改稱 **range%**、不再稱 CV；比對數字前先確認口徑（報告 §5）。
   - 主 noise 來源（Codex round-1，06-22）判定不是 W 大小，而是「每輪 redeploy」→ 改採同 cluster suite 模式。
 
 - **兩段式驗證協議 Path C → Path A（06-22）**：
