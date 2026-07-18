@@ -129,7 +129,7 @@ SSH_OPTS           := -o LogLevel=ERROR -o StrictHostKeyChecking=accept-new
 
 .PHONY: help \
         phase1 phase1-destroy phase1-destroy-idc phase1-destroy-gcp phase1-apply phase1-wait phase1-wait-via-31 \
-        phase2 phase2-dns-fix phase2-ssh-prime phase2-bootstrap phase2-gate \
+        phase2 phase2-dns-fix phase2-ssh-prime phase2-bootstrap phase2-gate phase2-bootstrap-gcp-client \
         phase3 phase3-tidb-deploy \
         phase4 phase4-ybdb-deploy phase4-ybdb-fix6n \
         phase5 phase5-crdb-deploy \
@@ -314,6 +314,14 @@ phase2-probe-clients:
 	  dnf install -y -q postgresql mysql bc >/dev/null 2>&1 || dnf install -y -q postgresql mysql bc; \
 	  which psql mysql bc'" \
 	  || { echo "[F-Gate] phase2-probe-clients FAIL — GCP probe 將全滅，中止"; exit 1; }
+
+# A-A / A-A-RO 前置（VM 每輪重建，同 phase2-probe-clients 根因）：g-test-poc-5
+# 除 DB clients 外還需 go-tpc binary + tests/common 全套（run-vm6-aa.sh GCP 側呼叫
+# /tmp/poc-tpcc/scripts/run.sh）；未接進 phase2 聚合 target，避免動既有 phase2 驗證面，
+# 手動於 aaro/aa smoke 前跑一次即可（冪等）。
+phase2-bootstrap-gcp-client:
+	@echo "==> phase2-bootstrap-gcp-client: go-tpc + tests/common -> g-test-poc-5 (fail-closed)"
+	bash phase-crossregion/scripts/bootstrap-gcp-client.sh
 
 phase2-dns-fix:
 	@echo "==> phase2-dns-fix: fix DNS + chrony IP server on $(IDC_NODES)"
