@@ -47,11 +47,16 @@ FILES=$(ssh "${SSH_OPTS[@]}" "root@$GCP_HOST" \
 [[ -n "$FILES" ]] || { echo "[merge-gcp] GCP 端 $ROOT 無任何 go-tpc-stdout.txt — fail-closed" >&2; exit 1; }
 
 N=0
+# 2026-07-20 修法：迴圈內 ssh 若不把 stdin 導 /dev/null，會吃掉 `done <<< "$FILES"`
+# 的 here-string，`read -r rel` 第二輪即讀到 EOF——迴圈只跑一次（同一種陷阱先前
+# 也在 ybdb-master-quorum-gate.sh 出現過，見 SMOKE-STAGE1-SUMMARY.md YBDB 節）。
+# 首次全輪 A-A-RO 實測（20260720T101928+0800 TiDB cell）即踩到：$FILES 正確含
+# 20 筆，但只落位 1 筆（threads-128/round-1），三家均會沿用同一支 driver 觸發。
 while IFS= read -r rel; do
   [[ -n "$rel" ]] || continue
   dest="$ROOT/${rel%go-tpc-stdout.txt}go-tpc-stdout-gcp.txt"
   mkdir -p "$(dirname "$dest")"
-  ssh "${SSH_OPTS[@]}" "root@$GCP_HOST" "cat '$ROOT/$rel'" > "$dest.tmp"
+  ssh "${SSH_OPTS[@]}" "root@$GCP_HOST" "cat '$ROOT/$rel'" < /dev/null > "$dest.tmp"
   [[ -s "$dest.tmp" ]] || {
     echo "[merge-gcp] GCP 端 $rel 拉回為空 — fail-closed" >&2
     rm -f "$dest.tmp"
