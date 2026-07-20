@@ -109,6 +109,12 @@ PROFILE            ?= A-S
 PROFILE_TOKEN       = $(if $(filter A-A,$(PROFILE)),-aa,$(if $(filter A-A-RO,$(PROFILE)),-aaro,))
 CLIENT_ZONE        := idc
 GATE_SKIP          := 1
+# ANCHOR_ONLY=1（2026-07-19，A-A-RO 全輪拍板）：run-vm6-suite.sh 跑到
+# gcp-replica-gate 即提早結束，跳過 freeze/run/collect（省掉整段 W=128 workload
+# 時間）。用途：先產出 plain（無 profile token）的 .prepare.done/prepare//gate/
+# 供 run-vm6-aa.sh 的 prepare-bridge 複製給 aaro/aa suite 使用，不需重跑一次
+# 完整 baseline 才能拿到 anchor 證據。
+ANCHOR_ONLY        ?=
 
 # === Per-invocation timestamp (overridable so chained sub-makes share one) ===
 TPCC_TS            ?= $(shell date +%Y%m%dT%H%M%S%z)
@@ -525,7 +531,8 @@ phase6-tidb-smoke:
 	         ROUNDS=$(ROUNDS) THREADS_LIST='$(THREADS_LIST)' RUN_SEC=$(RUN_SEC) ROUND_SLEEP_SEC=$(ROUND_SLEEP_SEC) \
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
 	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
-	         GCP_PROBE_DB_HOST=10.160.152.11; \
+	         GCP_PROBE_DB_HOST=10.160.152.11 \
+	         ANCHOR_ONLY=$(ANCHOR_ONLY); \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
 	    --db tidb --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --ts $$TS"
 	@echo "==> phase6-tidb-post-prepare leader gate: wait tpcc region leaders → IDC (max 5 min)"
@@ -586,7 +593,8 @@ phase7-ybdb-smoke:
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
 	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
 	         GCP_PROBE_DB_HOST=10.160.152.11 \
-	         YBDB_USER=yugabyte YBDB_DB=tpcc; \
+	         YBDB_USER=yugabyte YBDB_DB=tpcc \
+	         ANCHOR_ONLY=$(ANCHOR_ONLY); \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
 	    --db ybdb --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --ts $$TS"
 	@echo "==> phase7-ybdb leader-snapshot (tablet leader counts per tserver)"
@@ -636,7 +644,8 @@ phase8-crdb-smoke:
 	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
 	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
 	         GCP_PROBE_DB_HOST=10.160.152.11 \
-	         CRDB_USER=root CRDB_DB=tpcc; \
+	         CRDB_USER=root CRDB_DB=tpcc \
+	         ANCHOR_ONLY=$(ANCHOR_ONLY); \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
 	    --db crdb --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --ts $$TS"
 	@echo "==> phase8-crdb leader-snapshot (lease holder locality per range)"
@@ -1083,6 +1092,40 @@ win-3db-status:
 	  [ -f /tmp/poc-tpcc/logs/win-3db-$(TPCC_TS).done ] || [ -f /tmp/poc-tpcc/logs/win-3db-$(TPCC_TS).failed ] || echo '(window still running)'"
 	@echo "==> driver log tail"
 	@ssh $(TPCC_CLIENT) "tail -25 $(WIN_3DB_LOG) 2>/dev/null || echo '(no log yet)'"
+
+# -------------------------------------------------------------------
+# A-A-RO 正式 W=128 全輪：TiDB→YBDB→CRDB detached on .31（2026-07-19 拍板）
+# 用法同上（win-aaro-detach / win-aaro-status），driver = win-aaro-w128.sh
+# -------------------------------------------------------------------
+WIN_AARO_LOG = /tmp/poc-tpcc/logs/win-aaro-$(TPCC_TS).log
+
+win-aaro-detach:
+	@echo "==> rsync scripts + freeze/ + Makefile to .31 (driver 依賴)"
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
+	rsync -avz phase-crossregion/freeze/  '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/freeze/'
+	ssh $(TPCC_CLIENT) 'mkdir -p /tmp/poc/phase-crossregion/scripts'
+	rsync -avz phase-crossregion/Makefile '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/Makefile'
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
+	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver 進程"
+	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128' | grep -v pgrep || true); \
+	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
+	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS) DBS='$(DBS)'"
+	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \
+	  nohup env PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS) DBS='$(DBS)' \
+	    bash $(CROSS_SCRIPTS_REMOTE)/win-aaro-w128.sh \
+	    > $(WIN_AARO_LOG) 2>&1 < /dev/null & \
+	  echo \"started pid \$$!\""
+	@echo ""
+	@echo "==> detached。Mac 現在可關機。回來後查進度："
+	@echo "    make win-aaro-status TPCC_TS=$(TPCC_TS)"
+
+win-aaro-status:
+	@echo "==> window markers (TPCC_TS=$(TPCC_TS))"
+	@ssh $(TPCC_CLIENT) "for m in /tmp/poc-tpcc/logs/win-aaro-$(TPCC_TS).done /tmp/poc-tpcc/logs/win-aaro-$(TPCC_TS).failed; do \
+	  [ -f \"\$$m\" ] && { echo \"--- \$$m ---\"; cat \"\$$m\"; }; done; \
+	  [ -f /tmp/poc-tpcc/logs/win-aaro-$(TPCC_TS).done ] || [ -f /tmp/poc-tpcc/logs/win-aaro-$(TPCC_TS).failed ] || echo '(window still running)'"
+	@echo "==> driver log tail"
+	@ssh $(TPCC_CLIENT) "tail -25 $(WIN_AARO_LOG) 2>/dev/null || echo '(no log yet)'"
 
 # ===================================================================
 # Sub-rules reused verbatim from Makefile.tc1

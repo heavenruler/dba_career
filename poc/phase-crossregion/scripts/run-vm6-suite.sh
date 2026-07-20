@@ -389,6 +389,15 @@ fi
 echo "[wrapper] gcp-replica-gate: verify tpcc data replicated to GCP (fail-closed)"
 bash "$SELF/gcp-replica-gate.sh" --db "$DB" --db-host "$DB_HOST" --db-port "$DB_PORT" --out-dir "$ROOT/gate"
 
+# ANCHOR_ONLY（2026-07-19，A-A-RO 全輪拍板）：prepare+gate 已完成即結束，跳過
+# freeze/run/collect（省掉整段 W=128 workload 時間）。用途：快速產出 plain
+# suite 的 .prepare.done/prepare//gate/，供 run-vm6-aa.sh 的 prepare-bridge
+# 複製給 aaro/aa suite 使用（見 win-aaro-w128.sh）。
+if [[ "${ANCHOR_ONLY:-0}" == "1" ]]; then
+  echo "[wrapper] ANCHOR_ONLY=1 — prepare+gate 已備妥，跳過 freeze/run/collect"
+  exit 0
+fi
+
 # steady-state freeze hook（driver 傳入 FREEZE_SCRIPT；此時 placement 已收斂，凍結安全）
 if [[ -n "${FREEZE_SCRIPT:-}" ]]; then
   # W=1 小資料時 table-level placement ALTER 剛下完，PD 還有 in-flight operator，
