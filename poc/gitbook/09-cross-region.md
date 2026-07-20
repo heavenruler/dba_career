@@ -96,7 +96,7 @@ flowchart LR
 | 決策需求 | 可用設計／證據 | 必要 gate | 目前狀態 |
 |---|---|---|---|
 | 單主寫入與遠端讀 | A-S + placement P-A/P-B | leader/locality、time sync、WAN、metrics completeness | 部分已跑；不可外推 |
-| 讀多寫少且可接受陳舊 | A-A-RO + stale follower read 設計 | staleness、fallback、讀寫 client locality | 計畫中 |
+| 讀多寫少且可接受陳舊 | A-A-RO + stale follower read 設計 | staleness、fallback、讀寫 client locality | smoke 已驗證三家程序/口徑可跑通（07-18，[SMOKE-AARO-SUMMARY.md](../phase-crossregion/SMOKE-AARO-SUMMARY.md)），正式 W=128 待排 |
 | 兩端同時寫 | A-A profile | 衝突、跨區 commit、placement 與壓力隔離 | 計畫中 |
 | 宣稱 WAN cost | IDC-only 六節點 paired control | 同硬體、同 quorum、同 W、同 workload | 未完成 |
 | 宣稱 DR 數字 | failover/chaos scenario | RTO/RPO 方法、故障注入、資料完整性驗證 | 未完成 |

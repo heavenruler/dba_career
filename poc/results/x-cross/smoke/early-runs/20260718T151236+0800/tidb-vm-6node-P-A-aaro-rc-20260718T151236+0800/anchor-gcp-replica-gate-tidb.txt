@@ -1,0 +1,8 @@
+ADDRESS	LABEL	IS_LEADER	peer_count
+10.160.152.11:20160	[{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1-a"}]	0	19
+172.24.40.32:20160	[{"key": "region", "value": "idc"}, {"key": "zone", "value": "idc-vlan241"}]	0	1
+172.24.40.32:20160	[{"key": "region", "value": "idc"}, {"key": "zone", "value": "idc-vlan241"}]	1	18
+172.24.40.33:20160	[{"key": "region", "value": "idc"}, {"key": "zone", "value": "idc-vlan241"}]	0	18
+172.24.40.33:20160	[{"key": "region", "value": "idc"}, {"key": "zone", "value": "idc-vlan241"}]	1	1
+[gcp-replica-gate 14:43:57] tidb: gcp_followers=19 gcp_leaders=0
+[gcp-replica-gate 14:43:57] PASS: tidb GCP 副本存在且 leader/lease 全在 IDC（P-A；證據 /tmp/poc-tpcc/artifacts/X-CROSS/tidb-vm-6node-P-A-rc-20260718T143701+0800/gate/gcp-replica-gate-tidb.txt）

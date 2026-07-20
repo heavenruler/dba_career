@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "phase": "phase-crossregion",
+  "result_scope": "X-CROSS",
+  "baseline_family": "crossregion",
+  "manifest_sha256": "b7256b824aa884207205a045a74c9c1e8da8c3465a5244eb7a4220a58f61d858",
+  "db": "ybdb",
+  "topology": "vm-6node-P-A-aaro",
+  "iso": "rc",
+  "ts": "20260718T204842+0800",
+  "warehouses": 4,
+  "rounds_per_thread_group": 5,
+  "skip_rounds": 0,
+  "threads_list": [
+    16
+  ],
+  "thread_results": {
+    "16": {
+      "tpmC_mean": 6370.7,
+      "tpmC_per_round": [
+        6370.7
+      ],
+      "tpmC_range_mean_pct": 0.0,
+      "tpmTotal_mean": 14109.7,
+      "efficiency_mean_pct": 12384.8,
+      "NEW_ORDER": {
+        "p50_mean_ms": 88.1,
+        "p95_mean_ms": 176.2,
+        "p99_mean_ms": 260.0,
+        "total_count": 31825,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      },
+      "all_txn": {
+        "total_count": 70491,
+        "error_count": 0,
+        "error_rate_pct": 0.0
+      }
+    }
+  },
+  "generated_at": "2026-07-18T20:58:05.605147+08:00",
+  "generated_by": "tests/common/summary-from-stdout.py v1",
+  "source_files": "runs/threads-*/round-*/go-tpc-stdout.txt",
+  "region_routing_evidence": null,
+  "gcp_side": {
+    "profile": "A-A-RO",
+    "throughput_note": "read_tpmTotal 為 GCP 端 go-tpc [Summary] tpmTotal；A-A-RO 唯讀 mix 無 NEW_ORDER → tpmC 無定義（null），不可與 IDC tpmC 比大小（G2）",
+    "source_files": "runs/threads-*/round-*/go-tpc-stdout-gcp.txt",
+    "generated_at": "2026-07-18T20:58:05.637696+08:00",
+    "generated_by": "phase-crossregion/scripts/summary-gcp-side.py v1",
+    "thread_results": {
+      "16": {
+        "read_tpmTotal_mean": 21871.4,
+        "tpmTotal_per_round": [
+          21871.4
+        ],
+        "tpmC_mean": null,
+        "ORDER_STATUS": {
+          "TPM_mean": 10953.8,
+          "p50_mean_ms": 60.8,
+          "p95_mean_ms": 71.3,
+          "p99_mean_ms": 100.7,
+          "total_count": 54251,
+          "error_count": 0
+        },
+        "STOCK_LEVEL": {
+          "TPM_mean": 10917.6,
+          "p50_mean_ms": 32.5,
+          "p95_mean_ms": 52.4,
+          "p99_mean_ms": 75.5,
+          "total_count": 54105,
+          "error_count": 0
+        }
+      }
+    }
+  }
+}

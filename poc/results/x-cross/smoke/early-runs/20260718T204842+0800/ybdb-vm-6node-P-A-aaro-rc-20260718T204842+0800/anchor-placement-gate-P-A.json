@@ -1,0 +1,12 @@
+{
+  "db": "ybdb",
+  "placement": "P-A",
+  "verdict": "pass",
+  "reason": "P-A idc_majority idc=3/3 (100%)",
+  "idc_leader_count": 3,
+  "gcp_leader_count": 0,
+  "total_leader_samples": 3,
+  "sample_tables": "warehouse,district,customer",
+  "yb_master_addr": "172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100",
+  "generated_at": "2026-07-18T12:37:54Z"
+}
