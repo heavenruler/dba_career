@@ -10,16 +10,20 @@
 
 | DB | IDC tpmC | IDC 錯誤 | GCP read_tpmTotal | GCP tpmC | Placement gate | Artifact TS |
 |---|---:|---|---:|---|---|---|
-| **TiDB** | 1,563.3 | 0 / 17,289 | 16,282.0 | null（G2） | idc=19/19（100%） | `20260718T151236+0800` |
-| **CRDB** | 7,397.1 | 1 / 81,485（0.0012%，見下）| 19,828.0 | null（G2） | idc=5/5（100%） | `20260718T154300+0800` |
-| **YBDB** | 6,370.7 | 0 / 70,491 | 21,871.4 | null（G2） | idc=3/3（100%） | `20260718T204842+0800` |
+| **TiDB** | [1,563.3](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/aaro-go-tpc-stdout-idc.txt) | [0 / 17,289](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/aaro-go-tpc-stdout-idc.txt) | [16,282.0](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/aaro-go-tpc-stdout-gcp.txt) | null（G2） | [idc=19/19（100%）](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/anchor-placement-gate-P-A.json) | [`20260718T151236+0800`](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/) |
+| **CRDB** | [7,397.1](../results/x-cross/smoke/early-runs/20260718T154300+0800/crdb-vm-6node-P-A-aaro-rc-20260718T154300+0800/aaro-go-tpc-stdout-idc.txt) | [1 / 81,485](../results/x-cross/smoke/early-runs/20260718T154300+0800/crdb-vm-6node-P-A-aaro-rc-20260718T154300+0800/aaro-go-tpc-stdout-idc.txt)（0.0012%，見下）| [19,828.0](../results/x-cross/smoke/early-runs/20260718T154300+0800/crdb-vm-6node-P-A-aaro-rc-20260718T154300+0800/aaro-go-tpc-stdout-gcp.txt) | null（G2） | [idc=5/5（100%）](../results/x-cross/smoke/early-runs/20260718T154300+0800/crdb-vm-6node-P-A-aaro-rc-20260718T154300+0800/anchor-placement-gate-P-A.json) | [`20260718T154300+0800`](../results/x-cross/smoke/early-runs/20260718T154300+0800/crdb-vm-6node-P-A-aaro-rc-20260718T154300+0800/) |
+| **YBDB** | [6,370.7](../results/x-cross/smoke/early-runs/20260718T204842+0800/ybdb-vm-6node-P-A-aaro-rc-20260718T204842+0800/aaro-go-tpc-stdout-idc.txt) | [0 / 70,491](../results/x-cross/smoke/early-runs/20260718T204842+0800/ybdb-vm-6node-P-A-aaro-rc-20260718T204842+0800/aaro-go-tpc-stdout-idc.txt) | [21,871.4](../results/x-cross/smoke/early-runs/20260718T204842+0800/ybdb-vm-6node-P-A-aaro-rc-20260718T204842+0800/aaro-go-tpc-stdout-gcp.txt) | null（G2） | [idc=3/3（100%）](../results/x-cross/smoke/early-runs/20260718T204842+0800/ybdb-vm-6node-P-A-aaro-rc-20260718T204842+0800/anchor-placement-gate-P-A.json) | [`20260718T204842+0800`](../results/x-cross/smoke/early-runs/20260718T204842+0800/ybdb-vm-6node-P-A-aaro-rc-20260718T204842+0800/) |
 
 **G1-G6 合規**：兩地數據為獨立頂層區塊，未合併（G1）；GCP RO 端主指標為
 `read_tpmTotal`、`tpmC_mean=null`（G2，RO mix 無 NEW_ORDER，tpmC 無定義非量到零）；
 同 suite 目錄雙子樹、GCP 端檔名帶 `-gcp` 後綴（G3）。三家 GCP 側
 `read_tpmTotal_mean` 已由 raw `go-tpc-stdout-gcp.txt` 的 `[Summary]` TPM 欄位
-獨立手動重算，與 `summary-gcp-side.py` 注入值逐位元相符（16282.0／19828.0／
-21871.4），驗證口徑無誤。
+獨立手動重算，與
+[`summary-gcp-side.py` 注入值](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/aaro-summary.json)
+逐位元相符（TiDB
+[16282.0](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/aaro-go-tpc-stdout-gcp.txt)／CRDB
+[19828.0](../results/x-cross/smoke/early-runs/20260718T154300+0800/crdb-vm-6node-P-A-aaro-rc-20260718T154300+0800/aaro-go-tpc-stdout-gcp.txt)／YBDB
+[21871.4](../results/x-cross/smoke/early-runs/20260718T204842+0800/ybdb-vm-6node-P-A-aaro-rc-20260718T204842+0800/aaro-go-tpc-stdout-gcp.txt)），驗證口徑無誤。
 
 三家 `.suite.done`（anchor plain suite）、placement gate、gcp-replica-gate
 皆通過；**三家 A-A-RO 執行鏈本次全數首跑，過程中發現並修復 4 個此前從未
@@ -29,22 +33,22 @@ live 測過的根因 bug**（詳下）。
 
 ### TiDB（`20260718T151236+0800`）
 
-- NEW_ORDER（IDC 端）0 error；GCP 側 ORDER_STATUS/STOCK_LEVEL 各約 40.6-40.7k
-  次、0 error，p99 92.3/96.5ms。
-- Placement gate：idc_leader_count=19/19。
+- NEW_ORDER（IDC 端）0 error（[raw idc](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/aaro-go-tpc-stdout-idc.txt)）；GCP 側 ORDER_STATUS/STOCK_LEVEL 各約 40.6-40.7k
+  次、0 error，p99 92.3/96.5ms（[raw gcp](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/aaro-go-tpc-stdout-gcp.txt)、[summary.json](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/aaro-summary.json)）。
+- Placement gate：idc_leader_count=19/19（[json](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/anchor-placement-gate-P-A.json)）；GCP 副本 gate：[gcp-replica-gate-tidb.txt](../results/x-cross/smoke/early-runs/20260718T151236+0800/tidb-vm-6node-P-A-aaro-rc-20260718T151236+0800/anchor-gcp-replica-gate-tidb.txt)。
 
 ### CRDB（`20260718T154300+0800`）
 
-- IDC 側 1 筆 `NEW_ORDER_ERR`（率 0.0012%，延遲 188.7ms）——延遲量級為一般
+- IDC 側 1 筆 `NEW_ORDER_ERR`（率 0.0012%，延遲 188.7ms，[raw idc](../results/x-cross/smoke/early-runs/20260718T154300+0800/crdb-vm-6node-P-A-aaro-rc-20260718T154300+0800/aaro-go-tpc-stdout-idc.txt) grep `_ERR`）——延遲量級為一般
   交易衝突特徵，非 timeout 訊號（對照 YBDB 的 ~5s timeout 特徵），判定為
   W=4 低併發下的正常背景雜訊，不影響流程判定。
-- GCP 側 ORDER_STATUS/STOCK_LEVEL 各約 49.4-49.5k 次、0 error。
-- Placement gate：idc_leader_count=5/5。
+- GCP 側 ORDER_STATUS/STOCK_LEVEL 各約 49.4-49.5k 次、0 error（[raw gcp](../results/x-cross/smoke/early-runs/20260718T154300+0800/crdb-vm-6node-P-A-aaro-rc-20260718T154300+0800/aaro-go-tpc-stdout-gcp.txt)、[summary.json](../results/x-cross/smoke/early-runs/20260718T154300+0800/crdb-vm-6node-P-A-aaro-rc-20260718T154300+0800/aaro-summary.json)）。
+- Placement gate：idc_leader_count=5/5（[json](../results/x-cross/smoke/early-runs/20260718T154300+0800/crdb-vm-6node-P-A-aaro-rc-20260718T154300+0800/anchor-placement-gate-P-A.json)）；GCP 副本 gate：[gcp-replica-gate-crdb.txt](../results/x-cross/smoke/early-runs/20260718T154300+0800/crdb-vm-6node-P-A-aaro-rc-20260718T154300+0800/anchor-gcp-replica-gate-crdb.txt)。
 
 ### YBDB（`20260718T204842+0800`）
 
-- IDC/GCP 兩側均 0 error；GCP 側 ORDER_STATUS/STOCK_LEVEL 各約 54.1-54.3k 次。
-- Placement gate：idc_leader_count=3/3。
+- IDC/GCP 兩側均 0 error（[raw idc](../results/x-cross/smoke/early-runs/20260718T204842+0800/ybdb-vm-6node-P-A-aaro-rc-20260718T204842+0800/aaro-go-tpc-stdout-idc.txt)、[raw gcp](../results/x-cross/smoke/early-runs/20260718T204842+0800/ybdb-vm-6node-P-A-aaro-rc-20260718T204842+0800/aaro-go-tpc-stdout-gcp.txt)）；GCP 側 ORDER_STATUS/STOCK_LEVEL 各約 54.1-54.3k 次（[summary.json](../results/x-cross/smoke/early-runs/20260718T204842+0800/ybdb-vm-6node-P-A-aaro-rc-20260718T204842+0800/aaro-summary.json)）。
+- Placement gate：idc_leader_count=3/3（[json](../results/x-cross/smoke/early-runs/20260718T204842+0800/ybdb-vm-6node-P-A-aaro-rc-20260718T204842+0800/anchor-placement-gate-P-A.json)）；GCP 副本 gate：[gcp-replica-gate-ybdb.txt](../results/x-cross/smoke/early-runs/20260718T204842+0800/ybdb-vm-6node-P-A-aaro-rc-20260718T204842+0800/anchor-gcp-replica-gate-ybdb.txt)。
 
 ## 本輪發現並修復的 4 個根因（commit `e2cae9a2`）
 
