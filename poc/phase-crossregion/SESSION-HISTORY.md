@@ -1255,3 +1255,38 @@ Commit：`e2cae9a2`（Makefile／run-vm6-aa.sh／bootstrap-gcp-client.sh）。
 **Last updated**：2026-07-18 A-A-RO smoke 三家 PASS、READY 進正式輪。
 **Next review**：正式 A-A-RO W=128 輪（執行前確認 plain anchor 仍存在，
 prepare-bridge 依賴它）；P-B×A-S（CRDB 先行）。
+
+## 2026-07-20/21 — A-A-RO W=128 正式全輪：三家 0 錯誤，中途抓到新 bug
+
+**執行**：`TPCC_TS=20260720T101928+0800`，`win-aaro-w128.sh`（前一輪補齊的
+detached driver）TiDB→YBDB→CRDB。10:19 發射；每家 deploy→`ANCHOR_ONLY=1`
+prepare（快速產生 plain anchor，省去整段 baseline workload 才能拿到
+prepare-bridge 證據）→ aaro-smoke（真 W=128×4 檔位×5 輪）→
+`check-aaro-artifacts.py` 驗證→ teardown→ 歸檔，三家共用同一批 VM
+（teardown 只拆軟體不動 VM，`phase1+phase2` 只在批次開頭建一次）。
+
+**結果**：三家全程 **0 錯誤**（IDC `_ERR` 與 GCP `execute run failed` 雙口徑
+核實）。IDC t128 主水位：TiDB 15,182.5、YBDB 12,882.5、CRDB 11,331.1；GCP
+read_tpmTotal t128：TiDB 31,571.3、YBDB 56,787.9、CRDB 41,056.3。完整彙整見
+[XCROSS-AARO-CLOSING-REPORT-DRAFT.md](XCROSS-AARO-CLOSING-REPORT-DRAFT.md)。
+
+**中途插曲（新 bug，已修復）**：TiDB cell 首次驗證 FAIL——`merge-gcp-stdout.sh`
+的 `while read` 迴圈內 `ssh ... cat ...` 未把 stdin 導向 `/dev/null`，偷走
+迴圈自己的 here-string 輸入，20 筆待合併檔案只處理 1 筆（`threads-128/round-1`）。
+與先前 `ybdb-master-quorum-gate.sh` 同一種陷阱重演（見 07-08 節）。
+`check-aaro-artifacts.py` 正確 fail-closed 攔下，未讓半套 artifact 靜默通過。
+修復：`< /dev/null`（commit `78796957`）。修復後**手動補救 TiDB 既有結果**
+（IDC/GCP 兩側 raw stdout 本就完整，只有合併步驟出錯）——重跑修好的
+`merge-gcp-stdout.sh`（20/20 落位）→ 重生 `summary.json` → 重驗 PASS →
+teardown → 歸檔，**不必重跑 ~3hr workload**；YBDB/CRDB 兩家沿用修好版本，
+全程零人工介入。
+
+**收尾**：`phase8.5-fetch`＋`phase8.5-check-receipt`（跳過
+`phase8.5-static-check`——該腳本假設 plain 4 檔位＋near-read probe json，
+對 anchor 目錄與 aaro suite 皆會誤判 fail，改用逐家 `check-aaro-artifacts.py`
+把關）；`phase9-tunnels-stop`＋`phase9-destroy`，兩側 terraform state 歸零。
+原始 artifact（121M）依拍板**暫不 commit**，`.gitignore` 排除
+（`results/x-cross/baseline/w128/20260720T101928+0800/`）。
+
+**Last updated**：2026-07-21 A-A-RO W=128 正式輪三家完成、0 錯誤、報告落檔。
+**Next review**：A-A-RO 原始 artifact 留存與否待拍板；P-B×A-S（CRDB 先行）。

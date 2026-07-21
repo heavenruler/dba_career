@@ -4,7 +4,7 @@
 
 **決策影響：** 可確認跨區 framework、placement 與量測紀律的下一步；不得產生跨區產品排名、WAN penalty 或正式 RTO/RPO 承諾。
 
-**最後驗證：** 2026-07-18（首次驗證 2026-07-15）。`X-CROSS` 是 `baseline_eligible: false` 的探索 scope，資料原始檔仍留在 `results/x-cross/`。
+**最後驗證：** 2026-07-21（首次驗證 2026-07-15）。`X-CROSS` 是 `baseline_eligible: false` 的探索 scope，資料原始檔仍留在 `results/x-cross/`。
 
 本章縮寫：**P-A**＝placement 變體 A（leader/lease 固定在 IDC、GCP 持 1 份 voter 副本）；**A-S**＝Active-Standby workload（流量只打 IDC 端）；**t128**＝128 執行緒檔位；**N=1**＝每 cell 僅一次有效量測。
 
@@ -67,6 +67,13 @@ W=128 主資料點：三家各有一個修正後有效 cell（皆 `N=1`）＋一
 - [本 PoC 實測｜N=1] 2026-07-03 TiDB P-A/A-S cell：`t=128` 為 16,808.6 tpmC、樣本 CV 2.4%（標準差口徑；同 cell 以結案報告的 range/mean 口徑計為 6.5%——兩口徑不可互比）、error 0%——TiDB t128 跨批走勢 16,808.6（07-03）→ 13,251.6（07-12）→ 12,526.5（07-17），變異未歸因，各批皆有效，引用須註明批次。[來源與採樣完整性](../results/x-cross/pipeline-log.md#23-2026-07-03-tidb--p-a--a-s-w128-正式口徑-cell首個)
 - [本 PoC 實測｜N=1] TiDB 首輪（07-11）`t=128` range% 102.2% 判定為單次環境雜訊（重跑同參數 range% 4.0%；range%＝(max−min)/mean，非統計 CV），保留備查不採用。
 - [本 PoC 實測｜N=1] **效度事件（2026-07-13 覆核發現，07-14/15 修正後重測結案）：** 07-11 批 CRDB/YBDB 的 GCP 節點經查**完全沒有 tpcc 資料副本**——CRDB 的 zone config `constraints` list 形式與 `voter_constraints` 自相矛盾、YBDB 的 read-replica 因 tserver 缺 placement_uuid 從未實體化，且 GCP 端 probe 因探測主機缺 DB client 四個 suite 全滅卻靜默通過。合計七個根因逐一修正（含藏了整個專案週期的 gate grep 計數 bug），以 fail-closed 副本 gate + probe 斷言重測取得上列採用 cell。**遺留與後續**：YugabyteDB 的 transaction status tablet（系統層）leader 部分落 GCP，造成少量跨 WAN commit 協調錯誤——placement gate 只驗 tpcc 表的盲區再現於系統層。07-17 系統層 gate 補強上線並直接證實盲區存在（prepare 後 9/16 leader 在 GCP、`leader_stepdown` 修復後才開跑），但錯誤未歸零（07-17 批 156 筆；前批 309 筆——跨批觀察，不構成修復效果的因果證明）；候選機制與證據強弱見[結案報告 §6.3](../phase-crossregion/XCROSS-CLOSING-REPORT-DRAFT.md)。07-18 驗證輪（同設定重跑）全批 0 錯誤，且發現 timeout 調整宣告未被引擎套用——錯誤屬批間陣發現象、timeout 單變量實驗尚未真正執行（結案報告 §9.5）。全程見[執行歷史](../phase-crossregion/SESSION-HISTORY.md) 2026-07-13～07-18 各節。
+- [本 PoC 實測｜N=1] **A-A-RO W=128 正式全輪（07-20/21，三家、`t=128` 主水位）：**
+  IDC 側 tpmC——TiDB 15,182.5、YBDB 12,882.5、CRDB 11,331.1；GCP 側
+  read_tpmTotal——TiDB 31,571.3、YBDB 56,787.9、CRDB 41,056.3；三家全程 **0 錯誤**。
+  過程中抓到並修復一個新根因（`merge-gcp-stdout.sh` stdin 陷阱，與先前
+  YBDB master-quorum gate 同一種 bash 迴圈吃 stdin 陷阱重演）。逐項證據與判讀見
+  [A-A-RO 結案報告雛形](../phase-crossregion/XCROSS-AARO-CLOSING-REPORT-DRAFT.md)。
+  原始資料（121M）依拍板暫不進 repo（`.gitignore` 排除），報告連結僅本機可解析。
 
 ![X-CROSS TiDB W=128 逐輪 tpmC 三組對照](assets/charts/xcross-w128-tidb-rounds.svg)
 
@@ -96,7 +103,7 @@ flowchart LR
 | 決策需求 | 可用設計／證據 | 必要 gate | 目前狀態 |
 |---|---|---|---|
 | 單主寫入與遠端讀 | A-S + placement P-A/P-B | leader/locality、time sync、WAN、metrics completeness | 部分已跑；不可外推 |
-| 讀多寫少且可接受陳舊 | A-A-RO + stale follower read 設計 | staleness、fallback、讀寫 client locality | smoke 已驗證三家程序/口徑可跑通（07-18，[SMOKE-AARO-SUMMARY.md](../phase-crossregion/SMOKE-AARO-SUMMARY.md)），正式 W=128 待排 |
+| 讀多寫少且可接受陳舊 | A-A-RO + stale follower read 設計 | staleness、fallback、讀寫 client locality | 正式 W=128 三家已完成（07-20/21，0 錯誤，[A-A-RO 結案報告](../phase-crossregion/XCROSS-AARO-CLOSING-REPORT-DRAFT.md)）；smoke 前置見[SMOKE-AARO-SUMMARY.md](../phase-crossregion/SMOKE-AARO-SUMMARY.md) |
 | 兩端同時寫 | A-A profile | 衝突、跨區 commit、placement 與壓力隔離 | 計畫中 |
 | 宣稱 WAN cost | IDC-only 六節點 paired control | 同硬體、同 quorum、同 W、同 workload | 未完成 |
 | 宣稱 DR 數字 | failover/chaos scenario | RTO/RPO 方法、故障注入、資料完整性驗證 | 未完成 |
