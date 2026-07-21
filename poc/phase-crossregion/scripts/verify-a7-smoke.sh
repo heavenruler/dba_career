@@ -69,6 +69,10 @@ cd "$POC"
   echo "回應 codex 獨立審查（07-22）§5.6 建議 (1)(4)。本輪吞吐數字僅供機制"
   echo "驗證，非報告 §1-§6 採用數字（W=4 anchor，非完整 W=128）。"
 } > "$RESULTS"
+
+STAGE="bootstrap-gcp-client"
+log "=== bootstrap GCP client (.15) go-tpc/tests/common（冪等；VM 剛重建必跑）==="
+make -f "$MK" phase2-bootstrap-gcp-client
 log "window start TS=$TPCC_TS PLACEMENT=$PLACEMENT DBS=$DBS"
 
 for db in tidb ybdb crdb; do
