@@ -265,15 +265,23 @@ esac
 #   - CRDB：kv.closed_timestamp.follower_reads.enabled=t 只開「能力」，plain
 #     SELECT（無 AS OF SYSTEM TIME）不會自動用 follower read——需再加 session
 #     層 default_transaction_use_follower_reads=on（Cockroach Labs docs）。
+#     2026-07-22 A7(4) 實測發現：光加這個會讓 go-tpc 真實交易 100% 報錯
+#     `AS OF SYSTEM TIME specified with READ WRITE mode`——
+#     default_transaction_use_follower_reads=on 會讓 CRDB 隱式幫查詢加上
+#     AS OF SYSTEM TIME，但該子句只能用在 READ ONLY 交易；go-tpc 預設開
+#     READ WRITE 交易，兩者衝突即報錯。需再加 default_transaction_read_only=on
+#     （同 YBDB 邏輯）；GCP 側本就是純讀 workload（mix=0,0,50,0,50），交易恆
+#     read-only 對此側無副作用。此 bug 只有跑真實 go-tpc 負載才會暴露，用
+#     EXPLAIN ANALYZE 之類的單筆手動查詢測不出來（見報告 §5.6/§8-A8）。
 #   - YBDB：yb_read_from_followers=on 只在交易本身 read-only 才生效——需再加
 #     default_transaction_read_only=on（YugabyteDB docs）；GCP 側本就是純讀
 #     workload，交易恆 read-only 對此側無副作用。
 case "${DB}:${ISO}" in
   tidb:rc)             GCP_CONN_PARAMS="transaction_isolation=%27READ-COMMITTED%27&tidb_txn_mode=%27pessimistic%27" ;;
   tidb:rr|tidb:strict) GCP_CONN_PARAMS="transaction_isolation=%27REPEATABLE-READ%27&tidb_txn_mode=%27pessimistic%27" ;;
-  crdb:rc)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed%20-c%20default_transaction_use_follower_reads%3Don" ;;
-  crdb:rr)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read%20-c%20default_transaction_use_follower_reads%3Don" ;;
-  crdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable%20-c%20default_transaction_use_follower_reads%3Don" ;;
+  crdb:rc)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
+  crdb:rr)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
+  crdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
   ybdb:rc)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed%20-c%20default_transaction_read_only%3Don" ;;
   ybdb:rr)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read%20-c%20default_transaction_read_only%3Don" ;;
   ybdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable%20-c%20default_transaction_read_only%3Don" ;;
