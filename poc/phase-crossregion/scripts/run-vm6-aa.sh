@@ -258,13 +258,25 @@ case "$DB" in
   ybdb) GCP_DRIVER=postgres; GCP_USER="$YBDB_USER"; GCP_DBNAME="$YBDB_DB" ;;
 esac
 # conn-params 對齊 tests/common/lib/common.sh get_conn_params()（同值複製，
-# 非 source — GCP client 上沒有 .31 的 tests/common 路徑假設）
+# 非 source — GCP client 上沒有 .31 的 tests/common 路徑假設）。
+#
+# 2026-07-21 修法（就近讀生效檢驗發現，僅 GCP 側加，不動 IDC 側 conn-params，
+# 故不影響 IDC 寫入路徑）：
+#   - CRDB：kv.closed_timestamp.follower_reads.enabled=t 只開「能力」，plain
+#     SELECT（無 AS OF SYSTEM TIME）不會自動用 follower read——需再加 session
+#     層 default_transaction_use_follower_reads=on（Cockroach Labs docs）。
+#   - YBDB：yb_read_from_followers=on 只在交易本身 read-only 才生效——需再加
+#     default_transaction_read_only=on（YugabyteDB docs）；GCP 側本就是純讀
+#     workload，交易恆 read-only 對此側無副作用。
 case "${DB}:${ISO}" in
   tidb:rc)             GCP_CONN_PARAMS="transaction_isolation=%27READ-COMMITTED%27&tidb_txn_mode=%27pessimistic%27" ;;
   tidb:rr|tidb:strict) GCP_CONN_PARAMS="transaction_isolation=%27REPEATABLE-READ%27&tidb_txn_mode=%27pessimistic%27" ;;
-  crdb:rc|ybdb:rc)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed" ;;
-  crdb:rr|ybdb:rr)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read" ;;
-  crdb:strict|ybdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable" ;;
+  crdb:rc)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed%20-c%20default_transaction_use_follower_reads%3Don" ;;
+  crdb:rr)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read%20-c%20default_transaction_use_follower_reads%3Don" ;;
+  crdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable%20-c%20default_transaction_use_follower_reads%3Don" ;;
+  ybdb:rc)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed%20-c%20default_transaction_read_only%3Don" ;;
+  ybdb:rr)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read%20-c%20default_transaction_read_only%3Don" ;;
+  ybdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable%20-c%20default_transaction_read_only%3Don" ;;
   *) echo "[aa] unknown <db>:<iso> = ${DB}:${ISO}" >&2; exit 1 ;;
 esac
 ROUND_WAIT_TIMEOUT=$(( WARMUP_SEC + RUN_SEC + 300 ))

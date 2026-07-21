@@ -1290,3 +1290,51 @@ teardown → 歸檔，**不必重跑 ~3hr workload**；YBDB/CRDB 兩家沿用修
 
 **Last updated**：2026-07-21 A-A-RO W=128 正式輪三家完成、0 錯誤、報告落檔。
 **Next review**：A-A-RO 原始 artifact 留存與否待拍板；P-B×A-S（CRDB 先行）。
+
+## 2026-07-21（續）— GCP 就近讀根因定位與修復（三家）
+
+**背景**：報告 §5.4 查核發現「就近讀執行面未證實生效」，使用者質疑這是
+「不合理的推托」，要求找根因並補生效檢驗。深挖後三家各有一個實際阻擋點：
+
+1. **TiDB**：`tidb_replica_read=closest-replicas` 要求 zone 標籤**完全相同**
+   才判定「近」（PingCAP docs）；GCP 三台原各自不同 zone（-a/-b/-c），只有
+   落在 zone=a 的節點算近。修法：統一為單一 zone `gcp-asia-east1`
+   （[ansible/playbooks/tidb-vm6.yml](../ansible/playbooks/tidb-vm6.yml)）。
+2. **CRDB**：`kv.closed_timestamp.follower_reads.enabled=t` 只開能力，plain
+   SELECT 不會自動用。修法：GCP 側連線加
+   `default_transaction_use_follower_reads=on`（僅 GCP 側 session 層）。
+3. **YBDB**：`yb_read_from_followers=on` 只在交易本身 read-only 才生效。
+   修法：GCP 側連線加 `default_transaction_read_only=on`。
+
+兩處修法皆落在 [run-vm6-aa.sh](scripts/run-vm6-aa.sh) 的 `GCP_CONN_PARAMS`
+（僅 GCP 側，IDC 寫入路徑不受影響）。
+
+**驗證**（smoke 規模，各家用最強可得證據，而非延遲/netflow 推論）：
+- TiDB：500 筆讀取乾淨網路流量測試，GCP 入口節點對 IDC 流量比值從（隱含）
+  等同強制 leader，降到 **5.7%**。
+- CRDB：`EXPLAIN ANALYZE` 8/8 一致顯示 `used follower read`＋`regions: gcp`
+  ＋單節點（n4）執行，KV time 600-960µs。
+- YBDB：`EXPLAIN (ANALYZE, DIST)` 對照，follower-read 穩態 ~2.5ms vs 強制
+  leader-read ~9-13ms（量級吻合 WAN RTT）。
+
+**過程插曲**：本地背景任務（Bash `run_in_background`）兩度在長時間操作
+（TiDB／CRDB 的 ANCHOR_ONLY 資料載入）中途被砍，導致遠端程序透過斷開的
+pipe 收到 SIGPIPE（exit 141）而中止——與先前 A-A-RO 全輪 driver 已採用的
+「nohup 完全脫離本地 session」原則相同，本次補上後穩定運作。
+
+**方法論教訓**：延遲對照與 netflow 流量比值兩種「執行面」驗證手段證據力
+皆弱——延遲被 TSO 往返/併發競爭混淆，netflow 在小資料量下被叢集背景流量
+（raft heartbeat/gossip）淹沒，即使放大 10 倍 burst 比值仍不變也可能只是
+訊噪比問題（CRDB 即為此例：netflow 測 74-85%，但 EXPLAIN ANALYZE 決定性
+證實生效）。已落成可重用腳本 [check-nearread.sh](scripts/check-nearread.sh)，
+用各 DB 最強證據取代弱推論。
+
+**限制**：僅 smoke 規模（W=4/單筆查詢）驗證，未重跑完整 W=128 A-A-RO 批次；
+報告 §1-§6 採用數字仍是修法前的 07-20 批（吞吐數字本身不受影響）。
+
+修改檔案：`ansible/playbooks/tidb-vm6.yml`、`run-vm6-aa.sh`、
+`check-nearread.sh`（新增）、報告 §5.5/§8 A6 更新（本節同批 commit）。
+
+**Last updated**：2026-07-21 就近讀根因定位＋三家修法驗證完成（smoke 規模）。
+**Next review**：是否重跑完整 W=128 A-A-RO 批次（用修法後配置＋
+`check-nearread.sh` 驗證）；P-B×A-S（CRDB 先行）。

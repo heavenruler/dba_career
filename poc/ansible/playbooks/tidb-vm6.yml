@@ -13,7 +13,10 @@
 #
 # Locality labels (per Q3):
 #   config.labels.region = idc | gcp
-#   config.labels.zone   = idc-vlan241 | gcp-asia-east1-{a,b,c}
+#   config.labels.zone   = idc-vlan241 | gcp-asia-east1
+#   2026-07-21：GCP 三台統一單一 zone（原各自 -a/-b/-c，closest-replicas 要求
+#   zone 完全相同才判定「近」，見下方 tidb_hosts 註解），同 IDC 三台共用
+#   zone=idc-vlan241 的既有慣例。
 #
 # HAProxy (Q1 / Q3): dual-side
 #   IDC haproxy on 172.24.47.20:4000  (existing, NOT redeployed by this playbook)
@@ -205,9 +208,18 @@
       - { id: idc-dbhost-1, ip: 172.24.40.32,  region: idc, zone: idc-vlan241,      tidb_entry: true  }
       - { id: idc-dbhost-2, ip: 172.24.40.33,  region: idc, zone: idc-vlan241,      tidb_entry: true  }
       - { id: idc-dbhost-3, ip: 172.24.40.34,  region: idc, zone: idc-vlan241,      tidb_entry: false }
-      - { id: gcp-dbhost-1, ip: 10.160.152.11, region: gcp, zone: gcp-asia-east1-a, tidb_entry: true  }
-      - { id: gcp-dbhost-2, ip: 10.160.152.12, region: gcp, zone: gcp-asia-east1-b, tidb_entry: false }
-      - { id: gcp-dbhost-3, ip: 10.160.152.13, region: gcp, zone: gcp-asia-east1-c, tidb_entry: false }
+      # 2026-07-21 修法（就近讀生效檢驗發現）：GCP 三台原本各自不同 zone
+      # （-a/-b/-c），但 tidb_replica_read=closest-replicas 要求 zone 標籤
+      # 完全相同才判定「近」（PingCAP docs：TiDB uses the zone label to
+      # identify local replicas — exact match,否則 fallback 回 leader）。
+      # 只有落在 zone=a（gcp-dbhost-1）的 GCP 副本會被判定為近，落在 -b/-c
+      # 的副本一律 fallback 回 IDC leader——這正是本輪抓到 GCP 讀延遲異常
+      # 偏高（含 WAN RTT）的根因之一。統一為單一 zone（同 IDC 3 台本就共用
+      # 同一 zone=idc-vlan241 的既有慣例；YBDB/CRDB 稍早也統一過 GCP zone
+      # 供 LB 均衡，同理）。
+      - { id: gcp-dbhost-1, ip: 10.160.152.11, region: gcp, zone: gcp-asia-east1, tidb_entry: true  }
+      - { id: gcp-dbhost-2, ip: 10.160.152.12, region: gcp, zone: gcp-asia-east1, tidb_entry: false }
+      - { id: gcp-dbhost-3, ip: 10.160.152.13, region: gcp, zone: gcp-asia-east1, tidb_entry: false }
   tasks:
     - name: Render TiDB vm-6node topology
       ansible.builtin.copy:
