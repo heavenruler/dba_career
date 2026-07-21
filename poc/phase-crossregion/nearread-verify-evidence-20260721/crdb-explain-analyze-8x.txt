@@ -1,0 +1,49 @@
+# CRDB EXPLAIN ANALYZE 原始輸出（8 次，2026-07-21 near-read 生效檢驗）
+# 連線：postgres://root@10.160.152.11:26257/tpcc?sslmode=disable
+# W=4 anchor 資料；stock 表 GCP replica 位於 node 4（10.160.152.11 自身）
+
+## 明確 AS OF SYSTEM TIME follower_read_timestamp() 語法（單筆完整輸出，s_w_id=1 s_i_id=1）
+
+                                      info
+--------------------------------------------------------------------------------
+ planning time: 822µs
+ execution time: 947µs
+ distribution: local
+ plan type: custom
+ rows decoded from KV: 1 (329 B, 1 gRPC calls)
+ regions: gcp
+ used follower read
+ historical: AS OF SYSTEM TIME 2026-07-21 05:16:14.426504
+
+ • scan
+   sql nodes: n4
+   kv nodes: n4
+   regions: gcp
+   used follower read
+   KV time: 703µs
+   KV rows decoded: 1
+   sql cpu time: 36µs
+   actual row count: 1
+   estimated row count: 1 (<0.01% of the table; stats collected 11 minutes ago)
+   table: stock@stock_pkey
+   spans: [/1/1 - /1/1]
+(21 rows)
+
+## 5 次重複（不同 s_w_id/s_i_id 組合），僅擷取關鍵欄位
+
+query 1 (w=1,i=8):  regions: gcp | used follower read | sql nodes: n4 | KV time: 726µs
+query 2 (w=2,i=15): regions: gcp | used follower read | sql nodes: n4 | KV time: 962µs
+query 3 (w=3,i=22): regions: gcp | used follower read | sql nodes: n4 | KV time: 650µs
+query 4 (w=4,i=29): regions: gcp | used follower read | sql nodes: n4 | KV time: 742µs
+query 5 (w=1,i=36): regions: gcp | used follower read | sql nodes: n4 | KV time: 653µs
+
+## 純 session-level 設定（options=-c default_transaction_use_follower_reads=on，
+## 無 AS OF SYSTEM TIME 語法，模擬 go-tpc 實際會發出的 plain SELECT）
+
+query 1 (w=2,i=13): regions: gcp | used follower read | sql nodes: n4 | KV time: 635µs
+query 2 (w=3,i=25): regions: gcp | used follower read | sql nodes: n4 | KV time: 702µs
+query 3 (w=4,i=37): regions: gcp | used follower read | sql nodes: n4 | KV time: 606µs
+
+## 結論：8/8 一致 regions=gcp + used follower read + sql/kv nodes=n4（GCP 節點）
+## 限制（codex 審查指出）：僅測 SELECT ... LIMIT-style 單筆查詢，非完整
+## ORDER_STATUS/STOCK_LEVEL 交易；未排除 closed-timestamp 傳播等背景跨區流量

@@ -1,0 +1,28 @@
+# TiDB zone 標籤驗證（2026-07-21，修法後即時查詢）
+# 連線：mysql -h 172.24.40.32 -P 4000 -u root
+
+## TiKV store 標籤（information_schema.tikv_store_status）——三台 GCP 皆統一 zone=gcp-asia-east1
+
+STORE_ID  ADDRESS              LABEL
+11        10.160.152.12:20160  [{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1"}]
+1         172.24.40.34:20160   [{"key": "region", "value": "idc"}, {"key": "zone", "value": "idc-vlan241"}]
+3         172.24.40.33:20160   [{"key": "region", "value": "idc"}, {"key": "zone", "value": "idc-vlan241"}]
+88        10.160.152.13:20160  [{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1"}]
+2         172.24.40.32:20160   [{"key": "region", "value": "idc"}, {"key": "zone", "value": "idc-vlan241"}]
+10        10.160.152.11:20160  [{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1"}]
+
+## tidb-server 自身標籤（information_schema.tidb_servers_info）——GCP entry (.11) 與上方 TiKV store 完全相符
+
+DDL_ID                                IP              PORT  ... LABELS
+7497f754-cedc-4b06-956d-301597b549c2  172.24.40.33    4000  ... region=idc,zone=idc-vlan241
+80aa6722-95bf-4be5-a43b-117ab29b2439  10.160.152.11   4000  ... region=gcp,zone=gcp-asia-east1
+c04e8afe-240a-4e71-99ed-b1253cf9e4ac  172.24.40.32    4000  ... region=idc,zone=idc-vlan241
+
+## 延遲對照（closest-replicas vs 強制 leader，s_w_id=1, s_i_id=1..3，非決定性證據）
+closest-replicas: time=9.35ms / 8.46ms / 8.64ms
+leader（強制）:    time=8.57ms / 8.49ms / 8.42ms
+## 兩者幾乎相同——TSO 往返（tso_follower_proxy=OFF）主導總延遲，延遲本身無法
+## 區分 KV 讀取是否本地，故改用 netflow byte delta（見 netflow-pre.json/netflow-post.json）。
+
+## netflow byte delta（500 筆讀取 burst，.11 節點）：
+##   delta_to_gcp=79908974B  delta_to_idc=4559729B  ratio=5.7%

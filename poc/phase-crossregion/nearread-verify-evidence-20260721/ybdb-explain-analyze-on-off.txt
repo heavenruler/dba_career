@@ -1,0 +1,40 @@
+# YBDB EXPLAIN (ANALYZE, DIST) 原始輸出（2026-07-21 near-read 生效檢驗）
+# 連線：postgres://yugabyte@10.160.152.11:5433/tpcc?sslmode=disable
+# W=4 anchor 資料
+
+## follower-read ON（options=-c default_transaction_read_only=on
+## -c yb_read_from_followers=on -c yb_follower_read_staleness_ms=30000）
+## 首次查詢（冷 catalog cache，s_w_id=1 s_i_id=1）：
+
+ Index Scan using stock_pkey on stock  (cost=20.00..21.30 rows=1 width=4) (actual time=11.865..11.875 rows=1 loops=1)
+   Index Cond: ((s_w_id = 1) AND (s_i_id = 1))
+ Planning Time: 522.032 ms
+ Execution Time: 12.117 ms
+
+## EXPLAIN (ANALYZE, DIST) 版本（s_w_id=1 s_i_id=1，同連線）：
+
+ Index Scan using stock_pkey on public.stock  (cost=20.00..21.30 rows=1 width=4) (actual time=1.988..1.995 rows=1 loops=1)
+   Output: s_quantity
+   Index Cond: ((stock.s_w_id = 1) AND (stock.s_i_id = 1))
+   Storage Table Read Requests: 1
+   Storage Table Read Execution Time: 1.765 ms
+   Storage Table Read Ops: 1
+   Storage Table Rows Scanned: 1
+ Query Identifier: -7295399412167494131
+ Planning Time: 385.626 ms
+ Execution Time: 2.228 ms
+ Catalog Read Requests: 55
+ Catalog Read Execution Time: 482.876 ms
+
+## 穩態重複（同連線，catalog cache 已熱）：
+query (w=2,i=5): Storage Table Read Execution Time: 2.471 ms | Execution Time: 3.007 ms
+query (w=3,i=8): Storage Table Read Execution Time: 2.500 ms | Execution Time: 2.750 ms
+
+## 對照組：follower-read OFF（options=-c yb_read_from_followers=off，強制 leader）
+query (w=2,i=5): Storage Table Read Execution Time: 8.870 ms  | Execution Time: 9.404 ms
+query (w=3,i=8): Storage Table Read Execution Time: 13.402 ms | Execution Time: 13.638 ms
+
+## 結論：follower-read 穩態 Storage Table Read Execution Time ~2.5ms，
+## 強制 leader-read ~9-13ms，比值符合 WAN RTT（~8.4ms）量級。
+## 限制（codex 審查指出）：非決定性——未排除 cache/warmup 順序偏差、
+## tablet 差異、單次樣本抖動；建議交錯 on/off 多次取分布。
