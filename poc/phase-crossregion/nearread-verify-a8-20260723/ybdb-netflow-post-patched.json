@@ -1,0 +1,12 @@
+{
+  "label": "post-patched",
+  "timestamp": "2026-07-22T21:22:11Z",
+  "hosts": {
+    "10.160.152.11": {
+      "5433": {"idc": 1, "gcp": 0, "other": 0},
+      "7100": {"idc": 8, "gcp": 0, "other": 0},
+      "9100": {"idc": 39, "gcp": 10, "other": 0},
+      "traffic_bytes": {"iptables_to_gcp_bytes": 4935866987, "iptables_to_idc_bytes": 1800595696, "iface_rx_total_bytes": 0, "iface_tx_total_bytes": 0}
+    }
+  }
+}

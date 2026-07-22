@@ -1490,3 +1490,76 @@ staleness/freshness 驗證、統一 zone 前 placement/故障域評估）；YBDB
 「反事實」（不套用 go-tpc patch 時真實負載下是否也 100% 失效）未驗證；
 是否／何時重跑完整 W=128 A-A-RO 批次（**務必先確認 go-tpc patch 已套用**，
 見報告 §8 A8）。
+
+## 2026-07-22/23（續）— codex §5.6 (2)(3) 補強驗證：TiDB 嚴格 A/B、staleness、YBDB go-tpc 反事實
+
+**背景**：使用者拍板順序「先補驗證再決定 aaro#2」（順序 2→3→1：YBDB
+反事實 → codex 剩餘 (2)(3) → 才發 aaro#2），合併成一次 smoke 批次，
+避免三次獨立 VM 重建循環。新增
+[verify-a8-batch-smoke.sh](scripts/verify-a8-batch-smoke.sh) driver
+＋ [check-staleness.sh](scripts/check-staleness.sh)（三家 staleness）＋
+[relabel-tidb-gcp-zone.sh](scripts/relabel-tidb-gcp-zone.sh)／
+[verify-tidb-zone-ab.sh](scripts/verify-tidb-zone-ab.sh)（TiDB A/B，用
+`pd-ctl store label` 即時切換 zone，不需重新部署）。
+
+**(3) staleness/freshness——三家皆決定性，與理論預期吻合**：TiDB 近讀
+78ms（近乎即時，符合「zone-based 路由不引入過期」的預期）；CRDB 近讀
+4,152ms（與 `follower_read_timestamp()` 預設 ~4.8s 量級吻合）；YBDB 近讀
+28,283ms（與 `yb_follower_read_staleness_ms=30000` 量級吻合）。三家皆用
+IDC 寫入 marker → GCP 輪詢直到可見的方法，同時測 leader-read 基準線排除
+複寫延遲干擾。**A-A-RO 測試定義本身未明文規定可接受的過期讀取上限**，
+YBDB ~28.3s 是否合理需使用者拍板（報告 §8 A10）。
+
+**(2) TiDB 嚴格 A/B——未取得決定性結果**：unified／mismatched 兩種 zone
+設定（後者故意讓 2/3 GCP store 與 tidb-server 不同 zone，模擬 07-20 批
+問題但控制變因更乾淨）× closest-replicas／leader 兩種 session 設定，共
+4 組 netflow 比值：129.5%／110.9%／113.9%／112.1%——全部擠在一起，看不出
+方向性，甚至 leader-forced 組跟 closest-replicas 組幾乎沒差異。判定為
+netflow 方法論在 W=4＋200 次查詢規模下被背景流量淹沒，**非近讀機制有
+問題，是量測手法本身不夠力**（TiDB 缺乏 CRDB 那種 EXPLAIN 決定性欄位）。
+環境已 teardown，未來若要補上決定性證據需要更大規模 burst 或新量測手法。
+
+**YBDB go-tpc 反事實——延遲/吞吐量證據決定性，netflow 無效**：套用
+§5.7 go-tpc patch 前後，用真實 aaro-smoke 流量對照：ORDER_STATUS 平均
+延遲 60.7ms→27.1ms、STOCK_LEVEL 37.9ms→25.3ms，吞吐量從 ~18.6k 筆升到
+~34k/~34.3k 筆（近乎翻倍），套用後出現 ~0.04% 極低錯誤率（同量級於 CRDB
+已知 ~0.1%）。netflow ratio 本身幾乎沒變（105.9%→91.2%）——與 CRDB 早先
+「EXPLAIN 決定性、netflow 卻測到 74-85%」同一套教訓。**確認 YBDB 拿掉
+patch 確實會像 CRDB 一樣近讀實質失效，只是不報錯而是延遲/吞吐量劣化**，
+補上 07-22 報告留下的「YBDB 反事實未直接驗證」缺口。
+
+**過程插曲（環境/腳本層，與近讀機制無關）**：
+1. YBDB 部署本輪 3 次嘗試中 2 次卡在已知的 `gcp-replica-gate` flaky
+   （累計兩輪共 6 次嘗試、4 次卡住——flaky 率比原評估更高，見報告 §8
+   A9 更新），第 3 次自然通過，未動用手動 tablet 搬遷。
+2. `verify-a8-batch-smoke.sh` 的 `count_err()`（YBDB 反事實錯誤計數
+   輔助函式）踩到 `pipefail`＋`set -e` 真 bug：0 錯誤時 go-tpc 根本不印
+   `_ERR` 摘要行（非印 `Count: 0`），grep 找不到東西導致 pipeline 回傳
+   非 0，誤觸發整個 driver 中止——這時「未套 patch」那輪真實負載其實
+   已經跑完（IDC/GCP 兩側 rc=0），只是統計步驟自己中止。已修正（grep
+   拿掉 `^` 錨點以吃到 go-tpc 輸出的 `[gcp] ` 前綴、函式尾端加
+   `return 0` 避免 pipefail 誤判）；未套 patch 那輪的 netflow 暫存檔
+   在 driver 中止前未被清除，手動撈回算出 ratio，未浪費那輪已完成的
+   真實測試資料。
+3. Mac↔.31 SSH 在 phase2-bootstrap 期間又出現 2 次 kex 階段連線重置
+   （已知瞬斷模式，`retry-cmd.sh` 未覆蓋到的 `tests/common/
+   bootstrap-client.sh` 內部呼叫——該檔案受保護，未經授權不動，改用
+   立即重試吸收）；期間 Mac 端 VPN 介面（utun7）也掉線過一次，需人工
+   重連，純本機網路問題，與遠端環境無關。
+
+環境已於本輪結束後 `phase9-destroy`（VM 已全部拆除，terraform state
+兩邊皆空）。
+
+修改檔案：`check-staleness.sh`（新增）、`relabel-tidb-gcp-zone.sh`（新增）、
+`verify-tidb-zone-ab.sh`（新增）、`verify-a8-batch-smoke.sh`（新增，含
+`count_err()` pipefail 修正）、`nearread-verify-a8-20260723/`（新增，8
+個原始輸出檔）、報告 §5.7（尚未排除的疑點段落更新）/§5.8（新增）/§8
+（A7/A8/A9 更新＋新增 A10）/§9 更新。
+
+**Last updated**：2026-07-23 codex §5.6 (2)(3) 補強驗證完成——staleness
+三家決定性、YBDB 反事實決定性、TiDB 嚴格 A/B 因方法論限制未取得決定性
+結果；環境已 destroy。
+**Next review**：使用者拍板 A-A-RO 測試定義的過期讀取上限（YBDB ~28.3s
+是否可接受，報告 §8 A10）；codex (5)（統一 zone 對 P-B 故障域衝擊）待
+P-B 立項時處理，不擋 P-A；是否／何時發 aaro#2 全跑（前提仍是 §8 A8：
+GCP client go-tpc 已套用 patch）。

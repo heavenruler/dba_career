@@ -1,0 +1,55 @@
+[staleness] TiDB：item.i_price 84.96 -> 84.97（IDC leader 寫入）
+[staleness] 基準線（GCP leader-read，預期近乎即時可見，用於確認寫入/複寫本身無異常）：
+  GCP leader-read: 可見，延遲 94ms
+[staleness] 近讀（GCP near-read，此為本測試真正關心的數字）：
+  GCP near-read: 可見，延遲 78ms
+[staleness] 完成
+[relabel-tidb] 查 GCP TiKV store ID（10.160.152.12 / .13）
+  store(.12)=1  store(.13)=7
+[relabel-tidb] mode=unified → store(1).zone=gcp-asia-east1  store(7).zone=gcp-asia-east1
+The component `ctl` version pd is not installed; downloading from repository.
+Error: version pd on linux/amd64 for component ctl not found: unknown version
+The component `ctl` version v8.5.2 is not installed; downloading from repository.
+download https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 4.16 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 11.59 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 13.97 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 24.79 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 31.24 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 38.62 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 44.22 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 51.44 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 56.30 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 68.38 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 76.72 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 84.53 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 92.60 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 100.88 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 109.60 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 113.42 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 124.34 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 130.81 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 138.60 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 146.45 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 154.10 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 161.78 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 169.07 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 176.48 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 184.24 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 188.87 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 200.18 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 207.17 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 215.10 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 222.60 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 229.82 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 233.40 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 243.88 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 246.99 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 250.67 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 258.48 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 265.85 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 276.24 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 283.51 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 290.85 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 294.28 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 299.85 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 306.90 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 313.70 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 317.21 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 327.90 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 331.46 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 342.20 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 349.65 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 356.10 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 359.85 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 365.63 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 372.42 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 380.30 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 388.17 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 391.78 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 398.06 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 409.84 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 413.78 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 424.32 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 431.40 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 438.59 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 445.46 MiB / 449.79 MiBdownload https://tiup-mirrors.pingcap.com/ctl-v8.5.2-linux-amd64.tar.gz 449.79 MiB / 449.79 MiBStarting component ctl: /root/.tiup/components/ctl/v8.5.2/ctl pd -u http://172.24.40.32:2379 store label 1 zone=gcp-asia-east1
+Success! The store's label is updated.
+The component `ctl` version pd is not installed; downloading from repository.
+Error: version pd on linux/amd64 for component ctl not found: unknown version
+Starting component ctl: /root/.tiup/components/ctl/v8.5.2/ctl pd -u http://172.24.40.32:2379 store label 7 zone=gcp-asia-east1
+Success! The store's label is updated.
+[relabel-tidb] 驗證（PD 回報的目前 label）
+1	[{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1"}]
+7	[{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1"}]
+8	[{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1"}]
+[relabel-tidb] PASS: mode=unified 已生效
+[zone-ab] label=unified-closest replica_read=closest-replicas host=10.160.152.11 queries=200
+[netflow-snapshot] pre-unified-closest- → /tmp/tmp.G3NgbycXI5/netflow-pre-unified-closest-.json (1 hosts sampled)
+[netflow-snapshot] post-unified-closest- → /tmp/tmp.G3NgbycXI5/netflow-post-unified-closest-.json (1 hosts sampled)
+[zone-ab] RESULT label=unified-closest delta_to_gcp=2148973B delta_to_idc=2783284B ratio=129.5%
+[zone-ab] label=unified-leader replica_read=leader host=10.160.152.11 queries=200
+[netflow-snapshot] pre-unified-leader- → /tmp/tmp.1SqvIck9Kh/netflow-pre-unified-leader-.json (1 hosts sampled)
+[netflow-snapshot] post-unified-leader- → /tmp/tmp.1SqvIck9Kh/netflow-post-unified-leader-.json (1 hosts sampled)
+[zone-ab] RESULT label=unified-leader delta_to_gcp=2097666B delta_to_idc=2325304B ratio=110.9%
+[relabel-tidb] 查 GCP TiKV store ID（10.160.152.12 / .13）
+  store(.12)=1  store(.13)=7
+[relabel-tidb] mode=mismatched → store(1).zone=gcp-asia-east1-b  store(7).zone=gcp-asia-east1-c
+The component `ctl` version pd is not installed; downloading from repository.
+Error: version pd on linux/amd64 for component ctl not found: unknown version
+Starting component ctl: /root/.tiup/components/ctl/v8.5.2/ctl pd -u http://172.24.40.32:2379 store label 1 zone=gcp-asia-east1-b
+Success! The store's label is updated.
+The component `ctl` version pd is not installed; downloading from repository.
+Error: version pd on linux/amd64 for component ctl not found: unknown version
+Starting component ctl: /root/.tiup/components/ctl/v8.5.2/ctl pd -u http://172.24.40.32:2379 store label 7 zone=gcp-asia-east1-c
+Success! The store's label is updated.
+[relabel-tidb] 驗證（PD 回報的目前 label）
+7	[{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1-c"}]
+8	[{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1"}]
+1	[{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1-b"}]
+[relabel-tidb] PASS: mode=mismatched 已生效
+[zone-ab] label=mismatched-closest replica_read=closest-replicas host=10.160.152.11 queries=200
+[netflow-snapshot] pre-mismatched-closest- → /tmp/tmp.FrZIAZXTum/netflow-pre-mismatched-closest-.json (1 hosts sampled)
+[netflow-snapshot] post-mismatched-closest- → /tmp/tmp.FrZIAZXTum/netflow-post-mismatched-closest-.json (1 hosts sampled)
+[zone-ab] RESULT label=mismatched-closest delta_to_gcp=1998589B delta_to_idc=2275868B ratio=113.9%
+[zone-ab] label=mismatched-leader replica_read=leader host=10.160.152.11 queries=200
+[netflow-snapshot] pre-mismatched-leader- → /tmp/tmp.jaOE9AOT9W/netflow-pre-mismatched-leader-.json (1 hosts sampled)
+[netflow-snapshot] post-mismatched-leader- → /tmp/tmp.jaOE9AOT9W/netflow-post-mismatched-leader-.json (1 hosts sampled)
+[zone-ab] RESULT label=mismatched-leader delta_to_gcp=2000465B delta_to_idc=2243181B ratio=112.1%

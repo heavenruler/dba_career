@@ -316,11 +316,13 @@ on=0.43ms vs off=8.66ms）。第一組樣本的現象與 07-21
 ——並非近讀失效，是 `check-nearread-realtxn.sh` 本身少做一次暖機查詢，
 已修正（新增暖機查詢，不再計入 PASS/FAIL）。
 
-**尚未排除的疑點**：YBDB 本輪的良好結果（14/15 PASS）是**在套用 go-tpc
-修法之後**才測的——未套用修法時 YBDB 在真實負載下的表現從未單獨測過（第
-一次嘗試在 gcp-replica-gate 就卡住，見下），無法排除 YBDB 若不套用此
-patch 也會像 CRDB 一樣在真實負載下近讀完全不生效（依官方文件機制同構，
-高度懷疑會，但未直接驗證這個「反事實」）。
+**尚未排除的疑點（07-22 版本；07-23 已補測，見 §5.8）**：YBDB 本輪的良好
+結果（14/15 PASS）是**在套用 go-tpc 修法之後**才測的——未套用修法時
+YBDB 在真實負載下的表現從未單獨測過（第一次嘗試在 gcp-replica-gate 就
+卡住，見下），無法排除 YBDB 若不套用此 patch 也會像 CRDB 一樣在真實負載
+下近讀完全不生效（依官方文件機制同構，高度懷疑會，但未直接驗證這個
+「反事實」）。**此疑點已於 07-23 補測並確認成立**：未套 patch 時延遲/
+吞吐量明顯劣化（延遲砍半、吞吐量翻倍的方向相反），詳見 §5.8。
 
 **過程插曲（YBDB tablet 分布，與近讀無關的獨立問題）**：ANCHOR_ONLY
 prepare 第一、二次嘗試，`gcp-replica-gate` 均卡在「GCP 3 台 tserver 中
@@ -335,6 +337,98 @@ prepare 第一、二次嘗試，`gcp-replica-gate` 均卡在「GCP 3 台 tserver
 `phase-crossregion/patches/README.md`（新增）、
 `check-nearread-realtxn.sh`（YBDB 分支補暖機查詢）、
 `nearread-verify-a7-20260722/`（新增，9 個原始輸出檔）。
+
+### 5.8 codex §5.6 (2)(3) 補強驗證（2026-07-22/23）——TiDB 嚴格 A/B、staleness、YBDB go-tpc 反事實
+
+`實測事實`：三家依序在 smoke 規模（W=4）補齊 codex §5.6 剩餘建議的
+(2) TiDB 嚴格 A/B、(3) staleness/freshness，外加 YBDB go-tpc 反事實
+（驗證拿掉 §5.7 的 go-tpc-readonly-fix.patch 後 YBDB 是否也像 CRDB 一樣
+近讀失效）。原始輸出見
+[nearread-verify-a8-20260723/](nearread-verify-a8-20260723/README.md)（含
+過程插曲的完整記錄：YBDB 兩度卡在已知的 `gcp-replica-gate` flaky、
+驗證 driver 本身一個 `pipefail` 相關的真 bug 及其修復）。
+
+**(3) staleness/freshness——三家皆為決定性結果，與各自機制的理論預期吻合**：
+
+| DB | 近讀延遲（實測） | 理論預期 | 判讀 |
+|---|---:|---|---|
+| TiDB | 78ms（leader-read 對照組 94ms） | 理論上不應有額外過期（zone-based 物理路由，非歷史時間點語意） | `決定性`：兩者皆近乎即時，符合預期，無異常 |
+| CRDB | 4,152ms | `follower_read_timestamp()` 預設約 4.8s（`kv.closed_timestamp.target_duration` 決定） | `決定性`：量級吻合，確認近讀確實會讀到約 4 秒前的資料，非空談的設定值 |
+| YBDB | 28,283ms | `yb_follower_read_staleness_ms=30000`（明確設定 30 秒上限） | `決定性`：量級吻合（略低於上限，符合預期），確認近讀確實可能讀到最多約 30 秒前的資料 |
+
+三家皆用同一方法（IDC leader 寫入 `item.i_price` marker → GCP 端輪詢
+直到看到新值，同時測 GCP leader-read 基準線排除複寫本身延遲的干擾）。
+CRDB／YBDB 的過期讀取語意不是理論疑慮，是本輪首次直接量測到的真實
+現象，**若 A-A-RO 測試定義要求讀到的資料與寫入時間差在某個界線內，
+YBDB 的 ~28 秒需要對照該定義重新檢視是否可接受**（本報告未定義該界線，
+留待後續拍板）。
+
+**(2) TiDB 嚴格 A/B——未取得決定性結果，判定為方法論限制**：用
+[relabel-tidb-gcp-zone.sh](scripts/relabel-tidb-gcp-zone.sh)（`pd-ctl
+store label`，merge 語意即時生效、不需重啟——兩次 relabel 皆驗證成功）
+在「unified」（現況，3 台 GCP store 與 tidb-server 同 zone）與
+「mismatched」（2 台故意設不同 zone，模擬 07-20 批修法前的同類問題，但
+控制變因更乾淨——tidb-server 自身 zone 不動）間切換，各自搭配
+`tidb_replica_read=closest-replicas`／`leader` 兩種 session 設定，共 4
+組真實交易＋netflow 比值對照：
+
+| 設定 | ratio |
+|---|---:|
+| unified × closest-replicas | 129.5% |
+| unified × leader | 110.9% |
+| mismatched × closest-replicas | 113.9% |
+| mismatched × leader | 112.1% |
+
+`機制推論`：4 組 ratio 全部落在 110-130% 區間，**看不出「unified 應優於
+mismatched」的方向性，甚至 leader-forced 兩組（理論上不受 zone 影響）
+跟 closest-replicas 兩組幾乎沒有差異**——這代表 netflow 方法論在 W=4
+smoke 規模＋200 次查詢 burst 下被背景流量（raft heartbeat/gossip/PD
+心跳）完全淹沒，測不出任何訊號，與 §5.5 已記載的「CRDB netflow 在小
+資料量下被淹沒」是同一類限制，只是這次連方向都測不出來（CRDB 當時至少
+netflow 數字方向正確、只是不夠決定性）。**本節不採信這 4 個數字作為
+「近讀是否因 zone 設定改變」的證據**——判定為方法論本身不夠力，不是
+近讀機制有問題（TiDB 的 zone-label 比對本身仍是唯一可信機制證據，見
+`check-nearread.sh`）。環境已 teardown，這批 smoke 資料無法回頭重測；
+若要補上決定性證據，需要更大規模 burst（如 5,000+ 次查詢）或找到 TiDB
+版本的 EXPLAIN 決定性欄位（TiDB 目前無此欄位可用，見 §5.5 表格）。
+
+**YBDB go-tpc 反事實——延遲/吞吐量證據決定性，netflow 證據無效**：套用
+§5.7 的 go-tpc patch 前後，用真實 go-tpc aaro-smoke 流量（W=4、t32、
+RUN_SEC=60）對照：
+
+| 指標 | 未套 patch | 已套 patch |
+|---|---:|---:|
+| ORDER_STATUS 平均延遲 | 60.7ms | 27.1ms |
+| STOCK_LEVEL 平均延遲 | 37.9ms | 25.3ms |
+| ORDER_STATUS 筆數（57s 內） | 18,640 | 34,119 |
+| STOCK_LEVEL 筆數（57s 內） | 18,631 | 34,264 |
+| 查詢錯誤率 | 0% | ~0.04%（ORDER_STATUS 19 筆／STOCK_LEVEL 12 筆） |
+| netflow ratio | 105.9% | 91.2% |
+
+`實測事實`：套用 patch 後延遲砍半、吞吐量近乎翻倍，且出現與 CRDB 已知
+的 ~0.1% 同量級的極低錯誤率——**這組延遲/吞吐量對照是決定性證據，證實
+YBDB 拿掉 patch 確實會像 CRDB 一樣近讀實質失效，只是不報錯（YBDB 官方
+文件行為：靜默 fallback 回 leader），只是換了個更隱蔽的呈現方式**。
+`機制推論`：netflow ratio 本身幾乎沒變化（105.9%→91.2%），**再次印證
+netflow 在本測試規模下是弱訊號**——與 CRDB 當初「EXPLAIN ANALYZE 決定性
+證實生效，但同批 netflow 仍測到 74-85%」是同一套教訓，這次連 YBDB 也
+一樣：真正決定性的是 workload 本身的延遲/吞吐量/錯誤率變化，不是
+netflow。至此，§8 A8 標注的「YBDB 依機制同構、高度懷疑但未直接驗證的
+反事實」缺口已補上，YBDB 反事實與 CRDB 的結論方向一致。
+
+**過程插曲（YBDB 部署，與近讀機制無關）**：本輪 YBDB 部署嘗試 3 次，
+前 2 次卡在已知的 `gcp-replica-gate` flaky（見 §8 A9，同一模式重演），
+第 3 次自然通過，未動用手動 tablet 搬遷；驗證 driver
+（`verify-a8-batch-smoke.sh`）本身有一個 `pipefail`＋`set -e` 交互的真
+bug（YBDB 反事實的錯誤計數輔助函式 `count_err()`，0 錯誤時 grep 找不到
+`_ERR` 摘要行導致 pipeline 回傳非 0，誤觸發整個 driver 中止），已修正
+並 commit；未套 patch 那輪的真實 workload 資料在腳本中止前已完整跑完，
+netflow 暫存檔手動撈回未浪費。
+
+修改檔案：`check-staleness.sh`（新增）、`relabel-tidb-gcp-zone.sh`（新增）、
+`verify-tidb-zone-ab.sh`（新增）、`verify-a8-batch-smoke.sh`（新增，含
+`count_err()` 的 pipefail 修正）、`nearread-verify-a8-20260723/`（新增，
+8 個原始輸出檔）。
 
 ## 6. 各資料庫觀察
 
@@ -381,9 +475,10 @@ prepare 第一、二次嘗試，`gcp-replica-gate` 均卡在「GCP 3 台 tserver
 | A4 | 原始 artifact（121M）依拍板未進 repo（`.gitignore`），report 連結在無本地副本環境會失效 | 不影響本機使用；影響外部可重現性 | 待留存決策；決議保留時移除 `.gitignore` 該行即可 |
 | A5 | X-CROSS `baseline_eligible=false` | 數字不得進正式跨家排名 | 恆定約束（同 P-A×A-S 報告 O5） |
 | A6 | GCP 就近讀在 07-20 批確實未生效（三家各有實際根因，§5.5），07-21 已修復並在 smoke 規模驗證生效，**但尚未在完整 W=128 批次重跑確認** | 07-20 批 `read_tpmTotal` 吞吐數字本身有效，但該批的「近讀」不可宣稱已驗證（修法前）；§1-§6 採用數字未更新（仍是修法前批次） | 重跑完整 A-A-RO W=128 批次（三家修法已落地：TiDB zone 統一、CRDB/YBDB GCP_CONN_PARAMS），用 [check-nearread.sh](scripts/check-nearread.sh) 驗證後更新 §1-§6 採用數字 |
-| A7 | codex 獨立審查（§5.6）指出的 5 項補做，(1)(4) 已於 07-22 執行（§5.7），(2)(3)(5) 仍未執行：TiDB 嚴格 A/B、staleness/freshness 驗證、統一 zone 前的 placement/故障域評估 | (1)(4) 已提升 CRDB 為決定性、YBDB 為強支持證據（§5.5/§5.7）；(2)(3)(5) 未執行前，仍不足以宣稱三家「全面驗證完成」 | 依優先序執行 (2)(3)(5)；(3) staleness/freshness 建議優先，因直接關係 A-A-RO 測試定義本身是否成立 |
-| A8 | **go-tpc 與 CRDB/YBDB 近讀機制結構性衝突**（§5.7 新發現）：go-tpc 從未設 `TxOptions.ReadOnly=true`，`lib/pq` 因此對每筆交易明確送出 `BEGIN READ WRITE`，蓋過 session 層 `default_transaction_read_only`；已用 [go-tpc-readonly-fix.patch](patches/go-tpc-readonly-fix.patch) 修正，但**只在 GCP client 套用**，若重建 GCP client 或改用未 patch 的 go-tpc，CRDB/YBDB 近讀會無聲/報錯地退回未修法前狀態 | 若未套用此 patch 就重跑，CRDB 會 100% 查詢報錯（GCP 側吞吐數字整批作廢），YBDB 會靜默 fallback 回 leader（吞吐數字看似正常但近讀未生效，且不會有任何錯誤訊號） | 重跑完整 W=128 A-A-RO 前，**務必**確認 GCP client 的 go-tpc binary 已套用此 patch（`file`/`strings` 檢查或直接比對 build hash）；建議把 patch 套用步驟收進 `verify-a7-smoke.sh`/未來 W=128 driver 的自動化流程，不要仰賴人工記得 |
-| A9 | YBDB tablet 分布對 smoke 規模（W=4）資料量不穩定：`enable_automatic_tablet_splitting=false` 下多數表僅 1 tablet，GCP 側 3 台 tserver 的 LB 分配非保證均勻，本輪 3 次部署嘗試 2 次卡在 `gcp-replica-gate`（`.11` 恆 0 tablet）、1 次自然通過 | 不影響已成功那次的近讀驗證結果本身；但增加 YBDB smoke 驗證的重跑成本與不確定性 | 若未來重跑又卡在此 gate，優先選擇「重新部署重試」而非人工搬 tablet（後者需要使用者逐次授權 raft membership 變更）；長期可考慮調高 smoke WAREHOUSES 或評估是否啟用 auto-splitting |
+| A7 | codex 獨立審查（§5.6）指出的 5 項補做：(1)(4) 已於 07-22 執行（§5.7），(2)(3) 已於 07-22/23 執行（§5.8），(5) 仍未執行 | (3) staleness 三家皆決定性、YBDB 反事實決定性；(2) TiDB 嚴格 A/B **未取得決定性結果**（netflow 方法論在 W=4 規模不夠力，見 §5.8）；(5) 未執行前仍不足以宣稱「統一 zone 對 P-B 故障域衝擊」已評估 | (2) 若要補上決定性證據需更大規模 burst 或 TiDB 版 EXPLAIN 決定性欄位（現無）；(5) 待 P-B 立項時再處理，不擋本輪 P-A aaro#2 |
+| A8 | **go-tpc 與 CRDB/YBDB 近讀機制結構性衝突**（§5.7 新發現，YBDB 反事實已於 §5.8 補驗證確認同樣成立）：go-tpc 從未設 `TxOptions.ReadOnly=true`，`lib/pq` 因此對每筆交易明確送出 `BEGIN READ WRITE`，蓋過 session 層 `default_transaction_read_only`；已用 [go-tpc-readonly-fix.patch](patches/go-tpc-readonly-fix.patch) 修正，但**只在 GCP client 套用**，若重建 GCP client 或改用未 patch 的 go-tpc，CRDB/YBDB 近讀會無聲/報錯地退回未修法前狀態 | 若未套用此 patch 就重跑，CRDB 會 100% 查詢報錯（GCP 側吞吐數字整批作廢），YBDB 會延遲/吞吐量劣化但不報錯（吞吐數字看似正常但近讀未生效，且不會有任何錯誤訊號） | 重跑完整 W=128 A-A-RO 前，**務必**確認 GCP client 的 go-tpc binary 已套用此 patch（`file`/`strings` 檢查或直接比對 build hash）；建議把 patch 套用步驟收進 `verify-a7-smoke.sh`/未來 W=128 driver 的自動化流程，不要仰賴人工記得 |
+| A9 | YBDB tablet 分布對 smoke 規模（W=4）資料量不穩定：`enable_automatic_tablet_splitting=false` 下多數表僅 1 tablet，GCP 側 3 台 tserver 的 LB 分配非保證均勻。累計兩輪驗證（07-22 A7、07-23 A8）共 6 次部署嘗試，4 次卡在 `gcp-replica-gate`（`.11` 恆 0 tablet）、2 次自然通過——flaky 率比原先評估更高（約 1/3 通過） | 不影響已成功那幾次的近讀驗證結果本身；但顯著增加 YBDB smoke／未來 W=128 驗證的重跑成本與不確定性 | 若未來重跑又卡在此 gate，優先選擇「重新部署重試」而非人工搬 tablet；鑑於 flaky 率偏高，**建議在正式 aaro#2 之前評估調高 WAREHOUSES 或啟用 auto-splitting**，降低 W=128 全跑過程中卡在此 gate 的機率 |
+| A10 | **staleness 首次實測（§5.8）**：CRDB 近讀延遲 ~4.15s、YBDB ~28.3s（三家皆與各自設定值/理論量級吻合，決定性），但 A-A-RO 測試定義本身**未明文規定可接受的過期讀取上限**，YBDB ~28.3s 是否合理未經拍板 | 不影響現有 §1-§6 吞吐數字（staleness 與吞吐量測獨立）；但若 A-A-RO 的業務語意隱含「近讀應反映近期寫入」，YBDB 現況可能不符合，需要使用者判斷是否可接受 | 使用者拍板 A-A-RO 測試定義是否有過期讀取上限；若需要收緊，YBDB 可調低 `yb_follower_read_staleness_ms`（會犧牲部分近讀命中率換取更新鮮的讀取） |
 
 ## 9. 追溯紀錄
 
@@ -393,6 +488,6 @@ prepare 第一、二次嘗試，`gcp-replica-gate` 均卡在「GCP 3 台 tserver
 - Commits：`e2cae9a2`（4 根因修復＋smoke）、`f92d2491`（ANCHOR_ONLY／win-aaro-w128
   driver）、`78796957`（merge-gcp-stdout.sh stdin 修復）、`836d655f`（就近讀
   三家根因修復＋驗證）
-- 就近讀驗證原始輸出：[nearread-verify-evidence-20260721/](nearread-verify-evidence-20260721/README.md)（07-21，單筆查詢）、[nearread-verify-a7-20260722/](nearread-verify-a7-20260722/README.md)（07-22，真實交易＋t128 高併發）
+- 就近讀驗證原始輸出：[nearread-verify-evidence-20260721/](nearread-verify-evidence-20260721/README.md)（07-21，單筆查詢）、[nearread-verify-a7-20260722/](nearread-verify-a7-20260722/README.md)（07-22，真實交易＋t128 高併發）、[nearread-verify-a8-20260723/](nearread-verify-a8-20260723/README.md)（07-22/23，TiDB 嚴格 A/B＋staleness＋YBDB go-tpc 反事實）
 - go-tpc 修法：[patches/go-tpc-readonly-fix.patch](patches/go-tpc-readonly-fix.patch) ＋ [patches/README.md](patches/README.md)
 - codex 獨立審查對象：本文件 §5.4/§5.5/§5.6、[ansible/playbooks/tidb-vm6.yml](../ansible/playbooks/tidb-vm6.yml)、[run-vm6-aa.sh](scripts/run-vm6-aa.sh)、[check-nearread.sh](scripts/check-nearread.sh)

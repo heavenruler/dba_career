@@ -1,0 +1,28 @@
+{
+  "ts": "20260722T133916+0800",
+  "built_at": "2026-07-22T13:44:54+0800",
+  "idc": {
+    "data.vsphere_compute_cluster.cluster": "domain-c8",
+    "data.vsphere_custom_attribute.attrs[\"AZ\"]": "3408",
+    "data.vsphere_custom_attribute.attrs[\"BillDomain\"]": "3406",
+    "data.vsphere_custom_attribute.attrs[\"BillUnit\"]": "3405",
+    "data.vsphere_custom_attribute.attrs[\"DeveloperOwner\"]": "3404",
+    "data.vsphere_custom_attribute.attrs[\"Group\"]": "3402",
+    "data.vsphere_custom_attribute.attrs[\"SystemOwner\"]": "3403",
+    "data.vsphere_datacenter.dc": "datacenter-3",
+    "data.vsphere_datastore.vm_ds": "datastore-5038",
+    "data.vsphere_network.network": "network-2030",
+    "data.vsphere_resource_pool.pool": "resgroup-49188",
+    "data.vsphere_virtual_machine.template": "4218349d-19cc-c899-c5d7-edca6ec427fc",
+    "vsphere_virtual_machine.poc[\"l-test-poc-1\"]": "4218b1a7-db91-1ff8-3872-6842e0519bb6",
+    "vsphere_virtual_machine.poc[\"l-test-poc-2\"]": "4218ab7a-5b12-3e20-9953-a17acd46168e",
+    "vsphere_virtual_machine.poc[\"l-test-poc-3\"]": "4218730b-e4c1-5fdd-cddc-6f685f241e35"
+  },
+  "gcp": {
+    "google_compute_instance.poc[0]": "projects/lab-service-project-dba/zones/asia-east1-a/instances/g-test-poc-1",
+    "google_compute_instance.poc[1]": "projects/lab-service-project-dba/zones/asia-east1-b/instances/g-test-poc-2",
+    "google_compute_instance.poc[2]": "projects/lab-service-project-dba/zones/asia-east1-c/instances/g-test-poc-3",
+    "google_compute_instance.poc[3]": "projects/lab-service-project-dba/zones/asia-east1-a/instances/g-test-poc-4",
+    "google_compute_instance.poc[4]": "projects/lab-service-project-dba/zones/asia-east1-a/instances/g-test-poc-5"
+  }
+}

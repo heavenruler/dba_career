@@ -139,7 +139,7 @@ if run_db tidb; then
     bash "$SCRIPTS/verify-tidb-zone-ab.sh" --label mismatched-leader  --host "$GCP_DB_HOST" --replica-read leader
   } > "$AB_LOG" 2>&1
   echo "  4 組 ratio（見 $(basename "$AB_LOG") 內 RESULT 行）：" >> "$RESULTS"
-  grep '^\[zone-ab\] RESULT' "$AB_LOG" | sed 's/^/  - /' >> "$RESULTS"
+  grep '^\[zone-ab\] RESULT' "$AB_LOG" | sed 's/^/  - /' >> "$RESULTS" || true
   cat "$AB_LOG" >> "$LOGDIR/verify-a8-$TPCC_TS.log"
 
   STAGE="tidb-teardown"
@@ -172,9 +172,14 @@ if run_db ybdb; then
   # 經 run-vm6-aa.sh 的 ssh 連線串流回 .31、被下面 make 呼叫的 stdout 捕捉，
   # 故直接從本腳本存的 log grep 即可，不需另外讀 artifact 目錄裡的原始檔。
   count_err() {  # $1=logfile -> 印出 ORDER_STATUS_ERR + STOCK_LEVEL_ERR 加總
-    grep -E '^\[Summary\] (ORDER_STATUS|STOCK_LEVEL)_ERR - ' "$1" 2>/dev/null \
+    # 實際觀測（22:53）：go-tpc GCP 側輸出前面帶 "[gcp] " 前綴（如
+    # "[gcp] [Summary] ORDER_STATUS - ..."），且 0 錯誤時根本不印 _ERR
+    # 摘要行（非印 Count: 0）——故 grep 找不到東西是正常情況，不能讓
+    # pipefail 把「0 錯誤」誤判成腳本錯誤而觸發 set -e 中止整個 driver。
+    grep -E '\[Summary\] (ORDER_STATUS|STOCK_LEVEL)_ERR - ' "$1" 2>/dev/null \
       | grep -oE 'Count:\s+[0-9]+' | grep -oE '[0-9]+' \
       | awk '{s+=$1} END{print s+0}'
+    return 0
   }
 
   STAGE="ybdb-counterfactual-nopatch"

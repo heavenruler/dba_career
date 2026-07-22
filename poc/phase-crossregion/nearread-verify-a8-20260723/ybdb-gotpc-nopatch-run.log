@@ -1,0 +1,1040 @@
+==> [start] phase7-ybdb-aaro-smoke at 2026-07-22T22:48:38+0800
+==> phase7-ybdb-aaro-smoke ts=20260722T133916+0800 placement=P-A profile=A-A-RO token=-aaro
+[aa] pre-flight: chrony gate SKIP (GATE_SKIP=1)
+[aa][prepare-bridge] copied prepare+gate evidence /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260722T133916+0800 -> /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-aaro-rc-20260722T133916+0800
+[aa] launching dual-side TPCC: profile=A-A-RO placement=P-A threads_list='32'
+[aa] IDC client: root@172.24.40.31 → 172.24.40.32:5433 (standard mix, W=4)
+[aa] GCP client: root@10.160.152.15:22 → 10.160.152.11:5433 (mix=0,0,50,0,50, W=4)
+[aa] suite dir (IDC SSOT): /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-aaro-rc-20260722T133916+0800
+[aa] both sides ready; launching workload (sync window = same wallclock second)
+[idc] [22:48:43] INFO  run start  db=ybdb iso=rc topo=vm-6node-P-A-aaro host=172.24.40.32 cluster-host=172.24.40.32 fanout=true hosts=6
+[idc] [22:48:43] INFO  cold-reset
+[idc] [22:48:43] INFO  cold reset YugabyteDB on 172.24.40.32 (db-host=172.24.40.32)
+[idc] Stopped yugabyted using config /var/yugabyte/conf/yugabyted.conf.
+[idc] Starting yugabyted...
+[idc] Starting yugabyted...
+[idc] ✅ System checks
+[idc] / Starting the YugabyteDB Processes...- Starting the YugabyteDB Processes...✅ YugabyteDB Started                  
+[idc] ✅ Node joined a running cluster with UUID ed2eb351-b20b-4a52-a1a8-0fab55ffa90e
+[idc] / Bringing up UI...✅ UI ready         
+[idc] / Checking YSQL Status...- Checking YSQL Status...\ Checking YSQL Status...| Checking YSQL Status.../ Checking YSQL Status...- Checking YSQL Status...\ Checking YSQL Status...| Checking YSQL Status.../ Checking YSQL Status...- Checking YSQL Status...\ Checking YSQL Status...| Checking YSQL Status.../ Checking YSQL Status...- Checking YSQL Status...\ Checking YSQL Status...| Checking YSQL Status.../ Checking YSQL Status...- Checking YSQL Status...\ Checking YSQL Status...| Checking YSQL Status.../ Checking YSQL Status...- Checking YSQL Status...\ Checking YSQL Status...| Checking YSQL Status.../ Checking YSQL Status...- Checking YSQL Status...\ Checking YSQL Status...| Checking YSQL Status.../ Checking YSQL Status...- Checking YSQL Status...\ Checking YSQL Status...| Checking YSQL Status.../ Checking YSQL Status...[2K/ Verifying data placement constraint on the YugabyteDB Cluster...✅ Data placement constraint successfully verified                 
+[idc] 
+[idc] ⚠ WARNINGS:
+[idc] - Cluster started in an insecure mode without authentication and encryption enabled. For non-production use only, not to be used without firewalls blocking the internet traffic.
+[idc] 
+[idc] 
+[idc] +--------------------------------------------------------------------------------------------------+
+[idc] |                                            yugabyted                                             |
+[idc] +--------------------------------------------------------------------------------------------------+
+[idc] | Status     : Running.                                                                            |
+[idc] | YSQL Status: Ready                                                                               |
+[idc] | Replication Factor: 3                                                                                   |
+[idc] | YugabyteDB UI: http://172.24.40.32:15433                                                           |
+[idc] | JDBC       : jdbc:postgresql://172.24.40.32:5433/yugabyte?user=yugabyte&password=yugabyte        |
+[idc] | YSQL       : bin/ysqlsh -h 172.24.40.32  -U yugabyte -d yugabyte                                 |
+[idc] | YCQL       : bin/ycqlsh 172.24.40.32 9042 -u cassandra                                           |
+[idc] | Data Dir   : /var/yugabyte/data                                                                  |
+[idc] | Log Dir    : /var/yugabyte/logs                                                                  |
+[idc] | Universe UUID: ed2eb351-b20b-4a52-a1a8-0fab55ffa90e                                                |
+[idc] +--------------------------------------------------------------------------------------------------+
+[idc] 🚀 YugabyteDB started successfully! To load a sample dataset, try 'yugabyted demo'.
+[idc] 🎉 Join us on Slack at https://www.yugabyte.com/slack
+[idc] 👕 Claim your free t-shirt at https://www.yugabyte.com/community-rewards/
+[idc] 
+[idc] Starting yugabyted...
+[idc] [22:49:46] INFO  cold reset YugabyteDB done
+[idc] [22:49:46] INFO  active isolation gate
+[idc] 2026/07/22 22:49:46 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+[idc] Finished
+[idc] [Summary] NEW_ORDER - Takes(s): 1.5, Count: 5, TPM: 205.6, Sum(ms): 1770.9, Avg(ms): 354.0, 50th(ms): 385.9, 90th(ms): 385.9, 95th(ms): 385.9, 99th(ms): 385.9, 99.9th(ms): 385.9, Max(ms): 385.9
+[idc] [Summary] PAYMENT - Takes(s): 1.9, Count: 6, TPM: 193.9, Sum(ms): 147.3, Avg(ms): 24.7, 50th(ms): 15.7, 90th(ms): 16.3, 95th(ms): 75.5, 99th(ms): 75.5, 99.9th(ms): 75.5, Max(ms): 75.5
+[idc] tpmC: 205.5, tpmTotal: 399.4, efficiency: 1598.3%
+[idc] [22:49:49] INFO  isolation gate passed db=ybdb iso=rc expected=read committed actual=read committed yb_effective_db=read committed yb_effective_driver=read committed
+[idc] [22:49:49] INFO  warmup 10s (threads=64)
+[idc] === wan-probe.sh  phase=warmup  ts=20260722T133916+0800  2026-07-22T14:49:49Z ===
+[idc] WAN_PROBE_IPERF=1  WAN_NIC=auto
+[idc] 
+[idc] --- chronyc tracking (3 pair × 2 端 = 6 host) ---
+[idc]   [IDC/idc-driver    ] stratum=7 last_offset=-0.000072814 leap=Normal
+[idc]   [GCP/gcp-poc-5     ] stratum=3 last_offset=0.000003755 leap=Normal
+[idc]   [IDC/idc-dbhost-1  ] stratum=7 last_offset=0.000026324 leap=Normal
+[idc]   [GCP/gcp-poc-1     ] stratum=3 last_offset=0.000003071 leap=Normal
+[idc]   [IDC/idc-haproxy   ] stratum=7 last_offset=-0.000012315 leap=Normal
+[idc]   [GCP/gcp-poc-4     ] stratum=3 last_offset=0.000006424 leap=Normal
+[idc] 
+[idc] --- /proc/net/dev (NIC=auto) byte counter snapshot ---
+[idc]   [IDC/idc-driver    ] rx_bytes=995964628316 tx_bytes=1679849857338
+[idc]   [GCP/gcp-poc-5     ] rx_bytes=807928314 tx_bytes=10993855
+[idc]   [IDC/idc-dbhost-1  ] rx_bytes=5645579495 tx_bytes=6443425600
+[idc]   [GCP/gcp-poc-1     ] rx_bytes=3224394698 tx_bytes=364472125
+[idc]   [IDC/idc-haproxy   ] rx_bytes=213440331015 tx_bytes=136334346358
+[idc]   [GCP/gcp-poc-4     ] rx_bytes=769557001 tx_bytes=13305882
+[idc] 
+[idc] --- iperf3 5s TCP idc-dbhost-1 ↔ gcp-dbhost-1 (forward + reverse) ---
+[idc]   [forward idc->gcp]  target=10.160.152.11 port=20170
+[idc]     {
+[idc]     	"start":	{
+[idc]     		"connected":	[{
+[idc]     				"socket":	5,
+[idc]     				"local_host":	"172.24.40.32",
+[idc]     				"local_port":	52944,
+[idc]     				"remote_host":	"10.160.152.11",
+[idc]     				"remote_port":	20170
+[idc]     			}],
+[idc]     		"version":	"iperf 3.5",
+[idc]     		"system_info":	"Linux l-test-poc-1 4.18.0-553.124.1.el8_10.x86_64 #1 SMP Tue May 12 08:08:25 EDT 2026 x86_64",
+[idc]     		"timestamp":	{
+[idc]     			"time":	"Wed, 22 Jul 2026 14:49:53 GMT",
+[idc]     			"timesecs":	1784731793
+[idc]     		},
+[idc]     		"connecting_to":	{
+[idc]     			"host":	"10.160.152.11",
+[idc]     			"port":	20170
+[idc]     		},
+[idc]     		"cookie":	"k5xhluxvozzhaohmbmyrbs7hwpwqe7dcwqne",
+[idc]     		"tcp_mss_default":	1338,
+[idc]     		"sock_bufsize":	0,
+[idc]     		"sndbuf_actual":	16384,
+[idc]     		"rcvbuf_actual":	87380,
+[idc]     		"test_start":	{
+[idc]     			"protocol":	"TCP",
+[idc]     			"num_streams":	1,
+[idc]     			"blksize":	131072,
+[idc]     			"omit":	0,
+[idc]     			"duration":	5,
+[idc]     			"bytes":	0,
+[idc]     			"blocks":	0,
+[idc]     			"reverse":	0,
+[idc]     			"tos":	0
+[idc]     		}
+[idc]     	},
+[idc]     	"intervals":	[{
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	1.0000720024108887,
+[idc]     					"seconds":	1.0000720024108887,
+[idc]     					"bytes":	27351396,
+[idc]     					"bits_per_second":	218795414.202686,
+[idc]     					"retransmits":	17,
+[idc]     					"snd_cwnd":	264924,
+[idc]     					"rtt":	7778,
+[idc]     					"rttvar":	174,
+[idc]     					"pmtu":	1500,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	0,
+[idc]     				"end":	1.0000720024108887,
+[idc]     				"seconds":	1.0000720024108887,
+[idc]     				"bytes":	27351396,
+[idc]     				"bits_per_second":	218795414.202686,
+[idc]     				"retransmits":	17,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	1.0000720024108887,
+[idc]     					"end":	2.00008487701416,
+[idc]     					"seconds":	1.0000128746032715,
+[idc]     					"bytes":	30570624,
+[idc]     					"bits_per_second":	244561843.36329135,
+[idc]     					"retransmits":	18,
+[idc]     					"snd_cwnd":	252882,
+[idc]     					"rtt":	7950,
+[idc]     					"rttvar":	299,
+[idc]     					"pmtu":	1500,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	1.0000720024108887,
+[idc]     				"end":	2.00008487701416,
+[idc]     				"seconds":	1.0000128746032715,
+[idc]     				"bytes":	30570624,
+[idc]     				"bits_per_second":	244561843.36329135,
+[idc]     				"retransmits":	18,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	2.00008487701416,
+[idc]     					"end":	3.0000739097595215,
+[idc]     					"seconds":	0.99998903274536133,
+[idc]     					"bytes":	35772768,
+[idc]     					"bits_per_second":	286185282.66686887,
+[idc]     					"retransmits":	0,
+[idc]     					"snd_cwnd":	337176,
+[idc]     					"rtt":	7892,
+[idc]     					"rttvar":	281,
+[idc]     					"pmtu":	1500,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	2.00008487701416,
+[idc]     				"end":	3.0000739097595215,
+[idc]     				"seconds":	0.99998903274536133,
+[idc]     				"bytes":	35772768,
+[idc]     				"bits_per_second":	286185282.66686887,
+[idc]     				"retransmits":	0,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	3.0000739097595215,
+[idc]     					"end":	4.0000748634338379,
+[idc]     					"seconds":	1.0000009536743164,
+[idc]     					"bytes":	35708544,
+[idc]     					"bits_per_second":	285668079.5656895,
+[idc]     					"retransmits":	4,
+[idc]     					"snd_cwnd":	309078,
+[idc]     					"rtt":	7837,
+[idc]     					"rttvar":	319,
+[idc]     					"pmtu":	1500,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	3.0000739097595215,
+[idc]     				"end":	4.0000748634338379,
+[idc]     				"seconds":	1.0000009536743164,
+[idc]     				"bytes":	35708544,
+[idc]     				"bits_per_second":	285668079.5656895,
+[idc]     				"retransmits":	4,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	4.0000748634338379,
+[idc]     					"end":	5.00009298324585,
+[idc]     					"seconds":	1.0000181198120117,
+[idc]     					"bytes":	35836992,
+[idc]     					"bits_per_second":	286690741.21766365,
+[idc]     					"retransmits":	36,
+[idc]     					"snd_cwnd":	259572,
+[idc]     					"rtt":	7806,
+[idc]     					"rttvar":	278,
+[idc]     					"pmtu":	1500,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	4.0000748634338379,
+[idc]     				"end":	5.00009298324585,
+[idc]     				"seconds":	1.0000181198120117,
+[idc]     				"bytes":	35836992,
+[idc]     				"bits_per_second":	286690741.21766365,
+[idc]     				"retransmits":	36,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}],
+[idc]     	"end":	{
+[idc]     		"streams":	[{
+[idc]     				"sender":	{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	5.00009298324585,
+[idc]     					"seconds":	5.00009298324585,
+[idc]     					"bytes":	165240324,
+[idc]     					"bits_per_second":	264379601.82529718,
+[idc]     					"retransmits":	75,
+[idc]     					"max_snd_cwnd":	337176,
+[idc]     					"max_rtt":	7950,
+[idc]     					"min_rtt":	7778,
+[idc]     					"mean_rtt":	7852
+[idc]     				},
+[idc]     				"receiver":	{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	5.0403821468353271,
+[idc]     					"seconds":	5.00009298324585,
+[idc]     					"bytes":	164626432,
+[idc]     					"bits_per_second":	261291984.93945616
+[idc]     				}
+[idc]     			}],
+[idc]     		"sum_sent":	{
+[idc]     			"start":	0,
+[idc]     			"end":	5.00009298324585,
+[idc]     			"seconds":	5.00009298324585,
+[idc]     			"bytes":	165240324,
+[idc]     			"bits_per_second":	264379601.82529718,
+[idc]     			"retransmits":	75
+[idc]     		},
+[idc]     		"sum_received":	{
+[idc]     			"start":	0,
+[idc]     			"end":	5.0403821468353271,
+[idc]     			"seconds":	5.0403821468353271,
+[idc]     			"bytes":	164626432,
+[idc]     			"bits_per_second":	261291984.93945616
+[idc]     		},
+[idc]     		"cpu_utilization_percent":	{
+[idc]     			"host_total":	1.4268865455338173,
+[idc]     			"host_user":	0.12569110047127802,
+[idc]     			"host_system":	1.3012150139712222,
+[idc]     			"remote_total":	3.2336211453856962,
+[idc]     			"remote_user":	0.18173152211359395,
+[idc]     			"remote_system":	3.0518896232721024
+[idc]     		},
+[idc]     		"sender_tcp_congestion":	"cubic",
+[idc]     		"receiver_tcp_congestion":	"cubic"
+[idc]     	}
+[idc]     }
+[idc]   [reverse gcp->idc]  target=172.24.40.32 port=20170
+[idc]     {
+[idc]     	"start":	{
+[idc]     		"connected":	[{
+[idc]     				"socket":	5,
+[idc]     				"local_host":	"10.160.152.11",
+[idc]     				"local_port":	33222,
+[idc]     				"remote_host":	"172.24.40.32",
+[idc]     				"remote_port":	20170
+[idc]     			}],
+[idc]     		"version":	"iperf 3.5",
+[idc]     		"system_info":	"Linux g-test-poc-1 4.18.0-553.144.1.el8_10.x86_64 #1 SMP Tue Jul 14 09:26:58 EDT 2026 x86_64",
+[idc]     		"timestamp":	{
+[idc]     			"time":	"Wed, 22 Jul 2026 14:50:00 GMT",
+[idc]     			"timesecs":	1784731800
+[idc]     		},
+[idc]     		"connecting_to":	{
+[idc]     			"host":	"172.24.40.32",
+[idc]     			"port":	20170
+[idc]     		},
+[idc]     		"cookie":	"zaz67v7pck2t5nrdnchhyocb46dqahxpowze",
+[idc]     		"tcp_mss_default":	1338,
+[idc]     		"sock_bufsize":	0,
+[idc]     		"sndbuf_actual":	16384,
+[idc]     		"rcvbuf_actual":	87380,
+[idc]     		"test_start":	{
+[idc]     			"protocol":	"TCP",
+[idc]     			"num_streams":	1,
+[idc]     			"blksize":	131072,
+[idc]     			"omit":	0,
+[idc]     			"duration":	5,
+[idc]     			"bytes":	0,
+[idc]     			"blocks":	0,
+[idc]     			"reverse":	0,
+[idc]     			"tos":	0
+[idc]     		}
+[idc]     	},
+[idc]     	"intervals":	[{
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	1.0000979900360107,
+[idc]     					"seconds":	1.0000979900360107,
+[idc]     					"bytes":	35749876,
+[idc]     					"bits_per_second":	285970985.69281393,
+[idc]     					"retransmits":	0,
+[idc]     					"snd_cwnd":	1640388,
+[idc]     					"rtt":	37503,
+[idc]     					"rttvar":	152,
+[idc]     					"pmtu":	1460,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	0,
+[idc]     				"end":	1.0000979900360107,
+[idc]     				"seconds":	1.0000979900360107,
+[idc]     				"bytes":	35749876,
+[idc]     				"bits_per_second":	285970985.69281393,
+[idc]     				"retransmits":	0,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	1.0000979900360107,
+[idc]     					"end":	2.0000979900360107,
+[idc]     					"seconds":	1,
+[idc]     					"bytes":	39321600,
+[idc]     					"bits_per_second":	314572800,
+[idc]     					"retransmits":	326,
+[idc]     					"snd_cwnd":	2136786,
+[idc]     					"rtt":	64467,
+[idc]     					"rttvar":	399,
+[idc]     					"pmtu":	1460,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	1.0000979900360107,
+[idc]     				"end":	2.0000979900360107,
+[idc]     				"seconds":	1,
+[idc]     				"bytes":	39321600,
+[idc]     				"bits_per_second":	314572800,
+[idc]     				"retransmits":	326,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	2.0000979900360107,
+[idc]     					"end":	3.0001010894775391,
+[idc]     					"seconds":	1.0000030994415283,
+[idc]     					"bytes":	39321600,
+[idc]     					"bits_per_second":	314571825.00302196,
+[idc]     					"retransmits":	0,
+[idc]     					"snd_cwnd":	2377626,
+[idc]     					"rtt":	57418,
+[idc]     					"rttvar":	200,
+[idc]     					"pmtu":	1460,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	2.0000979900360107,
+[idc]     				"end":	3.0001010894775391,
+[idc]     				"seconds":	1.0000030994415283,
+[idc]     				"bytes":	39321600,
+[idc]     				"bits_per_second":	314571825.00302196,
+[idc]     				"retransmits":	0,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	3.0001010894775391,
+[idc]     					"end":	4.0001039505004883,
+[idc]     					"seconds":	1.0000028610229492,
+[idc]     					"bytes":	40632320,
+[idc]     					"bits_per_second":	325057630.00266075,
+[idc]     					"retransmits":	0,
+[idc]     					"snd_cwnd":	2582340,
+[idc]     					"rtt":	62253,
+[idc]     					"rttvar":	279,
+[idc]     					"pmtu":	1460,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	3.0001010894775391,
+[idc]     				"end":	4.0001039505004883,
+[idc]     				"seconds":	1.0000028610229492,
+[idc]     				"bytes":	40632320,
+[idc]     				"bits_per_second":	325057630.00266075,
+[idc]     				"retransmits":	0,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	4.0001039505004883,
+[idc]     					"end":	5.0001230239868164,
+[idc]     					"seconds":	1.0000190734863281,
+[idc]     					"bytes":	40632320,
+[idc]     					"bits_per_second":	325052360.11825335,
+[idc]     					"retransmits":	0,
+[idc]     					"snd_cwnd":	2750928,
+[idc]     					"rtt":	66222,
+[idc]     					"rttvar":	248,
+[idc]     					"pmtu":	1460,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	4.0001039505004883,
+[idc]     				"end":	5.0001230239868164,
+[idc]     				"seconds":	1.0000190734863281,
+[idc]     				"bytes":	40632320,
+[idc]     				"bits_per_second":	325052360.11825335,
+[idc]     				"retransmits":	0,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}],
+[idc]     	"end":	{
+[idc]     		"streams":	[{
+[idc]     				"sender":	{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	5.0001230239868164,
+[idc]     					"seconds":	5.0001230239868164,
+[idc]     					"bytes":	195657716,
+[idc]     					"bits_per_second":	313044643.19998842,
+[idc]     					"retransmits":	326,
+[idc]     					"max_snd_cwnd":	2750928,
+[idc]     					"max_rtt":	66222,
+[idc]     					"min_rtt":	37503,
+[idc]     					"mean_rtt":	57572
+[idc]     				},
+[idc]     				"receiver":	{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	5.1010069847106934,
+[idc]     					"seconds":	5.0001230239868164,
+[idc]     					"bytes":	195559424,
+[idc]     					"bits_per_second":	306699323.62163395
+[idc]     				}
+[idc]     			}],
+[idc]     		"sum_sent":	{
+[idc]     			"start":	0,
+[idc]     			"end":	5.0001230239868164,
+[idc]     			"seconds":	5.0001230239868164,
+[idc]     			"bytes":	195657716,
+[idc]     			"bits_per_second":	313044643.19998842,
+[idc]     			"retransmits":	326
+[idc]     		},
+[idc]     		"sum_received":	{
+[idc]     			"start":	0,
+[idc]     			"end":	5.1010069847106934,
+[idc]     			"seconds":	5.1010069847106934,
+[idc]     			"bytes":	195559424,
+[idc]     			"bits_per_second":	306699323.62163395
+[idc]     		},
+[idc]     		"cpu_utilization_percent":	{
+[idc]     			"host_total":	1.6794713130591741,
+[idc]     			"host_user":	0.023518937930157365,
+[idc]     			"host_system":	1.6559719416331182,
+[idc]     			"remote_total":	5.9274379260724821,
+[idc]     			"remote_user":	0.56379544031327822,
+[idc]     			"remote_system":	5.3636424857592031
+[idc]     		},
+[idc]     		"sender_tcp_congestion":	"cubic",
+[idc]     		"receiver_tcp_congestion":	"cubic"
+[idc]     	}
+[idc]     }
+[idc] 
+[idc] === wan-probe done (all probes succeeded) ===
+[idc] === wan-probe.sh  phase=warmup-post  ts=20260722T133916+0800  2026-07-22T14:50:17Z ===
+[idc] WAN_PROBE_IPERF=1  WAN_NIC=auto
+[idc] 
+[idc] --- chronyc tracking (3 pair × 2 端 = 6 host) ---
+[idc]   [IDC/idc-driver    ] stratum=7 last_offset=-0.000072814 leap=Normal
+[idc]   [GCP/gcp-poc-5     ] stratum=3 last_offset=0.000001203 leap=Normal
+[idc]   [IDC/idc-dbhost-1  ] stratum=7 last_offset=0.000026324 leap=Normal
+[idc]   [GCP/gcp-poc-1     ] stratum=3 last_offset=0.000003071 leap=Normal
+[idc]   [IDC/idc-haproxy   ] stratum=7 last_offset=-0.000012315 leap=Normal
+[idc]   [GCP/gcp-poc-4     ] stratum=3 last_offset=0.000004581 leap=Normal
+[idc] 
+[idc] --- /proc/net/dev (NIC=auto) byte counter snapshot ---
+[idc]   [IDC/idc-driver    ] rx_bytes=995971467893 tx_bytes=1679854818838
+[idc]   [GCP/gcp-poc-5     ] rx_bytes=807942710 tx_bytes=11008847
+[idc]   [IDC/idc-dbhost-1  ] rx_bytes=5892678755 tx_bytes=6675571738
+[idc]   [GCP/gcp-poc-1     ] rx_bytes=3412702207 tx_bytes=572846957
+[idc]   [IDC/idc-haproxy   ] rx_bytes=213440376456 tx_bytes=136334364317
+[idc]   [GCP/gcp-poc-4     ] rx_bytes=769584183 tx_bytes=13323997
+[idc] 
+[idc] --- iperf3 5s TCP idc-dbhost-1 ↔ gcp-dbhost-1 (forward + reverse) ---
+[idc]   [forward idc->gcp]  target=10.160.152.11 port=20170
+[idc]     {
+[idc]     	"start":	{
+[idc]     		"connected":	[{
+[idc]     				"socket":	5,
+[idc]     				"local_host":	"172.24.40.32",
+[idc]     				"local_port":	38924,
+[idc]     				"remote_host":	"10.160.152.11",
+[idc]     				"remote_port":	20170
+[idc]     			}],
+[idc]     		"version":	"iperf 3.5",
+[idc]     		"system_info":	"Linux l-test-poc-1 4.18.0-553.124.1.el8_10.x86_64 #1 SMP Tue May 12 08:08:25 EDT 2026 x86_64",
+[idc]     		"timestamp":	{
+[idc]     			"time":	"Wed, 22 Jul 2026 14:50:22 GMT",
+[idc]     			"timesecs":	1784731822
+[idc]     		},
+[idc]     		"connecting_to":	{
+[idc]     			"host":	"10.160.152.11",
+[idc]     			"port":	20170
+[idc]     		},
+[idc]     		"cookie":	"rqqkjrfuzo4xrzg3jhjgh67gluwjlp5ghw4y",
+[idc]     		"tcp_mss_default":	1338,
+[idc]     		"sock_bufsize":	0,
+[idc]     		"sndbuf_actual":	16384,
+[idc]     		"rcvbuf_actual":	87380,
+[idc]     		"test_start":	{
+[idc]     			"protocol":	"TCP",
+[idc]     			"num_streams":	1,
+[idc]     			"blksize":	131072,
+[idc]     			"omit":	0,
+[idc]     			"duration":	5,
+[idc]     			"bytes":	0,
+[idc]     			"blocks":	0,
+[idc]     			"reverse":	0,
+[idc]     			"tos":	0
+[idc]     		}
+[idc]     	},
+[idc]     	"intervals":	[{
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	1.0001177787780762,
+[idc]     					"seconds":	1.0001177787780762,
+[idc]     					"bytes":	27677868,
+[idc]     					"bits_per_second":	221396868.14739969,
+[idc]     					"retransmits":	334,
+[idc]     					"snd_cwnd":	136476,
+[idc]     					"rtt":	7700,
+[idc]     					"rttvar":	206,
+[idc]     					"pmtu":	1500,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	0,
+[idc]     				"end":	1.0001177787780762,
+[idc]     				"seconds":	1.0001177787780762,
+[idc]     				"bytes":	27677868,
+[idc]     				"bits_per_second":	221396868.14739969,
+[idc]     				"retransmits":	334,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	1.0001177787780762,
+[idc]     					"end":	2.0000879764556885,
+[idc]     					"seconds":	0.9999701976776123,
+[idc]     					"bytes":	20808576,
+[idc]     					"bits_per_second":	166473569.29898128,
+[idc]     					"retransmits":	5,
+[idc]     					"snd_cwnd":	156546,
+[idc]     					"rtt":	7642,
+[idc]     					"rttvar":	102,
+[idc]     					"pmtu":	1500,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	1.0001177787780762,
+[idc]     				"end":	2.0000879764556885,
+[idc]     				"seconds":	0.9999701976776123,
+[idc]     				"bytes":	20808576,
+[idc]     				"bits_per_second":	166473569.29898128,
+[idc]     				"retransmits":	5,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	2.0000879764556885,
+[idc]     					"end":	3.0001049041748047,
+[idc]     					"seconds":	1.0000169277191162,
+[idc]     					"bytes":	23120640,
+[idc]     					"bits_per_second":	184961989.01540276,
+[idc]     					"retransmits":	30,
+[idc]     					"snd_cwnd":	167250,
+[idc]     					"rtt":	7826,
+[idc]     					"rttvar":	352,
+[idc]     					"pmtu":	1500,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	2.0000879764556885,
+[idc]     				"end":	3.0001049041748047,
+[idc]     				"seconds":	1.0000169277191162,
+[idc]     				"bytes":	23120640,
+[idc]     				"bits_per_second":	184961989.01540276,
+[idc]     				"retransmits":	30,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	3.0001049041748047,
+[idc]     					"end":	4.000093936920166,
+[idc]     					"seconds":	0.99998903274536133,
+[idc]     					"bytes":	24662016,
+[idc]     					"bits_per_second":	197298291.82060617,
+[idc]     					"retransmits":	0,
+[idc]     					"snd_cwnd":	251544,
+[idc]     					"rtt":	7858,
+[idc]     					"rttvar":	101,
+[idc]     					"pmtu":	1500,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	3.0001049041748047,
+[idc]     				"end":	4.000093936920166,
+[idc]     				"seconds":	0.99998903274536133,
+[idc]     				"bytes":	24662016,
+[idc]     				"bits_per_second":	197298291.82060617,
+[idc]     				"retransmits":	0,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	4.000093936920166,
+[idc]     					"end":	5.000126838684082,
+[idc]     					"seconds":	1.000032901763916,
+[idc]     					"bytes":	35451648,
+[idc]     					"bits_per_second":	283603852.93298513,
+[idc]     					"retransmits":	0,
+[idc]     					"snd_cwnd":	335838,
+[idc]     					"rtt":	7677,
+[idc]     					"rttvar":	201,
+[idc]     					"pmtu":	1500,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	4.000093936920166,
+[idc]     				"end":	5.000126838684082,
+[idc]     				"seconds":	1.000032901763916,
+[idc]     				"bytes":	35451648,
+[idc]     				"bits_per_second":	283603852.93298513,
+[idc]     				"retransmits":	0,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}],
+[idc]     	"end":	{
+[idc]     		"streams":	[{
+[idc]     				"sender":	{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	5.000126838684082,
+[idc]     					"seconds":	5.000126838684082,
+[idc]     					"bytes":	131720748,
+[idc]     					"bits_per_second":	210747850.60399124,
+[idc]     					"retransmits":	369,
+[idc]     					"max_snd_cwnd":	335838,
+[idc]     					"max_rtt":	7858,
+[idc]     					"min_rtt":	7642,
+[idc]     					"mean_rtt":	7740
+[idc]     				},
+[idc]     				"receiver":	{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	5.040043830871582,
+[idc]     					"seconds":	5.000126838684082,
+[idc]     					"bytes":	130023424,
+[idc]     					"bits_per_second":	206384592.45703006
+[idc]     				}
+[idc]     			}],
+[idc]     		"sum_sent":	{
+[idc]     			"start":	0,
+[idc]     			"end":	5.000126838684082,
+[idc]     			"seconds":	5.000126838684082,
+[idc]     			"bytes":	131720748,
+[idc]     			"bits_per_second":	210747850.60399124,
+[idc]     			"retransmits":	369
+[idc]     		},
+[idc]     		"sum_received":	{
+[idc]     			"start":	0,
+[idc]     			"end":	5.040043830871582,
+[idc]     			"seconds":	5.040043830871582,
+[idc]     			"bytes":	130023424,
+[idc]     			"bits_per_second":	206384592.45703006
+[idc]     		},
+[idc]     		"cpu_utilization_percent":	{
+[idc]     			"host_total":	1.2988786671657413,
+[idc]     			"host_user":	0.11810300280210917,
+[idc]     			"host_system":	1.1807952307988212,
+[idc]     			"remote_total":	2.7947171989177497,
+[idc]     			"remote_user":	0.32128506364412912,
+[idc]     			"remote_system":	2.4734161747637526
+[idc]     		},
+[idc]     		"sender_tcp_congestion":	"cubic",
+[idc]     		"receiver_tcp_congestion":	"cubic"
+[idc]     	}
+[idc]     }
+[idc]   [reverse gcp->idc]  target=172.24.40.32 port=20170
+[idc]     {
+[idc]     	"start":	{
+[idc]     		"connected":	[{
+[idc]     				"socket":	5,
+[idc]     				"local_host":	"10.160.152.11",
+[idc]     				"local_port":	48556,
+[idc]     				"remote_host":	"172.24.40.32",
+[idc]     				"remote_port":	20170
+[idc]     			}],
+[idc]     		"version":	"iperf 3.5",
+[idc]     		"system_info":	"Linux g-test-poc-1 4.18.0-553.144.1.el8_10.x86_64 #1 SMP Tue Jul 14 09:26:58 EDT 2026 x86_64",
+[idc]     		"timestamp":	{
+[idc]     			"time":	"Wed, 22 Jul 2026 14:50:28 GMT",
+[idc]     			"timesecs":	1784731828
+[idc]     		},
+[idc]     		"connecting_to":	{
+[idc]     			"host":	"172.24.40.32",
+[idc]     			"port":	20170
+[idc]     		},
+[idc]     		"cookie":	"2lxam64fh5w3ugiihcrg7sufzyo5ch7myjui",
+[idc]     		"tcp_mss_default":	1338,
+[idc]     		"sock_bufsize":	0,
+[idc]     		"sndbuf_actual":	16384,
+[idc]     		"rcvbuf_actual":	87380,
+[idc]     		"test_start":	{
+[idc]     			"protocol":	"TCP",
+[idc]     			"num_streams":	1,
+[idc]     			"blksize":	131072,
+[idc]     			"omit":	0,
+[idc]     			"duration":	5,
+[idc]     			"bytes":	0,
+[idc]     			"blocks":	0,
+[idc]     			"reverse":	0,
+[idc]     			"tos":	0
+[idc]     		}
+[idc]     	},
+[idc]     	"intervals":	[{
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	1.0000989437103271,
+[idc]     					"seconds":	1.0000989437103271,
+[idc]     					"bytes":	34911096,
+[idc]     					"bits_per_second":	279261136.86696821,
+[idc]     					"retransmits":	264,
+[idc]     					"snd_cwnd":	402738,
+[idc]     					"rtt":	7685,
+[idc]     					"rttvar":	118,
+[idc]     					"pmtu":	1460,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	0,
+[idc]     				"end":	1.0000989437103271,
+[idc]     				"seconds":	1.0000989437103271,
+[idc]     				"bytes":	34911096,
+[idc]     				"bits_per_second":	279261136.86696821,
+[idc]     				"retransmits":	264,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	1.0000989437103271,
+[idc]     					"end":	2.0001020431518555,
+[idc]     					"seconds":	1.0000030994415283,
+[idc]     					"bytes":	40525344,
+[idc]     					"bits_per_second":	324201747.15564132,
+[idc]     					"retransmits":	0,
+[idc]     					"snd_cwnd":	468300,
+[idc]     					"rtt":	11200,
+[idc]     					"rttvar":	267,
+[idc]     					"pmtu":	1460,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	1.0000989437103271,
+[idc]     				"end":	2.0001020431518555,
+[idc]     				"seconds":	1.0000030994415283,
+[idc]     				"bytes":	40525344,
+[idc]     				"bits_per_second":	324201747.15564132,
+[idc]     				"retransmits":	0,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	2.0001020431518555,
+[idc]     					"end":	3.0001070499420166,
+[idc]     					"seconds":	1.0000050067901611,
+[idc]     					"bytes":	41552928,
+[idc]     					"bits_per_second":	332421759.63400453,
+[idc]     					"retransmits":	0,
+[idc]     					"snd_cwnd":	528510,
+[idc]     					"rtt":	12492,
+[idc]     					"rttvar":	452,
+[idc]     					"pmtu":	1460,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	2.0001020431518555,
+[idc]     				"end":	3.0001070499420166,
+[idc]     				"seconds":	1.0000050067901611,
+[idc]     				"bytes":	41552928,
+[idc]     				"bits_per_second":	332421759.63400453,
+[idc]     				"retransmits":	0,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	3.0001070499420166,
+[idc]     					"end":	4.0000920295715332,
+[idc]     					"seconds":	0.9999849796295166,
+[idc]     					"bytes":	40332672,
+[idc]     					"bits_per_second":	322666222.56620544,
+[idc]     					"retransmits":	0,
+[idc]     					"snd_cwnd":	580692,
+[idc]     					"rtt":	13578,
+[idc]     					"rttvar":	329,
+[idc]     					"pmtu":	1460,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	3.0001070499420166,
+[idc]     				"end":	4.0000920295715332,
+[idc]     				"seconds":	0.9999849796295166,
+[idc]     				"bytes":	40332672,
+[idc]     				"bits_per_second":	322666222.56620544,
+[idc]     				"retransmits":	0,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}, {
+[idc]     			"streams":	[{
+[idc]     					"socket":	5,
+[idc]     					"start":	4.0000920295715332,
+[idc]     					"end":	5.0001029968261719,
+[idc]     					"seconds":	1.0000109672546387,
+[idc]     					"bytes":	41617152,
+[idc][aa][watcher] threads=32 round=1 IDC started -> GCP barrier touched
+     					"bits_per_second":	332933564.63281894,
+[idc]     					"retransmits":	0,
+[idc]     					"snd_cwnd":	628860,
+[idc]     					"rtt":	13777,
+[idc]     					"rttvar":	238,
+[idc]     					"pmtu":	1460,
+[idc]     					"omitted":	false
+[idc]     				}],
+[idc]     			"sum":	{
+[idc]     				"start":	4.0000920295715332,
+[idc]     				"end":	5.0001029968261719,
+[idc]     				"seconds":	1.0000109672546387,
+[idc]     				"bytes":	41617152,
+[idc]     				"bits_per_second":	332933564.63281894,
+[idc]     				"retransmits":	0,
+[idc]     				"omitted":	false
+[idc]     			}
+[idc]     		}],
+[idc]     	"end":	{
+[idc]     		"streams":	[{
+[idc]     				"sender":	{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	5.0001029968261719,
+[idc]     					"seconds":	5.0001029968261719,
+[idc]     					"bytes":	198939192,
+[idc]     					"bits_per_second":	318296150.50134313,
+[idc]     					"retransmits":	264,
+[idc]     					"max_snd_cwnd":	628860,
+[idc]     					"max_rtt":	13777,
+[idc]     					"min_rtt":	7685,
+[idc]     					"mean_rtt":	11746
+[idc]     				},
+[idc]     				"receiver":	{
+[idc]     					"socket":	5,
+[idc]     					"start":	0,
+[idc]     					"end":	5.050117015838623,
+[idc]     					"seconds":	5.0001029968261719,
+[idc]     					"bytes":	197001216,
+[idc]     					"bits_per_second":	312073903.05158854
+[idc]     				}
+[idc]     			}],
+[idc]     		"sum_sent":	{
+[idc]     			"start":	0,
+[idc]     			"end":	5.0001029968261719,
+[idc]     			"seconds":	5.0001029968261719,
+[idc]     			"bytes":	198939192,
+[idc]     			"bits_per_second":	318296150.50134313,
+[idc]     			"retransmits":	264
+[idc]     		},
+[idc]     		"sum_received":	{
+[idc]     			"start":	0,
+[idc]     			"end":	5.050117015838623,
+[idc]     			"seconds":	5.050117015838623,
+[idc]     			"bytes":	197001216,
+[idc]     			"bits_per_second":	312073903.05158854
+[idc]     		},
+[idc]     		"cpu_utilization_percent":	{
+[idc]     			"host_total":	1.7751044023700404,
+[idc]     			"host_user":	0.04161226292063698,
+[idc]     			"host_system":	1.7334530117926845,
+[idc]     			"remote_total":	6.2611749342210716,
+[idc]     			"remote_user":	0.3958429088786431,
+[idc]     			"remote_system":	5.8653476164609781
+[idc]     		},
+[idc]     		"sender_tcp_congestion":	"cubic",
+[idc]     		"receiver_tcp_congestion":	"cubic"
+[idc]     	}
+[idc]     }
+[idc] 
+[idc] === wan-probe done (all probes succeeded) ===
+[idc] [22:50:34] INFO    run threads=32 round=1 → /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-aaro-rc-20260722T133916+0800/runs/threads-32/round-1
+[idc] === wan-probe.sh  phase=round-pre  ts=20260722T133916+0800  2026-07-22T14:50:34Z ===
+[idc] WAN_PROBE_IPERF=1  WAN_NIC=auto
+[idc] 
+[idc] --- chronyc tracking (3 pair × 2 端 = 6 host) ---
+[idc]   [IDC/idc-driver    ] stratum=7 last_offset=-0.000072814 leap=Normal
+[idc]   [GCP/gcp-poc-5     ] stratum=3 last_offset=0.000001203 leap=Normal
+[idc]   [IDC/idc-dbhost-1  ] stratum=7 last_offset=0.000026324 leap=Normal
+[idc]   [GCP/gcp-poc-1     ] stratum=3 last_offset=0.000003071 leap=Normal
+[idc]   [IDC/idc-haproxy   ] stratum=7 last_offset=-0.000012315 leap=Normal
+[idc]   [GCP/gcp-poc-4     ] stratum=3 last_offset=0.000004581 leap=Normal
+[idc] 
+[idc] --- /proc/net/dev (NIC=auto) byte counter snapshot ---
+[idc]   [IDC/idc-driver    ] rx_bytes=995971613443 tx_bytes=1679854935686
+[idc]   [GCP/gcp-poc-5     ] rx_bytes=807971938 tx_bytes=11031245
+[idc]   [IDC/idc-dbhost-1  ] rx_bytes=6099198836 tx_bytes=6810628051
+[idc]   [GCP/gcp-poc-1     ] rx_bytes=3547874037 tx_bytes=772488198
+[idc]   [IDC/idc-haproxy   ] rx_bytes=213440412837 tx_bytes=136334379244
+[idc]   [GCP/gcp-poc-4     ] rx_bytes=769598785 tx_bytes=13338797
+[idc] 
+[idc] --- iperf3: SKIP (phase=round-pre 落在 round 內，避免干擾 benchmark) ---
+[idc] 
+[idc] === wan-probe done (all probes succeeded) ===
+[idc] 2026/07/22 22:51:35 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+[idc] [Current] DELIVERY - Takes(s): 9.3, Count: 33, TPM: 214.0, Sum(ms): 3049.7, Avg(ms): 92.3, 50th(ms): 88.1, 90th(ms): 134.2, 95th(ms): 134.2, 99th(ms): 218.1, 99.9th(ms): 218.1, Max(ms): 218.1
+[idc] [Current] NEW_ORDER - Takes(s): 9.2, Count: 418, TPM: 2731.9, Sum(ms): 226769.5, Avg(ms): 543.0, 50th(ms): 453.0, 90th(ms): 939.5, 95th(ms): 1208.0, 99th(ms): 2013.3, 99.9th(ms): 4160.7, Max(ms): 4160.7
+[idc] [Current] ORDER_STATUS - Takes(s): 9.5, Count: 33, TPM: 208.5, Sum(ms): 794.0, Avg(ms): 23.9, 50th(ms): 10.5, 90th(ms): 37.7, 95th(ms): 134.2, 99th(ms): 142.6, 99.9th(ms): 142.6, Max(ms): 142.6
+[idc] [Current] PAYMENT - Takes(s): 9.5, Count: 460, TPM: 2918.6, Sum(ms): 58603.0, Avg(ms): 127.4, 50th(ms): 35.7, 90th(ms): 369.1, 95th(ms): 436.2, 99th(ms): 570.4, 99.9th(ms): 1140.9, Max(ms): 1140.9
+[idc] [Current] STOCK_LEVEL - Takes(s): 9.2, Count: 37, TPM: 241.5, Sum(ms): 1048.4, Avg(ms): 28.3, 50th(ms): 26.2, 90th(ms): 41.9, 95th(ms): 44.0, 99th(ms): 75.5, 99.9th(ms): 75.5, Max(ms): 75.5
+[idc] [Current] DELIVERY - Takes(s): 9.8, Count: 42, TPM: 256.4, Sum(ms): 3281.4, Avg(ms): 78.0, 50th(ms): 75.5, 90th(ms): 92.3, 95th(ms): 117.4, 99th(ms): 151.0, 99.9th(ms): 151.0, Max(ms): 151.0
+[idc] [Current] NEW_ORDER - Takes(s): 10.0, Count: 460, TPM: 2768.9, Sum(ms): 264836.7, Avg(ms): 575.6, 50th(ms): 503.3, 90th(ms): 1006.6, 95th(ms): 1208.0, 99th(ms): 1677.7, 99.9th(ms): 5637.1, Max(ms): 5637.1
+[idc] [Current] ORDER_STATUS - Takes(s): 9.9, Count: 42, TPM: 255.2, Sum(ms): 300.6, Avg(ms): 7.2, 50th(ms): 6.8, 90th(ms): 9.4, 95th(ms): 12.1, 99th(ms): 25.2, 99.9th(ms): 25.2, Max(ms): 25.2
+[idc] [Current] PAYMENT - Takes(s): 10.0, Count: 502, TPM: 3015.3, Sum(ms): 53968.5, Avg(ms): 107.7, 50th(ms): 25.2, 90th(ms): 318.8, 95th(ms): 419.4, 99th(ms): 637.5, 99.9th(ms): 771.8, Max(ms): 1040.2
+[idc] [Current] STOCK_LEVEL - Takes(s): 9.2, Count: 51, TPM: 333.5, Sum(ms): 1341.1, Avg(ms): 26.2, 50th(ms): 25.2, 90th(ms): 39.8, 95th(ms): 39.8, 99th(ms): 50.3, 99.9th(ms): 58.7, Max(ms): 58.7
+[idc] [Current] DELIVERY - Takes(s): 9.8, Count: 39, TPM: 237.6, Sum(ms): 2791.5, Avg(ms): 71.9, 50th(ms): 71.3, 90th(ms): 83.9, 95th(ms): 88.1, 99th(ms): 96.5, 99.9th(ms): 96.5, Max(ms): 96.5
+[idc] [Current] NEW_ORDER - Takes(s): 10.0, Count: 458, TPM: 2755.1, Sum(ms): 264012.3, Avg(ms): 577.5, 50th(ms): 503.3, 90th(ms): 1006.6, 95th(ms): 1208.0, 99th(ms): 1946.2, 99.9th(ms): 3087.0, Max(ms): 3087.0
+[idc] [Current] ORDER_STATUS - Takes(s): 9.9, Count: 34, TPM: 206.3, Sum(ms): 218.6, Avg(ms): 6.4, 50th(ms): 6.3, 90th(ms): 8.9, 95th(ms): 9.4, 99th(ms): 12.1, 99.9th(ms): 12.1, Max(ms): 12.1
+[idc] [Current] PAYMENT - Takes(s): 9.9, Count: 433, TPM: 2615.2, Sum(ms): 54555.9, Avg(ms): 125.9, 50th(ms): 26.2, 90th(ms): 369.1, 95th(ms): 453.0, 99th(ms): 570.4, 99.9th(ms): 1073.7, Max(ms): 1073.7
+[idc] [Current] STOCK_LEVEL - Takes(s): 9.9, Count: 42, TPM: 254.4, Sum(ms): 1142.0, Avg(ms): 27.2, 50th(ms): 25.2, 90th(ms): 39.8, 95th(ms): 46.1, 99th(ms): 62.9, 99.9th(ms): 62.9, Max(ms): 62.9
+[idc] [Current] DELIVERY - Takes(s): 9.7, Count: 43, TPM: 265.0, Sum(ms): 3140.9, Avg(ms): 73.1, 50th(ms): 75.5, 90th(ms): 83.9, 95th(ms): 92.3, 99th(ms): 109.1, 99.9th(ms): 109.1, Max(ms): 109.1
+[idc] [Current] NEW_ORDER - Takes(s): 10.0, Count: 464, TPM: 2789.8, Sum(ms): 261644.4, Avg(ms): 564.0, 50th(ms): 486.5, 90th(ms): 973.1, 95th(ms): 1275.1, 99th(ms): 1879.0, 99.9th(ms): 3221.2, Max(ms): 3221.2
+[idc] [Current] ORDER_STATUS - Takes(s): 9.7, Count: 33, TPM: 204.4, Sum(ms): 236.4, Avg(ms): 7.2, 50th(ms): 7.3, 90th(ms): 10.0, 95th(ms): 11.0, 99th(ms): 12.6, 99.9th(ms): 12.6, Max(ms): 12.6
+[idc] [Current] PAYMENT - Takes(s): 10.0, Count: 418, TPM: 2509.2, Sum(ms): 49270.2, Avg(ms): 117.9, 50th(ms): 30.4, 90th(ms): 352.3, 95th(ms): 419.4, 99th(ms): 604.0, 99.9th(ms): 1040.2, Max(ms): 1040.2
+[idc] [Current] STOCK_LEVEL - Takes(s): 10.0, Count: 38, TPM: 228.9, Sum(ms): 1167.3, Avg(ms): 30.7, 50th(ms): 28.3, 90th(ms): 41.9, 95th(ms): 58.7, 99th(ms): 79.7, 99.9th(ms): 79.7, Max(ms): 79.7
+[idc] [Current] DELIVERY - Takes(s): 9.9, Count: 30, TPM: 182.3, Sum(ms): 2109.4, Avg(ms): 70.2, 50th(ms): 71.3, 90th(ms): 79.7, 95th(ms): 92.3, 99th(ms): 130.0, 99.9th(ms): 130.0, Max(ms): 130.0
+[idc] [Current] NEW_ORDER - Takes(s): 10.0, Count: 462, TPM: 2775.8, Sum(ms): 265004[gcp] [gcp] waiting round barrier threads=32 round=1
+[gcp] [gcp] launch go-tpc threads=32 round=1 -> /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-aaro-rc-20260722T133916+0800/runs/threads-32/round-1
+[gcp] 2026/07/22 14:51:37 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+[gcp] [Current] ORDER_STATUS - Takes(s): 7.0, Count: 2152, TPM: 18427.8, Sum(ms): 153094.3, Avg(ms): 71.2, 50th(ms): 67.1, 90th(ms): 79.7, 95th(ms): 88.1, 99th(ms): 637.5, 99.9th(ms): 1006.6, Max(ms): 1006.6
+[gcp] [Current] STOCK_LEVEL - Takes(s): 7.2, Count: 2282, TPM: 19087.5, Sum(ms): 98082.9, Avg(ms): 43.0, 50th(ms): 33.6, 90th(ms): 46.1, 95th(ms): 52.4, 99th(ms): 469.8, 99.9th(ms): 838.9, Max(ms): 838.9
+[gcp] [Current] ORDER_STATUS - Takes(s): 10.0, Count: 3279, TPM: 19677.5, Sum(ms): 196291.3, Avg(ms): 59.9, 50th(ms): 67.1, 90th(ms): 79.7, 95th(ms): 83.9, 99th(ms): 96.5, 99.9th(ms): 117.4, Max(ms): 125.8
+[gcp] [Current] STOCK_LEVEL - Takes(s): 10.0, Count: 3275, TPM: 19653.9, Sum(ms): 120160.8, Avg(ms): 36.7, 50th(ms): 35.7, 90th(ms): 48.2, 95th(ms): 54.5, 99th(ms): 75.5, 99.9th(ms): 100.7, Max(ms): 159.4
+[gcp] [Current] ORDER_STATUS - Takes(s): 10.0, Count: 3262, TPM: 19588.9, Sum(ms): 194286.3, Avg(ms): 59.6, 50th(ms): 65.0, 90th(ms): 79.7, 95th(ms): 83.9, 99th(ms): 96.5, 99.9th(ms): 125.8, Max(ms): 134.2
+[gcp] [Current] STOCK_LEVEL - Takes(s): 10.0, Count: 3267, TPM: 19603.6, Sum(ms): 122527.3, Avg(ms): 37.5, 50th(ms): 35.7, 90th(ms): 50.3, 95th(ms): 56.6, 99th(ms): 75.5, 99.9th(ms): 121.6, Max(ms): 142.6
+[gcp] [Current] ORDER_STATUS - Takes(s): 10.0, Count: 3232, TPM: 19407.5, Sum(ms): 192244.9, Avg(ms): 59.5, 50th(ms): 67.1, 90th(ms): 79.7, 95th(ms): 83.9, 99th(ms): 92.3, 99.9th(ms): 117.4, Max(ms): 167.8
+[gcp] [Current] STOCK_LEVEL - Takes(s): 10.0, Count: 3268, TPM: 19623.4, Sum(ms): 124471.2, Avg(ms): 38.1, 50th(ms): 35.7, 90th(ms): 50.3, 95th(ms): 58.7, 99th(ms): 79.7, 99.9th(ms): 113.2, Max(ms): 167.8
+[gcp] [Current] ORDER_STATUS - Takes(s): 10.0, Count: 3375, TPM: 20254.0, Sum(ms): 197849.9, Avg(ms): 58.7, 50th(ms): 65.0, 90th(ms): 75.5, 95th(ms): 79.7, 99th(ms): 88.1, 99.9th(ms): 125.8, Max(ms): 134.2
+[gcp] [Current] STOCK_LEVEL - Takes(s): 10.0, Count: 3227, TPM: 19369.9, Sum(ms): 119060.3, Avg(ms): 36.9, 50th(ms): 35.7, 90th(ms): 50.3, 95th(ms): 56.6, 99th(ms): 79.7, 99.9th(ms): 100.7, Max(ms): 125.8
+[gcp] Finished
+[gcp] [Summary] ORDER_STATUS - Takes(s): 57.1, Count: 18640, TPM: 19592.3, Sum(ms): 1129984.1, Avg(ms): 60.7, 50th(ms): 65.0, 90th(ms): 79.7, 95th(ms): 83.9, 99th(ms): 96.5, 99.9th(ms): 637.5, Max(ms): 1006.6
+[gcp] [Summary] STOCK_LEVEL - Takes(s): 57.3, Count: 18631, TPM: 19525.9, Sum(ms): 706520.1, Avg(ms): 37.9, 50th(ms): 35.7, 90th(ms): 50.3, 95th(ms): 56.6, 99th(ms): 79.7, 99.9th(ms): 486.5, Max(ms): 838.9
+.9, Avg(ms): 573.6, 50th(ms): 486.5, 90th(ms): 973.1, 95th(ms): 1275.1, 99th(ms): 2080.4, 99.9th(ms): 3758.1, Max(ms): 3758.1
+[idc] [Current] ORDER_STATUS - Takes(s): 9.9, Count: 37, TPM: 223.6, Sum(ms): 223.9, Avg(ms): 6.1, 50th(ms): 5.8, 90th(ms): 8.9, 95th(ms): 9.4, 99th(ms): 11.0, 99.9th(ms): 11.0, Max(ms): 11.0
+[idc] [Current] PAYMENT - Takes(s): 10.0, Count: 437, TPM: 2629.3, Sum(ms): 47153.1, Avg(ms): 107.9, 50th(ms): 25.2, 90th(ms): 318.8, 95th(ms): 402.7, 99th(ms): 604.0, 99.9th(ms): 771.8, Max(ms): 771.8
+[idc] [Current] STOCK_LEVEL - Takes(s): 9.9, Count: 45, TPM: 273.0, Sum(ms): 1096.1, Avg(ms): 24.3, 50th(ms): 23.1, 90th(ms): 32.5, 95th(ms): 39.8, 99th(ms): 71.3, 99.9th(ms): 71.3, Max(ms): 71.3
+[idc] Finished
+[idc] [Summary] DELIVERY - Takes(s): 60.7, Count: 227, TPM: 224.2, Sum(ms): 17041.6, Avg(ms): 75.0, 50th(ms): 71.3, 90th(ms): 96.5, 95th(ms): 113.2, 99th(ms): 142.6, 99.9th(ms): 218.1, Max(ms): 218.1
+[idc] [Summary] NEW_ORDER - Takes(s): 60.7, Count: 2750, TPM: 2719.5, Sum(ms): 1586365.0, Avg(ms): 577.1, 50th(ms): 486.5, 90th(ms): 1006.6, 95th(ms): 1275.1, 99th(ms): 2080.4, 99.9th(ms): 3489.7, Max(ms): 5637.1
+[idc] [Summary] ORDER_STATUS - Takes(s): 61.0, Count: 220, TPM: 216.4, Sum(ms): 2029.7, Avg(ms): 9.2, 50th(ms): 6.8, 90th(ms): 11.0, 95th(ms): 22.0, 99th(ms): 134.2, 99.9th(ms): 142.6, Max(ms): 142.6
+[idc] [Summary] PAYMENT - Takes(s): 60.9, Count: 2636, TPM: 2595.0, Sum(ms): 305196.2, Avg(ms): 115.8, 50th(ms): 27.3, 90th(ms): 352.3, 95th(ms): 436.2, 99th(ms): 604.0, 99.9th(ms): 1040.2, Max(ms): 1476.4
+[idc] [Summary] STOCK_LEVEL - Takes(s): 60.7, Count: 252, TPM: 249.2, Sum(ms): 6754.3, Avg(ms): 26.8, 50th(ms): 25.2, 90th(ms): 39.8, 95th(ms): 44.0, 99th(ms): 65.0, 99.9th(ms): 79.7, Max(ms): 79.7
+[idc] tpmC: 2719.5, tpmTotal: 6004.3, efficiency: 5286.8%
+[idc] === wan-probe.sh  phase=round-post  ts=20260722T133916+0800  2026-07-22T14:53:31Z ===
+[idc] WAN_PROBE_IPERF=1  WAN_NIC=auto
+[idc] 
+[idc] --- chronyc tracking (3 pair × 2 端 = 6 host) ---
+[idc]   [IDC/idc-driver    ] stratum=7 last_offset=-0.000072814 leap=Normal
+[idc]   [GCP/gcp-poc-5     ] stratum=3 last_offset=0.000001203 leap=Normal
+[idc]   [IDC/idc-dbhost-1  ] stratum=7 last_offset=-0.000005696 leap=Normal
+[idc]   [GCP/gcp-poc-1     ] stratum=3 last_offset=0.000003071 leap=Normal
+[idc]   [IDC/idc-haproxy   ] stratum=7 last_offset=0.000000949 leap=Normal
+[idc]   [GCP/gcp-poc-4     ] stratum=3 last_offset=0.000004581 leap=Normal
+[idc] 
+[idc] --- /proc/net/dev (NIC=auto) byte counter snapshot ---
+[idc]   [IDC/idc-driver    ] rx_bytes=995997595205 tx_bytes=1679871398013
+[idc]   [GCP/gcp-poc-5     ] rx_bytes=846236764 tx_bytes=35150788
+[idc]   [IDC/idc-dbhost-1  ] rx_bytes=6231535265 tx_bytes=7027615038
+[idc]   [GCP/gcp-poc-1     ] rx_bytes=3786123221 tx_bytes=959582530
+[idc]   [IDC/idc-haproxy   ] rx_bytes=213440643826 tx_bytes=136334428941
+[idc]   [GCP/gcp-poc-4     ] rx_bytes=769736099 tx_bytes=13429830
+[idc] 
+[idc] --- iperf3: SKIP (phase=round-post 落在 round 內，避免干擾 benchmark) ---
+[idc] 
+[idc] === wan-probe done (all probes succeeded) ===
+[idc] [22:53:33] INFO    sleeping 0s between rounds
+[idc] [22:53:33] INFO  run phase complete
+[aa] IDC side rc=0  GCP side rc=0  watcher rc=0
+[aa] G3 merge: GCP-side per-round stdout → /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-aaro-rc-20260722T133916+0800 (go-tpc-stdout-gcp.txt)
+[merge-gcp] runs/threads-32/round-1/go-tpc-stdout.txt → runs/threads-32/round-1/go-tpc-stdout-gcp.txt
+[merge-gcp] PASS — 1 檔落位 go-tpc-stdout-gcp.txt（G3 佈局）
+[aa] dual-side AA run PASS — TS=20260722T133916+0800 PLACEMENT=P-A PROFILE=A-A-RO
+[aa] next: summary-from-stdout.py（IDC 主表）→ summary-gcp-side.py（gcp_side 注入）— 由 Makefile 收尾步驟執行
+==> phase7-ybdb-aaro-smoke summary: IDC 主表 + gcp_side 注入（G2/G3；summary-gcp-side.py）
+wrote /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-aaro-rc-20260722T133916+0800/summary.json
+wrote gcp_side (A-A-RO, threads=[32]) → /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-aaro-rc-20260722T133916+0800/summary.json
+==> [end]   phase7-ybdb-aaro-smoke at 2026-07-22T22:53:34+0800

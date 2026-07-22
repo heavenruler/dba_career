@@ -1,0 +1,732 @@
+[verify-a8 05:23:39] window start TS=20260722T133916+0800 PLACEMENT=P-A DBS=crdb
+[verify-a8 05:23:39] === bootstrap GCP client (.15) go-tpc/tests/common（冪等；VM 剛重建必跑）===
+==> phase2-bootstrap-gcp-client: go-tpc + tests/common -> g-test-poc-5 (fail-closed)
+bash phase-crossregion/scripts/bootstrap-gcp-client.sh
+==> bootstrap-gcp-client: target=10.160.152.15 (via root@172.24.40.31)
+==> go-tpc: check on .15, install from .31 binary if missing
+    go-tpc already present: /usr/local/bin/go-tpc
+2026/07/22 21:23:40 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+Git Commit Hash: none
+UTC Build Time: unknown
+==> tests/common (run.sh + lib/*.sh + coldreset-*.sh + gate-isolation.sh + probe-iso-latency.sh): rsync .31 -> .15
+==> phase-crossregion/scripts symlink (wan-probe.sh path derivation; WAN_PROBE disabled on GCP side but keep layout symmetric)
+==> verify run.sh present + executable on .15
+==> bootstrap-gcp-client PASS — go-tpc + tests/common ready on 10.160.152.15
+[verify-a8 05:23:42] === CRDB: deploy ===
+bash phase-crossregion/scripts/cleanup-tidb.sh
+==> [start] cleanup-tidb at 2026-07-23T05:23:42+0800
+=== IDC nodes (direct ssh) ===
+--- 172.24.40.32 ---
+--- 172.24.40.33 ---
+--- 172.24.40.34 ---
+=== GCP nodes (via 172.24.40.31) ===
+--- 10.160.152.11 ---
+--- 10.160.152.12 ---
+--- 10.160.152.13 ---
+--- 10.160.152.14 ---
+--- 10.160.152.15 ---
+==> verify-cleanup: every node's ports must be free
+=== IDC verify ===
+  [l-test-poc-1] OK: no tiup processes
+  [l-test-poc-2] OK: no tiup processes
+  [l-test-poc-3] OK: no tiup processes
+=== GCP verify (via 172.24.40.31) ===
+  [g-test-poc-1] OK: no tiup processes
+  [g-test-poc-2] OK: no tiup processes
+  [g-test-poc-3] OK: no tiup processes
+  [g-test-poc-4] OK: no tiup processes
+  [g-test-poc-5] OK: no tiup processes
+==> [end]   cleanup-tidb at 2026-07-23T05:24:05+0800 — all nodes verified clean
+==> [start] phase5-crdb-deploy at 2026-07-23T05:24:05+0800 (timeout=1800   s)
+==> phase5-crdb-deploy (placement=P-A) — controller=.31
+ssh root@172.24.40.31 "cd /tmp/poc/ansible && ansible-playbook -i inventory/crossregion-via31.ini \
+  playbooks/cockroach-vm6.yml -e crdb_placement=P-A"
+
+PLAY [Sanity check extra-vars] *************************************************
+
+TASK [Assert crdb_placement] ***************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY [Bootstrap CRDB control node (idc-dbhost-1 = 172.24.40.32)] ***************
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.24.40.32]
+
+TASK [Install CRDB prerequisites (control + worker tooling)] *******************
+ok: [172.24.40.32]
+
+TASK [Ensure cockroach system user exists] *************************************
+changed: [172.24.40.32]
+
+TASK [Create CRDB dirs (install / data / log)] *********************************
+changed: [172.24.40.32] => (item=/opt/cockroach)
+changed: [172.24.40.32] => (item=/var/lib/cockroach)
+changed: [172.24.40.32] => (item=/var/log/cockroach)
+
+TASK [Download cockroach CLI tarball] ******************************************
+changed: [172.24.40.32]
+
+TASK [Extract cockroach binary to install dir] *********************************
+changed: [172.24.40.32]
+
+TASK [Symlink cockroach binary into /usr/local/bin] ****************************
+changed: [172.24.40.32]
+
+TASK [Ensure root SSH keypair exists for control fan-out] **********************
+ok: [172.24.40.32]
+
+TASK [Read root public key] ****************************************************
+ok: [172.24.40.32]
+
+PLAY [Prepare CRDB worker nodes (IDC + GCP)] ***********************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+ok: [g-test-poc-1]
+ok: [g-test-poc-3]
+ok: [g-test-poc-2]
+
+TASK [Install CRDB node prerequisites] *****************************************
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+ok: [g-test-poc-1]
+ok: [g-test-poc-3]
+ok: [g-test-poc-2]
+
+TASK [OS tuning (swappiness / THP / ulimit)] ***********************************
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+ok: [g-test-poc-1]
+ok: [g-test-poc-3]
+ok: [g-test-poc-2]
+
+TASK [Set ulimit nofile] *******************************************************
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+changed: [g-test-poc-1]
+changed: [g-test-poc-3]
+changed: [g-test-poc-2]
+
+TASK [Ensure cockroach system user exists] *************************************
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+changed: [g-test-poc-1]
+changed: [g-test-poc-2]
+changed: [g-test-poc-3]
+
+TASK [Create CRDB dirs (install / data / log)] *********************************
+changed: [172.24.40.33] => (item=/opt/cockroach)
+changed: [172.24.40.34] => (item=/opt/cockroach)
+changed: [g-test-poc-1] => (item=/opt/cockroach)
+changed: [g-test-poc-3] => (item=/opt/cockroach)
+changed: [g-test-poc-2] => (item=/opt/cockroach)
+changed: [172.24.40.34] => (item=/var/lib/cockroach)
+changed: [172.24.40.33] => (item=/var/lib/cockroach)
+changed: [g-test-poc-1] => (item=/var/lib/cockroach)
+changed: [g-test-poc-3] => (item=/var/lib/cockroach)
+changed: [172.24.40.34] => (item=/var/log/cockroach)
+changed: [172.24.40.33] => (item=/var/log/cockroach)
+changed: [g-test-poc-2] => (item=/var/lib/cockroach)
+changed: [g-test-poc-1] => (item=/var/log/cockroach)
+changed: [g-test-poc-3] => (item=/var/log/cockroach)
+changed: [g-test-poc-2] => (item=/var/log/cockroach)
+
+TASK [Download cockroach CLI tarball] ******************************************
+changed: [g-test-poc-1]
+changed: [172.24.40.34]
+changed: [g-test-poc-2]
+changed: [g-test-poc-3]
+changed: [172.24.40.33]
+
+TASK [Extract cockroach binary to install dir] *********************************
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+changed: [g-test-poc-1]
+changed: [g-test-poc-3]
+changed: [g-test-poc-2]
+
+TASK [Symlink cockroach binary into /usr/local/bin] ****************************
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+changed: [g-test-poc-1]
+changed: [g-test-poc-3]
+changed: [g-test-poc-2]
+
+TASK [Stat systemd proxy drop-in (IDC only)] ***********************************
+skipping: [g-test-poc-1]
+skipping: [g-test-poc-2]
+skipping: [g-test-poc-3]
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+
+TASK [Patch systemd no_proxy to include 6-node cluster IPs (grpc-rust CIDR workaround)] ***
+skipping: [g-test-poc-1]
+skipping: [g-test-poc-2]
+skipping: [g-test-poc-3]
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+
+TASK [Authorize control (idc-dbhost-1) root key on this node for fan-out SSH] ***
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+ok: [g-test-poc-1]
+ok: [g-test-poc-3]
+ok: [g-test-poc-2]
+
+PLAY [Render systemd unit + start cockroach on all 6 nodes] ********************
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.24.40.32]
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+ok: [g-test-poc-1]
+ok: [g-test-poc-2]
+ok: [g-test-poc-3]
+
+TASK [Resolve self host record from crdb_hosts (match inventory_hostname)] *****
+ok: [172.24.40.32]
+ok: [172.24.40.33]
+ok: [172.24.40.34]
+ok: [g-test-poc-1]
+ok: [g-test-poc-2]
+ok: [g-test-poc-3]
+
+TASK [Assert crdb_self resolved] ***********************************************
+ok: [172.24.40.32] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+ok: [172.24.40.33] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+ok: [172.24.40.34] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+ok: [g-test-poc-1] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+ok: [g-test-poc-2] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+ok: [g-test-poc-3] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Render cockroach systemd unit (insecure PoC mode, with locality)] ********
+changed: [172.24.40.34]
+changed: [172.24.40.33]
+changed: [172.24.40.32]
+changed: [g-test-poc-1]
+changed: [g-test-poc-2]
+changed: [g-test-poc-3]
+
+TASK [Reload systemd after unit drop-in] ***************************************
+ok: [172.24.40.34]
+ok: [172.24.40.33]
+ok: [g-test-poc-1]
+ok: [172.24.40.32]
+ok: [g-test-poc-2]
+ok: [g-test-poc-3]
+
+TASK [Enable + start cockroach service] ****************************************
+changed: [172.24.40.32]
+changed: [172.24.40.33]
+changed: [172.24.40.34]
+changed: [g-test-poc-1]
+changed: [g-test-poc-3]
+changed: [g-test-poc-2]
+
+PLAY [Initialize CRDB cluster (one-shot from idc-dbhost-1)] ********************
+
+TASK [Wait for local cockroach SQL port] ***************************************
+ok: [172.24.40.32]
+
+TASK [Run cockroach init (idempotent — already-initialized 不 fail)] ***********
+changed: [172.24.40.32]
+
+TASK [Wait for all 6 nodes to register as live] ********************************
+ok: [172.24.40.32]
+
+PLAY [Apply CRDB placement SQL (deploy-time, CONFIGURE ZONE on DATABASE only)] ***
+
+TASK [Copy placement SQL to control node /root/] *******************************
+changed: [172.24.40.32]
+
+TASK [Apply placement SQL — DATABASE-level CONFIGURE ZONE only (best-effort; tpcc DB 不存在時 skip)] ***
+ok: [172.24.40.32]
+
+PLAY RECAP *********************************************************************
+172.24.40.32               : ok=20   changed=9    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+172.24.40.33               : ok=18   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+172.24.40.34               : ok=18   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+g-test-poc-1               : ok=16   changed=8    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+g-test-poc-2               : ok=16   changed=8    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+g-test-poc-3               : ok=16   changed=8    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+==> copy cockroach binary → GCP probe host .15（probe-iso-latency crdb 分支需要；fail-closed）
+ssh root@172.24.40.31 "ssh root@172.24.40.32 'cat /usr/local/bin/cockroach' | \
+  ssh -o StrictHostKeyChecking=accept-new root@10.160.152.15 'cat > /usr/local/bin/cockroach && chmod +x /usr/local/bin/cockroach && /usr/local/bin/cockroach version | head -2'" \
+  || { echo "[F-Gate] cockroach binary → .15 FAIL — GCP probe 將全滅，中止"; exit 1; }
+Build Tag:        v26.2.0
+Build Time:       2026/04/21 18:36:57
+==> [end]   phase5-crdb-deploy at 2026-07-23T05:25:21+0800
+[verify-a8 05:25:21] === CRDB: ANCHOR_ONLY prepare（W=4）===
+==> [start] phase8-crdb-smoke at 2026-07-23T05:25:21+0800 (timeout=3600   s)
+==> phase8-crdb-smoke ts=20260722T133916+0800 placement=P-A
+[wrapper] step 0/5 chrony gate SKIP (GATE_SKIP=1)
+[wrapper] DB=crdb TOPOLOGY=vm-6node-P-A PLACEMENT=P-A PROFILE=A-S CLIENT_ZONE=idc
+[wrapper] CLUSTER_HOSTS=idc-dbhost-1@172.24.40.32 idc-dbhost-2@172.24.40.33 idc-dbhost-3@172.24.40.34 gcp-dbhost-1@10.160.152.11 gcp-dbhost-2@10.160.152.12 gcp-dbhost-3@10.160.152.13
+[wrapper] DB_HOST=172.24.40.32:26257
+[wrapper] FULL chain; DB=crdb TOPOLOGY=vm-6node-P-A PLACEMENT=P-A PROFILE=A-S
+[1/4] gate
+[05:25:21] INFO  gate root: /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-A-rc-20260722T133916+0800  (client=l-dbm-labroom-1, db-host=172.24.40.32, cluster-host=172.24.40.32)
+[05:25:22] WARN  DB-host THP != [never] ([always] madvise never)
+[05:25:22] WARN  DB-host vm.swappiness (30) > 5
+[05:25:22] WARN  client (.31) artifacts FS available 12GB < 30GB
+[05:25:22] INFO  gate done  (os_gate_pass=false  client=12GB  db-host=90GB)
+[2/4] prepare
+[05:25:22] INFO  prepare root: /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-A-rc-20260722T133916+0800  db=crdb iso=rc topo=vm-6node-P-A host=172.24.40.32 expected_shards=0
+DROP DATABASE
+CREATE DATABASE
+[05:25:22] INFO  drop+create done
+[05:25:22] INFO  go-tpc tpcc prepare W=4 driver=postgres 
+2026/07/23 05:25:22 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+creating table warehouse
+creating table district
+creating table customer
+creating index idx_customer
+creating table history
+creating index idx_h_w_id
+creating index idx_h_c_w_id
+creating table new_order
+creating table orders
+creating index idx_order
+creating table order_line
+creating table stock
+creating table item
+load to item
+[wrapper] placement watcher (crdb): drop-create done + 9 tables present — applying placement SQL (pre-gate)
+load to warehouse in warehouse 1
+load to stock in warehouse 1
+[wrapper] placement watcher (crdb): applied OK (attempt 1)
+[wrapper] lease enforcer (crdb): relocated 13 gcp lease(s) → idc (pass 1)
+load to district in warehouse 1
+load to warehouse in warehouse 2
+load to stock in warehouse 2
+load to district in warehouse 2
+load to warehouse in warehouse 3
+load to stock in warehouse 3
+load to district in warehouse 3
+load to warehouse in warehouse 4
+load to stock in warehouse 4
+load to district in warehouse 4
+load to customer in warehouse 1 district 1
+load to history in warehouse 1 district 1
+load to orders in warehouse 1 district 1
+load to new_order in warehouse 1 district 1
+load to order_line in warehouse 1 district 1
+load to customer in warehouse 1 district 2
+load to history in warehouse 1 district 2
+load to orders in warehouse 1 district 2
+load to new_order in warehouse 1 district 2
+load to order_line in warehouse 1 district 2
+load to customer in warehouse 1 district 3
+load to history in warehouse 1 district 3
+load to orders in warehouse 1 district 3
+load to new_order in warehouse 1 district 3
+load to order_line in warehouse 1 district 3
+load to customer in warehouse 1 district 4
+load to history in warehouse 1 district 4
+load to orders in warehouse 1 district 4
+load to new_order in warehouse 1 district 4
+load to order_line in warehouse 1 district 4
+load to customer in warehouse 1 district 5
+load to history in warehouse 1 district 5
+load to orders in warehouse 1 district 5
+load to new_order in warehouse 1 district 5
+load to order_line in warehouse 1 district 5
+load to customer in warehouse 1 district 6
+load to history in warehouse 1 district 6
+load to orders in warehouse 1 district 6
+load to new_order in warehouse 1 district 6
+load to order_line in warehouse 1 district 6
+load to customer in warehouse 1 district 7
+load to history in warehouse 1 district 7
+load to orders in warehouse 1 district 7
+load to new_order in warehouse 1 district 7
+load to order_line in warehouse 1 district 7
+load to customer in warehouse 1 district 8
+load to history in warehouse 1 district 8
+load to orders in warehouse 1 district 8
+load to new_order in warehouse 1 district 8
+load to order_line in warehouse 1 district 8
+load to customer in warehouse 1 district 9
+load to history in warehouse 1 district 9
+load to orders in warehouse 1 district 9
+load to new_order in warehouse 1 district 9
+load to order_line in warehouse 1 district 9
+load to customer in warehouse 1 district 10
+load to history in warehouse 1 district 10
+load to orders in warehouse 1 district 10
+load to new_order in warehouse 1 district 10
+load to order_line in warehouse 1 district 10
+load to customer in warehouse 2 district 1
+load to history in warehouse 2 district 1
+load to orders in warehouse 2 district 1
+load to new_order in warehouse 2 district 1
+load to order_line in warehouse 2 district 1
+load to customer in warehouse 2 district 2
+load to history in warehouse 2 district 2
+load to orders in warehouse 2 district 2
+load to new_order in warehouse 2 district 2
+load to order_line in warehouse 2 district 2
+load to customer in warehouse 2 district 3
+load to history in warehouse 2 district 3
+load to orders in warehouse 2 district 3
+load to new_order in warehouse 2 district 3
+load to order_line in warehouse 2 district 3
+load to customer in warehouse 2 district 4
+load to history in warehouse 2 district 4
+load to orders in warehouse 2 district 4
+load to new_order in warehouse 2 district 4
+load to order_line in warehouse 2 district 4
+load to customer in warehouse 2 district 5
+load to history in warehouse 2 district 5
+load to orders in warehouse 2 district 5
+load to new_order in warehouse 2 district 5
+load to order_line in warehouse 2 district 5
+load to customer in warehouse 2 district 6
+load to history in warehouse 2 district 6
+load to orders in warehouse 2 district 6
+load to new_order in warehouse 2 district 6
+load to order_line in warehouse 2 district 6
+load to customer in warehouse 2 district 7
+load to history in warehouse 2 district 7
+load to orders in warehouse 2 district 7
+load to new_order in warehouse 2 district 7
+load to order_line in warehouse 2 district 7
+load to customer in warehouse 2 district 8
+load to history in warehouse 2 district 8
+load to orders in warehouse 2 district 8
+load to new_order in warehouse 2 district 8
+load to order_line in warehouse 2 district 8
+load to customer in warehouse 2 district 9
+load to history in warehouse 2 district 9
+load to orders in warehouse 2 district 9
+load to new_order in warehouse 2 district 9
+load to order_line in warehouse 2 district 9
+load to customer in warehouse 2 district 10
+load to history in warehouse 2 district 10
+load to orders in warehouse 2 district 10
+load to new_order in warehouse 2 district 10
+load to order_line in warehouse 2 district 10
+load to customer in warehouse 3 district 1
+load to history in warehouse 3 district 1
+load to orders in warehouse 3 district 1
+load to new_order in warehouse 3 district 1
+load to order_line in warehouse 3 district 1
+load to customer in warehouse 3 district 2
+load to history in warehouse 3 district 2
+load to orders in warehouse 3 district 2
+load to new_order in warehouse 3 district 2
+load to order_line in warehouse 3 district 2
+load to customer in warehouse 3 district 3
+load to history in warehouse 3 district 3
+load to orders in warehouse 3 district 3
+load to new_order in warehouse 3 district 3
+load to order_line in warehouse 3 district 3
+load to customer in warehouse 3 district 4
+load to history in warehouse 3 district 4
+load to orders in warehouse 3 district 4
+load to new_order in warehouse 3 district 4
+load to order_line in warehouse 3 district 4
+load to customer in warehouse 3 district 5
+load to history in warehouse 3 district 5
+load to orders in warehouse 3 district 5
+load to new_order in warehouse 3 district 5
+load to order_line in warehouse 3 district 5
+load to customer in warehouse 3 district 6
+load to history in warehouse 3 district 6
+load to orders in warehouse 3 district 6
+load to new_order in warehouse 3 district 6
+load to order_line in warehouse 3 district 6
+load to customer in warehouse 3 district 7
+load to history in warehouse 3 district 7
+load to orders in warehouse 3 district 7
+load to new_order in warehouse 3 district 7
+load to order_line in warehouse 3 district 7
+load to customer in warehouse 3 district 8
+load to history in warehouse 3 district 8
+load to orders in warehouse 3 district 8
+load to new_order in warehouse 3 district 8
+load to order_line in warehouse 3 district 8
+load to customer in warehouse 3 district 9
+load to history in warehouse 3 district 9
+load to orders in warehouse 3 district 9
+load to new_order in warehouse 3 district 9
+load to order_line in warehouse 3 district 9
+load to customer in warehouse 3 district 10
+load to history in warehouse 3 district 10
+load to orders in warehouse 3 district 10
+load to new_order in warehouse 3 district 10
+load to order_line in warehouse 3 district 10
+load to customer in warehouse 4 district 1
+load to history in warehouse 4 district 1
+load to orders in warehouse 4 district 1
+load to new_order in warehouse 4 district 1
+load to order_line in warehouse 4 district 1
+load to customer in warehouse 4 district 2
+load to history in warehouse 4 district 2
+load to orders in warehouse 4 district 2
+load to new_order in warehouse 4 district 2
+load to order_line in warehouse 4 district 2
+load to customer in warehouse 4 district 3
+load to history in warehouse 4 district 3
+load to orders in warehouse 4 district 3
+load to new_order in warehouse 4 district 3
+load to order_line in warehouse 4 district 3
+load to customer in warehouse 4 district 4
+load to history in warehouse 4 district 4
+load to orders in warehouse 4 district 4
+load to new_order in warehouse 4 district 4
+load to order_line in warehouse 4 district 4
+load to customer in warehouse 4 district 5
+load to history in warehouse 4 district 5
+load to orders in warehouse 4 district 5
+load to new_order in warehouse 4 district 5
+load to order_line in warehouse 4 district 5
+load to customer in warehouse 4 district 6
+load to history in warehouse 4 district 6
+load to orders in warehouse 4 district 6
+load to new_order in warehouse 4 district 6
+load to order_line in warehouse 4 district 6
+load to customer in warehouse 4 district 7
+load to history in warehouse 4 district 7
+load to orders in warehouse 4 district 7
+load to new_order in warehouse 4 district 7
+load to order_line in warehouse 4 district 7
+load to customer in warehouse 4 district 8
+load to history in warehouse 4 district 8
+load to orders in warehouse 4 district 8
+load to new_order in warehouse 4 district 8
+load to order_line in warehouse 4 district 8
+load to customer in warehouse 4 district 9
+load to history in warehouse 4 district 9
+load to orders in warehouse 4 district 9
+load to new_order in warehouse 4 district 9
+load to order_line in warehouse 4 district 9
+load to customer in warehouse 4 district 10
+load to history in warehouse 4 district 10
+load to orders in warehouse 4 district 10
+load to new_order in warehouse 4 district 10
+load to order_line in warehouse 4 district 10
+begin to check warehouse 1 at condition 3.3.2.8
+begin to check warehouse 1 at condition 3.3.2.9
+begin to check warehouse 1 at condition 3.3.2.10
+begin to check warehouse 1 at condition 3.3.2.12
+begin to check warehouse 1 at condition 3.3.2.1
+begin to check warehouse 1 at condition 3.3.2.3
+begin to check warehouse 1 at condition 3.3.2.6
+begin to check warehouse 1 at condition 3.3.2.7
+begin to check warehouse 1 at condition 3.3.2.2
+begin to check warehouse 1 at condition 3.3.2.4
+begin to check warehouse 1 at condition 3.3.2.5
+begin to check warehouse 1 at condition 3.3.2.11
+begin to check warehouse 2 at condition 3.3.2.7
+begin to check warehouse 2 at condition 3.3.2.8
+begin to check warehouse 2 at condition 3.3.2.9
+begin to check warehouse 2 at condition 3.3.2.10
+begin to check warehouse 2 at condition 3.3.2.12
+begin to check warehouse 2 at condition 3.3.2.1
+begin to check warehouse 2 at condition 3.3.2.3
+begin to check warehouse 2 at condition 3.3.2.6
+begin to check warehouse 2 at condition 3.3.2.11
+begin to check warehouse 2 at condition 3.3.2.2
+begin to check warehouse 2 at condition 3.3.2.4
+begin to check warehouse 2 at condition 3.3.2.5
+begin to check warehouse 3 at condition 3.3.2.5
+begin to check warehouse 3 at condition 3.3.2.11
+begin to check warehouse 3 at condition 3.3.2.2
+begin to check warehouse 3 at condition 3.3.2.4
+begin to check warehouse 3 at condition 3.3.2.6
+begin to check warehouse 3 at condition 3.3.2.7
+begin to check warehouse 3 at condition 3.3.2.8
+begin to check warehouse 3 at condition 3.3.2.9
+begin to check warehouse 3 at condition 3.3.2.10
+begin to check warehouse 3 at condition 3.3.2.12
+begin to check warehouse 3 at condition 3.3.2.1
+begin to check warehouse 3 at condition 3.3.2.3
+begin to check warehouse 4 at condition 3.3.2.3
+begin to check warehouse 4 at condition 3.3.2.6
+begin to check warehouse 4 at condition 3.3.2.7
+begin to check warehouse 4 at condition 3.3.2.8
+begin to check warehouse 4 at condition 3.3.2.9
+begin to check warehouse 4 at condition 3.3.2.10
+begin to check warehouse 4 at condition 3.3.2.12
+begin to check warehouse 4 at condition 3.3.2.1
+begin to check warehouse 4 at condition 3.3.2.4
+begin to check warehouse 4 at condition 3.3.2.5
+begin to check warehouse 4 at condition 3.3.2.11
+begin to check warehouse 4 at condition 3.3.2.2
+Finished
+[05:26:44] INFO  go-tpc tpcc check --check-all
+2026/07/23 05:26:44 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+begin to check warehouse 1 at condition 3.3.2.1
+begin to check warehouse 1 at condition 3.3.2.5
+begin to check warehouse 1 at condition 3.3.2.7
+begin to check warehouse 1 at condition 3.3.2.8
+begin to check warehouse 1 at condition 3.3.2.9
+begin to check warehouse 1 at condition 3.3.2.10
+begin to check warehouse 1 at condition 3.3.2.12
+begin to check warehouse 1 at condition 3.3.2.2
+begin to check warehouse 1 at condition 3.3.2.3
+begin to check warehouse 1 at condition 3.3.2.4
+begin to check warehouse 1 at condition 3.3.2.6
+begin to check warehouse 1 at condition 3.3.2.11
+begin to check warehouse 2 at condition 3.3.2.1
+begin to check warehouse 2 at condition 3.3.2.5
+begin to check warehouse 2 at condition 3.3.2.7
+begin to check warehouse 2 at condition 3.3.2.8
+begin to check warehouse 2 at condition 3.3.2.9
+begin to check warehouse 2 at condition 3.3.2.10
+begin to check warehouse 2 at condition 3.3.2.12
+begin to check warehouse 2 at condition 3.3.2.2
+begin to check warehouse 2 at condition 3.3.2.3
+begin to check warehouse 2 at condition 3.3.2.4
+begin to check warehouse 2 at condition 3.3.2.6
+begin to check warehouse 2 at condition 3.3.2.11
+begin to check warehouse 3 at condition 3.3.2.12
+begin to check warehouse 3 at condition 3.3.2.1
+begin to check warehouse 3 at condition 3.3.2.5
+begin to check warehouse 3 at condition 3.3.2.7
+begin to check warehouse 3 at condition 3.3.2.8
+begin to check warehouse 3 at condition 3.3.2.9
+begin to check warehouse 3 at condition 3.3.2.10
+begin to check warehouse 3 at condition 3.3.2.2
+begin to check warehouse 3 at condition 3.3.2.3
+begin to check warehouse 3 at condition 3.3.2.4
+begin to check warehouse 3 at condition 3.3.2.6
+begin to check warehouse 3 at condition 3.3.2.11
+begin to check warehouse 4 at condition 3.3.2.4
+begin to check warehouse 4 at condition 3.3.2.6
+begin to check warehouse 4 at condition 3.3.2.11
+begin to check warehouse 4 at condition 3.3.2.2
+begin to check warehouse 4 at condition 3.3.2.3
+begin to check warehouse 4 at condition 3.3.2.7
+begin to check warehouse 4 at condition 3.3.2.8
+begin to check warehouse 4 at condition 3.3.2.9
+begin to check warehouse 4 at condition 3.3.2.10
+begin to check warehouse 4 at condition 3.3.2.12
+begin to check warehouse 4 at condition 3.3.2.1
+begin to check warehouse 4 at condition 3.3.2.5
+Finished
+[05:26:50] INFO  quiesce 5 min
+[05:31:50] INFO  ANALYZE
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+[05:32:08] INFO  X-CROSS near-read setup (TOPO=vm-6node-P-A)
+NOTICE: "kv.closed_timestamp.follower_reads_enabled" is now an alias for "kv.closed_timestamp.follower_reads.enabled", the preferred setting name
+SET CLUSTER SETTING
+[05:32:09] INFO  X-CROSS placement gate (PLACEMENT=P-A)
+[05:32:11] INFO  placement gate PASS — P-A idc_majority idc=5/5 (100%)
+[05:32:11] INFO  schema + EXPLAIN dump
+[wrapper] lease enforcer (crdb): done
+[05:32:13] INFO  prepare done
+[wrapper] post-prepare: apply per-table lease_preferences=IDC (hard leader pin) from /root/crdb-vm6-placement-p-a.sql
+NOTICE: waiting for job(s) to complete: 1195001559047995393
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1195001561521094657
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1195001563917811713
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1195001566330781697
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1195001568803848193
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1195001571213606913
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1195001573647876097
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1195001576028962817
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1195001578466312193
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+target	raw_config_sql
+RANGE default	"ALTER RANGE default CONFIGURE ZONE USING
+	range_min_bytes = 134217728,
+	range_max_bytes = 536870912,
+	gc.ttlseconds = 14400,
+	num_replicas = 3,
+	constraints = '[]',
+	lease_preferences = '[]'"
+[wrapper] wait CRDB lease holders → IDC region (max 5 min, deterministic gate)
+  CRDB lease holders 100% on IDC
+[wrapper] pre-run: freeze CRDB load-based lease rebalancing + range split (via freeze-crdb.sh)
+[freeze-crdb] dumping current cluster settings...
+NOTICE: "kv.range_split.by_load_enabled" is now an alias for "kv.range_split.by_load.enabled", the preferred setting name
+[freeze-crdb] disabling load_based_lease_rebalancing...
+SET CLUSTER SETTING
+[freeze-crdb] disabling range_split.by_load_enabled...
+SET CLUSTER SETTING
+NOTICE: "kv.range_split.by_load_enabled" is now an alias for "kv.range_split.by_load.enabled", the preferred setting name
+[freeze-crdb] waiting 10s for settings to propagate...
+[freeze-crdb] CRDB frozen at 四  7月 23 05:32:32 CST 2026
+[wrapper] gcp-replica-gate: verify tpcc data replicated to GCP (fail-closed)
+[gcp-replica-gate 05:32:34] crdb: ranges_missing_gcp_replica=0 gcp_leaseholders=0
+[gcp-replica-gate 05:32:34] PASS: crdb GCP 副本存在且 leader/lease 全在 IDC（P-A；證據 /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-A-rc-20260722T133916+0800/gate/gcp-replica-gate-crdb.txt）
+[wrapper] ANCHOR_ONLY=1 — prepare+gate 已備妥，跳過 freeze/run/collect
+==> phase8-crdb leader-snapshot (lease holder locality per range)
+==> [end]   phase8-crdb-smoke at 2026-07-23T05:32:36+0800
+# TODO: validate with live cluster (crdb v26.2); fallback if gossip_nodes unavailable:
+# SELECT lease_holder, lease_holder_locality, COUNT(*) AS range_count FROM crdb_internal.ranges
+#   WHERE table_name IN ('new_order','orders','warehouse','customer','district','history','order_line','item','stock')
+#   GROUP BY lease_holder, lease_holder_locality ORDER BY range_count DESC;
+[verify-a8 05:32:36] === CRDB: staleness/freshness (§5.6-3) ===
+[staleness] CRDB：item.i_price 78.66 -> 78.67（IDC leader 寫入）
+[staleness] 基準線（GCP leader-read，預期近乎即時可見，用於確認寫入/複寫本身無異常）：
+  GCP leader-read: 可見，延遲 124ms
+[staleness] 近讀（GCP near-read，此為本測試真正關心的數字）：
+  GCP near-read: 可見，延遲 4152ms
+[staleness] 完成
+==> teardown-crdb (best-effort; ansible on .31)
+ssh root@172.24.40.31 "cd /tmp/poc/ansible && ansible -i inventory/crossregion-via31.ini crossregion_cluster -m shell -a \
+  'systemctl stop cockroach.service 2>/dev/null; \
+   for i in \$(seq 1 15); do pgrep -x cockroach >/dev/null || break; sleep 1; done; \
+   pkill -9 -x cockroach 2>/dev/null; sleep 2; \
+   rm -f /etc/systemd/system/cockroach.service; systemctl daemon-reload; \
+   rm -rf /var/lib/cockroach 2>/dev/null; echo crdb_clean' -b -o"
+g-test-poc-2 | CHANGED | rc=0 | (stdout) crdb_clean
+172.24.40.34 | CHANGED | rc=0 | (stdout) crdb_clean
+172.24.40.33 | CHANGED | rc=0 | (stdout) crdb_clean
+g-test-poc-1 | CHANGED | rc=0 | (stdout) crdb_clean
+172.24.40.32 | CHANGED | rc=0 | (stdout) crdb_clean
+g-test-poc-3 | CHANGED | rc=0 | (stdout) crdb_clean
+[verify-a8 05:37:48] === CRDB done ===
+[verify-a8 05:37:48] ALL DONE — marker /tmp/poc-tpcc/logs/verify-a8-20260722T133916+0800.done，結果: /tmp/poc-tpcc/logs/verify-a8-20260722T133916+0800-results.md
+[verify-a8 05:37:48] 回 Mac 跑 make phase9 (fetch+destroy) TPCC_TS=20260722T133916+0800（本 driver 未動 VM 本身）

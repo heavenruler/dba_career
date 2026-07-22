@@ -1,0 +1,6 @@
+[staleness] YBDB：item.i_price 53.87 -> 53.88（IDC leader 寫入）
+[staleness] 基準線（GCP leader-read，預期近乎即時可見，用於確認寫入/複寫本身無異常）：
+  GCP leader-read: 可見，延遲 1757ms
+[staleness] 近讀（GCP near-read，此為本測試真正關心的數字）：
+  GCP near-read: 可見，延遲 28283ms
+[staleness] 完成
