@@ -362,18 +362,27 @@ phase2-ssh-prime:
 phase2-bootstrap:
 	@echo "==> [start] phase2-bootstrap at $$(date +%Y-%m-%dT%H:%M:%S%z) (timeout=$(TIMEOUT_PHASE2_BOOTSTRAP)s)"
 	@echo "==> phase2-bootstrap: install go-tpc + rsync scripts + rsync ansible to .31"
+	@echo "    （每個 ssh/rsync/scp 呼叫皆包 retry-cmd.sh：2026-07-22 觀測 Mac↔.31 kex"
+	@echo "     階段偶發 client 端 reset，見 retry-cmd.sh 註解）"
 	TPCC_CLIENT=$(TPCC_CLIENT) TPCC_BASE=$(TPCC_BASE) GOTPC_VERSION=$(GOTPC_VERSION) \
 	  bash $(LOCAL_SCRIPTS)/bootstrap-client.sh
-	ssh $(TPCC_CLIENT) 'mkdir -p $(CROSS_SCRIPTS_REMOTE) $(ANSIBLE_REMOTE_DIR) $(POC_REMOTE_ROOT)/tests'
-	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
-	rsync -avz phase-crossregion/freeze/  '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/freeze/'
+	bash phase-crossregion/scripts/retry-cmd.sh 3 5 -- \
+	  ssh $(TPCC_CLIENT) 'mkdir -p $(CROSS_SCRIPTS_REMOTE) $(ANSIBLE_REMOTE_DIR) $(POC_REMOTE_ROOT)/tests'
+	bash phase-crossregion/scripts/retry-cmd.sh 3 5 -- \
+	  rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
+	bash phase-crossregion/scripts/retry-cmd.sh 3 5 -- \
+	  rsync -avz phase-crossregion/freeze/  '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/freeze/'
 	@echo "==> symlink /tmp/phase-crossregion/scripts (run.sh 以 \$$SELF/../../phase-crossregion/scripts 推導 wan-probe.sh)"
-	ssh $(TPCC_CLIENT) 'mkdir -p /tmp/phase-crossregion && ln -sfn $(CROSS_SCRIPTS_REMOTE) /tmp/phase-crossregion/scripts'
+	bash phase-crossregion/scripts/retry-cmd.sh 3 5 -- \
+	  ssh $(TPCC_CLIENT) 'mkdir -p /tmp/phase-crossregion && ln -sfn $(CROSS_SCRIPTS_REMOTE) /tmp/phase-crossregion/scripts'
 	@echo "==> manifest.yaml → .31:/tmp/phase-crossregion/ (summary-from-stdout.py 以 parents[2] 推 repo root)"
-	scp -q phase-crossregion/manifest.yaml '$(TPCC_CLIENT):/tmp/phase-crossregion/manifest.yaml'
+	bash phase-crossregion/scripts/retry-cmd.sh 3 5 -- \
+	  scp -q phase-crossregion/manifest.yaml '$(TPCC_CLIENT):/tmp/phase-crossregion/manifest.yaml'
 	@echo "==> rsync ansible/ + tests/ to $(TPCC_CLIENT):$(POC_REMOTE_ROOT)/ (mirror Mac layout for relative-path SQL files)"
-	rsync -avz --delete ansible/ '$(TPCC_CLIENT):$(ANSIBLE_REMOTE_DIR)/'
-	rsync -avz --delete tests/   '$(TPCC_CLIENT):$(POC_REMOTE_ROOT)/tests/'
+	bash phase-crossregion/scripts/retry-cmd.sh 3 5 -- \
+	  rsync -avz --delete ansible/ '$(TPCC_CLIENT):$(ANSIBLE_REMOTE_DIR)/'
+	bash phase-crossregion/scripts/retry-cmd.sh 3 5 -- \
+	  rsync -avz --delete tests/   '$(TPCC_CLIENT):$(POC_REMOTE_ROOT)/tests/'
 	@echo "==> [end]   phase2-bootstrap at $$(date +%Y-%m-%dT%H:%M:%S%z)"
 
 # iperf3 binary on idc-dbhost-1（wan-probe WAN_PROBE_IPERF=1 前置；GCP 端由 cloud-init 預裝）
