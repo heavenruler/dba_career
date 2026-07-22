@@ -1116,7 +1116,7 @@ win-aaro-detach:
 	rsync -avz phase-crossregion/Makefile '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/Makefile'
 	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
 	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver 進程"
-	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|verify-a7-smoke' | grep -v pgrep || true); \
+	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
 	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
 	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS) DBS='$(DBS)'"
 	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \
@@ -1151,7 +1151,7 @@ verify-a7-detach:
 	rsync -avz phase-crossregion/Makefile '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/Makefile'
 	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
 	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver/verify-a7 進程"
-	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|verify-a7-smoke' | grep -v pgrep || true); \
+	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
 	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
 	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS) DBS='$(DBS)'"
 	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \
@@ -1172,6 +1172,51 @@ verify-a7-status:
 	@ssh $(TPCC_CLIENT) "tail -25 $(VERIFY_A7_LOG) 2>/dev/null || echo '(no log yet)'"
 	@echo "==> results.md (若已產生)"
 	@ssh $(TPCC_CLIENT) "cat /tmp/poc-tpcc/logs/verify-a7-$(TPCC_TS)-results.md 2>/dev/null || echo '(尚未產生)'"
+
+# -------------------------------------------------------------------
+# codex §5.6 (2)(3) 補強驗證（TiDB 嚴格 A/B、staleness/freshness、YBDB
+# go-tpc 反事實）：TiDB→YBDB→CRDB detached on .31，smoke 規模（W=4）。
+# 用法同 win-aaro-detach/status，driver = verify-a8-batch-smoke.sh。
+# 前提：Mac 端 phase1+phase2 已完成；GO_TPC_PATCHED_BIN 指向本地已 build
+# 好的 patched go-tpc linux/amd64 binary（見 patches/README.md 套用方式）。
+# -------------------------------------------------------------------
+VERIFY_A8_LOG = /tmp/poc-tpcc/logs/verify-a8-$(TPCC_TS).log
+GO_TPC_PATCHED_BIN ?=
+GO_TPC_PATCHED_REMOTE := /tmp/poc-tpcc/scripts/crossregion/go-tpc-patched-linux-amd64
+
+verify-a8-detach:
+	@test -n "$(GO_TPC_PATCHED_BIN)" || { echo "FATAL: 需要 GO_TPC_PATCHED_BIN=<本地 patched go-tpc linux/amd64 binary 路徑>"; exit 1; }
+	@test -f "$(GO_TPC_PATCHED_BIN)" || { echo "FATAL: GO_TPC_PATCHED_BIN=$(GO_TPC_PATCHED_BIN) 不存在"; exit 1; }
+	@echo "==> rsync scripts + freeze/ + Makefile + patched go-tpc to .31 (driver 依賴)"
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
+	rsync -avz phase-crossregion/freeze/  '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/freeze/'
+	rsync -avz "$(GO_TPC_PATCHED_BIN)" '$(TPCC_CLIENT):$(GO_TPC_PATCHED_REMOTE)'
+	ssh $(TPCC_CLIENT) 'chmod +x $(GO_TPC_PATCHED_REMOTE)'
+	ssh $(TPCC_CLIENT) 'mkdir -p /tmp/poc/phase-crossregion/scripts'
+	rsync -avz phase-crossregion/Makefile '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/Makefile'
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
+	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver/verify-a7/verify-a8 進程"
+	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
+	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
+	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS) DBS='$(DBS)'"
+	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \
+	  nohup env PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS) DBS='$(DBS)' GO_TPC_PATCHED_BIN=$(GO_TPC_PATCHED_REMOTE) \
+	    bash $(CROSS_SCRIPTS_REMOTE)/verify-a8-batch-smoke.sh \
+	    > $(VERIFY_A8_LOG) 2>&1 < /dev/null & \
+	  echo \"started pid \$$!\""
+	@echo ""
+	@echo "==> detached。Mac 現在可關機。回來後查進度："
+	@echo "    make verify-a8-status TPCC_TS=$(TPCC_TS)"
+
+verify-a8-status:
+	@echo "==> window markers (TPCC_TS=$(TPCC_TS))"
+	@ssh $(TPCC_CLIENT) "for m in /tmp/poc-tpcc/logs/verify-a8-$(TPCC_TS).done /tmp/poc-tpcc/logs/verify-a8-$(TPCC_TS).failed; do \
+	  [ -f \"\$$m\" ] && { echo \"--- \$$m ---\"; cat \"\$$m\"; }; done; \
+	  [ -f /tmp/poc-tpcc/logs/verify-a8-$(TPCC_TS).done ] || [ -f /tmp/poc-tpcc/logs/verify-a8-$(TPCC_TS).failed ] || echo '(window still running)'"
+	@echo "==> driver log tail"
+	@ssh $(TPCC_CLIENT) "tail -25 $(VERIFY_A8_LOG) 2>/dev/null || echo '(no log yet)'"
+	@echo "==> results.md (若已產生)"
+	@ssh $(TPCC_CLIENT) "cat /tmp/poc-tpcc/logs/verify-a8-$(TPCC_TS)-results.md 2>/dev/null || echo '(尚未產生)'"
 
 # ===================================================================
 # Sub-rules reused verbatim from Makefile.tc1
