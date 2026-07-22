@@ -1,0 +1,11 @@
+[realtxn] TiDB：ORDER_STATUS + STOCK_LEVEL 真實跨表交易 burst + netflow byte delta
+  （TiDB EXPLAIN ANALYZE 無逐查詢 store 位址欄位，主判準仍是 check-nearread.sh
+   的 zone-label 比對；本項用真實查詢形狀重測 netflow 比值，作補充觀察）
+[netflow-snapshot] pre → /tmp/tmp.RguXvXTV8Y/netflow-pre.json (1 hosts sampled)
+[netflow-snapshot] post → /tmp/tmp.RguXvXTV8Y/netflow-post.json (1 hosts sampled)
+  delta_to_gcp=1979655B delta_to_idc=2042009B ratio=103.1%（觀察用，非 PASS/FAIL 門檻——
+   單一 burst 受背景流量影響，見報告 §5.5 方法論限制）
+  （TiDB 無 fail-closed 門檻可用於此項；主判準見 check-nearread.sh --db tidb）
+
+[realtxn] 總計 0 項檢查，FAIL=0
+[realtxn] PASS

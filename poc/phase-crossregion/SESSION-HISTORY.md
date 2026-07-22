@@ -1401,3 +1401,92 @@ session 層 follower-read 開關）均與官方文件一致，判定正確；但
 並修正；`check-nearread.sh` 現為真正 fail-closed。
 **Next review**：依報告 §5.6/§8 A7 優先序決定是否／如何補做剩餘 5 項驗證，
 以及是否／何時重跑完整 W=128 A-A-RO 批次。
+
+## 2026-07-22（續）— A7(1)(4) 補強驗證：真實交易＋t128 高併發，意外抓到 go-tpc 結構性 bug
+
+**背景**：codex 審查（§5.6）建議的 5 項後續補做中，用戶指定先做 (1)(4)：
+真實 ORDER_STATUS/STOCK_LEVEL 交易取代 `LIMIT 1` 單筆查詢、在高併發（t128）
+執行期間持續採樣近讀證據，而非只測空閒連線的單筆查詢。環境已完全 destroy
+（terraform state 兩邊皆空），先跑 `make phase1 phase2` 重建 6 台 VM。
+
+**新增 driver**：[verify-a7-smoke.sh](scripts/verify-a7-smoke.sh)（smoke
+規模 W=4，仿 win-aaro-w128.sh 結構）＋
+[check-nearread-realtxn.sh](scripts/check-nearread-realtxn.sh)（A7-1）＋
+[sample-nearread-loop.sh](scripts/sample-nearread-loop.sh)（A7-4，每 12s
+採樣一次 check-nearread.sh）。
+
+**過程踩到的坑**（環境重建/驅動本身的問題，與近讀機制無關）：
+1. 第一次試跑漏寫 `phase2-bootstrap-gcp-client`（GCP client 沒有
+   go-tpc/tests/common），GCP side rc=127 command not found——已補上
+   （commit `8e9552c9`）。
+2. 補上後重跑，TiDB deploy 卡在殘留的舊 placement policy（第一次失敗前
+   沒跑到 teardown-tidb）——手動 `teardown-tidb` 清乾淨後重跑正常。
+3. YBDB `gcp-replica-gate` 連兩次卡在 GCP 3 台 tserver 中 `.11` 恆 0
+   tablet（W=4 資料量小、`enable_automatic_tablet_splitting=false`，LB
+   分配非保證均勻）；使用者授權手動 `yb-admin change_config` 搬 tablet，
+   但因清理舊 YBDB cluster 時已把整個 cluster 砍了，搬移對象不存在；
+   第三次全新部署後 LB 自然分配到 3/3，未動用手動搬遷。
+
+**重大發現：go-tpc 與 CRDB/YBDB 近讀機制結構性衝突**。CRDB 第一次在真實
+go-tpc 負載下測試，GCP 側查詢 **100% 報錯**
+`AS OF SYSTEM TIME specified with READ WRITE mode`。追查到：go-tpc
+（`tpcc/workload.go`）的 `beginTx` 從未把 `sql.TxOptions.ReadOnly` 設
+`true`，go-tpc 對 CRDB/YBDB 都用 `-d postgres`（`lib/pq` driver），
+`lib/pq` 看到 `ReadOnly=false` 會明確送出 `BEGIN ... READ WRITE`，蓋過
+session 層 `default_transaction_read_only=on`（SQL 標準：顯式設定優先於
+預設值）。CRDB 因此 100% 報錯，YBDB 依官方文件會靜默 fallback 回
+leader——不報錯，但近讀完全不生效，是本次調查最初就想抓的那種「靜默
+失效」，只是換了個更深層的成因。
+
+**修法**：clone `github.com/pingcap/go-tpc`（base commit
+`a9ca4818625deef91ff80f6c395a575ccae22b7c`），patch 只讓 `ORDER_STATUS`/
+`STOCK_LEVEL`（TPC-C 定義上本就純讀）明確傳 `ReadOnly: true`，其餘涉及
+寫入的交易類型不受影響。跨編譯 `GOOS=linux GOARCH=amd64`，只部署到 GCP
+client（10.160.152.15，A-A-RO 唯一發起純讀 mix 的一側），原始 binary
+備份為 `go-tpc.orig`。TiDB 用 zone-based 物理路由，不受此問題影響，不需
+套用。Patch 存入
+[phase-crossregion/patches/go-tpc-readonly-fix.patch](patches/go-tpc-readonly-fix.patch)。
+
+**修法後三家結果**（詳見 [nearread-verify-a7-20260722/](nearread-verify-a7-20260722/README.md)）：
+- TiDB：A7(1) PASS；A7(4) 28 次採樣 25 PASS/3 FAIL，FAIL 全集中在採樣
+  視窗最前面（sample 2-4），之後穩定 100% PASS。
+- CRDB：套用修法後 aaro-smoke 查詢錯誤率從 100% 降到 ~0.1%（僅收尾正常
+  timeout）；A7(1) PASS；A7(4) 22 PASS/6 FAIL，FAIL 同樣全集中在最前面
+  （sample 2-7），之後穩定 100% PASS。
+- YBDB：A7(1) 表面 3/12 FAIL，覆核後確認是 `check-nearread-realtxn.sh`
+  本身沒做暖機查詢造成的假陽性（第一組樣本 on≈off，與 07-21 已知的「冷
+  catalog cache」現象一致，其餘 3 組樣本全 PASS 且差距懸殊）——已修正
+  腳本補暖機。A7(4) 14 PASS/1 FAIL（僅測到 15 個樣本；最後一次採樣間隔
+  異常拉長，疑與 aaro-smoke 收尾資源競爭有關）。
+
+**尚未排除**：YBDB 這輪的良好結果是在套用 go-tpc 修法「之後」才測的，未
+套用修法時 YBDB 在真實負載下的表現從未單獨驗證過（機制與 CRDB 同構，
+高度懷疑同樣會靜默失效，但未直接測過這個反事實）。
+
+**方法論收穫**：A7(4) 的 t128 高併發真實負載測試不只是「重複驗證同一件
+事」，直接抓到了一個 07-21 用手動 EXPLAIN 查詢完全測不出來的結構性 bug
+——這正是當初設計 A7(4)（而非只信任單筆診斷查詢）的意義所在。FAIL 樣本
+「集中在採樣視窗最前面、之後穩定 PASS」的時間分布模式，也證明了逐次記錄
+時間戳而非只看總計 PASS/FAIL 數字的價值——同樣的「25/28」，究竟是「持續
+低機率隨機失敗」還是「短暫暖機過渡後完全穩定」，只看聚合數字看不出來，
+必須看逐筆時間序列。
+
+環境已於本輪結束後 `phase9-destroy`（VM 已全部拆除，terraform state
+兩邊皆空）。
+
+修改檔案：`verify-a7-smoke.sh`（新增，2 次 bug 修正）、
+`check-nearread-realtxn.sh`（新增，YBDB 暖機修正）、
+`sample-nearread-loop.sh`（新增）、`run-vm6-aa.sh`（CRDB
+GCP_CONN_PARAMS 補 `default_transaction_read_only=on`，但實測發現此修
+法本身仍不夠，見上）、`patches/go-tpc-readonly-fix.patch`（新增）、
+`patches/README.md`（新增）、`nearread-verify-a7-20260722/`（新增）、
+報告 §5.5/§5.6/§5.7（新增）/§8（A7/A8/A9）/§9 更新。
+
+**Last updated**：2026-07-22 A7(1)(4) 補強驗證完成，三家皆有結果；意外
+發現並修正 go-tpc/lib/pq 與 CRDB/YBDB 近讀機制的結構性衝突（CRDB 修法前
+100% 報錯，修法後才成立）；環境已 destroy。
+**Next review**：codex §5.6 剩餘 (2)(3)(5) 三項（TiDB 嚴格 A/B、
+staleness/freshness 驗證、統一 zone 前 placement/故障域評估）；YBDB
+「反事實」（不套用 go-tpc patch 時真實負載下是否也 100% 失效）未驗證；
+是否／何時重跑完整 W=128 A-A-RO 批次（**務必先確認 go-tpc patch 已套用**，
+見報告 §8 A8）。

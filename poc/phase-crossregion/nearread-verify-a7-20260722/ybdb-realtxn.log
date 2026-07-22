@@ -1,0 +1,28 @@
+[realtxn] YBDB：ORDER_STATUS + STOCK_LEVEL 真實跨表交易，follower-read on/off 對照
+--- ORDER_STATUS.1 customer (w=1 d=3 c=500) ---  on=10.615ms off=8.431ms
+  FAIL: follower-read 未顯著快於 leader-read（<70% 門檻未達）
+--- ORDER_STATUS.2 latest order (w=1 d=3 c=500) ---  on=10.679ms off=8.419ms
+  FAIL: follower-read 未顯著快於 leader-read（<70% 門檻未達）
+--- STOCK_LEVEL.1 d_next_o_id (w=1 d=3) ---  on=9.054ms off=8.480ms
+  FAIL: follower-read 未顯著快於 leader-read（<70% 門檻未達）
+--- ORDER_STATUS.1 customer (w=2 d=7 c=1200) ---  on=1.638ms off=8.448ms
+  PASS
+--- ORDER_STATUS.2 latest order (w=2 d=7 c=1200) ---  on=1.666ms off=8.292ms
+  PASS
+--- STOCK_LEVEL.1 d_next_o_id (w=2 d=7) ---  on=0.470ms off=16.162ms
+  PASS
+--- ORDER_STATUS.1 customer (w=3 d=1 c=2999) ---  on=1.766ms off=8.339ms
+  PASS
+--- ORDER_STATUS.2 latest order (w=3 d=1 c=2999) ---  on=1.518ms off=8.438ms
+  PASS
+--- STOCK_LEVEL.1 d_next_o_id (w=3 d=1) ---  on=0.426ms off=8.659ms
+  PASS
+--- ORDER_STATUS.1 customer (w=4 d=10 c=42) ---  on=1.574ms off=8.354ms
+  PASS
+--- ORDER_STATUS.2 latest order (w=4 d=10 c=42) ---  on=1.696ms off=8.334ms
+  PASS
+--- STOCK_LEVEL.1 d_next_o_id (w=4 d=10) ---  on=0.426ms off=8.283ms
+  PASS
+
+[realtxn] 總計 12 項檢查，FAIL=3
+[realtxn] FAIL：至少一項真實交易語句未通過近讀檢驗

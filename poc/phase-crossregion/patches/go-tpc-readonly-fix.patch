@@ -1,0 +1,56 @@
+diff --git a/tpcc/order_status.go b/tpcc/order_status.go
+index d523d40..bf3a82c 100644
+--- a/tpcc/order_status.go
++++ b/tpcc/order_status.go
+@@ -43,7 +43,7 @@ func (w *Workloader) runOrderStatus(ctx context.Context, thread int) error {
+ 		d.cID = randCustomerID(s.R)
+ 	}
+ 
+-	tx, err := w.beginTx(ctx)
++	tx, err := w.beginTxReadOnly(ctx)
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/tpcc/stock_level.go b/tpcc/stock_level.go
+index 7a13a4a..9ea0e50 100644
+--- a/tpcc/stock_level.go
++++ b/tpcc/stock_level.go
+@@ -11,7 +11,7 @@ const stockLevelSelectDistrict = `SELECT d_next_o_id FROM district WHERE d_w_id
+ func (w *Workloader) runStockLevel(ctx context.Context, thread int) error {
+ 	s := getTPCCState(ctx)
+ 
+-	tx, err := w.beginTx(ctx)
++	tx, err := w.beginTxReadOnly(ctx)
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/tpcc/workload.go b/tpcc/workload.go
+index 6c1983f..4dd1f8f 100644
+--- a/tpcc/workload.go
++++ b/tpcc/workload.go
+@@ -492,6 +492,25 @@ func (w *Workloader) beginTx(ctx context.Context) (*sql.Tx, error) {
+ 	return tx, err
+ }
+ 
++// beginTxReadOnly is used only by ORDER_STATUS/STOCK_LEVEL — the two TPC-C
++// transaction types that never write. lib/pq's BeginTx always sends an
++// explicit BEGIN ... READ WRITE when TxOptions.ReadOnly is the Go zero value
++// (false), which overrides any server-side default_transaction_read_only
++// session setting — this silently defeats CockroachDB
++// (default_transaction_use_follower_reads) and YugabyteDB
++// (yb_read_from_followers) follower-read routing, both of which require the
++// transaction itself to be READ ONLY. Setting ReadOnly: true here makes
++// lib/pq emit an explicit READ ONLY instead, which is the only way these two
++// mechanisms can ever activate under this driver.
++func (w *Workloader) beginTxReadOnly(ctx context.Context) (*sql.Tx, error) {
++	s := getTPCCState(ctx)
++	tx, err := s.Conn.BeginTx(ctx, &sql.TxOptions{
++		Isolation: sql.IsolationLevel(w.cfg.Isolation),
++		ReadOnly:  true,
++	})
++	return tx, err
++}
++
+ func prepareStmts(driver string, ctx context.Context, conn *sql.Conn, queries []string) []*sql.Stmt {
+ 	stmts := make([]*sql.Stmt, len(queries))
+ 	for i, query := range queries {

@@ -104,6 +104,11 @@ case "$DB" in
         FAIL_COUNT=$((FAIL_COUNT+1))
       fi
     }
+    echo "[realtxn] 暖機（冷 catalog cache 的首次查詢不列入 PASS/FAIL 判定——見"
+    echo " nearread-verify-evidence-20260721/ybdb-explain-analyze-on-off.txt 同款觀察）"
+    get_time "$CONN_ON" "SELECT d_next_o_id FROM district WHERE d_w_id=1 AND d_id=1;" >/dev/null
+    get_time "$CONN_OFF" "SELECT d_next_o_id FROM district WHERE d_w_id=1 AND d_id=1;" >/dev/null
+
     for s in "${SAMPLES[@]}"; do
       read -r w d c <<< "$s"
       check_stmt "ORDER_STATUS.1 customer (w=$w d=$d c=$c)" \

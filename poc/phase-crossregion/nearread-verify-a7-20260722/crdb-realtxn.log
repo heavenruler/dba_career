@@ -1,0 +1,268 @@
+[realtxn] CRDB：ORDER_STATUS + STOCK_LEVEL 真實跨表交易，逐語句檢查 EXPLAIN ANALYZE
+--- ORDER_STATUS.1 customer (w=1 d=3 c=500) ---
+ regions: gcp
+ used follower read
+   sql nodes: n2
+   kv nodes: n2
+   regions: gcp
+   used follower read
+  PASS
+--- ORDER_STATUS.2 latest order (w=1 d=3 c=500) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ kv nodes: n3
+ │ regions: gcp
+ │ used follower read
+       sql nodes: n2
+       kv nodes: n3
+       regions: gcp
+       used follower read
+  PASS
+--- ORDER_STATUS.3 order_line by latest o_id (w=1 d=3) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ kv nodes: n2
+ │ regions: gcp
+ │ used follower read
+           sql nodes: n2
+           kv nodes: n3
+           regions: gcp
+           used follower read
+  PASS
+--- STOCK_LEVEL.1 d_next_o_id (w=1 d=3) ---
+ regions: gcp
+ used follower read
+   sql nodes: n2
+   kv nodes: n2
+   regions: gcp
+   used follower read
+  PASS
+--- STOCK_LEVEL.2 low-stock join+range (w=1 d=3) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ regions: gcp
+     │ sql nodes: n2
+     │ regions: gcp
+         │ sql nodes: n2
+         │ regions: gcp
+         │     sql nodes: n2
+         │     kv nodes: n2
+         │     regions: gcp
+         │     used follower read
+                 │ sql nodes: n2
+                 │ regions: gcp
+                 │   │ sql nodes: n2
+                 │   │ regions: gcp
+                 │         sql nodes: n2
+                 │         kv nodes: n2
+                 │         regions: gcp
+                 │         used follower read
+                       sql nodes: n2
+                       kv nodes: n2
+                       regions: gcp
+                       used follower read
+  PASS
+--- ORDER_STATUS.1 customer (w=2 d=7 c=1200) ---
+ regions: gcp
+ used follower read
+   sql nodes: n2
+   kv nodes: n2
+   regions: gcp
+   used follower read
+  PASS
+--- ORDER_STATUS.2 latest order (w=2 d=7 c=1200) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ kv nodes: n3
+ │ regions: gcp
+ │ used follower read
+       sql nodes: n2
+       kv nodes: n3
+       regions: gcp
+       used follower read
+  PASS
+--- ORDER_STATUS.3 order_line by latest o_id (w=2 d=7) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ kv nodes: n2
+ │ regions: gcp
+ │ used follower read
+           sql nodes: n2
+           kv nodes: n3
+           regions: gcp
+           used follower read
+  PASS
+--- STOCK_LEVEL.1 d_next_o_id (w=2 d=7) ---
+ regions: gcp
+ used follower read
+   sql nodes: n2
+   kv nodes: n2
+   regions: gcp
+   used follower read
+  PASS
+--- STOCK_LEVEL.2 low-stock join+range (w=2 d=7) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ regions: gcp
+     │ sql nodes: n2
+     │ regions: gcp
+         │ sql nodes: n2
+         │ regions: gcp
+         │     sql nodes: n2
+         │     kv nodes: n2
+         │     regions: gcp
+         │     used follower read
+                 │ sql nodes: n2
+                 │ regions: gcp
+                 │   │ sql nodes: n2
+                 │   │ regions: gcp
+                 │         sql nodes: n2
+                 │         kv nodes: n2
+                 │         regions: gcp
+                 │         used follower read
+                       sql nodes: n2
+                       kv nodes: n2
+                       regions: gcp
+                       used follower read
+  PASS
+--- ORDER_STATUS.1 customer (w=3 d=1 c=2999) ---
+ regions: gcp
+ used follower read
+   sql nodes: n2
+   kv nodes: n2
+   regions: gcp
+   used follower read
+  PASS
+--- ORDER_STATUS.2 latest order (w=3 d=1 c=2999) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ kv nodes: n3
+ │ regions: gcp
+ │ used follower read
+       sql nodes: n2
+       kv nodes: n3
+       regions: gcp
+       used follower read
+  PASS
+--- ORDER_STATUS.3 order_line by latest o_id (w=3 d=1) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ kv nodes: n2
+ │ regions: gcp
+ │ used follower read
+           sql nodes: n2
+           kv nodes: n3
+           regions: gcp
+           used follower read
+  PASS
+--- STOCK_LEVEL.1 d_next_o_id (w=3 d=1) ---
+ regions: gcp
+ used follower read
+   sql nodes: n2
+   kv nodes: n2
+   regions: gcp
+   used follower read
+  PASS
+--- STOCK_LEVEL.2 low-stock join+range (w=3 d=1) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ regions: gcp
+     │ sql nodes: n2
+     │ regions: gcp
+         │ sql nodes: n2
+         │ regions: gcp
+         │     sql nodes: n2
+         │     kv nodes: n2
+         │     regions: gcp
+         │     used follower read
+                 │ sql nodes: n2
+                 │ regions: gcp
+                 │   │ sql nodes: n2
+                 │   │ regions: gcp
+                 │         sql nodes: n2
+                 │         kv nodes: n2
+                 │         regions: gcp
+                 │         used follower read
+                       sql nodes: n2
+                       kv nodes: n2
+                       regions: gcp
+                       used follower read
+  PASS
+--- ORDER_STATUS.1 customer (w=4 d=10 c=42) ---
+ regions: gcp
+ used follower read
+   sql nodes: n2
+   kv nodes: n2
+   regions: gcp
+   used follower read
+  PASS
+--- ORDER_STATUS.2 latest order (w=4 d=10 c=42) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ kv nodes: n3
+ │ regions: gcp
+ │ used follower read
+       sql nodes: n2
+       kv nodes: n3
+       regions: gcp
+       used follower read
+  PASS
+--- ORDER_STATUS.3 order_line by latest o_id (w=4 d=10) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ kv nodes: n2
+ │ regions: gcp
+ │ used follower read
+           sql nodes: n2
+           kv nodes: n3
+           regions: gcp
+           used follower read
+  PASS
+--- STOCK_LEVEL.1 d_next_o_id (w=4 d=10) ---
+ regions: gcp
+ used follower read
+   sql nodes: n2
+   kv nodes: n2
+   regions: gcp
+   used follower read
+  PASS
+--- STOCK_LEVEL.2 low-stock join+range (w=4 d=10) ---
+ regions: gcp
+ used follower read
+ │ sql nodes: n2
+ │ regions: gcp
+     │ sql nodes: n2
+     │ regions: gcp
+         │ sql nodes: n2
+         │ regions: gcp
+         │     sql nodes: n2
+         │     kv nodes: n2
+         │     regions: gcp
+         │     used follower read
+                 │ sql nodes: n2
+                 │ regions: gcp
+                 │   │ sql nodes: n2
+                 │   │ regions: gcp
+                 │         sql nodes: n2
+                 │         kv nodes: n2
+                 │         regions: gcp
+                 │         used follower read
+                       sql nodes: n2
+                       kv nodes: n2
+                       regions: gcp
+                       used follower read
+  PASS
+
+[realtxn] 總計 20 項檢查，FAIL=0
+[realtxn] PASS
