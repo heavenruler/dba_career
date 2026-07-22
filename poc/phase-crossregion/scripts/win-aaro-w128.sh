@@ -59,6 +59,11 @@ STAGE="bootstrap-gcp-client"
 log "=== bootstrap GCP client (.15) go-tpc/tests/common（冪等）==="
 make -f "$MK" phase2-bootstrap-gcp-client
 
+STAGE="apply-gotpc-patch"
+log "=== 套用 go-tpc-readonly-fix.patch 到 GCP client（§8 A8：bootstrap 剛裝回官方"
+log "    release binary，未 patch 會讓 CRDB 100% 報錯、YBDB 延遲/吞吐量靜默劣化）==="
+bash "$POC/phase-crossregion/scripts/apply-gotpc-patch.sh"
+
 ARCHIVE=/var/lib/poc-tpcc-archive/$TPCC_TS
 archive_cell() {  # $1 = suite 目錄名（相對 X-CROSS/）
   mkdir -p "$ARCHIVE"

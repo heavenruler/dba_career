@@ -1109,12 +1109,13 @@ win-3db-status:
 WIN_AARO_LOG = /tmp/poc-tpcc/logs/win-aaro-$(TPCC_TS).log
 
 win-aaro-detach:
-	@echo "==> rsync scripts + freeze/ + Makefile to .31 (driver 依賴)"
+	@echo "==> rsync scripts + freeze/ + patches/ + Makefile to .31 (driver 依賴)"
 	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
 	rsync -avz phase-crossregion/freeze/  '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/freeze/'
-	ssh $(TPCC_CLIENT) 'mkdir -p /tmp/poc/phase-crossregion/scripts'
+	ssh $(TPCC_CLIENT) 'mkdir -p /tmp/poc/phase-crossregion/scripts /tmp/poc/phase-crossregion/patches'
 	rsync -avz phase-crossregion/Makefile '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/Makefile'
 	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
+	rsync -avz phase-crossregion/patches/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/patches/'
 	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver 進程"
 	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
 	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
@@ -1144,12 +1145,13 @@ win-aaro-status:
 VERIFY_A7_LOG = /tmp/poc-tpcc/logs/verify-a7-$(TPCC_TS).log
 
 verify-a7-detach:
-	@echo "==> rsync scripts + freeze/ + Makefile to .31 (driver 依賴)"
+	@echo "==> rsync scripts + freeze/ + patches/ + Makefile to .31 (driver 依賴)"
 	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
 	rsync -avz phase-crossregion/freeze/  '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/freeze/'
-	ssh $(TPCC_CLIENT) 'mkdir -p /tmp/poc/phase-crossregion/scripts'
+	ssh $(TPCC_CLIENT) 'mkdir -p /tmp/poc/phase-crossregion/scripts /tmp/poc/phase-crossregion/patches'
 	rsync -avz phase-crossregion/Makefile '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/Makefile'
 	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
+	rsync -avz phase-crossregion/patches/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/patches/'
 	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver/verify-a7 進程"
 	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
 	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
