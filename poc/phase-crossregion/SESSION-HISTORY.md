@@ -1605,3 +1605,44 @@ Mac 重開機，避免半途而廢的資料污染後續判讀。
 **Next review**：可發 aaro#2（完整 W=128 A-A-RO 全跑，用
 `win-aaro-detach`）；(5)（統一 zone 對 P-B 故障域衝擊）仍待 P-B 立項時
 處理，不擋本輪。
+
+## 2026-07-23（續）— aaro#2 正式發車（TiDB→YBDB→CRDB，W=128）
+
+**獨立驗證**：發車前先開 subagent 逐一核對 A8/A9/A10 三項前置是否經得起
+獨立檢查（不只是信任 commit message）。結果：A8/A9 CONFIRMED（A8 標為
+CONFIRMED WITH CAVEAT，因為部署到 GCP client 那步當時還沒真正端到端跑
+過）；**A10 NOT CONFIRMED**——subagent 抓到報告本文（§5.8 正文、§8 A10
+row）仍寫「未拍板/留待後續拍板」，跟 SESSION-HISTORY 已記載的拍板結果
+矛盾，純粹是報告忘了更新（決策本身沒問題）。已補上（commit `ba419bdd`）。
+
+**發車過程插曲**：第一次 `win-aaro-detach` 忘了先跑 `phase1+phase2`
+（VM 尚未重建），`win-aaro-w128.sh` 一開頭的 `phase2-bootstrap-gcp-client`
+就因 GCP client 不存在而失敗——`win-aaro-w128.sh` 本身不包含
+`phase1+phase2`，需要 Mac 端先跑完才能發車（見該腳本檔頭註解）。補跑
+`phase1+phase2` 後重新 `win-aaro-detach`，TS 沿用 `20260723T091902+0800`。
+
+**A8 完整端到端驗證成功**：這是 `apply-gotpc-patch.sh` 第一次在 GCP
+client 真實存在時跑完整流程——log 印出：
+```
+[apply-gotpc-patch] 確認 golang 已安裝（冪等）
+[apply-gotpc-patch] clone go-tpc @ a9ca4818625deef91ff80f6c395a575ccae22b7c
+[apply-gotpc-patch] apply patch
+[apply-gotpc-patch] build linux/amd64
+[apply-gotpc-patch] 部署到 root@10.160.152.15（首次備份原始 binary 為 go-tpc.orig）
+[apply-gotpc-patch] 驗證部署後的 binary 可執行
+[apply-gotpc-patch] PASS：patched go-tpc 已部署到 root@10.160.152.15
+```
+A8 的最後一個 caveat（未端到端驗證過部署步驟）已清除，報告 §8 A8 已
+更新為「已解決」。
+
+**Driver 已確認完全 detach**：`ps` 查詢 driver pid 的 PPID=1，確認脫離
+SSH session／Mac 連線，Mac 斷線或關機不影響進度。TS=`20260723T091902+0800`，
+DBS 預設全跑（TiDB→YBDB→CRDB），預估總時長 ~30 小時。
+
+修改檔案：報告 §8 A8（更新為已解決）、SESSION-HISTORY.md（本節）。
+
+**Last updated**：2026-07-23 aaro#2 正式發車，已確認 detach、A8 完整
+端到端驗證通過。
+**Next review**：定期查 `make win-aaro-status TPCC_TS=20260723T091902+0800`
+追蹤進度；全部完成後 `make phase9`（fetch+destroy）、彙整正式 W=128
+數字更新報告 §1-§6。
