@@ -20,6 +20,20 @@ value `false`）。CRDB/YBDB 的 GCP 側連線走 `-d postgres`（`lib/pq` drive
 讓 `lib/pq` 改送 `BEGIN ... READ ONLY`。其餘交易類型（`NEW_ORDER`／
 `PAYMENT`／`DELIVERY`，皆涉及寫入）完全不受影響，繼續用原本的 `beginTx`。
 
+**2026-07-23 修正（重大）**：`beginTxReadOnly` 一開始寫成 driver-agnostic
+（不分底層是 `postgres` 還是 `mysql`），實際跑 aaro#2 全量 W=128 才發現：
+GCP client 上的 go-tpc binary 是 TiDB／CRDB／YBDB 三家共用同一份，這個
+patch 套用後**連 TiDB（走 `mysql` driver）的 GCP 側也一起中招**——
+`go-sql-driver/mysql` 把 `TxOptions.ReadOnly=true` 轉成
+`START TRANSACTION READ ONLY`，TiDB 把這個語法歸類為「noop function」，
+預設 `tidb_enable_noop_functions=OFF` 下直接報錯拒絕（**Error 1235**:
+`function READ ONLY has only noop implementation in tidb now, use
+tidb_enable_noop_functions to enable these functions`），導致 TiDB GCP 側
+ORDER_STATUS/STOCK_LEVEL 100% 交易開不成——TiDB 原本沒有這個問題、也從
+未需要這個 patch，是純粹的回歸。已修正：`beginTxReadOnly` 內部判斷
+`w.cfg.Driver`，只在 `postgres` 才傳 `ReadOnly: true`，其餘（含 `mysql`）
+直接呼叫原本的 `beginTx`（見 patch 內 workload.go 的判斷式）。
+
 **套用方式**：
 ```bash
 git clone --depth 1 https://github.com/pingcap/go-tpc.git

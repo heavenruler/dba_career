@@ -5,7 +5,7 @@ index d523d40..bf3a82c 100644
 @@ -43,7 +43,7 @@ func (w *Workloader) runOrderStatus(ctx context.Context, thread int) error {
  		d.cID = randCustomerID(s.R)
  	}
- 
+
 -	tx, err := w.beginTx(ctx)
 +	tx, err := w.beginTxReadOnly(ctx)
  	if err != nil {
@@ -18,20 +18,20 @@ index 7a13a4a..9ea0e50 100644
 @@ -11,7 +11,7 @@ const stockLevelSelectDistrict = `SELECT d_next_o_id FROM district WHERE d_w_id
  func (w *Workloader) runStockLevel(ctx context.Context, thread int) error {
  	s := getTPCCState(ctx)
- 
+
 -	tx, err := w.beginTx(ctx)
 +	tx, err := w.beginTxReadOnly(ctx)
  	if err != nil {
  		return err
  	}
 diff --git a/tpcc/workload.go b/tpcc/workload.go
-index 6c1983f..4dd1f8f 100644
+index 6c1983f..323493c 100644
 --- a/tpcc/workload.go
 +++ b/tpcc/workload.go
-@@ -492,6 +492,25 @@ func (w *Workloader) beginTx(ctx context.Context) (*sql.Tx, error) {
+@@ -492,6 +492,36 @@ func (w *Workloader) beginTx(ctx context.Context) (*sql.Tx, error) {
  	return tx, err
  }
- 
+
 +// beginTxReadOnly is used only by ORDER_STATUS/STOCK_LEVEL — the two TPC-C
 +// transaction types that never write. lib/pq's BeginTx always sends an
 +// explicit BEGIN ... READ WRITE when TxOptions.ReadOnly is the Go zero value
@@ -42,7 +42,18 @@ index 6c1983f..4dd1f8f 100644
 +// transaction itself to be READ ONLY. Setting ReadOnly: true here makes
 +// lib/pq emit an explicit READ ONLY instead, which is the only way these two
 +// mechanisms can ever activate under this driver.
++//
++// This must stay postgres-only: go-sql-driver/mysql maps TxOptions.ReadOnly
++// to a "START TRANSACTION READ ONLY" that TiDB rejects outright with
++// Error 1235 ("function READ ONLY has only noop implementation in tidb now,
++// use tidb_enable_noop_functions to enable these functions") unless the
++// tidb_enable_noop_functions session variable is set — TiDB's near-read
++// routing is zone-based physical routing, unrelated to this transaction-level
++// hint, so it gains nothing from ReadOnly and only regresses if it's applied.
 +func (w *Workloader) beginTxReadOnly(ctx context.Context) (*sql.Tx, error) {
++	if w.cfg.Driver != "postgres" {
++		return w.beginTx(ctx)
++	}
 +	s := getTPCCState(ctx)
 +	tx, err := s.Conn.BeginTx(ctx, &sql.TxOptions{
 +		Isolation: sql.IsolationLevel(w.cfg.Isolation),
