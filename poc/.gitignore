@@ -27,3 +27,8 @@ results/audit/
 # 先驗結果數字，暫不進 repo（避免肥大）；報告/結論另行彙整並連結此路徑。
 # 若後續拍板要留存，移除本行即可正常 commit（目錄結構不變）。
 results/x-cross/baseline/w128/20260720T101928+0800/
+
+# 2026-07-24 aaro#2 正式重跑（go-tpc patch 修復後，近讀已生效驗證）W=128
+# 原始 artifact（121M：3 anchor + 3 aaro suite）。同上，僅先驗數字，數字已
+# 彙整進 XCROSS-AARO-CLOSING-REPORT-DRAFT.md §1-§6，本目錄暫不進 repo。
+results/x-cross/smoke/early-runs/20260723T133843+0800/

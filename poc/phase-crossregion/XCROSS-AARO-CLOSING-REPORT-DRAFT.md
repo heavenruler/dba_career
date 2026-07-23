@@ -1,13 +1,19 @@
 # X-CROSS A-A-RO 結案報告（雛形）— IDC↔GCP Cross-Region 3-DB W=128 A-A-RO 正式測試
 
 > 狀態：**雛形（draft）**。所有數字取自實際執行的 W=128 採樣，無任何模擬/示範資料。
-> 產出日：2026-07-21。範圍：A-A-RO（IDC 讀寫＋GCP read-only）profile，
-> P-A placement，三家（TiDB／CockroachDB／YugabyteDB）。
+> **2026-07-24 更新：§1/§3/§5 的採用數字已改為 aaro#2 重跑批次
+> （`TPCC_TS=20260723T133843+0800`）**——這是三家 go-tpc patch 修復＋近讀機制
+> 逐一驗證生效**之後**的第一次正式全跑，取代 07-20 批（修法前，近讀確實未
+> 生效，見 §5.5）。07-20 批數字保留於 §5.5/§5.7/§5.8 的根因定位/驗證脈絡中，
+> 不再作為 §1-§6 的正式採用數字。
 >
-> **⚠ 證據可及性注意**：本批原始 artifact（`results/x-cross/baseline/w128/20260720T101928+0800/`，
-> 121M）依 2026-07-21 拍板暫不進 repo（`.gitignore` 排除，避免肥大）。本報告連結指向
-> 該本地路徑，**在未持有此份本地 artifact 的環境（如重新 clone 的 repo）連結會失效**；
-> 若後續決議留存，移除 `.gitignore` 該行即可正常 commit、連結即恢復可解析。
+> **⚠ 證據可及性注意**：本批（07-24 採用）原始 artifact
+> （`results/x-cross/smoke/early-runs/20260723T133843+0800/`，121M）比照
+> 07-20 批慣例暫不進 repo（`.gitignore` 排除，避免肥大）；07-20 批舊
+> artifact（`results/x-cross/baseline/w128/20260720T101928+0800/`）**仍留在
+> 本機**（同樣 gitignore，未刪除），僅是不再作為 §1-§6 正式採用數字的來源。
+> 兩批皆僅在**持有本地 artifact 的環境**才能解析連結；若後續決議留存任一批
+> 的 artifact，移除 `.gitignore` 對應行即可正常 commit。
 >
 > 本文標籤同 [XCROSS-CLOSING-REPORT-DRAFT.md](XCROSS-CLOSING-REPORT-DRAFT.md)：`實測事實`／
 > `觀察`／`機制推論`／`根因未確認`／`採用決策`／`後續驗證`。
@@ -15,26 +21,40 @@
 ## 1. 執行摘要
 
 1. `採用決策`：正式採用三個 cell——**TiDB／CRDB／YBDB 的 A-A-RO W=128 全輪**（同批
-   `TPCC_TS=20260720T101928+0800`，單一 detached driver `win-aaro-w128.sh` 依序
-   TiDB→YBDB→CRDB；定義見 §3）。
-2. `實測事實`：**三家 IDC 側與 GCP 側全程 0 錯誤**（IDC 逐檔位 `_ERR` 計數與 GCP
-   `execute run failed` 計數雙口徑皆為 0；總交易數 TiDB 2,955,895／YBDB 2,124,346／
-   CRDB 2,338,604）。
-3. `實測事實`：t128 IDC 主水位 tpmC——TiDB **15,182.5**、YBDB **12,882.5**、CRDB
-   **11,331.1**；GCP 側 read_tpmTotal——TiDB **31,571.3**、YBDB **56,787.9**、CRDB
-   **41,056.3**（§5）。
+   `TPCC_TS=20260723T133843+0800`，2026-07-24 完成，單一 detached driver
+   `win-aaro-w128.sh` 依序 TiDB→YBDB→CRDB；定義見 §3）。**此批是三家近讀
+   機制根因修復＋逐一驗證生效（§5.5/§5.7/§5.8）之後的第一次正式重跑**，
+   取代 07-20 批（修法前，近讀確實未生效）作為 §1-§6 的採用數字。
+2. `實測事實`：**IDC 側／GCP 側錯誤率皆維持在既有已知的 RUN_SEC 收尾誤差
+   量級**（非新問題，見 §5.7/§5.8 對此類誤差的說明）——IDC 側：TiDB
+   3/1,300,573（0.0002%）、YBDB 5/1,625,299（0.0003%）、CRDB
+   0/2,410,368（0.0000%）；GCP 側：TiDB 1,186/1,399,965（0.085%）、YBDB
+   1,194/1,503,732（0.079%）、CRDB 1,111/3,927,268（0.028%）。三家皆通過
+   `check-aaro-artifacts.py` fail-closed 驗證。
+3. `實測事實`：t128 IDC 主水位 tpmC——TiDB **11,680.0**、YBDB **10,661.5**、CRDB
+   **10,694.1**；GCP 側 read_tpmTotal——TiDB **16,511.4**、YBDB **12,817.2**、CRDB
+   **40,328.9**（§5）。**與 07-20 批（修法前）相比，TiDB／YBDB 的 GCP 側
+   read_tpmTotal 明顯下降**（TiDB 31,571.3→16,511.4；YBDB 56,787.9→12,817.2），
+   `機制推論`：07-20 批的高吞吐建立在近讀失效、實際跨區回打 IDC 的基礎上
+   （見 §5.4），本批近讀生效後 GCP 側改為真正在本地服務，吞吐量與延遲特性
+   隨之改變，**不宜跨批直接比較吞吐數字大小**，只有本批（07-24）才代表
+   「近讀生效」狀態下的真實表現。
 4. `採用決策`：X-CROSS 於 phase registry 為 `baseline_eligible=false`——本報告數字供
    cross-region A-A-RO 能力與相對量級判讀，不作正式跨家排名（同 §2、§8 O5 慣例）。
-5. `後續驗證`：本輪為 A-A-RO 首次真實 W=128 全輪（此前僅 W=4 t16 smoke，見
-   [SMOKE-AARO-SUMMARY.md](SMOKE-AARO-SUMMARY.md)）；過程中發現並修復一個新根因
-   （`merge-gcp-stdout.sh` stdin 陷阱，§7），修復後 YBDB/CRDB 兩家全程零人工介入
-   （TiDB 因觸發此 bug 而人工補救一次，非重跑）。
-6. `實測事實`（07-21 補查，§5.5）：**GCP 就近讀本輪（07-20 批）確實未生效**——
-   三家各有一個實際阻擋點（TiDB zone 標籤不完全相同、CRDB 缺 session 層開關、
-   YBDB 交易未標記 read-only），已逐一定位並修復，用各 DB 決定性方法（CRDB
-   `EXPLAIN ANALYZE`、YBDB 執行時間對照、TiDB 大規模流量測試）驗證生效。
-   **僅在 smoke 規模驗證，尚未重跑完整 W=128 批次**；本報告 §1-§6 的採用數字
-   仍是修法前的 07-20 批，`read_tpmTotal` 吞吐數字本身不受影響。
+5. `實測事實`：本輪過程中意外發現並修復一個影響範圍更廣的根因——go-tpc
+   對 CRDB/YBDB 的 patch（§5.7）原本是 driver-agnostic 寫法，實際跑 W=128
+   時發現連 TiDB（`mysql` driver）也被拖累報錯（`Error 1235`，因 GCP client
+   的 go-tpc binary 三家共用同一份），已修正為僅在 `postgres` driver 生效
+   （§5.8／[patches/README.md](patches/README.md)）。另遇一次 GCP TiKV
+   重啟逾時導致的 driver 卡死插曲，皆為環境層面問題，與近讀機制本身無關，
+   詳見 [SESSION-HISTORY.md](SESSION-HISTORY.md) 2026-07-23/24 各節。
+6. `實測事實`（07-21/22/23 補查，§5.4/§5.5/§5.7/§5.8）：**GCP 就近讀在
+   07-20 批確實未生效**——三家各有一個實際阻擋點（TiDB zone 標籤不完全
+   相同、CRDB 缺 session 層開關、YBDB 交易未標記 read-only），已逐一定位
+   並修復，用各 DB 決定性/強支持方法驗證生效（CRDB `EXPLAIN ANALYZE` 決定性、
+   YBDB 延遲/吞吐量對照決定性、TiDB zone-label 比對為主要機制證據）。
+   **本批（07-24）即是修法後的正式 W=128 重跑**，§1-§6 採用數字已更新為
+   此批；codex 審查建議的 (2)(3) 已於 §5.8 補做，(5) 待 P-B 立項時處理。
 
 ## 2. 測試目的與範圍
 
@@ -50,10 +70,11 @@ X-CROSS 階段 A-A-RO 分項的結案數據。
 
 | 縮寫 | 狀態 | Suite 目錄（本地，見頂部證據可及性注意） |
 |---|---|---|
-| **TiDB A-A-RO** | ✅ 採用 | `results/x-cross/baseline/w128/20260720T101928+0800/tidb-vm-6node-P-A-aaro-rc-20260720T101928+0800/` |
-| **YBDB A-A-RO** | ✅ 採用 | `results/x-cross/baseline/w128/20260720T101928+0800/ybdb-vm-6node-P-A-aaro-rc-20260720T101928+0800/` |
-| **CRDB A-A-RO** | ✅ 採用 | `results/x-cross/baseline/w128/20260720T101928+0800/crdb-vm-6node-P-A-aaro-rc-20260720T101928+0800/` |
-| TiDB／YBDB／CRDB plain anchor | 備查（prepare-bridge 來源，非正式數據） | 同批 `*-vm-6node-P-A-rc-20260720T101928+0800/`（`ANCHOR_ONLY=1`：僅 prepare+gate，無 workload，§7） |
+| **TiDB A-A-RO** | ✅ 採用（07-24 重跑，取代 07-20 批） | `results/x-cross/smoke/early-runs/20260723T133843+0800/tidb-vm-6node-P-A-aaro-rc-20260723T133843+0800/` |
+| **YBDB A-A-RO** | ✅ 採用（07-24 重跑，取代 07-20 批） | `results/x-cross/smoke/early-runs/20260723T133843+0800/ybdb-vm-6node-P-A-aaro-rc-20260723T133843+0800/` |
+| **CRDB A-A-RO** | ✅ 採用（07-24 重跑，取代 07-20 批） | `results/x-cross/smoke/early-runs/20260723T133843+0800/crdb-vm-6node-P-A-aaro-rc-20260723T133843+0800/` |
+| TiDB／YBDB／CRDB plain anchor | 備查（prepare-bridge 來源，非正式數據） | 同批 `*-vm-6node-P-A-rc-20260723T133843+0800/`（`ANCHOR_ONLY=1`：僅 prepare+gate，無 workload，§7） |
+| 07-20 批（修法前，近讀未生效，見 §5.4/§5.5） | 停用，僅供根因定位脈絡參考 | `results/x-cross/baseline/w128/20260720T101928+0800/`（仍留存本機，未刪除） |
 
 三家均通過 `check-aaro-artifacts.py`（fail-closed）：`gcp_side` 頂層區塊存在、
 `tpmC_mean=null`（G2，RO mix 無 NEW_ORDER）、`read_tpmTotal_mean` 四檔位齊全、
@@ -89,41 +110,59 @@ majority PASS。
 
 ### 5.1 IDC 側吞吐（標準 TPCC mix）
 
+`實測事實`：本表為 07-24 重跑（`TPCC_TS=20260723T133843+0800`，近讀修法後）
+的採用數字，取代 07-20 批（修法前）。
+
 | threads | TiDB tpmC (range%) | YBDB tpmC (range%) | CRDB tpmC (range%) |
 |---:|---:|---:|---:|
-| 16 | 9,439.1 (16.1%) | 6,002.6 (18.6%) | 9,347.7 (13.8%) |
-| 32 | 12,833.2 (23.5%) | 7,276.9 (17.8%) | 9,906.0 (18.9%) |
-| 64 | 15,702.7 (7.3%) | 12,247.1 (2.6%) | 11,501.7 (8.8%) |
-| **128（主水位）** | **15,182.5 (23.6%)** | **12,882.5 (3.1%)** | **11,331.1 (4.0%)** |
+| 16 | 1,865.7 (2.1%) | 4,930.5 (4.6%) | 9,765.9 (5.1%) |
+| 32 | 3,401.9 (7.7%) | 5,945.4 (10.9%) | 11,386.1 (3.2%) |
+| 64 | 6,396.2 (24.5%) | 7,844.3 (8.3%) | 11,538.6 (6.6%) |
+| **128（主水位）** | **11,680.0 (9.5%)** | **10,661.5 (9.3%)** | **10,694.1 (6.4%)** |
 
-`觀察`：TiDB t64→t128 微降（15,702.7→15,182.5）且 t128 range% 偏高（23.6%）；
-YBDB/CRDB 皆單調遞增、t128 range% 收斂良好（3.1%/4.0%）。三家全檔位、全輪
-**0 錯誤**（IDC `_ERR` 計數與 GCP `execute run failed` 計數雙口徑核實，§1.2）。
+`觀察`：三家 IDC 側 tpmC 皆隨 threads 單調遞增（CRDB t64→t128 微降
+11,538.6→10,694.1，其餘皆升）；range% 除 TiDB t64（24.5%，單一離群檔位）
+外皆在 10% 以內，收斂良好。IDC 側全檔位、全輪錯誤率維持在既有已知的
+RUN_SEC 收尾誤差量級（TiDB 3/1,300,573＝0.0002%、YBDB
+5/1,625,299＝0.0003%、CRDB 0/2,410,368）。
 
 ### 5.2 GCP 側吞吐（read-only mix）
 
 | threads | TiDB read_tpmTotal | YBDB read_tpmTotal | CRDB read_tpmTotal |
 |---:|---:|---:|---:|
-| 16 | 8,151.6 | 19,883.7 | 8,831.6 |
-| 32 | 14,518.1 | 36,802.0 | 19,320.5 |
-| 64 | 26,475.5 | 50,640.1 | 42,095.6 |
-| **128** | **31,571.3** | **56,787.9** | **41,056.3** |
+| 16 | 10,493.0 | 9,887.5 | 34,298.8 |
+| 32 | 15,242.7 | 22,404.1 | 41,736.3 |
+| 64 | 13,867.6 | 15,019.6 | 40,894.2 |
+| **128** | **16,511.4** | **12,817.2** | **40,328.9** |
 
-`觀察`：三家 GCP 側 read_tpmTotal 皆隨 threads 單調遞增、未見平頂（128 檔位
-仍在成長），與 IDC 側同檔位相比：YBDB GCP 吞吐（56,787.9）遠高於其 IDC 側
-（12,882.5，約 4.4×）；TiDB／CRDB 的 GCP／IDC 比值分別約 2.1×／3.6×。
-`機制推論`：唯讀 mix（僅 ORDER_STATUS/STOCK_LEVEL，無寫入/鎖競爭）本質上
-比標準 TPCC mix 輕量，GCP 側單筆延遲更短、同硬體可撐更高吞吐；未以逐筆延遲
-分解證實。**GCP 與 IDC 兩側數值不可直接比較大小（G2）**——不同 workload、
-不同副本角色，此處僅供觀察兩側量級差異，非效能對比。
+`觀察`：CRDB GCP 側 read_tpmTotal 在 t32 後即接近平頂（41,736.3→40,894.2→
+40,328.9），TiDB／YBDB 則在 t32/t64 出現非單調波動（TiDB t32→t64 降
+15,242.7→13,867.6 後 t128 回升；YBDB t64→t128 降 15,019.6→12,817.2）。
+與 IDC 側同檔位 t128 相比：CRDB GCP／IDC 比值約 **3.77×**（40,328.9 vs
+10,694.1）、TiDB 約 **1.41×**、YBDB 約 **1.20×**。GCP 側全檔位錯誤率同樣
+維持在既有已知量級（TiDB 1,186/1,399,965＝0.085%、YBDB
+1,194/1,503,732＝0.079%、CRDB 1,111/3,927,268＝0.028%）。
+
+`根因未確認`：**本批（近讀生效後）的 GCP 側絕對吞吐數字全面低於 07-20
+批（修法前）**，尤以 TiDB（31,571.3→16,511.4）、YBDB（56,787.9→12,817.2）
+降幅明顯，CRDB 相對持平（41,056.3→40,328.9）。這與「近讀生效＝更快＝
+吞吐應該更高」的單純直覺相反。可能原因包含：(a) 兩批相隔數天，底層
+VM／網路背景條件不同，非同批對照實驗；(b) 近讀生效後的實際瓶頸可能轉移
+到別處（如 TiKV/TServer 本地 CPU、GCP VM 規格），而非 07-20 批以為的
+「WAN round-trip 是瓶頸」；(c) 07-20 批的高吞吐本身可能包含尚未察覺的
+量測扭曲（如部分讀取根本沒有真正落地、被提前判定完成）。**本報告不對此
+方向性反轉做進一步機制推論**——兩批條件不同，不構成合法的 before/after
+對照實驗（同 §5.5 對 TiDB netflow 方法論限制的態度），需要專門設計的
+同批 A/B 才能回答。**GCP 與 IDC 兩側數值不可直接比較大小（G2）**——不同
+workload、不同副本角色，此處僅供觀察兩側量級差異，非效能對比。
 
 ### 5.3 結果判讀
 
-| 資料庫 | IDC t128 | GCP t128 read_tpmTotal | 錯誤 | 可引用結論 |
-|---|---|---:|---|---|
-| TiDB | 15,182.5 tpmC | 31,571.3 | 0 / 2,955,895 | 首次 A-A-RO W=128 全輪，執行鏈驗證成功（近讀狀態見 §5.5，本批未修法） |
-| YBDB | 12,882.5 tpmC | 56,787.9 | 0 / 2,124,346 | 同上；range% 收斂最佳（3.1%） |
-| CRDB | 11,331.1 tpmC | 41,056.3 | 0 / 2,338,604 | 同上；range% 收斂良好（4.0%） |
+| 資料庫 | IDC t128 | GCP t128 read_tpmTotal | IDC 錯誤 | GCP 錯誤 | 可引用結論 |
+|---|---|---:|---|---|---|
+| TiDB | 11,680.0 tpmC | 16,511.4 | 3 / 1,300,573 | 1,186 / 1,399,965 | 近讀修法後正式 W=128 全輪，執行鏈與近讀機制皆驗證成功（§5.5/§5.7/§5.8） |
+| YBDB | 10,661.5 tpmC | 12,817.2 | 5 / 1,625,299 | 1,194 / 1,503,732 | 同上；go-tpc 反事實已確認拿掉 patch 會劣化（§5.8） |
+| CRDB | 10,694.1 tpmC | 40,328.9 | 0 / 2,410,368 | 1,111 / 3,927,268 | 同上；GCP／IDC 吞吐比值最高（3.77×），三家中近讀效益最明顯 |
 
 ### 5.4 GCP 就近讀「執行面」證據（2026-07-21 補查）
 
@@ -433,19 +472,21 @@ netflow 暫存檔手動撈回未浪費。
 
 ## 6. 各資料庫觀察
 
-- `觀察`：TiDB t128 range% 23.6% 為三家最高，且 t64→t128 tpmC 微降——與
+- `觀察`：TiDB t64 range% 24.5% 為三家四檔位中最高的單一離群值，其餘檔位
+  皆收斂良好（≤9.5%）；IDC 側 tpmC 三家 t128 皆落在 10,600-11,700 這個相近
+  量級（TiDB 11,680.0／YBDB 10,661.5／CRDB 10,694.1），與
   [XCROSS-CLOSING-REPORT-DRAFT.md §6.1](XCROSS-CLOSING-REPORT-DRAFT.md) 記載的
-  P-A×A-S 下 TiDB 低併發延遲敏感、高併發近線性的形狀不同（此處是 A-A-RO 雙端
-  並發下的新場景，GCP 側同時打流量可能改變 IDC 側資源競爭型態）。`根因未確認`
-  ——本輪未收集逐輪 mpstat 對照，留待下一輪補強。
-- `觀察`：YBDB／CRDB 在 A-A-RO 下的 IDC 側 t128 tpmC（12,882.5／11,331.1）與
-  P-A×A-S #3 批（12,769.5／10,163.4，見 [XCROSS-CLOSING-REPORT-DRAFT.md §5.1](XCROSS-CLOSING-REPORT-DRAFT.md)）
-  量級相近——`機制推論`：GCP 側的 read-only 流量對 IDC 側寫入路徑影響有限（副本
-  同步是既有 raft/paxos 背景成本）；跨批比較，未做同批對照實驗，僅供參考。
-  **本批（07-20，修法前）「read-only 查詢多數走 GCP 本地副本」假設不成立**
-  ——§5.4 執行面查核顯示證據不足，TiDB／YBDB 甚至傾向反方向；07-21 已定位
-  三家根因並修復（§5.5），但**修法後尚未重跑 W=128**，本節數字仍受修法前
-  的近讀失效狀態影響，勿沿用「已修復」的假設回頭解讀本批（07-20）數據。
+  P-A×A-S 純 IDC 場景相比屬同量級（`根因未確認`：GCP 側同時打近讀流量對
+  IDC 側資源競爭的確切影響，本輪未收集逐輪 mpstat 對照，留待下一輪補強）。
+- `實測事實`：**本批（07-24）是三家近讀機制根因修復＋逐一驗證生效之後的
+  正式 W=128 重跑**——§5.4 記載的「read-only 查詢多數走 GCP 本地副本假設
+  不成立」僅適用於 07-20 批（修法前）；07-21/22/23 已定位並修復三家根因
+  （§5.5）、補做 codex 審查建議的驗證（§5.7/§5.8），本批數字即是修法後的
+  結果，**不再受修法前的近讀失效狀態影響**。GCP／IDC t128 吞吐比值
+  （TiDB 1.41×／YBDB 1.20×／CRDB 3.77×，§5.2）為三家近讀生效後的實際觀察
+  值，但與 07-20 批（修法前）的比值（TiDB 2.1×／YBDB 4.4×／CRDB 3.6×）
+  方向不一致（尤其 YBDB 從遠高於 IDC 降為僅 1.2×），此反轉的確切機制未
+  確認（§5.2 已標注 `根因未確認`，不在本節重複推論）。
 
 ## 7. 執行紀錄與問題
 
@@ -475,7 +516,7 @@ netflow 暫存檔手動撈回未浪費。
 | A3 | GCP／IDC 兩側量級比較僅為觀察，無 workload-normalized 對照設計 | 不影響本報告範圍內結論 | 若需要「等效負載換算」需獨立設計 |
 | A4 | 原始 artifact（121M）依拍板未進 repo（`.gitignore`），report 連結在無本地副本環境會失效 | 不影響本機使用；影響外部可重現性 | 待留存決策；決議保留時移除 `.gitignore` 該行即可 |
 | A5 | X-CROSS `baseline_eligible=false` | 數字不得進正式跨家排名 | 恆定約束（同 P-A×A-S 報告 O5） |
-| A6 | GCP 就近讀在 07-20 批確實未生效（三家各有實際根因，§5.5），07-21 已修復並在 smoke 規模驗證生效，**但尚未在完整 W=128 批次重跑確認** | 07-20 批 `read_tpmTotal` 吞吐數字本身有效，但該批的「近讀」不可宣稱已驗證（修法前）；§1-§6 採用數字未更新（仍是修法前批次） | 重跑完整 A-A-RO W=128 批次（三家修法已落地：TiDB zone 統一、CRDB/YBDB GCP_CONN_PARAMS），用 [check-nearread.sh](scripts/check-nearread.sh) 驗證後更新 §1-§6 採用數字 |
+| A6 | **已解決（07-24）**：GCP 就近讀在 07-20 批確實未生效（三家各有實際根因，§5.5），07-21/22 於 smoke 規模驗證修法生效，07-23 意外發現並修復 go-tpc patch 誤傷 TiDB 的回歸（§5.8），07-24 完成修法後的正式 W=128 全跑（`TPCC_TS=20260723T133843+0800`） | §1-§6 採用數字已更新為 07-24 批（近讀生效後）；07-20 批（修法前）數字保留於 §5.4/§5.5 根因定位脈絡，不再是採用數字 | 已解決。後續若要更嚴謹的因果對照（例如同批次 patch on/off A/B），可參考 §5.8 YBDB 反事實的做法延伸到 W=128 規模，但非本報告必要項 |
 | A7 | codex 獨立審查（§5.6）指出的 5 項補做：(1)(4) 已於 07-22 執行（§5.7），(2)(3) 已於 07-22/23 執行（§5.8），(5) 仍未執行 | (3) staleness 三家皆決定性、YBDB 反事實決定性；(2) TiDB 嚴格 A/B **未取得決定性結果**（netflow 方法論在 W=4 規模不夠力，見 §5.8）；(5) 未執行前仍不足以宣稱「統一 zone 對 P-B 故障域衝擊」已評估 | (2) 若要補上決定性證據需更大規模 burst 或 TiDB 版 EXPLAIN 決定性欄位（現無）；(5) 待 P-B 立項時再處理，不擋本輪 P-A aaro#2 |
 | A8 | **go-tpc 與 CRDB/YBDB 近讀機制結構性衝突**（§5.7 新發現，YBDB 反事實已於 §5.8 補驗證確認同樣成立）：go-tpc 從未設 `TxOptions.ReadOnly=true`，`lib/pq` 因此對每筆交易明確送出 `BEGIN READ WRITE`，蓋過 session 層 `default_transaction_read_only`。**07-23 已固化並完整端到端驗證**：[apply-gotpc-patch.sh](scripts/apply-gotpc-patch.sh)（冪等從原始碼重建＋部署，不依賴人工記得）已接進 [win-aaro-w128.sh](scripts/win-aaro-w128.sh) 的 `phase2-bootstrap-gcp-client` 之後；aaro#2 全跑（TS=20260723T091902+0800）啟動時 GCP client 真實存在，`apply-gotpc-patch.sh` 完整跑完 clone→patch→build→部署→驗證，印出 `PASS：patched go-tpc 已部署到 root@10.160.152.15`，**已無任何未驗證的 gap** | 已解決 | 無 |
 | A9 | YBDB tablet 分布對 smoke 規模（W=4）資料量不穩定：`enable_automatic_tablet_splitting=false` 下多數表僅 1 tablet，GCP 側 3 台 tserver 的 LB 分配非保證均勻。累計三輪驗證（07-22 A7、07-23 A8、07-23 aaro#2 前置檢查）共 7 次部署嘗試，4 次在 W=4 smoke 卡住、**W=128 真實規模那次第一次嘗試即通過**（`gcp_tservers_with_sst=3`，無需重試）——確認 flaky 屬 W=4 smoke 特有現象（資料量小、tablet 數少），非 W=128 全跑的真實風險 | 不影響已成功那幾次的近讀驗證結果本身；**已排除**其對 aaro#2（W=128）的風險 | 已解決，無需在 aaro#2 前額外處理；未來若仍想跑 W=4 smoke 驗證卡在此 gate，優先選擇「重新部署重試」而非人工搬 tablet |
@@ -484,11 +525,21 @@ netflow 暫存檔手動撈回未浪費。
 ## 9. 追溯紀錄
 
 - 執行歷史：[SESSION-HISTORY.md](SESSION-HISTORY.md) 2026-07-18（A-A-RO smoke
-  四根因修復）、2026-07-20/21（本輪全跑＋merge-gcp-stdout.sh 修復）
+  四根因修復）、2026-07-20/21（07-20 批全跑＋merge-gcp-stdout.sh 修復，已停用
+  見上）、2026-07-23/24（**採用批**：go-tpc patch 誤傷 TiDB 回歸修復、GCP
+  TiKV 重啟逾時插曲、aaro#2 正式重跑完整 PASS）
 - Smoke 前置：[SMOKE-AARO-SUMMARY.md](SMOKE-AARO-SUMMARY.md)（W=4 t16，07-18）
-- Commits：`e2cae9a2`（4 根因修復＋smoke）、`f92d2491`（ANCHOR_ONLY／win-aaro-w128
-  driver）、`78796957`（merge-gcp-stdout.sh stdin 修復）、`836d655f`（就近讀
-  三家根因修復＋驗證）
+- Commits（依時間序）：`e2cae9a2`（4 根因修復＋smoke）、`f92d2491`（ANCHOR_ONLY／
+  win-aaro-w128 driver）、`78796957`（merge-gcp-stdout.sh stdin 修復）、
+  `836d655f`（就近讀三家根因修復＋驗證）、`e61e4096`（回應 codex 審查，
+  check-nearread.sh fail-closed）、`49b8454d`/`8e9552c9`/`46771576`/`e40c8af8`
+  （A7(1)(4) 補強驗證，抓到 go-tpc 結構性 bug）、`804afec5`（codex (2)(3)
+  補強：staleness／TiDB A/B／YBDB 反事實）、`759105dc`/`f48238c0`（A8 固化：
+  apply-gotpc-patch.sh 接進 win-aaro-w128.sh）、`a7245197`（go-tpc patch
+  修正僅限 postgres driver，修復誤傷 TiDB 的回歸）
 - 就近讀驗證原始輸出：[nearread-verify-evidence-20260721/](nearread-verify-evidence-20260721/README.md)（07-21，單筆查詢）、[nearread-verify-a7-20260722/](nearread-verify-a7-20260722/README.md)（07-22，真實交易＋t128 高併發）、[nearread-verify-a8-20260723/](nearread-verify-a8-20260723/README.md)（07-22/23，TiDB 嚴格 A/B＋staleness＋YBDB go-tpc 反事實）
-- go-tpc 修法：[patches/go-tpc-readonly-fix.patch](patches/go-tpc-readonly-fix.patch) ＋ [patches/README.md](patches/README.md)
+- go-tpc 修法：[patches/go-tpc-readonly-fix.patch](patches/go-tpc-readonly-fix.patch) ＋ [patches/README.md](patches/README.md)（含 07-23 driver-agnostic 回歸的修正記錄）
 - codex 獨立審查對象：本文件 §5.4/§5.5/§5.6、[ansible/playbooks/tidb-vm6.yml](../ansible/playbooks/tidb-vm6.yml)、[run-vm6-aa.sh](scripts/run-vm6-aa.sh)、[check-nearread.sh](scripts/check-nearread.sh)
+- aaro#2 採用批 driver log／過程插曲：[SESSION-HISTORY.md](SESSION-HISTORY.md)
+  2026-07-23/24 各節（go-tpc patch 回歸發現與修復、GCP TiKV 重啟逾時、
+  TiDB/YBDB/CRDB 三 cell 依序 PASS 並歸檔的完整過程）
