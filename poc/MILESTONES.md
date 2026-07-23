@@ -100,8 +100,8 @@ flowchart LR
 | 07-02～07-09 | 執行鏈收斂 | 三家 P-A×A-S smoke 全鏈完成，修復 freeze、gate、quorum 等問題 | ✅ |
 | 07-11～07-18 | P-A×A-S 正式輪 | 同批三家 W=128 全輪完成並形成結案報告 | ✅ `N=1` |
 | 07-18～07-21 | P-A×A-A-RO 首輪 | 三家 W=128 雙端全輪完成；發現近讀未生效 | ⚠️ 執行鏈有效，近讀口徑失效 |
-| 07-21～07-23 | 近讀修正與補驗 | 修正三家近讀條件、go-tpc read-only 行為與 fail-closed 檢查 | 🟡 |
-| 07-23～目前 | A-A-RO 第二輪 | TiDB 已完成；YugabyteDB、CockroachDB 尚無已提交完成證據 | 🔄 |
+| 07-21～07-23 | 近讀修正與補驗 | 修正三家近讀條件、go-tpc read-only 行為與 fail-closed 檢查 | ✅ |
+| 07-23～07-24 | P-A×A-A-RO 第二輪 | 三家同批 W=128 全輪完成，改採近讀修正後結果 | ✅ `N=1` |
 | 待排程 | P-A×A-A | 雙端讀寫與同 warehouse contention | ⚪ |
 | 待排程 | P-B 全 workload | A-S、A-A-RO、A-A | ⚪ |
 | 待排程 | Chaos／failover | C1、C4、C7 與 F1 RTO/RPO | ⚪ |
@@ -249,7 +249,7 @@ flowchart LR
 |---|---|---|---|---|---|
 | P-A | A-S | ✅ | ✅ | ✅ | 同批 W=128、`N=1`；可作 X-CROSS 探索性結論 |
 | P-A | A-A-RO 初輪 | ⚠️ | ⚠️ | ⚠️ | 雙端全輪完成，但近讀設定未實際生效 |
-| P-A | A-A-RO 修正後 | ✅ TiDB | 🔄 | 🔄 | 以目前可達 commit 判定；三家完成後才更新結案數字 |
+| P-A | A-A-RO 修正後 | ✅ | ✅ | ✅ | 同批 W=128、近讀修正後完成；`N=1` |
 | P-A | A-A | ⚪ | ⚪ | ⚪ | 尚無正式結果 |
 | P-B | A-S | ⚪ | ⚪ | ⚪ | gate／腳本準備不等於 workload 完成 |
 | P-B | A-A-RO | ⚪ | ⚪ | ⚪ | 尚無正式結果 |
@@ -257,6 +257,10 @@ flowchart LR
 
 X-CROSS 的 `baseline_eligible=false`；這些結果用於跨區能力與機制觀察，不進
 S-BASE 正式跨家排名。
+
+P-A×A-A-RO 修正後採用批次為 `TPCC_TS=20260723T133843+0800`。三家均通過
+雙側結果與近讀證據的 fail-closed 檢查；07-20 首輪僅保留作根因與修正歷程，
+不再作為正式採用數字。
 
 **主要證據**
 
@@ -304,7 +308,7 @@ S-BASE 正式跨家排名。
 | W=4 跨 run 變異過大 | warehouse 過少、鎖競爭與 cluster state 主導 | 改 W=128、正式 warmup、同批執行 | 7 月正式 W=128 收斂 | 仍多為 `N=1` |
 | CRDB／YBDB GCP 零副本 | placement、join 與 replica gate 不完整 | 修 placement＋GCP replica fail-closed | 修正後 W=128 正式 cell | P-B 尚未驗證 |
 | YugabyteDB master quorum race | cold reset 後 master/tserver flags 與 catalog 尚未收斂 | quorum gate＋catalog wait＋live flag readback | Stage 1 smoke 通過 | 長距離故障時仍需 DR 測試 |
-| A-A-RO 第一輪近讀未生效 | 三家「功能啟用」不等於 query 實際走 follower | 各家 session／transaction 修法＋執行面檢查 | smoke／補驗完成 | 修法後三家正式全輪未全數完成 |
+| A-A-RO 第一輪近讀未生效 | 三家「功能啟用」不等於 query 實際走 follower | 各家 session／transaction 修法＋執行面檢查 | 修正後三家同批 W=128 全輪完成 | 僅 `N=1`；YugabyteDB 約 28.3 秒 staleness 為已接受取捨 |
 | go-tpc read-only patch 誤傷 TiDB | 三家共用 binary，patch 未限制 driver | 只對 postgres 套 ReadOnly transaction | TiDB 第二輪 cell 通過 | patch 升級需三家回歸 |
 | `while read` 只處理第一筆 | 迴圈內 SSH 讀走 stdin | SSH stdin 導向 `/dev/null` | artifact checker 攔截並重生 summary | 同類 shell pattern 需掃描 |
 | 同 TS 重跑讀到 stale marker | 舊 marker 與新程序競態 | 清除 marker、重試與 lineage 斷言 | 後續 detached batch 通過 | 中斷恢復仍需明確 runbook |
@@ -319,6 +323,8 @@ S-BASE 正式跨家排名。
 - 跨區長跑需要 detached orchestration、雙 client 時序、GCP 副本與 query routing 證據。
 - P-A×A-S 三家 W=128 已完成一次同批正式執行，可作探索性架構觀察。
 - A-A-RO 第一輪證明雙端執行鏈可運作，也證明「設定存在」不足以證明就近讀。
+- P-A×A-A-RO 修正後三家已完成同批 W=128；可用於目前近讀設定下的
+  X-CROSS 探索性觀察，但仍受 `N=1` 與各家 staleness 語意限制。
 
 ### 不可下結論
 
@@ -332,7 +338,7 @@ S-BASE 正式跨家排名。
 
 | 決策 | 必要證據 | 目前狀態 |
 |---|---|---|
-| A-A-RO 修法後結案 | 三家同批 W=128、雙側 summary、近讀執行面證據 | 🔄 TiDB 完成，其餘待證據 |
+| A-A-RO 修法後結案 | 三家同批 W=128、雙側 summary、近讀執行面證據 | ✅ `TPCC_TS=20260723T133843+0800` |
 | 是否進 P-B | P-B placement gate、故障域模型、先行單家 smoke | ⚪ |
 | 是否進 A-A | 衝突模型、雙端寫入錯誤率、commit latency 與 rollback | ⚪ |
 | HA/DR 可用性 | C1/C4/C7、F1、RTO/RPO、資料一致性與回復紀錄 | ⚪ |

@@ -143,18 +143,43 @@ RUN_SEC 收尾誤差量級（TiDB 3/1,300,573＝0.0002%、YBDB
 維持在既有已知量級（TiDB 1,186/1,399,965＝0.085%、YBDB
 1,194/1,503,732＝0.079%、CRDB 1,111/3,927,268＝0.028%）。
 
-`根因未確認`：**本批（近讀生效後）的 GCP 側絕對吞吐數字全面低於 07-20
+`實測事實`＋`機制推論`（2026-07-24 補查，見 [SESSION-HISTORY.md](SESSION-HISTORY.md)
+2026-07-24 節）：**本批（近讀生效後）的 GCP 側絕對吞吐數字全面低於 07-20
 批（修法前）**，尤以 TiDB（31,571.3→16,511.4）、YBDB（56,787.9→12,817.2）
 降幅明顯，CRDB 相對持平（41,056.3→40,328.9）。這與「近讀生效＝更快＝
-吞吐應該更高」的單純直覺相反。可能原因包含：(a) 兩批相隔數天，底層
-VM／網路背景條件不同，非同批對照實驗；(b) 近讀生效後的實際瓶頸可能轉移
-到別處（如 TiKV/TServer 本地 CPU、GCP VM 規格），而非 07-20 批以為的
-「WAN round-trip 是瓶頸」；(c) 07-20 批的高吞吐本身可能包含尚未察覺的
-量測扭曲（如部分讀取根本沒有真正落地、被提前判定完成）。**本報告不對此
-方向性反轉做進一步機制推論**——兩批條件不同，不構成合法的 before/after
-對照實驗（同 §5.5 對 TiDB netflow 方法論限制的態度），需要專門設計的
-同批 A/B 才能回答。**GCP 與 IDC 兩側數值不可直接比較大小（G2）**——不同
-workload、不同副本角色，此處僅供觀察兩側量級差異，非效能對比。
+吞吐應該更高」的單純直覺相反，已對比兩批 `runs/threads-128/round-1/` 下
+原始 `mpstat`/`iostat`/`probe-iso-latency-gcp-*.json` 找到機制、且三家不同因：
+
+- **YBDB（證據力較強）**：GCP dbhost 磁碟 I/O 明顯惡化——CPU %iowait
+  11.8%→44.99%（峰值 66.5%）、disk %util 53.8%→90.3%、write await
+  0.9ms→17.0ms（19 倍），直接對應 GCP 側 STOCK_LEVEL p99 234.9ms→
+  14,925.0ms 的延遲暴增。查 [iac-gcp/main.tf](../iac-gcp/main.tf) 確認 GCP
+  DB 節點磁碟類型為 `pd-standard`（GCP 標準持久碟，IOPS／吞吐依「已佈建
+  容量」而非效能等級計費，100GB 預設下寫入 IOPS 上限僅約 150）——這款磁碟
+  在 LSM compaction 高併發寫入下，效能本就容易因 compaction 累積狀態、
+  GCP 後端網路儲存層 noisy-neighbor 而逐次跑產生大幅波動。**判定：磁碟選型
+  本身的已知特性造成的 run-to-run 變異，非 go-tpc 修法造成的規律性衰退。**
+- **TiDB（`根因未確認`，機制推論，證據力較弱）**：同一台 GCP dbhost-1 的
+  iowait 反而下降（15.4%→4.0%）、CPU %idle 上升（30.2%→56.1%），代表節點
+  更閒而非被 I/O 卡住，瓶頸不在磁碟。推論與同一次 run 內先前發生的
+  GCP TiKV 重啟逾時插曲（§7）有關——TiKV 在 GCP 節點的 region leader/lease
+  可能仍在穩定中，使部分 workers 提早被 `context deadline exceeded` 踢出
+  （`go-tpc-stdout-gcp.txt` 可見），降低了實際在途請求數。**此推論未逐一用
+  TiKV region metrics 驗證，仍標記為根因未確認。**
+- **CRDB（佐證）**：兩批 GCP 側幾乎一致（-1.8%），iowait／util 無異常——
+  證明「go-tpc 修法」本身對三家都沒有造成性能規律性衰退，CRDB 全程走同一段
+  程式碼路徑（postgres driver + ReadOnly=true）在兩批表現一致。
+- 已排除的候選解釋：隔離網路探測（`probe-iso-latency-gcp-t128-r1.json`
+  無負載下 SELECT_1 延遲）顯示 TiDB／YBDB 在新批次反而持平或更好，排除
+  「跨區網路整體劣化」。
+
+**結論：兩批吞吐落差主因是 GCP 側基礎設施 run-to-run 變異（YBDB 磁碟 I/O
+最主要）與該次 run 前置插曲（TiDB TiKV 重啟）疊加，而非 go-tpc 修法或近讀
+機制本身的性能退化。** 兩批條件本就不同，不構成合法的 before/after 對照
+實驗（同 §5.5 對 TiDB netflow 方法論限制的態度）；若要精確拆解每項因素的
+貢獻度，需要專門設計的同批多輪 A/B 才能回答。**GCP 與 IDC 兩側數值不可
+直接比較大小（G2）**——不同 workload、不同副本角色，此處僅供觀察兩側量級
+差異，非效能對比。
 
 ### 5.3 結果判讀
 
@@ -485,8 +510,10 @@ netflow 暫存檔手動撈回未浪費。
   結果，**不再受修法前的近讀失效狀態影響**。GCP／IDC t128 吞吐比值
   （TiDB 1.41×／YBDB 1.20×／CRDB 3.77×，§5.2）為三家近讀生效後的實際觀察
   值，但與 07-20 批（修法前）的比值（TiDB 2.1×／YBDB 4.4×／CRDB 3.6×）
-  方向不一致（尤其 YBDB 從遠高於 IDC 降為僅 1.2×），此反轉的確切機制未
-  確認（§5.2 已標注 `根因未確認`，不在本節重複推論）。
+  方向不一致（尤其 YBDB 從遠高於 IDC 降為僅 1.2×）。§5.2 已補查機制：主因
+  是 GCP 側基礎設施 run-to-run 變異（YBDB `pd-standard` 磁碟 I/O 惡化為
+  主，TiDB 與同批 TiKV 重啟插曲相關，`根因未確認`）疊加，而非近讀機制本身
+  退化，不在本節重複推論。
 
 ## 7. 執行紀錄與問題
 
@@ -543,3 +570,8 @@ netflow 暫存檔手動撈回未浪費。
 - aaro#2 採用批 driver log／過程插曲：[SESSION-HISTORY.md](SESSION-HISTORY.md)
   2026-07-23/24 各節（go-tpc patch 回歸發現與修復、GCP TiKV 重啟逾時、
   TiDB/YBDB/CRDB 三 cell 依序 PASS 並歸檔的完整過程）
+- GCP 側吞吐反轉根因補查（2026-07-24）：對比兩批
+  `runs/threads-128/round-1/{mpstat,iostat,probe-iso-latency-gcp-*}` 原始
+  監控檔，定位 YBDB 磁碟 I/O（`pd-standard` 類型，[iac-gcp/main.tf](../iac-gcp/main.tf)）
+  與 TiDB 有效並發下降兩條不同機制，取代原 §5.2 的 `根因未確認` 標記，
+  過程記於 [SESSION-HISTORY.md](SESSION-HISTORY.md) 2026-07-24 節

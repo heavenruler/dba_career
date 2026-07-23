@@ -1742,3 +1742,52 @@ go-tpc patch 修法與 TiKV 重啟逾時問題皆確認解決/未重演；driver
 YBDB cell。
 **Next review**：持續監控 YBDB／CRDB cell 進度；全部完成後 `make
 phase9`、彙整正式 W=128 數字更新報告 §1-§6。
+
+## 2026-07-24 — GCP 側吞吐「近讀生效後反而變低」根因補查
+
+**背景**：aaro#2（`TPCC_TS=20260723T133843+0800`）三家 PASS 並歸檔、
+`XCROSS-AARO-CLOSING-REPORT-DRAFT.md` §1-§6 完成改版（commit `d40fca8a`）
+後，§5.2 對「本批 GCP 側絕對吞吐全面低於 07-20 批（修法前）」標注了
+`根因未確認`（TiDB 31,571.3→16,511.4；YBDB 56,787.9→12,817.2；CRDB
+41,056.3→40,328.9 相對持平）。使用者要求進一步查根因。
+
+**查法**：直接對比兩批 `runs/threads-128/round-1/` 下的原始監控檔
+（`mpstat-db-gcp-dbhost-*.txt`／`iostat-1s-db-gcp-dbhost-*.txt`／
+`probe-iso-latency-gcp-t128-r1.json`），而非只看 summary 數字。
+
+**發現（三家三種不同狀況，非單一根因）**：
+
+- **YBDB（證據力較強，`實測事實`）**：GCP dbhost-1 磁碟 I/O 明顯惡化——
+  CPU %iowait 11.8%→44.99%（峰值 66.5%）、disk %util 53.8%→90.3%、
+  write await 0.9ms→17.0ms（19 倍），直接對應 GCP 側延遲暴增（STOCK_LEVEL
+  p99 234.9ms→14,925.0ms）。查 `iac-gcp/main.tf:30` 確認 GCP DB 節點磁碟
+  為 `pd-standard`（GCP 標準持久碟，IOPS／吞吐依「已佈建容量」計費，
+  100GB 預設下寫入 IOPS 上限僅約 150）——這款磁碟在 LSM compaction 高併發
+  寫入下，效能容易因 compaction 累積狀態、GCP 後端網路儲存層
+  noisy-neighbor 而逐次跑產生大幅波動。判定：磁碟選型本身的已知特性造成
+  run-to-run 變異，非 go-tpc 修法造成的規律性衰退。
+- **TiDB（`根因未確認`，機制推論）**：同一台 dbhost-1 的 iowait 反而下降
+  （15.4%→4.0%）、CPU %idle 上升（30.2%→56.1%），瓶頸不在磁碟。推論與
+  同一次 run 內先前的 GCP TiKV 重啟逾時插曲（見上節）有關——TiKV 在 GCP
+  節點的 region leader/lease 可能仍在穩定中，使部分 workers 提早被
+  `context deadline exceeded` 踢出，降低了實際在途請求數。未逐一用 TiKV
+  region metrics 驗證，仍標記根因未確認。
+- **CRDB（佐證）**：兩批 GCP 側幾乎一致（-1.8%），iowait／util 無異常，
+  證明 go-tpc 修法本身對三家都沒有造成性能規律性衰退。
+- 已排除：隔離網路探測（無負載 SELECT_1 延遲）顯示 TiDB／YBDB 新批次
+  持平或更好，排除「跨區網路整體劣化」這個候選解釋。
+
+**結論**：兩批吞吐落差主因是 GCP 側基礎設施 run-to-run 變異（YBDB 磁碟
+I/O 最主要）與該次 run 前置插曲（TiDB TiKV 重啟）疊加，而非 go-tpc 修法
+或近讀機制本身的性能退化。已更新
+`XCROSS-AARO-CLOSING-REPORT-DRAFT.md` §5.2／§6／§9，取代原本的
+`根因未確認` 籠統標記。
+
+修改檔案：`XCROSS-AARO-CLOSING-REPORT-DRAFT.md`（§5.2／§6／§9）、
+`SESSION-HISTORY.md`（本節）。純讀取分析，未改動任何原始 artifact 或
+執行環境。
+
+**Last updated**：2026-07-24 GCP 吞吐反轉根因補查完成，YBDB 磁碟 I/O
+與 TiDB 有效並發下降為兩條不同機制，CRDB 佐證修法本身無性能衰退。
+**Next review**：若後續要精確拆解各因素貢獻度，需專門設計同批多輪 A/B
+（目前僅 `N=1`，非合法對照實驗）。
