@@ -1,6 +1,7 @@
 # Summary
 
 - [首頁](README.md)
+- [專案歷程與里程碑](../MILESTONES.md)
 - [01 管理摘要](01-executive-summary.md)
 - [02 需求脈絡與評估目標](02-context-and-requirements.md)
 - [03 範圍、非目標與證據規則](03-scope-and-evidence.md)
