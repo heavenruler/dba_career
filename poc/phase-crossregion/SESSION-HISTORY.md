@@ -1646,3 +1646,59 @@ DBS 預設全跑（TiDB→YBDB→CRDB），預估總時長 ~30 小時。
 **Next review**：定期查 `make win-aaro-status TPCC_TS=20260723T091902+0800`
 追蹤進度；全部完成後 `make phase9`（fetch+destroy）、彙整正式 W=128
 數字更新報告 §1-§6。
+
+## 2026-07-23（續）— aaro#2 首次跑遇上 go-tpc patch 誤傷 TiDB，修復後重跑
+
+**發現**：aaro#2 跑到 TiDB cell 的 A-A-RO W=128 workload（threads=16 round
+4/5 之後）時，監控發現 GCP 側大量報錯
+`Error 1235 (42000): function READ ONLY has only noop implementation in
+tidb now, use tidb_enable_noop_functions to enable these functions`
+（累計 334 次），每輪 `[Summary] ORDER_STATUS_ERR`/`STOCK_LEVEL_ERR` 皆
+非零。
+
+**根因**：§5.7 的 go-tpc patch（`beginTxReadOnly`）寫成 driver-agnostic
+——`order_status.go`/`stock_level.go` 統一呼叫，不分底層 driver 是
+`postgres` 還是 `mysql`。但 GCP client（`.15`）上的 go-tpc binary 是
+TiDB／CRDB／YBDB **三家共用同一份**，patch 套用後連 TiDB（走 `mysql`
+driver）的 GCP 側也被強加 `TxOptions.ReadOnly=true`——
+`go-sql-driver/mysql` 把這個選項轉成 `START TRANSACTION READ ONLY`，
+TiDB 把它歸類為「noop function」，預設 `tidb_enable_noop_functions=OFF`
+下直接拒絕（Error 1235）。TiDB 的近讀是 zone-based 物理路由，跟這個
+交易層級的 READ ONLY 提示完全無關，從一開始就不需要這個 patch——這是
+單純的回歸，此前（e40c8af8）「TiDB 不受此問題影響、不需要套用此
+patch」的判斷本身沒錯，但沒考慮到 patch 是**套在共用 binary 上**，
+TiDB 想不受影響也不行。
+
+**發現方式**：定期監控 aaro#2 進度時例行 grep `FAIL|ERROR|Error`，抓到
+數量異常（338 次）後深入查看實際錯誤內容，而非只看有沒有 marker 檔。
+
+**處理**：使用者確認後（避免讓已知會失敗的 run 繼續浪費數小時跑到
+`check-aaro-artifacts.py` 才 fail-closed）：
+1. 停止當時正在跑的 TiDB workload（`kill`／`pkill -9`，driver 自身經
+   `[aa] FAIL` 判定中止）。
+2. 修正 patch（commit `a7245197`）：`beginTxReadOnly` 內部判斷
+   `w.cfg.Driver`，只在 `postgres` 才傳 `ReadOnly: true`，其餘（含
+   `mysql`）直接呼叫原本的 `beginTx`。
+3. 用乾淨 clone 重新驗證 patch apply + build 全流程成功（非只改本地
+   已修改過的工作目錄）。
+4. 依「中斷後環境一律作廢重建」慣例：`teardown-tidb` → `phase9-destroy`
+   → `phase1+phase2` 重建 → 用新 TS（`20260723T133843+0800`）重新
+   `win-aaro-detach`。已確認新一輪 `apply-gotpc-patch.sh` 印出
+   `PASS：patched go-tpc 已部署到`，driver `PPID=1` 完全 detach。
+
+**方法論教訓**：go-tpc 的 patch 是「對 go-tpc 原始碼」的修改，影響範圍
+天生是**整個 binary**，不是「只影響用到它的那個 DB」——任何未來對這個
+patch 的修改，都必須明確考慮三家共用同一份 binary 這個事實，不能只從
+「這個 DB 需不需要這個修法」的角度判斷，還要問「這個修法會不會波及
+不需要它的其他 DB」。
+
+修改檔案：`phase-crossregion/patches/go-tpc-readonly-fix.patch`（修正
+driver 判斷）、`patches/README.md`（記錄此次回歸與修法）、
+`SESSION-HISTORY.md`（本節）。報告文件本身此輪未更新（待 aaro#2 真正
+跑完後統一彙整）。
+
+**Last updated**：2026-07-23 go-tpc patch 誤傷 TiDB 的回歸已修復並重新
+驗證，aaro#2 已用新 TS（`20260723T133843+0800`）重新發車。
+**Next review**：持續監控新一輪 aaro#2 進度，特別留意 TiDB cell 這次
+是否不再出現 Error 1235；全部完成後 `make phase9`、彙整正式 W=128 數字
+更新報告 §1-§6。
