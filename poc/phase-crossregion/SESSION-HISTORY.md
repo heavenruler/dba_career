@@ -1702,3 +1702,43 @@ driver 判斷）、`patches/README.md`（記錄此次回歸與修法）、
 **Next review**：持續監控新一輪 aaro#2 進度，特別留意 TiDB cell 這次
 是否不再出現 Error 1235；全部完成後 `make phase9`、彙整正式 W=128 數字
 更新報告 §1-§6。
+
+## 2026-07-23（續）— TiDB cell 重跑第二次遇上 GCP TiKV 重啟逾時，修復後完整 PASS
+
+**新插曲（與 go-tpc patch 無關的獨立問題）**：TiDB cell 進入 A-A-RO
+W=128 workload 階段時，`tiup cluster start`（A-A-RO 執行前的 cluster
+restart 步驟）在 `10.160.152.11`（GCP TiKV）卡住——W=128 資料量大
+（`order_line` ~3800 萬列），TiKV 重啟需要的時間**超過 tiup 預設的 2
+分鐘逾時**，導致 `tiup cluster start` 半途回報
+`Error: failed to start tikv ... timed out waiting for port 20160 to
+be started after 2m0s` 並中止，跳過了 GCP 側 PD／tidb-server 的啟動步驟
+（不是真的 crash，是 tiup 根本沒跑到那一步）。驅動腳本
+（`run-vm6-aa.sh`）卡住超過 10 分鐘沒有自行恢復——手動
+`ssh 172.24.40.32 "tiup cluster start tpcc-tidb-vm6"` 補跑後 cluster
+完全恢復健康，但卡住的驅動腳本仍未自行接續，判斷為真的卡死（非仍在
+等待），經使用者確認後 `pkill` 中止、`teardown-tidb`、用同一個 TS 重新
+`win-aaro-detach`（TiDB 重新 deploy＋prepare＋跑 workload，YBDB/CRDB
+尚未開始不受影響）。
+
+**結果**：TiDB cell 第三次嘗試（本輪）**完整 PASS 並已歸檔**
+（`tidb-vm-6node-P-A-rc-...`／`tidb-vm-6node-P-A-aaro-rc-...`）。全程
+**0 次 `Error 1235`**（go-tpc patch 修法確認生效）、**0 次 TiKV 重啟
+逾時**（先前的重啟逾時研判為一次性/機率性，非每次必發生）。GCP 側
+ORDER_STATUS/STOCK_LEVEL 錯誤率維持在 ~0.05-0.1% 量級，與 CRDB/YBDB
+已知的收尾誤差同量級，非新問題。driver 已接續進入 YBDB cell（deploy→
+prepare→workload 依序進行中）。
+
+**方法論教訓**：長跑（~30hr）driver 卡住時，「log 完全沒有新內容」比
+「有錯誤訊息」更難判斷——本次靠(1)確認底層服務其實已經健康（tiup
+cluster display 顯示全部 Up）、(2)確認即使外部手動修復根因後 driver
+仍不接續，才能排除「還在合理等待」的可能性，判定為真卡死。純看 log
+是否有錯誤字樣不足以偵測這類「卡住但不報錯」的失敗模式。
+
+修改檔案：`SESSION-HISTORY.md`（本節）。報告文件本輪未更新（待 aaro#2
+完整跑完三家後統一彙整正式數字與方法論教訓）。
+
+**Last updated**：2026-07-23 TiDB cell 完整 PASS 並歸檔（第三次嘗試），
+go-tpc patch 修法與 TiKV 重啟逾時問題皆確認解決/未重演；driver 已進入
+YBDB cell。
+**Next review**：持續監控 YBDB／CRDB cell 進度；全部完成後 `make
+phase9`、彙整正式 W=128 數字更新報告 §1-§6。
