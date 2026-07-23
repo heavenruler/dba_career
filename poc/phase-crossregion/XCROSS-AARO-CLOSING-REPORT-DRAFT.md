@@ -359,9 +359,10 @@ prepare 第一、二次嘗試，`gcp-replica-gate` 均卡在「GCP 3 台 tserver
 三家皆用同一方法（IDC leader 寫入 `item.i_price` marker → GCP 端輪詢
 直到看到新值，同時測 GCP leader-read 基準線排除複寫本身延遲的干擾）。
 CRDB／YBDB 的過期讀取語意不是理論疑慮，是本輪首次直接量測到的真實
-現象，**若 A-A-RO 測試定義要求讀到的資料與寫入時間差在某個界線內，
-YBDB 的 ~28 秒需要對照該定義重新檢視是否可接受**（本報告未定義該界線，
-留待後續拍板）。
+現象。**使用者已拍板（2026-07-23）：維持現況 `yb_follower_read_staleness_ms=30000`
+不變**——A-A-RO 本輪關注的是近讀路由/吞吐量是否生效，不犧牲近讀命中率
+換取更新鮮的讀取；YBDB 的 ~28 秒過期讀取視為可接受的已知代價，不調整
+設定值。
 
 **(2) TiDB 嚴格 A/B——未取得決定性結果，判定為方法論限制**：用
 [relabel-tidb-gcp-zone.sh](scripts/relabel-tidb-gcp-zone.sh)（`pd-ctl
@@ -478,7 +479,7 @@ netflow 暫存檔手動撈回未浪費。
 | A7 | codex 獨立審查（§5.6）指出的 5 項補做：(1)(4) 已於 07-22 執行（§5.7），(2)(3) 已於 07-22/23 執行（§5.8），(5) 仍未執行 | (3) staleness 三家皆決定性、YBDB 反事實決定性；(2) TiDB 嚴格 A/B **未取得決定性結果**（netflow 方法論在 W=4 規模不夠力，見 §5.8）；(5) 未執行前仍不足以宣稱「統一 zone 對 P-B 故障域衝擊」已評估 | (2) 若要補上決定性證據需更大規模 burst 或 TiDB 版 EXPLAIN 決定性欄位（現無）；(5) 待 P-B 立項時再處理，不擋本輪 P-A aaro#2 |
 | A8 | **go-tpc 與 CRDB/YBDB 近讀機制結構性衝突**（§5.7 新發現，YBDB 反事實已於 §5.8 補驗證確認同樣成立）：go-tpc 從未設 `TxOptions.ReadOnly=true`，`lib/pq` 因此對每筆交易明確送出 `BEGIN READ WRITE`，蓋過 session 層 `default_transaction_read_only`。**07-23 已固化**：[apply-gotpc-patch.sh](scripts/apply-gotpc-patch.sh)（冪等從原始碼重建＋部署，不依賴人工記得）已接進 [win-aaro-w128.sh](scripts/win-aaro-w128.sh) 的 `phase2-bootstrap-gcp-client` 之後，已在 `.31` 上實測 build 全流程成功（部署到 GCP client 那步因當時 VM 已 destroy 而預期失敗，未在真正的 W=128 全跑中端到端驗證過） | 若此步驟本身失效（例如 dnf/github 存取異常），仍會回到 CRDB 100% 報錯／YBDB 延遲吞吐量靜默劣化的舊風險，但已非「仰賴人工記得」的問題 | 下次發 aaro#2 時第一次end-to-end驗證此步驟（GCP client 存在時跑到部署完成），確認 `/usr/local/bin/go-tpc` 是 patched 版本後才放心讓 W=128 跑完 |
 | A9 | YBDB tablet 分布對 smoke 規模（W=4）資料量不穩定：`enable_automatic_tablet_splitting=false` 下多數表僅 1 tablet，GCP 側 3 台 tserver 的 LB 分配非保證均勻。累計三輪驗證（07-22 A7、07-23 A8、07-23 aaro#2 前置檢查）共 7 次部署嘗試，4 次在 W=4 smoke 卡住、**W=128 真實規模那次第一次嘗試即通過**（`gcp_tservers_with_sst=3`，無需重試）——確認 flaky 屬 W=4 smoke 特有現象（資料量小、tablet 數少），非 W=128 全跑的真實風險 | 不影響已成功那幾次的近讀驗證結果本身；**已排除**其對 aaro#2（W=128）的風險 | 已解決，無需在 aaro#2 前額外處理；未來若仍想跑 W=4 smoke 驗證卡在此 gate，優先選擇「重新部署重試」而非人工搬 tablet |
-| A10 | **staleness 首次實測（§5.8）**：CRDB 近讀延遲 ~4.15s、YBDB ~28.3s（三家皆與各自設定值/理論量級吻合，決定性），但 A-A-RO 測試定義本身**未明文規定可接受的過期讀取上限**，YBDB ~28.3s 是否合理未經拍板 | 不影響現有 §1-§6 吞吐數字（staleness 與吞吐量測獨立）；但若 A-A-RO 的業務語意隱含「近讀應反映近期寫入」，YBDB 現況可能不符合，需要使用者判斷是否可接受 | 使用者拍板 A-A-RO 測試定義是否有過期讀取上限；若需要收緊，YBDB 可調低 `yb_follower_read_staleness_ms`（會犧牲部分近讀命中率換取更新鮮的讀取） |
+| A10 | **staleness 首次實測（§5.8）**：CRDB 近讀延遲 ~4.15s、YBDB ~28.3s（三家皆與各自設定值/理論量級吻合，決定性）。**已拍板（2026-07-23）**：維持現況 `yb_follower_read_staleness_ms=30000` 不變，YBDB ~28.3s 過期讀取視為可接受代價，不為換取更新鮮讀取而犧牲近讀命中率 | 不影響現有 §1-§6 吞吐數字（staleness 與吞吐量測獨立）；aaro#2 沿用現有近讀設定，無需額外調整 | 已解決，無需在 aaro#2 前額外處理；若日後業務語意變嚴格，可回頭調低 `yb_follower_read_staleness_ms` 重新評估 |
 
 ## 9. 追溯紀錄
 
