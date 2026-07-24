@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 808 207" width="100%" role="img" aria-labelledby="heatmap-title heatmap-description" preserveAspectRatio="xMinYMin meet">
   <title id="heatmap-title">Repository commit frequency for master</title>
-  <desc id="heatmap-description">Daily author-date commit counts from 2025-07-24 through 2026-07-23 UTC.</desc>
+  <desc id="heatmap-description">Daily author-date commit counts from 2025-07-25 through 2026-07-24 UTC.</desc>
   <style>
       .heading { fill: #24292f; font: 600 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
       .label { fill: #57606a; font: 10px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
@@ -20,9 +20,6 @@
   <text x="0" y="118" class="label">Wed</text>
   <text x="0" y="146" class="label">Fri</text>
   <text x="48" y="58" class="label">Jul</text>
-  <rect x="48" y="123" width="11" height="11" rx="2" class="day level-0" fill="#ebedf0" data-date="2025-07-24" data-count="0">
-    <title>2025-07-24: 0 commits</title>
-  </rect>
   <rect x="48" y="137" width="11" height="11" rx="2" class="day level-0" fill="#ebedf0" data-date="2025-07-25" data-count="0">
     <title>2025-07-25: 0 commits</title>
   </rect>
@@ -1127,7 +1124,10 @@
   <rect x="776" y="123" width="11" height="11" rx="2" class="day level-3" fill="#30a14e" data-date="2026-07-23" data-count="9">
     <title>2026-07-23: 9 commits</title>
   </rect>
-  <text x="0" y="183" class="summary">2025-07-24 to 2026-07-23 UTC</text>
+  <rect x="776" y="137" width="11" height="11" rx="2" class="day level-0" fill="#ebedf0" data-date="2026-07-24" data-count="0">
+    <title>2026-07-24: 0 commits</title>
+  </rect>
+  <text x="0" y="183" class="summary">2025-07-25 to 2026-07-24 UTC</text>
   <text x="678" y="183" class="label">Less</text>
   <rect x="706" y="174" width="11" height="11" rx="2" class="day level-0" fill="#ebedf0" />
   <rect x="720" y="174" width="11" height="11" rx="2" class="day level-1" fill="#9be9a8" />
