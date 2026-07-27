@@ -423,23 +423,34 @@ case "$DB" in
   crdb)
     PLACEMENT_SQL_FILE="/root/crdb-vm6-placement-${PLACEMENT,,}.sql"
     if ssh -o ConnectTimeout=5 root@"$DB_HOST" "test -f $PLACEMENT_SQL_FILE"; then
-      echo "[wrapper] post-prepare: apply per-table lease_preferences=IDC (hard leader pin) from $PLACEMENT_SQL_FILE"
+      echo "[wrapper] post-prepare: apply per-table lease_preferences (PLACEMENT=$PLACEMENT) from $PLACEMENT_SQL_FILE"
       ssh root@"$DB_HOST" "awk '/^-- tpcc database 套用/{p=1}p' $PLACEMENT_SQL_FILE 2>/dev/null | /usr/local/bin/cockroach sql --insecure --host=$DB_HOST:$DB_PORT -d tpcc" \
         || echo "  (warn: per-table CONFIGURE ZONE failed)"
     else
       echo "[wrapper] WARN: $PLACEMENT_SQL_FILE not found on $DB_HOST — skip per-table lease pin"
     fi
-    echo "[wrapper] wait CRDB lease holders → IDC region (max 5 min, deterministic gate)"
+    echo "[wrapper] wait CRDB lease holders converge (PLACEMENT=$PLACEMENT, max 5 min, deterministic gate)"
     converged=0
     for i in $(seq 1 30); do
       pct=$(/usr/local/bin/cockroach sql --insecure --host="$DB_HOST:$DB_PORT" -d tpcc --format=csv -e \
         "SELECT IFNULL(ROUND(SUM(CASE WHEN lease_holder_locality LIKE '%region=idc%' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*),0), 1), 0) AS idc_pct FROM [SHOW RANGES FROM DATABASE tpcc WITH TABLES, DETAILS] WHERE table_name IN ('new_order','orders','warehouse','customer','district','history','order_line','item','stock');" \
         2>/dev/null | tail -1 || true)
-      case "$pct" in 100|100.*) echo "  CRDB lease holders 100% on IDC"; converged=1; break ;; esac
+      pct_int=$(printf '%.0f' "$pct" 2>/dev/null || echo 0)
+      if [[ "$PLACEMENT" == "P-B" ]]; then
+        if [[ "$pct_int" -ge 30 && "$pct_int" -le 70 ]]; then
+          echo "  CRDB lease holders spread OK (P-B): $pct% on IDC"; converged=1; break
+        fi
+      else
+        case "$pct" in 100|100.*) echo "  CRDB lease holders 100% on IDC"; converged=1; break ;; esac
+      fi
       printf '  %2d/30 leases on IDC: %s%%\n' "$i" "$pct"
       sleep 10
     done
-    [[ "$converged" == "1" ]] || { echo "gate FAIL: CRDB lease holders not 100% IDC after 5min" >&2; exit 1; }
+    if [[ "$PLACEMENT" == "P-B" ]]; then
+      [[ "$converged" == "1" ]] || { echo "gate FAIL: CRDB lease holders not spread 30-70% (P-B) after 5min" >&2; exit 1; }
+    else
+      [[ "$converged" == "1" ]] || { echo "gate FAIL: CRDB lease holders not 100% IDC after 5min" >&2; exit 1; }
+    fi
     echo "[wrapper] pre-run: freeze CRDB load-based lease rebalancing + range split (via freeze-crdb.sh)"
     CRDB_HOST="$DB_HOST" DUMP_DIR="$ROOT/freeze-state" bash "$SELF/freeze/freeze-crdb.sh"
     ;;
