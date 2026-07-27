@@ -544,14 +544,25 @@ phase6-tidb-smoke:
 	         ANCHOR_ONLY=$(ANCHOR_ONLY); \
 	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
 	    --db tidb --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --ts $$TS"
-	@echo "==> phase6-tidb-post-prepare leader gate: wait tpcc region leaders → IDC (max 5 min)"
+	@echo "==> phase6-tidb-post-prepare leader gate: wait tpcc region leaders converge (PLACEMENT=$(PLACEMENT), max 5 min)"
 	@converged=0; for i in $$(seq 1 30); do \
 	  pct=$$(ssh $(TPCC_CLIENT) "mysql -h $(TIDB_HOST) -P $(TIDB_PORT) -u root -BNe \"SELECT IFNULL(SUM(CASE WHEN s.LABEL LIKE '%idc%' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*),0), 0) FROM information_schema.tikv_region_peers p JOIN information_schema.tikv_store_status s ON p.STORE_ID=s.STORE_ID JOIN information_schema.tikv_region_status r ON p.REGION_ID=r.REGION_ID WHERE p.IS_LEADER=1 AND r.DB_NAME='tpcc';\"" 2>/dev/null | tail -1); \
-	  case "$$pct" in *100|100.*) echo "  TiDB tpcc region leaders 100% on IDC"; converged=1; break;; esac; \
+	  pct_int=$$(printf '%.0f' "$$pct" 2>/dev/null || echo 0); \
+	  if [ "$(PLACEMENT)" = "P-B" ]; then \
+	    if [ "$$pct_int" -ge 30 ] && [ "$$pct_int" -le 70 ]; then \
+	      echo "  TiDB tpcc region leaders spread OK (P-B): $$pct% on IDC"; converged=1; break; \
+	    fi; \
+	  else \
+	    case "$$pct" in *100|100.*) echo "  TiDB tpcc region leaders 100% on IDC"; converged=1; break;; esac; \
+	  fi; \
 	  printf "  %2d/30 tpcc leaders on IDC: %s%%\n" $$i "$$pct"; \
 	  sleep 10; \
 	done; \
-	[ "$$converged" = "1" ] || { echo "gate FAIL: TiDB tpcc leaders not 100% IDC after 5min"; exit 1; }
+	if [ "$(PLACEMENT)" = "P-B" ]; then \
+	  [ "$$converged" = "1" ] || { echo "gate FAIL: TiDB tpcc leaders not spread 30-70% (P-B) after 5min"; exit 1; }; \
+	else \
+	  [ "$$converged" = "1" ] || { echo "gate FAIL: TiDB tpcc leaders not 100% IDC after 5min"; exit 1; }; \
+	fi
 	@echo "==> phase6-tidb leader-snapshot (post-run tpcc-scoped placement verification)"
 	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/tidb-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
 	ssh $(TPCC_CLIENT) "mkdir -p $$ROOT/leader-snapshot && \
