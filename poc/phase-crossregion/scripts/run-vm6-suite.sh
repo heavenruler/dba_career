@@ -294,12 +294,27 @@ elif [[ "$DB" == "crdb" ]]; then
     # 2026-07-14：constraints counted-form 修正後 GCP 有 voter，新 range 的 lease
     # 靠 preference 被動收斂太慢，prepare.sh 內建 gate（70% 門檻，tests/common 不可改）
     # 會在收斂完成前開槍（實測 idc=11/22=50% FAIL）。改為主動搬移：load 期間持續
-    # 把 lease 在 GCP 的 tpcc range RELOCATE 到該 range 的 IDC replica store，
-    # 直到 prepare 的 gate 證據檔出現（= prepare 已收尾）為止。
-    TBLS="'new_order','orders','warehouse','customer','district','history','order_line','item','stock'"
+    # 把 lease 搬到該 range 對應 table 的偏好 region，直到 prepare 的 gate 證據檔
+    # 出現（= prepare 已收尾）為止。
+    #
+    # 2026-07-27：原本無條件把「GCP lease 全部搬回 IDC」是 P-A 專用邏輯
+    # （P-A 要 100% IDC），對 P-B（要 30-70% 混合）完全是反效果——會把
+    # tests/cockroach/placement-p-b.sql 刻意分給 gcp 優先的 4 個 table
+    # 也強制搬回 IDC，變相退化成 P-A。改為依 PLACEMENT 分支：P-A 維持
+    # 原行為不變；P-B 改成依「每個 table 自己指定的偏好 region」分別搬移
+    # （idc 優先的 5 個 table 把 GCP lease 搬回 IDC；gcp 優先的 4 個 table
+    # 把 IDC lease 搬去 GCP），而非全部單向搬去同一區。
+    if [[ "$PLACEMENT" == "P-B" ]]; then
+      TBLS_IDC="'warehouse','district','customer','history','item'"
+      TBLS_GCP="'new_order','orders','order_line','stock'"
+    else
+      TBLS_IDC="'new_order','orders','warehouse','customer','district','history','order_line','item','stock'"
+      TBLS_GCP=""
+    fi
     for i in $(seq 1 240); do
       [[ -f "$ROOT/prepare/placement-gate-${PLACEMENT}.json" || -f "$ROOT/prepare/placement-gate-${PLACEMENT}.txt" ]] && break
       moved=0
+      # idc 優先組：把 GCP 上的 lease 搬回 IDC
       while IFS=$'\t' read -r rid store; do
         [[ -n "$rid" && -n "$store" ]] || continue
         /usr/local/bin/cockroach sql --insecure --host="$DB_HOST:$DB_PORT" -d tpcc -e \
@@ -308,11 +323,55 @@ elif [[ "$DB" == "crdb" ]]; then
         "SELECT r.range_id, x.store FROM [SHOW RANGES FROM DATABASE tpcc WITH TABLES, DETAILS] r,
            LATERAL (SELECT t.store FROM unnest(r.replicas, r.replica_localities) AS t(store, loc)
                     WHERE t.loc LIKE '%region=idc%' LIMIT 1) x
-         WHERE r.lease_holder_locality LIKE '%region=gcp%' AND r.table_name IN ($TBLS);" 2>/dev/null | tail -n +2)
-      [[ "$moved" -gt 0 ]] && echo "[wrapper] lease enforcer (crdb): relocated $moved gcp lease(s) → idc (pass $i)"
+         WHERE r.lease_holder_locality LIKE '%region=gcp%' AND r.table_name IN ($TBLS_IDC);" 2>/dev/null | tail -n +2)
+      # gcp 優先組（僅 P-B）：把 IDC 上的 lease 搬去 GCP
+      if [[ -n "$TBLS_GCP" ]]; then
+        while IFS=$'\t' read -r rid store; do
+          [[ -n "$rid" && -n "$store" ]] || continue
+          /usr/local/bin/cockroach sql --insecure --host="$DB_HOST:$DB_PORT" -d tpcc -e \
+            "ALTER RANGE $rid RELOCATE LEASE TO $store;" >/dev/null 2>&1 && moved=$((moved+1))
+        done < <(/usr/local/bin/cockroach sql --insecure --host="$DB_HOST:$DB_PORT" -d tpcc --format=tsv -e \
+          "SELECT r.range_id, x.store FROM [SHOW RANGES FROM DATABASE tpcc WITH TABLES, DETAILS] r,
+             LATERAL (SELECT t.store FROM unnest(r.replicas, r.replica_localities) AS t(store, loc)
+                      WHERE t.loc LIKE '%region=gcp%' LIMIT 1) x
+           WHERE r.lease_holder_locality LIKE '%region=idc%' AND r.table_name IN ($TBLS_GCP);" 2>/dev/null | tail -n +2)
+      fi
+      [[ "$moved" -gt 0 ]] && echo "[wrapper] lease enforcer (crdb): relocated $moved lease(s) toward preferred region (pass $i)"
       sleep 15
     done
     echo "[wrapper] lease enforcer (crdb): done"
+  ) &
+  PLACEMENT_WATCHER_PID=$!
+elif [[ "$DB" == "ybdb" && "$PLACEMENT" == "P-B" ]]; then
+  # 2026-07-27 新增：YBDB P-B 的 tablet leader 混合分佈完全依賴
+  # tests/yuga/placement-p-b.sql 的兩個 tablespace（leader_preference 方向
+  # 相反）——這個 post-prepare 執行步驟舊版從未接線（見 ansible/playbooks/
+  # yugabyte-vm6.yml Play 4 註解），比照 tidb 分支：儘早（表剛建立、尚無
+  # 資料時）套用 SET TABLESPACE，讓後續資料載入時新切的 tablet 從一開始就
+  # 依正確 tablespace 建立（同 TiDB 的成功模式：attach 在資料進來之前，
+  # 不需要事後搬移既有 leader）。P-A 不需要本分支（modify_placement_info +
+  # set_preferred_zones 已完整達成 100% IDC，不涉及 per-table 差異化）。
+  (
+    for i in $(seq 1 300); do
+      [[ -f "$ROOT/prepare/drop-create.log" ]] && break
+      sleep 2
+    done
+    for i in $(seq 1 300); do
+      cnt=$(ysqlsh -h "$DB_HOST" -p "$DB_PORT" -U "${YBDB_USER:-yugabyte}" -d "${YBDB_DB:-tpcc}" -tAc \
+        "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public';" 2>/dev/null || echo 0)
+      [[ "$cnt" -ge 9 ]] && break
+      sleep 2
+    done
+    echo "[wrapper] placement watcher (ybdb): drop-create done + 9 tables present — applying placement SQL (pre-gate)"
+    applied=0
+    for ai in $(seq 1 24); do
+      if ssh -o ConnectTimeout=5 root@"$DB_HOST" \
+        "awk '/^-- tpcc database 套用/{p=1}p' /root/yugabyte-vm6-placement-p-b.sql | ysqlsh -h $DB_HOST -p $DB_PORT -U ${YBDB_USER:-yugabyte} -d ${YBDB_DB:-tpcc}" >/dev/null 2>&1; then
+        applied=1; echo "[wrapper] placement watcher (ybdb): applied OK (attempt $ai)"; break
+      fi
+      sleep 5
+    done
+    [[ "$applied" == "1" ]] || echo "[wrapper] placement watcher (ybdb): apply FAILED after retries (gate will fail-closed)" >&2
   ) &
   PLACEMENT_WATCHER_PID=$!
 fi
