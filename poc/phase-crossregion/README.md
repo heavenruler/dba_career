@@ -130,16 +130,27 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 
 | Workload | 狀態 | 已採用批次 | 追溯 |
 |---|---|---|---|
-| A/S（placement 單因子對照，per G6，CRDB 先行） | ⚪ 未開始 | — | `gate-placement-p-b.sh`（gate 腳本已備） |
+| A/S（placement 單因子對照，per G6，CRDB 先行） | ⚪ 未開始 | — | `gcp-replica-gate.sh`（`PLACEMENT=P-B` 分支已備） |
 | A/A-RO | ⚪ 未開始 | — | 同上 |
 | A/A | ⚪ 未開始 | — | 同上 |
 | backup / migration / chaos | ⚪ 未開始（同 P-A spec） | — | — |
 
 **P-B 目前僅完成基礎設施備便**——07-17 Q3 拍板的 S1（O1 gate 補強）/ S2
-（`gcp-replica-gate` P-B 判準參數化）/ S3（fix6n P-B 分支）已實作（見
-`scripts/gate-placement-p-b.sh`），但尚無任何 workload 正式或 smoke 執行紀錄。
-`SESSION-HISTORY.md` 多處記載「P-B×A-S（CRDB 先行）」為下一步待辦，截至
-本次更新仍是待辦狀態，未觸發任何 P-B cell。
+（`gcp-replica-gate.sh` 內建 `PLACEMENT=P-B` 分支，30-70% leader/lease spread
+判準）/ S3（`phase4-ybdb-fix6n` P-B 分支，跳過 `set_preferred_zones`）已實作，
+但尚無任何 workload 正式或 smoke 執行紀錄。`SESSION-HISTORY.md` 多處記載
+「P-B×A-S（CRDB 先行）」為下一步待辦，截至本次更新仍是待辦狀態，未觸發任何
+P-B cell。
+
+**2026-07-27 死碼清理**：稽核發現 `scripts/gate-placement-p-b.sh`（判準
+≥1 each，與 `gcp-replica-gate.sh` 的 30-70% spread 不一致）從未被
+`run-vm6-suite.sh`／`Makefile` 呼叫，屬孤兒腳本，已刪除；`tests/yuga/placement-p-b.sql`
+（per-table tablespace 設計，假設 GCP 有 `asia-east1-a`/`asia-east1-b` 兩個獨立
+zone）同樣從未被 `prepare.sh` 呼叫，且與 `ansible/playbooks/yugabyte-vm6.yml`
+實際把所有 GCP tserver 攤平成單一 `zone=asia-east1` 的事實不符（即使執行也會
+因 zone 對不上而失效），已一併刪除。**YBDB P-B 唯一生效機制是
+`Makefile phase4-ybdb-fix6n` 的 universe 層 `modify_placement_info`**（不同於
+TiDB/CRDB 走 per-table SQL 的方式），詳見 `topology/P-B.md`。
 
 **追記（2026-07-27，規劃/執行落差說明）**：`decisions-2026-06-08.md`
 Q2/Q4（2026-07-17 拍板）曾決議「P-A×A-A-RO／P-A×A-A 共 6 cells 明文砍除」，

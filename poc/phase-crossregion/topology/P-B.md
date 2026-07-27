@@ -42,7 +42,16 @@ shard-3   ├── voter-1 @ idc-dbhost-3  (leader)
 - **退化形態 / fail-over 形態** — 模擬 region 不可用後的 placement skew
 - 適用 workload：`A/A-RO`（IDC write, GCP read）、`A/A`（兩邊都寫）
 
-## 落地指令（每家 DB；本輪 spec only）
+## 落地指令（每家 DB；2026-07-27 更新落地狀態）
+
+> TiDB／CRDB 已落地成可執行 SQL（`tests/{tidb,cockroach}/placement-p-b.sql`），
+> 並由 `scripts/run-vm6-suite.sh` 的 placement watcher 在 prepare 後自動套用
+> （非 spec only）。YBDB 走 universe 層 `modify_placement_info`（`Makefile
+> phase4-ybdb-fix6n`，deploy-time 執行，非 per-table SQL）——曾有一支
+> per-table tablespace 設計（`tests/yuga/placement-p-b.sql`）但從未接進執行鏈，
+> 且其假設的 GCP 雙 zone（`asia-east1-a`/`-b`）與 `ansible/playbooks/yugabyte-vm6.yml`
+> 實際單一 `zone=asia-east1` 攤平不符，已於 2026-07-27 刪除，避免與下方
+> YBDB 真正指令混淆。
 
 ### TiDB
 
