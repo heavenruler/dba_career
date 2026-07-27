@@ -374,6 +374,37 @@ elif [[ "$DB" == "ybdb" && "$PLACEMENT" == "P-B" ]]; then
       sleep 5
     done
     [[ "$applied" == "1" ]] || echo "[wrapper] placement watcher (ybdb): apply FAILED after retries (gate will fail-closed)" >&2
+    # 2026-07-27：SET TABLESPACE 對「已存在的 tablet」不會主動觸發 leader
+    # 搬移——YBDB 在 CREATE TABLE 當下就切好初始 tablet，W=4 這種小量資料
+    # 幾乎不會再 split，純被動等待收斂實測沒能在 gate 檢查前生效（idc=0/3
+    # FAIL，CRDB 也遇過同款「被動收斂太慢」問題，見上方 crdb 分支）。比照
+    # gcp-replica-gate.sh 已驗證過的 leader_stepdown 手法：對「leader 落在
+    # 錯誤 region」的 tablet 主動強制換屆（不指定目的地，讓 raft 依現有
+    # tablespace 的 leader_preference 重新選舉），直到 prepare 的 gate
+    # 證據檔出現為止。
+    : "${YB_MASTER_ADDR:=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100}"
+    YB="ssh -n -o ConnectTimeout=5 -o BatchMode=yes root@$DB_HOST /opt/yugabyte/bin/yb-admin --master_addresses=$YB_MASTER_ADDR"
+    stepdown_wrong_region() {
+      # $1=table  $2=wrong-region grep pattern（leader IP 落在此區則強制換屆）
+      local raw tid
+      raw=$($YB list_tablets ysql.tpcc "$1" 0 2>/dev/null) || return 0
+      while IFS= read -r line; do
+        [[ "$line" =~ ^([0-9a-f]{32}) ]] || continue
+        tid="${BASH_REMATCH[1]}"
+        echo "$line" | grep -qE "$2" && $YB leader_stepdown "$tid" >/dev/null 2>&1
+      done <<<"$raw"
+    }
+    for i in $(seq 1 40); do
+      [[ -f "$ROOT/prepare/placement-gate-${PLACEMENT}.json" || -f "$ROOT/prepare/placement-gate-${PLACEMENT}.txt" ]] && break
+      for t in warehouse district history item; do
+        stepdown_wrong_region "$t" '10\.160\.152\.'
+      done
+      for t in customer new_order orders order_line stock; do
+        stepdown_wrong_region "$t" '172\.24\.40\.'
+      done
+      sleep 8
+    done
+    echo "[wrapper] leader enforcer (ybdb): done"
   ) &
   PLACEMENT_WATCHER_PID=$!
 fi
