@@ -21,11 +21,19 @@
 -- 全庫套同一組設定只會導致 leader 全部倒向優先區，不會自然分成 30/70。
 --
 -- 本版修正：比照 tests/tidb/placement-p-b.sql 的雙 policy 設計，改用
--- 兩個 tablespace，9 個 TPCC table 拆 5:4 兩組（同 TiDB 分組，方便跨庫比對）：
+-- 兩個 tablespace，9 個 TPCC table 拆兩組。
+--
+-- 2026-07-27 二次修正：第一版分組（warehouse/district/customer/history/item
+-- → idc；new_order/orders/order_line/stock → gcp）仍然 FAIL——查
+-- tests/common/prepare.sh §6.6 ybdb 分支才發現，該 gate**只抽樣
+-- warehouse/district/customer 這 3 個 table**（非全部 9 個），而這 3 個
+-- 剛好全部被分進同一組，抽樣結果永遠同質，不可能落在 30-70% 窗口。
+-- 改為確保這 3 個抽樣 table 本身跨兩組：
 --   ts_p_b_leader_idc（leader_preference: idc=1, gcp=2）：
---     warehouse, district, customer, history, item
+--     warehouse, district, history, item（4 table，含抽樣中的 2 個）
 --   ts_p_b_leader_gcp（leader_preference: gcp=1, idc=2）：
---     new_order, orders, order_line, stock
+--     customer, new_order, orders, order_line, stock（5 table，含抽樣中的 1 個）
+-- 抽樣 3 個 table 預期 idc=2/3≈66.7%，落在 30-70% 窗口內。
 -- 兩個 tablespace 的 replica_placement 皆為 2 idc + 1 gcp（RF=3，與
 -- modify_placement_info 的 universe 預設一致，只有 leader_preference 方向不同，
 -- 不影響 voter 分佈）。GCP zone 統一用實際生效的 "asia-east1"（非 -a/-b 分裂）。
@@ -68,9 +76,9 @@ CREATE TABLESPACE ts_p_b_leader_gcp WITH (
 -- watcher 在 prepare 建完 tpcc tables 後才執行；標記行本身供 awk 切段用)
 ALTER TABLE tpcc.warehouse  SET TABLESPACE ts_p_b_leader_idc;
 ALTER TABLE tpcc.district   SET TABLESPACE ts_p_b_leader_idc;
-ALTER TABLE tpcc.customer   SET TABLESPACE ts_p_b_leader_idc;
 ALTER TABLE tpcc.history    SET TABLESPACE ts_p_b_leader_idc;
 ALTER TABLE tpcc.item       SET TABLESPACE ts_p_b_leader_idc;
+ALTER TABLE tpcc.customer   SET TABLESPACE ts_p_b_leader_gcp;
 ALTER TABLE tpcc.new_order  SET TABLESPACE ts_p_b_leader_gcp;
 ALTER TABLE tpcc.orders     SET TABLESPACE ts_p_b_leader_gcp;
 ALTER TABLE tpcc.order_line SET TABLESPACE ts_p_b_leader_gcp;

@@ -299,14 +299,16 @@ elif [[ "$DB" == "crdb" ]]; then
     #
     # 2026-07-27：原本無條件把「GCP lease 全部搬回 IDC」是 P-A 專用邏輯
     # （P-A 要 100% IDC），對 P-B（要 30-70% 混合）完全是反效果——會把
-    # tests/cockroach/placement-p-b.sql 刻意分給 gcp 優先的 4 個 table
-    # 也強制搬回 IDC，變相退化成 P-A。改為依 PLACEMENT 分支：P-A 維持
-    # 原行為不變；P-B 改成依「每個 table 自己指定的偏好 region」分別搬移
-    # （idc 優先的 5 個 table 把 GCP lease 搬回 IDC；gcp 優先的 4 個 table
-    # 把 IDC lease 搬去 GCP），而非全部單向搬去同一區。
+    # tests/cockroach/placement-p-b.sql 刻意分給 gcp 優先的 table 也強制搬回
+    # IDC，變相退化成 P-A。改為依 PLACEMENT 分支：P-A 維持原行為不變；P-B
+    # 改成依「每個 table 自己指定的偏好 region」分別搬移（idc 優先的 4 個
+    # table 把 GCP lease 搬回 IDC；gcp 優先的 5 個 table 把 IDC lease 搬去
+    # GCP），而非全部單向搬去同一區。分組刻意讓 prepare.sh §6.6 抽樣的
+    # warehouse/district/customer 跨兩組（非全部同組），否則抽樣結果永遠
+    # 同質，不可能落在 30-70% 窗口（YBDB smoke 已實測踩過這個坑）。
     if [[ "$PLACEMENT" == "P-B" ]]; then
-      TBLS_IDC="'warehouse','district','customer','history','item'"
-      TBLS_GCP="'new_order','orders','order_line','stock'"
+      TBLS_IDC="'warehouse','district','history','item'"
+      TBLS_GCP="'customer','new_order','orders','order_line','stock'"
     else
       TBLS_IDC="'new_order','orders','warehouse','customer','district','history','order_line','item','stock'"
       TBLS_GCP=""
