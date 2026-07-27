@@ -554,3 +554,25 @@ O1 gate 補強後的同批三家 P-A×A-S 重跑，一次消 O1+O3+O4+TiDB#2 證
   一次性盤點、§N 引用 ID 化 + link-lint。
 - Tier 3（範圍）：18 cells 正式降 12（P-A×A-A-RO、P-A×A-A 砍除）；
   P-B 鏈先單家打通（CRDB）再擴另兩家；failover/chaos 排序待 P-B 後再議。
+
+## Q18: P-A×A-A-RO 範圍追溯性回補（2026-07-27 補記）
+
+**背景**：Q2/Q4（本文件，2026-07-17 拍板）決議 P-A×A-A-RO／P-A×A-A 共 6
+cells 自正式範圍砍除（Tier 3），僅留 smoke 驗證 `summary-gcp-side.py`
+計算邏輯、不進正式數據表。
+
+**實際情形**：2026-07-18 起（詳 `SESSION-HISTORY.md` 2026-07-18～07-24
+各節）三家近讀機制陸續發現未生效並完成根因修復＋驗證，過程中 P-A×A-A-RO
+被推進為正式 W=128 全輪（`TPCC_TS=20260723T133843+0800`，即「aaro#2」），
+並於 07-24 產出正式結案報告
+[`XCROSS-AARO-CLOSING-REPORT-DRAFT.md`](./XCROSS-AARO-CLOSING-REPORT-DRAFT.md)，
+數字已被引用採用——當時的執行決策並未回頭修正本文件的 Q2/Q4 文字。
+
+**Decision（補記，非新決策）**：本項為**追溯性記錄**，承認 Q2/Q4 的
+「P-A×A-A-RO 砍除」文字已被後續實際執行取代；`phase-crossregion/README.md`
+「Phase 狀態」表已同步更新為執行事實。**P-A×A-A（Q2/Q4 同批砍除的另一半）
+未受此次回補影響，仍維持砍除／待排程狀態**，未有 P-A×A-A 的正式或 smoke
+執行紀錄。
+
+**教訓**：長跑多階段工作若中途因故（例如發現機制根因問題）擴大範圍，
+應同步回補當初拍板的規劃決策文件，避免規劃文件與執行事實長期不一致。

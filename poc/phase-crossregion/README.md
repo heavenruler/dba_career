@@ -111,18 +111,47 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 
 ## Phase 狀態
 
-| Phase | 內容 | 狀態 |
-|---|---|---|
-| Pre-P0 | WAN 隨 workload inline 採樣（per Q2，原 B4 hard gate 已取消）+ chrony drift <100ms gate + placement rule + dry-run gate | ✅ 框架落地（`wan/`, `freeze/`, gate scripts）|
-| P0 | IDC-only 6-node baseline（非必要可跳）| deploy/smoke target 就緒 |
-| P1 | P-A × A-S（W=128 正式）| ⏳ 待 operator 觸發正式 sweep |
-| P2 | P-B × A-A-RO | ⏳ 待觸發（`w128-suite-pb`）|
-| P3 | P-B × A-A | ⏳ 待觸發 |
-| P4 / P5 | backup / migration workload | spec only（TBD）|
-| P6 | chaos C1/C4/C7 + F1 failover | ✅ planner-only 落地；實跑須 DBA review |
+> **Pre-P0**：WAN 隨 workload inline 採樣（per Q2，原 B4 hard gate 已取消）+
+> chrony drift <100ms gate + placement rule + dry-run gate ——
+> ✅ 框架落地（`wan/`, `freeze/`, gate scripts）。
+
+### Placement P-A（2-IDC + 1-GCP majority）進度
+
+| Workload | 狀態 | 已採用批次 | 代表數字（t128） | 追溯 |
+|---|---|---|---|---|
+| single-writer（P0，IDC-only baseline，非必要可跳） | ⚪ 未見獨立正式執行紀錄（非必要） | — | — | — |
+| A/S（IDC main, GCP standby） | ✅ 完成且已採用 | `TPCC_TS=20260717T143238+0800` | tpmC：TiDB 12,526.5／CRDB 10,163.4／YBDB 12,769.5 | [XCROSS-CLOSING-REPORT-DRAFT.md](./XCROSS-CLOSING-REPORT-DRAFT.md) |
+| A/A-RO（IDC write, GCP read） | ✅ 完成且已採用（範圍超出 07-17 原規劃，見下方追記） | `TPCC_TS=20260723T133843+0800`（aaro#2） | IDC tpmC：TiDB 11,680.0／YBDB 10,661.5／CRDB 10,694.1；GCP read_tpmTotal：TiDB 16,511.4／YBDB 12,817.2／CRDB 40,328.9 | [XCROSS-AARO-CLOSING-REPORT-DRAFT.md](./XCROSS-AARO-CLOSING-REPORT-DRAFT.md) |
+| A/A（兩邊都寫） | ⚪ 未開始，待排程 | — | — | [`results/README.md` 目前總覽](../results/README.md#目前總覽) |
+| backup / migration | ⚪ spec only（TBD） | — | — | [`workload-profiles/backup.md`](./workload-profiles/backup.md) / [`migration.md`](./workload-profiles/migration.md) |
+| chaos C1/C4/C7 + F1 | 🟡 planner-only 落地；實跑須 DBA review | — | — | [`chaos/README.md`](./chaos/README.md) |
+
+### Placement P-B（散置，RF=3 全 voter，無 arbiter）進度
+
+| Workload | 狀態 | 已採用批次 | 追溯 |
+|---|---|---|---|
+| A/S（placement 單因子對照，per G6，CRDB 先行） | ⚪ 未開始 | — | `gate-placement-p-b.sh`（gate 腳本已備） |
+| A/A-RO | ⚪ 未開始 | — | 同上 |
+| A/A | ⚪ 未開始 | — | 同上 |
+| backup / migration / chaos | ⚪ 未開始（同 P-A spec） | — | — |
+
+**P-B 目前僅完成基礎設施備便**——07-17 Q3 拍板的 S1（O1 gate 補強）/ S2
+（`gcp-replica-gate` P-B 判準參數化）/ S3（fix6n P-B 分支）已實作（見
+`scripts/gate-placement-p-b.sh`），但尚無任何 workload 正式或 smoke 執行紀錄。
+`SESSION-HISTORY.md` 多處記載「P-B×A-S（CRDB 先行）」為下一步待辦，截至
+本次更新仍是待辦狀態，未觸發任何 P-B cell。
+
+**追記（2026-07-27，規劃/執行落差說明）**：`decisions-2026-06-08.md`
+Q2/Q4（2026-07-17 拍板）曾決議「P-A×A-A-RO／P-A×A-A 共 6 cells 明文砍除」，
+規劃僅以 smoke 驗證 `summary-gcp-side.py` 計算邏輯、不進正式數據表。但
+2026-07-18 起的實際執行（詳 `SESSION-HISTORY.md` 各節）走向了正式 W=128
+全輪，並於 07-24 產出正式結案報告（`XCROSS-AARO-CLOSING-REPORT-DRAFT.md`），
+數字已被引用採用。此為**執行事實覆蓋規劃決策**、決策文件本身當時未回補
+修正——已於 `decisions-2026-06-08.md` 補記 Q18 追溯性決策項；本表以實際
+執行結果為準，P-A×A-A（Q2/Q4 同批砍除的另一半）**未受影響、仍是待辦**。
 
 **已知阻擋**（詳 [`SESSION-HISTORY.md`](./SESSION-HISTORY.md) 關鍵結論速查）：
-- `results/x-cross/` 現有數據多為 W=4 same-cluster determinism，**不可作正式跨家排名**（pipeline-log §1 已標註）
+- `results/x-cross/` 內 W=4 same-cluster determinism 資料**不可作正式跨家排名**（pipeline-log §1 已標註）；W=128 正式採用數字以上表連結的結案報告為準。
 - probe driver + wall-clock wrapper script 已實裝（`scripts/probe-rto-driver/`, `scripts/wall-clock-wrapper.sh`），但尚未串入 Makefile runtime chain（RTO/RPO 實測前置；升級實跑須 PR + DBA review）。
   注意 `scripts/probe-rto-driver.sh`（bash，早期版本）與 `scripts/probe-rto-driver/`（Go，F8 新版，`time.Since()` monotonic + 額外輸出 `probe-stats.json` jitter 統計）**同名雙實作**——接線目標是 **Go 版**，bash 版為前期產物，尚未刪除。
 

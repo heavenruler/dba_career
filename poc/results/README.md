@@ -29,6 +29,18 @@
 - 同名 isolation 在三家底層機制不同，請先參考 [註2](#note-2)。
 - 三節點所有結果 `N=1`，對外結論前需補 `N=3`，詳見 [N9](#note-N9) 與 [§C.6](#c6-n3-補測規劃)。
 
+### 跨區 Placement 進度（phase-crossregion，sibling scope，不併入上表）
+
+> `phase-crossregion` 是獨立 result_scope（`X-CROSS`，`baseline_eligible: false`），
+> 依 [§10 參考 / 文件索引](#參考--文件索引) 下的 Phase isolation entries 慣例不可混入上方
+> S-BASE 主表；完整 placement × workload 進度與拆分理由見
+> [`phase-crossregion/README.md` Phase 狀態](../phase-crossregion/README.md#phase-狀態)。
+
+| Placement | Workload 完成範圍 | 已採用結案報告 |
+|---|---|---|
+| **P-A**（2-IDC + 1-GCP majority）| A/S ✅ 完成｜A/A-RO ✅ 完成｜A/A ⚪ 待排程 | [XCROSS-CLOSING-REPORT-DRAFT.md](../phase-crossregion/XCROSS-CLOSING-REPORT-DRAFT.md)（A/S）／[XCROSS-AARO-CLOSING-REPORT-DRAFT.md](../phase-crossregion/XCROSS-AARO-CLOSING-REPORT-DRAFT.md)（A/A-RO）|
+| **P-B**（散置，RF=3 全 voter，無 arbiter）| 僅 gate 腳本備便；A/S／A/A-RO／A/A 皆 ⚪ 未開始 | — |
+
 ## 已驗證結果
 
 > `error rate` 代表「失敗交易數 / 全部交易數」。全部交易數包含成功與失敗，並把 5 種 TPC-C transaction type 加總；由 [summary parser](../tests/common/summary-from-stdout.py) 解析 stdout `[Summary]` 後寫入 `summary.json`。
