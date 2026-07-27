@@ -1,0 +1,11 @@
+ADDRESS	LABEL	IS_LEADER	peer_count
+10.160.152.11:20160	[{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1"}]	0	12
+10.160.152.12:20160	[{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1"}]	0	7
+10.160.152.12:20160	[{"key": "region", "value": "gcp"}, {"key": "zone", "value": "gcp-asia-east1"}]	1	9
+172.24.40.33:20160	[{"key": "region", "value": "idc"}, {"key": "zone", "value": "idc-vlan241"}]	0	15
+172.24.40.33:20160	[{"key": "region", "value": "idc"}, {"key": "zone", "value": "idc-vlan241"}]	1	4
+172.24.40.34:20160	[{"key": "region", "value": "idc"}, {"key": "zone", "value": "idc-vlan241"}]	0	4
+172.24.40.34:20160	[{"key": "region", "value": "idc"}, {"key": "zone", "value": "idc-vlan241"}]	1	6
+[gcp-replica-gate 14:23:39] tidb: gcp_followers=19 gcp_leaders=9
+[gcp-replica-gate 14:23:39] tidb: P-B leader spread idc=10/19 (52%)
+[gcp-replica-gate 14:23:39] PASS: tidb GCP 副本存在且 leader/lease 跨區散布合格（P-B；證據 /tmp/poc-tpcc/artifacts/X-CROSS/tidb-vm-6node-P-B-rc-20260727T112707+0800/gate/gcp-replica-gate-tidb.txt）

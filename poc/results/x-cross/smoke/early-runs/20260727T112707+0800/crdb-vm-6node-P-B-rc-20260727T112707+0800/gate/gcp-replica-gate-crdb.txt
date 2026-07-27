@@ -1,0 +1,8 @@
+lease_holder_locality	replicas	count
+region=gcp,zone=gcp-asia-east1-b	region=idc,zone=idc-vlan241|region=gcp,zone=gcp-asia-east1-b|region=idc,zone=idc-vlan241	4
+region=idc,zone=idc-vlan241	region=idc,zone=idc-vlan241|region=idc,zone=idc-vlan241|region=gcp,zone=gcp-asia-east1-a	3
+region=gcp,zone=gcp-asia-east1-a	region=idc,zone=idc-vlan241|region=idc,zone=idc-vlan241|region=gcp,zone=gcp-asia-east1-a	2
+region=idc,zone=idc-vlan241	region=idc,zone=idc-vlan241|region=gcp,zone=gcp-asia-east1-c|region=idc,zone=idc-vlan241	1
+[gcp-replica-gate 21:33:10] crdb: ranges_missing_gcp_replica=0 gcp_leaseholders=6
+[gcp-replica-gate 21:33:11] crdb: P-B lease spread idc=4/10 (40%)
+[gcp-replica-gate 21:33:11] PASS: crdb GCP 副本存在且 leader/lease 跨區散布合格（P-B；證據 /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-rc-20260727T112707+0800/gate/gcp-replica-gate-crdb.txt）

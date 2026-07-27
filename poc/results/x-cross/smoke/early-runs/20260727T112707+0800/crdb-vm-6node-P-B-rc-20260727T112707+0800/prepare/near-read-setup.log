@@ -1,0 +1,3 @@
+NOTICE: "kv.closed_timestamp.follower_reads_enabled" is now an alias for "kv.closed_timestamp.follower_reads.enabled", the preferred setting name
+SET CLUSTER SETTING
+NOTE: CRDB follower read mechanism enabled at cluster level; actual routing requires AS OF SYSTEM TIME follower_read_timestamp() in query.

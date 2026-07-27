@@ -1,0 +1,10 @@
+Tablet Server UUID               RPC Host/Port Heartbeat delay Status   Reads/s  Writes/s Uptime   SST total size  SST uncomp size SST #files      Memory   Broadcast Host/Port 
+1c30efe9003244049c4742e8c695f43f 10.160.152.13:9100 0.84s           ALIVE    6.33     0.00     1406     52.00 MB        143.08 MB       4               362.27 MB 10.160.152.13:9100
+4c5e44ff630b41689cfb4b722892c074 10.160.152.11:9100 0.84s           ALIVE    0.00     0.20     1423     94.47 MB        123.54 MB       4               514.28 MB 10.160.152.11:9100
+5014089ae5b1458bbab2c2b97b40c1fa 172.24.40.34:9100 0.93s           ALIVE    6.39     0.00     1264     145.51 MB       265.71 MB       8               908.36 MB 172.24.40.34:9100
+9d652032b0364b2f83597f2f60f8fb74 172.24.40.33:9100 0.99s           ALIVE    6.39     0.20     1280     52.18 MB        143.77 MB       6               755.58 MB 172.24.40.33:9100
+dc90588b2c614660bea182536e24893b 10.160.152.12:9100 0.77s           ALIVE    0.00     0.00     1415     75.66 KB        193.51 KB       1               268.13 MB 10.160.152.12:9100
+e970252e266c41b4ba9aaa98896208bc 172.24.40.32:9100 0.93s           ALIVE    0.00     0.00     1296     93.17 MB        122.09 MB       4               636.25 MB 172.24.40.32:9100
+[gcp-replica-gate 15:43:33] ybdb: gcp_tservers_with_sst=3 (require >= 3)
+[gcp-replica-gate 15:43:33] ybdb: status_tablet_leaders idc=12 gcp=12 total=24 (P-B 僅記錄不斷言)
+[gcp-replica-gate 15:43:33] PASS: ybdb GCP 副本存在且 leader/lease 跨區散布合格（P-B；證據 /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-B-rc-20260727T112707+0800/gate/gcp-replica-gate-ybdb.txt）

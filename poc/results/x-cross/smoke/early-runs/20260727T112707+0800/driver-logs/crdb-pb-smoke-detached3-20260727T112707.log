@@ -1,0 +1,1422 @@
+==> [start] phase8-crdb-smoke at 2026-07-27T20:09:49+0800 (timeout=3600   s)
+==> phase8-crdb-smoke ts=20260727T112707+0800 placement=P-B
+[wrapper] step 0/5 chrony gate SKIP (GATE_SKIP=1)
+[wrapper] DB=crdb TOPOLOGY=vm-6node-P-B PLACEMENT=P-B PROFILE=A-S CLIENT_ZONE=idc
+[wrapper] CLUSTER_HOSTS=idc-dbhost-1@172.24.40.32 idc-dbhost-2@172.24.40.33 idc-dbhost-3@172.24.40.34 gcp-dbhost-1@10.160.152.11 gcp-dbhost-2@10.160.152.12 gcp-dbhost-3@10.160.152.13
+[wrapper] DB_HOST=172.24.40.32:26257
+[wrapper] FULL chain; DB=crdb TOPOLOGY=vm-6node-P-B PLACEMENT=P-B PROFILE=A-S
+[1/4] gate
+[20:09:50] INFO  gate root: /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-rc-20260727T112707+0800  (client=l-dbm-labroom-1, db-host=172.24.40.32, cluster-host=172.24.40.32)
+[20:09:50] WARN  DB-host THP != [never] ([always] madvise never)
+[20:09:50] WARN  DB-host vm.swappiness (30) > 5
+[20:09:51] WARN  client (.31) artifacts FS available 12GB < 30GB
+[20:09:51] INFO  gate done  (os_gate_pass=false  client=12GB  db-host=90GB)
+[2/4] prepare
+[20:09:51] INFO  prepare root: /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-rc-20260727T112707+0800  db=crdb iso=rc topo=vm-6node-P-B host=172.24.40.32 expected_shards=0
+NOTICE: waiting for job(s) to complete: 1196306568514764801
+If the statement is canceled, jobs will continue in the background.
+DROP DATABASE
+CREATE DATABASE
+[20:09:52] INFO  drop+create done
+[20:09:52] INFO  go-tpc tpcc prepare W=4 driver=postgres 
+2026/07/27 20:09:52 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+creating table warehouse
+creating table district
+creating table customer
+creating index idx_customer
+creating table history
+creating index idx_h_w_id
+creating index idx_h_c_w_id
+creating table new_order
+creating table orders
+creating index idx_order
+creating table order_line
+creating table stock
+creating table item
+load to item
+[wrapper] placement watcher (crdb): drop-create done + 9 tables present — applying placement SQL (pre-gate)
+load to warehouse in warehouse 1
+load to stock in warehouse 1
+[wrapper] placement watcher (crdb): applied OK (attempt 1)
+[wrapper] lease enforcer (crdb): relocated 9 lease(s) toward preferred region (pass 1)
+load to district in warehouse 1
+load to warehouse in warehouse 2
+load to stock in warehouse 2
+load to district in warehouse 2
+load to warehouse in warehouse 3
+load to stock in warehouse 3
+[wrapper] lease enforcer (crdb): relocated 3 lease(s) toward preferred region (pass 2)
+load to district in warehouse 3
+load to warehouse in warehouse 4
+load to stock in warehouse 4
+load to district in warehouse 4
+load to customer in warehouse 1 district 1
+load to history in warehouse 1 district 1
+load to orders in warehouse 1 district 1
+load to new_order in warehouse 1 district 1
+load to order_line in warehouse 1 district 1
+load to customer in warehouse 1 district 2
+load to history in warehouse 1 district 2
+load to orders in warehouse 1 district 2
+load to new_order in warehouse 1 district 2
+load to order_line in warehouse 1 district 2
+load to customer in warehouse 1 district 3
+load to history in warehouse 1 district 3
+load to orders in warehouse 1 district 3
+load to new_order in warehouse 1 district 3
+load to order_line in warehouse 1 district 3
+load to customer in warehouse 1 district 4
+load to history in warehouse 1 district 4
+load to orders in warehouse 1 district 4
+load to new_order in warehouse 1 district 4
+load to order_line in warehouse 1 district 4
+load to customer in warehouse 1 district 5
+load to history in warehouse 1 district 5
+load to orders in warehouse 1 district 5
+load to new_order in warehouse 1 district 5
+load to order_line in warehouse 1 district 5
+load to customer in warehouse 1 district 6
+load to history in warehouse 1 district 6
+load to orders in warehouse 1 district 6
+load to new_order in warehouse 1 district 6
+load to order_line in warehouse 1 district 6
+load to customer in warehouse 1 district 7
+load to history in warehouse 1 district 7
+load to orders in warehouse 1 district 7
+load to new_order in warehouse 1 district 7
+load to order_line in warehouse 1 district 7
+load to customer in warehouse 1 district 8
+load to history in warehouse 1 district 8
+load to orders in warehouse 1 district 8
+load to new_order in warehouse 1 district 8
+load to order_line in warehouse 1 district 8
+load to customer in warehouse 1 district 9
+load to history in warehouse 1 district 9
+load to orders in warehouse 1 district 9
+load to new_order in warehouse 1 district 9
+load to order_line in warehouse 1 district 9
+load to customer in warehouse 1 district 10
+load to history in warehouse 1 district 10
+load to orders in warehouse 1 district 10
+load to new_order in warehouse 1 district 10
+load to order_line in warehouse 1 district 10
+load to customer in warehouse 2 district 1
+load to history in warehouse 2 district 1
+load to orders in warehouse 2 district 1
+load to new_order in warehouse 2 district 1
+load to order_line in warehouse 2 district 1
+load to customer in warehouse 2 district 2
+load to history in warehouse 2 district 2
+load to orders in warehouse 2 district 2
+load to new_order in warehouse 2 district 2
+load to order_line in warehouse 2 district 2
+load to customer in warehouse 2 district 3
+load to history in warehouse 2 district 3
+load to orders in warehouse 2 district 3
+load to new_order in warehouse 2 district 3
+load to order_line in warehouse 2 district 3
+load to customer in warehouse 2 district 4
+load to history in warehouse 2 district 4
+load to orders in warehouse 2 district 4
+load to new_order in warehouse 2 district 4
+load to order_line in warehouse 2 district 4
+load to customer in warehouse 2 district 5
+load to history in warehouse 2 district 5
+load to orders in warehouse 2 district 5
+load to new_order in warehouse 2 district 5
+load to order_line in warehouse 2 district 5
+load to customer in warehouse 2 district 6
+load to history in warehouse 2 district 6
+load to orders in warehouse 2 district 6
+load to new_order in warehouse 2 district 6
+load to order_line in warehouse 2 district 6
+load to customer in warehouse 2 district 7
+load to history in warehouse 2 district 7
+load to orders in warehouse 2 district 7
+load to new_order in warehouse 2 district 7
+load to order_line in warehouse 2 district 7
+load to customer in warehouse 2 district 8
+load to history in warehouse 2 district 8
+load to orders in warehouse 2 district 8
+load to new_order in warehouse 2 district 8
+load to order_line in warehouse 2 district 8
+load to customer in warehouse 2 district 9
+load to history in warehouse 2 district 9
+load to orders in warehouse 2 district 9
+load to new_order in warehouse 2 district 9
+load to order_line in warehouse 2 district 9
+load to customer in warehouse 2 district 10
+load to history in warehouse 2 district 10
+load to orders in warehouse 2 district 10
+load to new_order in warehouse 2 district 10
+load to order_line in warehouse 2 district 10
+load to customer in warehouse 3 district 1
+load to history in warehouse 3 district 1
+load to orders in warehouse 3 district 1
+load to new_order in warehouse 3 district 1
+load to order_line in warehouse 3 district 1
+load to customer in warehouse 3 district 2
+load to history in warehouse 3 district 2
+load to orders in warehouse 3 district 2
+load to new_order in warehouse 3 district 2
+load to order_line in warehouse 3 district 2
+load to customer in warehouse 3 district 3
+load to history in warehouse 3 district 3
+load to orders in warehouse 3 district 3
+load to new_order in warehouse 3 district 3
+load to order_line in warehouse 3 district 3
+load to customer in warehouse 3 district 4
+load to history in warehouse 3 district 4
+load to orders in warehouse 3 district 4
+load to new_order in warehouse 3 district 4
+load to order_line in warehouse 3 district 4
+load to customer in warehouse 3 district 5
+load to history in warehouse 3 district 5
+load to orders in warehouse 3 district 5
+load to new_order in warehouse 3 district 5
+load to order_line in warehouse 3 district 5
+load to customer in warehouse 3 district 6
+load to history in warehouse 3 district 6
+load to orders in warehouse 3 district 6
+load to new_order in warehouse 3 district 6
+load to order_line in warehouse 3 district 6
+load to customer in warehouse 3 district 7
+load to history in warehouse 3 district 7
+load to orders in warehouse 3 district 7
+load to new_order in warehouse 3 district 7
+load to order_line in warehouse 3 district 7
+load to customer in warehouse 3 district 8
+load to history in warehouse 3 district 8
+load to orders in warehouse 3 district 8
+load to new_order in warehouse 3 district 8
+load to order_line in warehouse 3 district 8
+load to customer in warehouse 3 district 9
+load to history in warehouse 3 district 9
+load to orders in warehouse 3 district 9
+load to new_order in warehouse 3 district 9
+load to order_line in warehouse 3 district 9
+load to customer in warehouse 3 district 10
+load to history in warehouse 3 district 10
+load to orders in warehouse 3 district 10
+load to new_order in warehouse 3 district 10
+load to order_line in warehouse 3 district 10
+load to customer in warehouse 4 district 1
+load to history in warehouse 4 district 1
+load to orders in warehouse 4 district 1
+load to new_order in warehouse 4 district 1
+load to order_line in warehouse 4 district 1
+load to customer in warehouse 4 district 2
+load to history in warehouse 4 district 2
+load to orders in warehouse 4 district 2
+load to new_order in warehouse 4 district 2
+load to order_line in warehouse 4 district 2
+load to customer in warehouse 4 district 3
+load to history in warehouse 4 district 3
+load to orders in warehouse 4 district 3
+load to new_order in warehouse 4 district 3
+load to order_line in warehouse 4 district 3
+load to customer in warehouse 4 district 4
+load to history in warehouse 4 district 4
+load to orders in warehouse 4 district 4
+load to new_order in warehouse 4 district 4
+load to order_line in warehouse 4 district 4
+load to customer in warehouse 4 district 5
+load to history in warehouse 4 district 5
+load to orders in warehouse 4 district 5
+load to new_order in warehouse 4 district 5
+load to order_line in warehouse 4 district 5
+load to customer in warehouse 4 district 6
+load to history in warehouse 4 district 6
+load to orders in warehouse 4 district 6
+load to new_order in warehouse 4 district 6
+load to order_line in warehouse 4 district 6
+load to customer in warehouse 4 district 7
+load to history in warehouse 4 district 7
+load to orders in warehouse 4 district 7
+load to new_order in warehouse 4 district 7
+load to order_line in warehouse 4 district 7
+load to customer in warehouse 4 district 8
+load to history in warehouse 4 district 8
+load to orders in warehouse 4 district 8
+load to new_order in warehouse 4 district 8
+load to order_line in warehouse 4 district 8
+load to customer in warehouse 4 district 9
+load to history in warehouse 4 district 9
+load to orders in warehouse 4 district 9
+load to new_order in warehouse 4 district 9
+load to order_line in warehouse 4 district 9
+load to customer in warehouse 4 district 10
+load to history in warehouse 4 district 10
+load to orders in warehouse 4 district 10
+load to new_order in warehouse 4 district 10
+load to order_line in warehouse 4 district 10
+begin to check warehouse 1 at condition 3.3.2.1
+begin to check warehouse 1 at condition 3.3.2.3
+begin to check warehouse 1 at condition 3.3.2.4
+begin to check warehouse 1 at condition 3.3.2.5
+begin to check warehouse 1 at condition 3.3.2.10
+begin to check warehouse 1 at condition 3.3.2.11
+begin to check warehouse 1 at condition 3.3.2.12
+begin to check warehouse 1 at condition 3.3.2.2
+begin to check warehouse 1 at condition 3.3.2.6
+begin to check warehouse 1 at condition 3.3.2.7
+begin to check warehouse 1 at condition 3.3.2.8
+begin to check warehouse 1 at condition 3.3.2.9
+begin to check warehouse 2 at condition 3.3.2.1
+begin to check warehouse 2 at condition 3.3.2.3
+begin to check warehouse 2 at condition 3.3.2.4
+begin to check warehouse 2 at condition 3.3.2.5
+begin to check warehouse 2 at condition 3.3.2.10
+begin to check warehouse 2 at condition 3.3.2.11
+begin to check warehouse 2 at condition 3.3.2.12
+[wrapper] lease enforcer (crdb): done
+begin to check warehouse 2 at condition 3.3.2.2
+begin to check warehouse 2 at condition 3.3.2.6
+begin to check warehouse 2 at condition 3.3.2.7
+begin to check warehouse 2 at condition 3.3.2.8
+begin to check warehouse 2 at condition 3.3.2.9
+begin to check warehouse 3 at condition 3.3.2.4
+begin to check warehouse 3 at condition 3.3.2.5
+begin to check warehouse 3 at condition 3.3.2.10
+begin to check warehouse 3 at condition 3.3.2.11
+begin to check warehouse 3 at condition 3.3.2.12
+begin to check warehouse 3 at condition 3.3.2.1
+begin to check warehouse 3 at condition 3.3.2.3
+begin to check warehouse 3 at condition 3.3.2.7
+begin to check warehouse 3 at condition 3.3.2.8
+begin to check warehouse 3 at condition 3.3.2.9
+begin to check warehouse 3 at condition 3.3.2.2
+begin to check warehouse 3 at condition 3.3.2.6
+begin to check warehouse 4 at condition 3.3.2.2
+begin to check warehouse 4 at condition 3.3.2.6
+begin to check warehouse 4 at condition 3.3.2.7
+begin to check warehouse 4 at condition 3.3.2.8
+begin to check warehouse 4 at condition 3.3.2.9
+begin to check warehouse 4 at condition 3.3.2.11
+begin to check warehouse 4 at condition 3.3.2.12
+begin to check warehouse 4 at condition 3.3.2.1
+begin to check warehouse 4 at condition 3.3.2.3
+begin to check warehouse 4 at condition 3.3.2.4
+begin to check warehouse 4 at condition 3.3.2.5
+begin to check warehouse 4 at condition 3.3.2.10
+Finished
+[21:27:13] INFO  go-tpc tpcc check --check-all
+2026/07/27 21:27:13 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+begin to check warehouse 1 at condition 3.3.2.7
+begin to check warehouse 1 at condition 3.3.2.8
+begin to check warehouse 1 at condition 3.3.2.10
+begin to check warehouse 1 at condition 3.3.2.11
+begin to check warehouse 1 at condition 3.3.2.12
+begin to check warehouse 1 at condition 3.3.2.9
+begin to check warehouse 1 at condition 3.3.2.1
+begin to check warehouse 1 at condition 3.3.2.2
+begin to check warehouse 1 at condition 3.3.2.3
+begin to check warehouse 1 at condition 3.3.2.4
+begin to check warehouse 1 at condition 3.3.2.5
+begin to check warehouse 1 at condition 3.3.2.6
+begin to check warehouse 2 at condition 3.3.2.8
+begin to check warehouse 2 at condition 3.3.2.10
+begin to check warehouse 2 at condition 3.3.2.11
+begin to check warehouse 2 at condition 3.3.2.12
+begin to check warehouse 2 at condition 3.3.2.7
+begin to check warehouse 2 at condition 3.3.2.2
+begin to check warehouse 2 at condition 3.3.2.3
+begin to check warehouse 2 at condition 3.3.2.4
+begin to check warehouse 2 at condition 3.3.2.5
+begin to check warehouse 2 at condition 3.3.2.6
+begin to check warehouse 2 at condition 3.3.2.9
+begin to check warehouse 2 at condition 3.3.2.1
+begin to check warehouse 3 at condition 3.3.2.7
+begin to check warehouse 3 at condition 3.3.2.8
+begin to check warehouse 3 at condition 3.3.2.10
+begin to check warehouse 3 at condition 3.3.2.11
+begin to check warehouse 3 at condition 3.3.2.12
+begin to check warehouse 3 at condition 3.3.2.9
+begin to check warehouse 3 at condition 3.3.2.1
+begin to check warehouse 3 at condition 3.3.2.2
+begin to check warehouse 3 at condition 3.3.2.3
+begin to check warehouse 3 at condition 3.3.2.4
+begin to check warehouse 3 at condition 3.3.2.5
+begin to check warehouse 3 at condition 3.3.2.6
+begin to check warehouse 4 at condition 3.3.2.11
+begin to check warehouse 4 at condition 3.3.2.12
+begin to check warehouse 4 at condition 3.3.2.7
+begin to check warehouse 4 at condition 3.3.2.8
+begin to check warehouse 4 at condition 3.3.2.10
+begin to check warehouse 4 at condition 3.3.2.4
+begin to check warehouse 4 at condition 3.3.2.5
+begin to check warehouse 4 at condition 3.3.2.6
+begin to check warehouse 4 at condition 3.3.2.9
+begin to check warehouse 4 at condition 3.3.2.1
+begin to check warehouse 4 at condition 3.3.2.2
+begin to check warehouse 4 at condition 3.3.2.3
+Finished
+[21:27:20] INFO  quiesce 5 min
+[21:32:20] INFO  ANALYZE
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+CREATE STATISTICS
+[21:32:45] INFO  X-CROSS near-read setup (TOPO=vm-6node-P-B)
+NOTICE: "kv.closed_timestamp.follower_reads_enabled" is now an alias for "kv.closed_timestamp.follower_reads.enabled", the preferred setting name
+SET CLUSTER SETTING
+[21:32:46] INFO  X-CROSS placement gate (PLACEMENT=P-B)
+[21:32:47] INFO  placement gate PASS — P-B spread idc=2/3 (66%)
+[21:32:47] INFO  schema + EXPLAIN dump
+[21:32:50] INFO  prepare done
+[wrapper] post-prepare: apply per-table lease_preferences (PLACEMENT=P-B) from /root/crdb-vm6-placement-p-b.sql
+NOTICE: waiting for job(s) to complete: 1196322886287425537
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1196322887854620673
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1196322889452388353
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1196322891008081921
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1196322892607062017
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1196322894185693185
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1196322895776645121
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1196322897393483777
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+NOTICE: waiting for job(s) to complete: 1196322899001311233
+If the statement is canceled, jobs will continue in the background.
+CONFIGURE ZONE
+target	raw_config_sql
+RANGE default	"ALTER RANGE default CONFIGURE ZONE USING
+	range_min_bytes = 134217728,
+	range_max_bytes = 536870912,
+	gc.ttlseconds = 14400,
+	num_replicas = 3,
+	constraints = '[]',
+	lease_preferences = '[]'"
+[wrapper] wait CRDB lease holders converge (PLACEMENT=P-B, max 5 min, deterministic gate)
+  CRDB lease holders spread OK (P-B): 40.0% on IDC
+[wrapper] pre-run: freeze CRDB load-based lease rebalancing + range split (via freeze-crdb.sh)
+[freeze-crdb] dumping current cluster settings...
+NOTICE: "kv.range_split.by_load_enabled" is now an alias for "kv.range_split.by_load.enabled", the preferred setting name
+[freeze-crdb] disabling load_based_lease_rebalancing...
+SET CLUSTER SETTING
+[freeze-crdb] disabling range_split.by_load_enabled...
+SET CLUSTER SETTING
+NOTICE: "kv.range_split.by_load_enabled" is now an alias for "kv.range_split.by_load.enabled", the preferred setting name
+[freeze-crdb] waiting 10s for settings to propagate...
+[freeze-crdb] CRDB frozen at 一  7月 27 21:33:07 CST 2026
+[wrapper] gcp-replica-gate: verify tpcc data replicated to GCP (fail-closed)
+[gcp-replica-gate 21:33:10] crdb: ranges_missing_gcp_replica=0 gcp_leaseholders=6
+[gcp-replica-gate 21:33:11] crdb: P-B lease spread idc=4/10 (40%)
+[gcp-replica-gate 21:33:11] PASS: crdb GCP 副本存在且 leader/lease 跨區散布合格（P-B；證據 /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-rc-20260727T112707+0800/gate/gcp-replica-gate-crdb.txt）
+[3/4] run (warmup + sweep, contains gate-isolation)
+[21:33:11] INFO  run start  db=crdb iso=rc topo=vm-6node-P-B host=172.24.40.32 cluster-host=172.24.40.32 fanout=true hosts=6
+[21:33:11] INFO  cold-reset
+[21:33:12] INFO  cold reset CockroachDB on hosts: 172.24.40.32 172.24.40.33 172.24.40.34 (db-host=172.24.40.32)
+[21:34:20] INFO  cold reset CockroachDB done
+[21:34:20] INFO  active isolation gate
+2026/07/27 21:34:20 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+Finished
+[Summary] NEW_ORDER - Takes(s): 1.6, Count: 5, TPM: 185.8, Sum(ms): 1378.8, Avg(ms): 275.1, 50th(ms): 285.2, 90th(ms): 369.1, 95th(ms): 369.1, 99th(ms): 369.1, 99.9th(ms): 369.1, Max(ms): 369.1
+[Summary] PAYMENT - Takes(s): 1.5, Count: 4, TPM: 159.0, Sum(ms): 450.0, Avg(ms): 113.2, 50th(ms): 109.1, 90th(ms): 134.2, 95th(ms): 134.2, 99th(ms): 134.2, 99.9th(ms): 134.2, Max(ms): 134.2
+[Summary] STOCK_LEVEL - Takes(s): 0.5, Count: 1, TPM: 113.0, Sum(ms): 52.5, Avg(ms): 53.5, 50th(ms): 54.5, 90th(ms): 54.5, 95th(ms): 54.5, 99th(ms): 54.5, 99.9th(ms): 54.5, Max(ms): 54.5
+tpmC: 185.8, tpmTotal: 457.7, efficiency: 1444.6%
+[21:34:22] INFO  isolation gate passed db=crdb iso=rc expected=read committed actual=read committed
+[21:34:22] INFO  warmup 60s (threads=64)
+=== wan-probe.sh  phase=warmup  ts=20260727T112707+0800  2026-07-27T13:34:22Z ===
+WAN_PROBE_IPERF=1  WAN_NIC=auto
+
+--- chronyc tracking (3 pair × 2 端 = 6 host) ---
+  [IDC/idc-driver    ] stratum=7 last_offset=0.000003748 leap=Normal
+  [GCP/gcp-poc-5     ] stratum=3 last_offset=0.000002264 leap=Normal
+  [IDC/idc-dbhost-1  ] stratum=7 last_offset=-0.000013922 leap=Normal
+  [GCP/gcp-poc-1     ] stratum=3 last_offset=0.000001982 leap=Normal
+  [IDC/idc-haproxy   ] stratum=7 last_offset=0.000076107 leap=Normal
+  [GCP/gcp-poc-4     ] stratum=3 last_offset=-0.000002326 leap=Normal
+
+--- /proc/net/dev (NIC=auto) byte counter snapshot ---
+  [IDC/idc-driver    ] rx_bytes=1055209638211 tx_bytes=1775540191059
+  [GCP/gcp-poc-5     ] rx_bytes=1780162049 tx_bytes=19639953
+  [IDC/idc-dbhost-1  ] rx_bytes=14136019572 tx_bytes=20337360983
+  [GCP/gcp-poc-1     ] rx_bytes=9727909957 tx_bytes=4747577880
+  [IDC/idc-haproxy   ] rx_bytes=214447112521 tx_bytes=136438643406
+  [GCP/gcp-poc-4     ] rx_bytes=782829727 tx_bytes=15831994
+
+--- iperf3 5s TCP idc-dbhost-1 ↔ gcp-dbhost-1 (forward + reverse) ---
+  [forward idc->gcp]  target=10.160.152.11 port=20170
+    {
+    	"start":	{
+    		"connected":	[{
+    				"socket":	5,
+    				"local_host":	"172.24.40.32",
+    				"local_port":	33270,
+    				"remote_host":	"10.160.152.11",
+    				"remote_port":	20170
+    			}],
+    		"version":	"iperf 3.5",
+    		"system_info":	"Linux l-test-poc-1 4.18.0-553.124.1.el8_10.x86_64 #1 SMP Tue May 12 08:08:25 EDT 2026 x86_64",
+    		"timestamp":	{
+    			"time":	"Mon, 27 Jul 2026 13:34:27 GMT",
+    			"timesecs":	1785159267
+    		},
+    		"connecting_to":	{
+    			"host":	"10.160.152.11",
+    			"port":	20170
+    		},
+    		"cookie":	"55afwqsnxruh3nbr4dvo37zafjkypipxvypy",
+    		"tcp_mss_default":	1338,
+    		"sock_bufsize":	0,
+    		"sndbuf_actual":	16384,
+    		"rcvbuf_actual":	87380,
+    		"test_start":	{
+    			"protocol":	"TCP",
+    			"num_streams":	1,
+    			"blksize":	131072,
+    			"omit":	0,
+    			"duration":	5,
+    			"bytes":	0,
+    			"blocks":	0,
+    			"reverse":	0,
+    			"tos":	0
+    		}
+    	},
+    	"intervals":	[{
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	1.0000739097595215,
+    					"seconds":	1.0000739097595215,
+    					"bytes":	22968108,
+    					"bits_per_second":	183731284.46494862,
+    					"retransmits":	281,
+    					"snd_cwnd":	259572,
+    					"rtt":	8609,
+    					"rttvar":	254,
+    					"pmtu":	1500,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	0,
+    				"end":	1.0000739097595215,
+    				"seconds":	1.0000739097595215,
+    				"bytes":	22968108,
+    				"bits_per_second":	183731284.46494862,
+    				"retransmits":	281,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	1.0000739097595215,
+    					"end":	2.0001289844512939,
+    					"seconds":	1.0000550746917725,
+    					"bytes":	33589152,
+    					"bits_per_second":	268698417.51747549,
+    					"retransmits":	0,
+    					"snd_cwnd":	338514,
+    					"rtt":	8714,
+    					"rttvar":	480,
+    					"pmtu":	1500,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	1.0000739097595215,
+    				"end":	2.0001289844512939,
+    				"seconds":	1.0000550746917725,
+    				"bytes":	33589152,
+    				"bits_per_second":	268698417.51747549,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	2.0001289844512939,
+    					"end":	3.00007700920105,
+    					"seconds":	0.99994802474975586,
+    					"bytes":	36350784,
+    					"bits_per_second":	290821387.51439244,
+    					"retransmits":	62,
+    					"snd_cwnd":	298374,
+    					"rtt":	8618,
+    					"rttvar":	298,
+    					"pmtu":	1500,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	2.0001289844512939,
+    				"end":	3.00007700920105,
+    				"seconds":	0.99994802474975586,
+    				"bytes":	36350784,
+    				"bits_per_second":	290821387.51439244,
+    				"retransmits":	62,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	3.00007700920105,
+    					"end":	4.0001139640808105,
+    					"seconds":	1.0000369548797607,
+    					"bytes":	37057248,
+    					"bits_per_second":	296447028.83569396,
+    					"retransmits":	0,
+    					"snd_cwnd":	378654,
+    					"rtt":	8458,
+    					"rttvar":	214,
+    					"pmtu":	1500,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	3.00007700920105,
+    				"end":	4.0001139640808105,
+    				"seconds":	1.0000369548797607,
+    				"bytes":	37057248,
+    				"bits_per_second":	296447028.83569396,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	4.0001139640808105,
+    					"end":	5.0000860691070557,
+    					"seconds":	0.99997210502624512,
+    					"bytes":	34680960,
+    					"bits_per_second":	277455419.6116482,
+    					"retransmits":	44,
+    					"snd_cwnd":	335838,
+    					"rtt":	8609,
+    					"rttvar":	158,
+    					"pmtu":	1500,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	4.0001139640808105,
+    				"end":	5.0000860691070557,
+    				"seconds":	0.99997210502624512,
+    				"bytes":	34680960,
+    				"bits_per_second":	277455419.6116482,
+    				"retransmits":	44,
+    				"omitted":	false
+    			}
+    		}],
+    	"end":	{
+    		"streams":	[{
+    				"sender":	{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	5.0000860691070557,
+    					"seconds":	5.0000860691070557,
+    					"bytes":	164646252,
+    					"bits_per_second":	263429468.57217357,
+    					"retransmits":	387,
+    					"max_snd_cwnd":	378654,
+    					"max_rtt":	8714,
+    					"min_rtt":	8458,
+    					"mean_rtt":	8601
+    				},
+    				"receiver":	{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	5.0395119190216064,
+    					"seconds":	5.0000860691070557,
+    					"bytes":	163315712,
+    					"bits_per_second":	259256395.6577872
+    				}
+    			}],
+    		"sum_sent":	{
+    			"start":	0,
+    			"end":	5.0000860691070557,
+    			"seconds":	5.0000860691070557,
+    			"bytes":	164646252,
+    			"bits_per_second":	263429468.57217357,
+    			"retransmits":	387
+    		},
+    		"sum_received":	{
+    			"start":	0,
+    			"end":	5.0395119190216064,
+    			"seconds":	5.0395119190216064,
+    			"bytes":	163315712,
+    			"bits_per_second":	259256395.6577872
+    		},
+    		"cpu_utilization_percent":	{
+    			"host_total":	1.3548655322896941,
+    			"host_user":	0.0950203025474593,
+    			"host_system":	1.259825674215882,
+    			"remote_total":	2.932116765144249,
+    			"remote_user":	0.33175651127201461,
+    			"remote_system":	2.6003921658106024
+    		},
+    		"sender_tcp_congestion":	"cubic",
+    		"receiver_tcp_congestion":	"cubic"
+    	}
+    }
+  [reverse gcp->idc]  target=172.24.40.32 port=20170
+    {
+    	"start":	{
+    		"connected":	[{
+    				"socket":	5,
+    				"local_host":	"10.160.152.11",
+    				"local_port":	37024,
+    				"remote_host":	"172.24.40.32",
+    				"remote_port":	20170
+    			}],
+    		"version":	"iperf 3.5",
+    		"system_info":	"Linux g-test-poc-1 4.18.0-553.144.1.el8_10.x86_64 #1 SMP Tue Jul 14 09:26:58 EDT 2026 x86_64",
+    		"timestamp":	{
+    			"time":	"Mon, 27 Jul 2026 13:34:33 GMT",
+    			"timesecs":	1785159273
+    		},
+    		"connecting_to":	{
+    			"host":	"172.24.40.32",
+    			"port":	20170
+    		},
+    		"cookie":	"6stm62iwpyx3rzqbmkc64piwhxshwqdd5xcy",
+    		"tcp_mss_default":	1338,
+    		"sock_bufsize":	0,
+    		"sndbuf_actual":	16384,
+    		"rcvbuf_actual":	87380,
+    		"test_start":	{
+    			"protocol":	"TCP",
+    			"num_streams":	1,
+    			"blksize":	131072,
+    			"omit":	0,
+    			"duration":	5,
+    			"bytes":	0,
+    			"blocks":	0,
+    			"reverse":	0,
+    			"tos":	0
+    		}
+    	},
+    	"intervals":	[{
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	1.0001258850097656,
+    					"seconds":	1.0001258850097656,
+    					"bytes":	34214372,
+    					"bits_per_second":	273680523.72459829,
+    					"retransmits":	0,
+    					"snd_cwnd":	1562784,
+    					"rtt":	35814,
+    					"rttvar":	226,
+    					"pmtu":	1460,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	0,
+    				"end":	1.0001258850097656,
+    				"seconds":	1.0001258850097656,
+    				"bytes":	34214372,
+    				"bits_per_second":	273680523.72459829,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	1.0001258850097656,
+    					"end":	2.0000579357147217,
+    					"seconds":	0.999932050704956,
+    					"bytes":	40632320,
+    					"bits_per_second":	325080649.00093204,
+    					"retransmits":	0,
+    					"snd_cwnd":	3303522,
+    					"rtt":	76148,
+    					"rttvar":	209,
+    					"pmtu":	1460,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	1.0001258850097656,
+    				"end":	2.0000579357147217,
+    				"seconds":	0.999932050704956,
+    				"bytes":	40632320,
+    				"bits_per_second":	325080649.00093204,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	2.0000579357147217,
+    					"end":	3.0000910758972168,
+    					"seconds":	1.0000331401824951,
+    					"bytes":	41943040,
+    					"bits_per_second":	335533200.36850661,
+    					"retransmits":	137,
+    					"snd_cwnd":	2340162,
+    					"rtt":	57582,
+    					"rttvar":	191,
+    					"pmtu":	1460,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	2.0000579357147217,
+    				"end":	3.0000910758972168,
+    				"seconds":	1.0000331401824951,
+    				"bytes":	41943040,
+    				"bits_per_second":	335533200.36850661,
+    				"retransmits":	137,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	3.0000910758972168,
+    					"end":	4.0000910758972168,
+    					"seconds":	1,
+    					"bytes":	40632320,
+    					"bits_per_second":	325058560,
+    					"retransmits":	0,
+    					"snd_cwnd":	2556918,
+    					"rtt":	61707,
+    					"rttvar":	187,
+    					"pmtu":	1460,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	3.0000910758972168,
+    				"end":	4.0000910758972168,
+    				"seconds":	1,
+    				"bytes":	40632320,
+    				"bits_per_second":	325058560,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	4.0000910758972168,
+    					"end":	5.0001180171966553,
+    					"seconds":	1.0000269412994385,
+    					"bytes":	40632320,
+    					"bits_per_second":	325049802.73593205,
+    					"retransmits":	0,
+    					"snd_cwnd":	2738886,
+    					"rtt":	68461,
+    					"rttvar":	179,
+    					"pmtu":	1460,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	4.0000910758972168,
+    				"end":	5.0001180171966553,
+    				"seconds":	1.0000269412994385,
+    				"bytes":	40632320,
+    				"bits_per_second":	325049802.73593205,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}],
+    	"end":	{
+    		"streams":	[{
+    				"sender":	{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	5.0001180171966553,
+    					"seconds":	5.0001180171966553,
+    					"bytes":	198054372,
+    					"bits_per_second":	316879515.75357467,
+    					"retransmits":	137,
+    					"max_snd_cwnd":	3303522,
+    					"max_rtt":	76148,
+    					"min_rtt":	35814,
+    					"mean_rtt":	59942
+    				},
+    				"receiver":	{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	5.1007261276245117,
+    					"seconds":	5.0001180171966553,
+    					"bytes":	197656576,
+    					"bits_per_second":	310005393.0432086
+    				}
+    			}],
+    		"sum_sent":	{
+    			"start":	0,
+    			"end":	5.0001180171966553,
+    			"seconds":	5.0001180171966553,
+    			"bytes":	198054372,
+    			"bits_per_second":	316879515.75357467,
+    			"retransmits":	137
+    		},
+    		"sum_received":	{
+    			"start":	0,
+    			"end":	5.1007261276245117,
+    			"seconds":	5.1007261276245117,
+    			"bytes":	197656576,
+    			"bits_per_second":	310005393.0432086
+    		},
+    		"cpu_utilization_percent":	{
+    			"host_total":	1.8077077476569194,
+    			"host_user":	0.27156288074873769,
+    			"host_system":	1.5360470980139032,
+    			"remote_total":	5.9864258787142166,
+    			"remote_user":	0.417061927489402,
+    			"remote_system":	5.5693793911007026
+    		},
+    		"sender_tcp_congestion":	"cubic",
+    		"receiver_tcp_congestion":	"cubic"
+    	}
+    }
+
+=== wan-probe done (all probes succeeded) ===
+=== wan-probe.sh  phase=warmup-post  ts=20260727T112707+0800  2026-07-27T13:35:43Z ===
+WAN_PROBE_IPERF=1  WAN_NIC=auto
+
+--- chronyc tracking (3 pair × 2 端 = 6 host) ---
+  [IDC/idc-driver    ] stratum=7 last_offset=-0.000061627 leap=Normal
+  [GCP/gcp-poc-5     ] stratum=3 last_offset=0.000002264 leap=Normal
+  [IDC/idc-dbhost-1  ] stratum=7 last_offset=-0.000013922 leap=Normal
+  [GCP/gcp-poc-1     ] stratum=3 last_offset=0.000001982 leap=Normal
+  [IDC/idc-haproxy   ] stratum=7 last_offset=0.000076107 leap=Normal
+  [GCP/gcp-poc-4     ] stratum=3 last_offset=-0.000002326 leap=Normal
+
+--- /proc/net/dev (NIC=auto) byte counter snapshot ---
+  [IDC/idc-driver    ] rx_bytes=1055260672299 tx_bytes=1775559891010
+  [GCP/gcp-poc-5     ] rx_bytes=1780201819 tx_bytes=19662726
+  [IDC/idc-dbhost-1  ] rx_bytes=14604401712 tx_bytes=20677507522
+  [GCP/gcp-poc-1     ] rx_bytes=9947294990 tx_bytes=4995704948
+  [IDC/idc-haproxy   ] rx_bytes=214447280758 tx_bytes=136438672905
+  [GCP/gcp-poc-4     ] rx_bytes=782876505 tx_bytes=15865525
+
+--- iperf3 5s TCP idc-dbhost-1 ↔ gcp-dbhost-1 (forward + reverse) ---
+  [forward idc->gcp]  target=10.160.152.11 port=20170
+    {
+    	"start":	{
+    		"connected":	[{
+    				"socket":	5,
+    				"local_host":	"172.24.40.32",
+    				"local_port":	47074,
+    				"remote_host":	"10.160.152.11",
+    				"remote_port":	20170
+    			}],
+    		"version":	"iperf 3.5",
+    		"system_info":	"Linux l-test-poc-1 4.18.0-553.124.1.el8_10.x86_64 #1 SMP Tue May 12 08:08:25 EDT 2026 x86_64",
+    		"timestamp":	{
+    			"time":	"Mon, 27 Jul 2026 13:35:48 GMT",
+    			"timesecs":	1785159348
+    		},
+    		"connecting_to":	{
+    			"host":	"10.160.152.11",
+    			"port":	20170
+    		},
+    		"cookie":	"lke6v4z444p44gizvofng4plkt5m4cmco2u2",
+    		"tcp_mss_default":	1338,
+    		"sock_bufsize":	0,
+    		"sndbuf_actual":	16384,
+    		"rcvbuf_actual":	87380,
+    		"test_start":	{
+    			"protocol":	"TCP",
+    			"num_streams":	1,
+    			"blksize":	131072,
+    			"omit":	0,
+    			"duration":	5,
+    			"bytes":	0,
+    			"blocks":	0,
+    			"reverse":	0,
+    			"tos":	0
+    		}
+    	},
+    	"intervals":	[{
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	1.0000779628753662,
+    					"seconds":	1.0000779628753662,
+    					"bytes":	21652854,
+    					"bits_per_second":	173209328.10274085,
+    					"retransmits":	253,
+    					"snd_cwnd":	220770,
+    					"rtt":	8445,
+    					"rttvar":	211,
+    					"pmtu":	1500,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	0,
+    				"end":	1.0000779628753662,
+    				"seconds":	1.0000779628753662,
+    				"bytes":	21652854,
+    				"bits_per_second":	173209328.10274085,
+    				"retransmits":	253,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	1.0000779628753662,
+    					"end":	2.0000729560852051,
+    					"seconds":	0.99999499320983887,
+    					"bytes":	29607264,
+    					"bits_per_second":	236859297.90480232,
+    					"retransmits":	0,
+    					"snd_cwnd":	301050,
+    					"rtt":	8443,
+    					"rttvar":	201,
+    					"pmtu":	1500,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	1.0000779628753662,
+    				"end":	2.0000729560852051,
+    				"seconds":	0.99999499320983887,
+    				"bytes":	29607264,
+    				"bits_per_second":	236859297.90480232,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	2.0000729560852051,
+    					"end":	3.0000810623168945,
+    					"seconds":	1.0000081062316895,
+    					"bytes":	38149056,
+    					"bits_per_second":	305189974.059361,
+    					"retransmits":	0,
+    					"snd_cwnd":	379992,
+    					"rtt":	8473,
+    					"rttvar":	219,
+    					"pmtu":	1500,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	2.0000729560852051,
+    				"end":	3.0000810623168945,
+    				"seconds":	1.0000081062316895,
+    				"bytes":	38149056,
+    				"bits_per_second":	305189974.059361,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	3.0000810623168945,
+    					"end":	4.0001220703125,
+    					"seconds":	1.0000410079956055,
+    					"bytes":	34295616,
+    					"bits_per_second":	274353677.30560672,
+    					"retransmits":	43,
+    					"snd_cwnd":	341190,
+    					"rtt":	8505,
+    					"rttvar":	131,
+    					"pmtu":	1500,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	3.0000810623168945,
+    				"end":	4.0001220703125,
+    				"seconds":	1.0000410079956055,
+    				"bytes":	34295616,
+    				"bits_per_second":	274353677.30560672,
+    				"retransmits":	43,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	4.0001220703125,
+    					"end":	5.0000951290130615,
+    					"seconds":	0.99997305870056152,
+    					"bytes":	36286560,
+    					"bits_per_second":	290300301.06733811,
+    					"retransmits":	59,
+    					"snd_cwnd":	302388,
+    					"rtt":	8437,
+    					"rttvar":	248,
+    					"pmtu":	1500,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	4.0001220703125,
+    				"end":	5.0000951290130615,
+    				"seconds":	0.99997305870056152,
+    				"bytes":	36286560,
+    				"bits_per_second":	290300301.06733811,
+    				"retransmits":	59,
+    				"omitted":	false
+    			}
+    		}],
+    	"end":	{
+    		"streams":	[{
+    				"sender":	{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	5.0000951290130615,
+    					"seconds":	5.0000951290130615,
+    					"bytes":	159991350,
+    					"bits_per_second":	255981289.75050876,
+    					"retransmits":	355,
+    					"max_snd_cwnd":	379992,
+    					"max_rtt":	8505,
+    					"min_rtt":	8437,
+    					"mean_rtt":	8460
+    				},
+    				"receiver":	{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	5.0415530204772949,
+    					"seconds":	5.0000951290130615,
+    					"bytes":	158728192,
+    					"bits_per_second":	251871899.55998576
+    				}
+    			}],
+    		"sum_sent":	{
+    			"start":	0,
+    			"end":	5.0000951290130615,
+    			"seconds":	5.0000951290130615,
+    			"bytes":	159991350,
+    			"bits_per_second":	255981289.75050876,
+    			"retransmits":	355
+    		},
+    		"sum_received":	{
+    			"start":	0,
+    			"end":	5.0415530204772949,
+    			"seconds":	5.0415530204772949,
+    			"bytes":	158728192,
+    			"bits_per_second":	251871899.55998576
+    		},
+    		"cpu_utilization_percent":	{
+    			"host_total":	1.3437136561240006,
+    			"host_user":	0.13850036243633893,
+    			"host_system":	1.2052132936876616,
+    			"remote_total":	2.8471358970086196,
+    			"remote_user":	0.29492098090555441,
+    			"remote_system":	2.5522308776217595
+    		},
+    		"sender_tcp_congestion":	"cubic",
+    		"receiver_tcp_congestion":	"cubic"
+    	}
+    }
+  [reverse gcp->idc]  target=172.24.40.32 port=20170
+    {
+    	"start":	{
+    		"connected":	[{
+    				"socket":	5,
+    				"local_host":	"10.160.152.11",
+    				"local_port":	59992,
+    				"remote_host":	"172.24.40.32",
+    				"remote_port":	20170
+    			}],
+    		"version":	"iperf 3.5",
+    		"system_info":	"Linux g-test-poc-1 4.18.0-553.144.1.el8_10.x86_64 #1 SMP Tue Jul 14 09:26:58 EDT 2026 x86_64",
+    		"timestamp":	{
+    			"time":	"Mon, 27 Jul 2026 13:35:54 GMT",
+    			"timesecs":	1785159354
+    		},
+    		"connecting_to":	{
+    			"host":	"172.24.40.32",
+    			"port":	20170
+    		},
+    		"cookie":	"uks3gevl6pmjt4hfjhu6ugxx2w3nloewcjy4",
+    		"tcp_mss_default":	1338,
+    		"sock_bufsize":	0,
+    		"sndbuf_actual":	16384,
+    		"rcvbuf_actual":	87380,
+    		"test_start":	{
+    			"protocol":	"TCP",
+    			"num_streams":	1,
+    			"blksize":	131072,
+    			"omit":	0,
+    			"duration":	5,
+    			"bytes":	0,
+    			"blocks":	0,
+    			"reverse":	0,
+    			"tos":	0
+    		}
+    	},
+    	"intervals":	[{
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	1.0000970363616943,
+    					"seconds":	1.0000970363616943,
+    					"bytes":	26057550,
+    					"bits_per_second":	208440173.7239109,
+    					"retransmits":	13,
+    					"snd_cwnd":	378654,
+    					"rtt":	8588,
+    					"rttvar":	181,
+    					"pmtu":	1460,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	0,
+    				"end":	1.0000970363616943,
+    				"seconds":	1.0000970363616943,
+    				"bytes":	26057550,
+    				"bits_per_second":	208440173.7239109,
+    				"retransmits":	13,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	1.0000970363616943,
+    					"end":	2.0000779628753662,
+    					"seconds":	0.99998092651367188,
+    					"bytes":	47782656,
+    					"bits_per_second":	382268539.193756,
+    					"retransmits":	0,
+    					"snd_cwnd":	460272,
+    					"rtt":	11146,
+    					"rttvar":	185,
+    					"pmtu":	1460,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	1.0000970363616943,
+    				"end":	2.0000779628753662,
+    				"seconds":	0.99998092651367188,
+    				"bytes":	47782656,
+    				"bits_per_second":	382268539.193756,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	2.0000779628753662,
+    					"end":	3.0000998973846436,
+    					"seconds":	1.0000219345092773,
+    					"bytes":	41296032,
+    					"bits_per_second":	330361009.693368,
+    					"retransmits":	0,
+    					"snd_cwnd":	520482,
+    					"rtt":	12054,
+    					"rttvar":	219,
+    					"pmtu":	1460,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	2.0000779628753662,
+    				"end":	3.0000998973846436,
+    				"seconds":	1.0000219345092773,
+    				"bytes":	41296032,
+    				"bits_per_second":	330361009.693368,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	3.0000998973846436,
+    					"end":	4.0000979900360107,
+    					"seconds":	0.99999809265136719,
+    					"bytes":	40461120,
+    					"bits_per_second":	323689577.38887286,
+    					"retransmits":	0,
+    					"snd_cwnd":	574002,
+    					"rtt":	13483,
+    					"rttvar":	153,
+    					"pmtu":	1460,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	3.0000998973846436,
+    				"end":	4.0000979900360107,
+    				"seconds":	0.99999809265136719,
+    				"bytes":	40461120,
+    				"bits_per_second":	323689577.38887286,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}, {
+    			"streams":	[{
+    					"socket":	5,
+    					"start":	4.0000979900360107,
+    					"end":	5.0001678466796875,
+    					"seconds":	1.0000698566436768,
+    					"bytes":	41167584,
+    					"bits_per_second":	329317666.97308183,
+    					"retransmits":	0,
+    					"snd_cwnd":	620832,
+    					"rtt":	14763,
+    					"rttvar":	145,
+    					"pmtu":	1460,
+    					"omitted":	false
+    				}],
+    			"sum":	{
+    				"start":	4.0000979900360107,
+    				"end":	5.0001678466796875,
+    				"seconds":	1.0000698566436768,
+    				"bytes":	41167584,
+    				"bits_per_second":	329317666.97308183,
+    				"retransmits":	0,
+    				"omitted":	false
+    			}
+    		}],
+    	"end":	{
+    		"streams":	[{
+    				"sender":	{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	5.0001678466796875,
+    					"seconds":	5.0001678466796875,
+    					"bytes":	196764942,
+    					"bits_per_second":	314813339.12526131,
+    					"retransmits":	13,
+    					"max_snd_cwnd":	620832,
+    					"max_rtt":	14763,
+    					"min_rtt":	8588,
+    					"mean_rtt":	12006
+    				},
+    				"receiver":	{
+    					"socket":	5,
+    					"start":	0,
+    					"end":	5.0499119758605957,
+    					"seconds":	5.0001678466796875,
+    					"bytes":	195559424,
+    					"bits_per_second":	309802507.34635532
+    				}
+    			}],
+    		"sum_sent":	{
+    			"start":	0,
+    			"end":	5.0001678466796875,
+    			"seconds":	5.0001678466796875,
+    			"bytes":	196764942,
+    			"bits_per_second":	314813339.12526131,
+    			"retransmits":	13
+    		},
+    		"sum_received":	{
+    			"start":	0,
+    			"end":	5.0499119758605957,
+    			"seconds":	5.0499119758605957,
+    			"bytes":	195559424,
+    			"bits_per_second":	309802507.34635532
+    		},
+    		"cpu_utilization_percent":	{
+    			"host_total":	1.9408382598936118,
+    			"host_user":	0.19285198224189695,
+    			"host_system":	1.7479667245763579,
+    			"remote_total":	4.5958468869388156,
+    			"remote_user":	0.3677598542776081,
+    			"remote_system":	4.2280870326612074
+    		},
+    		"sender_tcp_congestion":	"cubic",
+    		"receiver_tcp_congestion":	"cubic"
+    	}
+    }
+
+=== wan-probe done (all probes succeeded) ===
+[21:36:00] INFO    run threads=16 round=1 → /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-rc-20260727T112707+0800/runs/threads-16/round-1
+=== wan-probe.sh  phase=round-pre  ts=20260727T112707+0800  2026-07-27T13:36:00Z ===
+WAN_PROBE_IPERF=1  WAN_NIC=auto
+
+--- chronyc tracking (3 pair × 2 端 = 6 host) ---
+  [IDC/idc-driver    ] stratum=7 last_offset=-0.000076791 leap=Normal
+  [GCP/gcp-poc-5     ] stratum=3 last_offset=0.000002264 leap=Normal
+  [IDC/idc-dbhost-1  ] stratum=7 last_offset=-0.000013922 leap=Normal
+  [GCP/gcp-poc-1     ] stratum=3 last_offset=0.000001982 leap=Normal
+  [IDC/idc-haproxy   ] stratum=7 last_offset=0.000076107 leap=Normal
+  [GCP/gcp-poc-4     ] stratum=3 last_offset=-0.000002326 leap=Normal
+
+--- /proc/net/dev (NIC=auto) byte counter snapshot ---
+  [IDC/idc-driver    ] rx_bytes=1055260829573 tx_bytes=1775560011954
+  [GCP/gcp-poc-5     ] rx_bytes=1780250819 tx_bytes=19687883
+  [IDC/idc-dbhost-1  ] rx_bytes=14809506872 tx_bytes=20841803315
+  [GCP/gcp-poc-1     ] rx_bytes=10111597542 tx_bytes=5193709156
+  [IDC/idc-haproxy   ] rx_bytes=214447326917 tx_bytes=136438689186
+  [GCP/gcp-poc-4     ] rx_bytes=782890913 tx_bytes=15881025
+
+--- iperf3: SKIP (phase=round-pre 落在 round 內，避免干擾 benchmark) ---
+
+=== wan-probe done (all probes succeeded) ===
+2026/07/27 21:36:29 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+[Current] DELIVERY - Takes(s): 9.2, Count: 33, TPM: 214.7, Sum(ms): 14533.4, Avg(ms): 439.8, 50th(ms): 369.1, 90th(ms): 671.1, 95th(ms): 738.2, 99th(ms): 838.9, 99.9th(ms): 838.9, Max(ms): 838.9
+[Current] NEW_ORDER - Takes(s): 9.8, Count: 364, TPM: 2234.7, Sum(ms): 100930.6, Avg(ms): 276.8, 50th(ms): 268.4, 90th(ms): 402.7, 95th(ms): 503.3, 99th(ms): 704.6, 99.9th(ms): 906.0, Max(ms): 906.0
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 29, TPM: 175.9, Sum(ms): 1431.4, Avg(ms): 49.4, 50th(ms): 54.5, 90th(ms): 60.8, 95th(ms): 60.8, 99th(ms): 65.0, 99.9th(ms): 65.0, Max(ms): 65.0
+[Current] PAYMENT - Takes(s): 9.9, Count: 382, TPM: 2313.7, Sum(ms): 39328.4, Avg(ms): 103.1, 50th(ms): 71.3, 90th(ms): 192.9, 95th(ms): 268.4, 99th(ms): 385.9, 99.9th(ms): 570.4, Max(ms): 570.4
+[Current] STOCK_LEVEL - Takes(s): 9.8, Count: 29, TPM: 177.4, Sum(ms): 1100.0, Avg(ms): 38.2, 50th(ms): 26.2, 90th(ms): 50.3, 95th(ms): 92.3, 99th(ms): 234.9, 99.9th(ms): 234.9, Max(ms): 234.9
+[Current] DELIVERY - Takes(s): 9.8, Count: 31, TPM: 190.5, Sum(ms): 13405.9, Avg(ms): 431.1, 50th(ms): 369.1, 90th(ms): 604.0, 95th(ms): 671.1, 99th(ms): 939.5, 99.9th(ms): 939.5, Max(ms): 939.5
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 338, TPM: 2031.3, Sum(ms): 100867.7, Avg(ms): 298.5, 50th(ms): 285.2, 90th(ms): 453.0, 95th(ms): 536.9, 99th(ms): 704.6, 99.9th(ms): 1610.6, Max(ms): 1610.6
+[Current] ORDER_STATUS - Takes(s): 9.8, Count: 33, TPM: 201.8, Sum(ms): 1678.2, Avg(ms): 50.6, 50th(ms): 54.5, 90th(ms): 58.7, 95th(ms): 58.7, 99th(ms): 62.9, 99.9th(ms): 62.9, Max(ms): 62.9
+[Current] PAYMENT - Takes(s): 10.0, Count: 345, TPM: 2077.4, Sum(ms): 41442.7, Avg(ms): 120.1, 50th(ms): 88.1, 90th(ms): 234.9, 95th(ms): 302.0, 99th(ms): 419.4, 99.9th(ms): 536.9, Max(ms): 536.9
+[Current] STOCK_LEVEL - Takes(s): 9.7, Count: 31, TPM: 192.3, Sum(ms): 1043.9, Avg(ms): 33.7, 50th(ms): 26.2, 90th(ms): 44.0, 95th(ms): 46.1, 99th(ms): 184.5, 99.9th(ms): 184.5, Max(ms): 184.5
+[Current] DELIVERY - Takes(s): 9.6, Count: 26, TPM: 162.2, Sum(ms): 13887.9, Avg(ms): 531.7, 50th(ms): 385.9, 90th(ms): 872.4, 95th(ms): 1208.0, 99th(ms): 1275.1, 99.9th(ms): 1275.1, Max(ms): 1275.1
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 360, TPM: 2162.3, Sum(ms): 106689.5, Avg(ms): 296.0, 50th(ms): 285.2, 90th(ms): 419.4, 95th(ms): 570.4, 99th(ms): 838.9, 99.9th(ms): 1409.3, Max(ms): 1409.3
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 25, TPM: 151.1, Sum(ms): 1258.9, Avg(ms): 50.3, 50th(ms): 54.5, 90th(ms): 56.6, 95th(ms): 56.6, 99th(ms): 56.6, 99.9th(ms): 56.6, Max(ms): 56.6
+[Current] PAYMENT - Takes(s): 10.0, Count: 336, TPM: 2019.1, Sum(ms): 37350.7, Avg(ms): 111.1, 50th(ms): 88.1, 90th(ms): 226.5, 95th(ms): 243.3, 99th(ms): 335.5, 99.9th(ms): 369.1, Max(ms): 369.1
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 31, TPM: 188.0, Sum(ms): 1042.1, Avg(ms): 33.5, 50th(ms): 27.3, 90th(ms): 50.3, 95th(ms): 67.1, 99th(ms): 71.3, 99.9th(ms): 71.3, Max(ms): 71.3
+[Current] DELIVERY - Takes(s): 9.9, Count: 30, TPM: 181.6, Sum(ms): 13122.2, Avg(ms): 437.9, 50th(ms): 369.1, 90th(ms): 637.5, 95th(ms): 671.1, 99th(ms): 1006.6, 99.9th(ms): 1006.6, Max(ms): 1006.6
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 364, TPM: 2191.9, Sum(ms): 108641.9, Avg(ms): 297.8, 50th(ms): 285.2, 90th(ms): 453.0, 95th(ms): 570.4, 99th(ms): 704.6, 99.9th(ms): 1275.1, Max(ms): 1275.1
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 33, TPM: 198.9, Sum(ms): 1611.0, Avg(ms): 49.0, 50th(ms): 54.5, 90th(ms): 56.6, 95th(ms): 56.6, 99th(ms): 58.7, 99.9th(ms): 58.7, Max(ms): 58.7
+[Current] PAYMENT - Takes(s): 10.0, Count: 325, TPM: 1951.6, Sum(ms): 35380.3, Avg(ms): 108.9, 50th(ms): 79.7, 90th(ms): 218.1, 95th(ms): 268.4, 99th(ms): 385.9, 99.9th(ms): 520.1, Max(ms): 520.1
+[Current] STOCK_LEVEL - Takes(s): 9.7, Count: 45, TPM: 278.0, Sum(ms): 1828.4, Avg(ms): 40.8, 50th(ms): 28.3, 90th(ms): 83.9, 95th(ms): 88.1, 99th(ms): 159.4, 99.9th(ms): 159.4, Max(ms): 159.4
+[Current] DELIVERY - Takes(s): 9.8, Count: 31, TPM: 189.1, Sum(ms): 12919.0, Avg(ms): 415.9, 50th(ms): 369.1, 90th(ms): 570.4, 95th(ms): 704.6, 99th(ms): 973.1, 99.9th(ms): 973.1, Max(ms): 973.1
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 342, TPM: 2057.6, Sum(ms): 101365.2, Avg(ms): 296.4, 50th(ms): 285.2, 90th(ms): 486.5, 95th(ms): 570.4, 99th(ms): 872.4, 99.9th(ms): 1040.2, Max(ms): 1040.2
+[Current] ORDER_STATUS - Takes(s): 9.4, Count: 36, TPM: 229.5, Sum(ms): 1669.2, Avg(ms): 46.4, 50th(ms): 54.5, 90th(ms): 56.6, 95th(ms): 56.6, 99th(ms): 58.7, 99.9th(ms): 58.7, Max(ms): 58.7
+[Current] PAYMENT - Takes(s): 10.0, Count: 370, TPM: 2222.8, Sum(ms): 42181.9, Avg(ms): 114.0, 50th(ms): 79.7, 90th(ms): 234.9, 95th(ms): 302.0, 99th(ms): 402.7, 99.9th(ms): 570.4, Max(ms): 570.4
+[Current] STOCK_LEVEL - Takes(s): 9.7, Count: 36, TPM: 223.3, Sum(ms): 1278.8, Avg(ms): 35.5, 50th(ms): 27.3, 90th(ms): 48.2, 95th(ms): 50.3, 99th(ms): 151.0, 99.9th(ms): 151.0, Max(ms): 151.0
+[Current] DELIVERY - Takes(s): 9.5, Count: 26, TPM: 163.5, Sum(ms): 11575.1, Avg(ms): 445.2, 50th(ms): 369.1, 90th(ms): 671.1, 95th(ms): 738.2, 99th(ms): 872.4, 99.9th(ms): 872.4, Max(ms): 872.4
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 379, TPM: 2279.6, Sum(ms): 110283.7, Avg(ms): 290.6, 50th(ms): 285.2, 90th(ms): 453.0, 95th(ms): 520.1, 99th(ms): 704.6, 99.9th(ms): 1140.9, Max(ms): 1140.9
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 41, TPM: 248.2, Sum(ms): 1852.3, Avg(ms): 45.1, 50th(ms): 54.5, 90th(ms): 54.5, 95th(ms): 54.5, 99th(ms): 54.5, 99.9th(ms): 54.5, Max(ms): 54.5
+[Current] PAYMENT - Takes(s): 10.0, Count: 324, TPM: 1947.9, Sum(ms): 34154.7, Avg(ms): 105.3, 50th(ms): 71.3, 90th(ms): 226.5, 95th(ms): 285.2, 99th(ms): 402.7, 99.9th(ms): 536.9, Max(ms): 536.9
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 34, TPM: 206.5, Sum(ms): 1234.3, Avg(ms): 36.3, 50th(ms): 28.3, 90th(ms): 62.9, 95th(ms): 62.9, 99th(ms): 96.5, 99.9th(ms): 96.5, Max(ms): 96.5
+Finished
+[Summary] DELIVERY - Takes(s): 59.7, Count: 179, TPM: 179.9, Sum(ms): 80683.5, Avg(ms): 450.0, 50th(ms): 369.1, 90th(ms): 671.1, 95th(ms): 838.9, 99th(ms): 1040.2, 99.9th(ms): 1275.1, Max(ms): 1275.1
+[Summary] NEW_ORDER - Takes(s): 60.2, Count: 2158, TPM: 2149.2, Sum(ms): 632821.1, Avg(ms): 292.9, 50th(ms): 285.2, 90th(ms): 453.0, 95th(ms): 536.9, 99th(ms): 771.8, 99.9th(ms): 1409.3, Max(ms): 1610.6
+[Summary] ORDER_STATUS - Takes(s): 60.4, Count: 197, TPM: 195.8, Sum(ms): 9500.9, Avg(ms): 48.2, 50th(ms): 54.5, 90th(ms): 56.6, 95th(ms): 58.7, 99th(ms): 60.8, 99.9th(ms): 65.0, Max(ms): 65.0
+[Summary] PAYMENT - Takes(s): 60.4, Count: 2085, TPM: 2071.9, Sum(ms): 230131.1, Avg(ms): 110.4, 50th(ms): 79.7, 90th(ms): 226.5, 95th(ms): 285.2, 99th(ms): 402.7, 99.9th(ms): 536.9, Max(ms): 570.4
+[Summary] STOCK_LEVEL - Takes(s): 60.3, Count: 206, TPM: 205.0, Sum(ms): 7527.5, Avg(ms): 36.6, 50th(ms): 27.3, 90th(ms): 52.4, 95th(ms): 83.9, 99th(ms): 159.4, 99.9th(ms): 234.9, Max(ms): 234.9
+tpmC: 2149.1, tpmTotal: 4801.8, efficiency: 4178.0%
+=== wan-probe.sh  phase=round-post  ts=20260727T112707+0800  2026-07-27T13:38:26Z ===
+WAN_PROBE_IPERF=1  WAN_NIC=auto
+
+--- chronyc tracking (3 pair × 2 端 = 6 host) ---
+  [IDC/idc-driver    ] stratum=7 last_offset=0.000031656 leap=Normal
+  [GCP/gcp-poc-5     ] stratum=3 last_offset=0.000002264 leap=Normal
+  [IDC/idc-dbhost-1  ] stratum=7 last_offset=-0.000013922 leap=Normal
+  [GCP/gcp-poc-1     ] stratum=3 last_offset=0.000001263 leap=Normal
+  [IDC/idc-haproxy   ] stratum=7 last_offset=0.000076107 leap=Normal
+  [GCP/gcp-poc-4     ] stratum=3 last_offset=-0.000002326 leap=Normal
+
+--- /proc/net/dev (NIC=auto) byte counter snapshot ---
+  [IDC/idc-driver    ] rx_bytes=1055294010755 tx_bytes=1775572715125
+  [GCP/gcp-poc-5     ] rx_bytes=1780543169 tx_bytes=19914305
+  [IDC/idc-dbhost-1  ] rx_bytes=14939369592 tx_bytes=20954606121
+  [GCP/gcp-poc-1     ] rx_bytes=10148892105 tx_bytes=5224108395
+  [IDC/idc-haproxy   ] rx_bytes=214447625332 tx_bytes=136438731915
+  [GCP/gcp-poc-4     ] rx_bytes=783022443 tx_bytes=15966598
+
+--- iperf3: SKIP (phase=round-post 落在 round 內，避免干擾 benchmark) ---
+
+=== wan-probe done (all probes succeeded) ===
+[21:38:28] INFO    sleeping 0s between rounds
+[21:38:28] INFO  run phase complete
+[wrapper] post-run: unfreeze CRDB lease rebalancing + range split via unfreeze-crdb.sh
+[unfreeze-crdb] restoring kv.allocator.load_based_lease_rebalancing.enabled = true
+SET CLUSTER SETTING
+[unfreeze-crdb] restoring kv.range_split.by_load_enabled = true
+SET CLUSTER SETTING
+NOTICE: "kv.range_split.by_load_enabled" is now an alias for "kv.range_split.by_load.enabled", the preferred setting name
+[unfreeze-crdb] CRDB unfrozen at 一  7月 27 21:38:29 CST 2026
+[4/4] collect
+[21:38:29] INFO  collect: /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-rc-20260727T112707+0800
+[21:38:30] INFO  db config dump written: /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-rc-20260727T112707+0800/db-config
+[21:38:30] INFO  collect done
+[4.5/4] summary.json (summary-from-stdout.py --warehouses 4)
+wrote /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-rc-20260727T112707+0800/summary.json
+[wrapper] FULL chain PASS — /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-rc-20260727T112707+0800
+==> phase8-crdb leader-snapshot (lease holder locality per range)
+==> [end]   phase8-crdb-smoke at 2026-07-27T21:38:32+0800
+# TODO: validate with live cluster (crdb v26.2); fallback if gossip_nodes unavailable:
+# SELECT lease_holder, lease_holder_locality, COUNT(*) AS range_count FROM crdb_internal.ranges
+#   WHERE table_name IN ('new_order','orders','warehouse','customer','district','history','order_line','item','stock')
+#   GROUP BY lease_holder, lease_holder_locality ORDER BY range_count DESC;

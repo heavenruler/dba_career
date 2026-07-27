@@ -1,0 +1,158 @@
+                                                 Table "public.warehouse"
+   Column   |         Type          | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+------------+-----------------------+-----------+----------+---------+----------+-------------+--------------+-------------
+ w_id       | integer               |           | not null |         | plain    |             |              | 
+ w_name     | character varying(10) |           |          |         | extended |             |              | 
+ w_street_1 | character varying(20) |           |          |         | extended |             |              | 
+ w_street_2 | character varying(20) |           |          |         | extended |             |              | 
+ w_city     | character varying(20) |           |          |         | extended |             |              | 
+ w_state    | character(2)          |           |          |         | extended |             |              | 
+ w_zip      | character(9)          |           |          |         | extended |             |              | 
+ w_tax      | numeric(4,4)          |           |          |         | main     |             |              | 
+ w_ytd      | numeric(12,2)         |           |          |         | main     |             |              | 
+Indexes:
+    "warehouse_pkey" PRIMARY KEY, lsm (w_id HASH)
+Access method: heap
+
+                                                  Table "public.district"
+   Column    |         Type          | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+-------------+-----------------------+-----------+----------+---------+----------+-------------+--------------+-------------
+ d_id        | integer               |           | not null |         | plain    |             |              | 
+ d_w_id      | integer               |           | not null |         | plain    |             |              | 
+ d_name      | character varying(10) |           |          |         | extended |             |              | 
+ d_street_1  | character varying(20) |           |          |         | extended |             |              | 
+ d_street_2  | character varying(20) |           |          |         | extended |             |              | 
+ d_city      | character varying(20) |           |          |         | extended |             |              | 
+ d_state     | character(2)          |           |          |         | extended |             |              | 
+ d_zip       | character(9)          |           |          |         | extended |             |              | 
+ d_tax       | numeric(4,4)          |           |          |         | main     |             |              | 
+ d_ytd       | numeric(12,2)         |           |          |         | main     |             |              | 
+ d_next_o_id | integer               |           |          |         | plain    |             |              | 
+Indexes:
+    "district_pkey" PRIMARY KEY, lsm (d_w_id HASH, d_id ASC)
+Access method: heap
+
+                                                       Table "public.customer"
+     Column     |            Type             | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+----------------+-----------------------------+-----------+----------+---------+----------+-------------+--------------+-------------
+ c_id           | integer                     |           | not null |         | plain    |             |              | 
+ c_d_id         | integer                     |           | not null |         | plain    |             |              | 
+ c_w_id         | integer                     |           | not null |         | plain    |             |              | 
+ c_first        | character varying(16)       |           |          |         | extended |             |              | 
+ c_middle       | character(2)                |           |          |         | extended |             |              | 
+ c_last         | character varying(16)       |           |          |         | extended |             |              | 
+ c_street_1     | character varying(20)       |           |          |         | extended |             |              | 
+ c_street_2     | character varying(20)       |           |          |         | extended |             |              | 
+ c_city         | character varying(20)       |           |          |         | extended |             |              | 
+ c_state        | character(2)                |           |          |         | extended |             |              | 
+ c_zip          | character(9)                |           |          |         | extended |             |              | 
+ c_phone        | character(16)               |           |          |         | extended |             |              | 
+ c_since        | timestamp without time zone |           |          |         | plain    |             |              | 
+ c_credit       | character(2)                |           |          |         | extended |             |              | 
+ c_credit_lim   | numeric(12,2)               |           |          |         | main     |             |              | 
+ c_discount     | numeric(4,4)                |           |          |         | main     |             |              | 
+ c_balance      | numeric(12,2)               |           |          |         | main     |             |              | 
+ c_ytd_payment  | numeric(12,2)               |           |          |         | main     |             |              | 
+ c_payment_cnt  | integer                     |           |          |         | plain    |             |              | 
+ c_delivery_cnt | integer                     |           |          |         | plain    |             |              | 
+ c_data         | character varying(500)      |           |          |         | extended |             |              | 
+Indexes:
+    "customer_pkey" PRIMARY KEY, lsm (c_w_id HASH, c_d_id ASC, c_id ASC)
+    "idx_customer" lsm (c_w_id HASH, c_d_id ASC, c_last ASC, c_first ASC)
+Access method: heap
+
+                                                    Table "public.history"
+  Column  |            Type             | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+----------+-----------------------------+-----------+----------+---------+----------+-------------+--------------+-------------
+ h_c_id   | integer                     |           | not null |         | plain    |             |              | 
+ h_c_d_id | integer                     |           | not null |         | plain    |             |              | 
+ h_c_w_id | integer                     |           | not null |         | plain    |             |              | 
+ h_d_id   | integer                     |           | not null |         | plain    |             |              | 
+ h_w_id   | integer                     |           | not null |         | plain    |             |              | 
+ h_date   | timestamp without time zone |           |          |         | plain    |             |              | 
+ h_amount | numeric(6,2)                |           |          |         | main     |             |              | 
+ h_data   | character varying(24)       |           |          |         | extended |             |              | 
+Indexes:
+    "idx_h_c_w_id" lsm (h_c_w_id HASH)
+    "idx_h_w_id" lsm (h_w_id HASH)
+Access method: heap
+
+                                        Table "public.new_order"
+ Column  |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+---------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ no_o_id | integer |           | not null |         | plain   |             |              | 
+ no_d_id | integer |           | not null |         | plain   |             |              | 
+ no_w_id | integer |           | not null |         | plain   |             |              | 
+Indexes:
+    "new_order_pkey" PRIMARY KEY, lsm (no_w_id HASH, no_d_id ASC, no_o_id ASC)
+Access method: heap
+
+                                                      Table "public.orders"
+    Column    |            Type             | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------------+-----------------------------+-----------+----------+---------+---------+-------------+--------------+-------------
+ o_id         | integer                     |           | not null |         | plain   |             |              | 
+ o_d_id       | integer                     |           | not null |         | plain   |             |              | 
+ o_w_id       | integer                     |           | not null |         | plain   |             |              | 
+ o_c_id       | integer                     |           |          |         | plain   |             |              | 
+ o_entry_d    | timestamp without time zone |           |          |         | plain   |             |              | 
+ o_carrier_id | integer                     |           |          |         | plain   |             |              | 
+ o_ol_cnt     | integer                     |           |          |         | plain   |             |              | 
+ o_all_local  | integer                     |           |          |         | plain   |             |              | 
+Indexes:
+    "orders_pkey" PRIMARY KEY, lsm (o_w_id HASH, o_d_id ASC, o_id ASC)
+    "idx_order" lsm (o_w_id HASH, o_d_id ASC, o_c_id ASC, o_id ASC)
+Access method: heap
+
+                                                      Table "public.order_line"
+     Column     |            Type             | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+----------------+-----------------------------+-----------+----------+---------+----------+-------------+--------------+-------------
+ ol_o_id        | integer                     |           | not null |         | plain    |             |              | 
+ ol_d_id        | integer                     |           | not null |         | plain    |             |              | 
+ ol_w_id        | integer                     |           | not null |         | plain    |             |              | 
+ ol_number      | integer                     |           | not null |         | plain    |             |              | 
+ ol_i_id        | integer                     |           | not null |         | plain    |             |              | 
+ ol_supply_w_id | integer                     |           |          |         | plain    |             |              | 
+ ol_delivery_d  | timestamp without time zone |           |          |         | plain    |             |              | 
+ ol_quantity    | integer                     |           |          |         | plain    |             |              | 
+ ol_amount      | numeric(6,2)                |           |          |         | main     |             |              | 
+ ol_dist_info   | character(24)               |           |          |         | extended |             |              | 
+Indexes:
+    "order_line_pkey" PRIMARY KEY, lsm (ol_w_id HASH, ol_d_id ASC, ol_o_id ASC, ol_number ASC)
+Access method: heap
+
+                                                  Table "public.item"
+ Column  |         Type          | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+---------+-----------------------+-----------+----------+---------+----------+-------------+--------------+-------------
+ i_id    | integer               |           | not null |         | plain    |             |              | 
+ i_im_id | integer               |           |          |         | plain    |             |              | 
+ i_name  | character varying(24) |           |          |         | extended |             |              | 
+ i_price | numeric(5,2)          |           |          |         | main     |             |              | 
+ i_data  | character varying(50) |           |          |         | extended |             |              | 
+Indexes:
+    "item_pkey" PRIMARY KEY, lsm (i_id HASH)
+Access method: heap
+
+                                                    Table "public.stock"
+    Column    |         Type          | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------------+-----------------------+-----------+----------+---------+----------+-------------+--------------+-------------
+ s_i_id       | integer               |           | not null |         | plain    |             |              | 
+ s_w_id       | integer               |           | not null |         | plain    |             |              | 
+ s_quantity   | integer               |           |          |         | plain    |             |              | 
+ s_dist_01    | character(24)         |           |          |         | extended |             |              | 
+ s_dist_02    | character(24)         |           |          |         | extended |             |              | 
+ s_dist_03    | character(24)         |           |          |         | extended |             |              | 
+ s_dist_04    | character(24)         |           |          |         | extended |             |              | 
+ s_dist_05    | character(24)         |           |          |         | extended |             |              | 
+ s_dist_06    | character(24)         |           |          |         | extended |             |              | 
+ s_dist_07    | character(24)         |           |          |         | extended |             |              | 
+ s_dist_08    | character(24)         |           |          |         | extended |             |              | 
+ s_dist_09    | character(24)         |           |          |         | extended |             |              | 
+ s_dist_10    | character(24)         |           |          |         | extended |             |              | 
+ s_ytd        | integer               |           |          |         | plain    |             |              | 
+ s_order_cnt  | integer               |           |          |         | plain    |             |              | 
+ s_remote_cnt | integer               |           |          |         | plain    |             |              | 
+ s_data       | character varying(50) |           |          |         | extended |             |              | 
+Indexes:
+    "stock_pkey" PRIMARY KEY, lsm (s_w_id HASH, s_i_id ASC)
+Access method: heap
+

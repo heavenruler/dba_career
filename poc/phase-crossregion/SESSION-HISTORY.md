@@ -1791,3 +1791,85 @@ I/O 最主要）與該次 run 前置插曲（TiDB TiKV 重啟）疊加，而非 
 與 TiDB 有效並發下降為兩條不同機制，CRDB 佐證修法本身無性能衰退。
 **Next review**：若後續要精確拆解各因素貢獻度，需專門設計同批多輪 A/B
 （目前僅 `N=1`，非合法對照實驗）。
+
+## 2026-07-27 — P-B×A-S smoke dry-run（TiDB→YBDB→CRDB）三家首次跑通，抓到一系列從未實測過的設計缺口
+
+**背景**：P-B（散置，RF=3 全 voter，無 arbiter，leader 跨區混合分佈）自
+06-08 立項以來從未真正執行過一次（連 smoke 都沒有）。稽核 P-B 執行前置時
+（見前次 commit）先清掉兩支死碼（`gate-placement-p-b.sh`、
+`tests/yuga/placement-p-b.sql` 舊版），確認 P-A/A-S、P-A/A-A-RO 已完成、
+P-B 完全空白後，拍板先跑一次 W=4 smoke dry-run 驗證整條鏈能否打通，
+順序 TiDB→YBDB→CRDB。
+
+**TiDB**：
+1. `tests/tidb/placement-p-b.sql` 的 `CONSTRAINTS="[+region=idc,+region=gcp]"`
+   list-form 語法錯誤（AND 語意，單一 store 不可能同時掛兩區 label）
+   ——ERROR 1105 invalid label constraints format。改用官方文件的
+   dictionary form 修正語法，但發現**設計層級缺口**：CONSTRAINTS-only
+   不含 PRIMARY_REGION 完全不影響 leader 選在哪（PD 不會主動搬移，
+   leader 天生留在建表當下所在 region）——smoke 實測 leader 100% 留 IDC。
+2. TiDB 官方文件證實單一 policy 無法表達「leader 跨兩區平衡分散」，
+   改用雙 policy 設計：9 個 TPCC table 拆兩組，各自掛不同 `PRIMARY_REGION`
+   的 policy。分組刻意讓 `tests/common/prepare.sh` §6.6 抽樣的
+   warehouse/district/customer 跨兩組（否則抽樣結果永遠同質，不可能落在
+   30-70% 窗口）：idc 優先＝warehouse/district/history/item；gcp 優先＝
+   customer/new_order/orders/order_line/stock。
+3. `phase-crossregion/Makefile` 的 `phase6-tidb-post-prepare leader gate`
+   寫死等待 100% IDC（只為 P-A 寫的檢查，從未依 PLACEMENT 分支）——改為
+   依 PLACEMENT 分支，P-B 用 30-70% 窗口。
+4. 修正後 smoke PASS：idc=10/19=52.6%，leader 確實跨 IDC + 3 個不同 GCP
+   store 分散。
+
+**YBDB**：同款設計缺口重演（這次 leader 100% 落在 GCP，方向相反同因）。
+`Makefile phase4-ybdb-fix6n` 的 universe 層 `modify_placement_info` 只控制
+replica 落點，不影響 leader 選舉。重建 tablespace 機制（前次 #41 刪除的
+舊版本身就不完整）：
+1. 兩個 tablespace（`leader_preference` 方向相反），9 table 同款分組
+   （比照 TiDB，同樣避開抽樣 3-table 盲點）。
+2. `ansible/playbooks/yugabyte-vm6.yml` 恢復 deploy-time CREATE TABLESPACE
+   play，限定 `when: yb_placement == "P-B"`（P-A 完全不需要）。
+3. `run-vm6-suite.sh` 新增 ybdb placement watcher（P-B only）：等 9 張
+   空表建立後立即套用 SET TABLESPACE——這一步舊版從未接線，是本次新增
+   的執行機制。
+4. 純被動套用仍不夠（SET TABLESPACE 對已存在的 tablet 不會主動觸發 leader
+   搬移，YBDB 在 CREATE TABLE 當下就切好初始 tablet）——比照
+   `gcp-replica-gate.sh` 已驗證過的 `leader_stepdown` 手法，補上主動
+   enforcer：對 leader 落在錯誤 region 的 tablet 逐一強制換屆。
+5. 修正後 smoke PASS：idc=2/3=66%。
+
+**CRDB**：預先套用同款雙分組修正（尚未實測前搶先修），smoke 實測又抓到
+兩個新問題：
+1. `CONFIGURE ZONE` 缺 `num_voters`——v26.2 要求「有 voter_constraints
+   必須同時設 num_voters」，本檔（含 DATABASE-level 與全部 9 個
+   ALTER TABLE）都漏了，deploy 階段的 database-level 版本被 "best-effort"
+   標記吞掉沒讓 deploy 失敗，直到 prepare 階段套 per-table 版本才真正卡住。
+   補上 `num_voters=3`（等於 num_replicas，三副本皆為 voter）。
+2. `run-vm6-suite.sh` 的 CRDB post-prepare lease gate 也寫死 100% IDC
+   （跟 TiDB Makefile 版本同一類問題）——實測 idc=46.2%，證明機制本身
+   正確，只是 gate 判準沒跟上。同步改為依 PLACEMENT 分支。
+3. 修正後 smoke PASS：idc=2/3=66%（全體 9 個 range 層級 idc=4/10=40%，
+   跨 IDC + 3 個不同 GCP zone 分散，非退化）。
+
+**環境層插曲**：手動 kill 掉 Mac 端本機跑的 CRDB smoke 嘗試兩次，SSH
+連線斷掉並未真的殺死 `.31` 上對應的遠端 process（`run-vm6-suite.sh` 與其
+內部 ssh 呼叫），累積出多個殘留 process 互搶同一個 `.lock-prepare`，是
+中途卡住「另一個 run 正在進行」的真正原因。經使用者確認後
+`pkill -9 -f 'run-vm6-suite.sh'` 等清乾淨，改為往後所有長跑一律先
+`nohup ssh root@172.24.40.31 "... & echo pid" ` 真正 detach 到 `.31`
+執行，不在 Mac 本機跑，避免同款問題重演。
+
+**結果**：TiDB／YBDB／CRDB 三家 P-B×A-S smoke（W=4，t16，1 round）全數
+PASS，錯誤率 0%，leader 分佈皆落在 prepare.sh §6.6 gate 要求的 30-70%
+窗口內且非退化（跨多個 GCP zone/store）。VM 已全數 destroy，smoke
+artifact 已 fetch 回本機（`results/x-cross/smoke/early-runs/20260727T112707+0800/`）。
+
+修改檔案：`tests/tidb/placement-p-b.sql`、`tests/yuga/placement-p-b.sql`、
+`tests/cockroach/placement-p-b.sql`、`ansible/playbooks/yugabyte-vm6.yml`、
+`phase-crossregion/scripts/run-vm6-suite.sh`、`phase-crossregion/Makefile`、
+`SESSION-HISTORY.md`（本節）。
+
+**Last updated**：2026-07-27 P-B×A-S smoke dry-run 三家全數 PASS，設計層級
+缺口（leader 混合分佈機制）已修復並驗證；VM 已 destroy，artifact 已回收。
+**Next review**：`check-nearread.sh` 尚無 P-B 分支（P-B 下無固定 leader
+region，P-A 語意的近讀驗證邏輯不適用），排 P-B×A-A-RO 前需先補上；正式
+W=128 P-B×A-S 全輪（TiDB→YBDB→CRDB）待觸發。
