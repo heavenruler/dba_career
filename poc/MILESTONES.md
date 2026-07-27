@@ -1,6 +1,6 @@
 # 分散式資料庫 PoC 專案歷程與里程碑
 
-> 更新日：2026-07-24
+> 更新日：2026-07-27
 > 專案起點：2026-03-30（分散式資料庫 PoC 實質研究與環境建置開始）
 > 證據截止：目前 `master` 可追溯 commit；未提交的執行結果不列為正式完成
 
@@ -44,41 +44,64 @@
 
 ## 專案魚骨圖
 
-魚頭代表本專案要形成的最終成果：**可追溯、可比較、可供決策的分散式資料庫 PoC 結論**。
+主幹由上往下呈現專案歷程；每一列由左至右依序為「遭遇問題、階段里程碑、
+解決方式」。最下方魚頭代表最終成果：**可追溯、可比較、可供決策的分散式
+資料庫 PoC 結論**。
 
 ```mermaid
-flowchart LR
-    P1["1. 初始化與口徑<br/>2026-03-30～05-17"]
-    P2["2. 單節點基準<br/>2026-05-18～05-21"]
-    P3["3. 三節點拓樸<br/>2026-05-22～06-02"]
-    P4["4. Kubernetes<br/>2026-06-08～06-14"]
-    P5["5. Phase 隔離<br/>2026-06-06～06-17"]
-    P6["6. IDC → Cross-Region<br/>2026-06-18～進行中"]
-    P7["7. 結案與知識移交<br/>2026-07-11～進行中"]
-    H["決策可用的 PoC 結論"]
+flowchart TB
+    subgraph R1[" "]
+        direction LR
+        I1["問題<br/>工具、OS、隔離級口徑不一"] --> P1["01 初始化與口徑<br/>03-30～05-17"] --> S1["解法<br/>v4.7 SSOT、共同 wrapper、active gate"]
+    end
 
-    P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7 --> H
+    subgraph R2[" "]
+        direction LR
+        I2["問題<br/>同名 isolation 底層語意不同"] --> P2["02 單節點基準<br/>05-18～05-21"] --> S2["解法<br/>connection string、DB／driver readback"]
+    end
 
-    I1["問題：工具、OS、隔離級口徑不一"] --> P1
-    S1["解法：v4.7 SSOT、共同 wrapper、active gate"] --> P1
+    subgraph R3[" "]
+        direction LR
+        I3["問題<br/>shard、RF、scheduler 預設值失真"] --> P3["03 三節點拓樸<br/>05-22～06-02"] --> S3["解法<br/>manual split、RF gate、5-cell 拆因子"]
+    end
 
-    I2["問題：同名 isolation 底層語意不同"] --> P2
-    S2["解法：connection string＋DB/driver readback"] --> P2
+    subgraph R4[" "]
+        direction LR
+        I4["問題<br/>資源限制、PVC 與 DB 殘留污染"] --> P4["04 Kubernetes<br/>06-08～06-14"] --> S4["解法<br/>limit／unlimit 六組、cleanup gate"]
+    end
 
-    I3["問題：shard、RF、scheduler 預設值失真"] --> P3
-    S3["解法：manual split＋RF gate＋5-cell 拆因子"] --> P3
+    subgraph R5[" "]
+        direction LR
+        I5["問題<br/>baseline、調參與跨區結果混用"] --> P5["05 Phase 隔離<br/>06-06～06-17"] --> S5["解法<br/>S-BASE、S-K8S、T-THRD、X-CROSS"]
+    end
 
-    I4["問題：資源限制、PVC 與 DB 殘留污染"] --> P4
-    S4["解法：limit/unlimit 六組＋cleanup gate"] --> P4
+    subgraph R6[" "]
+        direction LR
+        I6["問題<br/>WAN、placement、determinism、近讀路由"] --> P6["06 IDC → Cross-Region<br/>06-18～進行中"] --> S6["解法<br/>pre-flight、detached、readback、同批重跑"]
+    end
 
-    I5["問題：baseline、調參與跨區結果混用"] --> P5
-    S5["解法：S-BASE／S-K8S／T-THRD／X-CROSS"] --> P5
+    subgraph R7[" "]
+        direction LR
+        I7["問題<br/>文件摘錄失真與原始證據過大"] --> P7["07 結案與知識移交<br/>07-11～進行中"] --> S7["解法<br/>artifact-first、模板、審計、GitBook"]
+    end
 
-    I6["問題：WAN、placement、determinism、近讀路由"] --> P6
-    S6["解法：pre-flight、detached、readback、同批重跑"] --> P6
+    P1 ==> P2 ==> P3 ==> P4 ==> P5 ==> P6 ==> P7 ==> H["決策可用的 PoC 結論"]
 
-    I7["問題：文件摘錄失真與原始證據過大"] --> P7
-    S7["解法：artifact-first、模板、審計與 GitBook"] --> P7
+    classDef issue fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-width:1px
+    classDef stage fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    classDef solution fill:#ecfdf5,stroke:#059669,color:#064e3b,stroke-width:1px
+    classDef outcome fill:#fef3c7,stroke:#ca8a04,color:#713f12,stroke-width:3px
+    class I1,I2,I3,I4,I5,I6,I7 issue
+    class P1,P2,P3,P4,P5,P6,P7 stage
+    class S1,S2,S3,S4,S5,S6,S7 solution
+    class H outcome
+    style R1 fill:none,stroke:none
+    style R2 fill:none,stroke:none
+    style R3 fill:none,stroke:none
+    style R4 fill:none,stroke:none
+    style R5 fill:none,stroke:none
+    style R6 fill:none,stroke:none
+    style R7 fill:none,stroke:none
 ```
 
 ## 專案時程
