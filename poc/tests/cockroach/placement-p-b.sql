@@ -57,7 +57,24 @@ ALTER TABLE tpcc.warehouse  CONFIGURE ZONE USING num_replicas=3, num_voters=3, c
 ALTER TABLE tpcc.district   CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc], [+region=gcp]]';
 ALTER TABLE tpcc.history    CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc], [+region=gcp]]';
 ALTER TABLE tpcc.item       CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc], [+region=gcp]]';
-ALTER TABLE tpcc.customer   CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
+-- 2026-07-28 三次修正（W=128 正式輪實測炸開）：customer 整表分到單一
+-- 方向（gcp）在 W=4 smoke 沒問題（只有 1 個 range），但 W=128 時
+-- customer 有 384 萬列，CRDB 依 range_max_bytes 自動切成多個 range
+-- （實測 9 個），全部繼承同一份 table 層 zone config、全部倒向同一區——
+-- prepare.sh §6.6 gate 只抽樣 warehouse/district/customer 這 3 個 table，
+-- warehouse/district 因資料量小恆為 1 range，customer 的 range 數量
+-- 主導了抽樣結果，導致 idc=2/11=18%，跌出 30-70% 窗口（無論 customer
+-- 整表分到哪一區，都會被拉到其中一個極端，不可能自然落在窗口內）。
+-- 改用 PARTITION BY RANGE（依 c_w_id 攔腰切兩半，各自掛不同 zone
+-- config）——已在活著的 cluster 上實測驗證可行（非 Enterprise-only
+-- 限制），且與 warehouse-range 切半的精神一致，不受 auto-split 的
+-- range 數量影響。
+ALTER TABLE tpcc.customer PARTITION BY RANGE (c_w_id) (
+  PARTITION p_idc VALUES FROM (minvalue) TO (65),
+  PARTITION p_gcp VALUES FROM (65) TO (maxvalue)
+);
+ALTER PARTITION p_idc OF TABLE tpcc.customer CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc], [+region=gcp]]';
+ALTER PARTITION p_gcp OF TABLE tpcc.customer CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
 ALTER TABLE tpcc.new_order  CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
 ALTER TABLE tpcc.orders     CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
 ALTER TABLE tpcc.order_line CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
