@@ -301,14 +301,24 @@ elif [[ "$DB" == "crdb" ]]; then
     # （P-A 要 100% IDC），對 P-B（要 30-70% 混合）完全是反效果——會把
     # tests/cockroach/placement-p-b.sql 刻意分給 gcp 優先的 table 也強制搬回
     # IDC，變相退化成 P-A。改為依 PLACEMENT 分支：P-A 維持原行為不變；P-B
-    # 改成依「每個 table 自己指定的偏好 region」分別搬移（idc 優先的 4 個
-    # table 把 GCP lease 搬回 IDC；gcp 優先的 5 個 table 把 IDC lease 搬去
-    # GCP），而非全部單向搬去同一區。分組刻意讓 prepare.sh §6.6 抽樣的
-    # warehouse/district/customer 跨兩組（非全部同組），否則抽樣結果永遠
-    # 同質，不可能落在 30-70% 窗口（YBDB smoke 已實測踩過這個坑）。
+    # 改成依「每個 table 自己指定的偏好 region」分別搬移，而非全部單向搬去
+    # 同一區。分組刻意讓 prepare.sh §6.6 抽樣的 warehouse/district/customer
+    # 跨兩組（非全部同組），否則抽樣結果永遠同質，不可能落在 30-70% 窗口
+    # （YBDB smoke 已實測踩過這個坑）。
+    #
+    # 2026-07-29：customer 在 W=128 規模因 auto-split 成多個 range，整表
+    # 分到單一方向會被 range 數量主導、跌出窗口（CRDB smoke 過但 W=128
+    # 炸開），已改用 PARTITION BY RANGE 依 c_w_id 攔腰分兩半、各自掛不同
+    # zone config（見 placement-p-b.sql）。**customer 必須從下面兩個清單
+    # 移除**——否則這個 whole-table enforcer 會把 customer 的 idc 分區
+    # lease 依舊當成「整表屬於 gcp 優先組」強制搬回 gcp，跟 partition 的
+    # per-partition zone config 打對台（實測：持續 178+ 輪、每輪搬 4-5 個
+    # 不收斂，customer 最終被拉成 100% gcp，比整表分組更糟）。customer 的
+    # 混合分佈交給 zone config 自己的 lease_preferences 自然收斂即可，
+    # 不需要外部強制搬移。
     if [[ "$PLACEMENT" == "P-B" ]]; then
       TBLS_IDC="'warehouse','district','history','item'"
-      TBLS_GCP="'customer','new_order','orders','order_line','stock'"
+      TBLS_GCP="'new_order','orders','order_line','stock'"
     else
       TBLS_IDC="'new_order','orders','warehouse','customer','district','history','order_line','item','stock'"
       TBLS_GCP=""
