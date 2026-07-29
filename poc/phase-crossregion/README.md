@@ -128,19 +128,22 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 
 ### Placement P-B（散置，RF=3 全 voter，無 arbiter）進度
 
-| Workload | 狀態 | 已採用批次 | 追溯 |
-|---|---|---|---|
-| A/S（placement 單因子對照，per G6，CRDB 先行） | ⚪ 未開始 | — | `gcp-replica-gate.sh`（`PLACEMENT=P-B` 分支已備） |
-| A/A-RO | ⚪ 未開始 | — | 同上 |
-| A/A | ⚪ 未開始 | — | 同上 |
-| backup / migration / chaos | ⚪ 未開始（同 P-A spec） | — | — |
+| Workload | 狀態 | 已採用批次 | 代表數字（t128） | 追溯 |
+|---|---|---|---|---|
+| A/S（placement 單因子對照，per G6） | ✅ 完成且已採用 | `TPCC_TS=20260727T223650+0800` | tpmC：TiDB 15,107.4／YBDB 2,485.6／CRDB 11,640.0；idc/gcp 分佈皆落 30-70% 窗口（CRDB 實測 50/50） | [XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md](./XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md) |
+| A/A-RO | ⚪ 未開始（`check-nearread.sh` 尚缺 P-B 語意分支，見下方待辦） | — | — | 同上 |
+| A/A | ⚪ 未開始 | — | — | 同上 |
+| backup / migration / chaos | ⚪ 未開始（同 P-A spec） | — | — | — |
 
-**P-B 目前僅完成基礎設施備便**——07-17 Q3 拍板的 S1（O1 gate 補強）/ S2
-（`gcp-replica-gate.sh` 內建 `PLACEMENT=P-B` 分支，30-70% leader/lease spread
-判準）/ S3（`phase4-ybdb-fix6n` P-B 分支，跳過 `set_preferred_zones`）已實作，
-但尚無任何 workload 正式或 smoke 執行紀錄。`SESSION-HISTORY.md` 多處記載
-「P-B×A-S（CRDB 先行）」為下一步待辦，截至本次更新仍是待辦狀態，未觸發任何
-P-B cell。
+**P-B×A-S 已於 2026-07-27~29 完成正式 W=128 執行**——過程中發現並修復一個
+跨三家資料庫共通的設計缺口（單一 whole-table/whole-database placement
+policy 只能表達優先順序、無法表達機率式跨區混合分佈），TiDB/YBDB/CRDB
+各自以不同機制修復（雙 policy／雙 tablespace+enforcer／雙 lease_preferences
++`PARTITION BY RANGE`），詳見結案報告與 `SESSION-HISTORY.md` 同期節。
+07-17 Q3 拍板的 S1（O1 gate 補強）/ S2（`gcp-replica-gate.sh` 內建
+`PLACEMENT=P-B` 分支，30-70% leader/lease spread 判準）/ S3
+（`phase4-ybdb-fix6n` P-B 分支，跳過 `set_preferred_zones`）基礎設施備便
+已於本輪驗證為有效。A/A-RO、A/A 尚未執行。
 
 **2026-07-27 死碼清理**：稽核發現 `scripts/gate-placement-p-b.sh`（判準
 ≥1 each，與 `gcp-replica-gate.sh` 的 30-70% spread 不一致）從未被

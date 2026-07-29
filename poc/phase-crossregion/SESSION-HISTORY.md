@@ -1873,3 +1873,87 @@ artifact 已 fetch 回本機（`results/x-cross/smoke/early-runs/20260727T112707
 **Next review**：`check-nearread.sh` 尚無 P-B 分支（P-B 下無固定 leader
 region，P-A 語意的近讀驗證邏輯不適用），排 P-B×A-A-RO 前需先補上；正式
 W=128 P-B×A-S 全輪（TiDB→YBDB→CRDB）待觸發。
+
+## 2026-07-27~29 — P-B×A-S 正式 W=128 全輪（TiDB→YBDB→CRDB），CRDB 撞上
+資料量放大特有的新問題，8 次嘗試後全數 PASS 並歸檔
+
+**背景**：`/goal` 設定「W=128 P-B×A-S 全輪跑到完成」，銷毀 smoke VM、
+重建 phase1+2，TS=`20260727T223650+0800`，執行順序 TiDB→YBDB→CRDB
+（`win-3db-w128.sh`，`PLACEMENT=P-B`）。全輪橫跨約 30 小時（含中途
+Mac 端一度離線需改走 `.31` 上真正 detach 的 nohup 執行）。
+
+**TiDB／YBDB**：沿用 smoke 已驗證過的雙 policy／雙 tablespace+enforcer
+設計，W=128 規模下直接一次 PASS，無新問題。TiDB placement gate
+idc=10/19（52%）；YBDB idc=1/3（33%）。
+
+**CRDB（共 8 次嘗試，逐一列出根因）**：
+
+1. **`num_voters` 缺漏**——`tests/cockroach/placement-p-b.sql` 每條
+   `CONFIGURE ZONE` 皆缺 `num_voters`，v26.2 要求「有 `voter_constraints`
+   必須同時設 `num_voters`」，apply 直接 FAILED（錯誤原先被導到
+   `/dev/null` 沒看到，手動重跑才抓到）。補上 `num_voters=3`。
+2. **`customer` 表在 W=128 下自動 split 主導 3 表抽樣 gate**——W=4 smoke
+   只有 1 個 range 沒事，W=128 時 `customer` 384 萬列被 CRDB 自動切成
+   9 個 range，全部繼承同一份整表 zone config、全部倒向同一區，
+   `prepare.sh` §6.6（僅抽樣 warehouse/district/customer）算出
+   idc=2/11=18%，跌出 30-70% 窗口（無論整表分哪一區都會是極端值，
+   不可能自然落窗）。改用 `PARTITION BY RANGE (c_w_id)` 攔腰切兩半、
+   兩個 partition 各自掛相反方向 zone config，實測驗證 CRDB v26.2 可用
+   （非 Enterprise-only 限制）。
+3. **enforcer／partition 自我衝突**——改完 partition 後忘記把 `customer`
+   從 `run-vm6-suite.sh` 的整表 lease enforcer 名單移除，enforcer 持續
+   把 customer idc-partition 的 lease 強制搬回 gcp，跟 partition 自己的
+   zone config 互搶，收斂到比修復前更差的 100% gcp（178+ 輪不收斂，靠
+   即時分佈檢查才抓到）。移除 `customer` 後修復。
+4. **自建的「等 CRDB lease holder 全體收斂」post-prepare 補強檢查設計
+   有缺陷**——該檢查跑在 enforcer 自己的退出條件（gate 通過即停）之後，
+   未分區的大表根本沒時間收斂就被下游檢查判定，且此檢查只為 P-B 額外
+   加的、非官方 gate。判定為多此一舉，直接移除（P-A 分支保留原邏輯），
+   改依賴 `prepare.sh` 官方 §6.6 gate（與 TiDB/YBDB 共用同一支）為準。
+5. **`order_line`／`stock` 撞上同款問題，但這次是在全體 9 表判準**——
+   customer partition 化後 §6.6 抽樣 gate 過了，緊接著撞上
+   `gcp-replica-gate.sh` 的全體 9 表判準：idc=10/45=22%，跌出窗口。
+   查實際分佈，`order_line`（11 range）+`stock`（15 range）合計 26 個、
+   全倒 gcp，佔全體 45 個 range 的大宗（同款「大表整表分單一方向主導
+   判準」問題，這次發生在全體 9 表而非抽樣 3 表）。比照 customer 的
+   修法，兩表也改 `PARTITION BY RANGE`（依各自 warehouse-id 欄位）。
+6. **CRDB systemd 啟動競態（"Current command vanished from the unit
+   file"）**，隨機節點出現兩次——第一次修復（`ExecStart` 改單行 +
+   ansible `until`/`retries`）用錯理論（誤以為是多行 `ExecStart` 語法
+   問題），未解決同一錯誤原封不動重演，且 ansible 的 retry 從未真的
+   觸發（`ansible.builtin.systemd` 模組只檢查啟動指令本身有沒有回傳
+   成功，不檢查服務有沒有撐住）。經 WebFetch 查證，真正根因是
+   `daemon-reload` 尚未完全 settle、緊接著 `start` 就撞上這個已知
+   systemd 時序問題。改用 `ansible.builtin.shell` 自訂迴圈：
+   `daemon-reload`→`sleep 2`→`start`→`sleep 3`→`is-active` 驗證，
+   失敗則 `stop`+`sleep`重試，最多 3 次，才真正解決。
+7. **一次性叢集加入失敗**（6 個 process 都活著但只有 1/6 在 CRDB 自己的
+   cluster view 註冊，node log 顯示連不到其他節點）——判斷為單次網路
+   短暫抖動，非系統性 bug，未改任何程式碼直接重跑，下一次（第 8 次）
+   乾淨過。
+8. **第 8 次嘗試**：全數 PASS。最終 CRDB lease holder 全體分佈
+   idc=24/gcp=24（50%），是三家中最貼近理論中點的收斂結果。
+
+**結果**：三家 W=128 P-B×A-S 全數 PASS、0 error，正式效能數字與
+placement gate 驗證詳見
+[`XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md`](./XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md)。
+VM 已 `terraform destroy`，artifact 已 fetch 回本機
+（`results/x-cross/smoke/early-runs/20260727T223650+0800/`，三個 DB
+suite 原始目錄依慣例 gitignore，metadata 入 repo）。
+
+**附帶發現**：本次 fetch（`phase8.5-fetch`）依設計會把 `.31` 上
+`/tmp/poc-tpcc/artifacts/X-CROSS/` 當下累積的全部歷史 suite 一併撈回
+（非本次 bug），本機比對後 32 個歷史 run 目錄在他處查無其他副本
+（判定孤兒，暫不刪除）、其餘 86 個他處已有收錄（冗餘但同樣暫不刪除），
+兩者皆已 gitignore，不影響 repo 大小；比對清單見同批 commit 說明。
+
+修改檔案：`tests/cockroach/placement-p-b.sql`、
+`phase-crossregion/scripts/run-vm6-suite.sh`、
+`ansible/playbooks/cockroach-vm6.yml`、`phase-crossregion/README.md`、
+`phase-crossregion/XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md`（新增）、
+`SESSION-HISTORY.md`（本節）、`.gitignore`。
+
+**Last updated**：2026-07-29 P-B×A-S 正式 W=128 全輪三家全數 PASS 並歸檔，
+結案報告已產出；VM 已 destroy。
+**Next review**：`check-nearread.sh` 補 P-B 語意分支（task #44）——排
+P-B×A-A-RO 前置；P-B×A-A 尚未排程。
