@@ -327,27 +327,45 @@
           WantedBy=multi-user.target
       register: crdb_unit
 
-    - name: Reload systemd after unit drop-in
-      ansible.builtin.systemd:
-        daemon_reload: true
-      when: crdb_unit.changed
-
-    # 2026-07-29：W=128 P-B 全輪 CRDB cell 重跑 3 次撞到 3 次同款 systemd
-    # race（不同節點隨機命中）："Current command vanished from the unit
-    # file, execution of the command list won't be resumed"——這是
-    # ExecStart 用多行 `\` 續行寫法時，daemon-reload 若跟 start job 撞期
-    # 會遺失 command list 追蹤的已知 systemd 行為。已將上方 ExecStart
-    # 改成單行（去除續行），並在此加一層重試：若 start 失敗於同款錯誤，
-    # 重新 daemon-reload + start 一次，降低單次隨機命中就整批失敗的機率。
-    - name: Enable + start cockroach service
-      ansible.builtin.systemd:
-        name: cockroach
-        enabled: true
-        state: started
+    # 2026-07-29：W=128 P-B 全輪 CRDB cell 重跑多次撞到同款 systemd race
+    # （不同節點隨機命中）："Current command vanished from the unit file,
+    # execution of the command list won't be resumed"。研究確認：這是
+    # daemon-reload 回傳（ansible task 顯示 changed）不代表 systemd 內部
+    # 狀態真的已經穩定的已知行為——若緊接著 start，systemd 有機率仍在消化
+    # 剛才的 reload，導致遺失 command list 追蹤。單行 ExecStart（上方
+    # 已改）沒能解決，因為根因不是續行格式，是 reload/start 撞期本身。
+    #
+    # 2026-07-29 二次修正：改用 shell 版本，原因：(1) 中間插入明確緩衝，
+    # 讓 daemon-reload 有時間沉澱；(2) ansible.builtin.systemd 的
+    # until/retries 只看「start 指令本身有沒有回傳成功」，不代表服務真的
+    # 撐住——實測撞到這個 race 時 start 指令仍回傳成功（ansible 顯示
+    # changed、無 failed），但 process 幾秒後就自己死了，retry 條件
+    # 因此從未觸發。改成手動 daemon-reload → start → 等 3 秒 → 用
+    # systemctl is-active 驗證真的活著，沒活著就重來，最多 3 次。
+    - name: Enable + start cockroach service (verified alive, not just start-command-succeeded)
+      ansible.builtin.shell: |
+        set -e
+        systemctl enable cockroach >/dev/null 2>&1 || true
+        for attempt in 1 2 3; do
+          systemctl daemon-reload
+          sleep 2
+          systemctl start cockroach
+          sleep 3
+          if systemctl is-active --quiet cockroach; then
+            echo "ALIVE attempt=$attempt"
+            exit 0
+          fi
+          echo "NOT_ALIVE attempt=$attempt — retrying reload+start" >&2
+          systemctl stop cockroach 2>/dev/null || true
+          sleep 2
+        done
+        echo "FAILED after 3 attempts" >&2
+        systemctl status cockroach --no-pager -l 2>&1 | tail -20 >&2
+        exit 1
+      args:
+        executable: /bin/bash
       register: crdb_start_result
-      until: crdb_start_result is succeeded
-      retries: 2
-      delay: 5
+      changed_when: "'ALIVE' in crdb_start_result.stdout"
 
 - name: Initialize CRDB cluster (one-shot from idc-dbhost-1)
   hosts: 172.24.40.32
