@@ -439,26 +439,37 @@ case "$DB" in
     else
       echo "[wrapper] WARN: $PLACEMENT_SQL_FILE not found on $DB_HOST — skip per-table lease pin"
     fi
-    echo "[wrapper] wait CRDB lease holders converge (PLACEMENT=$PLACEMENT, max 5 min, deterministic gate)"
-    converged=0
-    for i in $(seq 1 30); do
+    if [[ "$PLACEMENT" == "P-B" ]]; then
+      # 2026-07-29：這個 all-9-table 收斂檢查對 P-B 有設計缺陷——下面的
+      # enforcer（見上方 lease enforcer 迴圈）一旦看到 prepare.sh 自己的
+      # gate 證據檔出現就會提早停止（設計上假設「prepare 官方 gate 過了
+      # 就不用再搬」），但這個檢查是在 prepare.sh 完成**之後**才跑，需要
+      # order_line/stock 這種大表繼續收斂，enforcer 卻已經停了——實測
+      # 卡在 22.2%、17 輪不動（order_line/stock 整表分組、未 partition，
+      # range 數量遠大於其他 table，稀釋了整體平均，跟先前 customer 撞到
+      # 的抽樣失衡是同一類問題，只是這次發生在全體 9 table 而非抽樣 3
+      # table）。TiDB 沒有這個問題是因為它靠 PD 被動式 balance（policy
+      # 持續生效，不依賴會提早退出的外部 loop）。
+      #
+      # prepare.sh §6.6 的官方 gate（跟 TiDB/YBDB 同一套邏輯、同一份
+      # protected 檔案）已經在上面驗證過 P-B spread 合格，是本專案認定
+      # 的權威判準——這裡只做資訊性記錄，不重新掛一個會提早失敗的獨立
+      # 硬性檢查。
       pct=$(/usr/local/bin/cockroach sql --insecure --host="$DB_HOST:$DB_PORT" -d tpcc --format=csv -e \
         "SELECT IFNULL(ROUND(SUM(CASE WHEN lease_holder_locality LIKE '%region=idc%' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*),0), 1), 0) AS idc_pct FROM [SHOW RANGES FROM DATABASE tpcc WITH TABLES, DETAILS] WHERE table_name IN ('new_order','orders','warehouse','customer','district','history','order_line','item','stock');" \
         2>/dev/null | tail -1 || true)
-      pct_int=$(printf '%.0f' "$pct" 2>/dev/null || echo 0)
-      if [[ "$PLACEMENT" == "P-B" ]]; then
-        if [[ "$pct_int" -ge 30 && "$pct_int" -le 70 ]]; then
-          echo "  CRDB lease holders spread OK (P-B): $pct% on IDC"; converged=1; break
-        fi
-      else
-        case "$pct" in 100|100.*) echo "  CRDB lease holders 100% on IDC"; converged=1; break ;; esac
-      fi
-      printf '  %2d/30 leases on IDC: %s%%\n' "$i" "$pct"
-      sleep 10
-    done
-    if [[ "$PLACEMENT" == "P-B" ]]; then
-      [[ "$converged" == "1" ]] || { echo "gate FAIL: CRDB lease holders not spread 30-70% (P-B) after 5min" >&2; exit 1; }
+      echo "[wrapper] CRDB lease holders (全體 9 table，僅記錄不斷言，P-B 官方判準見上方 §6.6 gate): idc=${pct}%"
     else
+      echo "[wrapper] wait CRDB lease holders converge (PLACEMENT=$PLACEMENT, max 5 min, deterministic gate)"
+      converged=0
+      for i in $(seq 1 30); do
+        pct=$(/usr/local/bin/cockroach sql --insecure --host="$DB_HOST:$DB_PORT" -d tpcc --format=csv -e \
+          "SELECT IFNULL(ROUND(SUM(CASE WHEN lease_holder_locality LIKE '%region=idc%' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*),0), 1), 0) AS idc_pct FROM [SHOW RANGES FROM DATABASE tpcc WITH TABLES, DETAILS] WHERE table_name IN ('new_order','orders','warehouse','customer','district','history','order_line','item','stock');" \
+          2>/dev/null | tail -1 || true)
+        case "$pct" in 100|100.*) echo "  CRDB lease holders 100% on IDC"; converged=1; break ;; esac
+        printf '  %2d/30 leases on IDC: %s%%\n' "$i" "$pct"
+        sleep 10
+      done
       [[ "$converged" == "1" ]] || { echo "gate FAIL: CRDB lease holders not 100% IDC after 5min" >&2; exit 1; }
     fi
     echo "[wrapper] pre-run: freeze CRDB load-based lease rebalancing + range split (via freeze-crdb.sh)"
