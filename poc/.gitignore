@@ -33,13 +33,10 @@ results/x-cross/baseline/w128/20260720T101928+0800/
 # 彙整進 XCROSS-AARO-CLOSING-REPORT-DRAFT.md §1-§6，本目錄暫不進 repo。
 results/x-cross/smoke/early-runs/20260723T133843+0800/
 
-# 2026-07-27~29 W=128 P-B×A-S 全輪（TiDB→YBDB→CRDB）原始 artifact
-# （每 DB suite ~40M）。small metadata（vm-rebuild-proof json + driver
-# console log）留在同目錄下正常入 repo；三個 DB suite 目錄暫不進 repo。
-results/x-cross/smoke/early-runs/20260727T223650+0800/crdb-vm-6node-P-B-rc-20260727T223650+0800/
-results/x-cross/smoke/early-runs/20260727T223650+0800/tidb-vm-6node-P-B-rc-20260727T223650+0800/
-results/x-cross/smoke/early-runs/20260727T223650+0800/ybdb-vm-6node-P-B-rc-20260727T223650+0800/
-
-# 2026-07-29 發現同一 fetch 意外撈回的歷史 run 完整 raw 副本（非本次目標，
-# 疑似整包撈回 bug 重演，比照 aaro#2）；待人工比對去重前先忽略，避免誤 commit。
-results/x-cross/smoke/early-runs/20260727T223650+0800/*-rc-20260*/
+# 2026-07-27~29 W=128 P-B×A-S 全輪 fetch（TS=20260727T223650+0800）。
+# phase8.5-fetch 會把 .31 上 /tmp/poc-tpcc/artifacts/X-CROSS/ 當下累積的
+# 全部歷史 suite 一併撈回（設計如此，非本次 bug；見同目錄 fetch-receipt.json）
+# ——本輪目標 3 個 P-B suite（各 ~40M）+ 其餘歷史 run 完整 raw 副本一律不進
+# repo；small metadata（vm-rebuild-proof json + driver console log）例外，
+# 已個別 commit。
+results/x-cross/smoke/early-runs/20260727T223650+0800/*/
