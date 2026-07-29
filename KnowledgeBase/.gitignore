@@ -20,6 +20,12 @@ node_modules/
 *.swo
 *~
 
+# Obsidian machine-local UI state
+obsidian/.obsidian/workspace.json
+obsidian/.obsidian/workspace-mobile.json
+obsidian/.obsidian/cache/
+obsidian/.trash/
+
 # 日誌檔案
 *.log
 

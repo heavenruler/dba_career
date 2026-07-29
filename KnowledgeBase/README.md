@@ -14,8 +14,13 @@ DBA 個人知識庫的 PDF → markdown → chunk pipeline。涵蓋範疇不限�
 | `generated/extracted/<md5>/` | PDF 抽出的 markdown（含 frontmatter / page markers / sha256） |
 | `generated/filtered/<md5>/` | LLM filter 後的結構化 knowledge JSON |
 | `generated/kb/{documents,chunks,missing_documents,source_audit}.jsonl` | RAG 用的最終產物 |
+| `obsidian/` | 人類知識層：MOC、概念、runbook、案例與來源頁 |
 
 `generated/` 全部 gitignored，可從 `collector/` + `output_with_md5.txt` 重建。
+
+Obsidian 請直接開啟 `KnowledgeBase/obsidian/` 作為 Vault。來源頁與 MOC 由
+`make obsidian` 重建；`20 Concepts/`、`30 Runbooks/`、`40 Cases/`、
+`50 Career/` 保留人工筆記，不會被產生器覆寫。
 
 ---
 

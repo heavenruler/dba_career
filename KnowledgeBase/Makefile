@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync fetch_collector_inventory upload_collector upload_collector_dry_run audit_collector_upload reconcile_collector_upload_state audit_collector_upload_strict todo filter_all filter_all_bg filter_status filter_stop filter_log
+.PHONY: help commit md5_fix reconcile_manifest extract_pdf ocr_pdf filter_doc filter_test audit_sources build_chunks clean_generated sync obsidian obsidian_check fetch_collector_inventory upload_collector upload_collector_dry_run audit_collector_upload reconcile_collector_upload_state audit_collector_upload_strict todo filter_all filter_all_bg filter_status filter_stop filter_log
 
 TODO_PID := todo.pid
 TODO_OUT := todo.out
@@ -36,6 +36,8 @@ help:
 		'  make ocr_pdf             OCR every needs_ocr doc (image-only PDFs); requires tesseract-lang' \
 		'  make audit_sources       compare manifest, collector PDFs, and extracted text' \
 		'  make build_chunks        build chunks for all extracted/filtered documents (page-tracked)' \
+		'  make obsidian            rebuild generated Obsidian source pages and maps' \
+		'  make obsidian_check      verify Obsidian generated pages are current' \
 		'  make fetch_collector_inventory  fetch Cloudflare R2 object list once' \
 		'  make upload_collector_dry_run  compare collector PDFs with R2 inventory' \
 		'  make upload_collector    inventory + diff + upload missing PDFs only' \
@@ -141,6 +143,12 @@ sync: reconcile_manifest extract_pdf ocr_pdf
 	@$(MAKE) audit_sources
 	@$(MAKE) todo
 	@echo "[sync] 完成 — 新增的 PDF 已抽取、OCR、切塊、審核、todo.sh 重生完畢"
+
+obsidian:
+	@python3 scripts/build_obsidian_vault.py
+
+obsidian_check:
+	@python3 scripts/build_obsidian_vault.py --check
 
 fetch_collector_inventory:
 	@if [ -z "$$KB_R2_BUCKET" ]; then echo "需要 KB_R2_BUCKET=<bucket>"; exit 1; fi
