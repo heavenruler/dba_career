@@ -317,8 +317,11 @@ elif [[ "$DB" == "crdb" ]]; then
     # 混合分佈交給 zone config 自己的 lease_preferences 自然收斂即可，
     # 不需要外部強制搬移。
     if [[ "$PLACEMENT" == "P-B" ]]; then
+      # 2026-07-29：order_line/stock 也改用 PARTITION BY RANGE（見
+      # placement-p-b.sql），同理從清單移除，不讓 whole-table enforcer
+      # 跟 per-partition zone config 打對台（同 customer 的教訓）。
       TBLS_IDC="'warehouse','district','history','item'"
-      TBLS_GCP="'new_order','orders','order_line','stock'"
+      TBLS_GCP="'new_order','orders'"
     else
       TBLS_IDC="'new_order','orders','warehouse','customer','district','history','order_line','item','stock'"
       TBLS_GCP=""

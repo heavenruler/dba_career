@@ -77,8 +77,29 @@ ALTER PARTITION p_idc OF TABLE tpcc.customer CONFIGURE ZONE USING num_replicas=3
 ALTER PARTITION p_gcp OF TABLE tpcc.customer CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
 ALTER TABLE tpcc.new_order  CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
 ALTER TABLE tpcc.orders     CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
-ALTER TABLE tpcc.order_line CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
-ALTER TABLE tpcc.stock      CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
+
+-- 2026-07-29 四次修正：customer 改 partition 後 §6.6 抽樣 gate（只看
+-- warehouse/district/customer）過了，但緊接著撞到 gcp-replica-gate.sh
+-- 的**全體 9 個 table**判準（跟 TiDB/YBDB 共用同一支腳本，非本檔專屬）
+-- ——idc=10/45=22%，跌出 30-70%。查實際分佈發現 order_line（11 range）
+-- 與 stock（15 range）合計 26 個、全部倒向 gcp，佔全體 45 個 range
+-- 的大宗，是這兩個 table 整表分到 gcp 主導了全體比例（同一種「大表整表
+-- 分單一方向」問題，這次發生在全體 9 table 判準而非抽樣 3 table）。
+-- 比照 customer 的修法，order_line／stock 也改用 PARTITION BY RANGE
+-- （依各自的 warehouse-id 欄位攔腰切兩半）。
+ALTER TABLE tpcc.order_line PARTITION BY RANGE (ol_w_id) (
+  PARTITION p_idc VALUES FROM (minvalue) TO (65),
+  PARTITION p_gcp VALUES FROM (65) TO (maxvalue)
+);
+ALTER PARTITION p_idc OF TABLE tpcc.order_line CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc], [+region=gcp]]';
+ALTER PARTITION p_gcp OF TABLE tpcc.order_line CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
+
+ALTER TABLE tpcc.stock PARTITION BY RANGE (s_w_id) (
+  PARTITION p_idc VALUES FROM (minvalue) TO (65),
+  PARTITION p_gcp VALUES FROM (65) TO (maxvalue)
+);
+ALTER PARTITION p_idc OF TABLE tpcc.stock CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=idc], [+region=gcp]]';
+ALTER PARTITION p_gcp OF TABLE tpcc.stock CONFIGURE ZONE USING num_replicas=3, num_voters=3, constraints='{+region=idc: 1, +region=gcp: 1}', voter_constraints='{+region=idc: 2, +region=gcp: 1}', lease_preferences='[[+region=gcp], [+region=idc]]';
 
 -- Verify zone config attached（後續 dry-run-confirm gate 解析）
 SHOW ZONE CONFIGURATION FROM DATABASE tpcc;
