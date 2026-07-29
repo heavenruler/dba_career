@@ -313,17 +313,7 @@
           Type=notify
           User=cockroach
           Group=cockroach
-          ExecStart=/usr/local/bin/cockroach start \
-            --insecure \
-            --advertise-addr={{ crdb_self.advertise }}:{{ crdb_sql_port }} \
-            --listen-addr=0.0.0.0:{{ crdb_sql_port }} \
-            --http-addr=0.0.0.0:{{ crdb_http_port }} \
-            --store={{ crdb_data_dir }} \
-            --log-dir={{ crdb_log_dir }} \
-            --cache=.25 \
-            --max-sql-memory=.25 \
-            --locality=region={{ crdb_self.region }},zone={{ crdb_self.zone }} \
-            --join={{ crdb_join }}
+          ExecStart=/usr/local/bin/cockroach start --insecure --advertise-addr={{ crdb_self.advertise }}:{{ crdb_sql_port }} --listen-addr=0.0.0.0:{{ crdb_sql_port }} --http-addr=0.0.0.0:{{ crdb_http_port }} --store={{ crdb_data_dir }} --log-dir={{ crdb_log_dir }} --cache=.25 --max-sql-memory=.25 --locality=region={{ crdb_self.region }},zone={{ crdb_self.zone }} --join={{ crdb_join }}
           TimeoutStopSec=300
           Restart=on-failure
           RestartSec=10
@@ -342,11 +332,22 @@
         daemon_reload: true
       when: crdb_unit.changed
 
+    # 2026-07-29：W=128 P-B 全輪 CRDB cell 重跑 3 次撞到 3 次同款 systemd
+    # race（不同節點隨機命中）："Current command vanished from the unit
+    # file, execution of the command list won't be resumed"——這是
+    # ExecStart 用多行 `\` 續行寫法時，daemon-reload 若跟 start job 撞期
+    # 會遺失 command list 追蹤的已知 systemd 行為。已將上方 ExecStart
+    # 改成單行（去除續行），並在此加一層重試：若 start 失敗於同款錯誤，
+    # 重新 daemon-reload + start 一次，降低單次隨機命中就整批失敗的機率。
     - name: Enable + start cockroach service
       ansible.builtin.systemd:
         name: cockroach
         enabled: true
         state: started
+      register: crdb_start_result
+      until: crdb_start_result is succeeded
+      retries: 2
+      delay: 5
 
 - name: Initialize CRDB cluster (one-shot from idc-dbhost-1)
   hosts: 172.24.40.32
