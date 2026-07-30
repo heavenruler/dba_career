@@ -136,8 +136,10 @@ whole-table 的 placement policy（TiDB `PRIMARY_REGION`、YBDB
 
 ## 7. 已知限制
 
-- 本輪為 P-B×A-S 單一 workload；P-B×A-A、P-B×A-A-RO 尚未執行
-  （`check-nearread.sh` 尚缺 P-B 語意分支，見 task #44）。
+- 本輪為 P-B×A-S 單一 workload；P-B×A-A、P-B×A-A-RO 尚未執行。
+  `check-nearread.sh`/`check-nearread-realtxn.sh`/`sample-nearread-loop.sh`
+  已補上 `--placement P-B` 分支（task #44，2026-07-30，見
+  `SESSION-HISTORY.md` 同期節），P-B×A-A-RO 執行前置已就緒。
 - YBDB th=32→64 的 tpmC 反常下滑與高延遲，判斷與既有磁碟 I/O 瓶頸
   同源，但未做專項隔離驗證（例如換用 pd-ssd 重跑對照）確認根因，
   留待後續 YBDB 專項優化排程。

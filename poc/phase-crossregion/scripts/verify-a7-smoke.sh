@@ -103,7 +103,7 @@ for db in tidb ybdb crdb; do
   result "### A7(1) 真實 ORDER_STATUS/STOCK_LEVEL 交易（idle 連線）"
   REALTXN_LOG="$LOGDIR/verify-a7-$TPCC_TS-$db-realtxn.log"
   if bash "$SCRIPTS/check-nearread-realtxn.sh" --db "$db" --host "$GCP_DB_HOST" --port "$PORT" --db-name tpcc \
-       > "$REALTXN_LOG" 2>&1; then
+       --placement "$PLACEMENT" > "$REALTXN_LOG" 2>&1; then
     result "PASS（詳見 verify-a7-$TPCC_TS-$db-realtxn.log）"
   else
     result "**FAIL**（詳見 verify-a7-$TPCC_TS-$db-realtxn.log）"
@@ -114,7 +114,8 @@ for db in tidb ybdb crdb; do
   log "=== $db: A7(4) t128 高併發同時採樣 ==="
   SAMPLE_LOG="$LOGDIR/verify-a7-$TPCC_TS-$db-underload.log"
   bash "$SCRIPTS/sample-nearread-loop.sh" --db "$db" --host "$GCP_DB_HOST" --port "$PORT" \
-    --duration-sec "$UNDERLOAD_DURATION" --interval-sec "$UNDERLOAD_INTERVAL" --log "$SAMPLE_LOG" &
+    --duration-sec "$UNDERLOAD_DURATION" --interval-sec "$UNDERLOAD_INTERVAL" --log "$SAMPLE_LOG" \
+    --placement "$PLACEMENT" &
   SAMPLER_PID=$!
 
   ROOT="/tmp/poc-tpcc/artifacts/X-CROSS/${db}-vm-6node-${PLACEMENT}-aaro-rc-${TPCC_TS}"

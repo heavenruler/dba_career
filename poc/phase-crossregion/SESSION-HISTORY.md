@@ -1957,3 +1957,70 @@ suite 原始目錄依慣例 gitignore，metadata 入 repo）。
 結案報告已產出；VM 已 destroy。
 **Next review**：`check-nearread.sh` 補 P-B 語意分支（task #44）——排
 P-B×A-A-RO 前置；P-B×A-A 尚未排程。
+
+## 2026-07-30 — P-B×A-A-RO 執行前置：近讀檢驗腳本補 P-B 語意分支（task #44）
+
+**背景**：`check-nearread.sh`／`check-nearread-realtxn.sh` 皆為 P-A 首跑
+（07-21/07-22）時寫成，隱含假設「單一固定 leader region（idc）」；P-B
+下 leader 依表/分區跨區混合（見 §「2026-07-27~29」節的三家修復設計），
+沿用原本查法在 CRDB／YBDB 會給出不確定或誤判的結果，排 P-B×A-A-RO
+前必須先修：
+
+1. **CRDB `check-nearread.sh`**：`stock` 表在 P-B 下已 `PARTITION BY
+   RANGE (s_w_id)`，不帶 `WHERE` 的 `SELECT 1 FROM stock LIMIT 1` 會落在
+   哪個分區不確定（p_idc 或 p_gcp，lease 方向相反），結果非決定性。
+2. **YBDB `check-nearread.sh`**：`stock` 整表在 P-B 下被分進 gcp 優先組
+   （`tests/yuga/placement-p-b.sql`），leader 已在 gcp——follower-read
+   （本地）vs 強制 leader-read（也是本地，因為 leader 本來就在 gcp）
+   兩者耗時理論上無顯著差異，但原判準要求「follower 必須顯著快於
+   leader（<70%）」，會把「近讀其實正常、只是這張表沒有跨區延遲可省」
+   誤判為 FAIL。
+3. **YBDB `check-nearread-realtxn.sh`**：`SAMPLES` 驅動的 ORDER_STATUS
+   真實交易查了 `customer`／`orders`，這兩表在 P-B 下同樣屬 gcp 優先組，
+   有同款誤判風險（3 項檢查中有 2 項）；`district`（idc 優先組）不受
+   影響。
+4. **CRDB `check-nearread-realtxn.sh`**：判準是結構性證據（EXPLAIN 的
+   `used follower read`/`regions`/`sql,kv nodes` 欄位），與資料實際
+   lease 落在哪個 region 無關，且既有 `SAMPLES` 的 w_id 皆 <=4、天然落在
+   CRDB 三張分區表的 p_idc 側，**確認本來就不受影響，未改動**。
+5. **TiDB 兩支腳本**：判準是 tidb-server 與 GCP TiKV store 的 zone label
+   比對，與 leader 落在哪個 region 無關，**確認本來就不受影響，未改動**。
+
+**修法**：三支腳本（`check-nearread.sh`、`check-nearread-realtxn.sh`、
+`sample-nearread-loop.sh`）新增 `--placement P-A|P-B`（預設 `P-A`，
+向後相容不影響既有 P-A 呼叫）：
+
+- CRDB `check-nearread.sh`：P-B 下改明確查 `s_w_id<=64`（p_idc 分區，
+  lease=idc）——這才是有意義的測試情境（GCP client 讀 idc-lease 資料
+  是否仍走本地 follower），而非不帶 WHERE 的不確定查詢。
+- YBDB `check-nearread.sh`：P-B 下改查 `warehouse`（idc 優先組）取代
+  `stock`，確保存在真正的跨區時間差可測。
+- YBDB `check-nearread-realtxn.sh`：`check_stmt` 新增 `expect_diff`
+  參數；P-B 下 customer/orders 兩項檢查改為「觀察但不計入 FAIL_COUNT」
+  （記錄實際耗時，說明無時間差是預期行為，非近讀失效訊號），district
+  維持嚴格判準。
+- `sample-nearread-loop.sh`（A7(4) 高併發背景採樣迴圈，`verify-a7-smoke.sh`
+  實際呼叫端）與 `verify-a7-smoke.sh` 兩處呼叫點同步補上 `--placement
+  "$PLACEMENT"` 透傳，否則即使腳本本身支援也不會被啟用。
+
+**額外確認**：`run-vm6-aa.sh`（A-A-RO/A-A 實際 driver）本就有
+`PLACEMENT=P-A|P-B` 參數化與 prepare-bridge 機制（07-18 已修），不像
+A-S 的 `run-vm6-suite.sh` 那樣另外疊了一份寫死 100% 的 post-prepare
+gate——這條路徑本身無需比照 A-S 的 Makefile/run-vm6-suite.sh 修法。但
+`run-vm6-aa.sh` 的 prepare-bridge 需要「同 DB/PLACEMENT 的 plain anchor
+prepare（無 PROFILE token）」已存在於**當次重建的 VM**上（不是本機
+歷史 artifact）——實際觸發 P-B×A-A-RO 時，執行順序必須是先跑
+`phase{6,7,8}-{db}-smoke PLACEMENT=P-B`（plain）產生 anchor，才能接著跑
+`phase{6,7,8}-{db}-aaro-smoke PLACEMENT=P-B`，與 P-A×A-A-RO 當初的做法
+一致，非新問題。
+
+修改檔案：`phase-crossregion/scripts/check-nearread.sh`、
+`check-nearread-realtxn.sh`、`sample-nearread-loop.sh`、
+`verify-a7-smoke.sh`、`workload-profiles/A-A-RO.md`、`README.md`、
+`XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md`、`SESSION-HISTORY.md`（本節）。
+
+**Last updated**：2026-07-30 P-B×A-A-RO 執行前置（近讀檢驗 P-B 語意分支）
+已完成，task #44 done。
+**Next review**：P-B×A-A-RO 實際觸發待排程（順序：phase1+2 重建 VM →
+plain anchor prepare PLACEMENT=P-B → aaro-smoke PLACEMENT=P-B）；
+P-B×A-A 仍未排程。

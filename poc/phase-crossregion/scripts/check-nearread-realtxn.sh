@@ -18,11 +18,25 @@
 #   check-nearread-realtxn.sh --db crdb --host <gcp-host> --port 26257 --db-name tpcc
 #   check-nearread-realtxn.sh --db ybdb --host <gcp-host> --port 5433  --db-name tpcc
 #   check-nearread-realtxn.sh --db tidb --host <gcp-host> --port 4000  --db-name tpcc
+#   （P-B 拓樸另加 --placement P-B，見下方 2026-07-30 附記）
 #
 # Fail-closed：任一語句不符近讀預期 → exit 1（印出全部樣本供人工複核，
 # 不因單一語句失敗就提早結束，方便一次看完整輪結果）。
-set -uo pipefail
-
+#
+# 2026-07-30 附記（P-B×A-A-RO 執行前置，task #44 同批）：CRDB 分支的判準
+# 是結構性證據（EXPLAIN 的 used follower read/regions/nodes 欄位），與該筆
+# 資料實際 lease 落在 idc 或 gcp 無關，P-A/P-B 下皆有效不必改；本輪 SAMPLES
+# 的 w_id 皆 <=4，落在 CRDB customer/order_line/stock 的 p_idc 分區內
+# （見 tests/cockroach/placement-p-b.sql，分區邊界 s_w_id<65），非退化。
+#
+# YBDB 分支則是時間差判準（follower-read 應顯著快於強制 leader-read），
+# P-B 下 customer/orders 兩表被分進 gcp 優先組（見
+# tests/yuga/placement-p-b.sql），leader 已在 gcp、兩種讀法都走本地、無
+# 時間差可偵測——沿用「必須顯著更快」門檻會對這兩表誤判 FAIL。加
+# `--placement P-B` 後，這兩表的檢查改為純觀察（記錄實際時間，不計入
+# FAIL_COUNT）；district（idc 優先組）維持嚴格判準，因為那裡才有真正的
+# 跨區時間差可測。
+PLACEMENT="P-A"
 DB="" HOST="" PORT="" DBNAME="tpcc"
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -30,12 +44,14 @@ while [[ $# -gt 0 ]]; do
     --host) HOST=$2; shift 2 ;;
     --port) PORT=$2; shift 2 ;;
     --db-name) DBNAME=$2; shift 2 ;;
+    --placement) PLACEMENT=$2; shift 2 ;;
     *) echo "unknown arg: $1" >&2; exit 1 ;;
   esac
 done
 : "${DB:?--db required (tidb|crdb|ybdb)}"
 : "${HOST:?--host required (GCP DB host)}"
 : "${PORT:?--port required}"
+case "$PLACEMENT" in P-A|P-B) ;; *) echo "unknown --placement: $PLACEMENT (P-A|P-B)" >&2; exit 1 ;; esac
 
 # 樣本組（w_id d_id c_id）用於 ORDER_STATUS；(w_id d_id) 用於 STOCK_LEVEL
 SAMPLES=("1 3 500" "2 7 1200" "3 1 2999" "4 10 42")
@@ -88,7 +104,7 @@ case "$DB" in
         | grep -oE 'Storage Table Read Execution Time: [0-9.]+' | grep -oE '[0-9.]+$' | head -1
     }
     check_stmt() {
-      local label="$1" sql="$2"
+      local label="$1" sql="$2" expect_diff="${3:-true}"
       TOTAL_COUNT=$((TOTAL_COUNT+1))
       local t_on t_off
       t_on=$(get_time "$CONN_ON" "$sql")
@@ -96,6 +112,10 @@ case "$DB" in
       echo "--- $label ---  on=${t_on:-N/A}ms off=${t_off:-N/A}ms"
       if [[ -z "$t_on" || -z "$t_off" ]]; then
         echo "  FAIL: 無法取得執行時間"; FAIL_COUNT=$((FAIL_COUNT+1)); return
+      fi
+      if [[ "$expect_diff" == "false" ]]; then
+        echo "  觀察（P-B gcp 優先組表，leader 已在本地，無時間差可測，不計入 FAIL）"
+        return
       fi
       if awk -v f="$t_on" -v l="$t_off" 'BEGIN{exit !(f < l*0.7)}'; then
         echo "  PASS"
@@ -109,12 +129,19 @@ case "$DB" in
     get_time "$CONN_ON" "SELECT d_next_o_id FROM district WHERE d_w_id=1 AND d_id=1;" >/dev/null
     get_time "$CONN_OFF" "SELECT d_next_o_id FROM district WHERE d_w_id=1 AND d_id=1;" >/dev/null
 
+    # P-B 下 customer/orders 屬 gcp 優先組（tests/yuga/placement-p-b.sql），
+    # leader 已在 gcp，無跨區時間差可測；district 屬 idc 優先組，維持嚴格判準
+    GCP_GROUP_EXPECT_DIFF=true
+    [[ "$PLACEMENT" == "P-B" ]] && GCP_GROUP_EXPECT_DIFF=false
+
     for s in "${SAMPLES[@]}"; do
       read -r w d c <<< "$s"
       check_stmt "ORDER_STATUS.1 customer (w=$w d=$d c=$c)" \
-        "SELECT c_balance, c_first, c_middle, c_last FROM customer WHERE c_w_id=$w AND c_d_id=$d AND c_id=$c;"
+        "SELECT c_balance, c_first, c_middle, c_last FROM customer WHERE c_w_id=$w AND c_d_id=$d AND c_id=$c;" \
+        "$GCP_GROUP_EXPECT_DIFF"
       check_stmt "ORDER_STATUS.2 latest order (w=$w d=$d c=$c)" \
-        "SELECT o_id, o_carrier_id, o_entry_d FROM orders WHERE o_w_id=$w AND o_d_id=$d AND o_c_id=$c ORDER BY o_id DESC LIMIT 1;"
+        "SELECT o_id, o_carrier_id, o_entry_d FROM orders WHERE o_w_id=$w AND o_d_id=$d AND o_c_id=$c ORDER BY o_id DESC LIMIT 1;" \
+        "$GCP_GROUP_EXPECT_DIFF"
       check_stmt "STOCK_LEVEL.1 d_next_o_id (w=$w d=$d)" \
         "SELECT d_next_o_id FROM district WHERE d_w_id=$w AND d_id=$d;"
     done

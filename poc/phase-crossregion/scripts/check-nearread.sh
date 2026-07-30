@@ -23,10 +23,28 @@
 #   check-nearread.sh --db tidb --host <gcp-tidb-host> --port 4000
 #   check-nearread.sh --db crdb --host <gcp-crdb-host> --port 26257 --db-name tpcc
 #   check-nearread.sh --db ybdb --host <gcp-ybdb-host> --port 5433 --db-name tpcc
+#   （P-B 拓樸另加 --placement P-B，見下方 2026-07-30 附記）
 #
 # Fail-closed：任一家證據不符預期 → exit 1，印出實際輸出供人工複核。
-set -euo pipefail
-
+#
+# 2026-07-30 附記（P-B×A-A-RO 執行前置，task #44）：本檢查原本假設 P-A
+# 語意——單一固定 leader region（idc），`stock` 整表無差異可言。P-B 下
+# leader 依表/分區跨區混合（見 tests/{cockroach,yuga}/placement-p-b.sql），
+# 沿用原本查法在兩家會給出無意義或誤判的結果：
+#   CRDB — `stock` 表在 P-B 下已 `PARTITION BY RANGE (s_w_id)`，兩個分區
+#          lease 方向相反；不帶 WHERE 的 `LIMIT 1` 會落在哪個分區不確定，
+#          結果非決定性。加 `--placement P-B` 後改為明確查 s_w_id<=65（p_idc
+#          分區，lease=idc），驗證「GCP client 讀 idc-lease 資料仍走本地
+#          follower」這個真正有意義的情境（分區邊界為 s_w_id<65，用 <=64
+#          保守避開邊界值）。
+#   YBDB — `stock` 整表在 P-B 下被分進 gcp 優先組（leader 已在 gcp），
+#          follower-read vs 強制 leader-read 兩者皆走本地、無時間差可偵測，
+#          原本的「follower 應顯著快於 leader」判準會誤判 FAIL。加
+#          `--placement P-B` 後改查 `warehouse`（idc 優先組），確保存在
+#          真正的跨區時間差可供偵測。
+#   TiDB — 本檢查只比對 tidb-server 與 GCP TiKV store 的 zone label，與
+#          leader 落在哪個 region 無關，P-A/P-B 下邏輯一致，不受影響。
+PLACEMENT="P-A"
 DB="" HOST="" PORT="" DBNAME="tpcc"
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -34,12 +52,14 @@ while [[ $# -gt 0 ]]; do
     --host) HOST=$2; shift 2 ;;
     --port) PORT=$2; shift 2 ;;
     --db-name) DBNAME=$2; shift 2 ;;
+    --placement) PLACEMENT=$2; shift 2 ;;
     *) echo "unknown arg: $1" >&2; exit 1 ;;
   esac
 done
 : "${DB:?--db required (tidb|crdb|ybdb)}"
 : "${HOST:?--host required (GCP DB host)}"
 : "${PORT:?--port required}"
+case "$PLACEMENT" in P-A|P-B) ;; *) echo "unknown --placement: $PLACEMENT (P-A|P-B)" >&2; exit 1 ;; esac
 
 case "$DB" in
   tidb)
@@ -68,8 +88,15 @@ case "$DB" in
     ;;
   crdb)
     echo "[check-nearread] CRDB：EXPLAIN ANALYZE 檢查（近乎決定性，非完整交易覆蓋）"
+    if [[ "$PLACEMENT" == "P-B" ]]; then
+      # p_idc 分區為 VALUES FROM (minvalue) TO (65)，即 s_w_id<65；用 64 保守避開邊界
+      CRDB_QUERY="SELECT 1 FROM stock WHERE s_w_id <= 64 LIMIT 1;"
+      echo "  [P-B] 明確查 s_w_id<=64（stock 的 p_idc 分區，lease=idc）——驗證 GCP client 讀 idc-lease 資料仍走本地 follower"
+    else
+      CRDB_QUERY="SELECT 1 FROM stock LIMIT 1;"
+    fi
     OUT=$(psql "postgres://root@${HOST}:${PORT}/${DBNAME}?sslmode=disable&options=-c%20default_transaction_use_follower_reads%3Don" \
-      -c "EXPLAIN ANALYZE SELECT 1 FROM stock LIMIT 1;" 2>&1)
+      -c "EXPLAIN ANALYZE $CRDB_QUERY" 2>&1)
     echo "$OUT" | grep -E 'used follower read|regions:|sql nodes|kv nodes' || true
     if ! echo "$OUT" | grep -q 'used follower read'; then
       echo "[check-nearread] FAIL: 未見 'used follower read'" >&2
@@ -92,15 +119,24 @@ case "$DB" in
     ;;
   ybdb)
     echo "[check-nearread] YBDB：follower-read vs leader-read 執行時間對照（多次交錯取樣，非決定性）"
+    if [[ "$PLACEMENT" == "P-B" ]]; then
+      # stock 在 P-B 下整表分進 gcp 優先組（leader 已在 gcp），follower/leader
+      # 兩者皆走本地、無時間差可偵測；改測 warehouse（idc 優先組，見
+      # tests/yuga/placement-p-b.sql），確保存在真正的跨區時間差
+      YBDB_TABLE="warehouse"
+      echo "  [P-B] 明確查 warehouse（idc 優先組）——stock 在 P-B 下 leader 已在 gcp，無跨區時間差可測"
+    else
+      YBDB_TABLE="stock"
+    fi
     N=5
     declare -a T_FOLLOWER_ARR T_LEADER_ARR
     for i in $(seq 1 $N); do
       t=$(psql "postgres://yugabyte@${HOST}:${PORT}/${DBNAME}?sslmode=disable&options=-c%20default_transaction_read_only%3Don%20-c%20yb_read_from_followers%3Don%20-c%20yb_follower_read_staleness_ms%3D30000" \
-        -c "EXPLAIN (ANALYZE, DIST) SELECT 1 FROM stock LIMIT 1;" 2>&1 \
+        -c "EXPLAIN (ANALYZE, DIST) SELECT 1 FROM $YBDB_TABLE LIMIT 1;" 2>&1 \
         | grep -oE 'Storage Table Read Execution Time: [0-9.]+' | grep -oE '[0-9.]+$' | head -1)
       T_FOLLOWER_ARR+=("$t")
       t=$(psql "postgres://yugabyte@${HOST}:${PORT}/${DBNAME}?sslmode=disable&options=-c%20yb_read_from_followers%3Doff" \
-        -c "EXPLAIN (ANALYZE, DIST) SELECT 1 FROM stock LIMIT 1;" 2>&1 \
+        -c "EXPLAIN (ANALYZE, DIST) SELECT 1 FROM $YBDB_TABLE LIMIT 1;" 2>&1 \
         | grep -oE 'Storage Table Read Execution Time: [0-9.]+' | grep -oE '[0-9.]+$' | head -1)
       T_LEADER_ARR+=("$t")
     done

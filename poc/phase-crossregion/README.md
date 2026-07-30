@@ -131,7 +131,7 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 | Workload | 狀態 | 已採用批次 | 代表數字（t128） | 追溯 |
 |---|---|---|---|---|
 | A/S（placement 單因子對照，per G6） | ✅ 完成且已採用 | `TPCC_TS=20260727T223650+0800` | tpmC：TiDB 15,107.4／YBDB 2,485.6／CRDB 11,640.0；idc/gcp 分佈皆落 30-70% 窗口（CRDB 實測 50/50） | [XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md](./XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md) |
-| A/A-RO | ⚪ 未開始（`check-nearread.sh` 尚缺 P-B 語意分支，見下方待辦） | — | — | 同上 |
+| A/A-RO | ⚪ 未開始（執行前置已備妥：`check-nearread.sh`/`check-nearread-realtxn.sh`/`sample-nearread-loop.sh` 已補 `--placement P-B` 分支，見 task #44） | — | — | 同上 |
 | A/A | ⚪ 未開始 | — | — | 同上 |
 | backup / migration / chaos | ⚪ 未開始（同 P-A spec） | — | — | — |
 

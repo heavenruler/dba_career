@@ -11,9 +11,10 @@
 #
 # Usage:
 #   sample-nearread-loop.sh --db <tidb|crdb|ybdb> --host <gcp-host> --port <port> \
-#     --duration-sec <N> --interval-sec <M> --log <path>
+#     --duration-sec <N> --interval-sec <M> --log <path> [--placement P-A|P-B]
 set -uo pipefail
 
+PLACEMENT="P-A"
 DB="" HOST="" PORT="" DURATION="" INTERVAL="" LOG=""
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -23,6 +24,7 @@ while [[ $# -gt 0 ]]; do
     --duration-sec) DURATION=$2; shift 2 ;;
     --interval-sec) INTERVAL=$2; shift 2 ;;
     --log) LOG=$2; shift 2 ;;
+    --placement) PLACEMENT=$2; shift 2 ;;
     *) echo "unknown arg: $1" >&2; exit 1 ;;
   esac
 done
@@ -45,7 +47,7 @@ while [[ $(date +%s) -lt $END ]]; do
   ts=$(date '+%Y-%m-%dT%H:%M:%S%z')
   {
     echo "=== sample $i @ $ts ==="
-    bash "$SCRIPT_DIR/check-nearread.sh" --db "$DB" --host "$HOST" --port "$PORT"
+    bash "$SCRIPT_DIR/check-nearread.sh" --db "$DB" --host "$HOST" --port "$PORT" --placement "$PLACEMENT"
   } >> "$DETAIL_LOG" 2>&1
   rc=$?
   if [[ $rc -eq 0 ]]; then

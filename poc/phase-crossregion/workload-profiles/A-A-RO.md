@@ -55,10 +55,16 @@ SET default_transaction_read_only = ON;
 ## Metrics 增補
 
 - 每家 follower-read 一致性 mode 必標於 manifest 或 run-args
-- `placement/leader-region.txt` 確認 IDC 為 leader
+- P-A：`placement/leader-region.txt` 確認 IDC 為 leader
+- P-B：leader 依表/分區跨區混合（見 `topology/P-B.md`），無單一固定
+  leader region 可核對；改用 `check-nearread.sh --placement P-B`／
+  `check-nearread-realtxn.sh --placement P-B`（2026-07-30 補上 P-B 語意
+  分支，見 `SESSION-HISTORY.md` 同期節）驗證 GCP 端近讀對 idc-lease 與
+  gcp-lease 兩種資料皆生效
 
 ## 變更歷史
 
 | 日期 | commit | 變更 |
 |---|---|---|
 | 2026-06-06 | (本) | 初版 spec |
+| 2026-07-30 | (本) | 補 P-B 近讀驗證方式（check-nearread 系列腳本已支援 `--placement`） |
