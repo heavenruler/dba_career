@@ -40,3 +40,10 @@ results/x-cross/smoke/early-runs/20260723T133843+0800/
 # repo；small metadata（vm-rebuild-proof json + driver console log）例外，
 # 已個別 commit。
 results/x-cross/smoke/early-runs/20260727T223650+0800/*/
+
+# 2026-07-30/31 W=128 P-B×A-A-RO 全輪 fetch（TS=20260730T094406+0800）。
+# 同款 phase8.5-fetch 整包撈回行為（見同目錄 fetch-receipt.json）；本輪
+# 目標 3 個 P-B aaro suite（各 ~40M）+ 3 個 plain anchor suite（小，供
+# prepare-bridge 用）+ 其餘歷史 run 完整 raw 副本一律不進 repo；small
+# metadata（driver console log + fetch-receipt.json）例外，已個別 commit。
+results/x-cross/smoke/early-runs/20260730T094406+0800/*/

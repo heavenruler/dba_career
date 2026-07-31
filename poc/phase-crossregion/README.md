@@ -131,8 +131,8 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 | Workload | 狀態 | 已採用批次 | 代表數字（t128） | 追溯 |
 |---|---|---|---|---|
 | A/S（placement 單因子對照，per G6） | ✅ 完成且已採用 | `TPCC_TS=20260727T223650+0800` | tpmC：TiDB 15,107.4／YBDB 2,485.6／CRDB 11,640.0；idc/gcp 分佈皆落 30-70% 窗口（CRDB 實測 50/50） | [XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md](./XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md) |
-| A/A-RO | ⚪ 未開始（執行前置已備妥：`check-nearread.sh`/`check-nearread-realtxn.sh`/`sample-nearread-loop.sh` 已補 `--placement P-B` 分支，見 task #44） | — | — | 同上 |
-| A/A | ⚪ 未開始 | — | — | 同上 |
+| A/A-RO | ✅ 完成且已採用 | `TPCC_TS=20260730T094406+0800` | IDC tpmC：TiDB 5,699.7（⚠ th=128 崩潰，見報告 §3）／YBDB 11,989.8／CRDB 13,777.1；GCP read_tpmTotal：TiDB 23,120.0／YBDB 42,116.4／CRDB 38,194.9 | [XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md](./XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md) |
+| A/A | ⚪ 未開始（執行前置復盤已修復 `run-vm6-aa.sh` GCP 側 conn-params 誤加 read-only 的阻擋，見 `SESSION-HISTORY.md` 2026-07-31 節） | — | — | 同上 |
 | backup / migration / chaos | ⚪ 未開始（同 P-A spec） | — | — | — |
 
 **P-B×A-S 已於 2026-07-27~29 完成正式 W=128 執行**——過程中發現並修復一個

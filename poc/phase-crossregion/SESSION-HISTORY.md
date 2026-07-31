@@ -2024,3 +2024,78 @@ prepare（無 PROFILE token）」已存在於**當次重建的 VM**上（不是�
 **Next review**：P-B×A-A-RO 實際觸發待排程（順序：phase1+2 重建 VM →
 plain anchor prepare PLACEMENT=P-B → aaro-smoke PLACEMENT=P-B）；
 P-B×A-A 仍未排程。
+
+## 2026-07-30/31 — P-B×A-A-RO 正式 W=128 全輪（TiDB→YBDB→CRDB），三家皆
+PASS，發現 TiDB 在最高併發檔位的跨區鎖競爭崩潰
+
+**執行**：`win-aaro-detach TPCC_TS=20260730T094406+0800 PLACEMENT=P-B`，
+`.31` 上真正 detach（nohup pid 3526649），順序 TiDB→YBDB→CRDB。期間 Mac
+端 VPN 一度斷線（ping/ssh 皆逾時），driver 本身不受影響持續執行；VPN
+恢復後確認三家皆已 PASS 並歸檔（TiDB 14:56、YBDB 19:17、CRDB 23:03），
+`ALL DONE` marker 已產生。
+
+**收尾撞上已知的 aaro/aa profile 結構性問題**：`make phase9` 的
+`phase8.5-static-check` FAIL——`tidb/ybdb/crdb-vm-6node-P-B-aaro-rc-...`
+皆缺 `.suite.done`（該 marker 由 `tests/common/run.sh` 完整鏈產生，
+A-A-RO 的 GCP 側設計上直接呼叫 go-tpc、不經 run.sh；IDC 側雖經 run.sh
+但只產生 `.run.done`，`.suite.done` 需另一層才會寫）。比照 07-21
+aaro 首輪已訂出的正確做法（見同節「收尾」段），改用 `phase8.5-fetch` +
+`phase8.5-check-receipt`（跳過 static-check，依賴 driver 自身
+`check-aaro-artifacts.py` 逐家已驗證的結果）+ `phase9-tunnels-stop` +
+`phase9-destroy`，順利完成 fetch（summary_json=45、suite_done=32）與
+兩側 VM 銷毀（IDC 3 + GCP 5，共 8 台）。
+
+**重大發現：TiDB th=128（最高併發）出現嚴重吞吐崩潰，YBDB/CRDB 未見**——
+tpmC 從 th=64 的 12,205.0 崩到 th=128 的 5,699.7，5 輪逐輪
+`[9003.0, 14948.5, 2113.0, 953.7, 1480.2]`（前兩輪正常甚至是全程最高，
+第 3-5 輪崩潰），NEW_ORDER p99 從正常檔位數百 ms 衝到 9,234.2ms。查證：
+1. 崩潰輪次 IDC dbhost CPU idle 反而更高（83.5% vs 正常輪的 58.3%）、
+   記憶體無 swap，排除本地資源耗盡。
+2. `go-tpc-stdout.txt` 崩潰輪次大量 `Error 8022: KV error safe to retry
+   ... TxnLockNotFound ... [try again later]`——TiDB 悲觀鎖交易在鎖
+   解析競賽下的標準重試訊號，高併發+高跨節點延遲下發生率會顯著上升。
+3. 與 P-B 設計的關聯：TiDB 9 表拆兩組相反方向 `PRIMARY_REGION`
+   policy，IDC 寫入落在 gcp 優先組（約一半 region）的表時，寫入路徑
+   本身要跨 WAN 到 gcp 端 leader；t128 最高併發下跨 WAN 悲觀鎖交易堆疊
+   + TTL 到期，觸發 `TxnLockNotFound` 重試風暴。
+4. YBDB（tablet leader）／CRDB（per-range lease）併發控制機制與 TiDB
+   percolator 式兩階段悲觀鎖不同，跨區延遲主要反映在單筆延遲上升，
+   不會觸發同款鎖解析重試風暴——兩者 th=128 五輪皆穩定
+   （range% 16.4%／13.1%）。
+
+判定為 **TiDB 特有的、P-B 跨區混合 leader 與高併發悲觀鎖交互作用**下的
+真實限制，非流程或口徑錯誤（`check-aaro-artifacts.py` 正確驗證通過，
+錯誤率僅 0.004%）。完整分析見
+[`XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md`](./XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md) §3。
+
+**收到新目標後執行前復盤，順手發現並修復 P-B×A-A 的真阻擋**：檢視
+`run-vm6-aa.sh`（A-A/A-A-RO 共用的 driver）發現 GCP 側 conn-params 對
+CRDB/YBDB **無條件**加了 `default_transaction_read_only=on`（2026-07-21
+為 A-A-RO 唯讀場景加的修法，`case "${DB}:${ISO}"` 判斷式未區分
+PROFILE）。P-B×A-A 是兩端皆標準讀寫 mix（`workload-profiles/A-A.md` Q5：
+W=128 全重疊 max contention），若沿用會讓 GCP 側**所有寫入交易被
+session 層 read-only 設定 100% 擋下**——這是實跑就會撞見的真阻擋，非
+理論疑慮。改為僅 `PROFILE=A-A-RO` 才加此組附加參數，`PROFILE=A-A` 改用
+與 IDC 側相同的 plain isolation-only 參數（比照
+`tests/common/lib/common.sh get_conn_params()` 基準值）。
+
+另發現 A-A 從未有對應的無人值守 detached driver（只有底層
+`phase{6,7,8}-{db}-aa-smoke` targets，沒有像 `win-aaro-w128.sh` 那樣
+串三家的 driver）——新增 `win-aa-w128.sh`（比照 win-aaro-w128.sh 改寫）
++ `win-aa-detach`／`win-aa-status` Makefile targets；
+`summary-gcp-side.py`／`check-aaro-artifacts.py` 兩支既有腳本已支援
+A-A profile（`tpmC_mean` 真實值而非 null、`gcp_side.profile` 接受
+'A-A'），無需額外修改。四個既有 detach target 的 preflight pgrep
+防重疊清單同步補上 `win-aa-w128`。
+
+修改檔案：`phase-crossregion/scripts/run-vm6-aa.sh`、
+`win-aa-w128.sh`（新增）、`Makefile`（win-aa-detach/status）、
+`README.md`、`XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md`（新增）、
+`SESSION-HISTORY.md`（本節）。
+
+**Last updated**：2026-07-31 P-B×A-A-RO 三家 PASS 並歸檔、TiDB th=128
+跨區鎖競爭崩潰已定位根因並記錄；P-B×A-A 執行前置阻擋（GCP 側
+read-only 誤擋）已修復，driver 已新增，準備部署執行。
+**Next review**：P-B×A-A 正式 W=128 全輪待觸發驗證修法是否確實解決
+（重點觀察 GCP 側寫入交易是否成功、無 read-only 相關報錯）；TiDB
+th=128 崩潰現象是否可重現待專項驗證。
