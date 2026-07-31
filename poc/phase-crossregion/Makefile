@@ -1128,7 +1128,7 @@ win-aaro-detach:
 	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
 	rsync -avz phase-crossregion/patches/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/patches/'
 	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver 進程"
-	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
+	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|win-aa-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
 	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
 	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS) DBS='$(DBS)'"
 	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \
@@ -1149,6 +1149,41 @@ win-aaro-status:
 	@ssh $(TPCC_CLIENT) "tail -25 $(WIN_AARO_LOG) 2>/dev/null || echo '(no log yet)'"
 
 # -------------------------------------------------------------------
+# A-A 正式 W=128 全輪：TiDB→YBDB→CRDB detached on .31（2026-07-31，比照
+# win-aaro-detach/status；driver = win-aa-w128.sh）
+# -------------------------------------------------------------------
+WIN_AA_LOG = /tmp/poc-tpcc/logs/win-aa-$(TPCC_TS).log
+
+win-aa-detach:
+	@echo "==> rsync scripts + freeze/ + patches/ + Makefile to .31 (driver 依賴)"
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
+	rsync -avz phase-crossregion/freeze/  '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/freeze/'
+	ssh $(TPCC_CLIENT) 'mkdir -p /tmp/poc/phase-crossregion/scripts /tmp/poc/phase-crossregion/patches'
+	rsync -avz phase-crossregion/Makefile '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/Makefile'
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
+	rsync -avz phase-crossregion/patches/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/patches/'
+	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver 進程"
+	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|win-aa-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
+	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
+	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS) DBS='$(DBS)'"
+	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \
+	  nohup env PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS) DBS='$(DBS)' \
+	    bash $(CROSS_SCRIPTS_REMOTE)/win-aa-w128.sh \
+	    > $(WIN_AA_LOG) 2>&1 < /dev/null & \
+	  echo \"started pid \$$!\""
+	@echo ""
+	@echo "==> detached。Mac 現在可關機。回來後查進度："
+	@echo "    make win-aa-status TPCC_TS=$(TPCC_TS)"
+
+win-aa-status:
+	@echo "==> window markers (TPCC_TS=$(TPCC_TS))"
+	@ssh $(TPCC_CLIENT) "for m in /tmp/poc-tpcc/logs/win-aa-$(TPCC_TS).done /tmp/poc-tpcc/logs/win-aa-$(TPCC_TS).failed; do \
+	  [ -f \"\$$m\" ] && { echo \"--- \$$m ---\"; cat \"\$$m\"; }; done; \
+	  [ -f /tmp/poc-tpcc/logs/win-aa-$(TPCC_TS).done ] || [ -f /tmp/poc-tpcc/logs/win-aa-$(TPCC_TS).failed ] || echo '(window still running)'"
+	@echo "==> driver log tail"
+	@ssh $(TPCC_CLIENT) "tail -25 $(WIN_AA_LOG) 2>/dev/null || echo '(no log yet)'"
+
+# -------------------------------------------------------------------
 # A7(1)(4) 補強驗證（codex 審查 2026-07-22 後續建議）：TiDB→YBDB→CRDB
 # detached on .31，smoke 規模（W=4，非完整 W=128）。用法同 win-aaro-detach/
 # status，driver = verify-a7-smoke.sh。前提：Mac 端 phase1+phase2 已完成。
@@ -1164,7 +1199,7 @@ verify-a7-detach:
 	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
 	rsync -avz phase-crossregion/patches/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/patches/'
 	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver/verify-a7 進程"
-	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
+	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|win-aa-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
 	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
 	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS) DBS='$(DBS)'"
 	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \
@@ -1209,7 +1244,7 @@ verify-a8-detach:
 	rsync -avz phase-crossregion/Makefile '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/Makefile'
 	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):/tmp/poc/phase-crossregion/scripts/'
 	@echo "==> preflight: .31 不得有殘留 run-vm6-suite/go-tpc/win-driver/verify-a7/verify-a8 進程"
-	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
+	@ssh $(TPCC_CLIENT) "procs=\$$(pgrep -af 'run-vm6-suite\.sh|run-vm6-aa\.sh|go-tpc|win-ybdb-crdb-w128|win-3db-w128|win-aaro-w128|win-aa-w128|verify-a7-smoke|verify-a8-batch-smoke' | grep -v pgrep || true); \
 	  [ -z \"\$$procs\" ] || { echo \"FATAL 殘留進程:\"; echo \"\$$procs\"; exit 1; }"
 	@echo "==> launch detached driver on .31  TPCC_TS=$(TPCC_TS) DBS='$(DBS)'"
 	ssh $(TPCC_CLIENT) "mkdir -p /tmp/poc-tpcc/logs; \

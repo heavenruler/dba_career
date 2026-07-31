@@ -260,8 +260,8 @@ esac
 # conn-params 對齊 tests/common/lib/common.sh get_conn_params()（同值複製，
 # 非 source — GCP client 上沒有 .31 的 tests/common 路徑假設）。
 #
-# 2026-07-21 修法（就近讀生效檢驗發現，僅 GCP 側加，不動 IDC 側 conn-params，
-# 故不影響 IDC 寫入路徑）：
+# 2026-07-21 修法（就近讀生效檢驗發現，僅 A-A-RO 的 GCP 側加，不動 IDC 側
+# conn-params，故不影響 IDC 寫入路徑）：
 #   - CRDB：kv.closed_timestamp.follower_reads.enabled=t 只開「能力」，plain
 #     SELECT（無 AS OF SYSTEM TIME）不會自動用 follower read——需再加 session
 #     層 default_transaction_use_follower_reads=on（Cockroach Labs docs）。
@@ -270,23 +270,45 @@ esac
 #     default_transaction_use_follower_reads=on 會讓 CRDB 隱式幫查詢加上
 #     AS OF SYSTEM TIME，但該子句只能用在 READ ONLY 交易；go-tpc 預設開
 #     READ WRITE 交易，兩者衝突即報錯。需再加 default_transaction_read_only=on
-#     （同 YBDB 邏輯）；GCP 側本就是純讀 workload（mix=0,0,50,0,50），交易恆
-#     read-only 對此側無副作用。此 bug 只有跑真實 go-tpc 負載才會暴露，用
-#     EXPLAIN ANALYZE 之類的單筆手動查詢測不出來（見報告 §5.6/§8-A8）。
+#     （同 YBDB 邏輯）；A-A-RO 的 GCP 側本就是純讀 workload
+#     （mix=0,0,50,0,50），交易恆 read-only 對此側無副作用。此 bug 只有跑
+#     真實 go-tpc 負載才會暴露，用 EXPLAIN ANALYZE 之類的單筆手動查詢測不
+#     出來（見報告 §5.6/§8-A8）。
 #   - YBDB：yb_read_from_followers=on 只在交易本身 read-only 才生效——需再加
-#     default_transaction_read_only=on（YugabyteDB docs）；GCP 側本就是純讀
-#     workload，交易恆 read-only 對此側無副作用。
-case "${DB}:${ISO}" in
-  tidb:rc)             GCP_CONN_PARAMS="transaction_isolation=%27READ-COMMITTED%27&tidb_txn_mode=%27pessimistic%27" ;;
-  tidb:rr|tidb:strict) GCP_CONN_PARAMS="transaction_isolation=%27REPEATABLE-READ%27&tidb_txn_mode=%27pessimistic%27" ;;
-  crdb:rc)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
-  crdb:rr)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
-  crdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
-  ybdb:rc)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed%20-c%20default_transaction_read_only%3Don" ;;
-  ybdb:rr)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read%20-c%20default_transaction_read_only%3Don" ;;
-  ybdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable%20-c%20default_transaction_read_only%3Don" ;;
-  *) echo "[aa] unknown <db>:<iso> = ${DB}:${ISO}" >&2; exit 1 ;;
-esac
+#     default_transaction_read_only=on（YugabyteDB docs）；同上，僅 A-A-RO
+#     的 GCP 側適用。
+#
+# 2026-07-31 修正（P-B×A-A 執行前復盤發現）：上述 read-only 附加參數原本
+# 對 DB:ISO 無條件套用，未區分 PROFILE——A-A 的 GCP 側是標準讀寫 mix（見
+# workload-profiles/A-A.md Q5：兩端共用全部 warehouse 範圍），若沿用會讓
+# GCP 側所有寫入交易被 session 層 read-only 設定擋下，直接 100% 報錯。
+# 改為 PROFILE=A-A-RO 才加這組附加參數；PROFILE=A-A 用與 IDC 側相同的
+# plain isolation-only 參數（比照 tests/common/lib/common.sh
+# get_conn_params() 的基準值）。
+if [[ "$PROFILE" == "A-A-RO" ]]; then
+  case "${DB}:${ISO}" in
+    tidb:rc)             GCP_CONN_PARAMS="transaction_isolation=%27READ-COMMITTED%27&tidb_txn_mode=%27pessimistic%27" ;;
+    tidb:rr|tidb:strict) GCP_CONN_PARAMS="transaction_isolation=%27REPEATABLE-READ%27&tidb_txn_mode=%27pessimistic%27" ;;
+    crdb:rc)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
+    crdb:rr)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
+    crdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
+    ybdb:rc)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed%20-c%20default_transaction_read_only%3Don" ;;
+    ybdb:rr)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read%20-c%20default_transaction_read_only%3Don" ;;
+    ybdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable%20-c%20default_transaction_read_only%3Don" ;;
+    *) echo "[aa] unknown <db>:<iso> = ${DB}:${ISO}" >&2; exit 1 ;;
+  esac
+else
+  # A-A：GCP 側標準讀寫 mix，用 plain isolation-only 參數（同 IDC 側 / 同
+  # tests/common/lib/common.sh get_conn_params() 基準值），不得加 read-only。
+  case "${DB}:${ISO}" in
+    tidb:rc)             GCP_CONN_PARAMS="transaction_isolation=%27READ-COMMITTED%27&tidb_txn_mode=%27pessimistic%27" ;;
+    tidb:rr|tidb:strict) GCP_CONN_PARAMS="transaction_isolation=%27REPEATABLE-READ%27&tidb_txn_mode=%27pessimistic%27" ;;
+    crdb:rc|ybdb:rc)         GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed" ;;
+    crdb:rr|ybdb:rr)         GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read" ;;
+    crdb:strict|ybdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable" ;;
+    *) echo "[aa] unknown <db>:<iso> = ${DB}:${ISO}" >&2; exit 1 ;;
+  esac
+fi
 ROUND_WAIT_TIMEOUT=$(( WARMUP_SEC + RUN_SEC + 300 ))
 
 echo "[aa] both sides ready; launching workload (sync window = same wallclock second)"
