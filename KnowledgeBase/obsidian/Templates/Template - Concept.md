@@ -1,8 +1,13 @@
 ---
-type: concept
-status: seed
-tags: []
-sources: []
+knowledge_type: concept
+status: inbox
+primary_expert: ""
+expert_domains: []
+risk_level: none
+review_status: pending
+doc_id: ""
+chunk_id: ""
+source_kind: ""
 ---
 
 # {{title}}
@@ -18,3 +23,7 @@ sources: []
 ## Related
 
 ## Evidence
+
+- doc_id:
+- chunk_id:
+- source_kind:

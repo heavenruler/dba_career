@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "doc_id": "44862aef1f3e9f432840f303bb9da948",
+      "reason": "DBA high-risk troubleshooting and command evidence",
+      "expected_primary_expert": "DBA",
+      "expected_expert_domains": ["DBA", "SRE Platform"]
+    },
+    {
+      "doc_id": "b18366ca3c3a10724c836aee806fef34",
+      "reason": "DBA query tuning and interview question",
+      "expected_primary_expert": "DBA",
+      "expected_expert_domains": ["DBA", "Career Interview"]
+    },
+    {
+      "doc_id": "99574e36ba022a0a02cf9b9545f7d55a",
+      "reason": "SRE monitoring tool and observability",
+      "expected_primary_expert": "SRE Platform",
+      "expected_expert_domains": ["SRE Platform", "DBA"]
+    },
+    {
+      "doc_id": "de2791b620b63753c4bc05e868e8cbb9",
+      "reason": "SRE incident self-healing case",
+      "expected_primary_expert": "SRE Platform",
+      "expected_expert_domains": ["SRE Platform", "Solution Architecture"]
+    },
+    {
+      "doc_id": "41446ccd753567640b5543201715fb85",
+      "reason": "Architecture migration case with validation and rollback",
+      "expected_primary_expert": "Solution Architecture",
+      "expected_expert_domains": ["Solution Architecture", "DBA", "SRE Platform"]
+    },
+    {
+      "doc_id": "f47e6048987f7b4eeb3199c1fc30c45c",
+      "reason": "Architecture consistency and HA tradeoff",
+      "expected_primary_expert": "Solution Architecture",
+      "expected_expert_domains": ["Solution Architecture", "DBA"]
+    },
+    {
+      "doc_id": "027e57475b162bf6d68064e5223762fc",
+      "reason": "Career and technical leadership",
+      "expected_primary_expert": "Career Interview",
+      "expected_expert_domains": ["Career Interview", "Solution Architecture"]
+    },
+    {
+      "doc_id": "6159ac12aef9e2e552f7bacef55b48fa",
+      "reason": "Content production and personal knowledge-base workflow",
+      "expected_primary_expert": "Content Production",
+      "expected_expert_domains": ["Content Production", "Knowledge Operations"]
+    },
+    {
+      "doc_id": "625e6e509764564726a1f50c3092630a",
+      "reason": "Extracted-only ingestion quality sample",
+      "expected_primary_expert": "Knowledge Operations",
+      "expected_expert_domains": ["Knowledge Operations", "Solution Architecture"]
+    },
+    {
+      "doc_id": "8b75834c29da190c7f229833b23f85ba",
+      "reason": "Source-only malformed URL quality sample",
+      "expected_primary_expert": "Knowledge Operations",
+      "expected_expert_domains": ["Knowledge Operations", "DBA"]
+    }
+  ]
+}

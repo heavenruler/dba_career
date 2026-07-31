@@ -1,0 +1,15 @@
+filters:
+  and:
+    - 'file.ext == "md"'
+    - 'primary_expert == "Career Interview"'
+    - 'knowledge_type != "review"'
+    - 'file.folder != "01 Workbenches"'
+views:
+  - type: table
+    name: Knowledge
+    order:
+      - file.name
+      - knowledge_type
+      - status
+      - risk_level
+      - source_kind

@@ -1,8 +1,13 @@
 ---
-type: case
-status: draft
-tags: []
-sources: []
+knowledge_type: case
+status: inbox
+primary_expert: ""
+expert_domains: []
+risk_level: medium
+review_status: pending
+doc_id: ""
+chunk_id: ""
+source_kind: ""
 ---
 
 # {{title}}
@@ -20,3 +25,7 @@ sources: []
 ## Lessons
 
 ## Evidence
+
+- doc_id:
+- chunk_id:
+- source_kind:

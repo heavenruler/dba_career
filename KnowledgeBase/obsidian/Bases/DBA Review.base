@@ -1,0 +1,63 @@
+filters:
+  and:
+    - 'file.ext == "md"'
+    - 'file.inFolder("00 Inbox/Reviews")'
+    - 'primary_expert == "DBA"'
+formulas:
+  risk_rank: 'if(risk_level == "high", 4, if(risk_level == "medium", 3, if(risk_level == "low", 2, 1)))'
+  evidence_alert: 'if(source_quality == 0, "missing evidence", if(review_status == "pending", "pending review", if(risk_level == "high" && review_status != "approved", "high-risk gate", "")))'
+properties:
+  status:
+    displayName: 狀態
+  primary_expert:
+    displayName: 主責專家
+  risk_level:
+    displayName: 風險
+  review_status:
+    displayName: 審核
+  source_quality:
+    displayName: 來源品質
+  knowledge_value:
+    displayName: 知識價值
+  formula.evidence_alert:
+    displayName: 警示
+views:
+  - type: table
+    name: Review Queue
+    filters:
+      and:
+        - 'status == "inbox"'
+    order:
+      - file.name
+      - risk_level
+      - source_quality
+      - knowledge_value
+      - review_status
+      - formula.evidence_alert
+    sort:
+      - property: formula.risk_rank
+        direction: DESC
+      - property: source_quality
+        direction: DESC
+      - property: knowledge_value
+        direction: DESC
+      - property: file.mtime
+        direction: DESC
+  - type: table
+    name: Evidence Gaps
+    filters:
+      or:
+        - 'source_quality == 0'
+        - 'review_status == "pending"'
+        - 'risk_level == "high" && review_status != "approved"'
+    order:
+      - file.name
+      - risk_level
+      - review_status
+      - source_quality
+      - formula.evidence_alert
+    sort:
+      - property: formula.risk_rank
+        direction: DESC
+      - property: file.mtime
+        direction: DESC

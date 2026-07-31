@@ -1,29 +1,17 @@
 ---
 doc_id: "41446ccd753567640b5543201715fb85"
 title: "Cutting over: Our journey from AWS Aurora MySQL to TiDB | Plaid"
-aliases:
-  - "Cutting over: Our journey from AWS Aurora MySQL to TiDB | Plaid"
-url: "https://plaid.com/blog/switching-to-tidb/"
-source_domain: "plaid.com"
-source_kind: "llm_filtered"
-pdf_exists: true
-knowledge_status: "filtered"
-tags:
-  - "source"
+knowledge_type: source
+status: reviewed
+primary_expert: "Solution Architecture"
+expert_domains:
+  - "Solution Architecture"
   - "DBA"
-  - "資料庫遷移"
-  - "TiDB"
-  - "Aurora MySQL"
-  - "分散式 SQL"
-  - "SRE"
-  - "可靠性"
-  - "DevOps"
-  - "平台工程"
-  - "可觀測性"
-  - "效能調優"
-  - "runbook"
-  - "事故預防"
-  - "溝通"
+  - "SRE Platform"
+classification_source: generated
+source_kind: "llm_filtered"
+source_domain: "plaid.com"
+url: "https://plaid.com/blog/switching-to-tidb/"
 generated: true
 ---
 
@@ -32,33 +20,103 @@ generated: true
 > [!info] Provenance
 > - doc_id: `41446ccd753567640b5543201715fb85`
 > - source_kind: `llm_filtered`
-> - source: [original URL](https://plaid.com/blog/switching-to-tidb/)
-> - PDF: [open local PDF](../../collector/41446ccd753567640b5543201715fb85.pdf)
+> - original: [來源連結](https://plaid.com/blog/switching-to-tidb/)
+> - Review Record: [[41446ccd753567640b5543201715fb85]]
+> - PDF: [[Attachments/Sources/41446ccd753567640b5543201715fb85.pdf|Open PDF]]
 
-## Summary
+## 專家建議
+
+- primary_expert: **Solution Architecture**
+- expert_domains: Solution Architecture, DBA, SRE Platform
+- reason: Architecture migration case with validation and rollback
+
+## Generated Summary
+
+> [!warning] Generated interpretation
+> 下列摘要不是來源原文；技術主張請回到 Evidence 與 PDF 核對。
 
 Plaid 分享從 AWS Aurora MySQL 遷移到 TiDB 的動機、技術規模、服務切換流程、驗證與 rollback 策略、動態 runbook 自動化，以及遷移中的成效與教訓。主題涵蓋資料庫平台替換、分散式 SQL、SRE/可靠性、資料一致性驗證、DevOps 自動化與跨團隊溝通。
 
 ## Knowledge Outline
 
-- Project Overview — 資料庫遷移, TiDB, Aurora MySQL, 平台工程
-- Motivation — 架構設計, 資料庫平台, 技術決策
-- Technical Landscape — 容量規劃, SLA, QPS, 資料庫規模
-- Why Move Off Aurora MySQL — Aurora MySQL, 可靠性, 開發效率, sharding, MySQL 5.7
-- Timeline — 專案規劃, 遷移時程, RFC
-- Service Transition Phases — runbook, 資料庫遷移, 服務切換
-- Remove Incompatibilities — TiCDC, primary key, foreign key, transaction isolation, auto-increment
-- Replicate Data — replication, TiDB Lightning, rollback, feature flag
-- Validate — 資料一致性, sync-diff-inspector, dual writes, query plan, performance benchmark
-- Switchover — cutover, feature flag, write downtime, rollback, 一致性
-- Acceleration Strategy — 平台工程, 自動化, rollback, runbook
-- Centralize Work — 組織協作, 平台團隊, 效率
-- Dynamic Runbooks — dynamic runbook, Jupyter, TypeScript, CLI, SDK, DevOps
-- Deno Runbook Stack — Deno, TypeScript, Jupyter, dax, 工具選型
-- Runbook Impact — 自動化, Slack audit, 流程標準化, 效率提升
-- What Went Well — 效能測試, rolling upgrade, online schema change, vendor support, 溝通
-- What Could Improve — TiCDC, TiDB Lightning, query hints, resource isolation, configuration
-- Conclusion And Advice — 資料庫遷移, 自動化, 觀測性, DDL, 溝通
+- Project Overview
+- Motivation
+- Technical Landscape
+- Why Move Off Aurora MySQL
+- Timeline
+- Service Transition Phases
+- Remove Incompatibilities
+- Replicate Data
+- Validate
+- Switchover
+- Acceleration Strategy
+- Centralize Work
+
+## Extractive Evidence
+
+### `41446ccd753567640b5543201715fb85:0001`
+
+`doc_id: 41446ccd753567640b5543201715fb85` · `source_kind: llm_filtered`
+
+```text
+# 摘要
+
+Plaid 分享從 AWS Aurora MySQL 遷移到 TiDB 的動機、技術規模、服務切換流程、驗證與 rollback 策略、動態 runbook 自動化，以及遷移中的成效與教訓。主題涵蓋資料庫平台替換、分散式 SQL、SRE/可靠性、資料一致性驗證、DevOps 自動化與跨團隊溝通。
+
+# Project Overview
+
+Switching database platforms is one of the most daunting challenges in modern
+infrastructure. Database platform replacements demand rigorous planning to
+maintain data consistency, ensure uptime, and preserve performance and feature
+compatibility. But in January of 2023, we kicked off a “Future of SQL” project to lay the
+online relational database foundation for Plaid’s growth over the next 5 to 10 years.
+We’ve now transitioned the majority of our services from AWS Aurora MySQL to TiDB
+with minimal service disruption and are seeing the benefits from our investment.
+```
+
+### `41446ccd753567640b5543201715fb85:0002`
+
+`doc_id: 41446ccd753567640b5543201715fb85` · `source_kind: llm_filtered`
+
+```text
+elational database foundation for Plaid’s growth over the next 5 to 10 years.
+We’ve now transitioned the majority of our services from AWS Aurora MySQL to TiDB
+with minimal service disruption and are seeing the benefits from our investment.
+
+In this post, we share our process for approaching and delivering a project that’s at
+the core of Plaid’s reliability and engineering velocity, with the goal of providing a
+roadmap for others facing similar challenges in infrastructure and company-wide
+replatforming.
+
+Below, we’ll explore our motivation for moving to TiDB, how we transitioned each
+service, and how we’ve refined and accelerated our process over time. We hope our
+journey can serve as a blueprint for other organizations looking to modernize their
+data infrastructure.
+
+# Motivation
+```
+
+### `41446ccd753567640b5543201715fb85:0003`
+
+`doc_id: 41446ccd753567640b5543201715fb85` · `source_kind: llm_filtered`
+
+```text
+# Motivation
+
+As the founder of the Storage Team at Plaid, I saw the investment we were putting
+into Aurora MySQL and the limitations we faced compared to other systems we self-
+host. Plaid’s Storage Team provides a scalable and reliable platform for storing online
+data at Plaid and focuses on investments in relational, NoSQL, and caching storage
+systems.
+
+Idevised the structure for assessing our alternatives along with Joy Zheng, our
+Architecture Lead, and our deep technical expert on databases Mingjian Liu, and then
+set an ambitious timeline for the team that we would do a quarter of research, a
+quarter of prototyping, and aim to complete our service transitions to a new platform
+before the Amazon’s MySQL 5.7 deprecation! To ensure the project delivered high
+value to the business, we had the design constraint that this project couldn’t last
+more than two years company-wide.
+```
 
 ## Repository Paths
 
@@ -66,6 +124,4 @@ Plaid 分享從 AWS Aurora MySQL 遷移到 TiDB 的動機、技術規模、服�
 - Extracted: `generated/extracted/41446ccd753567640b5543201715fb85/full.md`
 - Filtered: `generated/filtered/41446ccd753567640b5543201715fb85/knowledge.json`
 
-## Notes
-
-<!-- Add interpretation in Concepts, Runbooks, Cases, or Career notes; do not edit this generated source page. -->
+<!-- Generated source page: do not edit. Use the Review Record or promote a new note. -->

@@ -1,0 +1,26 @@
+:root {
+  --kb-dba: #164f86;
+  --kb-sre: #b35c00;
+  --kb-arch: #087f6b;
+  --kb-career: #9a6b00;
+  --kb-content: #9b3f32;
+  --kb-ops: #4b5563;
+}
+.knowledge-workbench .markdown-preview-sizer,
+.knowledge-workbench .cm-sizer { max-width: 980px; }
+.knowledge-workbench h1 {
+  letter-spacing: -0.035em;
+  border-bottom: 3px solid var(--kb-ops);
+  padding-bottom: .35rem;
+}
+.expert-dba h1 { border-color: var(--kb-dba); }
+.expert-sre-platform h1 { border-color: var(--kb-sre); }
+.expert-solution-architecture h1 { border-color: var(--kb-arch); }
+.expert-career-interview h1 { border-color: var(--kb-career); }
+.expert-content-production h1 { border-color: var(--kb-content); }
+.expert-knowledge-operations h1 { border-color: var(--kb-ops); }
+.knowledge-workbench .callout[data-callout="tip"] {
+  --callout-color: 8, 127, 107;
+}
+.knowledge-workbench table { font-size: .88rem; }
+.knowledge-workbench .internal-embed { margin-block: .5rem 1.5rem; }
