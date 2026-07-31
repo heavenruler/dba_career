@@ -2099,3 +2099,61 @@ read-only 誤擋）已修復，driver 已新增，準備部署執行。
 **Next review**：P-B×A-A 正式 W=128 全輪待觸發驗證修法是否確實解決
 （重點觀察 GCP 側寫入交易是否成功、無 read-only 相關報錯）；TiDB
 th=128 崩潰現象是否可重現待專項驗證。
+
+## 2026-07-31（續）— P-B×A-A 正式 W=128 首發撞上 WAN 壅塞疑似降速，改 W=4
+smoke 逐家驗證修法，發現 YBDB 一個獨立的 post-prepare 不穩定窗口
+
+**首次發射（TS=20260731T102925+0800）中止**：TiDB deploy 完成後進入
+ANCHOR_ONLY prepare，`stock`/`order_line`（P-B 下 leader 在 gcp）bulk
+load 速度遠低於預期——連續多次 30 分鐘輪詢僅推進個位數到十位數個
+warehouse，推算兩張大表載完可能要 20-30+ 小時（同樣配置的前一輪
+P-B×A-A-RO 只花 ~2 小時）。查證：
+1. IDC dbhost CPU（load average 0.03-0.85）/磁碟 I/O（%util <5%）皆正常，
+   排除本地資源競爭。
+2. PD `SHOW PLACEMENT` 確認全部 policy 皆為 `SCHEDULED`（非
+   `INPROGRESS`），排除 placement 排程本身卡住。
+3. 即時 `ping` RTT 正常（~7-8ms），但**即時 `iperf3` 吞吐量僅
+   178Mbps、112 次 retransmit/5s**，明顯低於本 session 稍早量到的
+   ~300-320Mbps 基準——研判是**共用專線當下被其他流量搶頻寬**（RTT
+   對輕量 ICMP 不敏感，但大量 bulk insert 這種吞吐密集型流量會先受
+   影響）。經使用者確認後，決定：中止本輪、改採 W=4 smoke 逐家驗證
+   整條 A-A 流程邏輯無誤，W=128 正式輪延後至離峰時段再發射。
+
+**W=4 smoke 逐家驗證結果**（TS=20260731T120112+0800 TiDB／
+20260731T123056+0800 YBDB；沿用同批重建 VM，CRDB 已於稍早
+TS=20260731T093700+0800 驗證過）：
+- **CRDB**：GCP 側標準讀寫 mix 完整成功執行（UPDATE district/warehouse/
+  stock 皆寫入成功），`dual-side AA run PASS`——確認 run-vm6-aa.sh 的
+  read-only conn-params 修法對 CRDB 有效。
+- **TiDB**：GCP 側標準讀寫 mix 完整成功執行（DELIVERY/NEW_ORDER/PAYMENT
+  皆有真實寫入），`dual-side AA run PASS`——確認修法對 TiDB 有效
+  （TiDB 本來就不受這個 bug 影響，此為額外確認）。
+- **YBDB**：連續兩次嘗試（TS=20260731T100600+0800 與
+  20260731T123056+0800）皆在 ANCHOR_ONLY prepare 剛完成、進入 A-A
+  workload 的窗口內出現 `LookupByIdRpc ... timed out after deadline
+  expired` tablet 查詢逾時，IDC 側本身吞吐劣化到 tpmC 個位數、部分
+  交易報錯（`NEW_ORDER_ERR`），GCP 側因等 round-barrier 逾時而
+  `rc=1` 未能執行。**全程無任何 read-only 相關錯誤訊息**，判定與
+  本次修的 bug 無關；查無殘留 `leader_stepdown` enforcer process，
+  懷疑是 P-B 設計下 prepare 剛完成、tablet leader 佈局仍在收斂的
+  一個獨立不穩定窗口（5 分鐘 quiesce 可能不足夠），非本次修法引入
+  的新問題，也非阻擋 W=128 正式輪的必要前提（W=128 的 WARMUP_SEC=1200
+  遠長於 smoke 的 30 秒，理論上有更充裕的收斂時間）。留待正式輪觀察
+  是否重演，非本輪修法範圍。
+
+**中途插曲**：多次遇到 SSH 對 `.31` 間歇性逾時（exit 255），但 ping
+延遲正常——與上述 WAN 壅塞觀察方向一致，判斷是同一現象的另一種徵狀
+（連線建立而非既有連線的頻寬）。另外重演一次已知的
+`pkill -f <pattern>` 自我匹配呼叫端 shell 陷阱（見同節慣例），改用
+確認式 `ps aux` 查驗程序真的已被殺掉，未再誤判。
+
+修改檔案：`SESSION-HISTORY.md`（本節）。程式碼（`run-vm6-aa.sh`／
+`win-aa-w128.sh`）未再修改，本輪純驗證。
+
+**Last updated**：2026-07-31 P-B×A-A 修法已於 TiDB/CRDB 用 W=4 smoke
+交叉驗證成功（GCP 側寫入不再被 read-only 擋下）；YBDB 發現一個獨立於
+本次修法的 post-prepare 不穩定窗口，非阻擋項但待正式輪觀察；環境已
+`phase9-destroy` 歸零，W=128 正式輪依使用者指示延後至離峰時段再發射。
+**Next review**：離峰時段重新 `win-aa-detach PLACEMENT=P-B DBS='tidb
+ybdb crdb'`（新 TS）觸發正式 W=128 全輪；留意 WAN 吞吐是否恢復正常、
+YBDB post-prepare 窗口是否於 W=128 規模（WARMUP_SEC=1200）下自然消失。
