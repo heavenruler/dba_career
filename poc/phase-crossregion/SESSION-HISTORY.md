@@ -2157,3 +2157,85 @@ TS=20260731T093700+0800 驗證過）：
 **Next review**：離峰時段重新 `win-aa-detach PLACEMENT=P-B DBS='tidb
 ybdb crdb'`（新 TS）觸發正式 W=128 全輪；留意 WAN 吞吐是否恢復正常、
 YBDB post-prepare 窗口是否於 W=128 規模（WARMUP_SEC=1200）下自然消失。
+
+## 2026-07-31/08-01（續）— P-B×A-A 正式 W=128 全輪三度嘗試，第三次
+（TS=20260731T204801+0800）三家全數 PASS 並歸檔
+
+**使用者拍板不等離峰、現在就發射**：第一次嘗試（TS=20260731T132824+0800）
+在 `apply-gotpc-patch.sh` 的 `git clone https://github.com/pingcap/go-tpc.git`
+逾時 300 秒（0 bytes received）FAILED——查證 GitHub 隨後可正常連線，
+判定為當下網路瞬斷；換新 TS（20260731T141546+0800）重新發射即過關，
+進入 TiDB deploy。
+
+**第二次嘗試中途撞上 YBDB deploy 新問題**：`yugabyted` 啟動失敗
+`ModuleNotFoundError: No module named 'dataclasses'`——查證該節點
+`/usr/bin/python3` 透過 `alternatives` 指向系統預設 `/usr/bin/python3.6`
+（RHEL8 系統 python，`dataclasses` 需 3.7+），而 `/usr/bin/python3.12`
+binary 其實已存在但從未註冊進 `alternatives`。以
+`alternatives --install/--set python3 /usr/bin/python3.12` 跨 6
+節點修復（`dnf` 走獨立的 platform-python，不受影響，安全）。
+
+**修復後 YBDB anchor prepare 途中因 Mac 端 VPN 斷線而中斷**：發現
+自己犯了已知的反面模式——`win-aa-w128.sh`（driver 本身）失敗退出後，
+手動用 `make phase7-ybdb-smoke ...` 逐步接續，這是 **Mac 端前景 SSH
+呼叫**（非 `.31` 上真正 nohup detach），VPN 斷線直接砍斷這段前景連線、
+連帶殺死遠端 prepare process。改正做法：重新走
+`win-aa-detach TPCC_TS=<同TS> DBS='ybdb crdb'`（TiDB 已成功跳過），
+driver 本身在 `.31` 上 nohup 執行，才真正不怕 Mac 端斷線。
+
+**使用者要求中止重來**：因累積的波折（WAN 瞬斷、python3 環境問題、
+手動接續踩坑）,使用者決定 `abort for now`，完整 teardown 三家 +
+`phase9-destroy` + phase1/phase2 重建，套用 python3.12 修法（此時
+proactive 先修，避免 YBDB 重演）後，用**全新 TS（20260731T204801+0800）
+從頭跑一次完整三家**。
+
+**第三次嘗試（正式採用批次）過程**：
+- phase2 首次執行又撞一次 SSH 逾時（ping 延遲升高到 20-66ms，較
+  基準 7-8ms 明顯劣化，同款網路不穩定徵狀），重跑後過關。
+- TiDB：deploy 20:48→prepare 20:53→W=128 workload 22:37→**PASS
+  01:34:35**（已歸檔）。th=128 round 1 tpmC=6,462.8，未見
+  A-A-RO 那輪的災難性崩潰，但延遲仍明顯偏高（詳見結案報告 §3，
+  判定為同根因的「持續劣化」而非「崩潰」）。
+- YBDB：deploy→prepare→**W=128 workload PASS 06:22:46**（已歸檔）
+  ——W=4 smoke 觀察到的 post-prepare tablet lookup timeout window
+  **在 W=128 規模下未重演**（WARMUP_SEC=1200 給了充分收斂時間，
+  驗證先前的假設）。
+- CRDB：deploy→prepare→**W=128 workload PASS 10:08:50**（已歸檔），
+  **ALL DONE** marker 產生。
+- 過程中又遇兩次 VPN 斷線（其中一次斷線長達近 12 小時，回來時三家
+  早已全數 PASS 並收工），皆屬 Mac 端連線問題，driver 本身
+  全程不受影響、無需介入。
+
+**收尾**：比照既有 aa/aaro profile 慣例跳過 `phase8.5-static-check`
+（`.suite.done` 結構性缺失非本次問題），改用 `phase8.5-fetch` +
+`phase8.5-check-receipt`（summary_json=51、suite_done=32）+
+`phase9-tunnels-stop` + `phase9-destroy`，IDC 3 台 + GCP 5 台全數
+銷毀。
+
+**正式數字彙整（三家 0 error）**：
+
+| DB | IDC tpmC@128 | GCP tpmC@128 |
+|---|---:|---:|
+| TiDB | 4,413.9（th=32 見頂 8,868.2 後劣化） | 2,966.6 |
+| YBDB | 11,605.5（正常擴展） | 3,379.9 |
+| CRDB | 9,880.6（正常擴展） | 5,704.9 |
+
+完整分析見
+[`XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md`](./XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md)。
+**核心結論與 P-B×A-A-RO 一致收斂**：TiDB 在高併發下因 P-B 跨區混合
+leader + percolator 兩階段悲觀鎖產生真實效能限制，且 **A-A（雙端
+寫同一批 warehouse）比 A-A-RO（GCP 端唯讀）更容易長期觸發**（本輪是
+持續劣化，A-A-RO 那輪是短暫崩潰後恢復）；YBDB／CRDB 兩家在 P-B 三種
+workload（A-S/A-A-RO/A-A）下皆表現穩定、正常擴展。
+
+修改檔案：`phase-crossregion/XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md`
+（新增）、`README.md`、`.gitignore`、`SESSION-HISTORY.md`（本節）。
+程式碼未修改（先前的 read-only conn-params 修法已於 W=4 smoke 驗證
+過，本輪只是把它跑到 W=128 正式規模）。
+
+**Last updated**：2026-08-01 P-B 三種 workload（A-S/A-A-RO/A-A）W=128
+正式執行全數完成，三家資料庫在 P-B 下的行為特徵已有完整交叉驗證：
+TiDB 高併發限制、YBDB/CRDB 正常擴展。VM 已 destroy，環境歸零。
+**Next review**：TiDB 高併發限制是否需要專項調校排入後續排程
+（`tidb_lock_ttl`、悲觀鎖重試策略）；P-B 正式測試矩陣（三 DB × 三
+workload）至此已完整跑過一輪，可考慮進入結果彙總/決策階段。

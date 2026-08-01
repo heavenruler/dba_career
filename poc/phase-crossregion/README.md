@@ -132,7 +132,7 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 |---|---|---|---|---|
 | A/S（placement 單因子對照，per G6） | ✅ 完成且已採用 | `TPCC_TS=20260727T223650+0800` | tpmC：TiDB 15,107.4／YBDB 2,485.6／CRDB 11,640.0；idc/gcp 分佈皆落 30-70% 窗口（CRDB 實測 50/50） | [XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md](./XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md) |
 | A/A-RO | ✅ 完成且已採用 | `TPCC_TS=20260730T094406+0800` | IDC tpmC：TiDB 5,699.7（⚠ th=128 崩潰，見報告 §3）／YBDB 11,989.8／CRDB 13,777.1；GCP read_tpmTotal：TiDB 23,120.0／YBDB 42,116.4／CRDB 38,194.9 | [XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md](./XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md) |
-| A/A | ⚪ 未開始（執行前置復盤已修復 `run-vm6-aa.sh` GCP 側 conn-params 誤加 read-only 的阻擋，見 `SESSION-HISTORY.md` 2026-07-31 節） | — | — | 同上 |
+| A/A | ✅ 完成且已採用 | `TPCC_TS=20260731T204801+0800` | IDC tpmC：TiDB 4,413.9（⚠ th=64/128 劣化，見報告 §3）／YBDB 11,605.5／CRDB 9,880.6；GCP tpmC：TiDB 2,966.6／YBDB 3,379.9／CRDB 5,704.9 | [XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md](./XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md) |
 | backup / migration / chaos | ⚪ 未開始（同 P-A spec） | — | — | — |
 
 **P-B×A-S 已於 2026-07-27~29 完成正式 W=128 執行**——過程中發現並修復一個
@@ -143,7 +143,11 @@ policy 只能表達優先順序、無法表達機率式跨區混合分佈），T
 07-17 Q3 拍板的 S1（O1 gate 補強）/ S2（`gcp-replica-gate.sh` 內建
 `PLACEMENT=P-B` 分支，30-70% leader/lease spread 判準）/ S3
 （`phase4-ybdb-fix6n` P-B 分支，跳過 `set_preferred_zones`）基礎設施備便
-已於本輪驗證為有效。A/A-RO、A/A 尚未執行。
+已於本輪驗證為有效。**P-B 三種 workload（A-S/A-A-RO/A-A）至此全數完成
+W=128 正式執行**——TiDB 皆在高併發檔位（th=64/128）出現不同程度的
+吞吐劣化（A-A-RO 為崩潰、A-A 為持續劣化），YBDB/CRDB 兩家在三種
+workload 下皆正常擴展，判定為 TiDB percolator 式兩階段悲觀鎖與 P-B
+跨區混合 leader 交互作用下的真實限制，非流程或口徑問題。
 
 **2026-07-27 死碼清理**：稽核發現 `scripts/gate-placement-p-b.sh`（判準
 ≥1 each，與 `gcp-replica-gate.sh` 的 30-70% spread 不一致）從未被
