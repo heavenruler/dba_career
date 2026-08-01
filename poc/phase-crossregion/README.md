@@ -135,6 +135,13 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 | A/A | ✅ 完成且已採用 | `TPCC_TS=20260731T204801+0800` | IDC tpmC：TiDB 4,413.9（⚠ th=64/128 劣化，見報告 §3）／YBDB 11,605.5／CRDB 9,880.6；GCP tpmC：TiDB 2,966.6／YBDB 3,379.9／CRDB 5,704.9 | [XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md](./XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md) |
 | backup / migration / chaos | ⚪ 未開始（同 P-A spec） | — | — | — |
 
+**P-B 三種 workload（A-S/A-A-RO/A-A）W=128 正式測試矩陣已全數完成**，
+橫向比對彙總見
+[XCROSS-PB-ALL-WORKLOADS-SUMMARY.md](./XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)
+（核心發現：TiDB 高併發限制與「GCP 端是否同時發起負載」強相關，
+A-S 下完全不受影響，A-A-RO/A-A 下依衝突強度分別呈現崩潰／持續劣化；
+YBDB/CRDB 三種 workload 下皆正常擴展）。
+
 **P-B×A-S 已於 2026-07-27~29 完成正式 W=128 執行**——過程中發現並修復一個
 跨三家資料庫共通的設計缺口（單一 whole-table/whole-database placement
 policy 只能表達優先順序、無法表達機率式跨區混合分佈），TiDB/YBDB/CRDB
