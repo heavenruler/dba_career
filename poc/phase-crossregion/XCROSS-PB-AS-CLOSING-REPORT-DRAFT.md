@@ -1,25 +1,35 @@
-# X-CROSS P-B×A-S 結案報告（雛形）— IDC↔GCP Cross-Region 3-DB W=128 P-B Placement 正式測試
+# X-CROSS P-B×A-S 結案報告（雛形）— IDC↔GCP Cross-Region 3-DB W=128 P-B Placement Phase-Adopted 探索性測試
 
+> **Scope**：`X-CROSS`，`baseline_family=crossregion`，
+> `baseline_eligible=false`，本 profile `N=1`。本報告是**本 phase 的
+> 採用批次**，不是可直接對外排名的 S-BASE/S-K8S 正式 baseline，見
+> `phase-crossregion/README.md`。
+>
 > 目的：驗證 TiDB/YBDB/CRDB 三家 DB 在 6-node cross-region 拓樸下、**P-B
 > placement（散置 RF=3 全 voter、leader 跨區混合分佈 30-70%；GCP 端
 > DB 節點與 IDC 端一樣是全 RF voter，非 standby DB）**於 A-S（**GCP
 > client 端不發負載**，只有 IDC client 打標準 TPCC）profile 的 W=128
-> 執行結果。TS=`20260727T223650+0800`，執行順序 TiDB→YBDB→CRDB，
-> 三家皆 PASS 並已歸檔，VM 已 destroy。
+> phase-adopted 執行結果。TS=`20260727T223650+0800`，執行順序
+> TiDB→YBDB→CRDB，三家皆 PASS 並已歸檔，VM 已 destroy。
 
 ## 1. 執行摘要
 
-| DB | tpmC@128 | tpmTotal@128 | NEW_ORDER p99@128 | 錯誤率 | Placement gate（§6.6 抽樣） | Artifact |
+| DB | tpmC@128 | tpmTotal@128 | NEW_ORDER p99@128 | all_txn 錯誤率 | Placement gate（§6.6 抽樣） | Artifact |
 |---|---:|---:|---:|---:|---|---|
-| **TiDB** | [15,107.4](../results/x-cross/smoke/early-runs/20260727T223650+0800/tidb-vm-6node-P-B-rc-20260727T223650+0800/summary.json) | 33,505.6 | 664.4ms | 0% | idc=10/19（52%）PASS | [`tidb-vm-6node-P-B-rc-20260727T223650+0800`](../results/x-cross/smoke/early-runs/20260727T223650+0800/tidb-vm-6node-P-B-rc-20260727T223650+0800/) |
-| **YBDB** | [2,485.6](../results/x-cross/smoke/early-runs/20260727T223650+0800/ybdb-vm-6node-P-B-rc-20260727T223650+0800/summary.json) | 5,498.9 | 6,227.7ms | 0% | idc=1/3（33%）PASS | [`ybdb-vm-6node-P-B-rc-20260727T223650+0800`](../results/x-cross/smoke/early-runs/20260727T223650+0800/ybdb-vm-6node-P-B-rc-20260727T223650+0800/) |
-| **CRDB** | [11,640.0](../results/x-cross/smoke/early-runs/20260727T223650+0800/crdb-vm-6node-P-B-rc-20260727T223650+0800/summary.json) | 25,903.4 | 1,301.9ms | 0% | idc=7/12（58%）PASS | [`crdb-vm-6node-P-B-rc-20260727T223650+0800`](../results/x-cross/smoke/early-runs/20260727T223650+0800/crdb-vm-6node-P-B-rc-20260727T223650+0800/) |
+| **TiDB** | [15,107.4](../results/x-cross/smoke/early-runs/20260727T223650+0800/tidb-vm-6node-P-B-rc-20260727T223650+0800/summary.json) | 33,505.6 | 664.4ms | 0/2,598,366=0% | idc=10/19（52%）PASS | [`tidb-vm-6node-P-B-rc-20260727T223650+0800`](../results/x-cross/smoke/early-runs/20260727T223650+0800/tidb-vm-6node-P-B-rc-20260727T223650+0800/) |
+| **YBDB** | [2,485.6](../results/x-cross/smoke/early-runs/20260727T223650+0800/ybdb-vm-6node-P-B-rc-20260727T223650+0800/summary.json) | 5,498.9 | 6,227.7ms | 0/401,413=0% | idc=1/3（33%）PASS | [`ybdb-vm-6node-P-B-rc-20260727T223650+0800`](../results/x-cross/smoke/early-runs/20260727T223650+0800/ybdb-vm-6node-P-B-rc-20260727T223650+0800/) |
+| **CRDB** | [11,640.0](../results/x-cross/smoke/early-runs/20260727T223650+0800/crdb-vm-6node-P-B-rc-20260727T223650+0800/summary.json) | 25,903.4 | 1,301.9ms | 0/1,976,705=0% | idc=7/12（58%）PASS | [`crdb-vm-6node-P-B-rc-20260727T223650+0800`](../results/x-cross/smoke/early-runs/20260727T223650+0800/crdb-vm-6node-P-B-rc-20260727T223650+0800/) |
 
-三家全程 0 error（16/32/64/128 四檔位、每檔 5 輪皆無交易錯誤）。P-B
-placement gate（`prepare.sh` §6.6 抽樣 warehouse/district/customer 3 表）
-三家皆落在 30-70% 窗口內通過；workload 結束後全體 9 表的
-`gcp-replica-gate.sh` 判準（CRDB 實測 idc/gcp lease holder 各 24/48=50%，
-見 §5）亦通過。
+三家 `all_txn` 全程 0 error（16/32/64/128 四檔位加總，分母依
+`tests/common/summary-from-stdout.py` 的 NEW_ORDER+PAYMENT+DELIVERY+
+ORDER_STATUS+STOCK_LEVEL 五種 transaction 加總，見上表；本 profile
+無 GCP client 負載，故無 GCP 側數字）。P-B placement gate（`prepare.sh`
+§6.6 抽樣 warehouse/district/customer 3 表）三家皆落在 30-70% 窗口內
+通過——**此為 prepare-time 的實際有限樣本結果，僅代表抽樣通過，不是
+「非抽樣」的 by-design 事實**；workload 結束後全體 9 表的
+`gcp-replica-gate.sh` 判準（CRDB 實測 idc/gcp lease holder 各
+24/48=50%，見 §5）亦通過，但目前僅 CRDB 有此 post-run 全表證據，
+不外推至 TiDB/YBDB。
 
 ## 2. 測試目的與範圍
 

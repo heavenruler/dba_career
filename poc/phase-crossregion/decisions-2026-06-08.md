@@ -576,3 +576,30 @@ cells 自正式範圍砍除（Tier 3），僅留 smoke 驗證 `summary-gcp-side.
 
 **教訓**：長跑多階段工作若中途因故（例如發現機制根因問題）擴大範圍，
 應同步回補當初拍板的規劃決策文件，避免規劃文件與執行事實長期不一致。
+
+## Q19: P-A×A-A 終止排程，不補跑（2026-08-04 拍板）
+
+**背景**：`XCROSS-PA-VS-PB-FINAL-COMPARISON.md` 覆核時多處將
+「P-A×A-A 缺失」列為待補的證據缺口／pending 待辦，隱含未來仍會排程
+執行。
+
+**Decision**：**P-A×A-A 不排入執行計畫，非「待排程」而是設計上不具
+比較價值，予以終止**。理由：
+
+- P-A 的設計是 leader 固定在 IDC（無 mixed-leader 機制），A-A workload
+  的意義在於觀察「兩端同時寫、GCP 端也能就近寫入」的行為；但在 P-A 下
+  GCP client 送出的每筆寫入仍須整趟跨 WAN 回 IDC 才能碰到 leader，等同
+  單純疊加一段固定 RTT，不存在「GCP 側 leader/quorum 混合」這個 P-B
+  才有的變因可觀察。
+- 這樣的組合與 P-A 本身「近讀近寫留在 IDC、GCP 僅同步/近讀」的設計
+  原則直接衝突——刻意違反設計原則去量測一個該設計本來就不支援的用法，
+  產出的數字不具參考價值（不是「P-A 在 A-A 下比較慢」的公平量測，而是
+  「強迫走一個非預期路徑」的人為劣化）。
+- 因此 P-A×A-A 與既有 P-A×A-S／P-A×A-A-RO 不同——後兩者都落在 P-A
+  設計支援的使用情境內，P-A×A-A 則否。
+
+**影響**：`XCROSS-PA-VS-PB-FINAL-COMPARISON.md`、`MILESTONES.md`、
+`gitbook/09-cross-region.md`、`phase-crossregion/README.md` 中原本
+「P-A×A-A 缺失／待補跑」的措辭，改為「P-A×A-A 依 Q19 終止排程，非
+待辦缺口」。若後續業務需求明確要求量測「P-A 下 GCP 端寫入代價」，
+應視為新的實驗設計題重新拍板，不是回頭補跑本項。

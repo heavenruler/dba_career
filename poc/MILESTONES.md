@@ -125,7 +125,7 @@ flowchart TB
 | 07-18～07-21 | P-A×A-A-RO 首輪 | 三家 W=128 雙端全輪完成；發現近讀未生效 | ⚠️ 執行鏈有效，近讀口徑失效 |
 | 07-21～07-23 | 近讀修正與補驗 | 修正三家近讀條件、go-tpc read-only 行為與 fail-closed 檢查 | ✅ |
 | 07-23～07-24 | P-A×A-A-RO 第二輪 | 三家同批 W=128 全輪完成，改採近讀修正後結果 | ✅ `N=1` |
-| 待排程 | P-A×A-A | 雙端讀寫與同 warehouse contention | ⚪ |
+| 終止排程（Q19，2026-08-04） | P-A×A-A | P-A leader 固定 IDC，GCP 端寫入僅疊加跨 WAN RTT、無 mixed-leader 變因可觀察，與近讀近寫原則衝突，不具參考價值 | ⛔ 不補跑 |
 | 07-27～08-01 | P-B 全 workload（A-S、A-A-RO、A-A） | 三家同批 W=128 全輪完成；TiDB 高併發吞吐劣化目前僅列假說 | ✅ `N=1`，探索性 |
 | 待排程 | Chaos／failover | C1、C4、C7 與 F1 RTO/RPO | ⚪ |
 
@@ -324,7 +324,7 @@ P-B 三 workload 採用批次：A-S `20260727T223650+0800`、A-A-RO
 
 **尚未完成**
 
-- P-A×A-A 正式結果（P-B 三 workload 已完成，見上節）。
+- ~~P-A×A-A 正式結果~~——依 Q19（2026-08-04）終止排程，不補跑（P-B 三 workload 已完成，見上節）。
 - Chaos／failover 真實演練與 RTO/RPO。
 - 三節點與跨區 `N=3` 獨立環境重現性。
 - 可供正式專案啟動的實際報價、維運人力與遷移演練數據。
@@ -370,7 +370,7 @@ P-B 三 workload 採用批次：A-S `20260727T223650+0800`、A-A-RO
 - 不可用 `N=1` 宣稱跨環境穩定重現。
 - 不可把 X-CROSS 數字放入 S-BASE 正式跨家排名。
 - 不可由 P-A 推論 P-B，也不可由 A-S 推論 A-A-RO 或 A-A。
-- 不可在 P-A×A-A、chaos、failover 尚未實跑前宣稱全矩陣或 HA/DR 完成。
+- 不可在 chaos、failover 尚未實跑前宣稱全矩陣或 HA/DR 完成（P-A×A-A 依 Q19 終止排程，不計入「尚未實跑」缺口）。
 - 不可把 P-B TiDB 高併發吞吐劣化現象宣稱為「已定位根因」或「已排除執行緒數／mix 混淆因素」——目前只到假說階段，控制實驗待辦見
   [P-B 三 workload 彙整 §3.3](./phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)。
 - 不可只靠原廠功能文件宣稱應用查詢已走預期資料路徑。
@@ -381,7 +381,7 @@ P-B 三 workload 採用批次：A-S `20260727T223650+0800`、A-A-RO
 |---|---|---|
 | A-A-RO 修法後結案 | 三家同批 W=128、雙側 summary、近讀執行面證據 | ✅ `TPCC_TS=20260723T133843+0800` |
 | 是否進 P-B | P-B placement gate、故障域模型、先行單家 smoke | ✅ 三 workload 已完成（見 6.2） |
-| 是否進 P-A×A-A | 衝突模型、雙端寫入錯誤率、commit latency 與 rollback | ⚪ |
+| 是否進 P-A×A-A | 衝突模型、雙端寫入錯誤率、commit latency 與 rollback | ⛔ 終止（Q19，2026-08-04）——P-A 不支援 GCP 端近寫，不具比較價值 |
 | HA/DR 可用性 | C1/C4/C7、F1、RTO/RPO、資料一致性與回復紀錄 | ⚪ |
 | 三節點候選配置 | 候選 cell `N=3` 獨立重建與變異分析 | ⚪ |
 | Thread control 是否補測 | 先以單一 tuning profile、`N=1` 探索；不得混入 baseline | ⚪ |

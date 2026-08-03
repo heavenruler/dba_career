@@ -10,7 +10,7 @@
 | [`baseline/w128/`](./baseline/w128/) | P-A×A-S 正式 W=128 採用批次（#2/#3 系列） | 以 `summary.json`／raw `go-tpc-stdout*.txt` 為準，見下表 |
 | [`preflight/time-sync/`](./preflight/time-sync/) | chrony / time server / 前置同步檢查 | 只作跨區前置佐證，不作 benchmark 結果 |
 | [`dry-run/`](./dry-run/) | framework probe、wrapper / gate / endpoint dry-run | 驗證流程可跑通，不含正式 go-tpc run |
-| [`smoke/early-runs/`](./smoke/early-runs/) | **目錄名稱沿用早期 smoke 慣例，但現已同時存放已採用的正式 W=128 P-A×A-A-RO／P-B 三 workload suite**（各子目錄含 `summary.json`），與早期 smoke/partial run 混放於同層 | 早期 smoke 子目錄僅供追溯建置與修正過程，不納正式結論；**已採用批次**（見下方清單）以其 `summary.json`／raw `go-tpc-stdout*.txt` 為正式數字來源 |
+| [`smoke/early-runs/`](./smoke/early-runs/) | **目錄名稱沿用早期 smoke 慣例，但現已同時存放已採用的正式 W=128 P-A×A-A-RO／P-B 三 workload suite**（各子目錄含 `summary.json`），與早期 smoke/partial run 混放於同層 | 早期 smoke 子目錄僅供追溯建置與修正過程，不納正式結論；**已採用批次**（見下方清單）以其 `summary.json`／raw `go-tpc-stdout*.txt` 為 X-CROSS 採用數字來源（`baseline_eligible=false`，非 S-BASE/S-K8S 正式 baseline） |
 | [`determinism/`](./determinism/) | same-cluster determinism / CV 觀察 | W=4 重現性資料 |
 
 **已採用批次（W=128，`N=1`，`baseline_eligible=false`，皆屬 X-CROSS 探索性 scope）：**
@@ -23,7 +23,7 @@
 | P-B | A-A-RO | `smoke/early-runs/20260730T094406+0800/` | [XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md](../../phase-crossregion/XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md) |
 | P-B | A-A | `smoke/early-runs/20260731T204801+0800/` | [XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md](../../phase-crossregion/XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md) |
 
-P-B 三 workload 彙整見 [XCROSS-PB-ALL-WORKLOADS-SUMMARY.md](../../phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)。**不可**重新命名上述任何目錄；未列入此表的 `smoke/early-runs/` 子目錄一律視為早期 smoke／partial run／中斷重試殘留，不作正式結論來源。
+P-B 三 workload 彙整見 [XCROSS-PB-ALL-WORKLOADS-SUMMARY.md](../../phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)。**不可**重新命名上述任何目錄；未列入此表的 `smoke/early-runs/` 子目錄一律視為早期 smoke／partial run／中斷重試殘留，不作 X-CROSS 採用數字來源。
 
 ## 建議閱讀順序
 

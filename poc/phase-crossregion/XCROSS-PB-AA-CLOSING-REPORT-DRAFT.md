@@ -1,30 +1,45 @@
-# X-CROSS P-B×A-A 結案報告（雛形）— IDC↔GCP Cross-Region 3-DB W=128 P-B Placement 正式測試
+# X-CROSS P-B×A-A 結案報告（雛形）— IDC↔GCP Cross-Region 3-DB W=128 P-B Placement Phase-Adopted 探索性測試
 
+> **Scope**：`X-CROSS`，`baseline_family=crossregion`，
+> `baseline_eligible=false`，本 profile `N=1`。本報告是**本 phase 的
+> 採用批次**，不是可直接對外排名的 S-BASE/S-K8S 正式 baseline，見
+> `phase-crossregion/README.md`。
+>
 > 目的：驗證 TiDB/YBDB/CRDB 三家 DB 在 6-node cross-region 拓樸下、**P-B
 > placement**（散置 RF=3 全 voter、leader 跨區混合分佈 30-70%）於
 > A-A（IDC 與 GCP 兩端同時跑標準讀寫 mix、W 全範圍重疊，per
 > `workload-profiles/A-A.md` Q5 拍板的 max contention 設計）profile 的
-> 正式 W=128 效能基準。TS=`20260731T204801+0800`，執行順序
+> W=128 phase-adopted 執行結果。TS=`20260731T204801+0800`，執行順序
 > TiDB→YBDB→CRDB，三家皆 PASS 並已歸檔，VM 已 destroy。
 
 ## 1. 執行摘要
 
-| DB | IDC tpmC@128 | GCP tpmC@128 | IDC 錯誤率 | GCP 錯誤率 | Placement gate |
+| DB | IDC tpmC@128 | GCP tpmC@128 | IDC all_txn 錯誤率 | GCP all_txn 錯誤率 | Placement gate |
 |---|---:|---:|---:|---:|---|
-| **TiDB** | 4,413.9（⚠ 見 §3 高併發劣化） | 2,966.6 | 0% | ≈0.158% | idc=10/19（52%）PASS |
-| **YBDB** | 11,605.5 | 3,379.9 | 0% | ≈0.134% | idc=2/3（66%）PASS |
-| **CRDB** | 9,880.6 | 5,704.9 | 0% | ≈0.111% | idc=7/12（58%）PASS |
+| **TiDB** | 4,413.9（⚠ 見 §3 高併發劣化） | 2,966.6 | 0/1,455,353=0% | 885/561,823≈0.157275% | idc=10/19（52%）PASS |
+| **YBDB** | 11,605.5 | 3,379.9 | 0/1,396,294=0% | 799/595,090≈0.134085% | idc=2/3（66%）PASS |
+| **CRDB** | 9,880.6 | 5,704.9 | 0/1,410,538=0% | 1,146/1,029,056≈0.111240% | idc=7/12（58%）PASS |
 
-**錯誤率修正（2026-08-03）**：先前版本寫「三家全程 0 error」不成立，
-只檢查了 IDC 側；**GCP 側錯誤率三家皆非零**（885/561,823、
-799/595,090、1,146/1,029,056，全檔位加總，口徑見
-`XCROSS-PB-ALL-WORKLOADS-SUMMARY.md` §2），主要由 `context deadline
-exceeded`（round 收尾取消）構成，CRDB 另有 2 筆
-`TransactionRetryError` 序列化重試失敗。P-B placement gate 三家皆落在
-30-70% 窗口內通過（僅代表 prepare-time 抽樣，見 §6）。**TiDB 在高
-併發（th=64/128）出現明顯吞吐劣化**（tpmC 隨執行緒數增加反而下降），
+**錯誤率修正（2026-08-03 Round 2）**：先前版本（含 Round 1 修正）寫
+「三家全程 0 error」不成立，只檢查了 IDC 側；Round 1 已補上 GCP 側，
+但**未明示 IDC 側 0% 是否為 all_txn 口徑**——本 profile 的 IDC 側
+`all_txn.error_count` 三家確實皆為 0（與 NEW_ORDER-only 結果一致，
+因分子本身是 0），已在上表明示分母為 all_txn 加總（1,455,353／
+1,396,294／1,410,538）以利追溯，不再用模糊的 `count/total`。**GCP
+側錯誤率三家皆非零**（885/561,823、799/595,090、1,146/1,029,056，
+五種 transaction 加總，口徑見 `XCROSS-PB-ALL-WORKLOADS-SUMMARY.md`
+§2），最常見的是 `context deadline exceeded`（round 收尾取消，抽查
+非精確計數），CRDB 另有 2 個 distinct `TransactionRetryError` 序列化
+重試失敗事件（raw log 各印兩次、非 4 筆獨立事件）。P-B placement
+gate 三家皆落在 30-70% 窗口內通過（僅代表 prepare-time 的實際有限
+樣本通過，非全 9 表全程 ground truth，見 §6）。**TiDB 在高併發
+（th=64/128）出現明顯吞吐劣化**（tpmC 隨執行緒數增加反而下降），
 YBDB／CRDB mean 曲線隨併發數增加而成長——現象觀察詳見 §3，因果尚待
 驗證。
+
+**採用 suite source**：[TiDB summary.json](../results/x-cross/smoke/early-runs/20260731T204801+0800/tidb-vm-6node-P-B-aa-rc-20260731T204801+0800/summary.json) ／
+[YBDB summary.json](../results/x-cross/smoke/early-runs/20260731T204801+0800/ybdb-vm-6node-P-B-aa-rc-20260731T204801+0800/summary.json) ／
+[CRDB summary.json](../results/x-cross/smoke/early-runs/20260731T204801+0800/crdb-vm-6node-P-B-aa-rc-20260731T204801+0800/summary.json)。
 
 ## 2. 測試目的與範圍
 
@@ -89,7 +104,11 @@ N=1、總 offered concurrency 與 mix 不同，尚未排除總執行緒數、批
 雜訊等混淆因素，**不可寫成已確認根因，也不可排序哪個 profile
 「更容易觸發」**。建議正式評估報告依
 `XCROSS-PB-ALL-WORKLOADS-SUMMARY.md` §3.3 的控制實驗設計驗證因果後，
-再列為 TiDB 專項調校（`tidb_lock_ttl`、悲觀鎖重試策略）的優先項。
+再列為 TiDB 專項調校（悲觀鎖 TTL 相關設定、重試策略）的優先項。
+  **修正**：先前版本寫 `tidb_lock_ttl` 為已知調校參數，經查證非真實
+  TiDB 系統變數，實際是設定檔 `performance.max-txn-ttl`（見
+  `XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md` §3 根因調查第 2 點），
+  調校前應以官方文件與 `SHOW VARIABLES`/設定檔核對本版本是否適用。
 
 ## 4. IDC 側完整結果
 
@@ -161,7 +180,8 @@ policy／雙 tablespace+enforcer／雙 lease_preferences+partition）在
 - **TiDB 高併發劣化**（§3）為本輪最重要待跟催項目，現象與 A-A-RO 輪
   的 th=128 崩潰相容於同一假說（跨區鎖競爭），但兩者根因是否相同
   尚未經控制實驗確認，建議排入 §3 所述控制實驗，再排 TiDB 專項調校
-  （悲觀鎖重試策略、`tidb_lock_ttl`）。
+  （悲觀鎖重試策略、`performance.max-txn-ttl`——非 `tidb_lock_ttl`，
+  詳見 §3 修正）。
 - 本次 W=128 P-B×A-A 執行前歷經多次波折：首發撞上 WAN 專線壅塞
   （iperf3 量到 178Mbps vs 基準 ~300Mbps）中止重來；YBDB deploy 撞上
   VM 預設 `/usr/bin/python3` 指向 3.6（`yugabyted` 需要 3.7+ 的

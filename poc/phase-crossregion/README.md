@@ -138,8 +138,9 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 **P-B 三種 workload（A-S/A-A-RO/A-A）W=128 執行矩陣已跑過一次**
 （各 profile N=1），橫向比對彙總見
 [XCROSS-PB-ALL-WORKLOADS-SUMMARY.md](./XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)。
-**P-A 與 P-B 跨 placement 最終比較**（A-S、A-A-RO 兩個有雙邊數據的
-profile 逐檔位對照；A-A 因 P-A×A-A 未執行故無法比較）見
+**P-A 與 P-B 跨 placement 階段性比較**（A-S、A-A-RO 兩個有雙邊數據的
+profile 逐檔位對照；A-A 依 [Q19](./decisions-2026-06-08.md#q19-p-aa-a-終止排程不補跑2026-08-04-拍板)
+終止排程、不補跑，非執行落後）見
 [XCROSS-PA-VS-PB-FINAL-COMPARISON.md](./XCROSS-PA-VS-PB-FINAL-COMPARISON.md)
 （**fact**：雙側負載的兩個批次皆觀察到 TiDB 高併發吞吐劣化與跨區鎖
 路徑錯誤存在性證據，單邊批次（A-S）未見同款現象；**inference，尚待
@@ -193,7 +194,10 @@ Q2/Q4（2026-07-17 拍板）曾決議「P-A×A-A-RO／P-A×A-A 共 6 cells 明�
 全輪，並於 07-24 產出正式結案報告（`XCROSS-AARO-CLOSING-REPORT-DRAFT.md`），
 數字已被引用採用。此為**執行事實覆蓋規劃決策**、決策文件本身當時未回補
 修正——已於 `decisions-2026-06-08.md` 補記 Q18 追溯性決策項；本表以實際
-執行結果為準，P-A×A-A（Q2/Q4 同批砍除的另一半）**未受影響、仍是待辦**。
+執行結果為準，P-A×A-A（Q2/Q4 同批砍除的另一半）**未受影響**，且已於
+Q19（2026-08-04）明確終止排程、不補跑（P-A leader 固定 IDC，A-A 情境下
+GCP 端寫入僅疊加跨 WAN RTT、無 mixed-leader 變因可觀察，與近讀近寫
+原則衝突，不具參考價值）。
 
 **已知阻擋**（詳 [`SESSION-HISTORY.md`](./SESSION-HISTORY.md) 關鍵結論速查）：
 - `results/x-cross/` 內 W=4 same-cluster determinism 資料**不可作正式跨家排名**（pipeline-log §1 已標註）；W=128 正式採用數字以上表連結的結案報告為準。

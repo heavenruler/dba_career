@@ -23,38 +23,90 @@
 | **A-A-RO**（IDC 讀寫，GCP 唯讀） | `20260730T094406+0800` | 5,699.7 | 11,989.8 | 13,777.1 |
 | **A-A**（IDC/GCP 同時讀寫，W 全重疊） | `20260731T204801+0800` | 4,413.9 | 11,605.5 | 9,880.6 |
 
-## 2. 錯誤率（fact，來源各 suite `summary.json` 全檔位加總；C1 修正）
+## 2. 錯誤率（fact，來源各 suite `summary.json` 全檔位加總；C1 修正，
+2026-08-03 Round 2 二次覆核修正口徑）
 
-**先前版本「三家錯誤率全 0%」不成立**——只統計了 IDC 側，未檢查
-`gcp_side.thread_results.*.error_count`。以下為 IDC／GCP 兩側分開的
-全檔位（16/32/64/128 五輪加總）錯誤率：
+**先前版本（含 2026-08-03 Round 1 修正）仍不成立**——Round 1 已補上
+GCP 側，但 **IDC 側誤用 `NEW_ORDER.error_count`/`NEW_ORDER.total_count`
+冒充「五種 transaction 全加總」**，造成 IDC/GCP 口徑不對稱（IDC 只算
+NEW_ORDER、GCP 卻是五種或兩種 transaction 加總）。
 
-| Profile | DB | IDC error（count/total） | GCP error（count/total） |
-|---|---|---:|---:|
-| A-S | TiDB | 0/1,169,077 = 0% | n/a（GCP client 未發負載） |
-| A-S | YBDB | 0/180,741 = 0% | n/a |
-| A-S | CRDB | 0/888,719 = 0% | n/a |
-| A-A-RO | TiDB | 8/833,276 ≈ 0.00096% | 1,190/1,481,960 ≈ 0.0803% |
-| A-A-RO | YBDB | 0/690,879 = 0% | 1,185/3,671,772 ≈ 0.03227% |
-| A-A-RO | CRDB | 0/874,860 = 0% | 1,150/3,606,553 ≈ 0.03189% |
-| A-A | TiDB | 0/654,355 = 0% | 885/561,823 ≈ 0.15752% |
-| A-A | YBDB | 0/628,431 = 0% | 799/595,090 ≈ 0.13427% |
-| A-A | CRDB | 0/634,863 = 0% | 1,146/1,029,056 ≈ 0.11136% |
+### Canonical 口徑（依 `tests/common/summary-from-stdout.py:128-131`）
+
+```text
+all_txn error rate = all_txn.error_count / (all_txn.total_count + all_txn.error_count)
+```
+
+`all_txn` 必須是 NEW_ORDER + PAYMENT + DELIVERY + ORDER_STATUS +
+STOCK_LEVEL 五種 transaction 的加總（IDC 側 `summary.json` 已內建
+`thread_results.<th>.all_txn` 欄位；GCP 側唯讀 profile 只有
+ORDER_STATUS/STOCK_LEVEL 兩種，A-A 則五種皆有但**沒有**內建
+`all_txn`，需手動加總 `gcp_side.thread_results.<th>` 下對應
+transaction 欄位）。以下數字為 16/32/64/128 四檔位加總，逐欄標明
+「errors / successful transactions；rate」，不再用模糊的
+`count/total`：
+
+| Profile | DB | IDC errors / successes | IDC rate | GCP errors / successes | GCP rate |
+|---|---|---:|---:|---:|---:|
+| A-S | TiDB | 0 / 2,598,366 | 0% | n/a（GCP client 未發負載） | n/a |
+| A-S | YugabyteDB | 0 / 401,413 | 0% | n/a | n/a |
+| A-S | CockroachDB | 0 / 1,976,705 | 0% | n/a | n/a |
+| A-A-RO | TiDB | 12 / 1,850,283 | 0.000649% | 1,190 / 1,481,960 | 0.080235% |
+| A-A-RO | YugabyteDB | 0 / 1,538,004 | 0% | 1,185 / 3,671,772 | 0.032263% |
+| A-A-RO | CockroachDB | 0 / 1,946,407 | 0% | 1,150 / 3,606,553 | 0.031876% |
+| A-A | TiDB | 0 / 1,455,353 | 0% | 885 / 561,823 | 0.157275% |
+| A-A | YugabyteDB | 0 / 1,396,294 | 0% | 799 / 595,090 | 0.134085% |
+| A-A | CockroachDB | 0 / 1,410,538 | 0% | 1,146 / 1,029,056 | 0.111240% |
+
+**修正對照**：TiDB A-A-RO IDC 側先前誤寫為「8/833,276 ≈ 0.00096%」
+（NEW_ORDER-only），正確為「12/1,850,283 ≈ 0.000649%」（all_txn）。
+其餘 DB 的 NEW_ORDER-only 分母同樣小於 all_txn 分母，但因 error_count
+本身為 0，比例仍是 0%，數值判讀不變、僅分母/分子的可追溯性需更正。
+GCP 側（A-A-RO 的 ORDER_STATUS+STOCK_LEVEL、A-A 的五種 transaction
+加總）先前即為正確口徑，不受本次修正影響。
+
+若各 thread table 保留「錯誤率」欄，須明示是 `all_txn.error_rate_pct`
+（單一檔位口徑），不要與本節的全檔位（16-128 四檔加總）口徑混寫；例如
+TiDB A-A-RO **th=128 單檔**的 canonical all-txn rate 是
+`summary.json` 內建的 `0.004%`，與本節「全檔位加總 0.000649%」是
+不同分母的兩個數字，不可互相取代引用。
+
+### 採用 suite source map
+
+| Profile | DB | `summary.json` |
+|---|---|---|
+| A-S | TiDB | [tidb-vm-6node-P-B-rc-20260727T223650+0800/summary.json](../results/x-cross/smoke/early-runs/20260727T223650+0800/tidb-vm-6node-P-B-rc-20260727T223650+0800/summary.json) |
+| A-S | YBDB | [ybdb-vm-6node-P-B-rc-20260727T223650+0800/summary.json](../results/x-cross/smoke/early-runs/20260727T223650+0800/ybdb-vm-6node-P-B-rc-20260727T223650+0800/summary.json) |
+| A-S | CRDB | [crdb-vm-6node-P-B-rc-20260727T223650+0800/summary.json](../results/x-cross/smoke/early-runs/20260727T223650+0800/crdb-vm-6node-P-B-rc-20260727T223650+0800/summary.json) |
+| A-A-RO | TiDB | [tidb-vm-6node-P-B-aaro-rc-20260730T094406+0800/summary.json](../results/x-cross/smoke/early-runs/20260730T094406+0800/tidb-vm-6node-P-B-aaro-rc-20260730T094406+0800/summary.json) |
+| A-A-RO | YBDB | [ybdb-vm-6node-P-B-aaro-rc-20260730T094406+0800/summary.json](../results/x-cross/smoke/early-runs/20260730T094406+0800/ybdb-vm-6node-P-B-aaro-rc-20260730T094406+0800/summary.json) |
+| A-A-RO | CRDB | [crdb-vm-6node-P-B-aaro-rc-20260730T094406+0800/summary.json](../results/x-cross/smoke/early-runs/20260730T094406+0800/crdb-vm-6node-P-B-aaro-rc-20260730T094406+0800/summary.json) |
+| A-A | TiDB | [tidb-vm-6node-P-B-aa-rc-20260731T204801+0800/summary.json](../results/x-cross/smoke/early-runs/20260731T204801+0800/tidb-vm-6node-P-B-aa-rc-20260731T204801+0800/summary.json) |
+| A-A | YBDB | [ybdb-vm-6node-P-B-aa-rc-20260731T204801+0800/summary.json](../results/x-cross/smoke/early-runs/20260731T204801+0800/ybdb-vm-6node-P-B-aa-rc-20260731T204801+0800/summary.json) |
+| A-A | CRDB | [crdb-vm-6node-P-B-aa-rc-20260731T204801+0800/summary.json](../results/x-cross/smoke/early-runs/20260731T204801+0800/crdb-vm-6node-P-B-aa-rc-20260731T204801+0800/summary.json) |
 
 **GCP 側錯誤組成**（抽查各 profile 全部 `go-tpc-stdout-gcp.txt` 的
-`failed` 訊息分類，非精確逐筆窮舉）：
+`failed` 訊息，非可重現的逐筆去重統計，**不支持精確百分比**）：
 
-- 主要（合計 >85%）由 `context deadline exceeded` / `query execution
-  canceled`（CRDB 用語）構成——這是每輪（`RUN_SEC`）計時結束時 go-tpc
-  對尚在執行中的 worker 發出取消訊號的收尾行為，非交易邏輯錯誤。
+- 抽查中最常見的是 `context deadline exceeded` / `query execution
+  canceled`（CRDB 用語）——這是每輪（`RUN_SEC`）計時結束時 go-tpc 對
+  尚在執行中的 worker 發出取消訊號的收尾行為，非交易邏輯錯誤；但目前
+  **沒有**去重規則（同一 error 常被 go-tpc 印兩次）與逐筆計數腳本，
+  不能寫成「合計 >85%」這類精確比例，也**不能**由 raw log 行數直接
+  一對一回推 `summary.json` 的 `error_count`。
 - 次要有一批 `sql: connection is already closed`／
   `pq: canceling statement due to user request`，屬連線層錯誤，
   尚未逐筆追查觸發原因（**pending validation**）。
-- **CRDB A-A** 額外出現 2 筆 `TransactionRetryError`（`RETRY_ASYNC_WRITE_FAILURE`，
-  read-committed retry limit exceeded）——這是交易層的序列化衝突重試
-  失敗，數量極少（2/1,029,056），列為觀察，不影響整體判定。
+- **CRDB A-A** 額外出現 `TransactionRetryError`（`RETRY_ASYNC_WRITE_FAILURE`，
+  read-committed retry limit exceeded）——raw log 命中 4 次文字列，
+  但屬**兩個 distinct transaction events**各被 go-tpc 重複列印兩次
+  （非四筆獨立錯誤事件），是交易層的序列化衝突重試失敗，列為觀察，
+  不影響整體判定。
 - **TiDB A-A th=128 round-2** 額外出現交易鎖錯誤（見 §3 C2），與上述
   收尾類錯誤性質不同、單獨列出。
+- 待補：一支可重現的分類腳本（定義去重規則、pattern、分母，輸出每
+  DB/profile count）才能把上述「抽查中最常見」升級為可引用的精確比例
+  （**pending validation**）。
 
 即使收尾類錯誤佔多數，**GCP 側錯誤率本身仍是非零**，不可寫成
 「全程 0 error」；上表數字才是可追溯的口徑。

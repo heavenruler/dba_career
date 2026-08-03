@@ -2098,12 +2098,21 @@ A-A profile（`tpmC_mean` 真實值而非 null、`gcp_side.profile` 接受
 > 未排除總 concurrency／mix 等混淆因素，不可稱已確認根因）；本節
 > 上方「三家 IDC 側全程 0 error」亦有缺漏，GCP 側全檔位錯誤率
 > 三家皆非零（TiDB≈0.08%／YBDB≈0.032%／CRDB≈0.032%，主要為
-> `context deadline exceeded` 收尾類錯誤）。更正版結論見
-> `XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md`（已同步更正）與
-> `XCROSS-PB-ALL-WORKLOADS-SUMMARY.md`。
+> `context deadline exceeded` 收尾類錯誤）。上方查證 1-4 點亦為
+> 當時判讀，經 Round 2 覆核後同步降級：第 1 點「排除本地資源耗盡」
+> 只排除了該次採樣的 IDC dbhost CPU/記憶體，GCP 節點/所有 TiKV
+> 節點/磁碟/WAN/queue-lock wait 皆未採集，不是全稱排除；第 3 點
+> 「觸發 TxnLockNotFound 重試風暴」中的「TTL 到期」是與 PingCAP
+> 官方文件語意相容的候選機制、非本批次逐一核實的具體因果，「重試
+> 風暴」改為中性的「8 個 distinct lock resolution 失敗事件」（round-3
+> 6 起、round-4 2 起，raw log 每起印兩次）；第 4 點「兩者 th=128
+> 五輪皆穩定」改為「range/mean 遠低於 TiDB 本檔位，但未定義穩定
+> 門檻」。更正版結論見 `XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md`
+> （已同步更正）與 `XCROSS-PB-ALL-WORKLOADS-SUMMARY.md`。
 
 **Last updated**：2026-07-31 P-B×A-A-RO 三家 PASS 並歸檔、TiDB th=128
-跨區鎖競爭崩潰已定位根因並記錄；P-B×A-A 執行前置阻擋（GCP 側
+跨區鎖競爭崩潰現象已記錄（2026-08-03 更正：「已定位根因」為當時判讀，
+已降級為假說，見上方事實修正記錄）；P-B×A-A 執行前置阻擋（GCP 側
 read-only 誤擋）已修復，driver 已新增，準備部署執行。
 **Next review**：P-B×A-A 正式 W=128 全輪待觸發驗證修法是否確實解決
 （重點觀察 GCP 側寫入交易是否成功、無 read-only 相關報錯）；TiDB
