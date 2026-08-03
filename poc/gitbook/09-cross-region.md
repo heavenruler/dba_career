@@ -4,7 +4,7 @@
 
 **決策影響：** 可確認跨區 framework、placement 與量測紀律的下一步；不得產生跨區產品排名、WAN penalty 或正式 RTO/RPO 承諾。
 
-**最後驗證：** 2026-07-21（首次驗證 2026-07-15）。`X-CROSS` 是 `baseline_eligible: false` 的探索 scope，資料原始檔仍留在 `results/x-cross/`。
+**最後驗證：** 2026-08-01（首次驗證 2026-07-15；2026-08-03 事實覆核修正）。`X-CROSS` 是 `baseline_eligible: false` 的探索 scope，資料原始檔仍留在 `results/x-cross/`。P-A 三 workload（A-S、A-A-RO 修正後、A-A 尚未執行）與 P-B 三 workload（A-S、A-A-RO、A-A，07-27～08-01 完成）皆屬此 scope。
 
 本章縮寫：**P-A**＝placement 變體 A（leader/lease 固定在 IDC、GCP 持 1 份 voter 副本）；**A-S**＝Active-Standby workload（流量只打 IDC 端）；**t128**＝128 執行緒檔位；**N=1**＝每 cell 僅一次有效量測。
 
@@ -46,8 +46,8 @@ flowchart TB
 | 分類 | 內容 | 可用範圍 |
 |---|---|---|
 | 官方能力 | 跨區 placement、就近讀寫與 follower/stale read 是需由各引擎設定與驗證的能力面 | 僅作架構選項與測試設計依據，不保證零跨區流量或延遲 |
-| 計畫中的設定 | P-A/P-B placement、A-S/A-A-RO/A-A profile 與 stale follower read 的取捨 | `PLANNED`，不可寫成已驗證功能結果 |
-| PoC 證據 | framework、determinism，以及三家各一個 W=128 P-A/A-S cell（含 GCP 副本存在與 near-read probe 證據） | 僅為 X-CROSS 內部探索與後續測試的起點，不作跨家排名 |
+| 計畫中的設定 | P-A×A-A（雙端讀寫、同 warehouse contention）尚未執行 | `PLANNED`，不可寫成已驗證功能結果 |
+| PoC 證據 | framework、determinism，以及三家各一個 W=128 P-A/A-S cell（含 GCP 副本存在與 near-read probe 證據）；三家各一個 W=128 P-B/A-S、P-B/A-A-RO、P-B/A-A cell（見下節） | 僅為 X-CROSS 內部探索與後續測試的起點，`N=1`，不作跨家排名 |
 
 跨區 scope 的拓樸、測項與禁止跨 family 比值規則見[manifest](../phase-crossregion/manifest.yaml)與[決策紀錄](../phase-crossregion/decisions-2026-06-08.md)。
 
@@ -87,6 +87,20 @@ W=128 主資料點：三家各有一個修正後有效 cell（皆 `N=1`）＋一
 | P-A/A-S 是可執行的測試路徑 | 相對 S-BASE 的 WAN penalty | 節點數、quorum、硬體與 topology 都不同，非 paired control |
 | 同 cluster 的低變異可被觀測 | RTO/RPO 或故障可用性 | 尚須獨立 failover/chaos 實驗與量測 |
 
+## P-B placement 與已有可引用資料
+
+**P-B**＝跨區分散 placement（leader 30-70% 混合分布於 IDC/GCP，非 P-A 的 IDC 固定 leader）。P-B 三 workload（A-S、A-A-RO、A-A）已各完成一次 W=128 三家同批正式執行（採用批次：A-S `20260727T223650+0800`、A-A-RO `20260730T094406+0800`、A-A `20260731T204801+0800`）。
+
+- [本 PoC 實測｜N=1｜fact] **錯誤率**：IDC 側三家在 A-S/A-A-RO/A-A 皆維持 0～0.001% 等級；**GCP 側全檔位錯誤率三家皆非零**（A-A-RO：TiDB≈0.08%／YBDB≈0.032%／CRDB≈0.032%；A-A：TiDB≈0.158%／YBDB≈0.134%／CRDB≈0.111%），主要為 round 收尾類錯誤（`context deadline exceeded` 等），CRDB A-A 另有 2 筆交易層 `TransactionRetryError`。A-S 因 GCP client 未發負載，GCP 側錯誤率為 n/a。逐項數字見[P-B 三 workload 彙整 §2](../phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md#2-錯誤率fact)。
+- [本 PoC 實測｜N=1｜fact] **TiDB 高併發吞吐**：A-A-RO 與 A-A 兩個 profile 在 th=128 皆出現吞吐劣化（A-A-RO 五輪 tpmC：9003.0, 14948.5, 2113.0, 953.7, 1480.2，R3-R5 持續低迷未在該五輪內恢復）；A-A th=128 round-2 GCP 端 raw stdout 命中 `PessimisticLockNotFound`／`LockTsMismatch`（單一輪次單一命中，見[raw stdout](../results/x-cross/smoke/early-runs/20260731T204801+0800/tidb-vm-6node-P-B-aa-rc-20260731T204801+0800/runs/threads-128/round-2/go-tpc-stdout-gcp.txt)）。
+- [inference，非已確認] 上述現象與「P-B 跨區混合 leader + Percolator 悲觀鎖競爭」假說相容，但 A-S（IDC-only 128 threads）與 A-A-RO/A-A（IDC 128 + GCP 128 = 256 threads）的 total offered concurrency 與 mix 不同、各 profile 僅 `N=1`，**不可**推論為已排除單純執行緒數過高、已定位根因、或 A-A 比 A-A-RO 更容易觸發。待驗證的最小控制實驗清單見[P-B 三 workload 彙整 §3.3](../phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md#33-尚待驗證)。
+- [本 PoC 實測｜N=1｜fact] YBDB／CRDB 在三個 profile 的 tpmC mean 曲線多可隨併發擴展（YBDB A-A-RO mean 單調遞增、無中段 dip），但多個檔位 round 間 range/mean 偏高，round-level repeatability 尚未建立，不可稱「皆穩定、正常雜訊」。
+- [本 PoC 實測｜N=1｜fact] Placement gate 僅證明 prepare-time 3 表（warehouse/district/customer）抽樣通過 30-70% 窗口；唯一的 post-run 全表證據為 CRDB A-S 的 `leader-snapshot`（idc=24/gcp=24=50%），其餘 profile／DB 無 post-run 全 9 表證據。
+- 完整分析與逐項連結見[P-B×A-S](../phase-crossregion/XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md)、[P-B×A-A-RO](../phase-crossregion/XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md)、[P-B×A-A](../phase-crossregion/XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md) 結案草稿，以及[三 workload 彙整](../phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)。
+- **P-A 與 P-B 跨 placement 逐檔位對照**（A-S、A-A-RO 兩個有雙邊實測數據的 profile；A-A 因 P-A×A-A 未執行無法比較）見[P-A vs P-B 最終比較報告](../phase-crossregion/XCROSS-PA-VS-PB-FINAL-COMPARISON.md)——**fact**：多數已測 cell（尤其低併發檔位）P-B tpmC 並未低於 P-A，與 pre-sweep 預測方向不符，僅 TiDB th=128（A-A-RO/A-A）與 YBDB（A-S）出現明顯劣化；**inference**：與跨區鎖競爭假說相容但未經控制實驗證實，兩 placement 批次非同批同時執行，比較仍是觀察性而非 paired control。
+
+以上皆為 `N=1`、`baseline_eligible=false` 的 X-CROSS 內部資料，不構成跨家排名，也不可由 P-A 結果外推。
+
 ```mermaid
 flowchart LR
   A[Placement P-A/P-B] --> B[Workload A-S/A-A-RO/A-A]
@@ -102,15 +116,15 @@ flowchart LR
 
 | 決策需求 | 可用設計／證據 | 必要 gate | 目前狀態 |
 |---|---|---|---|
-| 單主寫入與遠端讀 | A-S + placement P-A/P-B | leader/locality、time sync、WAN、metrics completeness | 部分已跑；不可外推 |
-| 讀多寫少且可接受陳舊 | A-A-RO + stale follower read 設計 | staleness、fallback、讀寫 client locality | 正式 W=128 三家已完成（07-20/21，0 錯誤，[A-A-RO 結案報告](../phase-crossregion/XCROSS-AARO-CLOSING-REPORT-DRAFT.md)）；smoke 前置見[SMOKE-AARO-SUMMARY.md](../phase-crossregion/SMOKE-AARO-SUMMARY.md) |
-| 兩端同時寫 | A-A profile | 衝突、跨區 commit、placement 與壓力隔離 | 計畫中 |
+| 單主寫入與遠端讀 | A-S + placement P-A/P-B | leader/locality、time sync、WAN、metrics completeness | P-A、P-B 各已完成一次 W=128（`N=1`）；不可外推至 A-A-RO/A-A |
+| 讀多寫少且可接受陳舊 | A-A-RO + stale follower read 設計 | staleness、fallback、讀寫 client locality | P-A 正式 W=128 三家已完成（07-20/21，[A-A-RO 結案報告](../phase-crossregion/XCROSS-AARO-CLOSING-REPORT-DRAFT.md)）；P-B×A-A-RO 亦已完成一次（07-30，GCP 側錯誤率非零、TiDB th=128 劣化，[P-B×A-A-RO 結案報告](../phase-crossregion/XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md)）；smoke 前置見[SMOKE-AARO-SUMMARY.md](../phase-crossregion/SMOKE-AARO-SUMMARY.md) |
+| 兩端同時寫 | A-A profile | 衝突、跨區 commit、placement 與壓力隔離 | P-B×A-A 已完成一次（07-31，[P-B×A-A 結案報告](../phase-crossregion/XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md)）；P-A×A-A 仍計畫中 |
 | 宣稱 WAN cost | IDC-only 六節點 paired control | 同硬體、同 quorum、同 W、同 workload | 未完成 |
 | 宣稱 DR 數字 | failover/chaos scenario | RTO/RPO 方法、故障注入、資料完整性驗證 | 未完成 |
 
 ## 待決事項
 
-- 依 `P-A` 後 `P-B` 的順序完成 placement × workload × 引擎矩陣，保留每 cell 的 full rebuild 與採樣完整性證據。
+- `P-A` 三 workload（A-A 除外）與 `P-B` 三 workload（A-S/A-A-RO/A-A）已各完成一次 W=128；剩餘缺口為 P-A×A-A，以及 P-B TiDB 高併發劣化假說的最小控制實驗（見上節）。
 - 建立 IDC-only 六節點 paired control；在此之前禁止計算或陳述 WAN penalty。
 - 將 A-A 的寫入衝突、stale read 的實際 staleness/fallback、以及 C1/C4/C7 故障情境各自量測。
 - 將跨區結果與 `S-BASE`、`S-K8S`、`T-THRD` 保持路徑與主表隔離，規則見[PHASES](../results/PHASES.md)。

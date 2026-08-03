@@ -9,16 +9,22 @@
 
 ## 1. 執行摘要
 
-| DB | IDC tpmC@128 | GCP tpmC@128 | 錯誤率 | Placement gate |
-|---|---:|---:|---:|---|
-| **TiDB** | 4,413.9（⚠ 見 §3 高併發劣化） | 2,966.6 | 0% | idc=10/19（52%）PASS |
-| **YBDB** | 11,605.5 | 3,379.9 | 0% | idc=2/3（66%）PASS |
-| **CRDB** | 9,880.6 | 5,704.9 | 0% | idc=7/12（58%）PASS |
+| DB | IDC tpmC@128 | GCP tpmC@128 | IDC 錯誤率 | GCP 錯誤率 | Placement gate |
+|---|---:|---:|---:|---:|---|
+| **TiDB** | 4,413.9（⚠ 見 §3 高併發劣化） | 2,966.6 | 0% | ≈0.158% | idc=10/19（52%）PASS |
+| **YBDB** | 11,605.5 | 3,379.9 | 0% | ≈0.134% | idc=2/3（66%）PASS |
+| **CRDB** | 9,880.6 | 5,704.9 | 0% | ≈0.111% | idc=7/12（58%）PASS |
 
-三家全程 **0 error**（16/32/64/128 四檔位、每檔 5 輪皆無交易錯誤）。P-B
-placement gate 三家皆落在 30-70% 窗口內通過。**TiDB 在高併發（th=64/128）
-出現明顯吞吐劣化**（tpmC 隨執行緒數增加反而下降），YBDB／CRDB 皆正常
-擴展（tpmC 隨併發數增加）——本輪最重要發現，詳見 §3。
+**錯誤率修正（2026-08-03）**：先前版本寫「三家全程 0 error」不成立，
+只檢查了 IDC 側；**GCP 側錯誤率三家皆非零**（885/561,823、
+799/595,090、1,146/1,029,056，全檔位加總，口徑見
+`XCROSS-PB-ALL-WORKLOADS-SUMMARY.md` §2），主要由 `context deadline
+exceeded`（round 收尾取消）構成，CRDB 另有 2 筆
+`TransactionRetryError` 序列化重試失敗。P-B placement gate 三家皆落在
+30-70% 窗口內通過（僅代表 prepare-time 抽樣，見 §6）。**TiDB 在高
+併發（th=64/128）出現明顯吞吐劣化**（tpmC 隨執行緒數增加反而下降），
+YBDB／CRDB mean 曲線隨併發數增加而成長——現象觀察詳見 §3，因果尚待
+驗證。
 
 ## 2. 測試目的與範圍
 
@@ -44,12 +50,19 @@ tpmC 在 th=32 見頂（8,868.2）後於 th=64/128 反而下滑，NEW_ORDER p99
 從 th=16 的 313.7ms 一路衝到 th=128 的 5,019.7ms（16 倍），
 `tpmC_range_mean_pct` 在 th=64/128 皆超過 100%（5 輪間變異度極大）。
 
-**與 P-B×A-A-RO 的 th=128 崩潰相比**：本輪 TiDB 錯誤率仍是 0%（未見
-`TxnLockNotFound` 之類的重試風暴訊號），是「持續劣化」而非「崩潰後
-恢復」的形態——判斷是同一根因（P-B 跨區混合 leader + TiDB percolator
-兩階段悲觀鎖）在 **A-A 場景下更容易長期發生**，因為 A-A 的 IDC/GCP
-兩端寫入同一組 warehouse 範圍（Q5 max contention 設計），跨區鎖競爭
-的觸發頻率天生比 A-A-RO（GCP 端唯讀，不寫）高得多。
+**修正（2026-08-03）**：先前版本寫「本輪 TiDB 錯誤率仍是 0%（未見
+`TxnLockNotFound` 之類的重試風暴訊號）」與 raw artifact 矛盾——
+[`runs/threads-128/round-2/go-tpc-stdout-gcp.txt`](../results/x-cross/smoke/early-runs/20260731T204801+0800/tidb-vm-6node-P-B-aa-rc-20260731T204801+0800/runs/threads-128/round-2/go-tpc-stdout-gcp.txt)
+第 26-27 行確實包含
+`PessimisticLockNotFound { ..., reason: LockTsMismatch }`，是與
+A-A-RO 那次 `TxnLockNotFound` 同性質的鎖解析錯誤訊號。此為**單一輪次
+的單一命中**（僅此檔案出現，其餘輪次/檔位未見同款訊息），可作為
+「跨區鎖競爭確實會發生」的存在性證據，**但不能據此宣稱已證明其造成
+整體吞吐劣化**，也不能倒推「A-A 比 A-A-RO 更容易觸發」——兩個 profile
+各只有 N=1，總 offered concurrency 與 workload mix 皆不同，尚未做過
+控制對照，無法排序何者「更容易觸發」。與 A-A-RO 的差異僅能客觀描述
+為：A-A-RO 該檔位是「崩潰後未在 5 輪內恢復」，A-A 是「持續性緩慢
+劣化」，兩者現象型態不同，但何者反映更嚴重的根因尚待驗證。
 
 ### YBDB／CRDB 對照
 
@@ -60,19 +73,23 @@ tpmC 在 th=32 見頂（8,868.2）後於 th=64/128 反而下滑，NEW_ORDER p99
 | 64 | 9,135.8 | 6,593.8 |
 | 128 | 11,605.5 | 9,880.6 |
 
-兩家皆隨執行緒數增加而**正常擴展**（YBDB 僅 th=32 有小幅回落，之後
-強勢回升；CRDB 全程單調遞增），未見 TiDB 這種持續性劣化。與
-`XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md` §3 的判斷一致：**TiDB
-percolator 式兩階段悲觀鎖在 P-B 跨區混合 leader 下對高併發特別敏感，
-YBDB（tablet leader）／CRDB（per-range lease）的併發控制機制較不受
-影響**。
+兩家 mean tpmC 皆隨執行緒數增加而成長（YBDB th=32 有小幅回落後在
+th=64/128 回升；CRDB 單調遞增），未見 TiDB 這種持續性劣化。
+`tpmC_range_mean_pct` 在 th=32/64 仍偏高（YBDB 66.0%／46.0%，見
+`XCROSS-PB-ALL-WORKLOADS-SUMMARY.md` §4），mean 曲線可擴展不代表
+round-level 已證明穩定。
 
-### 判定
+### 判定（fact + inference，2026-08-03 依 raw artifact 覆核後降級為假說）
 
-**P-B 對 TiDB 在高併發檔位存在真實的效能限制，且 A-A（雙寫滿載）比
-A-A-RO（單邊唯讀）更容易觸發**——這是兩輪 W=128 正式測試一致收斂的
-結論，建議正式評估報告明確標注此限制，並列為後續 TiDB 專項調校
-（`tidb_lock_ttl`、悲觀鎖重試策略）的優先項。
+**Fact**：兩個雙側負載批次（A-A-RO、A-A）都觀察到 TiDB 在高併發檔位
+的吞吐劣化與高輪間變異，且 raw log 皆有跨區鎖路徑錯誤的存在性證據
+（`TxnLockNotFound`／`PessimisticLockNotFound`）。**Inference**：現象
+與「P-B 跨區混合 leader 下的悲觀鎖競爭」相容，但兩個 profile 各僅
+N=1、總 offered concurrency 與 mix 不同，尚未排除總執行緒數、批次
+雜訊等混淆因素，**不可寫成已確認根因，也不可排序哪個 profile
+「更容易觸發」**。建議正式評估報告依
+`XCROSS-PB-ALL-WORKLOADS-SUMMARY.md` §3.3 的控制實驗設計驗證因果後，
+再列為 TiDB 專項調校（`tidb_lock_ttl`、悲觀鎖重試策略）的優先項。
 
 ## 4. IDC 側完整結果
 
@@ -114,7 +131,15 @@ A-A-RO（單邊唯讀）更容易觸發**——這是兩輪 W=128 正式測試�
 
 GCP 側 TiDB 同樣在 th=64→128 出現吞吐停滯（2,978.3→2,966.6，幾乎打平）
 且 NEW_ORDER p99 從 th=16 的 677.8ms 衝到 th=128 的 5,717.6ms，與 IDC
-側劣化同步發生，佐證 §3 的跨區鎖競爭判定（雙端互相阻塞，非單側問題）。
+側劣化同步發生，現象上與「雙端互相阻塞」相容，但如 §3 所述尚未經
+控制實驗確認因果。
+
+**GCP 側全檔位錯誤率**（口徑見 §1／`XCROSS-PB-ALL-WORKLOADS-SUMMARY.md`
+§2）：TiDB≈0.158%、YBDB≈0.134%、CRDB≈0.111%，皆非 0，主要由
+`context deadline exceeded`／`query execution canceled`（round 收尾
+取消）構成；CRDB 另有 2 筆 `TransactionRetryError`（read-committed
+retry limit exceeded）序列化重試失敗，數量極少但屬交易層錯誤，非
+收尾類。
 
 ## 6. Placement Gate 驗證
 
@@ -124,23 +149,28 @@ GCP 側 TiDB 同樣在 th=64→128 出現吞吐停滯（2,978.3→2,966.6，幾�
 - YBDB：idc=2/3（66%）PASS
 - CRDB：idc=7/12（58%）PASS
 
-與 P-B×A-S、P-B×A-A-RO 兩輪數字一致，確認 P-B 修復設計（雙 policy／雙
-tablespace+enforcer／雙 lease_preferences+partition）在 A-A profile 下
-同樣有效，不受 workload 類型影響。
+與 P-B×A-S、P-B×A-A-RO 兩輪數字一致，顯示同一套 P-B 修復設計（雙
+policy／雙 tablespace+enforcer／雙 lease_preferences+partition）在
+三個 profile 的 **prepare-time 抽樣**下皆通過 gate。此僅證明 prepare
+完成當下抽樣通過 30-70% 窗口，不代表 workload 執行期間或全 9 表分佈
+情形（唯一的 post-run 全表證據是 P-B×A-S 的 CRDB 一項，不外推至
+本輪，見 `XCROSS-PB-ALL-WORKLOADS-SUMMARY.md` §5）。
 
 ## 7. 已知限制
 
-- **TiDB 高併發劣化**（§3）為本輪最重要待跟催項目，與 A-A-RO 輪的
-  th=128 崩潰同根因，建議排入 TiDB 專項調校（悲觀鎖重試策略、
-  `tidb_lock_ttl`）。
+- **TiDB 高併發劣化**（§3）為本輪最重要待跟催項目，現象與 A-A-RO 輪
+  的 th=128 崩潰相容於同一假說（跨區鎖競爭），但兩者根因是否相同
+  尚未經控制實驗確認，建議排入 §3 所述控制實驗，再排 TiDB 專項調校
+  （悲觀鎖重試策略、`tidb_lock_ttl`）。
 - 本次 W=128 P-B×A-A 執行前歷經多次波折：首發撞上 WAN 專線壅塞
   （iperf3 量到 178Mbps vs 基準 ~300Mbps）中止重來；YBDB deploy 撞上
   VM 預設 `/usr/bin/python3` 指向 3.6（`yugabyted` 需要 3.7+ 的
   `dataclasses`），已透過 `alternatives --set python3 python3.12`
   修復；過程中多次 SSH/VPN 間歇性中斷，皆判斷為連線層問題、driver
   本身未受影響。完整過程見 `SESSION-HISTORY.md` 2026-07-31/08-01 節。
-- 三家 W=128 P-B 三種 workload（A-S、A-A-RO、A-A）至此全數完成，P-B
-  placement 對三家資料庫的行為特徵已有完整交叉驗證基礎。
+- 三家 W=128 P-B 三種 workload（A-S、A-A-RO、A-A）**執行矩陣已跑過
+  一次**（各 N=1）；重現性與因果仍待 §3 所述控制實驗，橫向彙總與
+  caveat 見 `XCROSS-PB-ALL-WORKLOADS-SUMMARY.md`。
 
 ## 8. Artifact 路徑
 

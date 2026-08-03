@@ -126,7 +126,7 @@ flowchart TB
 | 07-21～07-23 | 近讀修正與補驗 | 修正三家近讀條件、go-tpc read-only 行為與 fail-closed 檢查 | ✅ |
 | 07-23～07-24 | P-A×A-A-RO 第二輪 | 三家同批 W=128 全輪完成，改採近讀修正後結果 | ✅ `N=1` |
 | 待排程 | P-A×A-A | 雙端讀寫與同 warehouse contention | ⚪ |
-| 待排程 | P-B 全 workload | A-S、A-A-RO、A-A | ⚪ |
+| 07-27～08-01 | P-B 全 workload（A-S、A-A-RO、A-A） | 三家同批 W=128 全輪完成；TiDB 高併發吞吐劣化目前僅列假說 | ✅ `N=1`，探索性 |
 | 待排程 | Chaos／failover | C1、C4、C7 與 F1 RTO/RPO | ⚪ |
 
 前半段詳細 commit 與技術歷程見
@@ -274,9 +274,9 @@ flowchart LR
 | P-A | A-A-RO 初輪 | ⚠️ | ⚠️ | ⚠️ | 雙端全輪完成，但近讀設定未實際生效 |
 | P-A | A-A-RO 修正後 | ✅ | ✅ | ✅ | 同批 W=128、近讀修正後完成；`N=1` |
 | P-A | A-A | ⚪ | ⚪ | ⚪ | 尚無正式結果 |
-| P-B | A-S | ⚪ | ⚪ | ⚪ | gate／腳本準備不等於 workload 完成 |
-| P-B | A-A-RO | ⚪ | ⚪ | ⚪ | 尚無正式結果 |
-| P-B | A-A | ⚪ | ⚪ | ⚪ | 尚無正式結果 |
+| P-B | A-S | ✅ | ✅ | ✅ | 同批 W=128、`N=1`；GCP 端為全 RF voter 但無 GCP client 負載 |
+| P-B | A-A-RO | ✅ | ✅ | ✅ | 同批 W=128、`N=1`；TiDB th=128 吞吐劣化現象，根因僅列假說 |
+| P-B | A-A | ✅ | ✅ | ✅ | 同批 W=128、`N=1`；TiDB th=128 現象與 A-A-RO 相容但未證同根因 |
 
 X-CROSS 的 `baseline_eligible=false`；這些結果用於跨區能力與機制觀察，不進
 S-BASE 正式跨家排名。
@@ -285,12 +285,24 @@ P-A×A-A-RO 修正後採用批次為 `TPCC_TS=20260723T133843+0800`。三家均�
 雙側結果與近讀證據的 fail-closed 檢查；07-20 首輪僅保留作根因與修正歷程，
 不再作為正式採用數字。
 
+P-B 三 workload 採用批次：A-S `20260727T223650+0800`、A-A-RO
+`20260730T094406+0800`、A-A `20260731T204801+0800`。三者皆為 `N=1`、
+`baseline_eligible=false` 之探索性執行；GCP 側全檔位錯誤率非零（詳見
+各結案報告），TiDB 高併發吞吐劣化現象與跨區鎖競爭「相容」但尚未經
+控制實驗證實為根因，不可誇大為已排除其他混淆因素（見
+[P-B 三 workload 彙整](./phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)）。
+
 **主要證據**
 
 - [跨區決策](./phase-crossregion/decisions-2026-06-08.md)
 - [Pre-flight 計畫](./phase-crossregion/PRE-FLIGHT-TEST-PLAN-2026-06-17.md)
 - [P-A×A-S 結案報告](./phase-crossregion/XCROSS-CLOSING-REPORT-DRAFT.md)
 - [P-A×A-A-RO 結案草稿](./phase-crossregion/XCROSS-AARO-CLOSING-REPORT-DRAFT.md)
+- [P-B×A-S 結案草稿](./phase-crossregion/XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md)
+- [P-B×A-A-RO 結案草稿](./phase-crossregion/XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md)
+- [P-B×A-A 結案草稿](./phase-crossregion/XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md)
+- [P-B 三 workload 彙整](./phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)
+- [P-A vs P-B 最終比較報告](./phase-crossregion/XCROSS-PA-VS-PB-FINAL-COMPARISON.md)
 - [Cross-region 執行歷史](./phase-crossregion/SESSION-HISTORY.md)
 - [X-CROSS 結果索引](./results/x-cross/README.md)
 
@@ -312,7 +324,7 @@ P-A×A-A-RO 修正後採用批次為 `TPCC_TS=20260723T133843+0800`。三家均�
 
 **尚未完成**
 
-- P-B 與 A-A 正式結果。
+- P-A×A-A 正式結果（P-B 三 workload 已完成，見上節）。
 - Chaos／failover 真實演練與 RTO/RPO。
 - 三節點與跨區 `N=3` 獨立環境重現性。
 - 可供正式專案啟動的實際報價、維運人力與遷移演練數據。
@@ -329,7 +341,7 @@ P-A×A-A-RO 修正後採用批次為 `TPCC_TS=20260723T133843+0800`。三家均�
 | CockroachDB shard gate 失效 | v26.2 限制部分 `crdb_internal` 存取 | 改用 `SHOW RANGES FROM TABLE` | 5-cell suite 通過 | 版本升級需重驗 SQL |
 | Kubernetes cell 互相污染 | namespace、PVC/PV、CRD 與 local-path 殘留 | 獨立 namespace＋cleanup gate | 六組 suite 完成 | cleanup 需持續 fail-closed |
 | W=4 跨 run 變異過大 | warehouse 過少、鎖競爭與 cluster state 主導 | 改 W=128、正式 warmup、同批執行 | 7 月正式 W=128 收斂 | 仍多為 `N=1` |
-| CRDB／YBDB GCP 零副本 | placement、join 與 replica gate 不完整 | 修 placement＋GCP replica fail-closed | 修正後 W=128 正式 cell | P-B 尚未驗證 |
+| CRDB／YBDB GCP 零副本 | placement、join 與 replica gate 不完整 | 修 placement＋GCP replica fail-closed | 修正後 W=128 正式 cell（P-A、P-B 皆已驗證） | P-B gate 僅證明 prepare-time 抽樣 PASS，非全 9 表全程證據 |
 | YugabyteDB master quorum race | cold reset 後 master/tserver flags 與 catalog 尚未收斂 | quorum gate＋catalog wait＋live flag readback | Stage 1 smoke 通過 | 長距離故障時仍需 DR 測試 |
 | A-A-RO 第一輪近讀未生效 | 三家「功能啟用」不等於 query 實際走 follower | 各家 session／transaction 修法＋執行面檢查 | 修正後三家同批 W=128 全輪完成 | 僅 `N=1`；YugabyteDB 約 28.3 秒 staleness 為已接受取捨 |
 | go-tpc read-only patch 誤傷 TiDB | 三家共用 binary，patch 未限制 driver | 只對 postgres 套 ReadOnly transaction | TiDB 第二輪 cell 通過 | patch 升級需三家回歸 |
@@ -348,13 +360,19 @@ P-A×A-A-RO 修正後採用批次為 `TPCC_TS=20260723T133843+0800`。三家均�
 - A-A-RO 第一輪證明雙端執行鏈可運作，也證明「設定存在」不足以證明就近讀。
 - P-A×A-A-RO 修正後三家已完成同批 W=128；可用於目前近讀設定下的
   X-CROSS 探索性觀察，但仍受 `N=1` 與各家 staleness 語意限制。
+- P-B 三 workload（A-S/A-A-RO/A-A）三家已各完成一次同批 W=128；GCP 側
+  全檔位錯誤率三家皆非零，TiDB 於 A-A-RO/A-A 的 th=128 皆出現吞吐劣化
+  現象，與跨區鎖競爭假說相容，但 `N=1`、各 profile 的 total offered
+  concurrency 與 mix 不同，非單變量對照，不可視為已確認根因。
 
 ### 不可下結論
 
 - 不可用 `N=1` 宣稱跨環境穩定重現。
 - 不可把 X-CROSS 數字放入 S-BASE 正式跨家排名。
 - 不可由 P-A 推論 P-B，也不可由 A-S 推論 A-A-RO 或 A-A。
-- 不可在 P-B、A-A、chaos、failover 尚未實跑前宣稱全矩陣或 HA/DR 完成。
+- 不可在 P-A×A-A、chaos、failover 尚未實跑前宣稱全矩陣或 HA/DR 完成。
+- 不可把 P-B TiDB 高併發吞吐劣化現象宣稱為「已定位根因」或「已排除執行緒數／mix 混淆因素」——目前只到假說階段，控制實驗待辦見
+  [P-B 三 workload 彙整 §3.3](./phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)。
 - 不可只靠原廠功能文件宣稱應用查詢已走預期資料路徑。
 
 ## 下一決策門檻
@@ -362,8 +380,8 @@ P-A×A-A-RO 修正後採用批次為 `TPCC_TS=20260723T133843+0800`。三家均�
 | 決策 | 必要證據 | 目前狀態 |
 |---|---|---|
 | A-A-RO 修法後結案 | 三家同批 W=128、雙側 summary、近讀執行面證據 | ✅ `TPCC_TS=20260723T133843+0800` |
-| 是否進 P-B | P-B placement gate、故障域模型、先行單家 smoke | ⚪ |
-| 是否進 A-A | 衝突模型、雙端寫入錯誤率、commit latency 與 rollback | ⚪ |
+| 是否進 P-B | P-B placement gate、故障域模型、先行單家 smoke | ✅ 三 workload 已完成（見 6.2） |
+| 是否進 P-A×A-A | 衝突模型、雙端寫入錯誤率、commit latency 與 rollback | ⚪ |
 | HA/DR 可用性 | C1/C4/C7、F1、RTO/RPO、資料一致性與回復紀錄 | ⚪ |
 | 三節點候選配置 | 候選 cell `N=3` 獨立重建與變異分析 | ⚪ |
 | Thread control 是否補測 | 先以單一 tuning profile、`N=1` 探索；不得混入 baseline | ⚪ |

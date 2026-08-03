@@ -1,9 +1,10 @@
 # X-CROSS P-B×A-S 結案報告（雛形）— IDC↔GCP Cross-Region 3-DB W=128 P-B Placement 正式測試
 
 > 目的：驗證 TiDB/YBDB/CRDB 三家 DB 在 6-node cross-region 拓樸下、**P-B
-> placement（散置 RF=3 全 voter、leader 跨區混合分佈 30-70%）**於
-> A-S（單邊標準 TPCC，無 GCP 側 read-only mix）profile 的正式 W=128
-> 效能基準。TS=`20260727T223650+0800`，執行順序 TiDB→YBDB→CRDB，
+> placement（散置 RF=3 全 voter、leader 跨區混合分佈 30-70%；GCP 端
+> DB 節點與 IDC 端一樣是全 RF voter，非 standby DB）**於 A-S（**GCP
+> client 端不發負載**，只有 IDC client 打標準 TPCC）profile 的 W=128
+> 執行結果。TS=`20260727T223650+0800`，執行順序 TiDB→YBDB→CRDB，
 > 三家皆 PASS 並已歸檔，VM 已 destroy。
 
 ## 1. 執行摘要
@@ -136,7 +137,11 @@ whole-table 的 placement policy（TiDB `PRIMARY_REGION`、YBDB
 
 ## 7. 已知限制
 
-- 本輪為 P-B×A-S 單一 workload；P-B×A-A、P-B×A-A-RO 尚未執行。
+- 本報告涵蓋 P-B×A-S 單一 workload（本輪截稿時 P-B×A-A、P-B×A-A-RO
+  尚未執行；兩者已於 2026-07-30/08-01 完成，數字見
+  `XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md`／
+  `XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md`，橫向彙總見
+  `XCROSS-PB-ALL-WORKLOADS-SUMMARY.md`）。
   `check-nearread.sh`/`check-nearread-realtxn.sh`/`sample-nearread-loop.sh`
   已補上 `--placement P-B` 分支（task #44，2026-07-30，見
   `SESSION-HISTORY.md` 同期節），P-B×A-A-RO 執行前置已就緒。

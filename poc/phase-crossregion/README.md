@@ -135,12 +135,17 @@ teardown-tidb         # 拆該 cell（同理 crdb / ybdb）
 | A/A | ✅ 完成且已採用 | `TPCC_TS=20260731T204801+0800` | IDC tpmC：TiDB 4,413.9（⚠ th=64/128 劣化，見報告 §3）／YBDB 11,605.5／CRDB 9,880.6；GCP tpmC：TiDB 2,966.6／YBDB 3,379.9／CRDB 5,704.9 | [XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md](./XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md) |
 | backup / migration / chaos | ⚪ 未開始（同 P-A spec） | — | — | — |
 
-**P-B 三種 workload（A-S/A-A-RO/A-A）W=128 正式測試矩陣已全數完成**，
-橫向比對彙總見
-[XCROSS-PB-ALL-WORKLOADS-SUMMARY.md](./XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)
-（核心發現：TiDB 高併發限制與「GCP 端是否同時發起負載」強相關，
-A-S 下完全不受影響，A-A-RO/A-A 下依衝突強度分別呈現崩潰／持續劣化；
-YBDB/CRDB 三種 workload 下皆正常擴展）。
+**P-B 三種 workload（A-S/A-A-RO/A-A）W=128 執行矩陣已跑過一次**
+（各 profile N=1），橫向比對彙總見
+[XCROSS-PB-ALL-WORKLOADS-SUMMARY.md](./XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)。
+**P-A 與 P-B 跨 placement 最終比較**（A-S、A-A-RO 兩個有雙邊數據的
+profile 逐檔位對照；A-A 因 P-A×A-A 未執行故無法比較）見
+[XCROSS-PA-VS-PB-FINAL-COMPARISON.md](./XCROSS-PA-VS-PB-FINAL-COMPARISON.md)
+（**fact**：雙側負載的兩個批次皆觀察到 TiDB 高併發吞吐劣化與跨區鎖
+路徑錯誤存在性證據，單邊批次（A-S）未見同款現象；**inference，尚待
+控制實驗確認**：現象與跨區鎖競爭相容，但三個 profile 非單變量對照
+（total offered concurrency 與 mix 皆不同），不可視為已排除其他
+解釋。詳見彙總文件 §3 的 fact/inference 分節與最小控制實驗設計）。
 
 **P-B×A-S 已於 2026-07-27~29 完成正式 W=128 執行**——過程中發現並修復一個
 跨三家資料庫共通的設計缺口（單一 whole-table/whole-database placement
@@ -150,21 +155,36 @@ policy 只能表達優先順序、無法表達機率式跨區混合分佈），T
 07-17 Q3 拍板的 S1（O1 gate 補強）/ S2（`gcp-replica-gate.sh` 內建
 `PLACEMENT=P-B` 分支，30-70% leader/lease spread 判準）/ S3
 （`phase4-ybdb-fix6n` P-B 分支，跳過 `set_preferred_zones`）基礎設施備便
-已於本輪驗證為有效。**P-B 三種 workload（A-S/A-A-RO/A-A）至此全數完成
-W=128 正式執行**——TiDB 皆在高併發檔位（th=64/128）出現不同程度的
-吞吐劣化（A-A-RO 為崩潰、A-A 為持續劣化），YBDB/CRDB 兩家在三種
-workload 下皆正常擴展，判定為 TiDB percolator 式兩階段悲觀鎖與 P-B
-跨區混合 leader 交互作用下的真實限制，非流程或口徑問題。
+已於本輪驗證為有效（僅代表 prepare-time 抽樣 gate 通過，見
+`XCROSS-PB-ALL-WORKLOADS-SUMMARY.md` §5）。**P-B 三種 workload
+（A-S/A-A-RO/A-A）W=128 執行矩陣至此已跑過一次**——TiDB 在雙側負載
+的兩個批次（A-A-RO、A-A）皆於高併發檔位（th=64/128）觀察到吞吐劣化
+（A-A-RO 為崩潰後未恢復、A-A 為持續劣化），YBDB/CRDB 兩家 mean tpmC
+在三種 workload 下皆隨併發數成長。**現象是否為 TiDB percolator 式
+兩階段悲觀鎖與 P-B 跨區混合 leader 交互作用所致，目前只是與觀察
+相容的假說**——三個 profile 各僅 N=1、total offered concurrency 與
+transaction mix 皆不同，尚未做控制實驗排除其他因素，不可寫成已確認
+根因，詳見彙總文件 §3。
 
 **2026-07-27 死碼清理**：稽核發現 `scripts/gate-placement-p-b.sh`（判準
 ≥1 each，與 `gcp-replica-gate.sh` 的 30-70% spread 不一致）從未被
-`run-vm6-suite.sh`／`Makefile` 呼叫，屬孤兒腳本，已刪除；`tests/yuga/placement-p-b.sql`
-（per-table tablespace 設計，假設 GCP 有 `asia-east1-a`/`asia-east1-b` 兩個獨立
-zone）同樣從未被 `prepare.sh` 呼叫，且與 `ansible/playbooks/yugabyte-vm6.yml`
-實際把所有 GCP tserver 攤平成單一 `zone=asia-east1` 的事實不符（即使執行也會
-因 zone 對不上而失效），已一併刪除。**YBDB P-B 唯一生效機制是
-`Makefile phase4-ybdb-fix6n` 的 universe 層 `modify_placement_info`**（不同於
-TiDB/CRDB 走 per-table SQL 的方式），詳見 `topology/P-B.md`。
+`run-vm6-suite.sh`／`Makefile` 呼叫，屬孤兒腳本，已刪除；當時的
+`tests/yuga/placement-p-b.sql` 舊版（per-table tablespace 設計，假設
+GCP 有 `asia-east1-a`/`asia-east1-b` 兩個獨立 zone）同樣從未被
+`prepare.sh` 呼叫，且與 `ansible/playbooks/yugabyte-vm6.yml` 實際把
+所有 GCP tserver 攤平成單一 `zone=asia-east1` 的事實不符，已一併
+刪除。
+
+**現行實作（2026-07-27 同批稍後修正，取代上述已刪除的舊版）**：
+`tests/yuga/placement-p-b.sql` **目前存在**，內容為修正後的雙
+tablespace 設計（`ts_p_b_leader_idc`/`ts_p_b_leader_gcp`，zone 統一用
+實際生效的 `asia-east1`），由 `run-vm6-suite.sh` 新增的 YBDB placement
+watcher 在 prepare 建完 tpcc 表後執行 `SET TABLESPACE` + 主動
+`leader_stepdown` enforcer。**YBDB P-B 目前有兩層機制共同生效**：
+`Makefile phase4-ybdb-fix6n` 的 universe 層 `modify_placement_info`
+（決定 RF=3 的基礎 2 idc+1 gcp 副本分佈）+ 上述雙 tablespace（決定
+leader 跨區混合分佈），兩者分工不同、缺一不可，詳見 `topology/P-B.md`
+與 `tests/yuga/placement-p-b.sql` 檔頭註解。
 
 **追記（2026-07-27，規劃/執行落差說明）**：`decisions-2026-06-08.md`
 Q2/Q4（2026-07-17 拍板）曾決議「P-A×A-A-RO／P-A×A-A 共 6 cells 明文砍除」，

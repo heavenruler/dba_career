@@ -2093,6 +2093,15 @@ A-A profile（`tpmC_mean` 真實值而非 null、`gcp_side.profile` 接受
 `README.md`、`XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md`（新增）、
 `SESSION-HISTORY.md`（本節）。
 
+> **2026-08-03 事實修正記錄**：上一行「已定位根因」為當時判讀，經
+> raw artifact 覆核後降級為假說（跨區鎖競爭與觀察相容，但 N=1、
+> 未排除總 concurrency／mix 等混淆因素，不可稱已確認根因）；本節
+> 上方「三家 IDC 側全程 0 error」亦有缺漏，GCP 側全檔位錯誤率
+> 三家皆非零（TiDB≈0.08%／YBDB≈0.032%／CRDB≈0.032%，主要為
+> `context deadline exceeded` 收尾類錯誤）。更正版結論見
+> `XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md`（已同步更正）與
+> `XCROSS-PB-ALL-WORKLOADS-SUMMARY.md`。
+
 **Last updated**：2026-07-31 P-B×A-A-RO 三家 PASS 並歸檔、TiDB th=128
 跨區鎖競爭崩潰已定位根因並記錄；P-B×A-A 執行前置阻擋（GCP 側
 read-only 誤擋）已修復，driver 已新增，準備部署執行。
@@ -2212,21 +2221,35 @@ proactive 先修，避免 YBDB 重演）後，用**全新 TS（20260731T204801+0
 `phase9-tunnels-stop` + `phase9-destroy`，IDC 3 台 + GCP 5 台全數
 銷毀。
 
-**正式數字彙整（三家 0 error）**：
+**正式數字彙整（IDC 側 0 error；GCP 側非零，見下方 2026-08-03 更正）**：
 
 | DB | IDC tpmC@128 | GCP tpmC@128 |
 |---|---:|---:|
 | TiDB | 4,413.9（th=32 見頂 8,868.2 後劣化） | 2,966.6 |
-| YBDB | 11,605.5（正常擴展） | 3,379.9 |
-| CRDB | 9,880.6（正常擴展） | 5,704.9 |
+| YBDB | 11,605.5（mean 隨併發成長） | 3,379.9 |
+| CRDB | 9,880.6（mean 隨併發成長） | 5,704.9 |
 
 完整分析見
 [`XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md`](./XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md)。
-**核心結論與 P-B×A-A-RO 一致收斂**：TiDB 在高併發下因 P-B 跨區混合
-leader + percolator 兩階段悲觀鎖產生真實效能限制，且 **A-A（雙端
-寫同一批 warehouse）比 A-A-RO（GCP 端唯讀）更容易長期觸發**（本輪是
-持續劣化，A-A-RO 那輪是短暫崩潰後恢復）；YBDB／CRDB 兩家在 P-B 三種
-workload（A-S/A-A-RO/A-A）下皆表現穩定、正常擴展。
+**當時判讀（2026-08-01，已於 2026-08-03 更正，見下方）**：TiDB 在
+高併發下因 P-B 跨區混合 leader + percolator 兩階段悲觀鎖產生真實
+效能限制，且 A-A 比 A-A-RO 更容易長期觸發；YBDB／CRDB 兩家在 P-B
+三種 workload 下皆表現穩定、正常擴展。
+
+> **2026-08-03 事實修正記錄**：以上「三家 0 error」不成立——GCP 側
+> 全檔位錯誤率三家皆非零（TiDB≈0.158%／YBDB≈0.134%／CRDB≈0.111%，
+> 主要為 round 收尾類錯誤，CRDB 另有 2 筆交易層
+> `TransactionRetryError`）。「A-A 比 A-A-RO 更容易觸發」與「已定位
+> 根因為 P-B mixed leader + Percolator 悲觀鎖競賽」皆為當時判讀，
+> 經 raw artifact 覆核後降級為假說（N=1、A-S/A-A-RO/A-A 三個
+> profile 的 total offered concurrency 與 mix 皆不同，非單變量
+> 對照，尚未排除混淆因素）。TiDB A-A th=128 round-2 GCP 端 raw
+> stdout 亦補上 `PessimisticLockNotFound` 存在性證據（先前版本誤寫
+> 為「未見同類訊號」）。YBDB/CRDB「皆表現穩定」改為「mean 曲線可
+> 擴展，round-level repeatability 未建立」（多個檔位 range/mean
+> 偏高，見彙總文件 §4）。更正版結論見
+> `XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md`（已同步更正）與
+> `XCROSS-PB-ALL-WORKLOADS-SUMMARY.md`。
 
 修改檔案：`phase-crossregion/XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md`
 （新增）、`README.md`、`.gitignore`、`SESSION-HISTORY.md`（本節）。
@@ -2234,8 +2257,10 @@ workload（A-S/A-A-RO/A-A）下皆表現穩定、正常擴展。
 過，本輪只是把它跑到 W=128 正式規模）。
 
 **Last updated**：2026-08-01 P-B 三種 workload（A-S/A-A-RO/A-A）W=128
-正式執行全數完成，三家資料庫在 P-B 下的行為特徵已有完整交叉驗證：
-TiDB 高併發限制、YBDB/CRDB 正常擴展。VM 已 destroy，環境歸零。
+正式執行全數完成（2026-08-03 更正：「已有完整交叉驗證」為當時判讀，
+應改為「執行矩陣已跑過一次，重現性與因果仍待§3所述控制實驗」）。
+VM 已 destroy，環境歸零。
 **Next review**：TiDB 高併發限制是否需要專項調校排入後續排程
 （`tidb_lock_ttl`、悲觀鎖重試策略）；P-B 正式測試矩陣（三 DB × 三
-workload）至此已完整跑過一輪，可考慮進入結果彙總/決策階段。
+workload）至此已完整跑過一輪（各 `N=1`），可考慮進入結果彙總/決策
+階段，惟根因仍待控制實驗確認。
