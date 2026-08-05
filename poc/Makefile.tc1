@@ -121,7 +121,8 @@ help:
 	@echo "=== Phase-K8s (K8s 對照組 / v4.7 detached suite / RC only / family=k8s; 詳 phase-k8s/README.md) ==="
 	@echo "  make phase-k8s-plan          - 印出 phase scope / topology / 缺項 (read-only)"
 	@echo "  make phase-k8s-deploy        - 三家 ansible-playbook *-k8s.yml (current 既有路徑)"
-	@echo "  make phase-k8s-run           - 待補；v4.7 K8s wrapper 尚未實作 (exit 1)"
+	@echo "  make phase-k8s-run           - ⚠ stub (exit 1)；6 個正式 cell 實際靠直接呼叫"
+	@echo "                                  run-k8s-suite.sh 完整鏈產生，非本 target；詳 phase-k8s/README.md"
 	@echo ""
 	@echo "=== Phase-ThreadControl (process/thread/admission tuning 隔離 / family=tuning / baseline_eligible=false) ==="
 	@echo "  make phase-threadcontrol-plan   - 印出 phase scope / 三家可調參數 / guardrail 規則 (read-only)"
@@ -754,7 +755,9 @@ phase-k8s-plan:
 	@echo "===================================================================="
 	@cat phase-k8s/manifest.yaml | sed 's/^/  /'
 	@echo "  ---"
-	@echo "  Status: deploy ready / v4.7 run-wrapper PENDING (see phase-k8s/README.md §Pending)"
+	@echo "  Status: deploy ready / v4.7 run-wrapper (run-k8s-suite.sh) IMPLEMENTED and already"
+	@echo "          used to produce the 6 adopted S-K8S cells; 'make phase-k8s-run' itself is"
+	@echo "          still an unwired stub — invoke run-k8s-suite.sh directly (see phase-k8s/README.md)"
 	@echo "  Existing scripts (pre-v4.7, do NOT use as output source):"
 	@for f in tests/run-all/*-k8s-3node-*.sh tests/prepare/*-k8s-3node-*.sh; do echo "    $$f"; done
 

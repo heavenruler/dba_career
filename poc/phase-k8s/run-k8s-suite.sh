@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# phase-k8s/run-k8s-suite.sh — DRY_RUN-only wrapper.
-# Supports TiDB / CRDB / YBDB.
+# phase-k8s/run-k8s-suite.sh — v4.7 K8s suite wrapper.
+# Supports TiDB / CRDB / YBDB. Two modes (2026-08-05: header corrected —
+# this was mislabeled "DRY_RUN-only" though the full-chain branch below
+# has always existed; the 6 adopted S-K8S cells were produced by this
+# script's full-chain branch, DRY_RUN unset):
 #
-# DRY_RUN=1 branch:
+# DRY_RUN=1 branch (dump/diff/compare only, no workload):
 #   1. env / scope validation + DB-aware default port
 #   2. mkdir $ROOT/dry-run/
 #   3. dump-actual.sh → actual.yaml (DB-aware dispatch inside script)
@@ -10,6 +13,11 @@
 #   5. compare-vm.sh actual.yaml vm-baseline.yaml → compare-vm.md
 #   6. write $ROOT/.dry-run.done
 #   7. STOP
+#
+# DRY_RUN unset/0 branch: full v4.7 chain (gate → prepare → run → collect),
+# see code below. NOT wired into `make phase-k8s-run` (still a stub, see
+# phase-k8s/README.md) — invoke this script directly with the env vars
+# below to reproduce the adopted cells.
 #
 # Usage:
 #   env DRY_RUN=1 TPCC_TS=<ts> \

@@ -45,7 +45,27 @@
 
 → **本 phase 任何 output 不可由這些舊腳本直接產生**；v4.7 K8s wrapper 為待補項（詳 §「Pending v4.7 K8s wrapper」）。
 
-## Pending v4.7 K8s wrapper
+## v4.7 K8s wrapper — 現況（2026-08-05 修正，取代下方過期敘述）
+
+**`phase-k8s/run-k8s-suite.sh` 早已支援完整 v4.7 chain（非僅 DRY_RUN）**：
+腳本本身有兩個分支——`DRY_RUN=1` 只做 dump/diff/compare-vm 後 STOP；
+`DRY_RUN` 未設或 `=0` 則走 gate → prepare → run → collect 的完整鏈。三家
+（TiDB/CRDB/YBDB）× limit/unlimit 共 6 個正式 cell 已於 2026-06-08～06-13
+用這條完整鏈實際跑完並歸檔（見 `results/{db}-tc1/S-K8S/pipeline-log.md`
+與跨家分析 `1_MeetingMinutes/analytics-S-K8S-2026-06-15.md`），並非仍卡在
+「wrapper 尚未實作」的規劃階段。
+
+**仍未同步的殘留 tooling debt**：`Makefile.tc1` 的 `phase-k8s-run` target
+與 `phase-k8s-plan` 的狀態列**從未跟著更新**——`phase-k8s-run` 至今仍是
+`echo "NOT YET IMPLEMENTED" + exit 1` 的 stub，實際 6 個 cell 是直接
+呼叫 `run-k8s-suite.sh`（設好對應 env var、`DRY_RUN` 不設）產生，並未
+經過這個 Makefile target。這是文件/工具鏈與執行事實脫節的殘留（同類型
+問題 `phase-crossregion` 的 Q18 也發生過），**修正 Makefile 使其真正呼叫
+`run-k8s-suite.sh` 完整鏈本身不在本次文件修正範圍**（涉及未經測試的
+Makefile 行為變更），先如實記錄現況，待後續視需要另行驗證修復。
+
+<details>
+<summary>以下為原始（2026-06-06 T104 落地時）規劃敘述，現已由上方取代，僅保留供歷史追溯</summary>
 
 T104 commit 含基本 orchestration（Make target + README + manifest），但 K8s 完整 v4.7 detached suite **wrapper 尚未實作**：
 
@@ -58,12 +78,16 @@ T104 commit 含基本 orchestration（Make target + README + manifest），但 K
 
 → 補完前 `make phase-k8s-run` 為 **「未實作」echo target**（exit 1 + 提示文字）。
 
+</details>
+
 ## Make target
 
 ```
 make phase-k8s-plan       # echo 本 phase scope / topology / 缺項；安全
 make phase-k8s-deploy     # 三家 ansible-playbook *-k8s.yml（current 既有路徑）
-make phase-k8s-run        # 待補；目前 echo "TODO: v4.7 K8s wrapper not yet implemented" + exit 1
+make phase-k8s-run        # ⚠ Makefile stub 仍是 exit 1（tooling debt，見上節）；
+                           # 6 個正式 cell 實際是直接呼叫 run-k8s-suite.sh 產生的，
+                           # 不是靠這個 target
 ```
 
 ## 變更歷史
@@ -71,3 +95,7 @@ make phase-k8s-run        # 待補；目前 echo "TODO: v4.7 K8s wrapper not yet
 | 日期 | commit | 變更 |
 |---|---|---|
 | 2026-06-06 | （本 commit）| 初版：README + manifest（via T108a）+ 補缺漏 `tests/prepare/yuga-k8s-3node-limit.sh` stub + Make target 框架 |
+| 2026-06-08～06-13 | — | `run-k8s-suite.sh` 完整鏈直接執行，三家 × limit/unlimit 共 6 個正式 cell 完成並歸檔 |
+| 2026-06-15 | — | 跨家 VM vs K8s overhead 分析產出（`analytics-S-K8S-2026-06-15.md`） |
+| 2026-06-23 | — | 三份 `pipeline-log.md` retrofit 補上 `summary.json`（追溯性補正，非重跑） |
+| 2026-08-05 | （本次）| 修正本檔「wrapper 尚未實作」過期敘述，明確記錄 Makefile target 未同步的殘留 tooling debt |

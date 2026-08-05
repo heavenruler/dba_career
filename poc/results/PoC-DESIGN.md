@@ -784,13 +784,13 @@ overall_pass=true
 
 **TiDB / CockroachDB / YugabyteDB split / pre-create SQL** 全部 9 張表都套用（§7.5.1 / §7.5.2 / §7.5.3）。
 
-### 7.4 Active isolation gate（三家共用，兩層）
+### 7.4 Active isolation gate（三家共用，兩層；2026-08-05 同步實作現況）
 
-gate 採**兩層驗證**確保 go-tpc 實際 workload isolation 與宣稱一致：
+gate 採**兩層驗證**確保 go-tpc 實際 workload isolation 與宣稱一致。**三家都是各自開獨立連線做驗證，不是直接 introspect go-tpc worker 本身的 active transaction session**——這是「同參數路徑的間接佐證」，設計上就不追求對 go-tpc 存活連線的直接讀取。
 
-#### Layer A — DB active gate（用 client 連線，BEGIN..COMMIT 內看 active 值）
+#### Layer A — DB active gate（用獨立 client 連線查值；TiDB 在 `BEGIN..COMMIT` 內查、CockroachDB/YugabyteDB 為獨立唯讀查詢）
 
-**TiDB**（mysql client，DSN 與 go-tpc 同）：
+**TiDB**（mysql client，DSN 與 go-tpc 同；在 `BEGIN..COMMIT` 內查值）：
 ```bash
 mysql -h $TIDB_HOST -P $TIDB_PORT -u $TIDB_USER tpcc \
   -e "SET SESSION transaction_isolation='READ-COMMITTED'; \
@@ -803,10 +803,10 @@ mysql -h $TIDB_HOST -P $TIDB_PORT -u $TIDB_USER tpcc \
 #   strict →  REPEATABLE-READ / pessimistic   (TiDB strict ≡ rr, native 最強)
 ```
 
-**CockroachDB / YugabyteDB**（psql 用 URL-style connection string 帶 `$ISO_CONN_PARAMS`，**不用 `PGOPTIONS`**）：
+**CockroachDB / YugabyteDB**（psql 用 URL-style connection string 帶 `$ISO_CONN_PARAMS`，**不用 `PGOPTIONS`**；**不包 `BEGIN..COMMIT`**——見下方修法紀錄）：
 ```bash
 psql "postgres://${USER}@${HOST}:${PORT}/tpcc?${PG_CONN_RC}" \
-  -c "BEGIN; SHOW transaction_isolation; COMMIT;" \
+  -v ON_ERROR_STOP=1 -At -c "SHOW transaction_isolation" \
   > artifacts/gate/isolation-db.txt
 # Expected by iso (using $PG_CONN_RC / $PG_CONN_RR / $PG_CONN_STRICT):
 #   rc     →  read committed
@@ -814,7 +814,9 @@ psql "postgres://${USER}@${HOST}:${PORT}/tpcc?${PG_CONN_RC}" \
 #   strict →  serializable
 ```
 
-#### Layer B — driver DSN gate（用 go-tpc 同 binary probe，確保 driver 解析正確）
+> **實作修法紀錄（commit `9a04a839`，本節 2026-08-05 回補同步）**：本 gate 原本也是 `psql -At -c "BEGIN; SHOW transaction_isolation; COMMIT;"`，與上方舊版一致。但 `psql -At`（unaligned, tuples-only）搭配多語句 `-c` **只會印出最後一句（`COMMIT`）的結果**，等於 gate 讀不到真正的 isolation 值。修法拿掉 `BEGIN/COMMIT` 包裝，理由是 `SHOW transaction_isolation` 屬唯讀查詢、不需要交易包裝，autocommit 下讀到的就是 session default（即 `conn-params` 設定值），足以代表之後任何交易會採用的隔離級。這是**有理由的工程決定，不是遺漏**；本節先前的敘述在修法後一直沒有回頭同步，直到本次才更新。TiDB 因為驗證邏輯同時要確認 `tidb_txn_mode='pessimistic'` 有跟著 `BEGIN` 生效，維持 `BEGIN..COMMIT` 包裝不受此修法影響。現行程式碼見 `tests/common/gate-isolation.sh:29-120`（DB gate 在 L29-79，driver verify 在 L84-120，兩處對 CockroachDB/YugabyteDB 皆同樣不包 `BEGIN..COMMIT`）。
+
+#### Layer B — driver DSN gate（用 go-tpc 同 binary probe，確保 driver 解析正確；與 DB gate 是不同連線的間接佐證）
 
 寫一個短 Go probe（或用 `go-tpc tpcc run --warehouses=1 --time=2s --threads=1 -d ...` 並 grep 啟動 log 內的 session var），確保 go-tpc 用的 driver 真的把 `--conn-params` 套到 session：
 
@@ -825,7 +827,8 @@ go-tpc tpcc run -d postgres \
   --conn-params "$PG_CONN_RC" \
   --warehouses=1 --time=2s --threads=1 \
   --output=/tmp/probe-stdout.txt 2>&1 | tee artifacts/gate/isolation-driver.txt
-# probe 結束後，由 wrapper 在同 DSN 開連線執行 SHOW 驗證
+# probe 結束後，由 wrapper 另開一條獨立連線執行 SHOW 驗證（同 DSN／conn-params，
+# 但不是讀 go-tpc probe 那條連線本身的 session——兩者是不同連線）
 ```
 
 任一層不符合 → 該組標 invalid，**fail closed**，不進入 run。
@@ -834,10 +837,12 @@ go-tpc tpcc run -d postgres \
 
 YugabyteDB 不只看 active iso；同時驗三層才能視為 RC gate 通過，避免「看起來 RC、實際落回 snapshot isolation」：
 
-1. **default gate**：`--ysql_default_transaction_isolation='read committed'`（部署期 flag；varz 或 dry-run `iso-preset.txt` 驗證）
-2. **enable gate**：`--yb_enable_read_committed_isolation=true`（部署期 flag；varz 驗證）
-3. **active / effective gate**：在 `BEGIN..COMMIT` 內 `SHOW TRANSACTION ISOLATION LEVEL` 與 `SELECT yb_get_effective_transaction_isolation_level()` 都回報 `read committed`
+1. **default gate**：`--ysql_default_transaction_isolation='read committed'`（部署期 flag；varz 或 dry-run `iso-preset.txt` 驗證——**屬部署／config dump／dry-run 證據，不是 `gate-isolation.sh` 這支腳本驗證的範圍**）
+2. **enable gate**：`--yb_enable_read_committed_isolation=true`（部署期 flag；varz 驗證——**同樣不在 `gate-isolation.sh` 驗證範圍**，若此 flag 未開，效果會反映在下一項的 effective 值不符）
+3. **active / effective gate**（`gate-isolation.sh` 實際查的部分，**不包 `BEGIN..COMMIT`**）：獨立 psql 連線執行 `SHOW transaction_isolation` 與 `SELECT yb_get_effective_transaction_isolation_level()`，兩者皆需回報 `read committed`
 
+> 三層並非由同一支 script 驗證：第 1、2 層是部署期證據，第 3 層才是 `gate-isolation.sh` 的查詢對象。
+>
 > 舊 `SHOW yb_effective_transaction_isolation_level`（runtime parameter view）已 [deprecated](https://yugabytedb.tips/view-yb-run-time-parameters-values-and-descriptions/)；改用 `SELECT yb_get_effective_transaction_isolation_level()` 函式呼叫。
 
 #### go-tpc `--isolation` 參數處理
