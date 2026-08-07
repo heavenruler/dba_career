@@ -1,0 +1,37 @@
+chaos-c7-contention: (g=0): rw=randwrite, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=libaio, iodepth=64
+...
+fio-3.19
+Starting 4 processes
+chaos-c7-contention: Laying out IO file (1 file / 2048MiB)
+chaos-c7-contention: Laying out IO file (1 file / 2048MiB)
+chaos-c7-contention: Laying out IO file (1 file / 2048MiB)
+chaos-c7-contention: Laying out IO file (1 file / 2048MiB)
+
+chaos-c7-contention: (groupid=0, jobs=4): err= 0: pid=12543: Fri Aug  7 14:35:24 2026
+  write: IOPS=26.2k, BW=102MiB/s (107MB/s)(6151MiB/60024msec); 0 zone resets
+    slat (nsec): min=1522, max=170303k, avg=79324.63, stdev=1787620.33
+    clat (usec): min=224, max=186371, avg=9672.78, stdev=18606.87
+     lat (usec): min=235, max=194472, avg=9752.21, stdev=18701.11
+    clat percentiles (usec):
+     |  1.00th=[   635],  5.00th=[   930], 10.00th=[  1156], 20.00th=[  1516],
+     | 30.00th=[  1860], 40.00th=[  2245], 50.00th=[  2737], 60.00th=[  3556],
+     | 70.00th=[  5866], 80.00th=[ 11731], 90.00th=[ 24511], 95.00th=[ 45351],
+     | 99.00th=[ 99091], 99.50th=[115868], 99.90th=[145753], 99.95th=[160433],
+     | 99.99th=[179307]
+   bw (  KiB/s): min=30865, max=279953, per=100.00%, avg=105079.20, stdev=10025.51, samples=472
+   iops        : min= 7715, max=69987, avg=26268.66, stdev=2506.38, samples=472
+  lat (usec)   : 250=0.01%, 500=0.25%, 750=1.85%, 1000=4.28%
+  lat (msec)   : 2=27.40%, 4=29.34%, 10=13.84%, 20=10.83%, 50=7.82%
+  lat (msec)   : 100=3.43%, 250=0.96%
+  cpu          : usr=0.80%, sys=2.82%, ctx=52435, majf=0, minf=51
+  IO depths    : 1=0.1%, 2=0.1%, 4=0.1%, 8=0.1%, 16=0.1%, 32=0.1%, >=64=100.0%
+     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.1%, >=64=0.0%
+     issued rwts: total=0,1574777,0,0 short=0,0,0,0 dropped=0,0,0,0
+     latency   : target=0, window=0, percentile=100.00%, depth=64
+
+Run status group 0 (all jobs):
+  WRITE: bw=102MiB/s (107MB/s), 102MiB/s-102MiB/s (107MB/s-107MB/s), io=6151MiB (6450MB), run=60024-60024msec
+
+Disk stats (read/write):
+  sda: ios=13240/2069380, merge=0/107457, ticks=15035/2000981, in_queue=2016015, util=35.84%

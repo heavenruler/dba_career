@@ -1,0 +1,12 @@
+{
+  "scenario": "C7-disk-slow",
+  "db": "tidb",
+  "target_host": "172.24.40.32",
+  "t_incident": "2026-08-07T05:44:24.875Z",
+  "duration_sec": 60,
+  "throttle_bps": 1048576,
+  "cgroup_v2": false,
+  "device_majmin": "8:0",
+  "dry_run": false,
+  "note": "tpmC-1s must be derived separately from the concurrent go-tpc workload log for this window."
+}

@@ -58,9 +58,29 @@ case "$MODE" in
     ;;
 
   stamp-first-ok)
-    # If probe file exists, find first 'ok' line from it (more precise than manual call).
+    # If probe file exists, find first 'ok' line AFTER t_incident (more
+    # precise than manual call). 2026-08-07 fix: the probe loop starts
+    # ~2s BEFORE the incident and runs continuously, so probe.txt already
+    # contains pre-incident 'ok' lines by the time this is called — taking
+    # the file's first 'ok' unconditionally (the original logic) always
+    # picked a pre-incident timestamp, making every RTO compute to ~0 (or
+    # negative, since t_first_ok would predate t_incident). Must cut off
+    # at t_incident's own ts_ms.
+    # 2026-08-07 second fix: a real F1 run showed "flapping" during
+    # failover — one isolated 'ok' at t_incident+172ms sandwiched between
+    # two later 'err' lines (944474, 947840), with sustained recovery only
+    # starting ~7s later. Picking the first post-incident 'ok' (previous
+    # fix) reported that isolated blip as "recovered", understating RTO by
+    # ~7s. Correct anchor: the first 'ok' AFTER the LAST 'err' in the whole
+    # post-incident window (i.e. the point recovery actually held), not the
+    # first 'ok' after t_incident.
+    T_INC_CUTOFF=0
+    if [[ -f "$ARTIFACT_DIR/t_incident.txt" ]]; then
+      T_INC_CUTOFF=$(grep -oP '"ts_ms":\K[0-9]+' "$ARTIFACT_DIR/t_incident.txt" || echo 0)
+    fi
     if [[ -f "$PROBE_FILE" ]]; then
-      FIRST_OK_MS=$(awk '/^[0-9]+ ok /{print $1; exit}' "$PROBE_FILE" || true)
+      LAST_ERR_MS=$(awk -v cutoff="$T_INC_CUTOFF" '/^[0-9]+ err /{if ($1 > cutoff) last=$1} END{if (last) print last; else print cutoff}' "$PROBE_FILE")
+      FIRST_OK_MS=$(awk -v cutoff="$LAST_ERR_MS" '/^[0-9]+ ok /{if ($1 > cutoff) {print $1; exit}}' "$PROBE_FILE" || true)
     fi
     if [[ -n "${FIRST_OK_MS:-}" ]]; then
       # Convert epoch_ms to RFC3339 (portable: seconds + ms suffix)

@@ -1,0 +1,18 @@
+{
+  "db_kind": "tidb",
+  "scenario": "f1",
+  "placement": "P-A",
+  "dry_run": false,
+  "rto_sec": 6.987,
+  "rpo_lost_tx_count": 0,
+  "rpo_method": "simplified: per-warehouse max(o_id) high-water-mark check, not full driver-hooked FIFO buffer (see script header)",
+  "kill_target": "172.24.40.32",
+  "graceful_resign_cmd": "curl -s -m 5 -X POST http://172.24.40.32:2379/pd/api/v1/leader/resign",
+  "kill_cmd": "ssh -o StrictHostKeyChecking=accept-new root@172.24.40.32 'systemctl stop tidb-4000'",
+  "t_kill": "2026-08-07T16:22:23.993+0800",
+  "t_first_write_gcp": "2026-08-07T16:22:30.979+0800",
+  "poll_window_sec": 60,
+  "post_settle_sec": 30,
+  "generated_at": "2026-08-07T08:24:04.109Z",
+  "rto_recompute_note": "rto_sec corrected post-hoc from raw probe.txt after fixing wall-clock-wrapper.sh stamp-first-ok logic (flapping during failover meant the original first-ok-after-incident pick was an isolated blip sandwiched between two later errors, not sustained recovery); recomputed value anchors on first ok AFTER the last observed err, see kill.log/probe.txt for raw evidence"
+}
