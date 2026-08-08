@@ -48,7 +48,6 @@ done
 
 : "${PROBE_INTERVAL_MS:=100}"
 : "${PROBE_TABLE:=probe_rto}"
-: "${PROBE_USER:=root}"
 : "${PROBE_PASS:=}"
 STOP_FILE="${STOP_FILE:-$ARTIFACT_DIR/.probe.stop}"
 PROBE_OUT="$ARTIFACT_DIR/probe.txt"
@@ -57,13 +56,20 @@ mkdir -p "$ARTIFACT_DIR"
 rm -f "$STOP_FILE"
 
 # --- per-DB defaults ---
+# 2026-08-08 fix: PROBE_USER used to default unconditionally to "root" —
+# correct for tidb (root) and crdb (--insecure default superuser), but
+# YSQL's default superuser is "yugabyte", not "root". First real YBDB F1
+# run showed 100% probe failure (psql: FATAL: role "root" does not exist)
+# for the ENTIRE run, before/during/after the kill — not a real DB
+# behavior, a probe misconfiguration masquerading as "never recovers".
 case "$DB" in
-  tidb) DEFAULT_HOST=172.24.47.20; DEFAULT_PORT=4000 ;;
-  crdb) DEFAULT_HOST=172.24.47.20; DEFAULT_PORT=26257 ;;
-  ybdb) DEFAULT_HOST=172.24.47.20; DEFAULT_PORT=5433 ;;
+  tidb) DEFAULT_HOST=172.24.47.20; DEFAULT_PORT=4000;  DEFAULT_USER=root ;;
+  crdb) DEFAULT_HOST=172.24.47.20; DEFAULT_PORT=26257; DEFAULT_USER=root ;;
+  ybdb) DEFAULT_HOST=172.24.47.20; DEFAULT_PORT=5433;  DEFAULT_USER=yugabyte ;;
 esac
 DB_HOST="${HOST_OVERRIDE:-$DEFAULT_HOST}"
 DB_PORT="${PORT_OVERRIDE:-$DEFAULT_PORT}"
+: "${PROBE_USER:=$DEFAULT_USER}"
 
 ts_ms() { date '+%s%3N'; }
 
@@ -80,9 +86,23 @@ setup_probe_table() {
            seq INT NOT NULL
          );" 2>&1
       ;;
-    crdb|ybdb)
+    crdb)
       psql "host=$DB_HOST port=$DB_PORT user=$PROBE_USER dbname=defaultdb connect_timeout=5" \
         -c "CREATE DATABASE IF NOT EXISTS probe_db;" 2>/dev/null || true
+      psql "host=$DB_HOST port=$DB_PORT user=$PROBE_USER dbname=probe_db connect_timeout=5" \
+        -c "CREATE TABLE IF NOT EXISTS ${PROBE_TABLE} (
+              id SERIAL PRIMARY KEY,
+              ts BIGINT NOT NULL,
+              seq INT NOT NULL
+            );" 2>&1
+      ;;
+    ybdb)
+      # 2026-08-08 fix: YSQL has no "defaultdb" (that's a CRDB-ism — YSQL's
+      # always-present admin db is "yugabyte") and its CREATE DATABASE has
+      # no IF NOT EXISTS clause (confirmed live: "syntax error at or near
+      # NOT"). Plain CREATE DATABASE + swallow-error-on-rerun instead.
+      psql "host=$DB_HOST port=$DB_PORT user=$PROBE_USER dbname=yugabyte connect_timeout=5" \
+        -c "CREATE DATABASE probe_db;" 2>/dev/null || true
       psql "host=$DB_HOST port=$DB_PORT user=$PROBE_USER dbname=probe_db connect_timeout=5" \
         -c "CREATE TABLE IF NOT EXISTS ${PROBE_TABLE} (
               id SERIAL PRIMARY KEY,

@@ -188,8 +188,26 @@ case "$DB" in
     LEADER_QUERY="cockroach sql --insecure --host=${GCP_HOST}:${GCP_PORT} --format=tsv -e \"SELECT range_id, lease_holder FROM [SHOW RANGES FROM TABLE tpcc.warehouse] LIMIT 5;\""
     ;;
   ybdb)
-    KILL_CMD="ssh -o StrictHostKeyChecking=accept-new root@${KILL_TARGET} 'yb-admin --master_addresses=${GCP_HOST}:7100 master_leader_stepdown; systemctl stop yb-master; systemctl stop yb-tserver'"
-    LEADER_QUERY="yb-admin --master_addresses=${GCP_HOST}:7100 list_all_masters"
+    # 2026-08-08 fix (found live on first YBDB run — no prior real execution
+    # ever exercised this branch): YBDB is NOT managed by systemd at all in
+    # this topology — it runs under `yugabyted` (a supervisor process that
+    # spawns yb-master/yb-tserver as children); `systemctl stop yb-master`
+    # would fail immediately (no such unit exists). The real stop mechanism
+    # is `yugabyted stop --base_dir=<dir>`, which stops both children
+    # together — YBDB has no equivalent to TiDB's separable tidb/tikv/pd
+    # kill-scope, so --kill-scope is a no-op here (like crdb).
+    # Also: the original master_leader_stepdown ran unconditionally for
+    # both f1 and c4 (same bug class fixed for tidb above — resign must be
+    # F1-only or F1/C4 issue identical commands). And it addressed only
+    # $GCP_HOST:7100 as if it were the full master list, when yb-admin
+    # needs ALL master addresses — masters only run on the 3 IDC hosts in
+    # this P-A topology (confirmed via `list_all_masters`/`get_universe_config`).
+    YB_MASTER_ADDR="172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100"
+    if [[ "$SCENARIO" == "f1" ]]; then
+      RESIGN_CMD="yb-admin --master_addresses=${YB_MASTER_ADDR} master_leader_stepdown"
+    fi
+    KILL_CMD="ssh -o StrictHostKeyChecking=accept-new root@${KILL_TARGET} 'yugabyted stop --base_dir=/var/yugabyte'"
+    LEADER_QUERY="yb-admin --master_addresses=${YB_MASTER_ADDR} list_all_masters"
     ;;
 esac
 
@@ -207,7 +225,14 @@ S_PRE_FILE="$ARTIFACT_DIR/s_pre.txt"
 case "$DB" in
   tidb) S_PRE_QUERY="mysql -h ${GCP_HOST} -P ${GCP_PORT} -u root -N -B tpcc -e \"SELECT o_w_id, MAX(o_id) FROM orders GROUP BY o_w_id;\"" ;;
   crdb) S_PRE_QUERY="cockroach sql --insecure --host=${GCP_HOST}:${GCP_PORT} -d tpcc --format=tsv -e \"SELECT o_w_id, MAX(o_id) FROM oorder GROUP BY o_w_id;\"" ;;
-  ybdb) S_PRE_QUERY="psql \"host=${GCP_HOST} port=${GCP_PORT} user=yugabyte dbname=tpcc connect_timeout=5\" -At -c \"SELECT o_w_id, MAX(o_id) FROM oorder GROUP BY o_w_id;\"" ;;
+  # 2026-08-08 fix: go-tpc's YBDB/postgres-driver schema names this table
+  # "orders" (confirmed via information_schema.tables), not "oorder" — the
+  # latter is the classic OLTPBench/CRDB-driver naming this line was
+  # copy-pasted from. First real F1 run against YBDB hit this immediately
+  # (S_pre capture FATAL). CRDB's identical "oorder" line is left as-is —
+  # deferred to when CRDB testing begins, per the same known-issue tracking
+  # as its WRITE_PROBE SELECT-1 flaw.
+  ybdb) S_PRE_QUERY="psql \"host=${GCP_HOST} port=${GCP_PORT} user=yugabyte dbname=tpcc connect_timeout=5\" -At -c \"SELECT o_w_id, MAX(o_id) FROM orders GROUP BY o_w_id;\"" ;;
 esac
 
 if [[ "$DRY_RUN" -eq 0 ]]; then

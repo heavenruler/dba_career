@@ -78,8 +78,36 @@ case "$DB" in
         WRITE_PROBE="cockroach sql --insecure --host=$GCP_HOST:26257 -e \"SELECT 1\" 2>&1"
         HEALTH_QUERY="cockroach sql --insecure --host=$GCP_HOST:26257 --format=tsv -e \"SELECT count(*) FROM crdb_internal.kv_node_status WHERE address LIKE '172.24%'\"" ;;
   ybdb) SVC="yb-master yb-tserver"; GCP_PORT=5433
-        WRITE_PROBE="psql \"host=$GCP_HOST port=5433 user=yugabyte dbname=tpcc connect_timeout=3\" -c 'SELECT 1' 2>&1"
-        HEALTH_QUERY="yb-admin --master_addresses=$GCP_HOST:7100 list_all_tablet_servers 2>&1 | grep -c ALIVE" ;;
+        # 2026-08-08 fix: this was a bare "SELECT 1" — not an actual write,
+        # so it could never validate write-REJECT (a read-only query can
+        # succeed via a surviving replica while writes fail on quorum loss,
+        # or vice versa; it simply doesn't exercise the code path F2 exists
+        # to test). Confirmed real schema (only w_id is NOT NULL) and tested
+        # this insert+delete live before wiring it in.
+        WRITE_PROBE="psql \"host=$GCP_HOST port=5433 user=yugabyte dbname=tpcc connect_timeout=3\" -c 'INSERT INTO warehouse (w_id) VALUES (999999)' 2>&1; psql \"host=$GCP_HOST port=5433 user=yugabyte dbname=tpcc connect_timeout=3\" -c 'DELETE FROM warehouse WHERE w_id=999999' 2>&1"
+        # 2026-08-08 fix: $GCP_HOST:7100 is not a valid master address list —
+        # yb-admin needs all 3 IDC master addresses (masters only run on IDC
+        # in this P-A topology, confirmed via list_all_masters). Also fixed
+        # in run-vm6-chaos-execute.sh's ybdb case for the same reason.
+        HEALTH_QUERY="yb-admin --master_addresses=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100 list_all_tablet_servers 2>&1 | grep -c ALIVE" ;;
+esac
+
+# 2026-08-08 fix: YBDB runs under `yugabyted` (a supervisor spawning
+# yb-master/yb-tserver as children), not systemd — "systemctl stop/start
+# $SVC" fails immediately for ybdb (no such unit). Introduced per-DB
+# STATUS_CMD/STOP_CMD/START_CMD templates so tidb/crdb keep using systemctl
+# (verified real units) while ybdb uses `yugabyted stop/start --base_dir=`.
+case "$DB" in
+  ybdb)
+    STATUS_CMD="yugabyted status --base_dir=/var/yugabyte 2>&1"
+    STOP_CMD="yugabyted stop --base_dir=/var/yugabyte"
+    START_CMD="yugabyted start --base_dir=/var/yugabyte"
+    ;;
+  *)
+    STATUS_CMD="systemctl is-active $SVC 2>&1"
+    STOP_CMD="systemctl stop $SVC"
+    START_CMD="systemctl start $SVC"
+    ;;
 esac
 
 mkdir -p "$ARTIFACT_DIR"
@@ -92,7 +120,7 @@ log "db=$DB idc_hosts=[$IDC_HOSTS] gcp_host=$GCP_HOST dry_run=$DRY_RUN"
 mkdir -p "$ARTIFACT_DIR/db-config-snapshot/pre-kill"
 if [[ "$DRY_RUN" -eq 0 ]]; then
   for h in $IDC_HOSTS; do
-    ssh_c "$h" "systemctl is-active $SVC 2>&1" > "$ARTIFACT_DIR/db-config-snapshot/pre-kill/svc-status-$h.txt" 2>&1
+    ssh_c "$h" "$STATUS_CMD" > "$ARTIFACT_DIR/db-config-snapshot/pre-kill/svc-status-$h.txt" 2>&1
   done
   sleep "$PRE_WINDOW_SEC"
 else
@@ -103,13 +131,13 @@ fi
 T_KILL=$(date -u '+%Y-%m-%dT%H:%M:%S.%3NZ')
 echo "t_kill=$T_KILL" > "$ARTIFACT_DIR/kill.log"
 if [[ "$DRY_RUN" -eq 0 ]]; then
-  log "EXECUTING REAL KILL on all 3 IDC hosts simultaneously: $SVC"
+  log "EXECUTING REAL KILL on all 3 IDC hosts simultaneously: $STOP_CMD"
   for h in $IDC_HOSTS; do
-    ( ssh_c "$h" "systemctl stop $SVC" >> "$ARTIFACT_DIR/kill.log" 2>&1; echo "  $h stop exit=$?" >> "$ARTIFACT_DIR/kill.log" ) &
+    ( ssh_c "$h" "$STOP_CMD" >> "$ARTIFACT_DIR/kill.log" 2>&1; echo "  $h stop exit=$?" >> "$ARTIFACT_DIR/kill.log" ) &
   done
   wait
 else
-  log "[dry-run] would stop $SVC on all 3 IDC hosts simultaneously"
+  log "[dry-run] would run: $STOP_CMD on all 3 IDC hosts simultaneously"
 fi
 
 # ---- validate write-reject (per original C7.md intent) ----
@@ -129,13 +157,13 @@ fi
 T_RESTART_START=$(date -u '+%Y-%m-%dT%H:%M:%S.%3NZ')
 echo "t_restart_start=$T_RESTART_START" >> "$ARTIFACT_DIR/kill.log"
 if [[ "$DRY_RUN" -eq 0 ]]; then
-  log "restarting $SVC on all 3 IDC hosts"
+  log "restarting: $START_CMD on all 3 IDC hosts"
   for h in $IDC_HOSTS; do
-    ( ssh_c "$h" "systemctl start $SVC" >> "$ARTIFACT_DIR/kill.log" 2>&1; echo "  $h start exit=$?" >> "$ARTIFACT_DIR/kill.log" ) &
+    ( ssh_c "$h" "$START_CMD" >> "$ARTIFACT_DIR/kill.log" 2>&1; echo "  $h start exit=$?" >> "$ARTIFACT_DIR/kill.log" ) &
   done
   wait
 else
-  log "[dry-run] would restart $SVC on all 3 IDC hosts"
+  log "[dry-run] would run: $START_CMD on all 3 IDC hosts"
 fi
 
 RECOVERY_LOG="$ARTIFACT_DIR/recovery-poll.log"
@@ -175,7 +203,7 @@ fi
 mkdir -p "$ARTIFACT_DIR/db-config-snapshot/post-recovery"
 if [[ "$DRY_RUN" -eq 0 ]]; then
   for h in $IDC_HOSTS; do
-    ssh_c "$h" "systemctl is-active $SVC 2>&1" > "$ARTIFACT_DIR/db-config-snapshot/post-recovery/svc-status-$h.txt" 2>&1
+    ssh_c "$h" "$STATUS_CMD" > "$ARTIFACT_DIR/db-config-snapshot/post-recovery/svc-status-$h.txt" 2>&1
   done
 fi
 

@@ -73,7 +73,7 @@ done
 case "$DB" in
   tidb) DATA_DIR="/tidb-data/tikv-20160" ;;
   crdb) DATA_DIR="/var/lib/cockroach" ;;
-  ybdb) DATA_DIR="/var/yugabyte" ;;
+  ybdb) DATA_DIR="/var/yugabyte/data" ;;  # 2026-08-08: confirmed real path via `yugabyted status`
 esac
 
 mkdir -p "$ARTIFACT_DIR"

@@ -1,0 +1,32 @@
+[chaos-execute] 2026-08-08T08:18:44.601Z scenario=c4 db=ybdb placement=P-A kill_target=172.24.40.32 kill_role=leader kill_scope=tidb-tikv gcp=10.160.152.11:5433 artifact_dir=/tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260808T144840+0800/chaos/scenarioC4-leader dry_run=0
+[chaos-execute] 2026-08-08T08:18:44.602Z dumping pre-kill db-config-snapshot
+[chaos-execute] 2026-08-08T08:18:44.642Z capturing S_pre (pre-window 5s settle before snapshot)
+[chaos-execute] 2026-08-08T08:19:29.706Z starting probe-rto-driver.sh (background, GCP endpoint)
+[chaos-execute] 2026-08-08T08:19:29.707Z probe-rto-driver pid=1868788
+[wall-clock] t_incident stamped: 2026-08-08T16:19:31.713+0800  (1786177171712 ms)
+[chaos-execute] 2026-08-08T08:19:31.714Z EXECUTING REAL KILL: ssh -o StrictHostKeyChecking=accept-new root@172.24.40.32 'yugabyted stop --base_dir=/var/yugabyte'
+[chaos-execute] 2026-08-08T08:19:32.189Z post-kill verification: process confirmed down on 172.24.40.32
+[chaos-execute] 2026-08-08T08:19:32.190Z polling leader for 60s (every 5s)
+[wall-clock] t_first_ok stamped: 2026-08-08T16:19:32.087+0800  (1786177172087 ms)  source=probe
+[wall-clock] RTO = 0.375s  (375ms)  → /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260808T144840+0800/chaos/scenarioC4-leader/rto-wall-clock.json
+[chaos-execute] 2026-08-08T08:20:33.706Z post-settle wait 30s before S_post capture (per methodology §4.2 Step B)
+[chaos-execute] 2026-08-08T08:21:11.678Z done — artifact: /tmp/poc-tpcc/artifacts/X-CROSS/ybdb-vm-6node-P-A-rc-20260808T144840+0800/chaos/scenarioC4-leader/rto-rpo.json
+{
+  "db_kind": "ybdb",
+  "scenario": "c4",
+  "placement": "P-A",
+  "dry_run": false,
+  "rto_sec": 0.375,
+  "rpo_lost_tx_count": 0,
+  "rpo_method": "simplified: per-warehouse max(o_id) high-water-mark check, not full driver-hooked FIFO buffer (see script header)",
+  "kill_target": "172.24.40.32",
+  "kill_role": "leader",
+  "kill_scope": "tidb-tikv",
+  "graceful_resign_cmd": "null",
+  "kill_cmd": "ssh -o StrictHostKeyChecking=accept-new root@172.24.40.32 'yugabyted stop --base_dir=/var/yugabyte'",
+  "t_kill": "2026-08-08T16:19:31.713+0800",
+  "t_first_write_gcp": "2026-08-08T16:19:32.087+0800",
+  "poll_window_sec": 60,
+  "post_settle_sec": 30,
+  "generated_at": "2026-08-08T08:21:11.677Z"
+}
