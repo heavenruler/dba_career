@@ -1,0 +1,10 @@
+t_kill=2026-08-08T04:35:16.986Z
+Failed to stop tidb-4000.service: Unit tidb-4000.service not loaded.
+  172.24.40.33 stop exit=0
+  172.24.40.34 stop exit=5
+  172.24.40.32 stop exit=0
+t_restart_start=2026-08-08T04:37:56.256Z
+  172.24.40.32 start exit=0
+  172.24.40.33 start exit=0
+Failed to start tidb-4000.service: Unit tidb-4000.service not found.
+  172.24.40.34 start exit=5

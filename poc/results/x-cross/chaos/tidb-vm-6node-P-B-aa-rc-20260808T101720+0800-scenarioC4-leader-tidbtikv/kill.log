@@ -1,0 +1,6 @@
+scenario=c4 db=tidb placement=P-B kill_target=172.24.40.32
+resign_cmd=<none>
+kill_cmd=ssh -o StrictHostKeyChecking=accept-new root@172.24.40.32 'systemctl stop tidb-4000 tikv-20160'
+t_kill_start=2026-08-08T04:28:35.261Z
+kill_ssh_exit=0
+post_kill_verify=process_confirmed_down

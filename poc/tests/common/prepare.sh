@@ -282,8 +282,13 @@ fi
 # 驗 leader 分布；不符 placement policy 預期則中斷 prepare（避免後續 timed run
 # 量到 placement 沒套住的污染數據）。CRDB/YBDB Q13 PLANNED 階段先 TODO。
 if [[ "$TOPO" == vm-6node-* ]]; then
-  # Parse PLACEMENT from TOPO suffix (vm-6node-P-A / vm-6node-P-B).
-  PLACEMENT_FROM_TOPO=$(echo "$TOPO" | grep -oE 'P-[AB]$' || echo "UNKNOWN")
+  # Parse PLACEMENT from TOPO (vm-6node-P-A / vm-6node-P-B / vm-6node-P-B-aa
+  # etc. — non-default PROFILE tokens like "-aa"/"-aaro" get appended after
+  # the placement segment, so the match must NOT be end-anchored; a prior
+  # end-anchored `P-[AB]$` failed to match "vm-6node-P-B-aa", fail-closing
+  # the whole prepare with placement=UNKNOWN even though the underlying
+  # leader-distribution query itself succeeded (idc/gcp counts were fine).
+  PLACEMENT_FROM_TOPO=$(echo "$TOPO" | grep -oE 'P-[AB]' || echo "UNKNOWN")
   info "X-CROSS placement gate (PLACEMENT=$PLACEMENT_FROM_TOPO)"
   GATE_OUT="$PREP_DIR/placement-gate-${PLACEMENT_FROM_TOPO}.txt"
   GATE_JSON="$PREP_DIR/placement-gate-${PLACEMENT_FROM_TOPO}.json"
