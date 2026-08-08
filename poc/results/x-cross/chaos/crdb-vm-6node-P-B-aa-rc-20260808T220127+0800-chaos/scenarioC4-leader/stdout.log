@@ -1,0 +1,32 @@
+[chaos-execute] 2026-08-08T15:16:09.346Z scenario=c4 db=crdb placement=P-B kill_target=172.24.40.33 kill_role=leader kill_scope=tidb-tikv gcp=10.160.152.11:26257 artifact_dir=/tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-aa-rc-20260808T220127+0800/chaos/scenarioC4-leader dry_run=0
+[chaos-execute] 2026-08-08T15:16:09.347Z dumping pre-kill db-config-snapshot
+[chaos-execute] 2026-08-08T15:16:09.757Z capturing S_pre (pre-window 5s settle before snapshot)
+[chaos-execute] 2026-08-08T15:16:16.839Z starting probe-rto-driver.sh (background, GCP endpoint)
+[chaos-execute] 2026-08-08T15:16:16.840Z probe-rto-driver pid=2025955
+[wall-clock] t_incident stamped: 2026-08-08T23:16:18.845+0800  (1786202178844 ms)
+[chaos-execute] 2026-08-08T15:16:18.847Z EXECUTING REAL KILL: ssh -o StrictHostKeyChecking=accept-new root@172.24.40.33 'systemctl kill -s SIGKILL cockroach'
+[chaos-execute] 2026-08-08T15:16:19.179Z post-kill verification: process confirmed down on 172.24.40.33
+[chaos-execute] 2026-08-08T15:16:19.180Z polling leader for 60s (every 5s)
+[wall-clock] t_first_ok stamped: 2026-08-08T23:16:18.949+0800  (1786202178949 ms)  source=probe
+[wall-clock] RTO = 0.105s  (105ms)  → /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-aa-rc-20260808T220127+0800/chaos/scenarioC4-leader/rto-wall-clock.json
+[chaos-execute] 2026-08-08T15:17:30.036Z post-settle wait 30s before S_post capture (per methodology §4.2 Step B)
+[chaos-execute] 2026-08-08T15:18:02.686Z done — artifact: /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-aa-rc-20260808T220127+0800/chaos/scenarioC4-leader/rto-rpo.json
+{
+  "db_kind": "crdb",
+  "scenario": "c4",
+  "placement": "P-B",
+  "dry_run": false,
+  "rto_sec": 0.105,
+  "rpo_lost_tx_count": 0,
+  "rpo_method": "simplified: per-warehouse max(o_id) high-water-mark check, not full driver-hooked FIFO buffer (see script header)",
+  "kill_target": "172.24.40.33",
+  "kill_role": "leader",
+  "kill_scope": "tidb-tikv",
+  "graceful_resign_cmd": "null",
+  "kill_cmd": "ssh -o StrictHostKeyChecking=accept-new root@172.24.40.33 'systemctl kill -s SIGKILL cockroach'",
+  "t_kill": "2026-08-08T23:16:18.845+0800",
+  "t_first_write_gcp": "2026-08-08T23:16:18.949+0800",
+  "poll_window_sec": 60,
+  "post_settle_sec": 30,
+  "generated_at": "2026-08-08T15:18:02.685Z"
+}

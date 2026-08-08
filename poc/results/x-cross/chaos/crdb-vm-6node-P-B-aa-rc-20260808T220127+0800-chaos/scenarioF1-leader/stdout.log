@@ -1,0 +1,32 @@
+[chaos-execute] 2026-08-08T15:11:14.656Z scenario=f1 db=crdb placement=P-B kill_target=172.24.40.33 kill_role=leader kill_scope=tidb-tikv gcp=10.160.152.11:26257 artifact_dir=/tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-aa-rc-20260808T220127+0800/chaos/scenarioF1-leader dry_run=0
+[chaos-execute] 2026-08-08T15:11:14.657Z dumping pre-kill db-config-snapshot
+[chaos-execute] 2026-08-08T15:11:15.029Z capturing S_pre (pre-window 5s settle before snapshot)
+[chaos-execute] 2026-08-08T15:11:21.761Z starting probe-rto-driver.sh (background, GCP endpoint)
+[chaos-execute] 2026-08-08T15:11:21.762Z probe-rto-driver pid=2019675
+[wall-clock] t_incident stamped: 2026-08-08T23:11:23.768+0800  (1786201883767 ms)
+[chaos-execute] 2026-08-08T15:11:23.769Z EXECUTING REAL KILL: ssh -o StrictHostKeyChecking=accept-new root@172.24.40.33 'cockroach node drain --self --shutdown --insecure --host=localhost:26257'
+[chaos-execute] 2026-08-08T15:11:28.840Z post-kill verification: process confirmed down on 172.24.40.33
+[chaos-execute] 2026-08-08T15:11:28.840Z polling leader for 60s (every 5s)
+[wall-clock] t_first_ok stamped: 2026-08-08T23:11:23.804+0800  (1786201883804 ms)  source=probe
+[wall-clock] RTO = 0.037s  (37ms)  → /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-aa-rc-20260808T220127+0800/chaos/scenarioF1-leader/rto-wall-clock.json
+[chaos-execute] 2026-08-08T15:12:34.866Z post-settle wait 30s before S_post capture (per methodology §4.2 Step B)
+[chaos-execute] 2026-08-08T15:13:07.446Z done — artifact: /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-B-aa-rc-20260808T220127+0800/chaos/scenarioF1-leader/rto-rpo.json
+{
+  "db_kind": "crdb",
+  "scenario": "f1",
+  "placement": "P-B",
+  "dry_run": false,
+  "rto_sec": 0.037,
+  "rpo_lost_tx_count": 0,
+  "rpo_method": "simplified: per-warehouse max(o_id) high-water-mark check, not full driver-hooked FIFO buffer (see script header)",
+  "kill_target": "172.24.40.33",
+  "kill_role": "leader",
+  "kill_scope": "tidb-tikv",
+  "graceful_resign_cmd": "null",
+  "kill_cmd": "ssh -o StrictHostKeyChecking=accept-new root@172.24.40.33 'cockroach node drain --self --shutdown --insecure --host=localhost:26257'",
+  "t_kill": "2026-08-08T23:11:23.768+0800",
+  "t_first_write_gcp": "2026-08-08T23:11:23.804+0800",
+  "poll_window_sec": 60,
+  "post_settle_sec": 30,
+  "generated_at": "2026-08-08T15:13:07.445Z"
+}
