@@ -61,6 +61,8 @@ SCENARIO=""
 DB=""
 PLACEMENT=""
 KILL_TARGET=""
+KILL_ROLE="leader"
+KILL_SCOPE="tidb-tikv"
 GCP_HOST="10.160.152.14"
 GCP_PORT=""
 ARTIFACT_DIR=""
@@ -75,7 +77,14 @@ usage() {
   cat <<'EOF'
 Usage: run-vm6-chaos-execute.sh --scenario f1|c4 --db tidb|crdb|ybdb \
   --placement P-A|P-B --kill-target <ip> --gcp-host <ip> \
-  --artifact-dir <dir> [options] [--dry-run]
+  --artifact-dir <dir> [--kill-role leader|follower] \
+  [--kill-scope tidb-tikv|tidb-tikv-pd] [options] [--dry-run]
+
+--kill-role: label only (leader|follower) — records which role the target
+  host held at injection time; does not change the kill mechanics.
+--kill-scope: tidb only. tidb-tikv (default) stops tidb-server+tikv on the
+  target; tidb-tikv-pd additionally stops the co-located pd-server. No
+  effect on crdb (single process) / ybdb (already stops master+tserver).
 
 See file header for full option list and design notes.
 EOF
@@ -88,6 +97,8 @@ while [[ $# -gt 0 ]]; do
     --db)                DB=$2; shift 2 ;;
     --placement)         PLACEMENT=$2; shift 2 ;;
     --kill-target)       KILL_TARGET=$2; shift 2 ;;
+    --kill-role)         KILL_ROLE=$2; shift 2 ;;
+    --kill-scope)        KILL_SCOPE=$2; shift 2 ;;
     --gcp-host)          GCP_HOST=$2; shift 2 ;;
     --gcp-port)          GCP_PORT=$2; shift 2 ;;
     --artifact-dir)      ARTIFACT_DIR=$2; shift 2 ;;
@@ -106,6 +117,8 @@ done
 [[ "$SCENARIO" =~ ^(f1|c4)$ ]] || { echo "ERROR: --scenario must be f1|c4" >&2; exit 2; }
 [[ "$DB" =~ ^(tidb|crdb|ybdb)$ ]] || { echo "ERROR: --db must be tidb|crdb|ybdb" >&2; exit 2; }
 [[ "$PLACEMENT" =~ ^(P-A|P-B)$ ]] || { echo "ERROR: --placement must be P-A|P-B" >&2; exit 2; }
+[[ "$KILL_ROLE" =~ ^(leader|follower)$ ]] || { echo "ERROR: --kill-role must be leader|follower" >&2; exit 2; }
+[[ "$KILL_SCOPE" =~ ^(tidb-tikv|tidb-tikv-pd)$ ]] || { echo "ERROR: --kill-scope must be tidb-tikv|tidb-tikv-pd" >&2; exit 2; }
 
 case "$DB" in
   tidb) GCP_PORT="${GCP_PORT:-4000}" ;;
@@ -118,7 +131,7 @@ mkdir -p "$ARTIFACT_DIR/db-config-snapshot/pre-kill" "$ARTIFACT_DIR/db-config-sn
 
 log() { echo "[chaos-execute] $(date -u '+%Y-%m-%dT%H:%M:%S.%3NZ') $*"; }
 
-log "scenario=$SCENARIO db=$DB placement=$PLACEMENT kill_target=$KILL_TARGET gcp=$GCP_HOST:$GCP_PORT artifact_dir=$ARTIFACT_DIR dry_run=$DRY_RUN"
+log "scenario=$SCENARIO db=$DB placement=$PLACEMENT kill_target=$KILL_TARGET kill_role=$KILL_ROLE kill_scope=$KILL_SCOPE gcp=$GCP_HOST:$GCP_PORT artifact_dir=$ARTIFACT_DIR dry_run=$DRY_RUN"
 
 # ---- 0. Preconditions ----
 if [[ "$SKIP_CHRONY_GATE" -eq 0 && "$DRY_RUN" -eq 0 ]]; then
@@ -152,7 +165,17 @@ case "$DB" in
     # ever occurred). Port is fixed at 4000 for the SQL layer throughout
     # this topology (static host map), matching the tikv-20160 unit's own
     # fixed-port naming.
-    KILL_CMD="ssh -o StrictHostKeyChecking=accept-new root@${KILL_TARGET} 'systemctl stop tidb-4000'"
+    # 2026-08-08 fix: stopping only tidb-4000 (stateless SQL gateway) never
+    # exercises real TiKV Region/Raft leader failover — RTO-RPO-methodology's
+    # own leader query targets TIKV_REGION_PEERS, and C4.md's metric is
+    # TiKV's raftstore.raft-election-timeout-ticks. --kill-scope now also
+    # stops tikv-20160 (the actual data/leader-holding process) by default,
+    # matching what crdb/ybdb's kill commands already do to their real
+    # leader-bearing process; tidb-tikv-pd additionally stops the co-located
+    # pd-server to isolate whether losing a PD member adds measurable RTO.
+    KILL_CMD="ssh -o StrictHostKeyChecking=accept-new root@${KILL_TARGET} 'systemctl stop tidb-4000 tikv-20160"
+    [[ "$KILL_SCOPE" == "tidb-tikv-pd" ]] && KILL_CMD="${KILL_CMD} pd-2379"
+    KILL_CMD="${KILL_CMD}'"
     # 2026-08-07 fix: tikv_region_status has no store_id/is_leader columns in
     # this TiDB version (confirmed via DESC) — leader info lives in
     # tikv_region_peers (STORE_ID, IS_LEADER), joined back to
@@ -376,6 +399,8 @@ cat > "$ARTIFACT_DIR/rto-rpo.json" <<JSON
   "rpo_lost_tx_count": $RPO_LOST,
   "rpo_method": "simplified: per-warehouse max(o_id) high-water-mark check, not full driver-hooked FIFO buffer (see script header)",
   "kill_target": "$KILL_TARGET",
+  "kill_role": "$KILL_ROLE",
+  "kill_scope": "$KILL_SCOPE",
   "graceful_resign_cmd": "${RESIGN_CMD:-null}",
   "kill_cmd": "$KILL_CMD",
   "t_kill": "$T_KILL",

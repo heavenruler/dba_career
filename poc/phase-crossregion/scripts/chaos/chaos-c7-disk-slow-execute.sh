@@ -129,6 +129,19 @@ FIO_OK=0
 #      block device, time-bounded to $DURATION, then collect iostat samples
 #      concurrently so the induced latency is directly observable. ----
 if [[ "$DRY_RUN" -eq 0 ]]; then
+  # 2026-08-08 fix: a real run on a freshly-rebuilt host (fio never
+  # installed there — each VM rebuild starts clean, nothing carries over)
+  # silently "succeeded" per FIO_OK's old logic: the launch command itself
+  # (mkdir + setsid nohup ionice fio ... &) returns 0 even though the
+  # backgrounded fio then failed with "No such file or directory" —
+  # launching a background job is not the same as the job succeeding.
+  # Check the binary exists BEFORE injecting rather than discovering it
+  # from an empty/truncated fio-summary.txt after the fact.
+  if ! ssh_c "command -v fio" > /dev/null 2>&1; then
+    log "FATAL: fio not installed on $TARGET_HOST — aborting, will not fake an injection"
+    echo '{"error":"fio_not_installed","target_host":"'"$TARGET_HOST"'"}' > "$ARTIFACT_DIR/plan.txt"
+    exit 1
+  fi
   log "starting fio contention on $TARGET_HOST for ${DURATION}s (background)"
   # The whole "mkdir && setsid ... fio" compound must be wrapped in its own
   # subshell with stdio redirected on the SUBSHELL itself, not just the
@@ -156,6 +169,13 @@ if [[ "$DRY_RUN" -eq 0 ]]; then
   # truncated summary on an earlier real run).
   sleep 3
   ssh_c "cat /root/chaos-c7-fio.log 2>/dev/null; rm -f /root/chaos-c7-fio.log" > "$ARTIFACT_DIR/fio-summary.txt" 2>&1
+  # FIO_OK from the launch command's exit code only proves the ssh call
+  # that BACKGROUNDED fio returned 0 — not that fio itself ran. The real
+  # completion marker is "Run status" in fio's own summary output.
+  if ! grep -q "Run status" "$ARTIFACT_DIR/fio-summary.txt" 2>/dev/null; then
+    log "WARN: fio-summary.txt has no 'Run status' — fio did not complete successfully despite launch succeeding (see fio-summary.txt for the actual error)"
+    FIO_OK=0
+  fi
 else
   sleep 1
   echo "[dry-run] would run: fio --name=chaos-c7-contention --directory=<scratch> --size=$FIO_SIZE --rw=randwrite --bs=4k --direct=1 --iodepth=$FIO_IODEPTH --numjobs=$FIO_JOBS --runtime=${DURATION}s (background) + iostat -x 1 ${DURATION} concurrently" > "$ARTIFACT_DIR/io-latency-p99.txt"

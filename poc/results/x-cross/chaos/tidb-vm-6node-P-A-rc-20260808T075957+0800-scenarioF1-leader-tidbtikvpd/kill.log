@@ -1,0 +1,7 @@
+scenario=f1 db=tidb placement=P-A kill_target=172.24.40.33
+resign_cmd=curl -s -m 5 -X POST http://172.24.40.33:2379/pd/api/v1/leader/resign
+kill_cmd=ssh -o StrictHostKeyChecking=accept-new root@172.24.40.33 'systemctl stop tidb-4000 tikv-20160 pd-2379'
+resign_output="The resign command is submitted." resign_exit=0
+t_kill_start=2026-08-08T01:06:25.028Z
+kill_ssh_exit=0
+post_kill_verify=process_confirmed_down

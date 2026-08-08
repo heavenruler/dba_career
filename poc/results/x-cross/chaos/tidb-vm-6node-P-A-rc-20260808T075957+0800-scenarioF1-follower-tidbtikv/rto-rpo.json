@@ -1,0 +1,19 @@
+{
+  "db_kind": "tidb",
+  "scenario": "f1",
+  "placement": "P-A",
+  "dry_run": false,
+  "rto_sec": 7.315,
+  "rpo_lost_tx_count": 0,
+  "rpo_method": "simplified: per-warehouse max(o_id) high-water-mark check, not full driver-hooked FIFO buffer (see script header)",
+  "kill_target": "172.24.40.33",
+  "kill_role": "follower",
+  "kill_scope": "tidb-tikv",
+  "graceful_resign_cmd": "curl -s -m 5 -X POST http://172.24.40.33:2379/pd/api/v1/leader/resign",
+  "kill_cmd": "ssh -o StrictHostKeyChecking=accept-new root@172.24.40.33 'systemctl stop tidb-4000 tikv-20160'",
+  "t_kill": "2026-08-08T09:08:24.737+0800",
+  "t_first_write_gcp": "2026-08-08T09:08:32.051+0800",
+  "poll_window_sec": 30,
+  "post_settle_sec": 10,
+  "generated_at": "2026-08-08T01:09:13.691Z"
+}

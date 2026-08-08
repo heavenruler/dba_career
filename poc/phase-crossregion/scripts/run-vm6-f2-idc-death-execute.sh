@@ -63,7 +63,15 @@ done
 [[ "$DB" =~ ^(tidb|crdb|ybdb)$ ]] || { echo "--db must be tidb|crdb|ybdb" >&2; exit 2; }
 
 case "$DB" in
-  tidb) SVC="tidb-server"; GCP_PORT=4000
+  # 2026-08-08 fix: "tidb-server" is not a real unit (same bug found and
+  # fixed in run-vm6-chaos-execute.sh — real unit is "tidb-4000"). F2's
+  # spec intent ("IDC 全死 systemctl stop") is a genuine whole-node kill,
+  # not just the SQL layer, so this also stops the co-located tikv-20160
+  # and pd-2379 — matching the same kill-scope reasoning as F1/C4. Only
+  # 172.24.40.32/.33 actually run tidb-4000 in this topology (.34 is
+  # TiKV+PD only); stopping/starting it on .34 fails harmlessly (recorded
+  # in kill.log's exit code, not fatal to the overall run).
+  tidb) SVC="tidb-4000 tikv-20160 pd-2379"; GCP_PORT=4000
         WRITE_PROBE="mysql -h $GCP_HOST -P 4000 -u root -e 'INSERT INTO tpcc.warehouse (w_id) VALUES (999999)' 2>&1; mysql -h $GCP_HOST -P 4000 -u root -e 'DELETE FROM tpcc.warehouse WHERE w_id=999999' 2>&1"
         HEALTH_QUERY="mysql -h $GCP_HOST -P 4000 -u root -N -Be \"SELECT COUNT(*) FROM information_schema.tikv_store_status WHERE STORE_STATE='Up' AND LABEL LIKE '%idc%'\"" ;;
   crdb) SVC="cockroach"; GCP_PORT=26257

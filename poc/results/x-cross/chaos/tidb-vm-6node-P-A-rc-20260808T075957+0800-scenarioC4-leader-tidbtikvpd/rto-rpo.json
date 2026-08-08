@@ -1,0 +1,19 @@
+{
+  "db_kind": "tidb",
+  "scenario": "c4",
+  "placement": "P-A",
+  "dry_run": false,
+  "rto_sec": 6.684,
+  "rpo_lost_tx_count": 0,
+  "rpo_method": "simplified: per-warehouse max(o_id) high-water-mark check, not full driver-hooked FIFO buffer (see script header)",
+  "kill_target": "172.24.40.33",
+  "kill_role": "leader",
+  "kill_scope": "tidb-tikv-pd",
+  "graceful_resign_cmd": "null",
+  "kill_cmd": "ssh -o StrictHostKeyChecking=accept-new root@172.24.40.33 'systemctl stop tidb-4000 tikv-20160 pd-2379'",
+  "t_kill": "2026-08-08T09:17:06.223+0800",
+  "t_first_write_gcp": "2026-08-08T09:17:12.906+0800",
+  "poll_window_sec": 30,
+  "post_settle_sec": 10,
+  "generated_at": "2026-08-08T01:17:53.366Z"
+}

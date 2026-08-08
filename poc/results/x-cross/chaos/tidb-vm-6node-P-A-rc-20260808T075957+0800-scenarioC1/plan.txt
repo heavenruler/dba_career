@@ -1,0 +1,12 @@
+{
+  "scenario": "C1-partition",
+  "t_incident": "2026-08-08T01:00:40.309Z",
+  "duration_sec": 30,
+  "idc_hosts": "172.24.40.32 172.24.40.33 172.24.40.34",
+  "gcp_hosts": "10.160.152.11 10.160.152.12 10.160.152.13",
+  "orchestrator_ip_whitelisted_on_gcp_hosts": "172.24.40.31",
+  "self_heal_grace_sec": 15,
+  "self_heal_fires_at_sec": 45,
+  "dry_run": false,
+  "note": "tpmC-1s and leader-redist-trace must be derived separately from the concurrent go-tpc workload log for this window; this script only owns the network partition inject/restore + a coarse IDC-side reachability probe. Orchestrator control-plane traffic is whitelisted on GCP hosts (see 2026-08-07 safety fix in header) — the DB cluster's own SQL/PD/TiKV/raft traffic between IDC and GCP remains fully blocked for the full duration; only management-plane SSH is excluded from the blast radius."
+}
