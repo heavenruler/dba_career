@@ -1,0 +1,13 @@
+{
+  "scenario": "F2-idc-full-death",
+  "db_kind": "ybdb",
+  "dry_run": false,
+  "t_kill": "2026-08-08T11:36:54.276Z",
+  "t_restart_start": "2026-08-08T11:37:02.181Z",
+  "t_all_idc_healthy": "2026-08-08T11:37:05.228Z",
+  "t_first_write_ok": "2026-08-08T11:37:05.228Z",
+  "cluster_rebuild_sec": 10.952,
+  "write_recovery_sec": 10.952,
+  "poll_window_sec": 600,
+  "note": "write-reject validation is in write-reject-validation.txt (separate from this recovery-time measurement, per original C7.md intent + 2026-08-07 recovery-time extension)"
+}
