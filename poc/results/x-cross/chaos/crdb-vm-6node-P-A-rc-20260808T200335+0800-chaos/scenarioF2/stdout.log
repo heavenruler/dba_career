@@ -1,0 +1,18 @@
+[f2-execute] 2026-08-08T13:41:36.649Z db=crdb idc_hosts=[172.24.40.32 172.24.40.33 172.24.40.34] gcp_host=10.160.152.11 dry_run=0
+[f2-execute] 2026-08-08T13:41:42.187Z EXECUTING REAL KILL on all 3 IDC hosts simultaneously: systemctl stop cockroach
+[f2-execute] 2026-08-08T13:41:48.358Z validating write-reject (should fail — this is the expected/correct outcome)
+[f2-execute] 2026-08-08T13:42:49.473Z restarting: systemctl start cockroach on all 3 IDC hosts
+[f2-execute] 2026-08-08T13:43:03.813Z done — artifacts in /tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-A-rc-20260808T200335+0800/chaos/scenarioF2
+{
+  "scenario": "F2-idc-full-death",
+  "db_kind": "crdb",
+  "dry_run": false,
+  "t_kill": "2026-08-08T13:41:42.186Z",
+  "t_restart_start": "2026-08-08T13:42:49.472Z",
+  "t_all_idc_healthy": "2026-08-08T13:42:56.619Z",
+  "t_first_write_ok": "2026-08-08T13:43:02.425Z",
+  "cluster_rebuild_sec": 74.433,
+  "write_recovery_sec": 80.239,
+  "poll_window_sec": 600,
+  "note": "write-reject validation is in write-reject-validation.txt (separate from this recovery-time measurement, per original C7.md intent + 2026-08-07 recovery-time extension)"
+}

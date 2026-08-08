@@ -1,0 +1,7 @@
+[probe-rto] db=crdb host=10.160.152.11:26257 interval=100ms out=/tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-A-rc-20260808T200335+0800/chaos/scenarioC4-leader/probe.txt
+CREATE DATABASE
+NOTICE:  No license is installed. Throttling will begin after 2026-08-15 11:59:59 +0000 UTC unless a license is installed before then.
+NOTICE:  using sequential values in a primary key does not perform as well as using random UUIDs. See https://www.cockroachlabs.com/docs/v26.2/serial.html
+NOTICE:  relation "probe_rto" already exists, skipping
+CREATE TABLE
+[probe-rto] STOP_FILE detected — exiting (seq=505 written=/tmp/poc-tpcc/artifacts/X-CROSS/crdb-vm-6node-P-A-rc-20260808T200335+0800/chaos/scenarioC4-leader/probe.txt)

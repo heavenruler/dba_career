@@ -184,8 +184,38 @@ case "$DB" in
     LEADER_QUERY="mysql -h ${GCP_HOST} -P ${GCP_PORT} -u root -N -B -e \"SELECT p.STORE_ID, count(*) FROM information_schema.tikv_region_peers p JOIN information_schema.tikv_region_status s ON p.REGION_ID = s.REGION_ID WHERE s.DB_NAME='tpcc' AND p.IS_LEADER=1 GROUP BY p.STORE_ID;\""
     ;;
   crdb)
-    KILL_CMD="ssh -o StrictHostKeyChecking=accept-new root@${KILL_TARGET} 'cockroach quit --insecure --host=localhost:26257'"
-    LEADER_QUERY="cockroach sql --insecure --host=${GCP_HOST}:${GCP_PORT} --format=tsv -e \"SELECT range_id, lease_holder FROM [SHOW RANGES FROM TABLE tpcc.warehouse] LIMIT 5;\""
+    # 2026-08-08 fix (found before first real CRDB run — this branch had
+    # never been exercised): `cockroach quit` is CRDB's own graceful drain
+    # command (it transfers leases away BEFORE shutting down as one atomic
+    # step) — using it for BOTH f1 and c4 would make the two scenarios issue
+    # an identical command, defeating the entire graceful-vs-ungraceful
+    # comparison this DB pair of scenarios exists to test (unlike
+    # tidb/ybdb, where F1/C4 share the same KILL_CMD and differ only via a
+    # separate RESIGN_CMD run beforehand — CRDB has no such standalone
+    # resign-without-shutdown primitive, so the KILL_CMD itself must differ
+    # instead). f1 keeps the graceful `cockroach quit`; c4 hard-kills via
+    # SIGKILL (systemctl kill), bypassing drain/lease-transfer entirely.
+    # 2026-08-08 fix: `cockroach quit` no longer exists on v26.2 ("ERROR:
+    # unknown command \"quit\"") — first real F1 run's kill silently failed
+    # (non-zero exit) and post-kill verification correctly caught the
+    # process still running, fail-closing rather than reporting a fabricated
+    # RTO. The replacement is `node drain --self --shutdown` (tested live:
+    # drains ranges then exits cleanly). Also confirmed live: cockroach.service
+    # has Restart=on-failure/RestartSec=10s, so systemd auto-restarts the
+    # node ~10s after ANY kill (graceful or SIGKILL) — this is independent
+    # of what F1/C4 measure (cluster-wide lease failover to survivors, not
+    # this node's own recovery) and doesn't interfere with post-kill
+    # verification, which runs well under 10s after the kill.
+    if [[ "$SCENARIO" == "f1" ]]; then
+      KILL_CMD="ssh -o StrictHostKeyChecking=accept-new root@${KILL_TARGET} 'cockroach node drain --self --shutdown --insecure --host=localhost:26257'"
+    else
+      KILL_CMD="ssh -o StrictHostKeyChecking=accept-new root@${KILL_TARGET} 'systemctl kill -s SIGKILL cockroach'"
+    fi
+    # 2026-08-08 fix: bare "SHOW RANGES FROM TABLE" has no lease_holder
+    # column on v26.2 (confirmed live: "ERROR: column lease_holder does not
+    # exist ... consider SHOW RANGES WITH DETAILS") — first real run's
+    # pre-kill leader query failed (non-fatal, but always empty).
+    LEADER_QUERY="cockroach sql --insecure --host=${GCP_HOST}:${GCP_PORT} --format=tsv -e \"SELECT range_id, lease_holder FROM [SHOW RANGES FROM TABLE tpcc.warehouse WITH DETAILS] LIMIT 5;\""
     ;;
   ybdb)
     # 2026-08-08 fix (found live on first YBDB run — no prior real execution
@@ -224,7 +254,11 @@ fi
 S_PRE_FILE="$ARTIFACT_DIR/s_pre.txt"
 case "$DB" in
   tidb) S_PRE_QUERY="mysql -h ${GCP_HOST} -P ${GCP_PORT} -u root -N -B tpcc -e \"SELECT o_w_id, MAX(o_id) FROM orders GROUP BY o_w_id;\"" ;;
-  crdb) S_PRE_QUERY="cockroach sql --insecure --host=${GCP_HOST}:${GCP_PORT} -d tpcc --format=tsv -e \"SELECT o_w_id, MAX(o_id) FROM oorder GROUP BY o_w_id;\"" ;;
+  # 2026-08-08 fix: go-tpc's CRDB/postgres-driver schema names this table
+  # "orders" (confirmed via information_schema.columns), not "oorder" —
+  # same fix as ybdb's, deferred here until CRDB testing began. First real
+  # F1 run against crdb hit FATAL S_pre capture failure immediately.
+  crdb) S_PRE_QUERY="cockroach sql --insecure --host=${GCP_HOST}:${GCP_PORT} -d tpcc --format=tsv -e \"SELECT o_w_id, MAX(o_id) FROM orders GROUP BY o_w_id;\"" ;;
   # 2026-08-08 fix: go-tpc's YBDB/postgres-driver schema names this table
   # "orders" (confirmed via information_schema.tables), not "oorder" — the
   # latter is the classic OLTPBench/CRDB-driver naming this line was
@@ -306,8 +340,25 @@ if [[ "$DRY_RUN" -eq 0 ]]; then
     crdb) PROC_PATTERN="cockroach" ;;
     ybdb) PROC_PATTERN="yb-master|yb-tserver" ;;
   esac
-  if ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 root@"$KILL_TARGET" "pgrep -f '$PROC_PATTERN'" >> "$ARTIFACT_DIR/kill.log" 2>&1; then
-    log "FATAL: post-kill verification shows the process is STILL RUNNING on $KILL_TARGET — kill did not take effect, aborting (no real incident occurred, refusing to report a fabricated RTO/RPO)"
+  # 2026-08-08 fix: a single instantaneous check raced with crdb's
+  # `node drain --shutdown` — its CLI prints "shutdown ok" and the blocking
+  # ssh/eval call returns slightly BEFORE the OS process actually exits
+  # (confirmed live: identical kill command succeeded on one host at t+4s
+  # but was caught as "still running" on another host at t+2s, then
+  # confirmed dead moments later). Retry briefly instead of a single
+  # instant check — this is a general timing robustness fix, not
+  # crdb-specific (any DB's graceful-shutdown path could have similar lag).
+  STILL_RUNNING=1
+  for _ in 1 2 3 4 5; do
+    if ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 root@"$KILL_TARGET" "pgrep -f '$PROC_PATTERN'" >> "$ARTIFACT_DIR/kill.log" 2>&1; then
+      sleep 1
+    else
+      STILL_RUNNING=0
+      break
+    fi
+  done
+  if [[ "$STILL_RUNNING" -eq 1 ]]; then
+    log "FATAL: post-kill verification shows the process is STILL RUNNING on $KILL_TARGET after 5s of retries — kill did not take effect, aborting (no real incident occurred, refusing to report a fabricated RTO/RPO)"
     exit 1
   else
     echo "post_kill_verify=process_confirmed_down" >> "$ARTIFACT_DIR/kill.log"

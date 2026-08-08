@@ -1,0 +1,10 @@
+scenario=f1 db=crdb placement=P-A kill_target=172.24.40.32
+resign_cmd=<none>
+kill_cmd=ssh -o StrictHostKeyChecking=accept-new root@172.24.40.32 'cockroach node drain --self --shutdown --insecure --host=localhost:26257'
+t_kill_start=2026-08-08T13:04:30.077Z
+node is draining... remaining: 96
+node is draining... drain ok
+remaining: 0 (complete)
+shutdown ok
+kill_ssh_exit=0
+post_kill_verify=process_confirmed_down

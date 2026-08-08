@@ -516,7 +516,7 @@ phase5-crdb-deploy: phase-cleanup-tidb
 	ssh $(TPCC_CLIENT) "cd $(ANSIBLE_REMOTE_DIR) && ansible-playbook -i $(ANSIBLE_INV_VIA31) \
 	  playbooks/cockroach-vm6.yml -e crdb_placement=$(PLACEMENT)"
 	@echo "==> copy cockroach binary → GCP probe host .15（probe-iso-latency crdb 分支需要；fail-closed）"
-	ssh $(TPCC_CLIENT) "ssh root@$(CRDB_HOST) 'cat /usr/local/bin/cockroach' | \
+	ssh $(TPCC_CLIENT) "ssh -o StrictHostKeyChecking=accept-new root@$(CRDB_HOST) 'cat /usr/local/bin/cockroach' | \
 	  ssh -o StrictHostKeyChecking=accept-new root@10.160.152.15 'cat > /usr/local/bin/cockroach && chmod +x /usr/local/bin/cockroach && /usr/local/bin/cockroach version | head -2'" \
 	  || { echo "[F-Gate] cockroach binary → .15 FAIL — GCP probe 將全滅，中止"; exit 1; }
 	@echo "==> [end]   phase5-crdb-deploy at $$(date +%Y-%m-%dT%H:%M:%S%z)"

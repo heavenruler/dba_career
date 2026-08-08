@@ -1,0 +1,19 @@
+{
+  "db_kind": "crdb",
+  "scenario": "c4",
+  "placement": "P-A",
+  "dry_run": false,
+  "rto_sec": 0.131,
+  "rpo_lost_tx_count": 0,
+  "rpo_method": "simplified: per-warehouse max(o_id) high-water-mark check, not full driver-hooked FIFO buffer (see script header)",
+  "kill_target": "172.24.40.33",
+  "kill_role": "follower",
+  "kill_scope": "tidb-tikv",
+  "graceful_resign_cmd": "null",
+  "kill_cmd": "ssh -o StrictHostKeyChecking=accept-new root@172.24.40.33 'systemctl kill -s SIGKILL cockroach'",
+  "t_kill": "2026-08-08T21:15:57.759+0800",
+  "t_first_write_gcp": "2026-08-08T21:15:57.889+0800",
+  "poll_window_sec": 60,
+  "post_settle_sec": 30,
+  "generated_at": "2026-08-08T13:17:40.352Z"
+}

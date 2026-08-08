@@ -75,8 +75,22 @@ case "$DB" in
         WRITE_PROBE="mysql -h $GCP_HOST -P 4000 -u root -e 'INSERT INTO tpcc.warehouse (w_id) VALUES (999999)' 2>&1; mysql -h $GCP_HOST -P 4000 -u root -e 'DELETE FROM tpcc.warehouse WHERE w_id=999999' 2>&1"
         HEALTH_QUERY="mysql -h $GCP_HOST -P 4000 -u root -N -Be \"SELECT COUNT(*) FROM information_schema.tikv_store_status WHERE STORE_STATE='Up' AND LABEL LIKE '%idc%'\"" ;;
   crdb) SVC="cockroach"; GCP_PORT=26257
-        WRITE_PROBE="cockroach sql --insecure --host=$GCP_HOST:26257 -e \"SELECT 1\" 2>&1"
-        HEALTH_QUERY="cockroach sql --insecure --host=$GCP_HOST:26257 --format=tsv -e \"SELECT count(*) FROM crdb_internal.kv_node_status WHERE address LIKE '172.24%'\"" ;;
+        # 2026-08-08 fix: same class of bug as the ybdb WRITE_PROBE fix —
+        # this was a bare "SELECT 1", not an actual write, so it could never
+        # validate write-REJECT under quorum loss. Confirmed real schema
+        # (only w_id is NOT NULL on warehouse) and tested this exact
+        # insert+delete live before wiring it in.
+        WRITE_PROBE="cockroach sql --insecure --host=$GCP_HOST:26257 -d tpcc -e \"INSERT INTO warehouse (w_id) VALUES (999999)\" 2>&1; cockroach sql --insecure --host=$GCP_HOST:26257 -d tpcc -e \"DELETE FROM warehouse WHERE w_id=999999\" 2>&1"
+        # 2026-08-08 fix: crdb_internal.kv_node_status is access-restricted
+        # on v26.2 ("ERROR: Access to crdb_internal and system is
+        # restricted... set allow_unsafe_internals") — this query always
+        # failed, so idc_healthy_count was permanently 0 and the poll loop
+        # burned the full 600s window every time regardless of how fast the
+        # cluster/write-probe actually recovered. `cockroach node status`
+        # is unrestricted and gives the same is_available signal per node;
+        # cut+grep (no backslash escapes) sidesteps this string surviving
+        # two rounds of shell parsing (assignment here, then eval later).
+        HEALTH_QUERY="cockroach node status --insecure --host=$GCP_HOST:26257 --format=tsv 2>/dev/null | cut -f2,9 | grep -c '^172.24.*true\$'" ;;
   ybdb) SVC="yb-master yb-tserver"; GCP_PORT=5433
         # 2026-08-08 fix: this was a bare "SELECT 1" — not an actual write,
         # so it could never validate write-REJECT (a read-only query can
