@@ -1,5 +1,13 @@
 # TiDB P-B×A-A — 完整 5 情境 chaos/failover 實跑 (2026-08-08)
 
+> **⚠️ 2026-08-10 稽核修正**：完整逐項發現見
+> [`XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md`](../../../phase-crossregion/XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md)
+> 與 [`CHAOS-FAILOVER-AUDIT-2026-08-10.md`](../../../phase-crossregion/CHAOS-FAILOVER-AUDIT-2026-08-10.md)。
+> 本檔案下方第 2 點「F1-follower 4.180s 為量測雜訊」的說法**證據不足，已改列為未解決異常值**
+> ——核對 `probe.txt` 後這組事件後 `err=2`（真實觀測到中斷，`outage_observed=true`），與 P-A
+> 段的 0.030s 離群值（該筆 `err=0`，成因已查明為探測未觀測到中斷）性質不同，不能套用同一個
+> 「HAProxy round-robin 運氣好」的解釋。
+
 環境 TS=`20260808T101720+0800`（實際資料載入時 prepare artifact 目錄用的是
 `...rc-20260808T102900+0800`，是 phase6 內部第二次 TS 戳記，兩者屬同一次
 連續部署，非兩個環境）。W=128，placement gate 人工修正後確認 PASS
@@ -31,11 +39,16 @@
    優勢，兩者是不同的性質。本次數據補充佐證：連「單一節點層級」的
    failover，P-B 也沒有展現出比 P-A 更快的跡象。
 2. **F1-follower-tidbtikv（.33）量到 4.180s，是本輪 8 組 F1/C4 中最低的
-   一筆**，但同一台主機的其餘 3 種變體（+pd、leader×2）都落在 6.7-8.4s，
-   與 P-A 那次的離群值（follower 0.030s vs 其餘 ~6.7-7.3s）呈現同一種
-   「量測雜訊」型態——這次進一步支持「follower kill 的 RTO 讀數不穩定，
-   受 HAProxy round-robin 是否剛好避開故障 backend 的機率影響」這個假說，
-   而非「follower 真的有結構性優勢」。
+   一筆**，但同一台主機的其餘 3 種變體（+pd、leader×2）都落在 6.7-8.4s。
+   **[2026-08-10 修正]** 原本認為這與 P-A 段的離群值（follower 0.030s）
+   屬同一種「量測雜訊」型態，現已知不成立：P-A 那筆的成因是探測完全沒
+   觀測到中斷（`err=0`），但這筆（P-B F1-follower 4.180s）的 `probe.txt`
+   確實有 `err=2`，代表探測**真的觀測到了中斷**，只是恢復得比其餘 3 個
+   變體快將近一倍——這不能用「HAProxy 運氣好沒連到故障 backend」解釋
+   （若探測完全沒連到故障 backend，理應完全沒有 err，而非有 err 但恢復
+   較快）。這筆數字**改列為未解決的異常值**，真正成因待查（可能與這次
+   HAProxy 健康檢查週期恰好較短、或這次 leader handover 路徑恰好較短
+   有關，皆未經驗證）。
 3. **Leader 分布本身**：P-B 環境下 6 個 store 全部都持有 leader（IDC 三台
    各 2-5 個、GCP 三台各 2-5 個），對照 P-A 環境下 GCP 三台 leader 數恆為
    0——這是本次直接查詢驗證的 fact，符合 P-B「per-shard leader 散」的

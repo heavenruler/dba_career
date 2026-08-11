@@ -78,10 +78,29 @@ case "$MODE" in
     if [[ -f "$ARTIFACT_DIR/t_incident.txt" ]]; then
       T_INC_CUTOFF=$(grep -oP '"ts_ms":\K[0-9]+' "$ARTIFACT_DIR/t_incident.txt" || echo 0)
     fi
+    # 2026-08-10 fix (audit finding F-001): the previous version fell back
+    # to LAST_ERR_MS=cutoff whenever zero post-incident 'err' lines existed,
+    # which made FIRST_OK_MS resolve to "whatever probe tick happened to
+    # fire next after t_incident" — i.e. probe scheduling latency, NOT an
+    # observed outage-to-recovery duration. Verified against raw artifacts:
+    # every CockroachDB/YugabyteDB F1/C4 probe.txt in this campaign has
+    # err_count=0 post-incident (887/972/502/508/505/489/508/504 ok for
+    # crdb; 122/127/108/117/109/124/109/117 ok for ybdb — zero errors in
+    # all 16), so every RTO number reported for those scenarios was in
+    # fact measuring probe cadence, not failover. Must not silently keep
+    # producing a positive RTO in this case — record outage_observed
+    # explicitly and let --compute-rto decide what to output.
+    ERR_COUNT_POST=0
+    OK_COUNT_POST=0
     if [[ -f "$PROBE_FILE" ]]; then
+      ERR_COUNT_POST=$(awk -v cutoff="$T_INC_CUTOFF" '/^[0-9]+ err /{if ($1 > cutoff) n++} END{print n+0}' "$PROBE_FILE")
+      OK_COUNT_POST=$(awk -v cutoff="$T_INC_CUTOFF" '/^[0-9]+ ok /{if ($1 > cutoff) n++} END{print n+0}' "$PROBE_FILE")
+    fi
+    if [[ -f "$PROBE_FILE" && "$ERR_COUNT_POST" -gt 0 ]]; then
       LAST_ERR_MS=$(awk -v cutoff="$T_INC_CUTOFF" '/^[0-9]+ err /{if ($1 > cutoff) last=$1} END{if (last) print last; else print cutoff}' "$PROBE_FILE")
       FIRST_OK_MS=$(awk -v cutoff="$LAST_ERR_MS" '/^[0-9]+ ok /{if ($1 > cutoff) {print $1; exit}}' "$PROBE_FILE" || true)
     fi
+    OUTAGE_OBSERVED=false
     if [[ -n "${FIRST_OK_MS:-}" ]]; then
       # Convert epoch_ms to RFC3339 (portable: seconds + ms suffix)
       SEC=$((FIRST_OK_MS / 1000))
@@ -89,15 +108,25 @@ case "$MODE" in
       T_RFC=$(date -r "$SEC" '+%Y-%m-%dT%H:%M:%S' 2>/dev/null || date -d "@$SEC" '+%Y-%m-%dT%H:%M:%S' 2>/dev/null || echo "?")
       T_RFC="${T_RFC}.$(printf '%03d' "$MS_PART")$(date '+%z')"
       SRC=probe
+      OUTAGE_OBSERVED=true
+    elif [[ -f "$PROBE_FILE" ]]; then
+      # Probe ran and never errored post-incident: no outage was observed
+      # within probe resolution. Do NOT fabricate a recovery timestamp from
+      # the next scheduled tick — record the fact plainly instead.
+      FIRST_OK_MS="$T_INC_CUTOFF"
+      T_RFC="n/a"
+      SRC=no_outage_observed
+      echo "[wall-clock] NOTE: 0 post-incident errors in $PROBE_FILE (ok=$OK_COUNT_POST) — outage_observed=false, RTO not applicable" >&2
     else
       FIRST_OK_MS=$(ts_ms)
       T_RFC=$(ts_rfc3339)
       SRC=manual
-      echo "[wall-clock] WARN: no 'ok' in probe file — using current time as t_first_ok" >&2
+      echo "[wall-clock] WARN: no probe file found — using current time as t_first_ok" >&2
     fi
-    printf '{"ts_ms":%s,"ts_rfc3339":"%s","source":"%s"}\n' "$FIRST_OK_MS" "$T_RFC" "$SRC" \
+    printf '{"ts_ms":%s,"ts_rfc3339":"%s","source":"%s","outage_observed":%s,"probe_ok_count":%s,"probe_err_count":%s}\n' \
+      "$FIRST_OK_MS" "$T_RFC" "$SRC" "$OUTAGE_OBSERVED" "$OK_COUNT_POST" "$ERR_COUNT_POST" \
       > "$ARTIFACT_DIR/t_first_ok.txt"
-    echo "[wall-clock] t_first_ok stamped: $T_RFC  ($FIRST_OK_MS ms)  source=$SRC"
+    echo "[wall-clock] t_first_ok stamped: $T_RFC  ($FIRST_OK_MS ms)  source=$SRC  outage_observed=$OUTAGE_OBSERVED  ok=$OK_COUNT_POST  err=$ERR_COUNT_POST"
     ;;
 
   compute-rto)
@@ -108,18 +137,30 @@ case "$MODE" in
 
     T_INC=$(grep -oP '"ts_ms":\K[0-9]+' "$INCIDENT_FILE")
     T_OK=$(grep -oP '"ts_ms":\K[0-9]+' "$FIRST_OK_FILE")
+    OUTAGE_OBSERVED=$(grep -oP '"outage_observed":\K(true|false)' "$FIRST_OK_FILE" || echo "true")
+    PROBE_OK=$(grep -oP '"probe_ok_count":\K[0-9]+' "$FIRST_OK_FILE" || echo "null")
+    PROBE_ERR=$(grep -oP '"probe_err_count":\K[0-9]+' "$FIRST_OK_FILE" || echo "null")
 
-    if [[ "$T_OK" -le "$T_INC" ]]; then
+    if [[ "$T_OK" -le "$T_INC" && "$OUTAGE_OBSERVED" != "false" ]]; then
       echo "[wall-clock] WARN: t_first_ok ($T_OK) <= t_incident ($T_INC) — probe may predate incident" >&2
     fi
 
-    RTO_MS=$((T_OK - T_INC))
-    RTO_SEC=$(awk "BEGIN{printf \"%.3f\", $RTO_MS/1000}")
-
     OUT="$ARTIFACT_DIR/rto-wall-clock.json"
-    printf '{"t_incident_ms":%s,"t_first_ok_ms":%s,"rto_ms":%s,"rto_sec":%s}\n' \
-      "$T_INC" "$T_OK" "$RTO_MS" "$RTO_SEC" > "$OUT"
-
-    echo "[wall-clock] RTO = ${RTO_SEC}s  (${RTO_MS}ms)  → $OUT"
+    if [[ "$OUTAGE_OBSERVED" == "false" ]]; then
+      # 2026-08-10 fix (audit finding F-001): zero post-incident probe
+      # errors means no client-visible outage was observed within probe
+      # resolution — rto_sec MUST be null, not a positive number derived
+      # from probe scheduling latency. See probe_ok_count/probe_err_count
+      # for the underlying evidence.
+      printf '{"t_incident_ms":%s,"t_first_ok_ms":%s,"rto_ms":null,"rto_sec":null,"outage_observed":false,"probe_ok_count":%s,"probe_err_count":%s,"note":"no post-incident probe error observed; RTO not applicable (see F-001 audit finding)"}\n' \
+        "$T_INC" "$T_OK" "$PROBE_OK" "$PROBE_ERR" > "$OUT"
+      echo "[wall-clock] outage_observed=false — RTO not applicable (0 post-incident probe errors, ok=$PROBE_OK)  → $OUT"
+    else
+      RTO_MS=$((T_OK - T_INC))
+      RTO_SEC=$(awk "BEGIN{printf \"%.3f\", $RTO_MS/1000}")
+      printf '{"t_incident_ms":%s,"t_first_ok_ms":%s,"rto_ms":%s,"rto_sec":%s,"outage_observed":true,"probe_ok_count":%s,"probe_err_count":%s}\n' \
+        "$T_INC" "$T_OK" "$RTO_MS" "$RTO_SEC" "$PROBE_OK" "$PROBE_ERR" > "$OUT"
+      echo "[wall-clock] RTO = ${RTO_SEC}s  (${RTO_MS}ms)  outage_observed=true  → $OUT"
+    fi
     ;;
 esac

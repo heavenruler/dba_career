@@ -1,0 +1,9 @@
+--- INSERT_PROBE output ---
+ERROR: result is ambiguous: replica unavailable: (n4,s4):1 unable to serve request to r259:/Table/1{58-62/1/1/7} [(n4,s4):1, (n2,s2):5, (n3,s3):3, next=6, gen=154]: lost quorum (down: (n2,s2):5,(n3,s3):3); closed timestamp: 1786369362.503656819,0 (2026-08-10 13:42:42); raft status: {"id":"1","term":15,"vote":"1","commit":186025,"lead":"0","leadEpoch":"0","raftState":"StateFollower","applied":186025,"progress":{},"leadtransferee":"0"}: have been waiting 60.50s for slow proposal ConditionalPut [/Table/161/1/999999/0], EndTxn(commit) [/Table/161/1/999999/0], [txn: b09b44de], [can-forward-ts]
+SQLSTATE: 40003
+Failed running "sql"
+verdict=ambiguous_result_manual_review_required
+--- cleanup DELETE_PROBE output (best-effort, not used for verdict) ---
+ERROR: result is ambiguous: error=replica unavailable: (n4,s4):1 unable to serve request to r259:/Table/1{58-62/1/1/7} [(n4,s4):1, (n2,s2):5, (n3,s3):3, next=6, gen=154]: lost quorum (down: (n2,s2):5,(n3,s3):3); closed timestamp: 1786369362.503656819,0 (2026-08-10 13:42:42); raft status: {"id":"1","term":15,"vote":"1","commit":186025,"lead":"0","leadEpoch":"0","raftState":"StateFollower","applied":186025,"progress":{},"leadtransferee":"0"}: encountered poisoned latch /Table/161/1/999999/0@1786369365.502550839,0 [exhausted] (last error: failed to send RPC: sending to all replicas failed; last error: gRPC: failed to connect to n3 at 172.24.40.33:26257: initial connection heartbeat failed: grpc: connection error: desc = "transport: error while dialing: dial tcp 172.24.40.33:26257: connect: connection refused" [code 14/Unavailable])
+SQLSTATE: 40003
+Failed running "sql"

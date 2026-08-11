@@ -1,0 +1,6 @@
+[probe-rto] db=crdb host=10.160.152.11:26257 interval=100ms out=/tmp/poc-tpcc/artifacts/X-CROSS/chaos/crdb-vm-6node-P-B-aa-rc-20260810T152835+0800-chaos/scenarioC4-follower/probe.txt
+CREATE DATABASE
+NOTICE:  using sequential values in a primary key does not perform as well as using random UUIDs. See https://www.cockroachlabs.com/docs/v26.2/serial.html
+NOTICE:  relation "probe_rto" already exists, skipping
+CREATE TABLE
+[probe-rto] STOP_FILE detected — exiting (seq=495 written=/tmp/poc-tpcc/artifacts/X-CROSS/chaos/crdb-vm-6node-P-B-aa-rc-20260810T152835+0800-chaos/scenarioC4-follower/probe.txt)

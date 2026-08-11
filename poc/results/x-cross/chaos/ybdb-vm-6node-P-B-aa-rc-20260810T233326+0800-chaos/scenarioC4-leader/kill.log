@@ -1,0 +1,7 @@
+scenario=c4 db=ybdb placement=P-B kill_target=172.24.40.33
+resign_cmd=<none>
+kill_cmd=ssh -o StrictHostKeyChecking=accept-new root@172.24.40.33 'yugabyted stop --base_dir=/var/yugabyte'
+t_kill_start=2026-08-10T17:51:46.883Z
+Stopped yugabyted using config /var/yugabyte/conf/yugabyted.conf.
+kill_ssh_exit=0
+post_kill_verify=process_confirmed_down

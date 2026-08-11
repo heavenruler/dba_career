@@ -1,0 +1,4 @@
+[probe-rto] db=ybdb host=10.160.152.11:5433 interval=100ms out=/tmp/poc-tpcc/artifacts/X-CROSS/chaos/ybdb-vm-6node-P-A-rc-20260810T214440+0800-chaos/scenarioF1-leader/probe.txt
+CREATE DATABASE
+CREATE TABLE
+[probe-rto] STOP_FILE detected — exiting (seq=101 written=/tmp/poc-tpcc/artifacts/X-CROSS/chaos/ybdb-vm-6node-P-A-rc-20260810T214440+0800-chaos/scenarioF1-leader/probe.txt)

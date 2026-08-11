@@ -72,7 +72,8 @@ case "$DB" in
   # TiKV+PD only); stopping/starting it on .34 fails harmlessly (recorded
   # in kill.log's exit code, not fatal to the overall run).
   tidb) SVC="tidb-4000 tikv-20160 pd-2379"; GCP_PORT=4000
-        WRITE_PROBE="mysql -h $GCP_HOST -P 4000 -u root -e 'INSERT INTO tpcc.warehouse (w_id) VALUES (999999)' 2>&1; mysql -h $GCP_HOST -P 4000 -u root -e 'DELETE FROM tpcc.warehouse WHERE w_id=999999' 2>&1"
+        INSERT_PROBE="mysql -h $GCP_HOST -P 4000 -u root -e 'INSERT INTO tpcc.warehouse (w_id) VALUES (999999)' 2>&1"
+        DELETE_PROBE="mysql -h $GCP_HOST -P 4000 -u root -e 'DELETE FROM tpcc.warehouse WHERE w_id=999999' 2>&1"
         HEALTH_QUERY="mysql -h $GCP_HOST -P 4000 -u root -N -Be \"SELECT COUNT(*) FROM information_schema.tikv_store_status WHERE STORE_STATE='Up' AND LABEL LIKE '%idc%'\"" ;;
   crdb) SVC="cockroach"; GCP_PORT=26257
         # 2026-08-08 fix: same class of bug as the ybdb WRITE_PROBE fix —
@@ -80,7 +81,21 @@ case "$DB" in
         # validate write-REJECT under quorum loss. Confirmed real schema
         # (only w_id is NOT NULL on warehouse) and tested this exact
         # insert+delete live before wiring it in.
-        WRITE_PROBE="cockroach sql --insecure --host=$GCP_HOST:26257 -d tpcc -e \"INSERT INTO warehouse (w_id) VALUES (999999)\" 2>&1; cockroach sql --insecure --host=$GCP_HOST:26257 -d tpcc -e \"DELETE FROM warehouse WHERE w_id=999999\" 2>&1"
+        # 2026-08-10 fix (audit finding F-006): INSERT and DELETE used to be
+        # concatenated into one WRITE_PROBE string with combined output,
+        # which (a) let a naive "contains error" grep classify CRDB's own
+        # "ERROR: result is ambiguous ... lost quorum" response as a clean
+        # write_correctly_rejected — CRDB is explicitly telling us it does
+        # NOT know whether the write committed, which is a materially
+        # different outcome from a clean reject, and (b) meant an INSERT
+        # that actually committed followed by a DELETE that merely failed
+        # to connect would ALSO be misclassified as "correctly rejected"
+        # (the real failure — a write got through — hidden by grep matching
+        # the later command's unrelated connection error). Split into
+        # separate INSERT_PROBE/DELETE_PROBE so the verdict logic below can
+        # inspect the INSERT's own result in isolation.
+        INSERT_PROBE="cockroach sql --insecure --host=$GCP_HOST:26257 -d tpcc -e \"INSERT INTO warehouse (w_id) VALUES (999999)\" 2>&1"
+        DELETE_PROBE="cockroach sql --insecure --host=$GCP_HOST:26257 -d tpcc -e \"DELETE FROM warehouse WHERE w_id=999999\" 2>&1"
         # 2026-08-08 fix: crdb_internal.kv_node_status is access-restricted
         # on v26.2 ("ERROR: Access to crdb_internal and system is
         # restricted... set allow_unsafe_internals") — this query always
@@ -98,7 +113,8 @@ case "$DB" in
         # or vice versa; it simply doesn't exercise the code path F2 exists
         # to test). Confirmed real schema (only w_id is NOT NULL) and tested
         # this insert+delete live before wiring it in.
-        WRITE_PROBE="psql \"host=$GCP_HOST port=5433 user=yugabyte dbname=tpcc connect_timeout=3\" -c 'INSERT INTO warehouse (w_id) VALUES (999999)' 2>&1; psql \"host=$GCP_HOST port=5433 user=yugabyte dbname=tpcc connect_timeout=3\" -c 'DELETE FROM warehouse WHERE w_id=999999' 2>&1"
+        INSERT_PROBE="psql \"host=$GCP_HOST port=5433 user=yugabyte dbname=tpcc connect_timeout=3\" -c 'INSERT INTO warehouse (w_id) VALUES (999999)' 2>&1"
+        DELETE_PROBE="psql \"host=$GCP_HOST port=5433 user=yugabyte dbname=tpcc connect_timeout=3\" -c 'DELETE FROM warehouse WHERE w_id=999999' 2>&1"
         # 2026-08-08 fix: $GCP_HOST:7100 is not a valid master address list —
         # yb-admin needs all 3 IDC master addresses (masters only run on IDC
         # in this P-A topology, confirmed via list_all_masters). Also fixed
@@ -137,6 +153,12 @@ if [[ "$DRY_RUN" -eq 0 ]]; then
     ssh_c "$h" "$STATUS_CMD" > "$ARTIFACT_DIR/db-config-snapshot/pre-kill/svc-status-$h.txt" 2>&1
   done
   sleep "$PRE_WINDOW_SEC"
+  # Ensure the sentinel row is absent before injection (best-effort, while
+  # cluster is healthy) — a leftover row from a prior run/manual test would
+  # otherwise make the post-kill write-reject INSERT fail with a duplicate-key
+  # error instead of a genuine unavailability error, misclassifying the
+  # verdict as write_correctly_rejected for the wrong reason.
+  eval "$DELETE_PROBE" >/dev/null 2>&1 || true
 else
   log "[dry-run] would confirm baseline health on all 3 IDC hosts"
 fi
@@ -157,12 +179,34 @@ fi
 # ---- validate write-reject (per original C7.md intent) ----
 log "validating write-reject (should fail — this is the expected/correct outcome)"
 if [[ "$DRY_RUN" -eq 0 ]]; then
-  eval "$WRITE_PROBE" > "$ARTIFACT_DIR/write-reject-validation.txt" 2>&1
-  if grep -qiE "error|refused|timeout|no route|fail" "$ARTIFACT_DIR/write-reject-validation.txt"; then
-    echo "verdict=write_correctly_rejected" >> "$ARTIFACT_DIR/write-reject-validation.txt"
+  # 2026-08-10 fix (audit finding F-006): verdict is now derived from the
+  # INSERT's own output ONLY (not the combined INSERT+DELETE text), and
+  # distinguishes three outcomes instead of two — a naive "contains error"
+  # match previously classified CRDB's "result is ambiguous ... lost
+  # quorum" response (which means CRDB itself cannot say whether the write
+  # committed) as a clean write_correctly_rejected, and would have done the
+  # same for a committed INSERT followed by a merely-disconnected DELETE.
+  INSERT_RESULT=$(eval "$INSERT_PROBE" 2>&1)
+  {
+    echo "--- INSERT_PROBE output ---"
+    echo "$INSERT_RESULT"
+  } > "$ARTIFACT_DIR/write-reject-validation.txt"
+  if grep -qiE "ambiguous" <<<"$INSERT_RESULT"; then
+    VERDICT="ambiguous_result_manual_review_required"
+  elif grep -qiE "error|refused|timeout|no route|fail" <<<"$INSERT_RESULT"; then
+    VERDICT="write_correctly_rejected"
   else
-    echo "verdict=UNEXPECTED_WRITE_SUCCEEDED_review_manually" >> "$ARTIFACT_DIR/write-reject-validation.txt"
+    VERDICT="UNEXPECTED_WRITE_SUCCEEDED_review_manually"
   fi
+  echo "verdict=$VERDICT" >> "$ARTIFACT_DIR/write-reject-validation.txt"
+  # Best-effort cleanup regardless of verdict: if the INSERT actually
+  # committed (ambiguous or unexpected-success case), don't leave the
+  # sentinel row behind. Failure here is expected/harmless when the
+  # cluster is genuinely still down or the INSERT never committed.
+  {
+    echo "--- cleanup DELETE_PROBE output (best-effort, not used for verdict) ---"
+    eval "$DELETE_PROBE" 2>&1
+  } >> "$ARTIFACT_DIR/write-reject-validation.txt"
 else
   echo "[dry-run] would attempt a write via GCP endpoint, expecting rejection" > "$ARTIFACT_DIR/write-reject-validation.txt"
 fi
@@ -195,8 +239,27 @@ if [[ "$DRY_RUN" -eq 0 ]]; then
       echo "$NOW: all 3 IDC nodes report healthy" >> "$RECOVERY_LOG"
     fi
     if [[ "$T_FIRST_WRITE_OK" == "null" ]]; then
-      WRITE_RESULT=$(eval "$WRITE_PROBE" 2>&1)
-      if ! grep -qiE "error|refused|timeout|no route|fail" <<<"$WRITE_RESULT"; then
+      # 2026-08-10 fix (audit finding F-006): use INSERT_PROBE's own result
+      # to decide recovery, not a combined INSERT+DELETE string. An
+      # "ambiguous" result (CRDB, mid quorum-recovery) means we still don't
+      # know if a write went through — keep polling rather than declaring
+      # recovery on an uncertain outcome.
+      # 2026-08-10 fix (real re-run finding): the pre-recovery INSERT_PROBE
+      # above can itself have committed despite reporting "ambiguous" (CRDB
+      # confirmed case — the sentinel row existed after recovery even though
+      # its own cleanup DELETE_PROBE also failed ambiguous/poisoned-latch
+      # during the outage). Without this, every poll's INSERT then fails
+      # with a duplicate-key error, which contains "error" and is
+      # indistinguishable from "still down" — recovery is never detected
+      # even after the cluster is fully healthy. Make each poll idempotent
+      # by clearing the sentinel row first (best-effort; a no-op delete on a
+      # still-down cluster or a not-yet-existing row is expected/harmless).
+      eval "$DELETE_PROBE" >/dev/null 2>&1 || true
+      INSERT_RESULT=$(eval "$INSERT_PROBE" 2>&1)
+      if grep -qiE "ambiguous" <<<"$INSERT_RESULT"; then
+        : # inconclusive — do not declare recovered, retry next poll
+      elif ! grep -qiE "error|refused|timeout|no route|fail" <<<"$INSERT_RESULT"; then
+        eval "$DELETE_PROBE" >/dev/null 2>&1 || true  # best-effort cleanup
         T_FIRST_WRITE_OK="$NOW"
         echo "$NOW: first successful write post-recovery" >> "$RECOVERY_LOG"
       fi

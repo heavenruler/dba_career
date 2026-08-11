@@ -1,72 +1,59 @@
 # YugabyteDB — vm-6node P-A×A-S — chaos/failover 實跑摘要
 
-- TS: `20260808T144840+0800`（環境於本 TS 完成 phase1~phase7 建置；因 phase7 prepare 連續 2 次卡在
-  `WaitForYsqlBackendsCatalogVersion` catalog-version 迴圈，依專案規則整個環境 destroy 重建後才在此
-  TS 上成功跑完，經使用者確認「直接 teardown 重建整個環境」）
+> **⚠️ 2026-08-11 已被真實重跑取代**：本檔案記錄的原始數字（TS=`20260808T144840+0800`）已於
+> 2026-08-10 稽核（[`CHAOS-FAILOVER-AUDIT-2026-08-10.md`](../../../phase-crossregion/CHAOS-FAILOVER-AUDIT-2026-08-10.md)）
+> 撤回；完整重跑已於 2026-08-10/11 完成（新 TS=`20260810T214440+0800`，WAREHOUSES=128，與原始
+> campaign 建置紀錄一致）。**本檔案下方內容已完全替換為該次重跑的真實數字**。詳細方法論見
+> [`XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md`](../../../phase-crossregion/XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md)。
+
+- TS（重跑）: `20260810T214440+0800`
 - Placement: P-A（2 IDC + 1 GCP voter, RF=3, preferred_zones=IDC → leader 全數固定 IDC）
-- Profile: A-S（steady workload 單向連 GCP host `10.160.152.11:5433`，非 HAProxy VIP — 這個環境沒有
-  幫 YBDB 佈署 HAProxy，因此 steady workload 直連單一 GCP tserver；YBDB 6 台裡任一 IDC 節點被殺都不影響
-  這條連線，但 GCP host 本身被殺或整個 GCP 側出問題時 workload 會跟著斷線）
+- Profile: A-S（steady workload 連 GCP host `10.160.152.11:5433`，WAREHOUSES=128，載入耗時
+  約 1 小時）
 - 執行順序：C7 → C1 → F1(leader/follower) → C4(leader/follower) → F2
+- Kill target 選擇：直接查 `list_all_masters` 確認當下真正的 master LEADER/FOLLOWER（避免重演
+  原始 campaign 曾發生的角色標記錯誤）。F1-leader 用當時的 LEADER=172.24.40.34；F1-follower
+  原訂 172.24.40.32，但因 F1-leader kill 後觸發重新選舉，172.24.40.32 變成新 LEADER，改用
+  全程未被動過、穩定為 FOLLOWER 的 172.24.40.33。
+
+## 本次重跑中確認的已知問題（與 8/8 原始 campaign 記錄一致，非新發現）
+
+**YBDB `yugabyted stop` 不會像 CRDB/TiDB 的 systemd kill 一樣自動重啟**：CRDB/TiDB 的 kill 指令
+走 systemd（`Restart=on-failure`），節點會在 ~10s 內自動復活；YBDB 用 `yugabyted stop`
+直接停掉 supervisor，節點會維持停止狀態直到手動 `yugabyted start`。因此本段每個 F1/C4 情境
+之間都手動確認並補一次 `yugabyted start` + 等待 6/6 tserver ALIVE，才進入下一情境，避免
+「上一情境殺的節點還沒起來就疊加下一次 kill」污染結果。過程中曾撞到一次 `run-vm6-chaos-execute.sh`
+執行逾時（懷疑與 master leader stepdown 後的短暫選舉風暴有關，與原始 campaign 記錄的
+「YBDB master 執行緒暴增」屬同一類已知現象），清掉殘留 process 並確認叢集健康後重跑即恢復正常，
+未再觀測到執行緒異常暴增（正常值 27-30，與 8/8 段記錄的 1147 異常值不同）。
 
 ## 結果總表
 
-| 情境 | kill target | role | graceful resign | RTO | RPO (lost tx) | 備註 |
+| 情境 | kill target | role | graceful resign | RTO | RPO | 備註 |
 |---|---|---|---|---|---|---|
-| C7 (fio 磁碟競爭 30s) | 172.24.40.32 | — | — | N/A | N/A | fio WRITE bw=280MiB/s 持續 30s；6/6 tserver ALIVE 全程未受影響 |
-| C1 (WAN partition 30s) | 全部 6 台 DB host（IDC↔GCP 對稱阻斷） | — | — | N/A | N/A | probe 全程 err（partition 期間 GCP↔IDC 斷線符合預期）；30s 後自動 restore，6/6 ALIVE 復原 |
-| F1-leader | 172.24.40.32 (master LEADER) | leader | 是（master_leader_stepdown 先於實際 kill） | **0.260s** | 0 | |
-| F1-follower | 172.24.40.34 (master FOLLOWER) | follower | 是 | **0.391s** | 0 | |
-| C4-leader | 172.24.40.32 | leader | 否（ungraceful） | **0.375s** | 0 | 與 F1-leader 相比只慢 115ms — graceful resign 對 YBDB master failover 幫助有限 |
-| C4-follower | 172.24.40.34 | follower | 否 | **0.328s** | 0 | |
-| F2（3 台 IDC 同時死亡） | 172.24.40.32/33/34 | — | — | **write_recovery ≈3.2s**（見下方重新解讀）；raw `write_recovery_sec`=11.607s | 0（write-reject 期間無寫入被誤判成功，恢復後才寫入） | write-reject 驗證：kill 期間對 GCP host INSERT/DELETE 皆 `psql: timeout expired` → `verdict=write_correctly_rejected` |
+| C7 (fio 磁碟競爭 30s) | 172.24.40.34 | — | — | N/A | N/A | 30s 注入正常，6/6 tserver ALIVE 全程未受影響 |
+| C1 (WAN partition 30s) | 全部 6 台 | — | — | N/A | N/A | 探測全程 ok；30s 後自動 restore，6/6 ALIVE 復原 |
+| F1-leader | 172.24.40.34（當時真正的 master LEADER，已核對） | leader | 是（master_leader_stepdown 先於實際 kill） | `outage_observed=false`（ok=101, err=0） | 0 | |
+| F1-follower | 172.24.40.33（全程穩定 FOLLOWER） | follower | 是 | `outage_observed=false`（ok=114, err=0） | 0 | |
+| C4-leader | 172.24.40.34 | leader | 否 | `outage_observed=false`（ok=115, err=0） | 0 | |
+| C4-follower | 172.24.40.32 | follower | 否 | `outage_observed=false`（ok=116, err=0） | 0 | |
+| F2（3 台 IDC 同時死亡） | 172.24.40.32/33/34 | — | — | 真實復原 **≈2.99s**（15:32:36.097−15:32:33.109）；`cluster_rebuild_sec`=10.882 | 0 | write-reject：`psql: timeout expired` → `verdict=write_correctly_rejected`；復原後 6/6 ALIVE |
 
-**F2 數字重新解讀**（沿用 TiDB 段已建立的 basis-point 修正公式，不用 script 原生 `t_kill` 起算）：
-- raw `write_recovery_sec = t_first_write_ok - t_kill = 11.607s`：把「偵測到 kill 完成 + 跑 write-reject
-  驗證 + 送出 3 台 restart 指令」這段 ~8.4s 的前置作業時間也算進去，不是真正的復原時間。
-- 真實復原時間 = `t_first_write_ok - t_restart_start = 08:24:48.230 − 08:24:45.029 ≈ 3.2s`：3 台 IDC
-  yugabyted 平行重啟後，到第一次真實 INSERT+DELETE 成功為止。
+## 觀察
 
-## RTO/RPO 量測方法論一致性
+- **F1/C4 全數 `outage_observed=false`**：與 CRDB 兩個 placement 完全一致的模式——單一 IDC
+  node kill（含 master leader stepdown+kill）在 100ms 探測解析度下觀測不到中斷。
+- **F2 真實復原時間 ≈2.99s**：與同一 campaign 內 YBDB P-B 段（≈3.65s）同量級，也與稽核前
+  8/8 原始數字（P-A≈3.2s／P-B≈3.05s）高度吻合，顯示 YBDB 的 F2 復原速度在不同 placement 間
+  相當穩定，且此次真實重跑與歷史數字互相印證。
+- **YBDB F2 復原（≈3s）明顯快於 CRDB F2 復原（≈7s）**：這個跨 DB 差異在本次真實重跑中再次
+  重現，方向性一致，強化了「YBDB 的 quorum-loss 偵測/拒絕機制比 CRDB 更快判定失敗」這個
+  跨 DB 觀察的可信度（見比較報告）。
 
-沿用 TiDB 段確立的公式：全程使用 `probe-rto-driver.sh`（100ms 週期 write probe，本次修完 bug 後才可信，
-見下方）+ `wall-clock-wrapper.sh`（t_incident 錨點、以最後一次 error 而非第一次 isolated ok 判定復原）。
+## 已知限制
 
-## Placement 觀察
-
-與 TiDB P-A/P-B 段的結論一致：graceful resign 對 YBDB 的效益也很有限（F1-leader 0.260s vs C4-leader
-0.375s，僅差 115ms），且 leader/follower kill 的 RTO 差異也在同一量級（0.26~0.39s），沒有觀察到
-placement 或 role 造成的結構性差異。YBDB 的 raft-based master 選舉在小資料量/單區域環境下明顯偏快。
-
-## 本次執行中發現並修復的 bug（首次對 YBDB 實跑這些既有腳本分支）
-
-1. **`probe-rto-driver.sh` — PROBE_USER 對 ybdb 錯誤預設為 `root`**（新發現，影響本次 F1-leader/
-   F1-follower 的第一次嘗試）：YSQL 預設 superuser 是 `yugabyte`，不是 `root`；也沒有 `defaultdb`
-   這個庫（那是 CRDB 的命名），且 YSQL 的 `CREATE DATABASE` 不支援 `IF NOT EXISTS`（psql 回
-   `syntax error at or near "NOT"`）。三個問題疊加造成 probe table 從未真正建立成功，導致 F1 兩次首跑
-   全程 100% `err unknown`（含 kill 前，證明是探測工具本身失效，不是真的量到「一直沒復原」）。已修正：
-   `PROBE_USER` 依 DB 分開預設（ybdb→yugabyte）；ybdb 分支改連 `dbname=yugabyte` 執行
-   `CREATE DATABASE probe_db`（無 IF NOT EXISTS，靠既有的 `2>/dev/null || true` 吞掉重跑時的
-   already-exists 錯誤）。修復後兩個情境都重跑，拿到真實 RTO。
-2. **`run-vm6-chaos-execute.sh` — S_PRE_QUERY 對 ybdb 誤用 `oorder` 表名**（新發現）：go-tpc 在
-   postgres driver（ybdb/crdb 皆同）下建的表是 `orders`，不是 OLTPBench 傳統命名的 `oorder`；這行是從
-   CRDB 那行複製貼上但沒改對。首次對 ybdb 實跑 F1 時 S_pre capture 直接 FATAL 中止。已修正 ybdb 分支
-   為 `orders`；CRDB 那行維持 `oorder` 不動——因為 CRDB 測試本身還沒開始，比照既有的
-   WRITE_PROBE SELECT-1 已知問題，一併留到 CRDB 段處理。
-3. **`run-vm6-chaos-execute.sh` 呼叫 `gate-chrony-cross-region.sh` 缺少必填 `--ts`/`--root-suffix`**
-   （沿用既有工作模式而非新 bug）：該 gate script 本身要求這兩個參數，但呼叫端從未傳遞——推測 TiDB 段
-   兩次全部情境也都是靠 `--skip-chrony-gate` 略過（因為 F1/C4 artifact 目錄裡完全沒有 chrony-gate 相關
-   檔案佐證曾經真的跑過）。本次沿用同樣做法：全程加 `--skip-chrony-gate`，因為 chrony 漂移已在 phase2
-   對這批全新 VM 驗證過一次（10 host 全數 <100ms），環境生命週期內不會再變。未修改 script 本體。
-
-以上 1、2 屬於這批既有 ybdb 分支程式碼「第一次被真實執行到」才浮現的 bug，與 TiDB 段每個新分支首跑
-必出新 bug 的模式一致；已直接修正在共用腳本上，YBDB 後續 P-B×A-A 段與 CRDB 段的類似路徑可直接受惠
-（`run-vm6-chaos-execute.sh` 的 S_PRE_QUERY fix 僅涵蓋 ybdb；CRDB 段仍需比照修正 `oorder`→`orders`）。
-
-## 已知限制（沿用 TiDB 段既有方法論限制，未變）
-
-- RPO 量測為簡化版（per-warehouse `max(o_id)` high-water-mark），非完整 driver-hooked FIFO buffer。
-- C1/C7 未量測 tpmC-during-incident（沿用 TiDB 段已知的 workload log 覆蓋問題，本段未特別修正，因為
-  重心在讓 F1/C4/F2 的 kill-scope 分支首次正確跑通）。
-- Steady workload 這次因為 SSH 遠端 detach 的 harness 問題重啟過 2 次（詳見過程；已用 harness
-  `run_in_background` 取代手動 `nohup+disown`，之後穩定運行到收工，未再中斷）。
+- RPO 量測為簡化版（per-warehouse `max(o_id)` high-water-mark check），非完整 driver-hooked
+  FIFO buffer。
+- C1/C7 未量測 tpmC-during-incident。
+- F1/C4 之間需要手動介入重啟被殺節點（YBDB 特有的操作負擔，CRDB/TiDB 因 systemd 自動重啟則
+  不需要）。

@@ -1,5 +1,15 @@
 # TiDB P-A×A-S — 完整 5 情境 chaos/failover 實跑 (2026-08-08)
 
+> **⚠️ 2026-08-10 稽核修正**：完整逐項發現與跨 DB 修正見
+> [`XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md`](../../../phase-crossregion/XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md)
+> 與 [`CHAOS-FAILOVER-AUDIT-2026-08-10.md`](../../../phase-crossregion/CHAOS-FAILOVER-AUDIT-2026-08-10.md)。
+> 與本檔直接相關的修正：(1) 下表 C4-follower-tidbtikv 的 0.030s 離群值成因已查明——`probe.txt`
+> 事件後 `err=0`（`outage_observed=false`），與其餘 7 組（皆 `err=2`，真實觀測到中斷）性質不同，
+> 這不是「HAProxy 運氣好」的量測雜訊，而是探測從未偵測到失敗，RTO 數字本身無意義，見下方
+> §「重要方法論發現與警語」第 2 點更新。(2) F1/C4 三家（TiDB/YBDB/CRDB）的計時基準不對稱
+> （TiDB 的 PD resign 發生在 `t_incident` 之前並被排除計時）已知，跨 DB 比較時需注意。
+> (3) C1/C7 的探測/量測範圍限制見比較報告 §4/§5，本檔案的「n/a（韌性敘述）」定性不變。
+
 環境 TS=`20260808T075957+0800`，W=128，placement gate PASS（idc=20/20, 100%）。
 依 48 次注入campaign 規劃第一組（TiDB, P-A×A-S），共 11 次真實注入。
 
@@ -35,6 +45,11 @@
    剛好沒連到掛掉的 backend 影響很大，0.030s 這筆**很可能是量測雜訊，
    不是「follower 真的無感知」的證據**——4 組 follower 測試中 3 組落在
    leader-kill 同量級（~6.7-7.3s），只有 1 組是離群值。
+   **[2026-08-10 修正] 成因已查明**：核對 `probe.txt` 後發現這組事件後
+   `err=0`（`outage_observed=false`），與「HAProxy round-robin 運氣好」
+   無關——探測本身從未觀測到任何寫入失敗，0.030s 只是 t_incident 後下一次
+   probe tick 剛好落下的時間，不是真實的 RTO。這與 CockroachDB／YugabyteDB
+   全部 16 組 F1/C4 情境的根本成因完全相同（見比較報告 F-001）。
 3. **F1/C4 kill 範圍已修正為 tidb+tikv(+pd)**：原腳本只停無狀態的
    `tidb-server`，未觸發真正的 TiKV Region Raft leader 重選；修正後
    leader/follower/±pd 共 8 組數據都落在 6.68-7.32s 這個窄區間，顯示

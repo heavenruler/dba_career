@@ -1,0 +1,13 @@
+{
+  "scenario": "F2-idc-full-death",
+  "db_kind": "crdb",
+  "dry_run": false,
+  "t_kill": "2026-08-10T13:42:40.460Z",
+  "t_restart_start": "2026-08-10T13:43:45.979Z",
+  "t_all_idc_healthy": "2026-08-10T13:43:53.096Z",
+  "t_first_write_ok": "2026-08-10T13:43:53.096Z",
+  "cluster_rebuild_sec": 72.636,
+  "write_recovery_sec": 72.636,
+  "poll_window_sec": 600,
+  "note": "write-reject validation is in write-reject-validation.txt (separate from this recovery-time measurement, per original C7.md intent + 2026-08-07 recovery-time extension)"
+}

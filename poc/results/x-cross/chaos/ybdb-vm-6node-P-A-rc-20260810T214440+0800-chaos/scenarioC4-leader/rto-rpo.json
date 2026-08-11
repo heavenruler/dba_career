@@ -1,0 +1,19 @@
+{
+  "db_kind": "ybdb",
+  "scenario": "c4",
+  "placement": "P-A",
+  "dry_run": false,
+  "rto_sec": null,
+  "rpo_lost_tx_count": 0,
+  "rpo_method": "simplified: per-warehouse max(o_id) high-water-mark check, not full driver-hooked FIFO buffer (see script header)",
+  "kill_target": "172.24.40.34",
+  "kill_role": "leader",
+  "kill_scope": "tidb-tikv",
+  "graceful_resign_cmd": "null",
+  "kill_cmd": "ssh -o StrictHostKeyChecking=accept-new root@172.24.40.34 'yugabyted stop --base_dir=/var/yugabyte'",
+  "t_kill": "2026-08-10T23:26:02.639+0800",
+  "t_first_write_gcp": "n/a",
+  "poll_window_sec": 60,
+  "post_settle_sec": 30,
+  "generated_at": "2026-08-10T15:28:12.030Z"
+}

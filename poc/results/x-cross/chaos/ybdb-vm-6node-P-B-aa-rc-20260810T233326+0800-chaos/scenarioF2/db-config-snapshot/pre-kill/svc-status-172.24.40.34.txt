@@ -1,0 +1,15 @@
+/ Fetching status...- Fetching status...\ Fetching status...| Fetching status...[2K
++--------------------------------------------------------------------------------------------------+
+|                                            yugabyted                                             |
++--------------------------------------------------------------------------------------------------+
+| Status     : Running.                                                                            |
+| YSQL Status: Ready                                                                               |
+| Replication Factor: 3                                                                                   |
+| YugabyteDB UI: http://172.24.40.34:15433                                                           |
+| JDBC       : jdbc:postgresql://172.24.40.34:5433/yugabyte?user=yugabyte&password=yugabyte        |
+| YSQL       : bin/ysqlsh -h 172.24.40.34  -U yugabyte -d yugabyte                                 |
+| YCQL       : bin/ycqlsh 172.24.40.34 9042 -u cassandra                                           |
+| Data Dir   : /var/yugabyte/data                                                                  |
+| Log Dir    : /var/yugabyte/logs                                                                  |
+| Universe UUID: 3e65081d-7c7c-4abb-beee-abbf82873d58                                                |
++--------------------------------------------------------------------------------------------------+

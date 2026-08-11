@@ -1,90 +1,70 @@
 # CockroachDB — vm-6node P-A×A-S — chaos/failover 實跑摘要
 
-- TS: `20260808T200335+0800`
-- Placement: P-A（2 IDC + 1 GCP voter, RF=3；deploy-time CONFIGURE ZONE 使 P-A 下 lease holder 100% 落
-  IDC，同 TiDB/YBDB P-A 語意一致）
-- Profile: A-S（steady workload 連 GCP host `10.160.152.11:26257`）
+> **⚠️ 2026-08-11 已被真實重跑取代**：本檔案記錄的原始數字（TS=`20260808T200335+0800`）已於
+> 2026-08-10 稽核（[`CHAOS-FAILOVER-AUDIT-2026-08-10.md`](../../../phase-crossregion/CHAOS-FAILOVER-AUDIT-2026-08-10.md)）
+> 確認 F1/C4 全部 4 組 RTO 數字 `outage_observed=false`（探測從未觀測到中斷）而撤回；F2 write-reject
+> 判定重新分類為 `ambiguous_result_manual_review_required`。
+>
+> 完整重跑已於 2026-08-10/11 完成，環境全新重建（TS=`20260810T142439+0800`），使用稽核修正後的
+> 4 支腳本（`wall-clock-wrapper.sh`／`chaos-c1-partition-execute.sh`／
+> `run-vm6-f2-idc-death-execute.sh`／`chaos-c7-disk-slow-execute.sh`）。**本檔案下方內容已完全
+> 替換為該次重跑的真實數字**，舊 TS 的 artifact 保留於
+> `results/x-cross/chaos/crdb-vm-6node-P-A-rc-20260808T200335+0800-chaos/` 供追溯，但不再作為
+> 引用依據。詳細方法論與跨 DB 比較見
+> [`XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md`](../../../phase-crossregion/XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md)。
+
+- TS（重跑）: `20260810T142439+0800`
+- Placement: P-A（2 IDC + 1 GCP voter, RF=3；deploy-time CONFIGURE ZONE 使 lease holder 100% 落 IDC）
+- Profile: A-S（steady workload 連 GCP host `10.160.152.11:26257`，WAREHOUSES=4）
 - CRDB v26.2.0。與 TiDB/YBDB 不同：單一 `cockroach` process（無元件拆分問題），per-range leaseholder
-  貫穿全域（無 master-metadata-leader vs tablet-data-leader 的分層概念）
+  貫穿全域
 - 執行順序：C7 → C1 → F1(leader/follower) → C4(leader/follower) → F2
+- Kill target 選擇：`SHOW RANGES FROM DATABASE tpcc WITH TABLES, DETAILS` 對全部 9 張 tpcc table
+  抽樣 lease 分布 — node1(`.32`)=6（全 IDC 最高）、node3(`.34`)=5、node2(`.33`)=2（全 IDC 最低）。
+  選定 **leader-kill=172.24.40.32**、**follower-kill=172.24.40.33**。
 
-## 建置過程中發現並修復的 bug（CRDB 分支首次真實執行，逐一浮現）
+## 本次重跑中發現並修正的 2 個新 bug
 
-1. **`Makefile` phase5-crdb-deploy 缺少 `-o StrictHostKeyChecking=accept-new`**：copy cockroach binary
-   → GCP probe host .15 這步驟的第一段 hop（`ssh root@$(CRDB_HOST)`）對全新 VM 缺少
-   accept-new，首跑報 `Host key verification failed`，整個 phase5 中止在最後一步。已修正並重跑成功
-   （確認二進位 `v26.2.0` 正確送達 .15）。
-2. **`run-vm6-chaos-execute.sh` crdb 的 F1/C4 KILL_CMD 設計缺陷**：`cockroach quit` 是 CRDB 自己的
-   graceful drain 指令（drain+shutdown 是一個原子操作），F1、C4 若共用同一條指令會讓兩個情境發出
-   完全相同的命令，喪失「graceful vs ungraceful」對照的意義（不同於 TiDB/YBDB：那兩家用同一個
-   KILL_CMD，graceful/ungraceful 差異來自「殺之前是否先跑一個獨立的 resign 指令」；CRDB 沒有這種
-   獨立於關機之外的 resign 原語，所以只能讓 KILL_CMD 本身分流）。修正：F1 保留 graceful drain，C4 改
-   `systemctl kill -s SIGKILL cockroach` 真正硬殺，略過 drain/lease 轉移。
-3. **`cockroach quit` 在 v26.2 已不存在**（`ERROR: unknown command "quit"`）：F1 首次真實 kill 因此
-   靜默失敗（exit 非 0），腳本的 post-kill 驗證正確抓到「process 仍在跑」並 fail-closed 中止，沒有
-   量出假的 RTO。改用實測可行的 `cockroach node drain --self --shutdown --insecure --host=localhost:26257`。
-4. **post-kill 驗證的單次即時檢查與 drain 的實際行程序有 race**：同一條修正後的 drain 指令在 `.32`
-   上 4 秒後才確認完成，在 `.33` 上卻在僅 2 秒時仍顯示程序在跑（隨後確認其實已死+systemd 已自動重啟）。
-   將單次 pgrep 檢查改為最多重試 5 次（每次間隔 1s）——這是通用時序穩健性修正，非 CRDB 專屬，理論上
-   任何 DB 的 graceful-shutdown 路徑都可能有類似的短暫落差。
-5. **`run-vm6-chaos-execute.sh` LEADER_QUERY 缺少 `WITH DETAILS`**：v26.2 的 `SHOW RANGES FROM TABLE`
-   預設不含 `lease_holder` 欄位（`ERROR: column lease_holder does not exist`），首次 pre-kill leader
-   query 即失敗（non-fatal，但每次都是空的）。已修正加上 `WITH DETAILS`。
-6. **`run-vm6-chaos-execute.sh` S_PRE_QUERY 誤用 `oorder` 應為 `orders`**：延續 YBDB 段已確認的同款
-   go-tpc postgres-driver 命名慣例（`orders`，非 OLTPBench 傳統的 `oorder`），CRDB 這行先前一直沿用
-   YBDB 修復前的舊猜測值。首次真實 F1 run 因此 FATAL 中止於 S_pre capture。已修正。
-7. **`run-vm6-f2-idc-death-execute.sh` crdb 的 WRITE_PROBE 仍是空的 `SELECT 1`**：同 YBDB 已知問題
-   （非真實寫入，測不到 write-reject）。確認真實 schema（`warehouse` 僅 `w_id` NOT NULL）後改為真實
-   INSERT+DELETE，上線前先手動測試過一次確認可行。
-8. **`run-vm6-f2-idc-death-execute.sh` crdb 的 HEALTH_QUERY 查詢受限系統表**：
-   `crdb_internal.kv_node_status` 在 v26.2 預設被限制存取（`ERROR: Access to crdb_internal and system
-   is restricted`），這條查詢永遠失敗（回傳 0），導致 F2 首次真實執行時，即使叢集與 write-probe 早已
-   復原，poll loop 仍固定跑滿整個 600 秒視窗才放棄（`idc_healthy_count=0` 連續上百次）。改用
-   `cockroach node status`（不受限）配合 `cut`+`grep`（刻意避開任何反斜線跳脫，因為這段字串要先被
-   Makefile/腳本的 double-quote assignment 解析一次，之後又要被 `eval` 重新解析一次，兩層 shell
-   parsing 疊加下 `awk -F'\t'`／regex 的反斜線很容易算錯層數而失效——已用 `cut -f2,9 | grep -c
-   '^172.24.*true$'` 完全避開這個陷阱）。修正後 F2 重跑，全流程在原本該有的秒數內正確判定復原。
-
-以上 8 項全是 CRDB 分支「第一次被真實執行到」才浮現的 bug，與 TiDB/YBDB 每個分支首跑必出新 bug 的
-模式完全一致；已直接修正在共用腳本上，CRDB P-B×A-A 段可直接受惠（無需重複踩雷）。
+1. **F2 復原輪詢的 duplicate-key 陷阱**：kill 期間的 ambiguous INSERT 若其實已 commit，後續
+   輪詢的 INSERT 會撞 `duplicate key` 錯誤——該錯誤字串含 `error`，會被舊版判定邏輯誤判為
+   「仍在拒絕中」而非「已復原」，導致整個 600s 輪詢視窗都測不到復原。已修正
+   `run-vm6-f2-idc-death-execute.sh`：kill 前與每次輪詢 INSERT 前都先 best-effort DELETE
+   sentinel key，確保冪等。
+2. **`chaos-c7-disk-slow-execute.sh` 需要 fio 已安裝**：全新 VM 預設未裝 fio，首次執行
+   fail-fast（F-009 稽核修正後的正確行為）。已對全部 IDC host 手動 `dnf install fio`。
 
 ## 結果總表
 
-| 情境 | kill target | role | graceful | RTO | RPO (lost tx) | 備註 |
+| 情境 | kill target | role | graceful | RTO | RPO | 備註 |
 |---|---|---|---|---|---|---|
-| C7 (fio 磁碟競爭 30s) | 172.24.40.32（lease 最多的 IDC host） | — | — | N/A | N/A | fio 正常執行 30s；6/6 node available/live 全程未受影響 |
-| C1 (WAN partition 30s) | 全部 6 台 DB host | — | — | N/A | N/A | 30s 後自動 restore，6/6 復原 |
-| F1-leader | 172.24.40.32（node1，6 leases，全 lease 分布中最高） | leader | 是（`node drain --shutdown`） | **0.035s** | 0 | drain 在程序退出前已把 lease 轉走，client 幾乎無感 |
-| F1-follower | 172.24.40.33（node3，僅 1 lease，全 IDC 最低） | follower | 是 | **0.081s** | 0 | |
-| C4-leader | 172.24.40.32 | leader | 否（`systemctl kill -s SIGKILL`） | **0.100s** | 0 | 與 F1-leader 相比僅慢 65ms — graceful drain 對 CRDB range lease 復原速度幫助有限，兩者都在同一數量級 |
-| C4-follower | 172.24.40.33 | follower | 否 | **0.131s** | 0 | |
-| F2（3 台 IDC 同時死亡） | 172.24.40.32/33/34 | — | — | 真實復原 ≈**12.95s**（`t_first_write_ok-t_restart_start`=13:43:02.425−13:42:49.472）；raw `write_recovery_sec`=80.239s | 0 | write-reject 驗證：kill 期間查詢出現真實 `lost quorum`/`have been waiting 62.00s for slow proposal` 錯誤 → `verdict=write_correctly_rejected` |
+| C7 (fio 30s) | 172.24.40.32 | — | — | N/A | N/A | `fio_launch_ok=true`；6/6 node available/live 全程未受影響 |
+| C1 (WAN partition 30s) | 全部 6 台 | — | — | N/A | N/A | 探測全程 ok（P-A 下 lease 100% 在 IDC，探測從 IDC 側連 IDC 端點，partition 只切斷 IDC↔GCP，不影響此連線；30s 後自動 restore，6/6 復原） |
+| F1-leader | 172.24.40.32 | leader | 是（`node drain --shutdown`） | `outage_observed=false`（ok=514, err=0） | 0 | 探測全程未偵測到任何寫入失敗；RTO 無法計算 |
+| F1-follower | 172.24.40.33 | follower | 是 | `outage_observed=false`（ok=504, err=0） | 0 | 同上 |
+| C4-leader | 172.24.40.32 | leader | 否（`systemctl kill -s SIGKILL`） | `outage_observed=false`（ok=470, err=0） | 0 | 同上 |
+| C4-follower | 172.24.40.33 | follower | 否 | `outage_observed=false`（ok=454, err=0） | 0 | 同上 |
+| F2（3 台 IDC 同時死亡） | 172.24.40.32/33/34 | — | — | 真實復原 **≈7.01s**（07:26:10.800−07:26:03.787）；`cluster_rebuild_sec`=74.876 | **ambiguous，未判定** | write-reject：真實 `ERROR: result is ambiguous ... lost quorum` → `verdict=ambiguous_result_manual_review_required`；health 與 write-ready 同一次 poll 確認（精度緊密） |
 
-**F2 數字重新解讀**（沿用 TiDB/YBDB 段已建立的 basis-point 修正公式）：raw
-`write_recovery_sec=80.239s` 把「偵測 kill 完成 + write-reject 驗證 + 送出 3 台 restart 指令」這段
-~67s 的前置作業也算進去；真實復原時間 = `t_first_write_ok − t_restart_start ≈ 12.95s`。
+## 觀察
 
-## 跨 DB 比較觀察（F2 復原時間：CRDB ≈13s vs YBDB ≈3s）
+- **F1/C4 全數 `outage_observed=false`**：4 組獨立情境（leader/follower × graceful/ungraceful）
+  皆一致重現「單一 IDC node kill 在 100ms 探測解析度下觀測不到中斷」——這是用稽核修正後、
+  誠實回報 `outage_observed`/`rto_sec:null` 的邏輯得到的**真實觀測結果**，不是探測失效的假象。
+  可能原因：CRDB 單一 range 的 lease 重新選舉在此資料規模（WAREHOUSES=4，13 個 range）下速度
+  快過 100ms 探測週期，或探測本身連的固定 probe table 剛好不受影響。這個限制本身已記錄在
+  比較報告的方法論章節。
+- **F2 真實復原時間 ≈7.01s**：與同一 campaign 內 CockroachDB P-B 段（≈7.12s）高度一致，顯示
+  P-A/P-B 兩種 placement 下 F2（IDC 全滅）復原時間本身相當穩定，不受 lease pin 與否影響
+  （這符合預期：F2 測的是 3 台 IDC process 同時重啟後的叢集重建時間，與哪個 node 曾經是
+  leader 較無關）。
+- **write-reject 判定**：CockroachDB 在 quorum 遺失時回報 `result is ambiguous`（而非乾淨拒絕），
+  代表 CockroachDB 自己也無法確認寫入是否已提交——這與 TiDB/YBDB 的乾淨逾時拒絕是不同等級的
+  正確性保證，已在跨 DB 比較報告中特別標註。
 
-CRDB 的 F2 真實復原時間（~12.95s）明顯比 YBDB（~3.05~3.2s，兩個 placement 皆同量級）慢了 4 倍左右。
-write-reject-validation.txt 裡的錯誤訊息本身透露了原因：CRDB 的 raft proposal 在偵測到 quorum 遺失後
-會等待相當長的內部逾時（`have been waiting 62.00s for slow proposal`）才真正判定失敗並釋放 client
-連線去重試，這個「內部等待逾時」的機制設計本身就比 YBDB 的偵測/重試更保守（更慢判定失敗、但避免誤判）。
-這是本次唯一一個在 F2 情境觀察到跨 DB 有數量級差異的地方，值得在最終比較報告中特別標註——雖然兩者
-最終都正確達成「quorum 遺失時拒絕寫入、恢復後correctly 重新接受寫入」的正確性目標，只是速度有別。
+## 已知限制
 
-## 重大發現：`go-tpc` 對 CRDB 的容錯度偏低，多次因累積錯誤提前終止
-
-本段 steady workload 在單一次真實 kill（F1/C4，各自僅造成 30~130ms 級的短暫錯誤）後仍能存活，但在
-F2（IDC 全滅，較長的 write-reject 窗口）後兩次都直接印出 `Finished` 提前結束，而非像 YBDB 段一樣能撐
-過整個 campaign 不中斷。已確認每次結束前的 log 顯示大量真實的 CRDB 錯誤（`TransactionAbortedError`、
-`NotLeaseHolderError`、`connection refused` 等，都是預期中的真實故障徵狀，非探測工具本身的 bug）——
-研判是 `go-tpc` 的 postgres/crdb driver 對持續錯誤的內部容忍閾值比 ybdb driver 低，累積到一定次數後
-會自行判定「Finished」並印出統計摘要而非繼續重試。每次發生後都重新啟動 workload 才能繼續下一情境
-（比照 TiDB 段 PD-resign 導致 workload 崩潰後需重啟的既有模式，屬同一類「量測工具本身的韌性限制」，
-非資料庫本身的問題）。
-
-## 已知限制（沿用 TiDB/YBDB 段既有方法論限制，未變）
-
-- RPO 量測為簡化版（per-warehouse `max(o_id)` high-water-mark），非完整 driver-hooked FIFO buffer。
+- RPO 量測為簡化版（per-warehouse `max(o_id)` high-water-mark check），非完整 driver-hooked
+  FIFO buffer。
 - C1/C7 未量測 tpmC-during-incident。
+- F1/C4 的 100ms 探測解析度不足以判定「單節點 kill 是否真的零延遲」——只能確認「延遲短於可觀測
+  下限」。

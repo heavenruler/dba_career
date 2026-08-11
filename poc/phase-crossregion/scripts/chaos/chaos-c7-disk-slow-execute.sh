@@ -202,4 +202,9 @@ cat > "$ARTIFACT_DIR/plan.txt" <<JSON
   "note": "Induced latency delta must be read from io-latency-p99.txt (await/svctm columns, pre- vs during-injection) and fio-summary.txt; tpmC-1s impact must be derived separately from the concurrent go-tpc workload log for this window."
 }
 JSON
+
+if [[ "$DRY_RUN" -eq 0 && "$FIO_OK" -ne 1 ]]; then
+  log "FATAL: fio did not complete successfully — see plan.txt/fio-summary.txt (fio_launch_ok=false)"
+  exit 1
+fi
 log "done — artifacts in $ARTIFACT_DIR"

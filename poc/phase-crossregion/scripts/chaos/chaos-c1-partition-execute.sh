@@ -49,6 +49,7 @@ set -uo pipefail  # NOT -e: restore must run even if a mid-script ssh fails
 
 DURATION=""
 ARTIFACT_DIR=""
+DB=""
 IDC_HOSTS="172.24.40.32 172.24.40.33 172.24.40.34"
 GCP_HOSTS="10.160.152.11 10.160.152.12 10.160.152.13"
 IDC_CIDR="172.24.0.0/16"
@@ -59,7 +60,7 @@ DRY_RUN=0
 
 usage() {
   cat <<'EOF'
-Usage: chaos-c1-partition-execute.sh --duration <sec> --artifact-dir <dir>
+Usage: chaos-c1-partition-execute.sh --db tidb|crdb|ybdb --duration <sec> --artifact-dir <dir>
   [--idc-hosts "ip1 ip2 ip3"] [--gcp-hosts "ip1 ip2 ip3"]
   [--orchestrator-ip ip] [--self-heal-grace-sec N] [--dry-run]
 EOF
@@ -68,6 +69,7 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --db)                   DB=$2; shift 2 ;;
     --duration)             DURATION=$2; shift 2 ;;
     --artifact-dir)         ARTIFACT_DIR=$2; shift 2 ;;
     --idc-hosts)            IDC_HOSTS=$2; shift 2 ;;
@@ -79,8 +81,19 @@ while [[ $# -gt 0 ]]; do
     *) echo "unknown arg: $1" >&2; usage ;;
   esac
 done
-[[ -z "$DURATION" || -z "$ARTIFACT_DIR" ]] && usage
+[[ -z "$DURATION" || -z "$ARTIFACT_DIR" || -z "$DB" ]] && usage
 [[ "$DURATION" =~ ^[0-9]+$ ]] || { echo "--duration must be integer seconds" >&2; exit 2; }
+# 2026-08-10 fix (audit finding F-008): this script previously had NO --db
+# flag and unconditionally probed a hardcoded TiDB MySQL endpoint
+# (172.24.40.32:4000). When run against YugabyteDB/CockroachDB environments
+# (which don't run a MySQL service on that port at all), every single probe
+# failed regardless of whether the WAN partition itself affected the
+# database — confirmed against raw artifacts: YBDB/CRDB P-A
+# error-rate-by-sec.txt are 30/30 "err" (100%, before/during/after identical),
+# while TiDB's are 30/30 "ok" — that split reflects "does this environment
+# run tidb-4000" not "does this DB tolerate a WAN partition". --db is now
+# required and selects the correct protocol/port/probe query per DB.
+[[ "$DB" =~ ^(tidb|crdb|ybdb)$ ]] || { echo "--db must be tidb|crdb|ybdb" >&2; exit 2; }
 
 log() { echo "[c1-execute] $(date -u '+%Y-%m-%dT%H:%M:%S.%3NZ') $*"; }
 
@@ -153,7 +166,19 @@ else
   log "[dry-run] would inject DROP on all 6 hosts (+ orchestrator whitelist on GCP hosts + self-heal timers, ${HEAL_AFTER}s)"
 fi
 
-log "partition active for ${DURATION}s — collecting error-rate-by-sec via probe (best effort)"
+# 2026-08-10 fix (audit finding F-008): per-DB probe command against the
+# same fixed IDC host (172.24.40.32) used throughout this topology — only
+# the protocol/port/query differs. Still a single IDC-side vantage point
+# (see note below and the audit report on the still-open "no GCP-side
+# probe" gap — a full bidirectional dual-probe redesign is deferred, not
+# attempted blind in this pass).
+case "$DB" in
+  tidb) PROBE_CMD="timeout 2 mysql -h 172.24.40.32 -P 4000 -u root -e 'SELECT 1'" ;;
+  crdb) PROBE_CMD="timeout 2 cockroach sql --insecure --host=172.24.40.32:26257 -e 'SELECT 1'" ;;
+  ybdb) PROBE_CMD="timeout 2 psql \"host=172.24.40.32 port=5433 user=yugabyte dbname=yugabyte connect_timeout=2\" -c 'SELECT 1'" ;;
+esac
+
+log "partition active for ${DURATION}s — collecting error-rate-by-sec via probe (best effort, db=$DB)"
 # Best-effort 1s-resolution probe against the (now-unreachable-from-other-side)
 # IDC endpoint, from THIS host (.31, IDC-side), to see local-side degradation.
 : > "$ARTIFACT_DIR/error-rate-by-sec.txt"
@@ -162,13 +187,13 @@ if [[ "$DRY_RUN" -eq 0 ]]; then
   while [[ $(date +%s) -lt $END ]]; do
     TS=$(date -u '+%Y-%m-%dT%H:%M:%S')
     OK="err"
-    timeout 2 mysql -h 172.24.40.32 -P 4000 -u root -e "SELECT 1" >/dev/null 2>&1 && OK="ok"
+    eval "$PROBE_CMD" >/dev/null 2>&1 && OK="ok"
     echo "$TS $OK" >> "$ARTIFACT_DIR/error-rate-by-sec.txt"
     sleep 1
   done
 else
   sleep 1
-  echo "[dry-run] would sample IDC-side reachability every 1s for ${DURATION}s" >> "$ARTIFACT_DIR/error-rate-by-sec.txt"
+  echo "[dry-run] would sample IDC-side reachability (db=$DB) every 1s for ${DURATION}s" >> "$ARTIFACT_DIR/error-rate-by-sec.txt"
 fi
 
 log "duration elapsed — restore will run via EXIT trap"
@@ -178,6 +203,7 @@ restore
 cat > "$ARTIFACT_DIR/plan.txt" <<JSON
 {
   "scenario": "C1-partition",
+  "db": "$DB",
   "t_incident": "$T_INCIDENT",
   "duration_sec": $DURATION,
   "idc_hosts": "$IDC_HOSTS",

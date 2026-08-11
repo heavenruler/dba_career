@@ -1,0 +1,6 @@
+scenario=c4 db=crdb placement=P-A kill_target=172.24.40.33
+resign_cmd=<none>
+kill_cmd=ssh -o StrictHostKeyChecking=accept-new root@172.24.40.33 'systemctl kill -s SIGKILL cockroach'
+t_kill_start=2026-08-10T07:05:12.338Z
+kill_ssh_exit=0
+post_kill_verify=process_confirmed_down

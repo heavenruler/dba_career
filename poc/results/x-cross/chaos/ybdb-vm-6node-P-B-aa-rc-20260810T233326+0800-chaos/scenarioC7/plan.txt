@@ -1,0 +1,16 @@
+{
+  "scenario": "C7-disk-slow",
+  "mechanism": "fio-direct-io-contention",
+  "mechanism_note": "Competing high-priority O_DIRECT fio writes on the same block device as the DB data dir induce genuine I/O queueing latency; this is NOT an absolute bytes/sec cap on the DB process. cgroup v1 blkio.throttle was evaluated and rejected — confirmed ineffective against TiKV's buffered writeback on this kernel even with the PID correctly cgroup-assigned. tc network shaping was rejected — storage here is local, not network-attached, so it would not touch actual disk I/O.",
+  "db": "ybdb",
+  "target_host": "172.24.40.33",
+  "t_incident": "2026-08-10T17:37:51.356Z",
+  "duration_sec": 30,
+  "fio_jobs": 4,
+  "fio_iodepth": 64,
+  "fio_size": "2G",
+  "fio_launch_ok": true,
+  "scratch_dir": "/chaos-c7-fio-scratch",
+  "dry_run": false,
+  "note": "Induced latency delta must be read from io-latency-p99.txt (await/svctm columns, pre- vs during-injection) and fio-summary.txt; tpmC-1s impact must be derived separately from the concurrent go-tpc workload log for this window."
+}

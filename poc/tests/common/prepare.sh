@@ -105,8 +105,17 @@ fi
 # ---- 3. go-tpc prepare ---------------------------------------------
 # YBDB 2025.2: inline consistency check (3.3.2.x cross-table aggregates)
 # stalls 30+ min; use --no-check and verify via row-count below.
+# 2026-08-10 fix: same 3.3.2.x correlated cross-table aggregate stalls
+# indefinitely (45+ min, confirmed via SHOW CLUSTER STATEMENTS showing one
+# query stuck "executing" the whole time) on CRDB under P-B placement too —
+# P-B deliberately doesn't pin leases to IDC, so this query's per-row
+# correlated subquery can land on GCP-side leaseholders and the added
+# cross-region round-trips compound into the same pathological stall YBDB
+# already hit. Root cause is the unpinned/cross-region placement, not the
+# DB engine, so key off TOPO's placement token rather than DB alone.
 NOCHECK_ARG=""
-[[ "$DB" == "ybdb" ]] && NOCHECK_ARG="--no-check"
+PLACEMENT_FROM_TOPO_PREP=$(echo "$TOPO" | grep -oE 'P-[AB]' || echo "UNKNOWN")
+[[ "$DB" == "ybdb" || "$PLACEMENT_FROM_TOPO_PREP" == "P-B" ]] && NOCHECK_ARG="--no-check"
 info "go-tpc tpcc prepare W=$WAREHOUSES driver=$DRIVER $NOCHECK_ARG"
 go-tpc tpcc prepare \
   -d "$DRIVER" -H "$DB_HOST" -P "$PORT" -U "$USER" -D "$DBNAME" \
@@ -171,8 +180,8 @@ if [[ "$EXPECTED_SHARDS" == "3" ]]; then
 fi
 
 # ---- 4. consistency / integrity verification -----------------------
-if [[ "$DB" == "ybdb" ]]; then
-  info "row-count verification (YBDB; go-tpc check-all skipped — 2025.2 stalls on 3.3.2.x cross-table aggregates)"
+if [[ "$DB" == "ybdb" || "$NOCHECK_ARG" == "--no-check" ]]; then
+  info "row-count verification ($DB placement=$PLACEMENT_FROM_TOPO_PREP; go-tpc check-all skipped — 3.3.2.x cross-table aggregates stall under YBDB or unpinned/cross-region (P-B) placement)"
   psql "postgres://${USER}@${DB_HOST}:${PORT}/${DBNAME}" -v ON_ERROR_STOP=1 \
     -c "SELECT 'warehouse'  AS tbl, count(*) FROM warehouse
          UNION ALL SELECT 'district',   count(*) FROM district
