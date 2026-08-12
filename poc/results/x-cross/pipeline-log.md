@@ -79,6 +79,27 @@
 
 ---
 
+### 2.4 2026-08-11/12 Percona XtraDB Cluster 8.4（PXC，Galera）× P-A/P-B W=128
+
+| Suite | tpmC_mean (t16/32/64/128) | error rate 範圍 | round range/mean（t16/32/64/128） |
+|---|---|---|---|
+| Galera P-A×A-S | 284.9 / 304.4 / 291.8 / 298.8 | 0.000%~0.077% | 23.0% / 13.8% / 43.8% / 7.5% |
+| Galera P-B×A-A（IDC 端） | 410.5 / 294.6 / 279.9 / 249.9 | 0.004%~0.606% | 未逐輪紀錄於本表，見 suite `summary.json` |
+| Galera P-B×A-A（GCP 端，成功 NEW_ORDER TPM） | 6.6 / 9.1 / 14.0 / 17.9 | GCP 端全交易彙總失敗率 47.0%（詳 §3.6.2） | — |
+
+- 來源：`smoke/early-runs/20260812T132801+0800/galera-vm-6node-{P-A-rc-20260811T201242+0800,P-B-aa-rc-20260812T093709+0800}/`（`summary.json` + per-round go-tpc-stdout + wsrep-snapshot）
+- 口徑：same-cluster（6-node，3 IDC+3 GCP，同步多主複寫）、W=128、5r×4threads、無 chaos 注入（純穩態吞吐量）；P-A 單寫 IDC，P-B 雙端（IDC+GCP）同時各自 offered load，**不是**同一份 workload 的兩端分流
+- **P-B lineage caveat**（見 `fetch-receipt.json` 的 `lineage_caveat` 欄位，亦見
+  [`results/x-cross/README.md`](./README.md) 的 ⚠ 註記）：P-B 沿用 P-A 已 prepare
+  的 dataset，非獨立 prepare/gate/collect suite；`.prepare.done`／gate 證據為 P-A
+  副本；`env`／`db-config` 為空；`.suite.done` 為 operator 事後補寫。
+- 採樣完整性：P-A 有完整 `db-config/`（含逐節點 wsrep status snapshot，`wsrep_flow_control_paused`≈0.73、`wsrep_local_cert_failures`=0、`wsrep_local_bf_aborts`=0，皆為 run 後單點 snapshot，非嚴格 before/after delta）；P-B 無 `db-config/`（wsrep counter 缺，無法區分 GCP 端 `Error 1213` 究竟是 wsrep certification failure 還是純 InnoDB local deadlock）
+- 對照：TiDB 同拓樸同口徑數字見 §3.6 引用之 `baseline/w128/20260717T143238+0800/`（P-A）與 `smoke/early-runs/20260731T204801+0800/`（P-B），完整比較與 fact/inference 分層見
+  [`DISTRIBUTED-DB-SCORING.md` §3.6](../../DISTRIBUTED-DB-SCORING.md)
+- 效度邊界：X-CROSS `baseline_eligible=false`；`N=1`、Galera 與 TiDB 非同批次執行（相隔近一個月）；§2.1 加權評分項目（同拓樸延遲/擴展、chaos/failover）不受本 cell 影響，仍全數待測
+
+---
+
 ## 3. 不採用為正式結果的資料
 
 | 類型 | 位置 | 原因 |
@@ -124,6 +145,7 @@
 
 | 日期 | 內容 |
 |---|---|
+| 2026-08-12 | §2.4 新增 Galera（PXC 8.4）P-A/P-B W=128 採用批次（`smoke/early-runs/20260812T132801+0800/`），含 P-B lineage caveat（沿用 P-A prepare、無獨立 collect）；`README.md` 同步補採用批次表 |
 | 2026-07-07 | §4 勘誤：`summary.json` 已存在於 determinism（06-26）+ baseline/w128（07-03），修正舊「目前沒有」陳述（Fable 健檢 P3-2） |
 | 2026-07-03 | §2.3 新增 TiDB P-A A-S W=128 正式口徑 cell（20260703T092243；GCP per-round 300/300 齊）；§3 標註 07-02 輪因網路採樣失敗不採用；§0 目錄表補 baseline/w128 與 compare |
 | 2026-06-26 | retrofit `summary.json` 至 determinism 三家 suite-dir（W=4；YBDB skip R1/R2）；同步 patch `summary-from-stdout.py` 支援 `--warehouses` / `--skip-rounds` 與 `-run<N>` suffix |

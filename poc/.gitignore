@@ -54,3 +54,11 @@ results/x-cross/smoke/early-runs/20260730T094406+0800/*/
 # repo；small metadata（driver console log + fetch-receipt.json）例外，
 # 已個別 commit。
 results/x-cross/smoke/early-runs/20260731T204801+0800/*/
+
+# 2026-08-11/12 MySQL Galera Cluster（Percona XtraDB Cluster 8.4）P-A×A-S /
+# P-B×A-A W=128 全輪 fetch（TS=20260812T132801+0800）。同款慣例：本輪目標 2 個
+# canonical suite（各 ~40-80M，見 fetch-receipt.json 的 lineage_caveat 說明
+# P-B 沿用 P-A prepare dataset）一律不進 repo；small metadata
+# （fetch-receipt.json，含兩份 summary.json 的 SHA-256）例外，已個別 commit。
+# 數字已彙整進 DISTRIBUTED-DB-SCORING.md §3.6。
+results/x-cross/smoke/early-runs/20260812T132801+0800/*/

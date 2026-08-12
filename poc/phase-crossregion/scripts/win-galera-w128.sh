@@ -71,6 +71,25 @@ trap '_window_failed' EXIT
 
 log "window start  DB=galera PLACEMENT=$PLACEMENT PROFILE=$PROFILE TS=$TPCC_TS W=$WAREHOUSES N=$ROUNDS threads=[$THREADS_LIST]"
 
+# 2026-08-12 audit 修正（/tmp/mysql-fix §5）：先前只在 workload 跑完後拍一次
+# wsrep snapshot，是單點值不是 before/after delta，無法區分 certification
+# conflict／BF abort／InnoDB local deadlock／flow control 各自貢獻多少（見
+# DISTRIBUTED-DB-SCORING.md §3.6.2 對本次資料的 inference 標註）。改成
+# workload 開始前先拍一次（wsrep-snapshot-before），跑完後再拍一次
+# （wsrep-snapshot-after），未來才能算 delta。
+wsrep_snapshot() {  # wsrep_snapshot <label>
+  local label=$1 outdir="$ROOT/wsrep-snapshot"
+  mkdir -p "$outdir"
+  {
+    for h in 172.24.40.32 172.24.40.33 172.24.40.34 10.160.152.11 10.160.152.12 10.160.152.13; do
+      echo "=== $h ==="
+      ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new "root@$h" \
+        "MYSQL_PWD='$GALERA_BENCH_PASSWORD' mysql -u$GALERA_USER -N -B -e \"SHOW STATUS LIKE 'wsrep_cluster_size'; SHOW STATUS LIKE 'wsrep_local_state_comment'; SHOW STATUS LIKE 'wsrep_ready'; SHOW STATUS LIKE 'wsrep_local_cert_failures'; SHOW STATUS LIKE 'wsrep_local_bf_aborts'; SHOW STATUS LIKE 'wsrep_flow_control_paused'; SHOW STATUS LIKE 'wsrep_flow_control_paused_ns'; SHOW STATUS LIKE 'wsrep_flow_control_sent'; SHOW STATUS LIKE 'wsrep_flow_control_recv'; SHOW STATUS LIKE 'wsrep_local_recv_queue'; SHOW STATUS LIKE 'wsrep_local_recv_queue_avg'; SHOW STATUS LIKE 'wsrep_local_send_queue'; SHOW STATUS LIKE 'wsrep_local_send_queue_avg';\""
+    done
+  } > "$outdir/wsrep-status-${label}.txt" 2>&1 || true
+}
+wsrep_snapshot "before"
+
 case "$PROFILE" in
   A-S)
     log "step 1: run-vm6-suite.sh (P-A×A-S 單寫 IDC)"
@@ -100,20 +119,35 @@ case "$PROFILE" in
     # run-vm6-aa.sh 開頭「bug 修法 #2」說明）。phase8.5-static-check（destroy
     # 前的共用 schema 檢查）會找這個檔案，故在這裡補寫，格式對齊
     # run-vm6-suite.sh 的 write_phase_done 輸出。
-    printf '{"phase":"suite","db":"galera","iso":"rc","topology":"vm-6node-%s%s","ts":"%s","placement":"%s","profile":"%s","completed_at":"%s"}\n' \
-      "$PLACEMENT" "$TOKEN" "$TPCC_TS" "$PLACEMENT" "$PROFILE" "$(date '+%Y-%m-%dT%H:%M:%S%z')" > "$ROOT/.suite.done"
+    #
+    # 2026-08-12 audit 修正（/tmp/mysql-fix §5）：原本這裡只補 .suite.done，
+    # 沒有誠實反映「A-A 沒有獨立 prepare/collect」這件事——閱讀者拿到
+    # .suite.done 會誤以為這是一個完整跑過 prepare→gate→run→collect 的
+    # suite。改成原生記錄 prepare_source（若走 prepare-bridge，明確寫出
+    # bridged_from 的來源 topology/ts；沒有 bridge 則為 null）與
+    # collect_status（A-A 路徑不經 tests/common/run.sh 的 collect 步驟，
+    # env/db-config 恆為空，誠實標 "missing"，不宣稱完整 suite）。
+    PREPARE_SOURCE_TS="null"
+    PREPARE_SOURCE_TOPOLOGY="null"
+    if [[ -f "$ROOT/prepare-bridge.json" ]]; then
+      _bridged_from=$(python3 -c "import json,sys; print(json.load(open('$ROOT/prepare-bridge.json')).get('bridged_from',''))" 2>/dev/null || echo "")
+      if [[ -n "$_bridged_from" ]]; then
+        _bridged_basename=$(basename "$_bridged_from")
+        # 目錄名格式 galera-vm-6node-{placement}-rc-{ts}；用最後一個 '-rc-' 切 ts
+        PREPARE_SOURCE_TS="\"${_bridged_basename##*-rc-}\""
+        PREPARE_SOURCE_TOPOLOGY="\"vm-6node-${PLACEMENT}\""
+      fi
+    fi
+    printf '{"phase":"suite","db":"galera","iso":"rc","topology":"vm-6node-%s%s","ts":"%s","placement":"%s","profile":"%s","completed_at":"%s","prepare_source_ts":%s,"prepare_source_topology":%s,"collect_status":"missing","collect_status_note":"run-vm6-aa.sh A-A path bypasses tests/common/run.sh native collect step; env/ and db-config/ are not populated by this suite"}\n' \
+      "$PLACEMENT" "$TOKEN" "$TPCC_TS" "$PLACEMENT" "$PROFILE" "$(date '+%Y-%m-%dT%H:%M:%S%z')" \
+      "$PREPARE_SOURCE_TS" "$PREPARE_SOURCE_TOPOLOGY" > "$ROOT/.suite.done"
     ;;
 esac
 
-log "step 3: wsrep-snapshot (cluster status per node)"
-mkdir -p "$ROOT/wsrep-snapshot"
-{
-  for h in 172.24.40.32 172.24.40.33 172.24.40.34 10.160.152.11 10.160.152.12 10.160.152.13; do
-    echo "=== $h ==="
-    ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new "root@$h" \
-      "MYSQL_PWD='$GALERA_BENCH_PASSWORD' mysql -u$GALERA_USER -N -B -e \"SHOW STATUS LIKE 'wsrep_cluster_size'; SHOW STATUS LIKE 'wsrep_local_state_comment'; SHOW STATUS LIKE 'wsrep_ready';\""
-  done
-} > "$ROOT/wsrep-snapshot/wsrep-status.txt" 2>&1 || true
+log "step 3: wsrep-snapshot after (cluster status per node + cert/flow-control/queue counters)"
+wsrep_snapshot "after"
+# 保留舊檔名（wsrep-status.txt = after 快照）供既有下游腳本/人工查閱習慣相容。
+cp "$ROOT/wsrep-snapshot/wsrep-status-after.txt" "$ROOT/wsrep-snapshot/wsrep-status.txt" 2>/dev/null || true
 
 trap - EXIT
 rm -f "$ROOT/.window.failed" 2>/dev/null || true

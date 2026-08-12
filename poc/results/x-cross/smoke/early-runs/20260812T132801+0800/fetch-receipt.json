@@ -1,0 +1,15 @@
+{
+  "ts": "20260812T132801+0800",
+  "fetched_at": "2026-08-12T13:28:01+08:00",
+  "note": "Curated subset: only the 2 adopted W=128 Galera suites copied here from the full phase8.5-fetch snapshot (results/x-cross/smoke/early-runs/galera-w128-final/, which also contains unrelated historical crdb/ybdb dirs incidentally present on .31 at fetch time and 2 earlier Galera W=4 smoke suites not part of this adopted batch).",
+  "summary_json_count": 2,
+  "suite_done_count": 1,
+  "local_root": "results/x-cross/smoke/early-runs/20260812T132801+0800",
+  "checksums": {
+    "galera-vm-6node-P-A-rc-20260811T201242+0800/summary.json": "9b2a2c921edcc0ccc2458955c64cc15420cfafe7cf97ce5ab945823769361893",
+    "galera-vm-6node-P-B-aa-rc-20260812T093709+0800/summary.json": "51315aba3eb9e5a4f7b5a11477a73ab992e441fdf8966a72c8620a0ac89eb1ec"
+  },
+  "lineage_caveat": {
+    "galera-vm-6node-P-B-aa-rc-20260812T093709+0800": "P-B reused P-A's already-prepared W=128 dataset on the same shared 6-node cluster (see prepare-bridge.json inside this suite dir) rather than running an independent P-B prepare. Its .prepare.done and gate/gcp-replica-gate-galera.txt are verbatim copies of the P-A suite's files (topology/ts fields literally read 'vm-6node-P-A' / '20260811T201242+0800' — this is not a bug, it is prepare-bridge.sh's documented copy-not-fabricate design for a shared-cluster placement). This suite has no independent prepare/gate/collect lineage of its own: .collect.done is absent, env/ and db-config/ are empty (run-vm6-aa.sh's P-B/A-A path bypasses tests/common/run.sh's native collect step). .suite.done present in this copy was written retroactively by the operator after the run completed (see its own 'note' field) because run-vm6-aa.sh does not natively emit this marker; .window.done (written natively by win-galera-w128.sh) is the only completion marker for this suite that was NOT retroactively added."
+  }
+}

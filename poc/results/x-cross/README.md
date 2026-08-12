@@ -22,8 +22,21 @@
 | P-B | A-S | `smoke/early-runs/20260727T223650+0800/` | [XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md](../../phase-crossregion/XCROSS-PB-AS-CLOSING-REPORT-DRAFT.md) |
 | P-B | A-A-RO | `smoke/early-runs/20260730T094406+0800/` | [XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md](../../phase-crossregion/XCROSS-PB-AARO-CLOSING-REPORT-DRAFT.md) |
 | P-B | A-A | `smoke/early-runs/20260731T204801+0800/` | [XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md](../../phase-crossregion/XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md) |
+| Galera P-A | A-S | `smoke/early-runs/20260812T132801+0800/galera-vm-6node-P-A-rc-20260811T201242+0800/` | [DISTRIBUTED-DB-SCORING.md §3.6](../../DISTRIBUTED-DB-SCORING.md#36-mysql-相容群組mysql-galera-cluster-跨區-pap-b穩態吞吐量實測2026-08-12) |
+| Galera P-B | A-A⚠ | `smoke/early-runs/20260812T132801+0800/galera-vm-6node-P-B-aa-rc-20260812T093709+0800/` | 同上；**lineage caveat 見下方** |
 
 P-B 三 workload 彙整見 [XCROSS-PB-ALL-WORKLOADS-SUMMARY.md](../../phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)。**不可**重新命名上述任何目錄；未列入此表的 `smoke/early-runs/` 子目錄一律視為早期 smoke／partial run／中斷重試殘留，不作 X-CROSS 採用數字來源。
+
+⚠ **Galera P-B lineage caveat**（詳見該批次目錄下 `fetch-receipt.json` 的
+`lineage_caveat` 欄位）：P-B 沿用同一 6-node 叢集上 P-A 已完成的 W=128 prepare
+dataset（見 suite 內 `prepare-bridge.json`），**不是獨立的 P-B prepare/gate/collect
+鏈**——其 `.prepare.done`／`gate/gcp-replica-gate-galera.txt` 逐位元組等於 P-A 那份
+（topology/ts 欄位字面值仍是 `vm-6node-P-A`／P-A 的 TS，非筆誤，是 prepare-bridge
+機制的既有設計：複製證據而非捏造）；`env/`／`db-config/` 為空（P-B 走
+`run-vm6-aa.sh`，繞過 `tests/common/run.sh` 原生 collect 步驟）；`.suite.done` 為
+operator 事後補寫（檔內 `note` 欄位自陳 retroactive）；只有 `.window.done`（由
+`win-galera-w128.sh` 原生寫出）是非回填的真實完成標記。引用此批次數字時應註明
+「P-B 為雙端 workload 執行結果，非獨立 prepare/gate/collect suite」。
 
 ## 建議閱讀順序
 

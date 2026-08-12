@@ -282,7 +282,14 @@ case "$DB" in
   *) echo "unsupported db: $DB" >&2; exit 2 ;;
 esac
 
-if [[ "$PLACEMENT" == "P-A" ]]; then
+# 2026-08-12 audit 修正（/tmp/mysql-fix §5）：這段收尾訊息原本對所有 DB 通用，
+# 一律講「leader/lease 全在 IDC」/「跨區散布合格」——這對 tidb/crdb/ybdb 正確，
+# 但 galera 沒有 leader/lease 概念（見上面 case 分支已記錄的正確訊息），套用
+# 這段通用收尾等於在 galera 的 log 尾巴又補一句誤導性的「PASS...leader/lease
+# 全在 IDC」，讓人誤以為 galera 也驗證了 placement。改成 DB-conditional。
+if [[ "$DB" == "galera" ]]; then
+  log "PASS: galera 6-node Primary/Synced、cluster UUID 一致、sentinel replication verified；不驗 placement（證據 $EV）"
+elif [[ "$PLACEMENT" == "P-A" ]]; then
   log "PASS: $DB GCP 副本存在且 leader/lease 全在 IDC（P-A；證據 $EV）"
 else
   log "PASS: $DB GCP 副本存在且 leader/lease 跨區散布合格（P-B；證據 $EV）"

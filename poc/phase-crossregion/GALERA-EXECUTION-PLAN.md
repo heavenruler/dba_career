@@ -1,12 +1,18 @@
 # Galera (Percona XtraDB Cluster 8.4) 執行計畫
 
-狀態：**Stage 0（靜態修正 + preflight）已完成，尚未實跑部署/benchmark。**
-對照文件：`DISTRIBUTED-DB-SCORING.md` §2.1/§4.1/§5.1（MySQL 相容群組：Galera vs TiDB）。
+狀態（2026-08-12 更新）：**Stage 0（靜態修正）、Stage 1（部署）、Stage 2（W=4
+smoke）、Stage 3 情境 3/4（P-A×A-S、P-B×A-A 的 W=128 正式量測）已完成並回填
+`results/x-cross/`；環境已 teardown。Stage 3 情境 1/2/5（wsrep-off／IDC-3-node／
+hot-row micro-test）與 Stage 5（chaos/failover）尚未執行。** **MySQL 相容群組
+完整加權評分（§2.1/§4.1）尚未完成**——已完成的是跨區穩態吞吐量對照，不是
+§2.1 要求的同拓樸延遲/擴展與 chaos/failover 測試，兩者是不同維度，不可互相
+替代。
+對照文件：`DISTRIBUTED-DB-SCORING.md` §2.1/§3.6/§4.1/§5.1（MySQL 相容群組：
+Percona XtraDB Cluster 8.4／PXC／Galera vs TiDB）。
 
 本文件回應 2026-08-11 Codex review（`/tmp/pxc-fix`）§4 要求，記錄從目前狀態到
-產出可比較評分數字的完整分期執行路徑。Stage 0 之後每個 stage 都需要真的碰
-機器（SSH/部署/benchmark），依現有流程須先經過人工核准才能執行——本文件
-只是計畫，不代表已獲執行授權。
+產出可比較評分數字的完整分期執行路徑；2026-08-12 依 Codex 二次 audit
+（`/tmp/mysql-fix`）修正本節狀態描述過期問題。
 
 ## 設計前提（勿與 TiDB/CRDB/YBDB 混淆）
 
@@ -45,58 +51,67 @@ Galera 是同步多主複寫，沒有 leader/lease/placement policy 概念；P-A
 任何 ansible-playbook apply、未 SSH 進 .31/.32-.34/GCP、未跑過任何 W=4/W=128
 workload。**
 
-## Stage 1 — 首次部署 + 基本健康檢查（下一步，需人工核准後執行）
+## Stage 1 — 首次部署 + 基本健康檢查（已完成，2026-08-11/12）
 
-1. `make phase-galera-deploy`（6 節點 ansible-playbook apply）
-2. 逐台驗證：`wsrep_cluster_size=6`、`wsrep_cluster_status=Primary`、
+1. ✅ `make phase-galera-deploy`（6 節點 ansible-playbook apply）——實測歷經
+   9 次迭代才成功，過程中發現並修正 5 個未在 Stage 0 靜態檢查抓到的根因問題：
+   PXC repo/module preflight 仍不足（`pxc-84-lts` репо 需另外 enable `pxc-84-lts`
+   xtrabackup 子repo）、自訂 wsrep 埠未生效（`/etc/my.cnf.d/` 未被此套件
+   include，須直接 append 進 `/etc/my.cnf`）、SST 帳號驗證失敗（`wsrep_sst_auth`
+   須放 `[sst]` section 而非 `[mysqld]`）、`pxc_strict_mode=ENFORCING` 擋掉
+   TPC-C `history` 表（標準 schema 無 explicit PK）、bootstrap 節點永久佔用
+   `mysql@bootstrap.service`（需手動切換回 `mysql.service`）。
+2. ✅ 逐台驗證通過：`wsrep_cluster_size=6`、`wsrep_cluster_status=Primary`、
    `wsrep_ready=ON`、`wsrep_local_state_comment=Synced`、6 台 `wsrep_cluster_state_uuid`
-   一致
-3. 首次觀察 SST 實際耗時（F-006 標記為 pending runtime validation 的項目在此
-   收斂成具體數字，回填 wait_for timeout）
-4. 驗證 semanage port / firewalld preflight 在真實環境的行為（F-007 假設是否
-   成立：SELinux 是否真的 enforcing、firewalld 是否真的在跑）
+   一致。
+3. SST 實際耗時：本次 6 台皆為全新初始化（無既有資料），SST 負載極小，未能
+   反映 W=128 真實資料量下的 SST 耗時；F-006 的 timeout pending runtime
+   validation 標記**仍未收斂**，留待未來需要重新 SST（如節點復原）時實測。
+4. semanage port / firewalld preflight 在此環境下皆無實際作用（`getenforce`
+   回報 SELinux 為 permissive/disabled，`systemctl is-active firewalld` 回報
+   inactive）——F-007 的 fail-safe 設計正確生效（未強制假設兩者存在），但
+   未實際驗證「兩者皆啟用」情境下的行為。
 
-失敗處置：任何一步 fail-closed 就停下來修，不重跑「帶著已知失敗繼續往下」。
+## Stage 2 — P-A×A-S / P-B×A-A smoke（W=4，已完成，2026-08-11/12）
 
-## Stage 2 — P-A×A-S / P-B×A-A smoke（W=4，驗證 pipeline 正確性）
+1. ✅ `make phase-galera-smoke`（P-A×A-S）：gate-isolation / prepare / run /
+   collect / gcp-replica-gate 全部 PASS，`galera_routing_profile=G-SW-IDC`。
+2. ✅ `make phase-galera-aa-smoke`（P-B×A-A）：首次嘗試因 `run-vm6-aa.sh` 預設
+   走 IAP tunnel（`localhost:12215`）而非直連 GCP 而失敗，修正
+   `win-galera-w128.sh` 補上與 `_aa_smoke_recipe` 一致的直連覆寫後成功。
+3. ✅ summary.json 格式與 tidb 一致，已用於 §3.6 引用。
 
-1. `make phase-galera-smoke`（P-A×A-S，IDC client 單寫 idc-dbhost-1）
-2. `make phase-galera-aa-smoke`（P-B×A-A，IDC+GCP 同時寫）
-3. 確認 gate-isolation / prepare / gcp-replica-gate 全部 PASS，run.done 內
-   `galera_routing_profile` 正確標記（G-SW-IDC / G-DW-XR）
-4. 確認 summary.json 產出格式與 tidb 一致（供 DISTRIBUTED-DB-SCORING.md 引用）
+## Stage 3 — W=128 正式量測
 
-## Stage 3 — W=128 正式量測（產出可比較評分數字）
+| # | 情境 | 狀態 | 備註 |
+|---|------|------|------|
+| 1 | 單機 wsrep-off control | ❌ 未執行 | |
+| 2 | IDC-3-node 單寫 | ❌ 未執行 | |
+| 3 | 6-node 跨區單寫（P-A×A-S） | ✅ **已完成**（2026-08-11） | 見 `results/x-cross/smoke/early-runs/20260812T132801+0800/galera-vm-6node-P-A-rc-20260811T201242+0800/`；DISTRIBUTED-DB-SCORING.md §3.6.1 |
+| 4 | 6-node 跨區雙寫（P-B×A-A） | ✅ **已完成，但有 lineage caveat**（2026-08-12） | 沿用 P-A 的 prepare dataset，非獨立 prepare/gate/collect suite；見 `results/x-cross/README.md` 的 ⚠ 說明；DISTRIBUTED-DB-SCORING.md §3.6.2 |
+| 5 | Hot-row 衝突 micro-test | ❌ 未執行 | P-B×A-A 的 PAYMENT 交易已觀測到 81.5% 失敗率（見 §3.6.2），方向上與 hot-row 衝突假說相容，但**未做獨立設計的 micro-test，也未擷取 wsrep certification counter**，不構成根因證實 |
 
-與 TiDB 對照口徑一致：P-A×A-S、P-B×A-A 各一組完整 5 round × 4 threads-level
-sweep。額外拆分 cost breakdown（Codex 明確要求）：
+情境 3/4 已對照 TiDB P-A×A-S / P-B×A-A 正式數字進 DISTRIBUTED-DB-SCORING.md
+§3.6（**不計入 §2.1 加權評分**，見該節「狀態說明」）。情境 1/2/5 仍待執行；
+情境 5 若要做，需獨立設計（不能沿用標準 TPC-C mix，需針對少量 warehouse 高頻
+並發更新以放大衝突率，並同步擷取 workload 前後的 `wsrep_local_cert_failures`／
+`wsrep_local_bf_aborts` delta，才能把 §3.6.2 目前「型態相容但根因未證實」的
+PAYMENT 高失敗率觀察，收斂成可證實的因果結論）。
 
-| # | 情境 | 目的 |
-|---|------|------|
-| 1 | 單機 wsrep-off control（單節點、不開 Galera） | 量測「同步多主複寫本身」的固定開銷 baseline |
-| 2 | IDC-3-node 單寫（3 台 IDC 節點組叢集，client 只連 1 台） | 純同區同步複寫開銷，排除跨區延遲干擾 |
-| 3 | 6-node 跨區單寫（P-A×A-S 正式數字） | 對照 TiDB P-A×A-S |
-| 4 | 6-node 跨區雙寫（P-B×A-A 正式數字） | 對照 TiDB P-B×A-A |
-| 5 | Hot-row 衝突 micro-test（IDC+GCP 同時高頻更新同一批 warehouse row） | 獨立測項：Galera 是樂觀憑證複寫，跨區同 row 衝突會觸發
-  `wsrep_local_cert_failures` 上升、交易被迫 rollback-retry——這是 leader-based
-  架構（TiDB/CRDB/YBDB）不會出現的失敗模式，須獨立量測 abort rate/retry
-  latency，不能用標準 TPC-C mix 掩蓋掉 |
+## Stage 4 — Teardown + 更新 DISTRIBUTED-DB-SCORING.md（已完成，2026-08-12）
 
-情境 1/2 不進 DISTRIBUTED-DB-SCORING.md 主表（那是分層拆解開銷用的診斷數據），
-只有情境 3/4 對照 TiDB P-A×A-S / P-B×A-A 正式數字進主表。情境 5 獨立成一個
-新的比較項目（Galera 特有的樂觀複寫衝突特徵），不與 TiDB 的悲觀鎖模式直接
-比大小，而是各自說明各自的衝突處理機制與代價。
-
-## Stage 4 — Teardown + 更新 DISTRIBUTED-DB-SCORING.md
-
-Stage 3 全部完成、數字經人工覆核後才動評分表：
-
-- §2.1 MySQL 群組表格填入 Galera 實測數字
-- §3.x 星等改為 Galera vs TiDB 2-way 比較（比照現有 YBDB vs CRDB 2-way 模式）
-- §4.1 補上 MySQL 群組加權總分
-- §5.1 補上 MySQL 群組結論
+- ✅ Teardown：`terraform destroy` 確認 IDC/GCP 兩邊 state 皆清空。
+- ✅ 原始 artifact 已 fetch 回本機並歸戶到 `results/x-cross/` canonical
+  位置（`smoke/early-runs/20260812T132801+0800/`），SHA-256 已於
+  `fetch-receipt.json` 記錄。
+- ✅ DISTRIBUTED-DB-SCORING.md 新增 §3.6（PXC vs TiDB 跨區穩態吞吐量對照，
+  fact/inference 分層），§4.1/§5.1 同步更新現況說明。
+- ❌ **§2.1 MySQL 群組加權評分表仍未填入任何星等**——§3.6 是不同測試維度
+  （跨區穩態吞吐量 vs §2.1 要求的同拓樸延遲/擴展、chaos/failover），不可
+  互相替代；§4.1 加權總分仍為「待測」。
 - 明確標註：Galera 的 P-A/P-B 是 client routing profile，不是 server-side
-  placement policy（F-009 metadata 來源），避免讀者誤解成跟 TiDB 同款機制
+  placement policy（F-009 metadata 來源），避免讀者誤解成跟 TiDB 同款機制；
+  DISTRIBUTED-DB-SCORING.md §3.6 開頭已加註「比較邊界」段落重申此點。
 
 ## Stage 5 — Galera 專屬 chaos/failover 設計（獨立於既有 3DB F1-C4 框架）
 
@@ -119,8 +134,15 @@ Stage 3 全部完成、數字經人工覆核後才動評分表：
 
 ## 尚待人工決策的項目
 
-- Stage 1 是否現在就開始執行（需要使用者明確核准部署）
-- Stage 3 情境 1/2（wsrep-off / IDC-3-node）是否值得投入時間跑，或是否可以
-  用文獻/官方 benchmark 數字替代（避免重複造輪子）
+- Stage 3 情境 1/2（wsrep-off / IDC-3-node）是否值得投入時間重新部署跑，或是否
+  可以用文獻/官方 benchmark 數字替代（避免重複造輪子）——需要重新部署環境
+  （本輪已 teardown）。
+- Stage 3 情境 5（hot-row micro-test）與補測 wsrep certification counter
+  delta，是把 §3.6.2 PAYMENT 81.5% 失敗率的「型態相容但根因未證實」收斂成
+  確定結論的必要步驟，若要正式寫入評分依據應優先排入。
 - Stage 5 的具體故障注入時間窗/量測指標，需要比照 chaos_48injection_campaign
-  的既有命名慣例與 3 分鐘注入上限規範重新設計，不是簡單套用 3DB 現有腳本
+  的既有命名慣例與 3 分鐘注入上限規範重新設計，不是簡單套用 3DB 現有腳本。
+- §2.1 加權評分表要真正填入星等，仍需補測同拓樸（`vm-1node`/
+  `vm-3node-haproxy-3s3r`）延遲/擴展基準，以及 Galera 專屬設計的 chaos/failover
+  測試（見 Stage 5）——這兩項與已完成的跨區穩態吞吐量測試是不同維度，缺一
+  不可。
