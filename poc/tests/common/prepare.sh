@@ -59,6 +59,20 @@ case "$DB" in
       CREATE DATABASE \`$DBNAME\`;
     " 2>&1 | tee "$PREP_DIR/drop-create.log"
     ;;
+  galera)
+    PORT="${GALERA_PORT:-3306}"; USER="${GALERA_USER:-tpcc_bench}"; DBNAME="${GALERA_DB:-tpcc}"
+    # Galera 同步複寫：DROP/CREATE 在任一節點執行即會透過 wsrep 複製到全部 6 台，
+    # 不需要像 YBDB 額外處理殘留 session（Galera 沒有 YSQL 那種單一 transaction
+    # block 限制），比照 TiDB 直接 DROP+CREATE。
+    # F-002（Codex review）：改用 tpcc_bench（ALL PRIVILEGES ON tpcc.*，涵蓋
+    # CREATE/DROP DATABASE tpcc）+ 密碼，取代原本 passwordless root。
+    : "${GALERA_BENCH_PASSWORD:?missing GALERA_BENCH_PASSWORD}"
+    export MYSQL_PWD="$GALERA_BENCH_PASSWORD"
+    mysql -h "$DB_HOST" -P "$PORT" -u "$USER" -e "
+      DROP DATABASE IF EXISTS \`$DBNAME\`;
+      CREATE DATABASE \`$DBNAME\`;
+    " 2>&1 | tee "$PREP_DIR/drop-create.log"
+    ;;
   crdb)
     PORT="${CRDB_PORT:-26257}"; USER="${CRDB_USER:-root}"; DBNAME="${CRDB_DB:-tpcc}"
     cockroach sql --insecure --host="$DB_HOST:$PORT" -e "
@@ -83,6 +97,11 @@ case "$DB" in
     ;;
 esac
 info "drop+create done"
+
+# F-002（Codex review）：go-tpc 無 MYSQL_PWD 等價機制，密碼須用 -p 明傳；
+# mysql CLI 呼叫則靠上面 case 區塊已 export 的 MYSQL_PWD，不重複帶 -p。
+GO_TPC_PASS_ARGS=""
+[[ "$DB" == "galera" ]] && GO_TPC_PASS_ARGS="-p $GALERA_BENCH_PASSWORD"
 
 # ---- 2. (vm-3node YBDB) pre-create schema with SPLIT INTO $EXPECTED_SHARDS TABLETS
 # 為什麼 1s*r 和 3s*r 都要 pre-create：
@@ -113,15 +132,22 @@ fi
 # cross-region round-trips compound into the same pathological stall YBDB
 # already hit. Root cause is the unpinned/cross-region placement, not the
 # DB engine, so key off TOPO's placement token rather than DB alone.
+# 2026-08-11：galera P-A×A-S smoke 實測也在這步卡住（go-tpc --check-all
+# 逐 warehouse 跑 3.3.2.x cross-table aggregate，W=4 就要跑數分鐘到十幾分鐘）。
+# Galera 不涉及 YBDB/CRDB-P-B 那種跨區 leaseholder 路由問題（P-A 單寫在
+# IDC 本地），純粹是這個 aggregate 查詢本身對任何 DB 都慢；比照既有做法一律
+# 用 --no-check + row-count 驗證，不分 placement（galera 目前只有 P-A/P-B
+# 兩種，都不需要這個檢查）。
 NOCHECK_ARG=""
 PLACEMENT_FROM_TOPO_PREP=$(echo "$TOPO" | grep -oE 'P-[AB]' || echo "UNKNOWN")
-[[ "$DB" == "ybdb" || "$PLACEMENT_FROM_TOPO_PREP" == "P-B" ]] && NOCHECK_ARG="--no-check"
+[[ "$DB" == "ybdb" || "$DB" == "galera" || "$PLACEMENT_FROM_TOPO_PREP" == "P-B" ]] && NOCHECK_ARG="--no-check"
 info "go-tpc tpcc prepare W=$WAREHOUSES driver=$DRIVER $NOCHECK_ARG"
 go-tpc tpcc prepare \
   -d "$DRIVER" -H "$DB_HOST" -P "$PORT" -U "$USER" -D "$DBNAME" \
   --conn-params "$ISO_CONN_PARAMS" \
   --warehouses="$WAREHOUSES" \
   $NOCHECK_ARG \
+  $GO_TPC_PASS_ARGS \
   2>&1 | tee "$PREP_DIR/go-tpc-prepare.log"
 
 # ---- 3b. (vm-3node 3s*r) post-prepare SPLIT 9 tables ---------------
@@ -180,10 +206,13 @@ if [[ "$EXPECTED_SHARDS" == "3" ]]; then
 fi
 
 # ---- 4. consistency / integrity verification -----------------------
+# 2026-08-11 修正（F-004，Codex review）：原本用 "$DB == ybdb" 推論 client 是
+# psql，但 NOCHECK_ARG=--no-check 這條件本身跟 DB 是不同軸——galera P-B 也會
+# 進到這個分支，卻不是 postgres wire protocol，硬用 psql 必定連線失敗。改用
+# 明確的 DB-conditional 選 client，不再從 NOCHECK_ARG 反推協定。
 if [[ "$DB" == "ybdb" || "$NOCHECK_ARG" == "--no-check" ]]; then
   info "row-count verification ($DB placement=$PLACEMENT_FROM_TOPO_PREP; go-tpc check-all skipped — 3.3.2.x cross-table aggregates stall under YBDB or unpinned/cross-region (P-B) placement)"
-  psql "postgres://${USER}@${DB_HOST}:${PORT}/${DBNAME}" -v ON_ERROR_STOP=1 \
-    -c "SELECT 'warehouse'  AS tbl, count(*) FROM warehouse
+  ROW_COUNT_SQL="SELECT 'warehouse'  AS tbl, count(*) FROM warehouse
          UNION ALL SELECT 'district',   count(*) FROM district
          UNION ALL SELECT 'customer',   count(*) FROM customer
          UNION ALL SELECT 'history',    count(*) FROM history
@@ -191,8 +220,43 @@ if [[ "$DB" == "ybdb" || "$NOCHECK_ARG" == "--no-check" ]]; then
          UNION ALL SELECT 'stock',      count(*) FROM stock
          UNION ALL SELECT 'new_order',  count(*) FROM new_order
          UNION ALL SELECT 'orders',     count(*) FROM orders
-         UNION ALL SELECT 'order_line', count(*) FROM order_line;" \
-    2>&1 | tee "$PREP_DIR/row-count-check.log"
+         UNION ALL SELECT 'order_line', count(*) FROM order_line;"
+  case "$DB" in
+    tidb|galera)
+      mysql -h "$DB_HOST" -P "$PORT" -u "$USER" "$DBNAME" -e "$ROW_COUNT_SQL" \
+        2>&1 | tee "$PREP_DIR/row-count-check.log"
+      ;;
+    *)
+      psql "postgres://${USER}@${DB_HOST}:${PORT}/${DBNAME}" -v ON_ERROR_STOP=1 -c "$ROW_COUNT_SQL" \
+        2>&1 | tee "$PREP_DIR/row-count-check.log"
+      ;;
+  esac
+  if [[ "$DB" == "galera" ]]; then
+    # ANALYZE TABLE 已移到下方 §6（統一 tidb|galera 分支，避免這裡與 §6 重複跑兩次）。
+    info "galera: SHOW CREATE TABLE + 2 個代表性 EXPLAIN（schema/查詢計畫證據）"
+    {
+      echo "=== SHOW CREATE TABLE warehouse ==="
+      mysql -h "$DB_HOST" -P "$PORT" -u "$USER" "$DBNAME" -e "SHOW CREATE TABLE warehouse;"
+      echo "=== SHOW CREATE TABLE order_line ==="
+      mysql -h "$DB_HOST" -P "$PORT" -u "$USER" "$DBNAME" -e "SHOW CREATE TABLE order_line;"
+      echo "=== EXPLAIN: point lookup (warehouse by PK) ==="
+      mysql -h "$DB_HOST" -P "$PORT" -u "$USER" "$DBNAME" -e "EXPLAIN SELECT * FROM warehouse WHERE w_id = 1;"
+      echo "=== EXPLAIN: range scan (order_line by warehouse) ==="
+      mysql -h "$DB_HOST" -P "$PORT" -u "$USER" "$DBNAME" -e "EXPLAIN SELECT * FROM order_line WHERE ol_w_id = 1;"
+    } > "$PREP_DIR/galera-schema-explain.txt" 2>&1
+    # F-004 #6（Codex review）：galera 沒有 shard-count/placement leader 這類
+    # 概念可驗（同步多主複寫，見 ansible/playbooks/galera-vm6.yml 設計說明），
+    # 明確寫出 no-op 原因的 artifact，而非靜默跳過讓人誤以為漏做。
+    cat > "$PREP_DIR/galera-shard-placement-noop.json" <<JSON
+{
+  "db": "galera",
+  "shard_count_check": "skipped",
+  "placement_leader_gate": "skipped",
+  "reason": "Galera is synchronous multi-master replication with no sharding and no leader/lease concept — every node holds a full replica of all data, so there is no 'shard count' or 'leader placement' to verify. See ansible/playbooks/galera-vm6.yml design note.",
+  "generated_at_note": "this is an intentional no-op, not a missed check"
+}
+JSON
+  fi
 else
   info "go-tpc tpcc check --check-all"
   go-tpc tpcc check \
@@ -200,6 +264,7 @@ else
     --conn-params "$ISO_CONN_PARAMS" \
     --warehouses="$WAREHOUSES" \
     --check-all \
+    $GO_TPC_PASS_ARGS \
     2>&1 | tee "$PREP_DIR/check-all.log" || warn "check-all reported issues; see $PREP_DIR/check-all.log"
 fi
 
@@ -210,7 +275,7 @@ sleep 300
 # ---- 6. ANALYZE / CREATE STATISTICS --------------------------------
 info "ANALYZE"
 case "$DB" in
-  tidb)
+  tidb|galera)
     mysql -h "$DB_HOST" -P "$PORT" -u "$USER" "$DBNAME" -e "
       ANALYZE TABLE warehouse, district, customer, history, new_order, orders, order_line, item, stock;
     " 2>&1 | tee "$PREP_DIR/analyze.log"

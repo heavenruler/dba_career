@@ -43,6 +43,23 @@ case "$DB" in
     ACTUAL=$(awk 'NR==2 {print $1}' "$GATE_DIR/isolation-db.txt")
     grep -Eq "[[:space:]]pessimistic$|pessimistic" "$GATE_DIR/isolation-db.txt" || die "TiDB pessimistic mode gate failed"
     ;;
+  galera)
+    require_cmd mysql go-tpc
+    : "${GALERA_BENCH_PASSWORD:?missing GALERA_BENCH_PASSWORD}"
+    export MYSQL_PWD="$GALERA_BENCH_PASSWORD"  # F-002: 避免密碼出現在 -p CLI 參數／ps aux
+    PORT="${GALERA_PORT:-3306}"
+    USER="${GALERA_USER:-tpcc_bench}"
+    DB_NAME="${GALERA_DB:-tpcc}"
+    if [[ "$ISO" == "rc" ]]; then
+      galera_iso="READ-COMMITTED"
+    else
+      galera_iso="REPEATABLE-READ"
+    fi
+    mysql -h "$DB_HOST" -P "$PORT" -u "$USER" "$DB_NAME" \
+      -e "SET SESSION transaction_isolation='${galera_iso}'; BEGIN; SELECT @@transaction_isolation AS transaction_isolation; COMMIT;" \
+      > "$GATE_DIR/isolation-db.txt" 2>&1
+    ACTUAL=$(awk 'NR==2 {print $1}' "$GATE_DIR/isolation-db.txt")
+    ;;
   crdb)
     require_cmd psql go-tpc
     PORT="${CRDB_PORT:-26257}"
@@ -88,6 +105,18 @@ case "$DB" in
       2>&1 | tee "$GATE_DIR/isolation-driver.txt"
     mysql -h "$DB_HOST" -P "${TIDB_PORT:-4000}" -u "${TIDB_USER:-root}" "${TIDB_DB:-tpcc}" \
       -e "SET SESSION transaction_isolation='${tidb_iso}'; SET SESSION tidb_txn_mode='pessimistic'; BEGIN; SELECT @@transaction_isolation AS transaction_isolation, @@tidb_txn_mode AS tidb_txn_mode; COMMIT;" \
+      > "$GATE_DIR/isolation-driver-verify.txt" 2>&1
+    DRIVER_ACTUAL=$(awk 'NR==2 {print $1}' "$GATE_DIR/isolation-driver-verify.txt")
+    ;;
+  galera)
+    # go-tpc 不讀 MYSQL_PWD，只認自己的 -p/--password 旗標，argv 短暫可見於
+    # ps aux 是這個 client 的固有限制（無 env var 替代方案，見 review prompt）。
+    go-tpc tpcc run -d "$DRIVER" -H "$DB_HOST" -P "${GALERA_PORT:-3306}" -U "${GALERA_USER:-tpcc_bench}" \
+      -p "$GALERA_BENCH_PASSWORD" -D "${GALERA_DB:-tpcc}" \
+      --conn-params "$ISO_CONN_PARAMS" --warehouses=1 --time=2s --threads=1 --output=plain \
+      2>&1 | tee "$GATE_DIR/isolation-driver.txt"
+    mysql -h "$DB_HOST" -P "${GALERA_PORT:-3306}" -u "${GALERA_USER:-tpcc_bench}" "${GALERA_DB:-tpcc}" \
+      -e "SET SESSION transaction_isolation='${galera_iso}'; BEGIN; SELECT @@transaction_isolation AS transaction_isolation; COMMIT;" \
       > "$GATE_DIR/isolation-driver-verify.txt" 2>&1
     DRIVER_ACTUAL=$(awk 'NR==2 {print $1}' "$GATE_DIR/isolation-driver-verify.txt")
     ;;

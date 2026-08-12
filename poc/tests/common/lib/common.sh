@@ -62,6 +62,10 @@ get_conn_params() {
       echo "transaction_isolation=%27READ-COMMITTED%27&tidb_txn_mode=%27pessimistic%27" ;;
     tidb:rr|tidb:strict)
       echo "transaction_isolation=%27REPEATABLE-READ%27&tidb_txn_mode=%27pessimistic%27" ;;
+    galera:rc)
+      echo "transaction_isolation=%27READ-COMMITTED%27" ;;
+    galera:rr|galera:strict)
+      echo "transaction_isolation=%27REPEATABLE-READ%27" ;;
     crdb:rc|ybdb:rc)
       echo "sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed" ;;
     crdb:rr|ybdb:rr)
@@ -79,6 +83,8 @@ expected_iso() {
   case "$db:$iso" in
     tidb:rc)       echo "READ-COMMITTED" ;;
     tidb:rr|tidb:strict) echo "REPEATABLE-READ" ;;
+    galera:rc)     echo "READ-COMMITTED" ;;
+    galera:rr|galera:strict) echo "REPEATABLE-READ" ;;
     crdb:rc|ybdb:rc)     echo "read committed" ;;
     crdb:rr|ybdb:rr)     echo "repeatable read" ;;
     crdb:strict|ybdb:strict) echo "serializable" ;;
@@ -89,7 +95,7 @@ expected_iso() {
 # get_driver <db>
 get_driver() {
   case "$1" in
-    tidb) echo "mysql" ;;
+    tidb|galera) echo "mysql" ;;
     crdb|ybdb) echo "postgres" ;;
     *) die "unknown db: $1" ;;
   esac

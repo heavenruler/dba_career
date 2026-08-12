@@ -64,7 +64,7 @@ run_query() {
 
   start_ns=$(date +%s%N)
   case "$DB" in
-    tidb)
+    tidb|galera)
       if [[ "$kind" == "select" ]]; then
         mysql -h "$DB_HOST" -P "$PORT" -u "${USER:-root}" "$DBNAME" -e "SELECT 1;" >/dev/null 2>&1
       else

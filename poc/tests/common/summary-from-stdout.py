@@ -34,7 +34,7 @@ SUMMARY_RE = re.compile(
     r"\s+95th\(ms\):\s+([\d.]+),\s+99th\(ms\):\s+([\d.]+)"
 )
 SUITE_NAME_RE = re.compile(
-    r"(tidb|crdb|ybdb)-(.+?)-(rc|rr|strict)(?:-run\d+)?-(\d{8}T\d{6}\+\d{4})"
+    r"(tidb|crdb|ybdb|galera)-(.+?)-(rc|rr|strict)(?:-run\d+)?-(\d{8}T\d{6}\+\d{4})"
 )
 
 PHASE_MANIFESTS = {

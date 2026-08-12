@@ -62,7 +62,7 @@ done
 [[ "$BASELINE_FAMILY" == "crossregion"       ]] || { echo "BASELINE_FAMILY must be crossregion" >&2; exit 1; }
 [[ "$PLACEMENT" =~ ^(P-A|P-B)$            ]] || { echo "PLACEMENT must be P-A | P-B" >&2; exit 1; }
 [[ "$PROFILE"   =~ ^(A-S|A-A-RO|A-A)$     ]] || { echo "PROFILE must be A-S | A-A-RO | A-A" >&2; exit 1; }
-[[ "$DB"        =~ ^(tidb|crdb|ybdb)$     ]] || { echo "DB must be tidb | crdb | ybdb" >&2; exit 1; }
+[[ "$DB"        =~ ^(tidb|crdb|ybdb|galera)$ ]] || { echo "DB must be tidb | crdb | ybdb | galera" >&2; exit 1; }
 
 # Q17（2026-07-07 拍板）: artifact 目錄 profile token 組字檢查（fail-closed）。
 # token 插在 placement 與 iso 之間、藏進 topology 段（tests/common 零改動）：
@@ -89,6 +89,12 @@ ISO="${ISO:-rc}"
 # Per-DB env required by tests/common/{prepare,run,collect}.sh
 case "$DB" in
   tidb) export TIDB_PORT="$DB_PORT" TIDB_USER="${TIDB_USER:-root}" TIDB_DB="${TIDB_DB:-tpcc}" ;;
+  galera)
+    # F-002（Codex review）：預設帳號改 tpcc_bench（非 passwordless root）；
+    # GALERA_BENCH_PASSWORD 由 Makefile 傳入，這裡只確保它繼續往下游 export。
+    : "${GALERA_BENCH_PASSWORD:?missing GALERA_BENCH_PASSWORD}"
+    export GALERA_PORT="$DB_PORT" GALERA_USER="${GALERA_USER:-tpcc_bench}" GALERA_DB="${GALERA_DB:-tpcc}" GALERA_BENCH_PASSWORD
+    ;;
   crdb) export CRDB_PORT="$DB_PORT" CRDB_USER="${CRDB_USER:-root}" CRDB_DB="${CRDB_DB:-tpcc}" ;;
   ybdb) export YBDB_PORT="$DB_PORT" YBDB_USER="${YBDB_USER:-yugabyte}" YBDB_DB="${YBDB_DB:-tpcc}" ;;
 esac
@@ -514,7 +520,14 @@ fi
 # GCP 副本存在 gate（2026-07-13）：fail-closed 驗證 tpcc 資料確實有副本同步到 GCP，
 # 且 leader/lease 全在 IDC。堵 w128 首輪「CRDB/YBDB GCP 零副本靜默通過」問題。
 echo "[wrapper] gcp-replica-gate: verify tpcc data replicated to GCP (fail-closed)"
-bash "$SELF/gcp-replica-gate.sh" --db "$DB" --db-host "$DB_HOST" --db-port "$DB_PORT" --out-dir "$ROOT/gate"
+# 2026-08-11 修正（F-005，Codex review）：TiDB/CRDB/YBDB 的 gate 查詢是「連任一
+# 節點、問整個叢集的 distributed metadata」，所以傳 $DB_HOST（IDC 側入口）就夠。
+# Galera 沒有這種跨節點視野——SHOW STATUS 只回報「你連的這個節點自己」的狀態，
+# 傳 IDC host 給 galera gate 只會查到 IDC 自己，完全查不到 GCP 有沒有跟上複寫。
+# 從 CLUSTER_HOSTS 抽出 gcp-* 的 IP 清單，明確傳給 gate 逐台查。
+GCP_HOSTS_FOR_GATE=$(tr ' ' '\n' <<<"$CLUSTER_HOSTS" | grep '^gcp-' | cut -d@ -f2 | tr '\n' ' ')
+bash "$SELF/gcp-replica-gate.sh" --db "$DB" --db-host "$DB_HOST" --db-port "$DB_PORT" \
+  --gcp-hosts "$GCP_HOSTS_FOR_GATE" --out-dir "$ROOT/gate"
 
 # ANCHOR_ONLY（2026-07-19，A-A-RO 全輪拍板）：prepare+gate 已完成即結束，跳過
 # freeze/run/collect（省掉整段 W=128 workload 時間）。用途：快速產出 plain

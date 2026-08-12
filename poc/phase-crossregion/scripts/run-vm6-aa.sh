@@ -81,7 +81,7 @@ done
   echo "run-vm6-aa.sh handles only PROFILE=A-A | A-A-RO; for A-S use run-vm6-suite.sh." >&2
   exit 1
 }
-[[ "$DB" =~ ^(tidb|crdb|ybdb)$ ]] || { echo "DB must be tidb | crdb | ybdb" >&2; exit 1; }
+[[ "$DB" =~ ^(tidb|crdb|ybdb|galera)$ ]] || { echo "DB must be tidb | crdb | ybdb | galera" >&2; exit 1; }
 
 # Q17: topology 必須帶 profile token（-aa / -aaro，插在 placement 與 iso 之間）— fail-closed
 case "$PROFILE" in
@@ -101,6 +101,7 @@ esac
 # per-DB 預設 writer port（IDC/GCP 兩端同 port；host 可由 env 覆寫）
 case "$DB" in
   tidb) _DEF_PORT=4000 ;;
+  galera) _DEF_PORT=3306 ;;
   crdb) _DEF_PORT=26257 ;;
   ybdb) _DEF_PORT=5433 ;;
 esac
@@ -148,6 +149,12 @@ fi
 : "${TIDB_USER:=root}";     : "${TIDB_DB:=tpcc}"
 : "${CRDB_USER:=root}";     : "${CRDB_DB:=tpcc}"
 : "${YBDB_USER:=yugabyte}"; : "${YBDB_DB:=tpcc}"
+# F-002（Codex review）：galera 預設帳號 tpcc_bench（非 passwordless root）。
+# GALERA_BENCH_PASSWORD 對非 galera DB 留空不報錯（set -u 安全預設）；
+# 只在 DB=galera 時 fail-closed（見下方檢查）。
+: "${GALERA_USER:=tpcc_bench}"; : "${GALERA_DB:=tpcc}"
+: "${GALERA_BENCH_PASSWORD:=}"
+[[ "$DB" == "galera" ]] && : "${GALERA_BENCH_PASSWORD:?missing GALERA_BENCH_PASSWORD}"
 # .31 上的 crossregion scripts（phase2-bootstrap rsync 目的地；merge 步驟用）
 : "${CROSS_SCRIPTS_REMOTE:=/tmp/poc-tpcc/scripts/crossregion}"
 
@@ -194,8 +201,19 @@ fi
 #   live cluster 上跑過且 PASS，只是換一個 Q17 命名的目錄）。
 #   缺 anchor prepare → fail-closed，要求先跑 phase{6,7,8}-*-smoke（plain
 #   PLACEMENT=$PLACEMENT，無 PROFILE token）產生它。
-# ---------------------------------------------------------------------
-ANCHOR_TOPOLOGY="vm-6node-${PLACEMENT}"
+#
+# 2026-08-11 galera 特例：Galera 單一 6-node 叢集部署同時服務 P-A/P-B 兩種
+# placement（見 ansible/playbooks/galera-vm6.yml 開頭設計說明——P-A/P-B 差異
+# 完全收斂成 client 連線目標，伺服器端資料本身跟 placement 無關），設計上
+# 只跑一次 plain prepare（固定 PLACEMENT=P-A，見 Makefile phase-galera-smoke
+# 的 target-specific 設定），不會有「P-B 專屬 plain prepare」這種東西可當
+# anchor——這跟 tidb/crdb/ybdb 每個 placement 資料實體分布真的不同、必須
+# 分開 anchor 的情況不一樣。固定用 P-A 的 anchor，不隨 $PLACEMENT 變動。
+if [[ "$DB" == "galera" ]]; then
+  ANCHOR_TOPOLOGY="vm-6node-P-A"
+else
+  ANCHOR_TOPOLOGY="vm-6node-${PLACEMENT}"
+fi
 ssh "$IDC_CLIENT" "
   set -euo pipefail
   ROOT='$ROOT'
@@ -254,6 +272,7 @@ wait $IDC_READY_PID $GCP_READY_PID
 # ---------------------------------------------------------------------
 case "$DB" in
   tidb) GCP_DRIVER=mysql; GCP_USER="$TIDB_USER"; GCP_DBNAME="$TIDB_DB" ;;
+  galera) GCP_DRIVER=mysql; GCP_USER="$GALERA_USER"; GCP_DBNAME="$GALERA_DB" ;;
   crdb) GCP_DRIVER=postgres; GCP_USER="$CRDB_USER"; GCP_DBNAME="$CRDB_DB" ;;
   ybdb) GCP_DRIVER=postgres; GCP_USER="$YBDB_USER"; GCP_DBNAME="$YBDB_DB" ;;
 esac
@@ -289,6 +308,8 @@ if [[ "$PROFILE" == "A-A-RO" ]]; then
   case "${DB}:${ISO}" in
     tidb:rc)             GCP_CONN_PARAMS="transaction_isolation=%27READ-COMMITTED%27&tidb_txn_mode=%27pessimistic%27" ;;
     tidb:rr|tidb:strict) GCP_CONN_PARAMS="transaction_isolation=%27REPEATABLE-READ%27&tidb_txn_mode=%27pessimistic%27" ;;
+    galera:rc)             GCP_CONN_PARAMS="transaction_isolation=%27READ-COMMITTED%27" ;;
+    galera:rr|galera:strict) GCP_CONN_PARAMS="transaction_isolation=%27REPEATABLE-READ%27" ;;
     crdb:rc)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
     crdb:rr)     GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
     crdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable%20-c%20default_transaction_use_follower_reads%3Don%20-c%20default_transaction_read_only%3Don" ;;
@@ -303,6 +324,8 @@ else
   case "${DB}:${ISO}" in
     tidb:rc)             GCP_CONN_PARAMS="transaction_isolation=%27READ-COMMITTED%27&tidb_txn_mode=%27pessimistic%27" ;;
     tidb:rr|tidb:strict) GCP_CONN_PARAMS="transaction_isolation=%27REPEATABLE-READ%27&tidb_txn_mode=%27pessimistic%27" ;;
+    galera:rc)             GCP_CONN_PARAMS="transaction_isolation=%27READ-COMMITTED%27" ;;
+    galera:rr|galera:strict) GCP_CONN_PARAMS="transaction_isolation=%27REPEATABLE-READ%27" ;;
     crdb:rc|ybdb:rc)         GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dread%5C%20committed" ;;
     crdb:rr|ybdb:rr)         GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Drepeatable%5C%20read" ;;
     crdb:strict|ybdb:strict) GCP_CONN_PARAMS="sslmode=disable&options=-c%20default_transaction_isolation%3Dserializable" ;;
@@ -327,6 +350,8 @@ ssh "$IDC_CLIENT" "
          GCP_PROBE_DB_HOST='${GCP_PROBE_DB_HOST}' \
          DB_HOST='${IDC_DB_HOST}' DB_PORT='${IDC_DB_PORT}' \
          TIDB_PORT='${IDC_DB_PORT}' TIDB_USER='${TIDB_USER}' TIDB_DB='${TIDB_DB}' \
+         GALERA_PORT='${IDC_DB_PORT}' GALERA_USER='${GALERA_USER}' GALERA_DB='${GALERA_DB}' \
+         GALERA_BENCH_PASSWORD='${GALERA_BENCH_PASSWORD}' \
          CRDB_PORT='${IDC_DB_PORT}' CRDB_USER='${CRDB_USER}' CRDB_DB='${CRDB_DB}' \
          YBDB_PORT='${IDC_DB_PORT}' YBDB_USER='${YBDB_USER}' YBDB_DB='${YBDB_DB}' \
          PHASE_NAME='${PHASE_NAME}' RESULT_SCOPE='${RESULT_SCOPE}' BASELINE_FAMILY='${BASELINE_FAMILY}' \
@@ -349,6 +374,10 @@ IDC_PID=$!
 # 不讓「工具打錯参数但看起來 PASS」的空資料流入 summary-gcp-side.py。
 GCP_MIX_ARGS=""
 [[ -n "$GCP_MIX_FLAG" ]] && GCP_MIX_ARGS="--weight $GCP_MIX_FLAG"
+# F-002（Codex review）：go-tpc 無 MYSQL_PWD 等價機制，galera 密碼須用 -p 明傳
+# （go-tpc 官方 --help 僅有 -p/--password；同款限制已見 tests/common/run.sh）。
+GCP_PASS_ARGS=""
+[[ "$DB" == "galera" ]] && GCP_PASS_ARGS="-p ${GALERA_BENCH_PASSWORD}"
 ssh -p "$GCP_CLIENT_PORT" "$GCP_CLIENT_SSH" "
   set -euo pipefail
   ROOT_LOCAL='${TPCC_ARTIFACTS}/${DB}-${TOPOLOGY}-${ISO}-${TS}'
@@ -372,7 +401,7 @@ ssh -p "$GCP_CLIENT_PORT" "$GCP_CLIENT_SSH" "
       go-tpc tpcc run -d '${GCP_DRIVER}' -H '${GCP_DB_HOST}' -P '${GCP_DB_PORT}' \
         -U '${GCP_USER}' -D '${GCP_DBNAME}' --conn-params '${GCP_CONN_PARAMS}' \
         --warehouses='${WAREHOUSES}' --time='${RUN_SEC}s' --threads=\"\$threads\" \
-        --output=plain ${GCP_MIX_ARGS} 2>&1 | tee \"\$RD/go-tpc-stdout.txt\"
+        --output=plain ${GCP_MIX_ARGS} ${GCP_PASS_ARGS} 2>&1 | tee \"\$RD/go-tpc-stdout.txt\"
       grep -qE '^\[Summary\]|^tpmC:' \"\$RD/go-tpc-stdout.txt\" || {
         echo \"[gcp] FAIL: threads=\$threads round=\$r go-tpc-stdout.txt 無 [Summary]/tpmC 行（工具本身失效，非量到零）\" >&2
         exit 1

@@ -50,18 +50,25 @@
 | # | 評分細項 | 類別 | 權重 | 驗證方法 | MySQL Galera Cluster | TiDB |
 |---|---|---|---:|---|:---:|:---:|
 | 1 | MySQL 協定相容性 | MySQL 相容性 | 20% | 既有應用 SQL／ORM 相容性矩陣測試（見 §3.1） | 待測 | 待測 |
-| 3 | 單節點/低併發延遲 | 延遲與水平擴展 | 15% | go-tpc TPC-C，`vm-1node` RC，W=128（見 §3.2.1） | 待測 | 待比較基準（Galera 未測） |
-| 4 | 水平擴展能力 | 延遲與水平擴展 | 20% | go-tpc TPC-C，`vm-1node`→`vm-3node-haproxy-3s3r` 擴展比（見 §3.2.2） | 待測 | 待比較基準（Galera 未測） |
-| 5 | 高併發穩定性 | 延遲與水平擴展 | 15% | go-tpc TPC-C，t=128 5-round range/mean 與 error rate（見 §3.2.3） | 待測 | 待比較基準（Galera 未測） |
-| 6 | Failover RTO／RPO | Failover、RTO／RPO、PITR | 6% | `phase-crossregion` chaos 實測，2026-08-11 完成（見 §3.3.1） | 待測 | 待比較基準（Galera 未測；TiDB 自身數字見 §3.3.1） |
+| 3 | 單節點/低併發延遲 | 延遲與水平擴展 | 15% | go-tpc TPC-C，`vm-1node` RC，W=128（見 §3.2.1） | 待測§ | 待比較基準（Galera 未測此拓樸） |
+| 4 | 水平擴展能力 | 延遲與水平擴展 | 20% | go-tpc TPC-C，`vm-1node`→`vm-3node-haproxy-3s3r` 擴展比（見 §3.2.2） | 待測§ | 待比較基準（Galera 未測此拓樸） |
+| 5 | 高併發穩定性 | 延遲與水平擴展 | 15% | go-tpc TPC-C，t=128 5-round range/mean 與 error rate（見 §3.2.3） | 待測§ | 待比較基準（Galera 未測此拓樸） |
+| 6 | Failover RTO／RPO | Failover、RTO／RPO、PITR | 6% | `phase-crossregion` chaos 實測，2026-08-11 完成（見 §3.3.1） | 待測¶ | 待比較基準（Galera 未測；TiDB 自身數字見 §3.3.1） |
 | 7 | PITR／備份還原 | Failover、RTO／RPO、PITR | 4% | 尚未排入本 PoC 測試矩陣（見 §3.3.2） | 待測 | 待測 |
 | 8 | Online DDL 與維運工具 | Online DDL 與維運工具 | 10% | 尚未排入本 PoC 測試矩陣（見 §3.4） | 待測 | 待測 |
 | 9 | HTAP／TiFlash | TiDB HTAP／TiFlash | 5% | 分析型查詢尚未排入（見 §3.5） | n/a | 待測 |
 | | **合計** | | **95%**† | | | |
 
-† 本群組不計入項目 2（PostgreSQL 相容性，5% 權重），故合計 95%。**目前 Galera 全數
-「待測」，TiDB 在本群組內沒有可比較的同群組對象**，本群組尚無法產出任何星等或加權
-總分（見 §4.1）。
+† 本群組不計入項目 2（PostgreSQL 相容性，5% 權重），故合計 95%。**目前本群組所有加權
+評分項目仍「待測」**，本群組尚無法產出任何星等或加權總分（見 §4.1）。
+
+§ 2026-08-12 已完成 Galera 的 `phase-crossregion` 跨區（`vm-6node`）P-A/P-B 穩態吞吐量
+實測，但**拓樸與 §3.2 要求的 `vm-1node`/`vm-3node-haproxy-3s3r` 不同**，不可互相替代
+——兩者是不同的測試維度（單機房 vs 跨區），故本欄仍列「待測」。新增的跨區實測數字見
+新設 §3.6，與 TiDB 既有的同拓樸數字並列比較。
+
+¶ 2026-08-12 的 Galera 測試僅涵蓋**穩態吞吐量**（P-A×A-S 單寫、P-B×A-A 雙寫），**未包含
+任何 chaos/node-kill 注入**，不構成 Failover RTO/RPO 的測試證據，故本欄仍列「待測」。
 
 ### 2.2 PostgreSQL 相容群組：YugabyteDB vs CockroachDB
 
@@ -263,6 +270,110 @@ CockroachDB 單體、YugabyteDB 雙 process），不代表其他拓樸（如 K8s
   故本項仍標「待測」。MySQL Galera Cluster 原生不支援跨區散置寫入架構，
   標記 `n/a`。
 
+### 3.6 MySQL 相容群組：MySQL Galera Cluster 跨區 P-A/P-B 穩態吞吐量實測（2026-08-12）
+
+> **狀態說明**：本節是 2026-08-12 新增的實測數據，**與 §2.1 加權評分項目 #3/#4/#5/#6
+> 是不同的測試維度**——本節拓樸為 `phase-crossregion` 的 `vm-6node`（3 台 IDC + 3 台
+> GCP 組成單一 Galera 叢集，同步多主複寫），不是 §3.2 的 `vm-1node`/`vm-3node-haproxy`；
+> 且本節只測穩態吞吐量，**未含任何 chaos/node-kill 注入**，不構成 §3.3.1 Failover
+> 的測試證據。比照本文件對 TiDB／YugabyteDB／CockroachDB 跨區 P-A/P-B 數據的既有
+> 處理方式（見 §3.5 說明），**本節數據不換算成星等或計入加權總分**，僅作為原始數字
+> 並列比較——但作為「同一套硬體/topology 下 Galera vs TiDB 實測比較」，這是本 PoC
+> 目前唯一一組 Galera 有真實數字可對照的資料，資訊量遠高於單純的「待測」。
+>
+> 測試方法：go-tpc TPC-C，W=128，READ COMMITTED，5-round mean，
+> `tests/common/summary-from-stdout.py` 彙整。Galera 部署與測試設計見
+> [`ansible/playbooks/galera-vm6.yml`](./ansible/playbooks/galera-vm6.yml) 開頭說明、
+> [`phase-crossregion/GALERA-EXECUTION-PLAN.md`](./phase-crossregion/GALERA-EXECUTION-PLAN.md)。
+> Galera 原始 artifact：`phase-crossregion/results-galera-w128/{P-A-w128,P-B-aa-w128}/summary.json`。
+> TiDB 原始 artifact：`phase-crossregion/results/x-cross/baseline/w128/20260717T143238+0800/`
+> 與 `.../smoke/early-runs/20260731T204801+0800/`（詳見
+> [`XCROSS-PA-VS-PB-FINAL-COMPARISON.md`](./phase-crossregion/XCROSS-PA-VS-PB-FINAL-COMPARISON.md)、
+> [`XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md`](./phase-crossregion/XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md)）。
+> 兩家皆 `N=1`、非同批次執行（Galera 2026-08-12、TiDB 2026-07-17/07-31），不構成
+> 統計顯著結論，僅供方向性參考。
+
+#### 3.6.1 P-A×A-S（單寫 IDC，無跨區寫入衝突）
+
+| threads | Galera tpmC | Galera NEW_ORDER p50 | Galera error rate | TiDB tpmC | TiDB error rate |
+|---|---:|---:|---:|---:|---:|
+| 16 | 284.9 | 2.1s | 0.000% | 1,584.4 | 0.000% |
+| 32 | 304.4 | 4.1s | 0.000% | 3,614.3 | 0.000% |
+| 64 | 291.8 | 5.1s | 0.077% | 7,176.1 | 0.000% |
+| 128 | 298.8 | 12.1s | 0.006% | 12,526.5 | 0.000% |
+
+**核心發現**：Galera 的 tpmC 在四個 thread level 幾乎打平（285~304，範圍僅
+±3.5%），TiDB 則隨 thread 數持續線性擴展（1,584→12,527，8× 成長）。thread=128 時
+TiDB 吞吐量是 Galera 的 **41.9 倍**。這不是「TiDB 調校比較好」的程度差異，而是兩種
+複寫架構的本質差異：Galera 的同步憑證複寫（certification-based replication）讓
+每筆交易在 commit 前都要等全叢集憑證完成，這個序列化點很早就把單寫吞吐量封頂；
+TiDB 的 leader-based Raft 複寫允許多個 region 的 leader 平行處理不同 key range 的
+寫入，擴展空間大得多。延遲面也對應：Galera 的 NEW_ORDER p50 從 2.1s（t=16）一路
+惡化到 12.1s（t=128），代表多開 thread 只是讓交易排隊等憑證，換不到更高吞吐量。
+
+#### 3.6.2 P-B×A-A（IDC+GCP 雙寫，跨區寫入衝突情境）
+
+**IDC 端 tpmC：**
+
+| threads | Galera IDC tpmC | Galera IDC error rate | TiDB IDC tpmC | TiDB IDC error rate |
+|---|---:|---:|---:|---:|
+| 16 | 410.5 | 0.004% | 6,141.3 | 0.000% |
+| 32 | 294.6 | 0.036% | 8,868.2 | 0.000% |
+| 64 | 279.9 | 0.128% | 6,717.9 | 0.000% |
+| 128 | 249.9 | 0.606% | 4,413.9 | 0.000% |
+
+**GCP 端吞吐量與衝突/錯誤率：**
+
+| threads | Galera GCP NEW_ORDER TPM | Galera GCP 寫入失敗率* | TiDB GCP tpmC | TiDB GCP 錯誤率 |
+|---|---:|---:|---:|---:|
+| 16 | 6.6 | 見下方彙總 | 1,600.2 | 見下方彙總 |
+| 32 | 9.1 | 見下方彙總 | 2,619.3 | 見下方彙總 |
+| 64 | 14.0 | 見下方彙總 | 2,978.3 | 見下方彙總 |
+| 128 | 17.9 | 見下方彙總 | 2,966.6 | 見下方彙總 |
+
+\* Galera 未逐 thread-level 拆分錯誤率，以下為 4 個 thread level 加總的 GCP 端全交易
+彙總（依 `summary.json` 的 `gcp_side.thread_results[*].{NEW_ORDER,PAYMENT,...}` 各
+`total_count`/`error_count` 加總計算）：
+
+| 交易類型 | 成功 | 失敗 | 失敗率 |
+|---|---:|---:|---:|
+| NEW_ORDER | 839 | 238 | 22.1% |
+| PAYMENT | 214 | 941 | **81.5%** |
+| DELIVERY | 95 | 15 | 13.6% |
+| ORDER_STATUS | 90 | 0 | 0% |
+| STOCK_LEVEL | 107 | 0 | 0% |
+| **全部合計** | **1,345** | **1,194** | **47.0%** |
+
+對照組：TiDB GCP 端全交易彙總錯誤率約 **0.158%**（
+[`XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md`](./phase-crossregion/XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md)
+§5，主因是 `context deadline exceeded`／`query execution canceled`，即跨區鎖等待
+逾時，不是真正的寫入衝突拒絕）。
+
+**核心發現**：Galera 在 P-B 雙寫情境下的 GCP 端整體失敗率（47.0%）比 TiDB
+（0.158%）高約 **300 倍**，且失敗性質不同——Galera 是**樂觀憑證複寫的真實衝突拒絕**
+（wsrep certification failure：IDC 與 GCP 同時對同一列送出交易，先憑證成功的一方
+贏，另一方直接 abort），TiDB 則是**悲觀鎖跨區等待逾時**（交易會排隊等鎖，只是等
+太久被判定逾時，不是被判定衝突）。PAYMENT 交易的失敗率（81.5%）遠高於其他交易
+類型，這與 PAYMENT 更新 `warehouse.w_ytd`／`district.d_ytd` 這類高度熱點列
+（每筆 PAYMENT 都會更新同一列）完全吻合——這正是 Galera 官方文件明確警告的
+「多主寫入熱點衝突」情境，本次測試等於直接把這個已知限制在真實跨區環境下量測
+出具體數字。IDC 端本身的錯誤率仍低（0.004%~0.606%），代表衝突主要由「輸家」
+（GCP 端）承擔，IDC 端交易多半能成功憑證。
+
+TiDB 在 P-B 情境下也出現 thread=128 時 IDC 端吞吐量從 th=32 的 8,868 驟降到
+4,413（－50%），推測與跨區悲觀鎖競爭有關（見
+[`XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md`](./phase-crossregion/XCROSS-PB-AA-CLOSING-REPORT-DRAFT.md)，
+該報告本身也標註此為推測、未證實）；Galera 的 IDC 端吞吐量則是從一開始（t=16）
+就已經逼近其單寫上限附近小幅波動（410→295→280→250），沒有 TiDB 那種「先升後崩」
+的曲線——因為 Galera 的吞吐量瓶頸在更早的憑證序列化點，跨區鎖競爭造成的邊際
+影響相對有限。
+
+**決策意涵**：若應用情境需要真正的多主動寫（P-B 這類雙活寫入），Galera 的樂觀
+複寫模型會直接把跨區衝突轉嫁成大量交易失敗，需要應用層自行處理重試邏輯（且
+重試本身在高熱點衝突下未必能收斂）；TiDB 的悲觀鎖模型則是把跨區衝突轉嫁成
+延遲增加與少量逾時，應用層處理相對單純（重試邏輯成熟度需求較低）。這是選型
+時的關鍵質性差異，比單純比較 tpmC 數字更重要。
+
 ## 4. 加權總分（依 §2 分組規則，分別計算）
 
 > 計算方式：僅對**已有實測星等**的項目計入加權分母重新正規化，未測項目**不**用任何
@@ -273,13 +384,15 @@ CockroachDB 單體、YugabyteDB 雙 process），不代表其他拓樸（如 K8s
 
 | DB | 已計入項目 | 已計入權重合計 | 加權總分 |
 |---|---|---:|---:|
-| MySQL Galera Cluster | 無 | 0% | 待測（無任何實測項目） |
+| MySQL Galera Cluster | 無 | 0% | 待測（§2.1 加權項目皆待測；§3.6 有跨區穩態吞吐量實測但非加權評分項目） |
 | TiDB | 無（本群組內無其他已測對象可比較） | — | 待評（見下方說明） |
 
-本群組**目前無法產出任何加權總分**：Galera 全數「待測」，TiDB 雖有 §3.2/§3.3.1 的完整
-實測數字，但「星等」的定義是相對排序，本群組內沒有第二個已測對象可供排序，勉強給
-TiDB 滿星等同於自我比較沒有意義。待 Galera 補測 §3.2（延遲/擴展）與 Failover 後，
-才能回填本節。
+本群組**目前無法產出任何加權總分**：§2.1 的 4 個可評分項目（#3/#4/#5/#6）皆要求
+`vm-1node`/`vm-3node-haproxy` 拓樸的延遲/擴展數字或 chaos/failover 數字，Galera
+目前只有 §3.6 的跨區（`vm-6node`）穩態吞吐量數字，測試維度不同，不能互相替代
+——「星等」的定義是相對排序，本群組內沒有第二個同維度已測對象可供排序，勉強給
+TiDB 滿星等同於自我比較沒有意義。待 Galera 補測 §3.2 同拓樸基準（延遲/擴展）與
+§3.3.1 chaos/failover 後，才能回填本節。
 
 ### 4.2 PostgreSQL 相容群組：YugabyteDB vs CockroachDB
 
@@ -308,18 +421,35 @@ TiDB 滿星等同於自我比較沒有意義。待 Galera 補測 §3.2（延遲/
 
 ### 5.1 MySQL 相容群組：MySQL Galera Cluster vs TiDB
 
-**現況**：本群組**目前無法產出任何星等或加權總分**（見 §4.1）——Galera 完全未納入本
-PoC 任何測試矩陣（相容性、效能、Failover 皆待測），TiDB 雖已有完整的 §3.2 效能數字
-與 §3.3.1 Failover 真實數字，但沒有同群組的已測對象可供相對排序。
+**現況**：本群組**目前無法產出任何星等或加權總分**（見 §4.1）——§2.1 要求的 4 個
+可評分項目（同拓樸延遲/擴展、chaos/failover）Galera 仍待測，TiDB 雖已有完整的
+§3.2 效能數字與 §3.3.1 Failover 真實數字，但沒有同拓樸/同維度的 Galera 數字可供
+相對排序。**2026-08-12 新增**：Galera 已完成跨區（`vm-6node`）P-A/P-B 穩態吞吐量
+實測並與 TiDB 同拓樸數字並列比較（見 §3.6）——這不是 §2.1 要求的測試維度，不計入
+星等，但已是本 PoC 目前唯一一組「Galera vs TiDB 同硬體環境實測比較」的資料，
+質性發現足以影響選型判斷（見下方）。
 
-**TiDB 自身數字**（供未來與 Galera 比較時的基準，非群組內排名）：單節點延遲 597ms
-p99（t=128）、擴展倍率 2.06×（此為三家 DB 中最高的擴展倍率原始數字，即使不納入
-跨組排名，這個絕對數字本身仍值得記錄）、高併發穩定性 range/mean 7.4%；Failover
-方面，F2 真實復原時間 39~44s（且多數時間屬「儲存層健康但 SQL 層仍不可寫」的區間），
-F1/C4 單節點 kill 有 6.68~8.4s 的真實可觀測中斷，write-reject 判定乾淨
-（`PD server timeout`）。
+**§3.6 核心發現**（跨區穩態吞吐量，非群組內星等評分，但為重要參考）：單寫情境
+（P-A×A-S）TiDB thread=128 吞吐量是 Galera 的 **41.9 倍**（12,526.5 vs 298.8
+tpmC），且 Galera 吞吐量在四個 thread level 幾乎打平、不隨並發數擴展，反映
+Galera 同步憑證複寫很早就把單寫吞吐量封頂；雙寫情境（P-B×A-A）Galera 的 GCP 端
+整體交易失敗率（47.0%）比 TiDB（0.158%）高約 300 倍，且失敗性質是**真實的樂觀
+複寫衝突拒絕**（wsrep certification failure），而非 TiDB 的**悲觀鎖跨區逾時**
+——這代表若應用情境需要真正的跨區多主動寫，Galera 需要應用層自行處理大量交易
+失敗與重試，這是比單純效能數字更關鍵的架構限制。
 
-**不能下的結論**：不能說 TiDB「整體優於／劣於」Galera——Galera 一項都沒測；不能把
+**TiDB 自身數字**（供與 Galera §3.6 比較時的基準，非群組內排名）：`vm-1node`/
+`vm-3node` 拓樸下單節點延遲 597ms p99（t=128）、擴展倍率 2.06×（此為三家 DB 中
+最高的擴展倍率原始數字，即使不納入跨組排名，這個絕對數字本身仍值得記錄）、高
+併發穩定性 range/mean 7.4%；跨區拓樸下 P-A×A-S thread=128 吞吐量 12,526.5 tpmC、
+P-B×A-A IDC 端 thread=32 峰值 8,868.2 tpmC（thread=128 時降至 4,413.9，推測與跨區
+悲觀鎖競爭有關，未證實）；Failover 方面，F2 真實復原時間 39~44s（且多數時間屬
+「儲存層健康但 SQL 層仍不可寫」的區間），F1/C4 單節點 kill 有 6.68~8.4s 的真實
+可觀測中斷，write-reject 判定乾淨（`PD server timeout`）。
+
+**不能下的結論**：不能因為 §3.6 的跨區吞吐量/衝突率差距就直接斷言「TiDB 整體優於
+Galera」——§2.1 要求的相容性、PITR、Online DDL、同拓樸延遲/擴展、chaos/failover
+仍全數待測，§3.6 只涵蓋其中一個面向（跨區穩態吞吐量與雙寫衝突行為）；也不能把
 TiDB 的 Failover 秒數與 YugabyteDB／CockroachDB 的「無可觀測中斷」做倍率換算（見
 §3.3.1，兩者不是同一種量測基準）。
 
@@ -344,9 +474,17 @@ P-A/P-B placement 探索性數據當作 Geo-Distribution 的正式評分依據�
 
 ### 5.3 兩組共通的下一步建議（依風險與可行性排序）
 
-1. 針對 MySQL Galera Cluster 補一輪與本 PoC 相同口徑（W=128、go-tpc TPC-C、
-   READ COMMITTED、`vm-1node`/`vm-3node`）的基準測試與 chaos/failover 測試，
-   否則 MySQL 相容群組永遠無法產出星等或加權總分（見 §5.1）。
+1. 針對 MySQL Galera Cluster 補一輪與本 PoC §3.2 相同口徑（`vm-1node`/
+   `vm-3node-haproxy-3s3r` 拓樸）的基準測試，以及 §3.3.1 同規格的 chaos/failover
+   測試，否則 MySQL 相容群組永遠無法產出星等或加權總分（見 §5.1）。
+   **2026-08-12 已完成的部分**：跨區（`vm-6node`）P-A/P-B 穩態吞吐量與 TiDB 的
+   實測比較（見 §3.6）——這是不同拓樸/不同維度的資料，不能取代本項待補的
+   `vm-1node`/`vm-3node` 基準測試與 chaos/failover 測試，但已提供了「Galera vs
+   TiDB 同硬體環境比較」的第一手質性證據（吞吐量上限差距、雙寫衝突行為），
+   後續若要補測 chaos/failover，建議設計 §5.3 補充：Galera 無 leader/lease，
+   既有 F1/C4（leader kill）測試框架不能直接套用，需另外設計節點 kill／
+   quorum 邊界測試情境（詳見
+   [`GALERA-EXECUTION-PLAN.md`](./phase-crossregion/GALERA-EXECUTION-PLAN.md) §Stage 5）。
 2. 設計並執行 §3.1 相容性矩陣與 §3.4 Online DDL 測試——這兩項在兩個群組合計皆佔
    相當權重，且往往是實際遷移時最先浮現的痛點，優先度應不低於效能測試。
 3. 若條件允許，針對 YugabyteDB 2026-08-08 觀察到的 master 執行緒暴增異常安排更長

@@ -65,6 +65,8 @@ CRDB_HOST          := 172.24.40.32
 CRDB_PORT          := 26257
 YBDB_HOST          := 172.24.40.32
 YBDB_PORT          := 5433
+GALERA_HOST        := 172.24.40.32
+GALERA_PORT        := 3306
 
 # === go-tpc 5-min smoke knobs (NOT the full sweep) ===
 GOTPC_VERSION      ?= v1.0.12
@@ -762,6 +764,112 @@ phase8-crdb-aaro-smoke:
 phase8-crdb-aa-smoke: PROFILE = A-A
 phase8-crdb-aa-smoke:
 	$(call _aa_smoke_recipe,crdb,$(CRDB_HOST),$(CRDB_PORT),CRDB_USER=root CRDB_DB=tpcc)
+
+# ===================================================================
+# Phase — Galera (Percona XtraDB Cluster 8.4) — MySQL 相容群組評分用
+# （見 DISTRIBUTED-DB-SCORING.md §2.1/§4.1/§5.1；對照 TiDB）
+# ===================================================================
+# 安全性（F-002 延伸）：這三個 target 的 recipe 會把 GALERA_ADMIN_PASSWORD/
+# GALERA_SST_PASSWORD/GALERA_BENCH_PASSWORD 內嵌進 ssh 指令字串。make 預設會把
+# 每行 recipe「先印出來再執行」（除非該行有 @ 前綴）——若不處理，實際執行時
+# 密碼明碼就會出現在 make 自己的 stdout 上。用 .SILENT 對這三個 target 關掉
+# 「印指令」這個行為（不影響指令本身的輸出，如 ansible-playbook 的 log 仍會
+# 正常顯示），比逐行加 @ 更不會漏掉。
+.SILENT: phase-galera-deploy phase-galera-smoke phase-galera-aa-smoke
+# 設計：Galera 同步多主複寫無 leader/lease 概念，P-A/P-B 差異完全收斂成
+# client workload profile 差異，伺服器端叢集部署本身不變（見
+# ansible/playbooks/galera-vm6.yml 開頭設計說明）——因此只需部署一次，
+# P-A×A-S 用 phase-galera-smoke，P-B×A-A 用 phase-galera-aa-smoke 即可，
+# 不需要像 TiDB/CRDB/YBDB 那樣在兩個 placement 之間重新部署叢集。
+# 2026-08-11 安全性修正（首次真實跑事故）：原本設計把 GALERA_*_PASSWORD 當
+# local make 變數，直接內插進 ssh 指令字串——這個字串本身會成為本機（Mac）
+# ssh 行程的 argv，`ps aux` 就能在本機看到明碼密碼（已實際發生一次外洩，
+# 3 組密碼已作廢重轉）。改法：密碼只活在 .31 上的 root-only 檔案
+# （$(GALERA_SECRETS_REMOTE)，由部署者手動在 .31 上产生，不經過 Mac 端環境
+# 變數/make 變數），Makefile 一律用 `source` 讓「值」只在 .31（和更下游、
+# 本來就已是同信任邊界的 DB 節點）的 remote shell 裡出現，本機 ps aux 只會
+# 看到檔名，看不到值。
+GALERA_SECRETS_REMOTE := /root/.galera-secrets.env
+
+phase-galera-deploy:
+	@echo "==> [start] phase-galera-deploy at $$(date +%Y-%m-%dT%H:%M:%S%z)"
+	ssh $(TPCC_CLIENT) "test -f $(GALERA_SECRETS_REMOTE) || { echo 'missing $(GALERA_SECRETS_REMOTE) on .31 -- 先在 .31 上產生三組密碼（見 GALERA-EXECUTION-PLAN.md）' >&2; exit 1; }; \
+	  source $(GALERA_SECRETS_REMOTE) && cd $(ANSIBLE_REMOTE_DIR) && \
+	  ansible-playbook -i $(ANSIBLE_INV_VIA31) playbooks/galera-vm6.yml"
+	@echo "==> [end]   phase-galera-deploy at $$(date +%Y-%m-%dT%H:%M:%S%z)"
+
+phase-galera-smoke: PLACEMENT = P-A
+phase-galera-smoke: PROFILE = A-S
+phase-galera-smoke:
+	@echo "==> [start] phase-galera-smoke at $$(date +%Y-%m-%dT%H:%M:%S%z)"
+	@echo "==> phase-galera-smoke ts=$(TPCC_TS) placement=$(PLACEMENT) (P-A×A-S：IDC client 僅連 $(GALERA_HOST)；無 server 端 placement 差異)"
+	@TS=$(TPCC_TS); \
+	ssh $(TPCC_CLIENT) " \
+	  source $(GALERA_SECRETS_REMOTE) && \
+	  export PHASE_NAME=$(PHASE_NAME) RESULT_SCOPE=$(RESULT_SCOPE) BASELINE_FAMILY=$(BASELINE_FAMILY) \
+	         tuning_profile_id=default \
+	         TPCC_TS=$$TS PLACEMENT=$(PLACEMENT) PROFILE=$(PROFILE) \
+	         DB=galera CLIENT_ZONE=$(CLIENT_ZONE) GATE_SKIP=$(GATE_SKIP) \
+	         DB_HOST=$(GALERA_HOST) DB_PORT=$(GALERA_PORT) \
+	         CLUSTER_HOSTS='idc-dbhost-1@172.24.40.32 idc-dbhost-2@172.24.40.33 idc-dbhost-3@172.24.40.34 gcp-dbhost-1@10.160.152.11 gcp-dbhost-2@10.160.152.12 gcp-dbhost-3@10.160.152.13' \
+	         WAREHOUSES=$(WAREHOUSES) WARMUP_SEC=$(WARMUP_SEC) \
+	         ROUNDS=$(ROUNDS) THREADS_LIST='$(THREADS_LIST)' RUN_SEC=$(RUN_SEC) ROUND_SLEEP_SEC=$(ROUND_SLEEP_SEC) \
+	         TPCC_ARTIFACTS=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE) \
+	         WAN_PROBE_ENABLED=1 WAN_PROBE_IPERF=1 \
+	         GCP_PROBE_DB_HOST=10.160.152.11 \
+	         GALERA_USER=tpcc_bench GALERA_DB=tpcc \
+	         ANCHOR_ONLY=$(ANCHOR_ONLY); \
+	  bash $(CROSS_SCRIPTS_REMOTE)/run-vm6-suite.sh \
+	    --db galera --topology vm-6node-$(PLACEMENT)$(PROFILE_TOKEN) --ts $$TS"
+	@echo "==> phase-galera wsrep-snapshot (cluster status per node)"
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/galera-vm-6node-$(PLACEMENT)$(PROFILE_TOKEN)-$(ISO)-$(TPCC_TS); \
+	ssh $(TPCC_CLIENT) "source $(GALERA_SECRETS_REMOTE) && mkdir -p $$ROOT/wsrep-snapshot && \
+	  for h in 172.24.40.32 172.24.40.33 172.24.40.34 10.160.152.11 10.160.152.12 10.160.152.13; do \
+	    echo \"=== \$$h ===\"; \
+	    ssh root@\$$h \"MYSQL_PWD='\$$GALERA_BENCH_PASSWORD' mysql -utpcc_bench -N -B -e \\\"SHOW STATUS LIKE 'wsrep_cluster_size'; SHOW STATUS LIKE 'wsrep_local_state_comment'; SHOW STATUS LIKE 'wsrep_ready';\\\"\"; \
+	  done > $$ROOT/wsrep-snapshot/wsrep-status.txt 2>&1" || true
+	@echo "==> [end]   phase-galera-smoke at $$(date +%Y-%m-%dT%H:%M:%S%z)"
+
+phase-galera-aa-smoke: PLACEMENT = P-B
+phase-galera-aa-smoke: PROFILE = A-A
+phase-galera-aa-smoke:
+	$(call _aa_smoke_recipe,galera,$(GALERA_HOST),$(GALERA_PORT),GALERA_USER=tpcc_bench GALERA_DB=tpcc; source $(GALERA_SECRETS_REMOTE))
+
+# ===================================================================
+# Operator window — Galera × W=128 detached on .31（Mac 可關機）
+#
+# 跟 win-tidb-as-detach 同款 nohup detach 模式，但驅動腳本是
+# win-galera-w128.sh（沒有 freeze/leader-gate，見該腳本開頭說明）。
+# PLACEMENT=P-A → PROFILE=A-S；PLACEMENT=P-B → PROFILE=A-A（跟
+# phase-galera-smoke / phase-galera-aa-smoke 的對應關係一致）。
+# ===================================================================
+WIN_GALERA_LOG = /tmp/poc-tpcc/logs/win-galera-$(PLACEMENT)-$(TPCC_TS).log
+
+.SILENT: win-galera-detach
+win-galera-detach:
+	@echo "==> rsync scripts to .31 (driver 依賴)"
+	rsync -avz phase-crossregion/scripts/ '$(TPCC_CLIENT):$(CROSS_SCRIPTS_REMOTE)/'
+	@echo "==> launch detached driver on .31  PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "test -f $(GALERA_SECRETS_REMOTE) || { echo 'missing $(GALERA_SECRETS_REMOTE) on .31' >&2; exit 1; }; \
+	  mkdir -p /tmp/poc-tpcc/logs; \
+	  source $(GALERA_SECRETS_REMOTE) && \
+	  nohup env PLACEMENT=$(PLACEMENT) PROFILE=$(if $(filter P-A,$(PLACEMENT)),A-S,A-A) TPCC_TS=$(TPCC_TS) \
+	    bash $(CROSS_SCRIPTS_REMOTE)/win-galera-w128.sh \
+	    > $(WIN_GALERA_LOG) 2>&1 < /dev/null & \
+	  echo \"started pid \$$!\""
+	@echo ""
+	@echo "==> detached。Mac 現在可關機。回來後查進度："
+	@echo "    make win-galera-status PLACEMENT=$(PLACEMENT) TPCC_TS=$(TPCC_TS)"
+
+win-galera-status:
+	@echo "==> window markers (TPCC_TS=$(TPCC_TS) PLACEMENT=$(PLACEMENT))"
+	@ROOT=$(TPCC_ARTIFACTS)/$(RESULT_SCOPE)/galera-vm-6node-$(PLACEMENT)$(if $(filter P-B,$(PLACEMENT)),-aa,)-$(ISO)-$(TPCC_TS); \
+	ssh $(TPCC_CLIENT) "for m in .window.done .window.failed .suite.done .suite.failed; do \
+	    [ -f '$$ROOT'/\$$m ] && { echo \"--- \$$m ---\"; cat '$$ROOT'/\$$m; }; \
+	  done; \
+	  [ -f '$$ROOT'/.window.done ] || [ -f '$$ROOT'/.window.failed ] || echo '(window still running)'"
+	@echo "==> driver log tail"
+	@ssh $(TPCC_CLIENT) "tail -20 $(WIN_GALERA_LOG) 2>/dev/null || echo '(no log yet)'"
 
 # ===================================================================
 # Phase 8.5 — Correctness gate (static-check before fetch; per audit §6 #8)

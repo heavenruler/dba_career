@@ -20,12 +20,13 @@
 # Env  : YB_MASTER_ADDR（ybdb 用，預設 3 IDC masters）；PLACEMENT=P-A|P-B（預設 P-A）
 set -euo pipefail
 
-DB="" DB_HOST="" DB_PORT="" OUT_DIR=""
+DB="" DB_HOST="" DB_PORT="" OUT_DIR="" GCP_HOSTS=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --db) DB=$2; shift 2 ;;
     --db-host) DB_HOST=$2; shift 2 ;;
     --db-port) DB_PORT=$2; shift 2 ;;
+    --gcp-hosts) GCP_HOSTS=$2; shift 2 ;;
     --out-dir) OUT_DIR=$2; shift 2 ;;
     *) echo "unknown arg: $1" >&2; exit 2 ;;
   esac
@@ -186,6 +187,97 @@ case "$DB" in
         log "WARN: 無法列出 transaction status tablets（P-B 僅記錄；證據 $ST_EV）"
       fi
     fi
+    ;;
+  galera)
+    # Galera 是同步多主複寫：每個 wsrep 節點都持有全量資料的完整副本（不像
+    # TiKV/CRDB/YBDB 是 sharded RF=3 out of 6），沒有「部分節點缺副本」這種
+    # failure mode 可測，也沒有 leader/lease 概念可供 P-A/P-B 語意檢查（P-A/P-B
+    # 差異完全體現在 client 連線目標，見 ansible/playbooks/galera-vm6.yml 開頭
+    # 設計說明）。本 gate 改成逐台查 GCP 節點（F-005，Codex review：$DB_HOST 是
+    # IDC 入口，SHOW STATUS 只回報「你連的這個節點自己」，傳 IDC host 只會查到
+    # IDC 自己，完全查不到 GCP 有沒有跟上複寫）。
+    #
+    # 帳號改用 tpcc_bench + 密碼（F-002），取代原本 passwordless root。
+    : "${GALERA_BENCH_PASSWORD:?missing GALERA_BENCH_PASSWORD}"
+    export MYSQL_PWD="$GALERA_BENCH_PASSWORD"
+    GALERA_GATE_USER="${GALERA_USER:-tpcc_bench}"
+    [[ -n "$GCP_HOSTS" ]] || { log "FAIL: --gcp-hosts 未提供，無法逐台驗證 GCP 複寫狀態"; exit 1; }
+
+    mysql_1() {  # mysql_1 <host> <sql> — 單行 BNe 查詢，失敗回空字串
+      mysql -h "$1" -P "$DB_PORT" -u "$GALERA_GATE_USER" -BNe "$2" 2>>"$EV" || true
+    }
+
+    # 1) 逐台驗證 wsrep 核心狀態（gate 條件）+ 額外指標（F-010，只記錄不 gate）
+    declare -a UUIDS=()
+    all_ok=1
+    for h in $GCP_HOSTS; do
+      log "galera: probing GCP node $h"
+      state_line=$(mysql_1 "$h" "SHOW STATUS LIKE 'wsrep_cluster_size'; SHOW STATUS LIKE 'wsrep_cluster_status'; SHOW STATUS LIKE 'wsrep_connected'; SHOW STATUS LIKE 'wsrep_ready'; SHOW STATUS LIKE 'wsrep_local_state'; SHOW STATUS LIKE 'wsrep_local_state_comment'; SHOW STATUS LIKE 'wsrep_cluster_state_uuid';")
+      echo "=== $h ===" >> "$EV"; echo "$state_line" >> "$EV"
+      cluster_size=$(awk '$1=="wsrep_cluster_size"{print $2}' <<<"$state_line")
+      cluster_status=$(awk '$1=="wsrep_cluster_status"{print $2}' <<<"$state_line")
+      connected=$(awk '$1=="wsrep_connected"{print $2}' <<<"$state_line")
+      ready=$(awk '$1=="wsrep_ready"{print $2}' <<<"$state_line")
+      local_state=$(awk '$1=="wsrep_local_state"{print $2}' <<<"$state_line")
+      state_comment=$(awk '$1=="wsrep_local_state_comment"{print $2}' <<<"$state_line")
+      uuid=$(awk '$1=="wsrep_cluster_state_uuid"{print $2}' <<<"$state_line")
+      UUIDS+=("$uuid")
+      row_count=$(mysql_1 "$h" "SELECT COUNT(*) FROM tpcc.warehouse;")
+      log "galera: $h cluster_size=$cluster_size status=$cluster_status connected=$connected ready=$ready local_state=$local_state ($state_comment) uuid=$uuid warehouse_rows=${row_count:-0}"
+
+      node_ok=1
+      [[ "$cluster_size" == "6" ]]              || { log "FAIL: $h wsrep_cluster_size=$cluster_size (expect 6)"; node_ok=0; }
+      [[ "$cluster_status" == "Primary" ]]      || { log "FAIL: $h wsrep_cluster_status=$cluster_status (expect Primary)"; node_ok=0; }
+      [[ "$connected" == "ON" ]]                || { log "FAIL: $h wsrep_connected=$connected (expect ON)"; node_ok=0; }
+      [[ "$ready" == "ON" ]]                    || { log "FAIL: $h wsrep_ready=$ready (expect ON)"; node_ok=0; }
+      [[ "$local_state" == "4" && "$state_comment" == "Synced" ]] \
+        || { log "FAIL: $h wsrep_local_state=$local_state/$state_comment (expect 4/Synced)"; node_ok=0; }
+      [[ "${row_count:-0}" -gt 0 ]]             || { log "FAIL: $h tpcc.warehouse row count=0（資料未同步到 GCP）"; node_ok=0; }
+      [[ "$node_ok" == "1" ]] || all_ok=0
+
+      # F-010：額外執行指標，只記錄不 gate（flow-control/複寫延遲屬效能特徵，非正確性條件）
+      extra=$(mysql_1 "$h" "SHOW STATUS LIKE 'wsrep_last_committed'; SHOW STATUS LIKE 'wsrep_local_recv_queue'; SHOW STATUS LIKE 'wsrep_local_recv_queue_avg'; SHOW STATUS LIKE 'wsrep_flow_control_paused'; SHOW STATUS LIKE 'wsrep_flow_control_sent'; SHOW STATUS LIKE 'wsrep_flow_control_recv'; SHOW STATUS LIKE 'wsrep_evs_repl_latency';")
+      echo "--- $h extra wsrep metrics (recorded, not gated) ---" >> "$EV"
+      echo "$extra" >> "$EV"
+    done
+    [[ "$all_ok" == "1" ]] || { log "FAIL: 至少一台 GCP 節點 wsrep 狀態未達標，見上方明細"; exit 1; }
+
+    # cluster UUID 一致性檢查（同一顆 cluster 的 6 台必須共用同一個 state UUID；
+    # 不一致代表發生了 split-brain / 各自 bootstrap 出獨立叢集）
+    first_uuid="${UUIDS[0]}"
+    for u in "${UUIDS[@]}"; do
+      [[ "$u" == "$first_uuid" ]] || { log "FAIL: GCP 節點 wsrep_cluster_state_uuid 不一致（$first_uuid vs $u）— 疑似 split-brain"; exit 1; }
+    done
+    log "galera: GCP 節點 cluster_state_uuid 一致 ($first_uuid)"
+
+    # 2) sentinel write-then-causal-read：IDC 端寫一筆帶時間戳的 sentinel，
+    # 逐台輪詢直到 3 台 GCP 節點都讀到（驗證「這次跑」的寫入真的跨區複寫，
+    # 不只是驗證舊資料還在）。Galera 是同步憑證複寫，但 apply 到其他節點仍有
+    # 短暫延遲（flow control 排隊），故容許最多 30×2s 輪詢。
+    mysql -h "$DB_HOST" -P "$DB_PORT" -u "$GALERA_GATE_USER" tpcc -e \
+      "CREATE TABLE IF NOT EXISTS _gcp_replica_gate_sentinel (k VARCHAR(64) PRIMARY KEY, v BIGINT);" \
+      >> "$EV" 2>&1
+    sentinel_key="gate-$(mysql -h "$DB_HOST" -P "$DB_PORT" -u "$GALERA_GATE_USER" tpcc -BNe "SELECT CONNECTION_ID();")"
+    sentinel_val=$RANDOM
+    mysql -h "$DB_HOST" -P "$DB_PORT" -u "$GALERA_GATE_USER" tpcc -e \
+      "REPLACE INTO _gcp_replica_gate_sentinel (k, v) VALUES ('$sentinel_key', $sentinel_val);" \
+      >> "$EV" 2>&1
+    log "galera: sentinel k=$sentinel_key v=$sentinel_val written on IDC ($DB_HOST) — polling GCP nodes"
+    for h in $GCP_HOSTS; do
+      seen=0
+      for i in $(seq 1 30); do
+        got=$(mysql_1 "$h" "SELECT v FROM tpcc._gcp_replica_gate_sentinel WHERE k='$sentinel_key';")
+        [[ "$got" == "$sentinel_val" ]] && { seen=1; break; }
+        sleep 2
+      done
+      [[ "$seen" == "1" ]] \
+        || { log "FAIL: $h 在 60s 內未讀到 sentinel（causal-read 未跟上，複寫延遲異常）"; exit 1; }
+      log "galera: $h sentinel causal-read OK (${i}x2s)"
+    done
+
+    log "galera: P-A/P-B 無 leader/lease 概念可驗（同步多主複寫，見設計說明）；" \
+        "本 gate 驗證的是跨區複寫本身（狀態、資料存在、UUID 一致、sentinel causal-read），" \
+        "不是 leader/lease 分布合規性——與 tidb/crdb/ybdb 分支的 PASS 語意不對等"
     ;;
   *) echo "unsupported db: $DB" >&2; exit 2 ;;
 esac

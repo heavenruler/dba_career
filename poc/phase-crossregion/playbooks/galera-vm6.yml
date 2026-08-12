@@ -1,0 +1,8 @@
+---
+# Thin wrapper: phase-crossregion 入口 → ansible/playbooks/galera-vm6.yml
+#
+# 用法:
+#   ansible-playbook -i ansible/inventory/crossregion.ini \
+#     phase-crossregion/playbooks/galera-vm6.yml
+
+- import_playbook: ../../ansible/playbooks/galera-vm6.yml

@@ -16,7 +16,7 @@ if '--ts' in args:
 base = args[0]
 
 fails = []
-dbs = ['tidb', 'crdb', 'ybdb']
+dbs = ['tidb', 'crdb', 'ybdb', 'galera']
 checked = 0
 skipped_dryrun = 0
 for db in dbs:
@@ -51,6 +51,11 @@ for db in dbs:
     # 屬 tests/common/ 不可改），故兩種副檔名皆接受，只驗證「gate 真的留了證據」。
     gate = glob.glob(os.path.join(d, 'prepare', 'placement-gate-*.json')) or \
            glob.glob(os.path.join(d, 'prepare', 'placement-gate-*.txt'))
+    # Galera 同步多主複寫沒有 shard/leader 概念可驗（見
+    # ansible/playbooks/galera-vm6.yml 開頭設計說明），prepare.sh 改寫明確的
+    # no-op 說明檔案（F-004 #6）取代傳統 placement-gate，非漏跑。
+    if not gate and db == 'galera':
+        gate = glob.glob(os.path.join(d, 'prepare', 'galera-shard-placement-noop.json'))
     if not gate:
         fails.append(f'{label}: placement-gate artifact missing (prepare/placement-gate-*.{{json,txt}})')
     # GCP 副本存在 gate 證據（2026-07-13 起 run-vm6-suite.sh 必產；缺=gate 沒跑=fail-closed）

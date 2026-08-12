@@ -86,8 +86,31 @@ mkdir -p "$RUNS_DIR"
 ISO_CONN_PARAMS=$(get_conn_params "$DB" "$ISO")
 DRIVER=$(get_driver "$DB")
 
+# F-002（Codex review）：galera 帳號改用 tpcc_bench + 密碼，取代原本 passwordless root。
+# go-tpc 無 MYSQL_PWD 等價機制，密碼須用 -p 明傳；mysql CLI（probe-iso-latency.sh 等
+# 由本 script 呼叫的子行程）則靠 export 的 MYSQL_PWD 取得，不重複帶 -p。
+GO_TPC_PASS_ARGS=""
+GALERA_ROUTING_PROFILE_JSON="null"
+if [[ "$DB" == "galera" ]]; then
+  : "${GALERA_BENCH_PASSWORD:?missing GALERA_BENCH_PASSWORD}"
+  export MYSQL_PWD="$GALERA_BENCH_PASSWORD"
+  GO_TPC_PASS_ARGS="-p $GALERA_BENCH_PASSWORD"
+  # F-009（Codex review）：Galera 無 leader/lease，P-A/P-B 完全收斂成 client
+  # 連線目標差異（見 ansible/playbooks/galera-vm6.yml 開頭設計說明）——跟
+  # tidb/crdb/ybdb 的 P-A/P-B（server 端 placement policy）不是同一種語意，
+  # 不能直接放進同一張比較表當「同款拍板」。用獨立的 routing-profile 標籤
+  # 明示這個差異，供 summary.json / 完成報告不假等價地引用：
+  #   G-SW-IDC = Galera Single-Writer IDC（P-A×A-S：client 只連 idc-dbhost-1）
+  #   G-DW-XR  = Galera Dual-Writer Cross-Region（P-B×A-A：IDC+GCP 同時寫）
+  case "$TOPO" in
+    *-aa)  GALERA_ROUTING_PROFILE_JSON='"G-DW-XR"' ;;
+    *)     GALERA_ROUTING_PROFILE_JSON='"G-SW-IDC"' ;;
+  esac
+fi
+
 case "$DB" in
   tidb) PORT="${TIDB_PORT:-4000}"; USER="${TIDB_USER:-root}"; DBNAME="${TIDB_DB:-tpcc}" ;;
+  galera) PORT="${GALERA_PORT:-3306}"; USER="${GALERA_USER:-tpcc_bench}"; DBNAME="${GALERA_DB:-tpcc}" ;;
   crdb) PORT="${CRDB_PORT:-26257}"; USER="${CRDB_USER:-root}"; DBNAME="${CRDB_DB:-tpcc}" ;;
   ybdb) PORT="${YBDB_PORT:-5433}"; USER="${YBDB_USER:-yugabyte}"; DBNAME="${YBDB_DB:-tpcc}" ;;
 esac
@@ -122,6 +145,7 @@ go-tpc tpcc run \
   --time="${WARMUP_SEC}s" \
   --threads=64 \
   --output=plain \
+  $GO_TPC_PASS_ARGS \
   > "$RUNS_DIR/warmup.log" 2>&1
 wan_probe "warmup-post" "$RUNS_DIR"
 
@@ -198,13 +222,24 @@ for threads in $THREADS_LIST; do
       # GCP_PROBE_DB_HOST default = GCP HAProxy (10.160.152.14) 對齊 GCP-side
       # near-read 預期；可由 caller 透過 env override.
       : "${GCP_PROBE_HOST:=10.160.152.15}"
-      : "${GCP_PROBE_DB_HOST:=10.160.152.14}"
+      if [[ "$DB" == "galera" ]]; then
+        # Galera 沒有 GCP 側 HAProxy VIP（P-A/P-B 由 client 直連特定節點，
+        # 見 ansible/playbooks/galera-vm6.yml 設計說明）；預設打 gcp-dbhost-1，
+        # 不沿用 TiDB 的 10.160.152.14 HAProxy 預設值。
+        : "${GCP_PROBE_DB_HOST:=10.160.152.11}"
+      else
+        : "${GCP_PROBE_DB_HOST:=10.160.152.14}"
+      fi
+      # F-002：galera 密碼透過 remote 端 MYSQL_PWD 前綴傳遞（不落地檔案、不進
+      # scp/ssh argv 之外的地方）；其他 DB 維持原本 passwordless 呼叫方式不變。
+      REMOTE_PWD_PREFIX=""
+      [[ "$DB" == "galera" ]] && REMOTE_PWD_PREFIX="MYSQL_PWD='$GALERA_BENCH_PASSWORD' "
       GCP_REM="/tmp/poc-tpcc/probe-${TS}-t${threads}-r${r}"
       (
         ssh -o BatchMode=yes -o ConnectTimeout=5 \
             -o StrictHostKeyChecking=accept-new \
             root@"$GCP_PROBE_HOST" \
-            "mkdir -p $GCP_REM && bash /tmp/poc/tests/common/probe-iso-latency.sh \
+            "mkdir -p $GCP_REM && ${REMOTE_PWD_PREFIX}bash /tmp/poc/tests/common/probe-iso-latency.sh \
               --db $DB --db-host $GCP_PROBE_DB_HOST --port $PORT \
               --user $USER --dbname $DBNAME \
               --duration-sec 60 --out-dir $GCP_REM \
@@ -233,6 +268,7 @@ for threads in $THREADS_LIST; do
       --threads="$threads" \
       --output=plain \
       $GO_TPC_MIX_ARGS \
+      $GO_TPC_PASS_ARGS \
       2>&1 | tee "$RD/go-tpc-stdout.txt"
 
     # wait for monitors to finish (some have 5s buffer)
@@ -264,7 +300,9 @@ write_phase_done "$ROOT" "run" "$(cat <<JSON
   "threads_list": "$THREADS_LIST",
   "rounds": $ROUNDS,
   "warmup_sec": $WARMUP_SEC,
-  "run_sec": $RUN_SEC
+  "run_sec": $RUN_SEC,
+  "galera_routing_profile": $GALERA_ROUTING_PROFILE_JSON,
+  "placement_semantics_note": $( [[ "$DB" == "galera" ]] && echo '"Galera has no leader/lease placement policy; P-A/P-B collapse to client routing profile (see galera_routing_profile) — NOT semantically equivalent to tidb/crdb/ybdb server-side placement P-A/P-B"' || echo null )
 }
 JSON
 )"

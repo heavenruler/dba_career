@@ -78,6 +78,12 @@ case "$DB" in
       done
     ' > "$ROOT/runs/db-log-tail.txt" 2>&1 || warn "tidb log tail failed (rc=$?)"
     ;;
+  galera)
+    ssh -o ConnectTimeout=10 "root@$CLUSTER_HOST" '
+      echo "=== mysqld.log tail (wsrep events) ==="
+      tail -1000 /var/log/mysqld.log 2>/dev/null || journalctl -u mysql -n 1000 --no-pager
+    ' > "$ROOT/runs/db-log-tail.txt" 2>&1 || warn "galera log tail failed (rc=$?)"
+    ;;
   crdb)
     ssh -o ConnectTimeout=10 "root@$CLUSTER_HOST" '
       echo "=== cockroach.log tail ==="

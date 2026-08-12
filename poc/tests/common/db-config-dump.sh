@@ -52,6 +52,46 @@ case "$DB" in
       -e "SET SESSION transaction_isolation='${tidb_iso}'; SET SESSION tidb_txn_mode='pessimistic'; BEGIN; SELECT @@transaction_isolation AS transaction_isolation, @@tidb_txn_mode AS tidb_txn_mode; COMMIT;" \
       > "$CONFIG_DIR/isolation.txt" 2>&1
     ;;
+  galera)
+    require_cmd mysql
+    # 2026-08-11（F-002 Codex review）：密碼用 MYSQL_PWD 環境變數傳遞，不放進
+    # -p CLI 參數——後者會短暫出現在 `ps aux`，MYSQL_PWD 不會。
+    : "${GALERA_BENCH_PASSWORD:?missing GALERA_BENCH_PASSWORD}"
+    export MYSQL_PWD="$GALERA_BENCH_PASSWORD"
+    {
+      echo "=== SHOW GLOBAL VARIABLES ==="
+      mysql -h "$DB_HOST" -P "${GALERA_PORT:-3306}" -u "${GALERA_USER:-tpcc_bench}" -e "SHOW GLOBAL VARIABLES;"
+      echo
+      echo "=== SHOW GLOBAL STATUS LIKE 'wsrep_%' ==="
+      mysql -h "$DB_HOST" -P "${GALERA_PORT:-3306}" -u "${GALERA_USER:-tpcc_bench}" -e "SHOW GLOBAL STATUS LIKE 'wsrep_%';"
+    } > "$CONFIG_DIR/effective-config.txt" 2>&1
+    mysql -h "$DB_HOST" -P "${GALERA_PORT:-3306}" -u "${GALERA_USER:-tpcc_bench}" \
+      -e "SHOW STATUS LIKE 'wsrep_cluster_size'; SHOW STATUS LIKE 'wsrep_local_state_comment'; SHOW STATUS LIKE 'wsrep_ready';" \
+      > "$CONFIG_DIR/cluster-settings.txt" 2>&1
+    galera_iso=$([[ "$ISO" == "rc" ]] && echo "READ-COMMITTED" || echo "REPEATABLE-READ")
+    mysql -h "$DB_HOST" -P "${GALERA_PORT:-3306}" -u "${GALERA_USER:-tpcc_bench}" "${GALERA_DB:-tpcc}" \
+      -e "SET SESSION transaction_isolation='${galera_iso}'; BEGIN; SELECT @@transaction_isolation AS transaction_isolation; COMMIT;" \
+      > "$CONFIG_DIR/isolation.txt" 2>&1
+    # F-010（Codex review）：above 只查 $DB_HOST 這一台；6 節點同步多主複寫，
+    # 每台的 wsrep 執行指標（commit/cert-failure/flow-control/repl-latency 等）
+    # 各自獨立、不能只憑一台推論全叢集健康度。SHOW GLOBAL STATUS LIKE
+    # 'wsrep_%' 本身已是全欄位萬用字元（涵蓋 wsrep_local_commits/
+    # wsrep_local_cert_failures/wsrep_local_bf_aborts/wsrep_local_recv_queue(_avg)/
+    # wsrep_flow_control_paused|sent|recv/wsrep_evs_repl_latency/
+    # wsrep_last_committed 等全部指標，非只挑幾個列舉），逐台重跑存證即可。
+    # CLUSTER_HOSTS 由 run-vm6-suite.sh export（格式 "name@ip ..."）；vm-1node/
+    # vm-3node 等非 X-CROSS 拓樸沒有這個 env，退化成只查 $DB_HOST 一台。
+    if [[ -n "${CLUSTER_HOSTS:-}" ]]; then
+      for entry in $CLUSTER_HOSTS; do
+        node_ip="${entry#*@}"
+        node_name="${entry%%@*}"
+        mysql -h "$node_ip" -P "${GALERA_PORT:-3306}" -u "${GALERA_USER:-tpcc_bench}" \
+          -e "SHOW GLOBAL STATUS LIKE 'wsrep_%';" \
+          > "$CONFIG_DIR/wsrep-status-${node_name}.txt" 2>&1 || \
+          echo "wsrep status dump failed for $node_name ($node_ip)" > "$CONFIG_DIR/wsrep-status-${node_name}.txt"
+      done
+    fi
+    ;;
   crdb)
     require_cmd cockroach psql
     cockroach sql --insecure --host="$DB_HOST:${CRDB_PORT:-26257}" -e "SHOW ALL CLUSTER SETTINGS;" \
