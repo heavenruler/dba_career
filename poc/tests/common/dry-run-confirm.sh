@@ -37,7 +37,7 @@ done
 [[ -n "$DB" && -n "$SUB" && -n "$ISO" && -n "$DB_HOST" && -n "$TS" ]] || die "missing required args"
 
 case "$SUB" in 1s1r|1s3r|3s1r|3s3r|haproxy-3s3r) ;; *) die "invalid sub-topology: $SUB" ;; esac
-case "$DB"  in tidb|crdb|ybdb)      ;; *) die "invalid db: $DB" ;; esac
+case "$DB"  in tidb|crdb|ybdb|galera) ;; *) die "invalid db: $DB" ;; esac
 
 # Expected RF derived from sub-topology suffix:
 case "$SUB" in
@@ -84,9 +84,27 @@ case "$DB" in
     remote '/opt/yugabyte/bin/yb-admin --master_addresses=172.24.40.32:7100,172.24.40.33:7100,172.24.40.34:7100 list_all_tablet_servers 2>&1' \
       > "$DRY/cluster-topology.txt" || true
     ;;
+  galera)
+    # Galera 沒有 tiup/cockroach-node-status/yb-admin 這類 cluster CLI，直接查
+    # wsrep 狀態變數；用 tpcc_bench（唯一可跨網路連線的帳號，見
+    # ansible/playbooks/galera-vm3.yml 帳號模型）而非 root（root@'localhost'
+    # 只能走 unix socket）。
+    require_cmd mysql
+    : "${GALERA_BENCH_PASSWORD:?missing GALERA_BENCH_PASSWORD}"
+    remote "MYSQL_PWD='$GALERA_BENCH_PASSWORD' mysql -u${GALERA_USER:-tpcc_bench} -N -B -e \"SHOW STATUS LIKE 'wsrep_cluster_size'; SHOW STATUS LIKE 'wsrep_cluster_status'; SHOW STATUS LIKE 'wsrep_ready'; SHOW STATUS LIKE 'wsrep_incoming_addresses';\"" \
+      > "$DRY/cluster-topology.txt" || true
+    ;;
 esac
 
-NODE_COUNT=$(grep -cE '(Up|172\.24\.40\.(32|33|34))' "$DRY/cluster-topology.txt" 2>/dev/null || echo 0)
+if [[ "$DB" == "galera" ]]; then
+  # 上面 galera 分支的輸出格式（NAME\tVALUE 逐行）跟 tiup/cockroach/yb-admin
+  # 完全不同，沿用下面通用的 grep -c IP 出現次數毫無意義——直接讀
+  # wsrep_cluster_size 數值本身。
+  NODE_COUNT=$(awk '$1=="wsrep_cluster_size" {print $2}' "$DRY/cluster-topology.txt" 2>/dev/null)
+  NODE_COUNT=${NODE_COUNT:-0}
+else
+  NODE_COUNT=$(grep -cE '(Up|172\.24\.40\.(32|33|34))' "$DRY/cluster-topology.txt" 2>/dev/null || echo 0)
+fi
 if [[ "${NODE_COUNT:-0}" -lt 3 ]]; then
   warn "cluster topology shows < 3 nodes (node_count=$NODE_COUNT)"
   ALL_PASS=false
@@ -176,6 +194,12 @@ case "$DB" in
     ACTUAL_RF=$(grep -oE '"numReplicas"\s*:\s*[0-9]+|"replication_factor"\s*:\s*[0-9]+' "$DRY/replication-factor.txt" 2>/dev/null | grep -oE '[0-9]+' | head -1 || echo "?")
     ACTUAL_RF=${ACTUAL_RF:-?}
     ;;
+  galera)
+    # Galera 沒有獨立的 RF 設定值可查——每個 wsrep member 天生就是完整副本，
+    # cluster_size 本身即等於「RF」，重用上面已查到的 NODE_COUNT。
+    echo "wsrep_cluster_size=$NODE_COUNT (galera: 每個 member 皆完整副本，RF=cluster_size)" > "$DRY/replication-factor.txt"
+    ACTUAL_RF="$NODE_COUNT"
+    ;;
 esac
 
 if [[ "$ACTUAL_RF" != "$EXPECTED_RF" ]]; then
@@ -235,6 +259,12 @@ case "$DB" in
     ysqlsh -h "$DB_HOST" -p "${YBDB_PORT:-5433}" -U "${YBDB_USER:-yugabyte}" -d yugabyte \
       -c "SELECT 1 AS health" > "$DRY/cluster-health.txt" 2>&1 || ALL_PASS=false
     ;;
+  galera)
+    # root@'localhost' 只能走 unix socket，DB_HOST 是 HAProxy/跨網路連線，
+    # 一律用 tpcc_bench（唯一可跨網路連線的帳號）。
+    MYSQL_PWD="$GALERA_BENCH_PASSWORD" mysql -h "$DB_HOST" -P "${GALERA_PORT:-3306}" -u "${GALERA_USER:-tpcc_bench}" \
+      -e "SELECT 1 AS health" > "$DRY/cluster-health.txt" 2>&1 || ALL_PASS=false
+    ;;
 esac
 grep -qE '^(1|health|---|[[:space:]]*1[[:space:]]*$)' "$DRY/cluster-health.txt" 2>/dev/null \
   || { ALL_PASS=false; FAILS+=("cluster-health-no-row"); }
@@ -249,6 +279,13 @@ case "$DB" in
     if [[ "$ISO" == "rc" ]]; then tidb_iso="READ-COMMITTED"; else tidb_iso="REPEATABLE-READ"; fi
     mysql -h "$DB_HOST" -P "${TIDB_PORT:-4000}" -u "${TIDB_USER:-root}" \
       -e "SET SESSION transaction_isolation='${tidb_iso}'; SET SESSION tidb_txn_mode='pessimistic'; BEGIN; SELECT @@transaction_isolation AS transaction_isolation, @@tidb_txn_mode AS tidb_txn_mode; COMMIT;" \
+      > "$DRY/iso-preset.txt" 2>&1 || true
+    ACTUAL_ISO=$(awk 'NR==2 {print $1}' "$DRY/iso-preset.txt")
+    ;;
+  galera)
+    if [[ "$ISO" == "rc" ]]; then galera_iso="READ-COMMITTED"; else galera_iso="REPEATABLE-READ"; fi
+    MYSQL_PWD="$GALERA_BENCH_PASSWORD" mysql -h "$DB_HOST" -P "${GALERA_PORT:-3306}" -u "${GALERA_USER:-tpcc_bench}" \
+      -e "SET SESSION transaction_isolation='${galera_iso}'; BEGIN; SELECT @@transaction_isolation AS transaction_isolation; COMMIT;" \
       > "$DRY/iso-preset.txt" 2>&1 || true
     ACTUAL_ISO=$(awk 'NR==2 {print $1}' "$DRY/iso-preset.txt")
     ;;

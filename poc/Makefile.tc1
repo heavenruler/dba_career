@@ -33,6 +33,18 @@ YBDB_PORT         := 5433
 YBDB_USER         := yugabyte
 YBDB_DB           := tpcc
 
+GALERA_HOST       := 172.24.40.32
+GALERA_PORT       := 3306
+GALERA_USER       := tpcc_bench
+GALERA_DB         := tpcc
+# 安全性（同 phase-crossregion/Makefile 既有解法，同一台 .31，同一份檔案）：
+# GALERA_ADMIN_PASSWORD/GALERA_SST_PASSWORD/GALERA_BENCH_PASSWORD 一律不當
+# local make 變數內插進 ssh 指令字串（會變成本機 ssh 行程 argv，ps aux 可見）。
+# 密碼只活在 .31 上這個 root-only 檔案裡，Makefile 一律用 `source` 讓值只在
+# .31（remote shell）出現。deploy 用的 ansible-playbook 是本機執行，讀本機
+# shell 已 export 的同名 env var（部署者自己 export，不經過本檔案任何變數）。
+GALERA_SECRETS_REMOTE := /root/.galera-secrets.env
+
 # go-tpc parameters
 GOTPC_VERSION     := v1.0.12
 WAREHOUSES        := 128
@@ -136,7 +148,7 @@ help:
 
 ## Build
 new-vms:
-	$(MAKE) -j2 new-idc-vms new-gcp-vms
+	$(MAKE) -f Makefile.tc1 -j2 new-idc-vms new-gcp-vms
 	@echo "==> All VMs created (IDC + GCP)"
 
 new-idc-vms: drop-idc-vms
@@ -166,7 +178,7 @@ new-gcp-vms: drop-gcp-vms
 
 ## Drop
 drop-vms:
-	$(MAKE) -j2 drop-idc-vms drop-gcp-vms
+	$(MAKE) -f Makefile.tc1 -j2 drop-idc-vms drop-gcp-vms
 	@echo "==> All VMs destroyed (IDC + GCP)"
 
 drop-idc-vms:
@@ -247,7 +259,8 @@ clean-tpcc-artifacts:
 define DB_HOST
 $(if $(filter tidb,$(1)),$(TIDB_HOST),\
 $(if $(filter crdb,$(1)),$(CRDB_HOST),\
-$(if $(filter ybdb,$(1)),$(YBDB_HOST),)))
+$(if $(filter ybdb,$(1)),$(YBDB_HOST),\
+$(if $(filter galera,$(1)),$(GALERA_HOST),))))
 endef
 
 # ---- per-db result directory mapping ----
@@ -258,7 +271,8 @@ endef
 define DB_RESULT_DIR
 $(if $(filter tidb,$(1)),tidb-tc1,\
 $(if $(filter crdb,$(1)),crdb-tc1,\
-$(if $(filter ybdb,$(1)),yuga-tc1,)))
+$(if $(filter ybdb,$(1)),yuga-tc1,\
+$(if $(filter galera,$(1)),galera-tc1,))))
 endef
 
 # ---- gate phase (Step 1: OS / chrony / disk; isolation gate after prepare) ----
@@ -292,7 +306,8 @@ TPCC_ENV = \
   ROUNDS=$(ROUNDS) WARMUP_SEC=$(WARMUP_SEC) RUN_SEC=$(RUN_SEC) ROUND_SLEEP_SEC=$(ROUND_SLEEP_SEC) \
   TIDB_PORT=$(TIDB_PORT) TIDB_USER=$(TIDB_USER) TIDB_DB=$(TIDB_DB) \
   CRDB_PORT=$(CRDB_PORT) CRDB_USER=$(CRDB_USER) CRDB_DB=$(CRDB_DB) \
-  YBDB_PORT=$(YBDB_PORT) YBDB_USER=$(YBDB_USER) YBDB_DB=$(YBDB_DB)
+  YBDB_PORT=$(YBDB_PORT) YBDB_USER=$(YBDB_USER) YBDB_DB=$(YBDB_DB) \
+  GALERA_PORT=$(GALERA_PORT) GALERA_USER=$(GALERA_USER) GALERA_DB=$(GALERA_DB)
 
 # ---- phase 4: prepare (DROP+CREATE + go-tpc prepare + check + ANALYZE + EXPLAIN) ----
 $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,prepare-vm1-$(db)-$(iso))):
@@ -338,12 +353,12 @@ $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,fetch-vm1-$(db)-$(iso))):
 $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,test-tpcc-vm1-$(db)-$(iso))):
 	$(eval DB := $(word 4,$(subst -, ,$@)))
 	$(eval ISO := $(word 5,$(subst -, ,$@)))
-	$(MAKE) deploy-vm1-$(DB)
-	$(MAKE) gate-vm1-$(DB)-$(ISO)        TPCC_TS=$(TPCC_TS)
-	$(MAKE) prepare-vm1-$(DB)-$(ISO)     TPCC_TS=$(TPCC_TS)
-	$(MAKE) run-vm1-$(DB)-$(ISO)         TPCC_TS=$(TPCC_TS)
-	$(MAKE) collect-vm1-$(DB)-$(ISO)     TPCC_TS=$(TPCC_TS)
-	$(MAKE) fetch-vm1-$(DB)-$(ISO)       TPCC_TS=$(TPCC_TS)
+	$(MAKE) -f Makefile.tc1 deploy-vm1-$(DB)
+	$(MAKE) -f Makefile.tc1 gate-vm1-$(DB)-$(ISO)        TPCC_TS=$(TPCC_TS)
+	$(MAKE) -f Makefile.tc1 prepare-vm1-$(DB)-$(ISO)     TPCC_TS=$(TPCC_TS)
+	$(MAKE) -f Makefile.tc1 run-vm1-$(DB)-$(ISO)         TPCC_TS=$(TPCC_TS)
+	$(MAKE) -f Makefile.tc1 collect-vm1-$(DB)-$(ISO)     TPCC_TS=$(TPCC_TS)
+	$(MAKE) -f Makefile.tc1 fetch-vm1-$(DB)-$(ISO)       TPCC_TS=$(TPCC_TS)
 	@echo "==> test-tpcc-vm1-$(DB)-$(ISO) complete; ts=$(TPCC_TS)"
 
 # ---- batch: 3 DB × 1 iso ----
@@ -367,9 +382,9 @@ $(foreach db,tidb crdb ybdb,$(foreach iso,rc rr strict,vm1-$(db)-$(iso))):
 	$(eval HOST := $(strip $(call DB_HOST,$(DB))))
 	$(eval TS := $(TPCC_TS))
 	@echo "==> $@: TPCC_TS=$(TS) host=$(HOST)"
-	$(MAKE) new-idc-vms
-	$(MAKE) bootstrap-tpcc-client
-	$(MAKE) deploy-vm1-$(DB)
+	$(MAKE) -f Makefile.tc1 new-idc-vms
+	$(MAKE) -f Makefile.tc1 bootstrap-tpcc-client
+	$(MAKE) -f Makefile.tc1 deploy-vm1-$(DB)
 	@echo "==> launching remote suite on $(TPCC_CLIENT) (detached)"
 	@ssh $(TPCC_CLIENT) "env $(TPCC_ENV) bash $(TPCC_SCRIPTS)/launch-vm1-suite.sh \
 	  --db $(DB) --iso $(ISO) --topology vm-1node \
@@ -449,6 +464,11 @@ destroy-vm3-all:
 	     cmd=$$(tr "\0" " " < /proc/$$pid/cmdline 2>/dev/null); \
 	     case "$$cmd" in *bin/yugabyted*) kill -KILL $$pid 2>/dev/null ;; esac; \
 	   done; sleep 3; rm -rf /var/yugabyte 2>/dev/null; echo ybdb_clean' -b -o 2>&1 | tail -5
+	@echo "--- Galera/PXC: stop mysql + wipe datadir (N=2/N=3 重跑前清殘留；重新初始化用) ---"
+	-cd $(ANSIBLE_DIR) && ansible -i inventory/vm3.ini vm3_db -m shell -a \
+	  'systemctl stop mysql mysql@bootstrap 2>/dev/null; \
+	   pkill -9 -x mysqld 2>/dev/null; sleep 2; \
+	   rm -rf /var/lib/mysql/* 2>/dev/null; echo galera_clean' -b -o 2>&1 | tail -5
 	@echo "--- HAProxy (.20): stop + remove config (N=2/N=3 重跑前清殘留) ---"
 	-cd $(ANSIBLE_DIR) && ansible -i inventory/vm3.ini haproxy -m shell -a \
 	  'systemctl stop haproxy 2>/dev/null; \
@@ -587,10 +607,10 @@ $(foreach db,tidb crdb ybdb,$(foreach sub,$(VM3_SUBS),vm3-$(db)-$(sub)-rc)):
 	@echo "==================================================================="
 	@echo "  vm3-$(DB)-$(SUB)-$(ISO)  ts=$(TS)  execute=$(EXECUTE)"
 	@echo "==================================================================="
-	$(MAKE) destroy-vm3-all
-	$(MAKE) bootstrap-tpcc-client
-	$(MAKE) deploy-vm3-$(DB)-$(SUB)
-	$(MAKE) dryrun-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS)
+	$(MAKE) -f Makefile.tc1 destroy-vm3-all
+	$(MAKE) -f Makefile.tc1 bootstrap-tpcc-client
+	$(MAKE) -f Makefile.tc1 deploy-vm3-$(DB)-$(SUB)
+	$(MAKE) -f Makefile.tc1 dryrun-vm3-$(DB)-$(SUB)-$(ISO) TPCC_TS=$(TS)
 	@if [ "$(EXECUTE)" = "1" ]; then \
 	  echo "==> EXECUTE=1 — launching detached suite on $(TPCC_CLIENT)"; \
 	  ssh $(TPCC_CLIENT) "env $(TPCC_ENV) bash $(TPCC_SCRIPTS)/launch-vm1-suite.sh \
@@ -703,10 +723,10 @@ vm3-tidb-haproxy-3s3r-rc vm3-crdb-haproxy-3s3r-rc vm3-ybdb-haproxy-3s3r-rc:
 	@echo "==================================================================="
 	@echo "  vm3-$(DB)-haproxy-3s3r-rc  ts=$(TS)  execute=$(EXECUTE)"
 	@echo "==================================================================="
-	$(MAKE) destroy-vm3-all
-	$(MAKE) bootstrap-tpcc-client
-	$(MAKE) deploy-vm3-$(DB)-haproxy-3s3r
-	$(MAKE) dryrun-vm3-$(DB)-haproxy-3s3r-rc TPCC_TS=$(TS)
+	$(MAKE) -f Makefile.tc1 destroy-vm3-all
+	$(MAKE) -f Makefile.tc1 bootstrap-tpcc-client
+	$(MAKE) -f Makefile.tc1 deploy-vm3-$(DB)-haproxy-3s3r
+	$(MAKE) -f Makefile.tc1 dryrun-vm3-$(DB)-haproxy-3s3r-rc TPCC_TS=$(TS)
 	@if [ "$(EXECUTE)" = "1" ]; then \
 	  echo "==> EXECUTE=1 — launching detached suite on $(TPCC_CLIENT)"; \
 	  ssh $(TPCC_CLIENT) "env $(TPCC_ENV) bash $(TPCC_SCRIPTS)/launch-vm1-suite.sh \
@@ -734,6 +754,181 @@ vm3-tidb-haproxy-3s3r-rc vm3-crdb-haproxy-3s3r-rc vm3-ybdb-haproxy-3s3r-rc:
 vm3-tidb-all5-rc-dry: vm3-tidb-all-rc-dry vm3-tidb-haproxy-3s3r-rc
 vm3-crdb-all5-rc-dry: vm3-crdb-all-rc-dry vm3-crdb-haproxy-3s3r-rc
 vm3-ybdb-all5-rc-dry: vm3-ybdb-all-rc-dry vm3-ybdb-haproxy-3s3r-rc
+
+# ====================================================================
+# vm1-galera-rc / vm3-galera-haproxy-3s3r-rc — Galera (PXC 8.4) IDC-only
+# S-BASE baseline，比照 tidb/crdb/ybdb 同款 vm-1node / vm-3node-haproxy-3s3r
+# 拓樸與流程，供 DISTRIBUTED-DB-SCORING.md §3.2.1/§3.2.2/§3.2.3 對照
+# （2026-08-12，見 GALERA-EXECUTION-PLAN.md Stage 3 情境 1/2 決策）。
+# 只跑 RC：vm-3node 系列本來就只測 RC；vm-1node 這裡也只跑 RC，因為 §3.2
+# 引用的既有數字全部是 RC 口徑，不補 RR/STRICT。IDC only，不開 GCP VM。
+#
+# 命名注意（見 ansible/playbooks/galera-vm3.yml 開頭說明）：
+# vm-3node-haproxy-3s3r 的 "3s3r" 對 tidb/crdb/ybdb 指 3 shard×RF3；Galera
+# 沒有 shard 概念，3 台皆完整副本，此處沿用同一拓樸目錄名只為路徑/工具鏈
+# 一致，語意上請對照 DISTRIBUTED-DB-SCORING.md §3.2 的比較邊界說明。
+#
+# 密碼前置：部署者需先在「本機」export GALERA_ADMIN_PASSWORD/
+# GALERA_SST_PASSWORD/GALERA_BENCH_PASSWORD（ansible-playbook 本機執行，讀
+# 本機 env），並在 .31 上準備好 $(GALERA_SECRETS_REMOTE)（給 prepare/run/
+# collect/dry-run-confirm 用，見上方 GALERA_SECRETS_REMOTE 定義的安全性說明）
+# ——兩邊必須是同一組密碼值，否則 SST/帳號驗證會對不上。
+# ====================================================================
+
+.PHONY: deploy-vm1-galera gate-vm1-galera-rc prepare-vm1-galera-rc \
+        run-vm1-galera-rc collect-vm1-galera-rc fetch-vm1-galera-rc \
+        test-tpcc-vm1-galera-rc vm1-galera-rc status-vm1-galera-rc \
+        deploy-vm3-galera-haproxy-3s3r dryrun-vm3-galera-haproxy-3s3r-rc \
+        gate-vm3-galera-haproxy-3s3r-rc prepare-vm3-galera-haproxy-3s3r-rc \
+        run-vm3-galera-haproxy-3s3r-rc collect-vm3-galera-haproxy-3s3r-rc \
+        fetch-vm3-galera-haproxy-3s3r-rc status-vm3-galera-haproxy-3s3r-rc \
+        vm3-galera-haproxy-3s3r-rc
+
+.SILENT: prepare-vm1-galera-rc run-vm1-galera-rc collect-vm1-galera-rc \
+         vm1-galera-rc dryrun-vm3-galera-haproxy-3s3r-rc \
+         prepare-vm3-galera-haproxy-3s3r-rc run-vm3-galera-haproxy-3s3r-rc \
+         collect-vm3-galera-haproxy-3s3r-rc vm3-galera-haproxy-3s3r-rc
+
+# ---- vm-1node --------------------------------------------------------
+deploy-vm1-galera:
+	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory/vm1.ini playbooks/galera-vm1.yml
+
+gate-vm1-galera-rc:
+	@echo "==> gate-vm1-galera-rc host=$(GALERA_HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "TPCC_ARTIFACTS=$(TPCC_ARTIFACTS) bash $(TPCC_SCRIPTS)/gate.sh \
+	  --db galera --iso rc --db-host $(GALERA_HOST) --ts $(TPCC_TS)"
+
+prepare-vm1-galera-rc:
+	@echo "==> prepare-vm1-galera-rc host=$(GALERA_HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "source $(GALERA_SECRETS_REMOTE) && $(TPCC_ENV) bash $(TPCC_SCRIPTS)/prepare.sh \
+	  --db galera --iso rc --topology vm-1node --db-host $(GALERA_HOST) --ts $(TPCC_TS)"
+
+run-vm1-galera-rc:
+	@echo "==> run-vm1-galera-rc host=$(GALERA_HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "source $(GALERA_SECRETS_REMOTE) && $(TPCC_ENV) bash $(TPCC_SCRIPTS)/run.sh \
+	  --db galera --iso rc --topology vm-1node --db-host $(GALERA_HOST) --ts $(TPCC_TS)"
+
+collect-vm1-galera-rc:
+	@echo "==> collect-vm1-galera-rc host=$(GALERA_HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "source $(GALERA_SECRETS_REMOTE) && $(TPCC_ENV) bash $(TPCC_SCRIPTS)/collect.sh \
+	  --db galera --iso rc --topology vm-1node --db-host $(GALERA_HOST) --ts $(TPCC_TS)"
+
+fetch-vm1-galera-rc:
+	$(eval FETCH_SRC := $(if $(filter command line,$(origin TPCC_TS)),$(TPCC_ARTIFACTS)/galera-vm-1node-rc-$(TPCC_TS),$(TPCC_ARTIFACTS)/galera-vm-1node-rc-*))
+	@echo "==> fetch-vm1-galera-rc src=$(FETCH_SRC) dest=galera-tc1"
+	mkdir -p $(LOCAL_RESULTS)/galera-tc1/S-BASE/vm-1node-rc/
+	rsync -avz --remove-source-files \
+	  '$(TPCC_CLIENT):$(FETCH_SRC)' \
+	  $(LOCAL_RESULTS)/galera-tc1/S-BASE/vm-1node-rc/
+	ssh $(TPCC_CLIENT) 'find $(TPCC_ARTIFACTS) -depth -type d -empty -delete' || true
+
+test-tpcc-vm1-galera-rc:
+	$(MAKE) -f Makefile.tc1 deploy-vm1-galera
+	$(MAKE) -f Makefile.tc1 gate-vm1-galera-rc     TPCC_TS=$(TPCC_TS)
+	$(MAKE) -f Makefile.tc1 prepare-vm1-galera-rc  TPCC_TS=$(TPCC_TS)
+	$(MAKE) -f Makefile.tc1 run-vm1-galera-rc      TPCC_TS=$(TPCC_TS)
+	$(MAKE) -f Makefile.tc1 collect-vm1-galera-rc  TPCC_TS=$(TPCC_TS)
+	$(MAKE) -f Makefile.tc1 fetch-vm1-galera-rc    TPCC_TS=$(TPCC_TS)
+	@echo "==> test-tpcc-vm1-galera-rc complete; ts=$(TPCC_TS)"
+
+# MAC dispatches, .31 runs detached (mirror vm1-<db>-<iso>；fetch 另外人工)
+vm1-galera-rc:
+	$(eval TS := $(TPCC_TS))
+	@echo "==> $@: TPCC_TS=$(TS) host=$(GALERA_HOST)"
+	$(MAKE) -f Makefile.tc1 new-idc-vms
+	$(MAKE) -f Makefile.tc1 bootstrap-tpcc-client
+	$(MAKE) -f Makefile.tc1 deploy-vm1-galera
+	@echo "==> launching remote suite on $(TPCC_CLIENT) (detached)"
+	ssh $(TPCC_CLIENT) "source $(GALERA_SECRETS_REMOTE) && env $(TPCC_ENV) bash $(TPCC_SCRIPTS)/launch-vm1-suite.sh \
+	  --db galera --iso rc --topology vm-1node \
+	  --db-host $(GALERA_HOST) --ts $(TS)"
+	@echo "==================================================================="
+	@echo "  TPCC_TS:       $(TS)"
+	@echo "  Status check:  make -f Makefile.tc1 status-vm1-galera-rc"
+	@echo "  Tail log:      ssh $(TPCC_CLIENT) tail -f $(TPCC_BASE)/logs/galera-vm-1node-rc-$(TS).log"
+	@echo "  Fetch later:   make -f Makefile.tc1 fetch-vm1-galera-rc TPCC_TS=$(TS)"
+	@echo "==================================================================="
+
+status-vm1-galera-rc:
+	@ssh $(TPCC_CLIENT) "bash $(TPCC_SCRIPTS)/status-vm1.sh \
+	  --db galera --topology vm-1node --iso rc"
+
+# ---- vm-3node-haproxy-3s3r --------------------------------------------
+deploy-vm3-galera-haproxy-3s3r:
+	@echo "==> deploy-vm3-galera-haproxy-3s3r (3 個完整副本 + HAProxy on .20)"
+	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory/vm3.ini playbooks/galera-vm3.yml
+
+dryrun-vm3-galera-haproxy-3s3r-rc:
+	@echo "==> dryrun-vm3-galera-haproxy-3s3r-rc db-host=$(HAPROXY_HOST):$(GALERA_PORT) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "source $(GALERA_SECRETS_REMOTE) && $(TPCC_ENV) bash $(TPCC_SCRIPTS)/dry-run-confirm.sh \
+	  --db galera --sub-topology haproxy-3s3r --iso rc --db-host $(HAPROXY_HOST) --ts $(TPCC_TS)"
+
+gate-vm3-galera-haproxy-3s3r-rc:
+	@echo "==> gate-vm3-galera-haproxy-3s3r-rc ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "$(TPCC_ENV) bash $(TPCC_SCRIPTS)/gate.sh \
+	  --db galera --iso rc --db-host $(HAPROXY_HOST) --ts $(TPCC_TS)"
+
+prepare-vm3-galera-haproxy-3s3r-rc:
+	@echo "==> prepare-vm3-galera-haproxy-3s3r-rc db-host=$(HAPROXY_HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "source $(GALERA_SECRETS_REMOTE) && $(TPCC_ENV) bash $(TPCC_SCRIPTS)/prepare.sh \
+	  --db galera --iso rc --topology vm-3node-haproxy-3s3r --db-host $(HAPROXY_HOST) --ts $(TPCC_TS)"
+
+run-vm3-galera-haproxy-3s3r-rc:
+	@echo "==> run-vm3-galera-haproxy-3s3r-rc db-host=$(HAPROXY_HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "source $(GALERA_SECRETS_REMOTE) && $(TPCC_ENV) bash $(TPCC_SCRIPTS)/run.sh \
+	  --db galera --iso rc --topology vm-3node-haproxy-3s3r --db-host $(HAPROXY_HOST) --ts $(TPCC_TS)"
+
+collect-vm3-galera-haproxy-3s3r-rc:
+	@echo "==> collect-vm3-galera-haproxy-3s3r-rc db-host=$(HAPROXY_HOST) ts=$(TPCC_TS)"
+	ssh $(TPCC_CLIENT) "source $(GALERA_SECRETS_REMOTE) && $(TPCC_ENV) bash $(TPCC_SCRIPTS)/collect.sh \
+	  --db galera --iso rc --topology vm-3node-haproxy-3s3r --db-host $(HAPROXY_HOST) --ts $(TPCC_TS)"
+
+fetch-vm3-galera-haproxy-3s3r-rc:
+	$(eval FETCH_SRC := $(if $(filter command line,$(origin TPCC_TS)),$(TPCC_ARTIFACTS)/galera-vm-3node-haproxy-3s3r-rc-$(TPCC_TS),$(TPCC_ARTIFACTS)/galera-vm-3node-haproxy-3s3r-rc-*))
+	@echo "==> fetch-vm3-galera-haproxy-3s3r-rc src=$(FETCH_SRC) dest=galera-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/"
+	mkdir -p $(LOCAL_RESULTS)/galera-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/
+	rsync -avz --remove-source-files \
+	  '$(TPCC_CLIENT):$(FETCH_SRC)' \
+	  $(LOCAL_RESULTS)/galera-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/
+	ssh $(TPCC_CLIENT) 'find $(TPCC_ARTIFACTS) -depth -type d -empty -delete' || true
+
+status-vm3-galera-haproxy-3s3r-rc:
+	@ssh $(TPCC_CLIENT) "bash $(TPCC_SCRIPTS)/status-vm1.sh \
+	  --db galera --topology vm-3node-haproxy-3s3r --iso rc" || true
+	@echo "==> dry-run artifacts: $(TPCC_ARTIFACTS)/galera-vm-3node-haproxy-3s3r-rc-*/dry-run/"
+	@ssh $(TPCC_CLIENT) "ls -la $(TPCC_ARTIFACTS)/galera-vm-3node-haproxy-3s3r-rc-*/dry-run/ 2>/dev/null | tail -20" || true
+
+# Full chain (mirror vm3-<db>-haproxy-3s3r-rc), gate→prepare→run→collect 走 detached suite。
+vm3-galera-haproxy-3s3r-rc:
+	$(eval TS := $(TPCC_TS))
+	@echo "==================================================================="
+	@echo "  vm3-galera-haproxy-3s3r-rc  ts=$(TS)  execute=$(EXECUTE)"
+	@echo "==================================================================="
+	$(MAKE) -f Makefile.tc1 destroy-vm3-all
+	$(MAKE) -f Makefile.tc1 bootstrap-tpcc-client
+	$(MAKE) -f Makefile.tc1 deploy-vm3-galera-haproxy-3s3r
+	$(MAKE) -f Makefile.tc1 dryrun-vm3-galera-haproxy-3s3r-rc TPCC_TS=$(TS)
+	@if [ "$(EXECUTE)" = "1" ]; then \
+	  echo "==> EXECUTE=1 — launching detached suite on $(TPCC_CLIENT)"; \
+	  ssh $(TPCC_CLIENT) "source $(GALERA_SECRETS_REMOTE) && env $(TPCC_ENV) bash $(TPCC_SCRIPTS)/launch-vm1-suite.sh \
+	    --db galera --iso rc --topology vm-3node-haproxy-3s3r \
+	    --db-host $(HAPROXY_HOST) --ts $(TS)"; \
+	  echo "==================================================================="; \
+	  echo "  Suite launched detached on $(TPCC_CLIENT) — Mac safe to disconnect."; \
+	  echo "  TPCC_TS:       $(TS)"; \
+	  echo "  Status check:  make -f Makefile.tc1 status-vm3-galera-haproxy-3s3r-rc"; \
+	  echo "  Tail log:      ssh $(TPCC_CLIENT) tail -f $(TPCC_BASE)/logs/galera-vm-3node-haproxy-3s3r-rc-$(TS).log"; \
+	  echo "  Fetch later:   make -f Makefile.tc1 fetch-vm3-galera-haproxy-3s3r-rc TPCC_TS=$(TS)"; \
+	  echo "==================================================================="; \
+	else \
+	  echo "==================================================================="; \
+	  echo "  STOPPED AT DRY-RUN ANCHOR"; \
+	  echo "  TPCC_TS:        $(TS)"; \
+	  echo "  Review:         ssh $(TPCC_CLIENT) cat $(TPCC_ARTIFACTS)/galera-vm-3node-haproxy-3s3r-rc-$(TS)/dry-run/*.txt"; \
+	  echo "  Status:         make -f Makefile.tc1 status-vm3-galera-haproxy-3s3r-rc"; \
+	  echo "  To execute:     make -f Makefile.tc1 vm3-galera-haproxy-3s3r-rc EXECUTE=1 TPCC_TS=$(TS)"; \
+	  echo "==================================================================="; \
+	fi
 
 ## ============================================================================
 ## Phase isolation targets (T104-T106) — see results/PHASES.md + phase-*/README.md

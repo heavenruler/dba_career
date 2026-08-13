@@ -1,0 +1,15 @@
+{
+  "phase": "run",
+  "db": "galera",
+  "iso": "rc",
+  "topology": "vm-3node-haproxy-3s3r",
+  "ts": "20260813T112044+0800",
+  "db_host": "172.24.47.20",
+  "warehouses": 128,
+  "threads_list": "16 32 64 128",
+  "rounds": 5,
+  "warmup_sec": 1200,
+  "run_sec": 300,
+  "galera_routing_profile": "G-SW-IDC",
+  "placement_semantics_note": "Galera has no leader/lease placement policy; P-A/P-B collapse to client routing profile (see galera_routing_profile) — NOT semantically equivalent to tidb/crdb/ybdb server-side placement P-A/P-B"
+}

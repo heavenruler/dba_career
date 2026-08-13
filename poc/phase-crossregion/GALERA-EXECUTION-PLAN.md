@@ -1,12 +1,21 @@
 # Galera (Percona XtraDB Cluster 8.4) 執行計畫
 
-狀態（2026-08-12 更新）：**Stage 0（靜態修正）、Stage 1（部署）、Stage 2（W=4
-smoke）、Stage 3 情境 3/4（P-A×A-S、P-B×A-A 的 W=128 正式量測）已完成並回填
-`results/x-cross/`；環境已 teardown。Stage 3 情境 1/2/5（wsrep-off／IDC-3-node／
-hot-row micro-test）與 Stage 5（chaos/failover）尚未執行。** **MySQL 相容群組
-完整加權評分（§2.1/§4.1）尚未完成**——已完成的是跨區穩態吞吐量對照，不是
-§2.1 要求的同拓樸延遲/擴展與 chaos/failover 測試，兩者是不同維度，不可互相
-替代。
+狀態（2026-08-13 更新）：**Stage 0（靜態修正）、Stage 1（部署）、Stage 2（W=4
+smoke）、Stage 3 情境 3/4（跨區 P-A×A-S、P-B×A-A 的 W=128 正式量測）、以及
+§2.1/§3.2 同拓樸 `vm-1node`/`vm-3node-haproxy-3s3r` 的 W=128 正式量測已完成並
+回填 `results/x-cross/` 與 `results/galera-tc1/`；環境已 teardown。** **MySQL
+相容群組加權評分（§2.1/§4.1）已完成 #3/#4/#5（50% 權重），仍缺 #1/#6/#7/#8
+（相容性/chaos-failover/PITR/Online DDL，合計 40% 權重）**——詳見
+`DISTRIBUTED-DB-SCORING.md` §2.1/§3.2/§4.1/§5.1。
+
+**2026-08-13 設計決策**：§2.1 的 #3/#4/#5 原規劃比照 §7（`S-PXC`，wsrep-off
+control + single-writer + multi-writer 三個 cell）的完整設計，但實際執行時
+改採**簡化版**——直接沿用 TiDB 既有的 `vm-1node`/`vm-3node-haproxy-3s3r` 命名與
+拓樸，只跑 2 個 cell（無 wsrep-off control、無獨立 single-writer cell），
+`vm-3node-haproxy-3s3r` 的 HAProxy round-robin 天生就是 multi-writer，等同
+覆蓋 §7 的 multi-writer cell，但**沒有** wsrep-off（無法拆解「複寫本身成本」
+vs「certification 衝突成本」）與 single-writer（無法對照「保守單寫」的
+scaling 表現）兩個對照組——這兩者仍是本節下方「尚待人工決策的項目」。
 對照文件：`DISTRIBUTED-DB-SCORING.md` §2.1/§3.6/§4.1/§5.1（MySQL 相容群組：
 Percona XtraDB Cluster 8.4／PXC／Galera vs TiDB）。
 
@@ -85,11 +94,13 @@ workload。**
 
 | # | 情境 | 狀態 | 備註 |
 |---|------|------|------|
-| 1 | 單機 wsrep-off control | ❌ 未執行 | |
-| 2 | IDC-3-node 單寫 | ❌ 未執行 | |
+| 1 | 單機 wsrep-off control | ❌ 未執行 | 比照 §7 `S-PXC` 設計；2026-08-13 決策改跑簡化版（見上方設計決策），不含此對照組 |
+| 2 | IDC-3-node 單寫 | ❌ 未執行 | 同上；`vm-3node-haproxy-3s3r` 天生是 multi-writer，沒有獨立測 single-writer |
+| 2b | **`vm-1node` 單節點（簡化版，取代 #1/#2 對照組）** | ✅ **已完成**（2026-08-13） | 見 `results/galera-tc1/S-BASE/vm-1node-rc/galera-vm-1node-rc-20260813T073744+0800/`；DISTRIBUTED-DB-SCORING.md §3.2.1；tpmC_mean 35,523.8/53,791.9/51,384.2/51,527.8（t=16/32/64/128），全部 0% error，round range/mean 1.6%~8.4% |
+| 2c | **`vm-3node-haproxy-3s3r` multi-writer（簡化版，覆蓋 §7 multi-writer cell）** | ✅ **已完成**（2026-08-13） | 見 `results/galera-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/galera-vm-3node-haproxy-3s3r-rc-20260813T112044+0800/`；DISTRIBUTED-DB-SCORING.md §3.2.2/§3.2.3；vs vm-1node **0.49×（負向擴展）**，round range/mean 34.5%~117.5%，唯一非零 error rate（0.037% all_txn）；`wsrep_local_cert_failures=234`／`bf_aborts=265`（post-run 單點 snapshot） |
 | 3 | 6-node 跨區單寫（P-A×A-S） | ✅ **已完成**（2026-08-11） | 見 `results/x-cross/smoke/early-runs/20260812T132801+0800/galera-vm-6node-P-A-rc-20260811T201242+0800/`；DISTRIBUTED-DB-SCORING.md §3.6.1 |
 | 4 | 6-node 跨區雙寫（P-B×A-A） | ✅ **已完成，但有 lineage caveat**（2026-08-12） | 沿用 P-A 的 prepare dataset，非獨立 prepare/gate/collect suite；見 `results/x-cross/README.md` 的 ⚠ 說明；DISTRIBUTED-DB-SCORING.md §3.6.2 |
-| 5 | Hot-row 衝突 micro-test | ❌ 未執行 | P-B×A-A 的 PAYMENT 交易已觀測到 81.5% 失敗率（見 §3.6.2），方向上與 hot-row 衝突假說相容，但**未做獨立設計的 micro-test，也未擷取 wsrep certification counter**，不構成根因證實 |
+| 5 | Hot-row 衝突 micro-test | ❌ 未執行 | P-B×A-A 的 PAYMENT 交易已觀測到 81.5% 失敗率（見 §3.6.2），方向上與 hot-row 衝突假說相容；`vm-3node-haproxy-3s3r`（#2c）也觀測到 certification 衝突（cert_failures=234），但同樣**未做獨立設計的 micro-test 與逐輪 wsrep counter delta**，不構成根因證實 |
 
 情境 3/4 已對照 TiDB P-A×A-S / P-B×A-A 正式數字進 DISTRIBUTED-DB-SCORING.md
 §3.6（**不計入 §2.1 加權評分**，見該節「狀態說明」）。情境 1/2/5 仍待執行；
@@ -134,15 +145,18 @@ PAYMENT 高失敗率觀察，收斂成可證實的因果結論）。
 
 ## 尚待人工決策的項目
 
-- Stage 3 情境 1/2（wsrep-off / IDC-3-node）是否值得投入時間重新部署跑，或是否
-  可以用文獻/官方 benchmark 數字替代（避免重複造輪子）——需要重新部署環境
-  （本輪已 teardown）。
-- Stage 3 情境 5（hot-row micro-test）與補測 wsrep certification counter
-  delta，是把 §3.6.2 PAYMENT 81.5% 失敗率的「型態相容但根因未證實」收斂成
-  確定結論的必要步驟，若要正式寫入評分依據應優先排入。
+- Stage 3 情境 1/2（wsrep-off control / 保守 single-writer 對照組）是否值得
+  投入時間重新部署補測——2026-08-13 已用簡化版（#2b/#2c）取得 vm-1node 與
+  multi-writer 的數字並填入 §2.1/§4.1，但仍缺這兩個對照組，導致 §3.2.2 的
+  0.49× 負向擴展**無法拆解**「wsrep 複寫本身開銷」vs「multi-writer certification
+  衝突開銷」各佔多少（見 DISTRIBUTED-DB-SCORING.md §3.2.2 的 inference 標註）。
+- Stage 3 情境 5（hot-row micro-test）與補測**逐輪**（不只 post-run 單點）
+  wsrep certification counter delta，是把 §3.6.2 PAYMENT 81.5% 失敗率、以及
+  #2c 觀測到的 cert_failures/bf_aborts 與 tpmC 大幅震盪（range/mean 最高
+  117.5%）之間的「型態相容但根因未證實」收斂成確定結論的必要步驟，若要正式
+  寫入評分依據應優先排入。
 - Stage 5 的具體故障注入時間窗/量測指標，需要比照 chaos_48injection_campaign
   的既有命名慣例與 3 分鐘注入上限規範重新設計，不是簡單套用 3DB 現有腳本。
-- §2.1 加權評分表要真正填入星等，仍需補測同拓樸（`vm-1node`/
-  `vm-3node-haproxy-3s3r`）延遲/擴展基準，以及 Galera 專屬設計的 chaos/failover
-  測試（見 Stage 5）——這兩項與已完成的跨區穩態吞吐量測試是不同維度，缺一
-  不可。
+- §2.1 加權評分表已完成 #3/#4/#5（50% 權重，見上方 #2b/#2c），仍缺 #1（相容性
+  20%）/#6（chaos/failover 6%，見 Stage 5）/#7（PITR 4%）/#8（Online DDL 10%）
+  合計 40% 權重，才能產出完整加權總分。

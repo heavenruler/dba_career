@@ -82,6 +82,20 @@
 | YugabyteDB | 直連 — 3s3r | RC | [20260525T031918](./yuga-tc1/S-BASE/vm-3node-3s3r-rc/ybdb-vm-3node-3s3r-rc-20260525T031918+0800/) | 128 | 8,729 | 1,114 | 0.000% | 同上；3s3r tablet 協調瓶頸（mpstat CPU 24-42% idle、throughput 反而 drop）|
 | YugabyteDB | HAProxy — 3s3r | RC | [20260525T193740](./yuga-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/) | 128 | **15,632** | 705 | 0.000% | [流程紀錄](./yuga-tc1/S-BASE/pipeline-log.md#vm-3node-haproxy-3s3r-rc3-shards--rf3--haproxy)；[HAProxy vs direct 分析](./dispatch-records/2026-05-26-vm-3node-haproxy-vs-direct-3s3r-ybdb-analysis.md)；vs direct +79.1% |
 
+### Galera（MySQL 相容群組，2026-08-13 補測；獨立於上方三家對標）
+
+> Galera（Percona XtraDB Cluster 8.4）不屬於上方「三家對標」的原始 S-BASE 範圍，
+> 是為了填補 [`DISTRIBUTED-DB-SCORING.md`](../DISTRIBUTED-DB-SCORING.md) §2.1
+> MySQL 相容群組（Galera vs TiDB）的 #3/#4/#5 評分項目才補測，故獨立列於此。
+> `vm-3node-haproxy-3s3r` 對 Galera是 3 台完整副本（無 shard 概念），語意上不等同
+> TiDB/CRDB/YBDB 的 3 shard×RF3——完整比較邊界與 fact/inference 分析見
+> `DISTRIBUTED-DB-SCORING.md` §3.2.1/§3.2.2/§3.2.3。
+
+| 資料庫 | 案例 | 隔離級 | 來源目錄 | 代表點 t | tpmC | NEW_ORDER p99 (ms) | error rate | 判讀 |
+|---|---|---|---|---:|---:|---:|---:|---|
+| MySQL Galera Cluster | 單節點虛擬機 | READ COMMITTED | [20260813T073744](./galera-tc1/S-BASE/vm-1node-rc/galera-vm-1node-rc-20260813T073744+0800/) | 32 | **53,791.9** | 37.7 | 0.000% | 單節點下 wsrep 幾乎空轉，效果接近原生 MySQL；四家 vm-1node 最高 tpmC |
+| MySQL Galera Cluster | HAProxy — 3 replica（無 shard） | READ COMMITTED | [20260813T112044](./galera-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/galera-vm-3node-haproxy-3s3r-rc-20260813T112044+0800/) | 128 | 26,166.2 | 51.6 | 0.037%（all_txn） | vs vm-1node **0.49×（負向擴展）**；HAProxy round-robin 造成 multi-writer certification 衝突，`wsrep_local_cert_failures=234`／`wsrep_local_bf_aborts=265`；5-round range/mean 43.2%（t=16 最高 117.5%），四家中唯一非零 error rate |
+
 ## 執行矩陣
 
 > 三節點（直連 + HAProxy）及 Kubernetes 以 `READ COMMITTED` 為主。參考 vm-1node 三 isolation 對標說明。

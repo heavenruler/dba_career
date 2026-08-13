@@ -32,7 +32,13 @@ if [[ -n "${CLUSTER_HOSTS:-}" ]]; then
   NODES=()
   for entry in $CLUSTER_HOSTS; do NODES+=("${entry#*@}"); done
 else
-  NODES=("$DB_HOST")
+  # HAProxy 拓樸（vm-3node-haproxy-3s3r）：db-host 是 HAProxy IP（無 mysql
+  # process 可重啟），須 fallback 成真正的 3 台 PXC member，比照
+  # coldreset-tidb.sh 的既有解法。
+  case "$DB_HOST" in
+    172.24.40.32|172.24.40.33|172.24.40.34) NODES=("$DB_HOST") ;;
+    *) NODES=(172.24.40.32 172.24.40.33 172.24.40.34) ;;
+  esac
 fi
 
 info "cold reset Galera: rolling restart across ${#NODES[@]} node(s): ${NODES[*]}"

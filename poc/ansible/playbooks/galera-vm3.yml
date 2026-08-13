@@ -1,0 +1,357 @@
+# Deploy Percona XtraDB Cluster 8.4 (MySQL 8.4 + Galera) as a 3-NODE
+# synchronous multi-master cluster on vm-3node (172.24.40.32/.33/.34),
+# fronted by HAProxy (172.24.47.20, round-robin, multi-writer — every
+# backend accepts writes since every PXC node is a full replica), for
+# DISTRIBUTED-DB-SCORING.md §3.2.2/§3.2.3 (水平擴展能力／高併發穩定性)
+# comparison against TiDB/CockroachDB/YugabyteDB's `vm-3node-haproxy-3s3r`
+# topology. IDC only — no GCP VM (cost control).
+#
+# Naming caveat (do not conflate with TiDB/CRDB/YBDB): the `-3s3r` suffix
+# in `vm-3node-haproxy-3s3r` originally means "3 shards x RF3" for those
+# three DBs. Galera has NO shard concept — every one of the 3 nodes is a
+# full, independent replica of the entire dataset (RF=3, "shards"=1). The
+# topology directory name is kept identical for path/tooling parity with
+# the other three DBs' S-BASE artifacts, but this distinction must be
+# called out wherever the results are compared (see
+# DISTRIBUTED-DB-SCORING.md §3.2 caveat).
+#
+# Inventory: ansible/inventory/vm3.ini
+#   [vm3_db] = 172.24.40.32 (primary/bootstrap), .33, .34 (workers/joiners)
+#   [haproxy] = 172.24.47.20
+#
+# Required environment variables (same 3-account model as galera-vm6.yml):
+#   GALERA_ADMIN_PASSWORD, GALERA_SST_PASSWORD, GALERA_BENCH_PASSWORD
+
+- name: Sanity check required secret env vars
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Assert GALERA_*_PASSWORD env vars are set
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'GALERA_ADMIN_PASSWORD') | length > 0
+          - lookup('env', 'GALERA_SST_PASSWORD') | length > 0
+          - lookup('env', 'GALERA_BENCH_PASSWORD') | length > 0
+        fail_msg: "Must export GALERA_ADMIN_PASSWORD, GALERA_SST_PASSWORD, GALERA_BENCH_PASSWORD before running this playbook."
+      no_log: true
+
+- name: Install and bootstrap Percona XtraDB Cluster 8.4 (vm-3node, 3 full replicas)
+  hosts: vm3_db
+  become: true
+  gather_facts: true
+  vars:
+    proxy_url: "http://sproxy.104-dev.com.tw:3128"
+    galera_cluster_name: "galera-vm3"
+    galera_admin_password: "{{ lookup('env', 'GALERA_ADMIN_PASSWORD') }}"
+    galera_sst_password: "{{ lookup('env', 'GALERA_SST_PASSWORD') }}"
+    galera_bench_password: "{{ lookup('env', 'GALERA_BENCH_PASSWORD') }}"
+    galera_hosts:
+      - { ip: 172.24.40.32, bootstrap: true }
+      - { ip: 172.24.40.33, bootstrap: false }
+      - { ip: 172.24.40.34, bootstrap: false }
+    galera_cluster_address: "gcomm://{{ galera_hosts | map(attribute='ip') | map('regex_replace', '$', ':20164') | join(',') }}"
+  tasks:
+    # 2026-08-12 vm1/vm3 首次真實跑實測：這批 IDC 模板的 python3.12 沒裝
+    # python3-dnf binding（ansible.builtin.dnf module 直接 fatal: "Could not
+    # import the dnf python module"）——改用 raw dnf 指令（比照 tidb-vm1.yml
+    # 既有、已驗證可行的作法），完全繞開 python-dnf binding。
+    - name: Install Percona release repo package
+      ansible.builtin.command: dnf install -y --nogpgcheck https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      register: galera_percona_release_install
+      changed_when: "'Nothing to do' not in galera_percona_release_install.stdout"
+      failed_when: galera_percona_release_install.rc != 0
+
+    - name: Enable Percona XtraDB Cluster 8.4 repo
+      ansible.builtin.command: percona-release setup -y pxc-84-lts
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      register: galera_repo_setup
+      changed_when: "'already' not in galera_repo_setup.stdout"
+      failed_when: galera_repo_setup.rc != 0
+
+    - name: Verify pxc-84-lts repo file was actually created
+      ansible.builtin.stat:
+        path: /etc/yum.repos.d/percona-pxc-84-lts-release.repo
+      register: galera_repo_file
+      failed_when: not galera_repo_file.stat.exists
+
+    - name: Enable Percona XtraBackup 8.4 repo (separate from pxc-84-lts)
+      ansible.builtin.command: percona-release enable pxb-84-lts release
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      register: galera_pxb_repo_setup
+      changed_when: "'already' not in galera_pxb_repo_setup.stdout"
+      failed_when: galera_pxb_repo_setup.rc != 0
+
+    - name: Verify pxb-84-lts repo file was actually created
+      ansible.builtin.stat:
+        path: /etc/yum.repos.d/percona-pxb-84-lts-release.repo
+      register: galera_pxb_repo_file
+      failed_when: not galera_pxb_repo_file.stat.exists
+
+    - name: Disable EL8 built-in mysql module (avoid conflict with Percona packages)
+      ansible.builtin.command: dnf module disable -y mysql
+      register: galera_module_disable
+      changed_when: "'Nothing to do' not in galera_module_disable.stdout"
+      failed_when: galera_module_disable.rc != 0
+
+    - name: Install Percona XtraDB Cluster + client + xtrabackup (SST)
+      ansible.builtin.command: dnf install -y percona-xtradb-cluster percona-xtradb-cluster-client percona-xtrabackup-84 sysstat
+      environment:
+        http_proxy: "{{ proxy_url }}"
+        https_proxy: "{{ proxy_url }}"
+      register: galera_pkg_install
+      changed_when: "'Nothing to do' not in galera_pkg_install.stdout"
+      failed_when: galera_pkg_install.rc != 0
+
+    - name: Capture installed package NEVRA as evidence
+      ansible.builtin.command: rpm -q percona-xtradb-cluster percona-xtradb-cluster-client percona-xtrabackup-84
+      register: galera_pkg_nevra
+      changed_when: false
+
+    - name: Write package evidence file
+      ansible.builtin.copy:
+        dest: "/tmp/galera-pkg-nevra.txt"
+        content: "{{ galera_pkg_nevra.stdout }}\n"
+        mode: "0644"
+
+    - name: OS tuning (swappiness / THP)
+      ansible.builtin.shell: |
+        set -e
+        sysctl -w vm.swappiness=1
+        echo "vm.swappiness = 1" > /etc/sysctl.d/99-galera.conf
+        echo never > /sys/kernel/mm/transparent_hugepage/enabled
+        echo never > /sys/kernel/mm/transparent_hugepage/defrag
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Preflight — capture SELinux enforcement mode (evidence, not gating)
+      ansible.builtin.command: getenforce
+      register: galera_selinux_mode
+      changed_when: false
+      failed_when: false
+
+    - name: Label wsrep ports (20164-20166/tcp) as mysqld_port_t under SELinux enforcing/permissive
+      ansible.builtin.command: semanage port -a -t mysqld_port_t -p tcp 20164-20166
+      register: galera_semanage_add
+      changed_when: "'already defined' not in (galera_semanage_add.stderr | default(''))"
+      failed_when: >
+        galera_semanage_add.rc != 0 and
+        'already defined' not in (galera_semanage_add.stderr | default(''))
+      when: galera_selinux_mode.stdout in ['Enforcing', 'Permissive']
+
+    - name: Open wsrep ports (20164-20166/tcp) + MySQL client port (3306/tcp) on firewalld
+      ansible.builtin.command: "{{ item }}"
+      loop:
+        - "firewall-cmd --permanent --add-port=20164-20166/tcp"
+        - "firewall-cmd --permanent --add-port=3306/tcp"
+        - "firewall-cmd --reload"
+      register: galera_firewalld_active
+      failed_when: false
+      changed_when: galera_firewalld_active.rc == 0
+
+    - name: Preflight — verify wsrep ports (20164-20166) are not bound by a non-mysqld process
+      ansible.builtin.shell: |
+        set -o pipefail
+        ss -ltnp 2>/dev/null | grep -E ':(20164|20165|20166)\s' | grep -v 'mysqld' || true
+      args:
+        executable: /bin/bash
+      register: galera_port_conflict
+      changed_when: false
+      failed_when: galera_port_conflict.stdout != ''
+
+    - name: Override wsrep settings (append to end of /etc/my.cnf — /etc/my.cnf.d/ is NOT included by this package)
+      ansible.builtin.blockinfile:
+        path: /etc/my.cnf
+        marker: "# {mark} ANSIBLE MANAGED BLOCK — galera-vm3.yml wsrep override"
+        insertafter: EOF
+        block: |
+          [mysqld]
+          server_id={{ (ansible_default_ipv4.address.split('.')[-2:] | join('')) }}
+          wsrep_on=ON
+          wsrep_provider=/usr/lib64/galera4/libgalera_smm.so
+          wsrep_cluster_address={{ galera_cluster_address }}
+          wsrep_node_address={{ ansible_host | default(inventory_hostname) }}:20164
+          wsrep_node_name={{ inventory_hostname }}
+          wsrep_cluster_name={{ galera_cluster_name }}
+          wsrep_provider_options="gmcast.listen_addr=tcp://0.0.0.0:20164;ist.recv_addr={{ ansible_host | default(inventory_hostname) }}:20165"
+          pxc_encrypt_cluster_traffic=OFF
+          wsrep_sst_method=xtrabackup-v2
+          wsrep_sst_receive_address={{ ansible_host | default(inventory_hostname) }}:20166
+          binlog_format=ROW
+          # 2026-08-13 vm1 首次真實跑實測踩到的 bug（見 galera-vm1.yml 同一行
+          # 註解）：W=128 長時間 sustained write 無 binlog purge 政策會把磁碟
+          # 填爆。3 節點理論上仍可能需要 binlog 供 IST 使用，故不設極短窗；
+          # 本輪 baseline 測試不含 chaos/node-kill，不需要長 IST 保留窗。
+          binlog_expire_logs_seconds=3600
+          default_storage_engine=InnoDB
+          innodb_autoinc_lock_mode=2
+          innodb_buffer_pool_size=2G
+          # 標準 TPC-C history 表無 explicit PK，理由與 galera-vm6.yml 相同
+          pxc_strict_mode=PERMISSIVE
+          bind_address=0.0.0.0
+
+          [sst]
+          wsrep_sst_auth=sstuser:{{ galera_sst_password }}
+      register: galera_wsrep_cnf
+      no_log: true
+
+    - name: Check if datadir already initialized
+      ansible.builtin.stat:
+        path: /var/lib/mysql/ibdata1
+      register: galera_datadir_stat
+
+    - name: Archive pre-existing mysqld.log before fresh bootstrap
+      ansible.builtin.command: >
+        mv /var/log/mysqld.log
+        /var/log/mysqld.log.pre-bootstrap.{{ ansible_date_time.iso8601_basic_short }}
+      args:
+        removes: /var/log/mysqld.log
+      when:
+        - inventory_hostname == '172.24.40.32'
+        - not galera_datadir_stat.stat.exists
+
+    - name: Bootstrap first node (172.24.40.32 only, fresh init only)
+      ansible.builtin.systemd:
+        name: mysql@bootstrap.service
+        state: started
+        enabled: false
+      when:
+        - inventory_hostname == '172.24.40.32'
+        - not galera_datadir_stat.stat.exists
+      register: galera_bootstrap_start
+
+    - name: Wait for bootstrap node MySQL port
+      ansible.builtin.wait_for:
+        host: 172.24.40.32
+        port: 3306
+        timeout: 120
+      when: inventory_hostname == '172.24.40.32'
+
+    - name: Extract temporary root password from bootstrap node log (first init only)
+      ansible.builtin.shell: |
+        grep -oP '(?<=temporary password is generated for root@localhost: ).*' /var/log/mysqld.log 2>/dev/null | tail -1 || true
+      args:
+        executable: /bin/bash
+      register: galera_temp_pass
+      changed_when: false
+      no_log: true
+      when:
+        - inventory_hostname == '172.24.40.32'
+        - not galera_datadir_stat.stat.exists
+
+    - name: Write temporary root auth defaults-file (avoids shell-quoting hazard)
+      ansible.builtin.copy:
+        dest: /root/.tmp-root-auth.cnf
+        mode: "0600"
+        content: |
+          [client]
+          user=root
+          password="{{ galera_temp_pass.stdout }}"
+      when:
+        - inventory_hostname == '172.24.40.32'
+        - not galera_datadir_stat.stat.exists
+        - (galera_temp_pass.stdout | default('')) | length > 0
+      no_log: true
+
+    - name: Create Galera accounts (bootstrap node, first init only)
+      ansible.builtin.shell: |
+        set -e
+        rm -f /root/.account-setup-err.log
+        if [ -f /root/.tmp-root-auth.cnf ]; then
+          mysql --defaults-extra-file=/root/.tmp-root-auth.cnf --connect-expired-password -e "
+            ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ galera_admin_password }}';
+          " 2>>/root/.account-setup-err.log
+          rm -f /root/.tmp-root-auth.cnf
+        fi
+        mysql -uroot -p'{{ galera_admin_password }}' -e "
+          CREATE USER IF NOT EXISTS 'sstuser'@'localhost' IDENTIFIED BY '{{ galera_sst_password }}';
+          ALTER USER 'sstuser'@'localhost' IDENTIFIED BY '{{ galera_sst_password }}';
+          GRANT RELOAD, LOCK TABLES, PROCESS, REPLICATION CLIENT, BACKUP_ADMIN ON *.* TO 'sstuser'@'localhost';
+          CREATE DATABASE IF NOT EXISTS tpcc;
+          CREATE USER IF NOT EXISTS 'tpcc_bench'@'%' IDENTIFIED BY '{{ galera_bench_password }}';
+          ALTER USER 'tpcc_bench'@'%' IDENTIFIED BY '{{ galera_bench_password }}';
+          GRANT ALL PRIVILEGES ON tpcc.* TO 'tpcc_bench'@'%';
+          GRANT PROCESS, REPLICATION CLIENT ON *.* TO 'tpcc_bench'@'%';
+          FLUSH PRIVILEGES;
+        " 2>>/root/.account-setup-err.log
+      args:
+        executable: /bin/bash
+      when:
+        - inventory_hostname == '172.24.40.32'
+        - not galera_datadir_stat.stat.exists
+      no_log: true
+
+    - name: Start MySQL on remaining nodes (join via SST, one at a time)
+      ansible.builtin.systemd:
+        name: mysql
+        state: started
+        enabled: true
+      when: inventory_hostname != '172.24.40.32'
+      throttle: 1
+      register: galera_join_start
+
+    - name: Wait for MySQL port on all nodes
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host | default(inventory_hostname) }}"
+        port: 3306
+        timeout: 600
+
+    - name: Wait for wsrep_cluster_size = 3 on this node
+      ansible.builtin.shell: |
+        set -e
+        for i in $(seq 1 60); do
+          size=$(mysql -uroot -p'{{ galera_admin_password }}' -N -B -e \
+            "SHOW STATUS LIKE 'wsrep_cluster_size';" 2>/dev/null | awk '{print $2}')
+          ready=$(mysql -uroot -p'{{ galera_admin_password }}' -N -B -e \
+            "SHOW STATUS LIKE 'wsrep_ready';" 2>/dev/null | awk '{print $2}')
+          if [ "$size" = "3" ] && [ "$ready" = "ON" ]; then
+            echo "wsrep_cluster_size=3 wsrep_ready=ON"
+            exit 0
+          fi
+          sleep 5
+        done
+        echo "timeout: wsrep_cluster_size=$size wsrep_ready=$ready (expected 3/ON)"
+        exit 1
+      args:
+        executable: /bin/bash
+      no_log: true
+      changed_when: false
+
+    - name: Stop the one-time mysql@bootstrap.service unit on bootstrap node
+      ansible.builtin.systemd:
+        name: mysql@bootstrap.service
+        state: stopped
+        enabled: false
+      when: inventory_hostname == '172.24.40.32'
+
+    - name: Switch bootstrap node to regular mysql.service (cluster confirmed formed, rejoins via IST not gcomm:// bootstrap)
+      ansible.builtin.systemd:
+        name: mysql
+        state: started
+        enabled: true
+      when: inventory_hostname == '172.24.40.32'
+
+# HAProxy — round-robin across all 3 PXC nodes (multi-writer; every node is
+# a full replica so this is the only meaningful routing profile, unlike
+# TiDB's single-vs-multi-writer distinction which doesn't apply here).
+- name: Deploy HAProxy for Galera vm-3node-haproxy-3s3r
+  hosts: haproxy
+  become: true
+  # gather_facts: false — .20 (l-monitor-labroom-1) 只有 Python 3.6，ansible
+  # setup module 需要 Python 3.7+，比照 tidb-vm3.yml 的既有解法。
+  gather_facts: false
+  vars:
+    haproxy_backends: "172.24.40.32:3306,172.24.40.33:3306,172.24.40.34:3306"
+    haproxy_port: 3306
+    haproxy_frontend: galera
+  tasks:
+    - name: Include haproxy_deploy role
+      ansible.builtin.include_role:
+        name: haproxy_deploy

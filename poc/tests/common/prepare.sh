@@ -47,6 +47,11 @@ case "$TOPO" in
   k8s-3node-haproxy-3s3r-limit|k8s-3node-haproxy-3s3r-unlimit) EXPECTED_SHARDS=3 ;;  # 2026-06-08: phase-k8s S-K8S
   *)                                                      EXPECTED_SHARDS=0 ;;   # vm-1node / 其他 → 不 enforce
 esac
+# Galera 沒有 shard 概念（每台皆完整副本，見下方 galera-shard-placement-noop.json
+# 設計說明）；下面 §8 的 shard-count hard gate 的 DB case 沒有 galera 分支，若不
+# 在此強制歸零，vm-3node-haproxy-3s3r 對 galera 會因 actual=0 < expected=3 而
+# 每張表 fail-closed，誤判成「shard 沒生效」而非「這個概念本來就不適用」。
+[[ "$DB" == "galera" ]] && EXPECTED_SHARDS=0
 
 info "prepare root: $ROOT  db=$DB iso=$ISO topo=$TOPO host=$DB_HOST expected_shards=$EXPECTED_SHARDS"
 

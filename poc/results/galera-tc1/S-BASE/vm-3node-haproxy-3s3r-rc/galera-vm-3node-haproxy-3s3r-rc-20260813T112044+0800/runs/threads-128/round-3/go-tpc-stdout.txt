@@ -1,0 +1,409 @@
+2026/08/13 14:05:52 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+[2026-08-13 14:05:52] execute run failed, err exec SELECT c_first, c_middle, c_last, c_street_1, c_street_2, c_city, c_state, c_zip, c_phone,
+c_credit, c_credit_lim, c_discount, c_balance, c_since FROM customer WHERE c_w_id = ? AND c_d_id = ? 
+AND c_id = ? FOR UPDATE failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec SELECT c_first, c_middle, c_last, c_street_1, c_street_2, c_city, c_state, c_zip, c_phone,
+c_credit, c_credit_lim, c_discount, c_balance, c_since FROM customer WHERE c_w_id = ? AND c_d_id = ? 
+AND c_id = ? FOR UPDATE failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec INSERT INTO history (h_c_d_id, h_c_w_id, h_c_id, h_d_id, h_w_id, h_date, h_amount, h_data)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?) failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec INSERT INTO history (h_c_d_id, h_c_w_id, h_c_id, h_d_id, h_w_id, h_date, h_amount, h_data)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?) failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec INSERT INTO history (h_c_d_id, h_c_w_id, h_c_id, h_d_id, h_w_id, h_date, h_amount, h_data)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?) failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec INSERT INTO history (h_c_d_id, h_c_w_id, h_c_id, h_d_id, h_w_id, h_date, h_amount, h_data)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?) failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec SELECT d_street_1, d_street_2, d_city, d_state, d_zip, d_name FROM district WHERE d_w_id = ? AND d_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec SELECT d_street_1, d_street_2, d_city, d_state, d_zip, d_name FROM district WHERE d_w_id = ? AND d_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1, c_data = ? WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1, c_data = ? WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec UPDATE customer SET c_balance = c_balance + ?, c_delivery_cnt = c_delivery_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec UPDATE customer SET c_balance = c_balance + ?, c_delivery_cnt = c_delivery_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec UPDATE customer SET c_balance = c_balance - ?, c_ytd_payment = c_ytd_payment + ?, 
+c_payment_cnt = c_payment_cnt + 1 WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:52] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err exec UPDATE stock SET s_quantity = ?, s_ytd = s_ytd + ?, s_order_cnt = s_order_cnt + 1, s_remote_cnt = s_remote_cnt + ? WHERE s_i_id = ? AND s_w_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec UPDATE stock SET s_quantity = ?, s_ytd = s_ytd + ?, s_order_cnt = s_order_cnt + 1, s_remote_cnt = s_remote_cnt + ? WHERE s_i_id = ? AND s_w_id = ? failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err exec SELECT i_price, i_name, i_data, i_id FROM item WHERE i_id IN (?,?,?,?,?) failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec SELECT i_price, i_name, i_data, i_id FROM item WHERE i_id IN (?,?,?,?,?) failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err exec SELECT c_first, c_middle, c_last, c_street_1, c_street_2, c_city, c_state, c_zip, c_phone,
+c_credit, c_credit_lim, c_discount, c_balance, c_since FROM customer WHERE c_w_id = ? AND c_d_id = ? 
+AND c_id = ? FOR UPDATE failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err exec SELECT c_first, c_middle, c_last, c_street_1, c_street_2, c_city, c_state, c_zip, c_phone,
+c_credit, c_credit_lim, c_discount, c_balance, c_since FROM customer WHERE c_w_id = ? AND c_d_id = ? 
+AND c_id = ? FOR UPDATE failed Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:53] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:54] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:54] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:54] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:54] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:54] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:54] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:54] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:54] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:54] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:55] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[2026-08-13 14:05:55] execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+execute run failed, err Error 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+[Current] DELIVERY - Takes(s): 9.7, Count: 382, TPM: 2356.4, Sum(ms): 21318.4, Avg(ms): 55.8, 50th(ms): 41.9, 90th(ms): 96.5, 95th(ms): 125.8, 99th(ms): 243.3, 99.9th(ms): 369.1, Max(ms): 369.1
+[Current] DELIVERY_ERR - Takes(s): 9.7, Count: 2, TPM: 12.3, Sum(ms): 200.0, Avg(ms): 98.6, 50th(ms): 75.5, 90th(ms): 125.8, 95th(ms): 125.8, 99th(ms): 125.8, 99.9th(ms): 125.8, Max(ms): 125.8
+[Current] NEW_ORDER - Takes(s): 9.8, Count: 4091, TPM: 25105.2, Sum(ms): 118497.8, Avg(ms): 29.0, 50th(ms): 22.0, 90th(ms): 46.1, 95th(ms): 79.7, 99th(ms): 167.8, 99.9th(ms): 302.0, Max(ms): 402.7
+[Current] NEW_ORDER_ERR - Takes(s): 9.8, Count: 17, TPM: 104.3, Sum(ms): 1951.5, Avg(ms): 114.7, 50th(ms): 104.9, 90th(ms): 192.9, 95th(ms): 251.7, 99th(ms): 402.7, 99.9th(ms): 402.7, Max(ms): 402.7
+[Current] ORDER_STATUS - Takes(s): 9.8, Count: 373, TPM: 2285.7, Sum(ms): 4141.0, Avg(ms): 11.1, 50th(ms): 10.5, 90th(ms): 16.8, 95th(ms): 18.9, 99th(ms): 26.2, 99.9th(ms): 44.0, Max(ms): 44.0
+[Current] PAYMENT - Takes(s): 9.8, Count: 3945, TPM: 24159.7, Sum(ms): 84240.6, Avg(ms): 21.4, 50th(ms): 16.3, 90th(ms): 35.7, 95th(ms): 52.4, 99th(ms): 142.6, 99.9th(ms): 218.1, Max(ms): 302.0
+[Current] PAYMENT_ERR - Takes(s): 9.8, Count: 91, TPM: 557.3, Sum(ms): 8916.5, Avg(ms): 98.1, 50th(ms): 92.3, 90th(ms): 209.7, 95th(ms): 234.9, 99th(ms): 318.8, 99.9th(ms): 369.1, Max(ms): 369.1
+[Current] STOCK_LEVEL - Takes(s): 9.8, Count: 387, TPM: 2377.8, Sum(ms): 11966.6, Avg(ms): 30.9, 50th(ms): 32.5, 90th(ms): 46.1, 95th(ms): 52.4, 99th(ms): 62.9, 99.9th(ms): 88.1, Max(ms): 88.1
+[Current] DELIVERY - Takes(s): 10.0, Count: 353, TPM: 2128.2, Sum(ms): 11714.0, Avg(ms): 33.2, 50th(ms): 32.5, 90th(ms): 41.9, 95th(ms): 48.2, 99th(ms): 75.5, 99.9th(ms): 96.5, Max(ms): 96.5
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4253, TPM: 25535.7, Sum(ms): 92886.2, Avg(ms): 21.8, 50th(ms): 22.0, 90th(ms): 30.4, 95th(ms): 35.7, 99th(ms): 44.0, 99.9th(ms): 54.5, Max(ms): 67.1
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 375, TPM: 2250.7, Sum(ms): 3642.5, Avg(ms): 9.7, 50th(ms): 9.4, 90th(ms): 14.7, 95th(ms): 17.8, 99th(ms): 22.0, 99.9th(ms): 35.7, Max(ms): 35.7
+[Current] PAYMENT - Takes(s): 10.0, Count: 3882, TPM: 23306.0, Sum(ms): 55107.4, Avg(ms): 14.2, 50th(ms): 13.1, 90th(ms): 22.0, 95th(ms): 27.3, 99th(ms): 39.8, 99.9th(ms): 48.2, Max(ms): 83.9
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 344, TPM: 2065.0, Sum(ms): 12601.3, Avg(ms): 36.6, 50th(ms): 41.9, 90th(ms): 62.9, 95th(ms): 71.3, 99th(ms): 83.9, 99.9th(ms): 100.7, Max(ms): 100.7
+[Current] DELIVERY - Takes(s): 10.0, Count: 346, TPM: 2076.9, Sum(ms): 10975.7, Avg(ms): 31.7, 50th(ms): 29.4, 90th(ms): 44.0, 95th(ms): 50.3, 99th(ms): 75.5, 99.9th(ms): 100.7, Max(ms): 100.7
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4252, TPM: 25519.4, Sum(ms): 90132.4, Avg(ms): 21.2, 50th(ms): 19.9, 90th(ms): 30.4, 95th(ms): 35.7, 99th(ms): 46.1, 99.9th(ms): 71.3, Max(ms): 79.7
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 338, TPM: 2036.5, Sum(ms): 3275.9, Avg(ms): 9.7, 50th(ms): 9.4, 90th(ms): 13.6, 95th(ms): 21.0, 99th(ms): 28.3, 99.9th(ms): 32.5, Max(ms): 32.5
+[Current] PAYMENT - Takes(s): 10.0, Count: 3989, TPM: 23944.3, Sum(ms): 57229.2, Avg(ms): 14.4, 50th(ms): 12.1, 90th(ms): 25.2, 95th(ms): 30.4, 99th(ms): 46.1, 99.9th(ms): 62.9, Max(ms): 71.3
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 378, TPM: 2282.2, Sum(ms): 14495.0, Avg(ms): 38.4, 50th(ms): 44.0, 90th(ms): 71.3, 95th(ms): 79.7, 99th(ms): 88.1, 99.9th(ms): 109.1, Max(ms): 109.1
+[Current] DELIVERY - Takes(s): 9.9, Count: 327, TPM: 1972.8, Sum(ms): 10838.7, Avg(ms): 33.2, 50th(ms): 30.4, 90th(ms): 44.0, 95th(ms): 48.2, 99th(ms): 100.7, 99.9th(ms): 121.6, Max(ms): 121.6
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4273, TPM: 25668.8, Sum(ms): 89154.9, Avg(ms): 20.9, 50th(ms): 19.9, 90th(ms): 30.4, 95th(ms): 33.6, 99th(ms): 44.0, 99.9th(ms): 52.4, Max(ms): 62.9
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 338, TPM: 2038.4, Sum(ms): 3096.0, Avg(ms): 9.2, 50th(ms): 9.4, 90th(ms): 12.6, 95th(ms): 14.7, 99th(ms): 26.2, 99.9th(ms): 29.4, Max(ms): 29.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4099, TPM: 24626.2, Sum(ms): 57409.8, Avg(ms): 14.0, 50th(ms): 12.1, 90th(ms): 23.1, 95th(ms): 28.3, 99th(ms): 35.7, 99.9th(ms): 48.2, Max(ms): 65.0
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 392, TPM: 2357.5, Sum(ms): 15502.3, Avg(ms): 39.6, 50th(ms): 44.0, 90th(ms): 67.1, 95th(ms): 75.5, 99th(ms): 96.5, 99.9th(ms): 113.2, Max(ms): 113.2
+[Current] DELIVERY - Takes(s): 10.0, Count: 391, TPM: 2347.2, Sum(ms): 12374.8, Avg(ms): 31.6, 50th(ms): 29.4, 90th(ms): 41.9, 95th(ms): 48.2, 99th(ms): 104.9, 99.9th(ms): 117.4, Max(ms): 117.4
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4479, TPM: 26884.4, Sum(ms): 89136.3, Avg(ms): 19.9, 50th(ms): 19.9, 90th(ms): 28.3, 95th(ms): 32.5, 99th(ms): 39.8, 99.9th(ms): 54.5, Max(ms): 62.9
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 384, TPM: 2338.5, Sum(ms): 3237.5, Avg(ms): 8.4, 50th(ms): 8.4, 90th(ms): 12.1, 95th(ms): 14.2, 99th(ms): 21.0, 99.9th(ms): 33.6, Max(ms): 33.6
+[Current] PAYMENT - Takes(s): 10.0, Count: 4373, TPM: 26239.4, Sum(ms): 57533.2, Avg(ms): 13.2, 50th(ms): 11.5, 90th(ms): 21.0, 95th(ms): 26.2, 99th(ms): 37.7, 99.9th(ms): 54.5, Max(ms): 60.8
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 402, TPM: 2412.2, Sum(ms): 13666.1, Avg(ms): 34.1, 50th(ms): 37.7, 90th(ms): 58.7, 95th(ms): 62.9, 99th(ms): 75.5, 99.9th(ms): 104.9, Max(ms): 104.9
+[Current] DELIVERY - Takes(s): 10.0, Count: 408, TPM: 2455.7, Sum(ms): 12873.2, Avg(ms): 31.6, 50th(ms): 29.4, 90th(ms): 41.9, 95th(ms): 48.2, 99th(ms): 75.5, 99.9th(ms): 121.6, Max(ms): 121.6
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4423, TPM: 26569.4, Sum(ms): 88950.0, Avg(ms): 20.1, 50th(ms): 19.9, 90th(ms): 29.4, 95th(ms): 33.6, 99th(ms): 41.9, 99.9th(ms): 48.2, Max(ms): 52.4
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 408, TPM: 2457.4, Sum(ms): 3434.8, Avg(ms): 8.4, 50th(ms): 8.4, 90th(ms): 12.1, 95th(ms): 14.2, 99th(ms): 18.9, 99.9th(ms): 32.5, Max(ms): 32.5
+[Current] PAYMENT - Takes(s): 10.0, Count: 4228, TPM: 25412.8, Sum(ms): 58553.9, Avg(ms): 13.9, 50th(ms): 12.1, 90th(ms): 23.1, 95th(ms): 28.3, 99th(ms): 41.9, 99.9th(ms): 46.1, Max(ms): 62.9
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 366, TPM: 2204.0, Sum(ms): 12246.6, Avg(ms): 33.5, 50th(ms): 37.7, 90th(ms): 60.8, 95th(ms): 67.1, 99th(ms): 83.9, 99.9th(ms): 88.1, Max(ms): 88.1
+[Current] DELIVERY - Takes(s): 9.9, Count: 367, TPM: 2215.4, Sum(ms): 11391.5, Avg(ms): 31.1, 50th(ms): 29.4, 90th(ms): 41.9, 95th(ms): 46.1, 99th(ms): 75.5, 99.9th(ms): 117.4, Max(ms): 117.4
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4503, TPM: 27052.1, Sum(ms): 90867.0, Avg(ms): 20.2, 50th(ms): 19.9, 90th(ms): 29.4, 95th(ms): 32.5, 99th(ms): 41.9, 99.9th(ms): 52.4, Max(ms): 79.7
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 377, TPM: 2277.4, Sum(ms): 3379.7, Avg(ms): 9.0, 50th(ms): 8.9, 90th(ms): 13.1, 95th(ms): 16.3, 99th(ms): 25.2, 99.9th(ms): 39.8, Max(ms): 39.8
+[Current] PAYMENT - Takes(s): 10.0, Count: 4212, TPM: 25309.7, Sum(ms): 56657.3, Avg(ms): 13.4, 50th(ms): 11.0, 90th(ms): 23.1, 95th(ms): 28.3, 99th(ms): 39.8, 99.9th(ms): 54.5, Max(ms): 62.9
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 397, TPM: 2386.4, Sum(ms): 13479.0, Avg(ms): 33.9, 50th(ms): 37.7, 90th(ms): 58.7, 95th(ms): 65.0, 99th(ms): 75.5, 99.9th(ms): 83.9, Max(ms): 83.9
+[Current] DELIVERY - Takes(s): 10.0, Count: 410, TPM: 2470.7, Sum(ms): 12707.7, Avg(ms): 31.0, 50th(ms): 29.4, 90th(ms): 39.8, 95th(ms): 44.0, 99th(ms): 65.0, 99.9th(ms): 109.1, Max(ms): 109.1
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4580, TPM: 27491.9, Sum(ms): 92059.0, Avg(ms): 20.1, 50th(ms): 19.9, 90th(ms): 28.3, 95th(ms): 33.6, 99th(ms): 44.0, 99.9th(ms): 58.7, Max(ms): 79.7
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 403, TPM: 2430.4, Sum(ms): 3632.8, Avg(ms): 9.0, 50th(ms): 8.9, 90th(ms): 13.6, 95th(ms): 15.7, 99th(ms): 29.4, 99.9th(ms): 33.6, Max(ms): 33.6
+[Current] PAYMENT - Takes(s): 10.0, Count: 4286, TPM: 25729.9, Sum(ms): 54193.2, Avg(ms): 12.6, 50th(ms): 10.5, 90th(ms): 19.9, 95th(ms): 27.3, 99th(ms): 41.9, 99.9th(ms): 58.7, Max(ms): 71.3
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 395, TPM: 2375.5, Sum(ms): 12740.0, Avg(ms): 32.2, 50th(ms): 35.7, 90th(ms): 56.6, 95th(ms): 62.9, 99th(ms): 71.3, 99.9th(ms): 75.5, Max(ms): 75.5
+[Current] DELIVERY - Takes(s): 10.0, Count: 445, TPM: 2674.7, Sum(ms): 13757.3, Avg(ms): 30.9, 50th(ms): 29.4, 90th(ms): 39.8, 95th(ms): 46.1, 99th(ms): 104.9, 99.9th(ms): 113.2, Max(ms): 113.2
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4611, TPM: 27677.2, Sum(ms): 90250.2, Avg(ms): 19.6, 50th(ms): 18.9, 90th(ms): 28.3, 95th(ms): 32.5, 99th(ms): 44.0, 99.9th(ms): 62.9, Max(ms): 92.3
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 398, TPM: 2391.1, Sum(ms): 3390.4, Avg(ms): 8.5, 50th(ms): 8.9, 90th(ms): 12.1, 95th(ms): 14.2, 99th(ms): 24.1, 99.9th(ms): 30.4, Max(ms): 30.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4482, TPM: 26899.7, Sum(ms): 56061.3, Avg(ms): 12.5, 50th(ms): 10.5, 90th(ms): 19.9, 95th(ms): 25.2, 99th(ms): 37.7, 99.9th(ms): 54.5, Max(ms): 60.8
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 383, TPM: 2310.3, Sum(ms): 11990.8, Avg(ms): 31.3, 50th(ms): 35.7, 90th(ms): 56.6, 95th(ms): 65.0, 99th(ms): 75.5, 99.9th(ms): 88.1, Max(ms): 88.1
+[Current] DELIVERY - Takes(s): 10.0, Count: 437, TPM: 2627.1, Sum(ms): 13028.5, Avg(ms): 29.8, 50th(ms): 28.3, 90th(ms): 39.8, 95th(ms): 44.0, 99th(ms): 75.5, 99.9th(ms): 134.2, Max(ms): 134.2
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4667, TPM: 28006.6, Sum(ms): 90655.7, Avg(ms): 19.4, 50th(ms): 18.9, 90th(ms): 28.3, 95th(ms): 33.6, 99th(ms): 44.0, 99.9th(ms): 62.9, Max(ms): 62.9
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 434, TPM: 2627.7, Sum(ms): 3747.2, Avg(ms): 8.6, 50th(ms): 8.4, 90th(ms): 12.6, 95th(ms): 14.7, 99th(ms): 26.2, 99.9th(ms): 30.4, Max(ms): 30.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4520, TPM: 27122.2, Sum(ms): 56388.8, Avg(ms): 12.5, 50th(ms): 10.5, 90th(ms): 21.0, 95th(ms): 27.3, 99th(ms): 39.8, 99.9th(ms): 62.9, Max(ms): 71.3
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 384, TPM: 2308.4, Sum(ms): 11683.7, Avg(ms): 30.5, 50th(ms): 33.6, 90th(ms): 56.6, 95th(ms): 60.8, 99th(ms): 75.5, 99.9th(ms): 113.2, Max(ms): 113.2
+[Current] DELIVERY - Takes(s): 10.0, Count: 446, TPM: 2678.3, Sum(ms): 13133.0, Avg(ms): 29.5, 50th(ms): 28.3, 90th(ms): 37.7, 95th(ms): 44.0, 99th(ms): 60.8, 99.9th(ms): 88.1, Max(ms): 88.1
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4683, TPM: 28118.4, Sum(ms): 89958.8, Avg(ms): 19.2, 50th(ms): 18.9, 90th(ms): 27.3, 95th(ms): 32.5, 99th(ms): 44.0, 99.9th(ms): 50.3, Max(ms): 79.7
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 422, TPM: 2532.1, Sum(ms): 3453.5, Avg(ms): 8.2, 50th(ms): 8.4, 90th(ms): 11.5, 95th(ms): 13.6, 99th(ms): 25.2, 99.9th(ms): 29.4, Max(ms): 29.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4547, TPM: 27305.1, Sum(ms): 56844.1, Avg(ms): 12.5, 50th(ms): 10.5, 90th(ms): 21.0, 95th(ms): 27.3, 99th(ms): 44.0, 99.9th(ms): 54.5, Max(ms): 88.1
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 392, TPM: 2355.9, Sum(ms): 12213.1, Avg(ms): 31.2, 50th(ms): 35.7, 90th(ms): 56.6, 95th(ms): 60.8, 99th(ms): 75.5, 99.9th(ms): 88.1, Max(ms): 88.1
+[Current] DELIVERY - Takes(s): 10.0, Count: 446, TPM: 2678.3, Sum(ms): 13388.8, Avg(ms): 30.0, 50th(ms): 27.3, 90th(ms): 41.9, 95th(ms): 46.1, 99th(ms): 75.5, 99.9th(ms): 96.5, Max(ms): 96.5
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4693, TPM: 28184.7, Sum(ms): 90216.2, Avg(ms): 19.2, 50th(ms): 17.8, 90th(ms): 28.3, 95th(ms): 33.6, 99th(ms): 44.0, 99.9th(ms): 58.7, Max(ms): 71.3
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 414, TPM: 2486.5, Sum(ms): 3515.5, Avg(ms): 8.5, 50th(ms): 8.4, 90th(ms): 12.6, 95th(ms): 14.7, 99th(ms): 27.3, 99.9th(ms): 29.4, Max(ms): 29.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4440, TPM: 26667.3, Sum(ms): 55341.0, Avg(ms): 12.5, 50th(ms): 10.5, 90th(ms): 21.0, 95th(ms): 29.4, 99th(ms): 41.9, 99.9th(ms): 60.8, Max(ms): 83.9
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 423, TPM: 2538.6, Sum(ms): 13043.6, Avg(ms): 30.8, 50th(ms): 35.7, 90th(ms): 54.5, 95th(ms): 62.9, 99th(ms): 75.5, 99.9th(ms): 83.9, Max(ms): 83.9
+[Current] DELIVERY - Takes(s): 10.0, Count: 412, TPM: 2476.8, Sum(ms): 12698.5, Avg(ms): 30.8, 50th(ms): 29.4, 90th(ms): 39.8, 95th(ms): 46.1, 99th(ms): 79.7, 99.9th(ms): 100.7, Max(ms): 100.7
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4588, TPM: 27538.0, Sum(ms): 90627.9, Avg(ms): 19.8, 50th(ms): 18.9, 90th(ms): 28.3, 95th(ms): 32.5, 99th(ms): 48.2, 99.9th(ms): 60.8, Max(ms): 83.9
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 411, TPM: 2472.2, Sum(ms): 3562.0, Avg(ms): 8.7, 50th(ms): 8.4, 90th(ms): 12.6, 95th(ms): 15.2, 99th(ms): 22.0, 99.9th(ms): 29.4, Max(ms): 29.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4478, TPM: 26882.0, Sum(ms): 56083.5, Avg(ms): 12.5, 50th(ms): 10.5, 90th(ms): 21.0, 95th(ms): 27.3, 99th(ms): 44.0, 99.9th(ms): 56.6, Max(ms): 79.7
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 405, TPM: 2431.5, Sum(ms): 12505.7, Avg(ms): 30.9, 50th(ms): 35.7, 90th(ms): 56.6, 95th(ms): 65.0, 99th(ms): 79.7, 99.9th(ms): 88.1, Max(ms): 88.1
+[Current] DELIVERY - Takes(s): 10.0, Count: 397, TPM: 2390.7, Sum(ms): 12482.3, Avg(ms): 31.5, 50th(ms): 29.4, 90th(ms): 39.8, 95th(ms): 46.1, 99th(ms): 83.9, 99.9th(ms): 92.3, Max(ms): 92.3
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4671, TPM: 28026.5, Sum(ms): 91602.2, Avg(ms): 19.6, 50th(ms): 18.9, 90th(ms): 27.3, 95th(ms): 31.5, 99th(ms): 44.0, 99.9th(ms): 60.8, Max(ms): 71.3
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 387, TPM: 2340.0, Sum(ms): 3362.1, Avg(ms): 8.7, 50th(ms): 8.9, 90th(ms): 12.6, 95th(ms): 13.6, 99th(ms): 24.1, 99.9th(ms): 26.2, Max(ms): 26.2
+[Current] PAYMENT - Takes(s): 10.0, Count: 4422, TPM: 26537.5, Sum(ms): 54503.5, Avg(ms): 12.3, 50th(ms): 10.5, 90th(ms): 19.9, 95th(ms): 26.2, 99th(ms): 39.8, 99.9th(ms): 52.4, Max(ms): 75.5
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 437, TPM: 2625.0, Sum(ms): 13373.9, Avg(ms): 30.6, 50th(ms): 35.7, 90th(ms): 56.6, 95th(ms): 62.9, 99th(ms): 75.5, 99.9th(ms): 92.3, Max(ms): 92.3
+[Current] DELIVERY - Takes(s): 10.0, Count: 416, TPM: 2496.8, Sum(ms): 12604.4, Avg(ms): 30.3, 50th(ms): 28.3, 90th(ms): 39.8, 95th(ms): 44.0, 99th(ms): 79.7, 99.9th(ms): 88.1, Max(ms): 88.1
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4665, TPM: 28002.9, Sum(ms): 90159.0, Avg(ms): 19.3, 50th(ms): 18.9, 90th(ms): 27.3, 95th(ms): 32.5, 99th(ms): 44.0, 99.9th(ms): 58.7, Max(ms): 75.5
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 417, TPM: 2503.0, Sum(ms): 3466.7, Avg(ms): 8.3, 50th(ms): 8.4, 90th(ms): 11.5, 95th(ms): 14.2, 99th(ms): 25.2, 99.9th(ms): 31.5, Max(ms): 31.5
+[Current] PAYMENT - Takes(s): 10.0, Count: 4599, TPM: 27606.3, Sum(ms): 56372.6, Avg(ms): 12.3, 50th(ms): 10.5, 90th(ms): 19.9, 95th(ms): 26.2, 99th(ms): 39.8, 99.9th(ms): 54.5, Max(ms): 79.7
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 417, TPM: 2502.2, Sum(ms): 12928.1, Avg(ms): 31.0, 50th(ms): 35.7, 90th(ms): 54.5, 95th(ms): 60.8, 99th(ms): 71.3, 99.9th(ms): 92.3, Max(ms): 92.3
+[Current] DELIVERY - Takes(s): 9.9, Count: 426, TPM: 2570.3, Sum(ms): 13051.2, Avg(ms): 30.6, 50th(ms): 29.4, 90th(ms): 39.8, 95th(ms): 48.2, 99th(ms): 65.0, 99.9th(ms): 100.7, Max(ms): 100.7
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4531, TPM: 27201.6, Sum(ms): 89120.6, Avg(ms): 19.7, 50th(ms): 18.9, 90th(ms): 29.4, 95th(ms): 33.6, 99th(ms): 46.1, 99.9th(ms): 56.6, Max(ms): 71.3
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 397, TPM: 2382.2, Sum(ms): 3321.8, Avg(ms): 8.4, 50th(ms): 8.4, 90th(ms): 12.1, 95th(ms): 13.1, 99th(ms): 21.0, 99.9th(ms): 37.7, Max(ms): 37.7
+[Current] PAYMENT - Takes(s): 10.0, Count: 4381, TPM: 26306.0, Sum(ms): 56762.8, Avg(ms): 13.0, 50th(ms): 10.5, 90th(ms): 23.1, 95th(ms): 30.4, 99th(ms): 39.8, 99.9th(ms): 58.7, Max(ms): 75.5
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 418, TPM: 2517.8, Sum(ms): 13280.7, Avg(ms): 31.8, 50th(ms): 35.7, 90th(ms): 58.7, 95th(ms): 65.0, 99th(ms): 75.5, 99.9th(ms): 83.9, Max(ms): 83.9
+[Current] DELIVERY - Takes(s): 10.0, Count: 427, TPM: 2573.5, Sum(ms): 12569.1, Avg(ms): 29.4, 50th(ms): 28.3, 90th(ms): 37.7, 95th(ms): 44.0, 99th(ms): 71.3, 99.9th(ms): 96.5, Max(ms): 96.5
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4690, TPM: 28164.8, Sum(ms): 89740.8, Avg(ms): 19.1, 50th(ms): 18.9, 90th(ms): 27.3, 95th(ms): 32.5, 99th(ms): 44.0, 99.9th(ms): 50.3, Max(ms): 60.8
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 428, TPM: 2571.1, Sum(ms): 3660.3, Avg(ms): 8.6, 50th(ms): 8.4, 90th(ms): 12.1, 95th(ms): 14.2, 99th(ms): 25.2, 99.9th(ms): 29.4, Max(ms): 29.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4620, TPM: 27723.4, Sum(ms): 56918.6, Avg(ms): 12.3, 50th(ms): 10.5, 90th(ms): 21.0, 95th(ms): 28.3, 99th(ms): 41.9, 99.9th(ms): 52.4, Max(ms): 75.5
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 433, TPM: 2602.5, Sum(ms): 12583.9, Avg(ms): 29.1, 50th(ms): 32.5, 90th(ms): 52.4, 95th(ms): 56.6, 99th(ms): 71.3, 99.9th(ms): 79.7, Max(ms): 79.7
+[Current] DELIVERY - Takes(s): 10.0, Count: 425, TPM: 2556.0, Sum(ms): 12866.8, Avg(ms): 30.3, 50th(ms): 28.3, 90th(ms): 41.9, 95th(ms): 48.2, 99th(ms): 83.9, 99.9th(ms): 92.3, Max(ms): 92.3
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4676, TPM: 28056.4, Sum(ms): 91171.8, Avg(ms): 19.5, 50th(ms): 18.9, 90th(ms): 28.3, 95th(ms): 33.6, 99th(ms): 46.1, 99.9th(ms): 60.8, Max(ms): 88.1
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 399, TPM: 2394.1, Sum(ms): 3387.7, Avg(ms): 8.5, 50th(ms): 8.4, 90th(ms): 13.1, 95th(ms): 14.7, 99th(ms): 22.0, 99.9th(ms): 30.4, Max(ms): 30.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4446, TPM: 26678.6, Sum(ms): 55287.1, Avg(ms): 12.4, 50th(ms): 10.5, 90th(ms): 21.0, 95th(ms): 28.3, 99th(ms): 44.0, 99.9th(ms): 52.4, Max(ms): 75.5
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 416, TPM: 2502.1, Sum(ms): 12889.1, Avg(ms): 31.0, 50th(ms): 35.7, 90th(ms): 54.5, 95th(ms): 60.8, 99th(ms): 71.3, 99.9th(ms): 92.3, Max(ms): 92.3
+[Current] DELIVERY - Takes(s): 10.0, Count: 402, TPM: 2412.8, Sum(ms): 12438.6, Avg(ms): 31.0, 50th(ms): 28.3, 90th(ms): 44.0, 95th(ms): 50.3, 99th(ms): 71.3, 99.9th(ms): 104.9, Max(ms): 104.9
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4586, TPM: 27521.7, Sum(ms): 90077.6, Avg(ms): 19.6, 50th(ms): 18.9, 90th(ms): 29.4, 95th(ms): 35.7, 99th(ms): 48.2, 99.9th(ms): 56.6, Max(ms): 79.7
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 418, TPM: 2511.1, Sum(ms): 3576.7, Avg(ms): 8.5, 50th(ms): 8.4, 90th(ms): 12.6, 95th(ms): 16.3, 99th(ms): 27.3, 99.9th(ms): 31.5, Max(ms): 31.5
+[Current] PAYMENT - Takes(s): 10.0, Count: 4437, TPM: 26630.3, Sum(ms): 56691.7, Avg(ms): 12.8, 50th(ms): 10.5, 90th(ms): 21.0, 95th(ms): 29.4, 99th(ms): 46.1, 99.9th(ms): 62.9, Max(ms): 100.7
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 428, TPM: 2569.7, Sum(ms): 12748.2, Avg(ms): 29.8, 50th(ms): 33.6, 90th(ms): 54.5, 95th(ms): 60.8, 99th(ms): 75.5, 99.9th(ms): 100.7, Max(ms): 100.7
+[Current] DELIVERY - Takes(s): 10.0, Count: 382, TPM: 2297.6, Sum(ms): 12044.0, Avg(ms): 31.5, 50th(ms): 29.4, 90th(ms): 41.9, 95th(ms): 48.2, 99th(ms): 62.9, 99.9th(ms): 100.7, Max(ms): 100.7
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4676, TPM: 28058.1, Sum(ms): 91264.2, Avg(ms): 19.5, 50th(ms): 18.9, 90th(ms): 27.3, 95th(ms): 32.5, 99th(ms): 44.0, 99.9th(ms): 50.3, Max(ms): 67.1
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 391, TPM: 2348.4, Sum(ms): 3346.4, Avg(ms): 8.6, 50th(ms): 8.9, 90th(ms): 13.1, 95th(ms): 15.2, 99th(ms): 19.9, 99.9th(ms): 28.3, Max(ms): 28.3
+[Current] PAYMENT - Takes(s): 10.0, Count: 4493, TPM: 26960.0, Sum(ms): 55425.8, Avg(ms): 12.3, 50th(ms): 10.5, 90th(ms): 19.9, 95th(ms): 25.2, 99th(ms): 37.7, 99.9th(ms): 48.2, Max(ms): 67.1
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 397, TPM: 2387.7, Sum(ms): 13353.3, Avg(ms): 33.7, 50th(ms): 37.7, 90th(ms): 60.8, 95th(ms): 67.1, 99th(ms): 75.5, 99.9th(ms): 96.5, Max(ms): 96.5
+[Current] DELIVERY - Takes(s): 10.0, Count: 411, TPM: 2473.1, Sum(ms): 12721.9, Avg(ms): 31.0, 50th(ms): 29.4, 90th(ms): 41.9, 95th(ms): 48.2, 99th(ms): 67.1, 99.9th(ms): 88.1, Max(ms): 88.1
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4556, TPM: 27369.8, Sum(ms): 89269.9, Avg(ms): 19.6, 50th(ms): 18.9, 90th(ms): 29.4, 95th(ms): 33.6, 99th(ms): 46.1, 99.9th(ms): 65.0, Max(ms): 79.7
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 424, TPM: 2552.9, Sum(ms): 3528.4, Avg(ms): 8.3, 50th(ms): 8.4, 90th(ms): 12.1, 95th(ms): 13.6, 99th(ms): 21.0, 99.9th(ms): 29.4, Max(ms): 29.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4530, TPM: 27210.3, Sum(ms): 57816.6, Avg(ms): 12.8, 50th(ms): 10.5, 90th(ms): 22.0, 95th(ms): 29.4, 99th(ms): 46.1, 99.9th(ms): 67.1, Max(ms): 88.1
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 390, TPM: 2345.6, Sum(ms): 12113.7, Avg(ms): 31.1, 50th(ms): 33.6, 90th(ms): 54.5, 95th(ms): 60.8, 99th(ms): 71.3, 99.9th(ms): 83.9, Max(ms): 83.9
+[Current] DELIVERY - Takes(s): 10.0, Count: 430, TPM: 2580.5, Sum(ms): 12956.4, Avg(ms): 30.1, 50th(ms): 28.3, 90th(ms): 39.8, 95th(ms): 46.1, 99th(ms): 65.0, 99.9th(ms): 83.9, Max(ms): 83.9
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4565, TPM: 27392.0, Sum(ms): 90078.4, Avg(ms): 19.7, 50th(ms): 18.9, 90th(ms): 28.3, 95th(ms): 33.6, 99th(ms): 46.1, 99.9th(ms): 54.5, Max(ms): 71.3
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 422, TPM: 2536.6, Sum(ms): 3556.2, Avg(ms): 8.4, 50th(ms): 8.4, 90th(ms): 13.1, 95th(ms): 15.2, 99th(ms): 24.1, 99.9th(ms): 33.6, Max(ms): 33.6
+[Current] PAYMENT - Takes(s): 10.0, Count: 4368, TPM: 26217.8, Sum(ms): 56365.3, Avg(ms): 12.9, 50th(ms): 11.0, 90th(ms): 22.0, 95th(ms): 27.3, 99th(ms): 39.8, 99.9th(ms): 50.3, Max(ms): 65.0
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 378, TPM: 2268.3, Sum(ms): 12924.7, Avg(ms): 34.3, 50th(ms): 37.7, 90th(ms): 58.7, 95th(ms): 65.0, 99th(ms): 79.7, 99.9th(ms): 100.7, Max(ms): 100.7
+[Current] DELIVERY - Takes(s): 10.0, Count: 398, TPM: 2396.5, Sum(ms): 12078.9, Avg(ms): 30.4, 50th(ms): 28.3, 90th(ms): 41.9, 95th(ms): 46.1, 99th(ms): 71.3, 99.9th(ms): 92.3, Max(ms): 92.3
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4554, TPM: 27359.6, Sum(ms): 89965.5, Avg(ms): 19.8, 50th(ms): 18.9, 90th(ms): 29.4, 95th(ms): 35.7, 99th(ms): 44.0, 99.9th(ms): 58.7, Max(ms): 75.5
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 388, TPM: 2332.6, Sum(ms): 3267.5, Avg(ms): 8.4, 50th(ms): 8.4, 90th(ms): 12.1, 95th(ms): 14.7, 99th(ms): 25.2, 99.9th(ms): 27.3, Max(ms): 27.3
+[Current] PAYMENT - Takes(s): 10.0, Count: 4332, TPM: 25992.0, Sum(ms): 58621.3, Avg(ms): 13.5, 50th(ms): 11.5, 90th(ms): 22.0, 95th(ms): 29.4, 99th(ms): 41.9, 99.9th(ms): 56.6, Max(ms): 71.3
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 394, TPM: 2387.9, Sum(ms): 11902.4, Avg(ms): 30.2, 50th(ms): 35.7, 90th(ms): 54.5, 95th(ms): 60.8, 99th(ms): 65.0, 99.9th(ms): 75.5, Max(ms): 75.5
+[Current] DELIVERY - Takes(s): 10.0, Count: 432, TPM: 2594.0, Sum(ms): 12978.8, Avg(ms): 30.1, 50th(ms): 28.3, 90th(ms): 39.8, 95th(ms): 46.1, 99th(ms): 83.9, 99.9th(ms): 109.1, Max(ms): 109.1
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4525, TPM: 27157.8, Sum(ms): 89959.3, Avg(ms): 19.9, 50th(ms): 18.9, 90th(ms): 29.4, 95th(ms): 35.7, 99th(ms): 48.2, 99.9th(ms): 58.7, Max(ms): 83.9
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 393, TPM: 2358.7, Sum(ms): 3269.3, Avg(ms): 8.3, 50th(ms): 8.4, 90th(ms): 12.1, 95th(ms): 13.6, 99th(ms): 24.1, 99.9th(ms): 30.4, Max(ms): 30.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4278, TPM: 25669.1, Sum(ms): 56054.3, Avg(ms): 13.1, 50th(ms): 11.0, 90th(ms): 23.1, 95th(ms): 28.3, 99th(ms): 41.9, 99.9th(ms): 60.8, Max(ms): 79.7
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 425, TPM: 2566.3, Sum(ms): 13396.2, Avg(ms): 31.6, 50th(ms): 35.7, 90th(ms): 54.5, 95th(ms): 62.9, 99th(ms): 71.3, 99.9th(ms): 88.1, Max(ms): 88.1
+[Current] DELIVERY - Takes(s): 10.0, Count: 421, TPM: 2526.8, Sum(ms): 13246.7, Avg(ms): 31.5, 50th(ms): 28.3, 90th(ms): 44.0, 95th(ms): 54.5, 99th(ms): 79.7, 99.9th(ms): 142.6, Max(ms): 142.6
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4538, TPM: 27230.8, Sum(ms): 90106.6, Avg(ms): 19.9, 50th(ms): 18.9, 90th(ms): 29.4, 95th(ms): 35.7, 99th(ms): 54.5, 99.9th(ms): 65.0, Max(ms): 88.1
+[Current] ORDER_STATUS - Takes(s): 9.9, Count: 384, TPM: 2316.9, Sum(ms): 3237.9, Avg(ms): 8.4, 50th(ms): 8.4, 90th(ms): 12.1, 95th(ms): 13.6, 99th(ms): 19.9, 99.9th(ms): 26.2, Max(ms): 26.2
+[Current] PAYMENT - Takes(s): 10.0, Count: 4296, TPM: 25780.9, Sum(ms): 57434.5, Avg(ms): 13.4, 50th(ms): 10.5, 90th(ms): 24.1, 95th(ms): 31.5, 99th(ms): 46.1, 99.9th(ms): 62.9, Max(ms): 75.5
+[Current] STOCK_LEVEL - Takes(s): 9.9, Count: 399, TPM: 2407.1, Sum(ms): 11917.6, Avg(ms): 29.9, 50th(ms): 33.6, 90th(ms): 52.4, 95th(ms): 58.7, 99th(ms): 79.7, 99.9th(ms): 92.3, Max(ms): 92.3
+[Current] DELIVERY - Takes(s): 10.0, Count: 396, TPM: 2381.9, Sum(ms): 13787.9, Avg(ms): 34.8, 50th(ms): 31.5, 90th(ms): 48.2, 95th(ms): 56.6, 99th(ms): 83.9, 99.9th(ms): 125.8, Max(ms): 125.8
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4325, TPM: 25950.0, Sum(ms): 91301.0, Avg(ms): 21.1, 50th(ms): 19.9, 90th(ms): 29.4, 95th(ms): 35.7, 99th(ms): 50.3, 99.9th(ms): 75.5, Max(ms): 79.7
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 394, TPM: 2367.4, Sum(ms): 3709.0, Avg(ms): 9.4, 50th(ms): 9.4, 90th(ms): 13.6, 95th(ms): 16.3, 99th(ms): 25.2, 99.9th(ms): 30.4, Max(ms): 30.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4167, TPM: 25003.5, Sum(ms): 53778.4, Avg(ms): 12.9, 50th(ms): 11.0, 90th(ms): 22.0, 95th(ms): 27.3, 99th(ms): 37.7, 99.9th(ms): 56.6, Max(ms): 67.1
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 362, TPM: 2172.4, Sum(ms): 12418.4, Avg(ms): 34.3, 50th(ms): 39.8, 90th(ms): 58.7, 95th(ms): 65.0, 99th(ms): 75.5, 99.9th(ms): 100.7, Max(ms): 100.7
+[Current] DELIVERY - Takes(s): 10.0, Count: 355, TPM: 2130.7, Sum(ms): 11838.6, Avg(ms): 33.4, 50th(ms): 30.4, 90th(ms): 44.0, 95th(ms): 56.6, 99th(ms): 83.9, 99.9th(ms): 104.9, Max(ms): 104.9
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4448, TPM: 26688.5, Sum(ms): 92388.2, Avg(ms): 20.8, 50th(ms): 19.9, 90th(ms): 29.4, 95th(ms): 35.7, 99th(ms): 52.4, 99.9th(ms): 79.7, Max(ms): 83.9
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 426, TPM: 2560.0, Sum(ms): 4003.1, Avg(ms): 9.4, 50th(ms): 9.4, 90th(ms): 13.1, 95th(ms): 15.2, 99th(ms): 26.2, 99.9th(ms): 35.7, Max(ms): 35.7
+[Current] PAYMENT - Takes(s): 10.0, Count: 4295, TPM: 25772.1, Sum(ms): 53939.5, Avg(ms): 12.6, 50th(ms): 11.0, 90th(ms): 19.9, 95th(ms): 26.2, 99th(ms): 37.7, 99.9th(ms): 79.7, Max(ms): 83.9
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 383, TPM: 2299.7, Sum(ms): 12979.9, Avg(ms): 33.9, 50th(ms): 39.8, 90th(ms): 58.7, 95th(ms): 62.9, 99th(ms): 75.5, 99.9th(ms): 96.5, Max(ms): 96.5
+[Current] DELIVERY - Takes(s): 10.0, Count: 380, TPM: 2281.1, Sum(ms): 12368.4, Avg(ms): 32.6, 50th(ms): 29.4, 90th(ms): 44.0, 95th(ms): 56.6, 99th(ms): 92.3, 99.9th(ms): 104.9, Max(ms): 104.9
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4459, TPM: 26753.8, Sum(ms): 91070.7, Avg(ms): 20.4, 50th(ms): 18.9, 90th(ms): 29.4, 95th(ms): 35.7, 99th(ms): 52.4, 99.9th(ms): 79.7, Max(ms): 96.5
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 403, TPM: 2418.0, Sum(ms): 3459.8, Avg(ms): 8.6, 50th(ms): 8.9, 90th(ms): 13.1, 95th(ms): 15.2, 99th(ms): 18.9, 99.9th(ms): 32.5, Max(ms): 32.5
+[Current] PAYMENT - Takes(s): 10.0, Count: 4291, TPM: 25757.9, Sum(ms): 55911.2, Avg(ms): 13.0, 50th(ms): 10.5, 90th(ms): 22.0, 95th(ms): 31.5, 99th(ms): 44.0, 99.9th(ms): 58.7, Max(ms): 65.0
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 363, TPM: 2182.7, Sum(ms): 12685.5, Avg(ms): 35.0, 50th(ms): 39.8, 90th(ms): 60.8, 95th(ms): 67.1, 99th(ms): 75.5, 99.9th(ms): 88.1, Max(ms): 88.1
+[Current] DELIVERY - Takes(s): 10.0, Count: 412, TPM: 2477.2, Sum(ms): 13038.9, Avg(ms): 31.6, 50th(ms): 29.4, 90th(ms): 44.0, 95th(ms): 54.5, 99th(ms): 75.5, 99.9th(ms): 92.3, Max(ms): 92.3
+[Current] NEW_ORDER - Takes(s): 10.0, Count: 4564, TPM: 27407.9, Sum(ms): 91680.4, Avg(ms): 20.1, 50th(ms): 18.9, 90th(ms): 29.4, 95th(ms): 35.7, 99th(ms): 46.1, 99.9th(ms): 65.0, Max(ms): 83.9
+[Current] ORDER_STATUS - Takes(s): 10.0, Count: 373, TPM: 2239.3, Sum(ms): 3170.9, Avg(ms): 8.5, 50th(ms): 8.4, 90th(ms): 12.1, 95th(ms): 14.2, 99th(ms): 21.0, 99.9th(ms): 30.4, Max(ms): 30.4
+[Current] PAYMENT - Takes(s): 10.0, Count: 4404, TPM: 26450.2, Sum(ms): 56241.3, Avg(ms): 12.8, 50th(ms): 10.5, 90th(ms): 22.0, 95th(ms): 28.3, 99th(ms): 41.9, 99.9th(ms): 71.3, Max(ms): 96.5
+[Current] STOCK_LEVEL - Takes(s): 10.0, Count: 369, TPM: 2219.1, Sum(ms): 11165.6, Avg(ms): 30.3, 50th(ms): 32.5, 90th(ms): 54.5, 95th(ms): 65.0, 99th(ms): 75.5, 99.9th(ms): 96.5, Max(ms): 96.5
+Finished
+[Summary] DELIVERY - Takes(s): 299.7, Count: 12096, TPM: 2421.3, Sum(ms): 386271.5, Avg(ms): 31.9, 50th(ms): 29.4, 90th(ms): 41.9, 95th(ms): 52.4, 99th(ms): 88.1, 99.9th(ms): 176.2, Max(ms): 369.1
+[Summary] DELIVERY_ERR - Takes(s): 299.7, Count: 2, TPM: 0.4, Sum(ms): 200.0, Avg(ms): 98.6, 50th(ms): 75.5, 90th(ms): 125.8, 95th(ms): 125.8, 99th(ms): 125.8, 99.9th(ms): 125.8, Max(ms): 125.8
+[Summary] NEW_ORDER - Takes(s): 299.8, Count: 135640, TPM: 27146.5, Sum(ms): 2741660.1, Avg(ms): 20.2, 50th(ms): 18.9, 90th(ms): 29.4, 95th(ms): 35.7, 99th(ms): 48.2, 99.9th(ms): 100.7, Max(ms): 402.7
+[Summary] NEW_ORDER_ERR - Takes(s): 299.8, Count: 17, TPM: 3.4, Sum(ms): 1951.5, Avg(ms): 114.7, 50th(ms): 104.9, 90th(ms): 192.9, 95th(ms): 251.7, 99th(ms): 402.7, 99.9th(ms): 402.7, Max(ms): 402.7
+[Summary] ORDER_STATUS - Takes(s): 299.8, Count: 11956, TPM: 2392.7, Sum(ms): 104421.8, Avg(ms): 8.7, 50th(ms): 8.9, 90th(ms): 12.6, 95th(ms): 15.2, 99th(ms): 25.2, 99.9th(ms): 32.5, Max(ms): 44.0
+[Summary] PAYMENT - Takes(s): 299.8, Count: 130142, TPM: 26044.4, Sum(ms): 1716039.1, Avg(ms): 13.2, 50th(ms): 11.0, 90th(ms): 22.0, 95th(ms): 28.3, 99th(ms): 44.0, 99.9th(ms): 79.7, Max(ms): 302.0
+[Summary] PAYMENT_ERR - Takes(s): 299.8, Count: 91, TPM: 18.2, Sum(ms): 8916.5, Avg(ms): 98.1, 50th(ms): 92.3, 90th(ms): 209.7, 95th(ms): 234.9, 99th(ms): 318.8, 99.9th(ms): 369.1, Max(ms): 369.1
+[Summary] STOCK_LEVEL - Takes(s): 299.8, Count: 11868, TPM: 2375.3, Sum(ms): 384576.0, Avg(ms): 32.4, 50th(ms): 35.7, 90th(ms): 58.7, 95th(ms): 65.0, 99th(ms): 79.7, 99.9th(ms): 100.7, Max(ms): 113.2
+tpmC: 27146.5, tpmTotal: 60380.1, efficiency: 1649.2%

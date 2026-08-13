@@ -1,0 +1,7 @@
+{
+  "db": "galera",
+  "shard_count_check": "skipped",
+  "placement_leader_gate": "skipped",
+  "reason": "Galera is synchronous multi-master replication with no sharding and no leader/lease concept — every node holds a full replica of all data, so there is no 'shard count' or 'leader placement' to verify. See ansible/playbooks/galera-vm6.yml design note.",
+  "generated_at_note": "this is an intentional no-op, not a missed check"
+}
