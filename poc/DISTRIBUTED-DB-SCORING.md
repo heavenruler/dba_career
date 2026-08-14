@@ -112,6 +112,12 @@ G1-G5，見 §3.3.1a），合計 56% 權重；#1/#7/#8 仍「待測」**（見 �
 > [`results/galera-tc1/S-BASE/`](./results/galera-tc1/S-BASE/)；部署與量測過程
 > 記錄於 [`phase-crossregion/GALERA-EXECUTION-PLAN.md`](./phase-crossregion/GALERA-EXECUTION-PLAN.md)
 > Stage 3 情境 1/2。
+>
+> **Canonical `summary.json`（§3.2.1-3.2.3 逐項數字直接來源）**：
+> Galera [`vm-1node`](./results/galera-tc1/S-BASE/vm-1node-rc/galera-vm-1node-rc-20260813T073744+0800/summary.json)／[`vm-3node-haproxy-3s3r`](./results/galera-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/galera-vm-3node-haproxy-3s3r-rc-20260813T112044+0800/summary.json)；
+> TiDB [`vm-1node`](./results/tidb-tc1/S-BASE/vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/summary.json)／[`vm-3node-haproxy-3s3r`](./results/tidb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-haproxy-3s3r-rc-20260601T003316+0800/summary.json)；
+> YugabyteDB [`vm-1node`](./results/yuga-tc1/S-BASE/vm-1node-rc/ybdb-vm-1node-rc-20260520T134929+0800/summary.json)／[`vm-3node-haproxy-3s3r`](./results/yuga-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/summary.json)；
+> CockroachDB [`vm-1node`](./results/crdb-tc1/S-BASE/vm-1node-rc/crdb-vm-1node-rc-20260519T085346+0800/summary.json)／[`vm-3node-haproxy-3s3r`](./results/crdb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/crdb-vm-3node-haproxy-3s3r-rc-20260602T051500+0800/summary.json)。
 
 #### 3.2.1 單節點/低併發延遲（vm-1node RC）
 
@@ -223,6 +229,14 @@ CockroachDB 單體、YugabyteDB 雙 process），不代表其他拓樸（如 K8s
 > 重跑全部 5 情境**。TiDB 段（15/16 組真實觀測到中斷）未重跑，原始 2026-08-08 數字維持有效。
 > 完整逐項數字與方法論見
 > [`XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md`](./phase-crossregion/XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md)。
+>
+> **F2 canonical `rto-rpo.json`**：TiDB（2026-08-08，未重跑）
+> [P-A](./results/x-cross/chaos/tidb-vm-6node-P-A-rc-20260808T075957+0800-scenarioF2/rto-rpo.json)／
+> [P-B](./results/x-cross/chaos/tidb-vm-6node-P-B-aa-rc-20260808T101720+0800-scenarioF2/rto-rpo.json)；
+> YugabyteDB N=2：[08-08 P-A](./results/x-cross/chaos/ybdb-vm-6node-P-A-rc-20260808T144840+0800-chaos/scenarioF2/rto-rpo.json)／
+> [rerun P-A](./results/x-cross/chaos/ybdb-vm-6node-P-A-rc-20260810T214440+0800-chaos/scenarioF2/rto-rpo.json)；
+> CockroachDB N=2：[08-08 P-A](./results/x-cross/chaos/crdb-vm-6node-P-A-rc-20260808T200335+0800-chaos/scenarioF2/rto-rpo.json)／
+> [rerun P-A](./results/x-cross/chaos/crdb-vm-6node-P-A-rc-20260810T142439+0800-chaos/scenarioF2/rto-rpo.json)。
 
 - **設計基礎**：量測方法論見
   [`RTO-RPO-methodology.md`](./phase-crossregion/failover/RTO-RPO-methodology.md)；
@@ -293,7 +307,9 @@ CockroachDB 單體、YugabyteDB 雙 process），不代表其他拓樸（如 K8s
 > （disk-slow，沿用 C7 機制）。同一套 vm-6node 拓樸（3 IDC + 3 GCP），環境已 teardown。
 > 完整 artifact 見
 > [`results/x-cross/smoke/early-runs/20260813T213018+0800/`](./results/x-cross/smoke/early-runs/20260813T213018+0800/)
-> 的 `fetch-receipt.json`。
+> 的 `fetch-receipt.json`。G2 canonical raw evidence：
+> [`rto-rpo.json`](./results/x-cross/smoke/early-runs/20260813T213018+0800/galera-vm-6node-rc-20260813T213018+0800-scenarioG2-quorumloss/rto-rpo.json)、
+> [`write-reject-validation.txt`](./results/x-cross/smoke/early-runs/20260813T213018+0800/galera-vm-6node-rc-20260813T213018+0800-scenarioG2-quorumloss/write-reject-validation.txt)。
 
 - **G2（殺全部 3 台 IDC，quorum-loss）— Fact**：`cluster_rebuild_sec=22.169`、
   `write_recovery_sec=22.169`（quorum 重組與首次成功寫入同一輪偵測到）。
