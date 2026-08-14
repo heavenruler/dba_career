@@ -2,7 +2,7 @@
 
 > 本檔是導讀，**不是**新的評分 SSOT。完整評分規則、公式、原始數字、Fact/Inference 分析與結果檔案連結，一律以 [`DISTRIBUTED-DB-SCORING.md`](./DISTRIBUTED-DB-SCORING.md) 為準；本檔任何數字都可回查該檔對應章節。
 >
-> 評分資料基準：`DISTRIBUTED-DB-SCORING.md` @ commit `dab237c6`；資料快照日期：2026-08-14。導讀本身版本以本檔 git history 為準，不綁定單一 commit hash。
+> 評分資料基準：`DISTRIBUTED-DB-SCORING.md` @ commit `cbd7820e`（`git log -1 --format=%h -- DISTRIBUTED-DB-SCORING.md`）；資料快照日期：2026-08-14。導讀本身版本以本檔 git history 為準，不綁定單一 commit hash。
 >
 > 本 PoC 是 stress benchmark / TPC-C-derived workload（go-tpc），**不是** audited TPC-C 認證結果，不可與官方 TPC-C 排名直接比較。
 
@@ -19,8 +19,9 @@
 
 - `⏸ 最終產品選型：證據不足`
 - `▶ 下一階段：相容性、PITR、Online DDL 驗證`
+- 下面兩條的分數是**部分加權試算**：只把已測 56% 權重重新正規化，再依 1-5 星（離散、帶判斷成分的相對評級）換算而來——不是完整產品分數，也不是 confidence-adjusted score，小數點不代表量測精度。
 - MySQL 相容路線：已測 56% 原始權重，`TiDB 78.6` 分 vs `Percona XtraDB Cluster 8.4（PXC，Galera）41.4` 分；TiDB 在水平擴展、高併發穩定性與本次 failover 設計上領先，Galera 在單節點延遲領先。
-- PostgreSQL 相容路線：已測 56% 原始權重，`YugabyteDB 87.5` 分 vs `CockroachDB 87.1` 分；0.4 分差距小於本 PoC 可支持的決策精度，應視為**接近**而非排名勝負。
+- PostgreSQL 相容路線：已測 56% 原始權重，`YugabyteDB 87.5` 分 vs `CockroachDB 87.1` 分；0.4 分差距小於本 PoC 可支持的決策精度，應維持**接近／不可排名**的結論。
 - 兩組分數不可互相比較，星等僅在群組內部有意義；所有 cell 主要為 `N=1`，方向可用但重現性未驗證——如需提高信心可另補 `N=3`，非本輪完成條件。
 
 ## 先選遷移路線，再選產品
@@ -85,7 +86,7 @@ flowchart TD
    - 決策影響：延遲敏感但併發不高的場景可參考此項；不能單獨當作整體優劣依據，此優勢在水平擴展/高併發情境下完全反轉（見下方兩項）。
 
 2. **水平擴展**
-   - Fact：vm-1node → vm-3node-haproxy-3s3r，`PXC/Galera` 0.49× vs `TiDB` 2.06×（[§3.2.2](./DISTRIBUTED-DB-SCORING.md#322-水平擴展能力vm-1node--vm-3node-haproxy-3s3r)，採用代表點倍率）；同 t=128 檢查（51,527.8 → 26,166.2）仍為負向、約 0.51×，方向一致。
+   - Fact：先看公平的同 t=128 檢查——`PXC/Galera` 51,527.8 → 26,166.2（約 0.51×）、`TiDB` 13,064 → 26,947（約 2.06×），兩者同 thread 對照，方向一致。評分 SSOT 實際採用的是各自代表點倍率 `PXC/Galera` 0.49× vs `TiDB` 2.06×（[§3.2.2](./DISTRIBUTED-DB-SCORING.md#322-水平擴展能力vm-1node--vm-3node-haproxy-3s3r) ／ evidence: [Galera vm-1node](./results/galera-tc1/S-BASE/vm-1node-rc/galera-vm-1node-rc-20260813T073744+0800/summary.json)、[vm-3node](./results/galera-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/galera-vm-3node-haproxy-3s3r-rc-20260813T112044+0800/summary.json)），不是完全同口徑的直接對照，但不是代表點錯覺。
    - 解讀：Galera 是 HAProxy round-robin 多寫入節點架構，TiDB 是分散式儲存（TiKV Region）擴展機制，兩者擴展模型本質不同。
    - 決策影響：此數字只代表本次 HAProxy round-robin naive multi-writer 拓樸，不是 Galera 產品的普遍擴展上限；若改用單寫或 shard key 分流，結果可能不同（見 §3.6）。預期靠加節點提升吞吐的場景，需先確認架構是否支援真正水平擴展。
 
@@ -95,9 +96,9 @@ flowchart TD
    - 決策影響：對併發穩定性要求高的場景需留意此差異，但單次重跑不足以下定論。
 
 4. **Failover / 跨區**
-   - Fact：`PXC/Galera` G2（quorum-loss，殺光 3 個 IDC 節點）cluster_rebuild_sec ≈ 22.169s，但故障窗內曾出現 `UNEXPECTED_WRITE_SUCCEEDED_review_manually`（kill 後約 14 秒一筆寫入異常成功，屬需人工複核的正確性風險）（[§3.3.1a](./DISTRIBUTED-DB-SCORING.md#331a-mysql-相容群組galerapxc-84chaosfailover-實測2026-08-13)）；`TiDB` 跨區 F2 場景約 44.3s/39.1s（[§3.3.1](./DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成)）。
-   - 解讀：22.169s 是 IDC 節點重啟/rejoin 後的 quorum 重建時間，不是 GCP 端獨立接手服務的 RTO；`TiDB` 展示的才是真正的區域級 failover。跨區 P-A/P-B 穩態吞吐（[§3.6](./DISTRIBUTED-DB-SCORING.md#36-mysql-相容群組percona-xtradb-cluster-84pxcgalera跨區-p-ap-b-穩態吞吐量實測2026-08-12)）屬 X-CROSS exploratory scope（`baseline_eligible=false`），不計入加權分數。
-   - 決策影響：不可因為 22.169s 比 TiDB 的 39-44s 小就認為 Galera 更好——兩者不是同一種能力，Galera 在本次 6-node 設計下沒有真正的區域容錯上限保證。引用 Galera 跨區失敗率時只能當方向性參考，缺 wsrep counter delta，錯誤分類方式也與 TiDB 不同。
+   - Fact：`PXC/Galera` G2（quorum-loss，殺光 3 個 IDC 節點）cluster_rebuild_sec ≈ 22.169s，但故障窗內曾出現 `UNEXPECTED_WRITE_SUCCEEDED_review_manually`（kill 後約 14 秒一筆寫入異常成功，屬需人工複核的正確性風險）（[§3.3.1a](./DISTRIBUTED-DB-SCORING.md#331a-mysql-相容群組galerapxc-84chaosfailover-實測2026-08-13) ／ evidence: [rto-rpo.json](./results/x-cross/smoke/early-runs/20260813T213018+0800/galera-vm-6node-rc-20260813T213018+0800-scenarioG2-quorumloss/rto-rpo.json)、[write-reject-validation.txt](./results/x-cross/smoke/early-runs/20260813T213018+0800/galera-vm-6node-rc-20260813T213018+0800-scenarioG2-quorumloss/write-reject-validation.txt)）；`TiDB` 跨區 F2 場景約 44.3s/39.1s（[§3.3.1](./DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成) ／ evidence: [P-A](./results/x-cross/chaos/tidb-vm-6node-P-A-rc-20260808T075957+0800-scenarioF2/rto-rpo.json)、[P-B](./results/x-cross/chaos/tidb-vm-6node-P-B-aa-rc-20260808T101720+0800-scenarioF2/rto-rpo.json)）。
+   - 解讀：兩者量測的是不同能力，不是同一把尺的兩個讀數。TiDB 的 F2 量的是「GCP 端不依賴 IDC 復原即可恢復寫入」；Galera 的 G2 是在本次 3+3、majority=4 的架構下，GCP 3 節點無法獨立形成 Primary Component，22.169s 量到的是 IDC 節點重啟/rejoin 後的 quorum 重建時間，而不是 GCP 端獨立接手的 RTO。跨區 P-A/P-B 穩態吞吐（[§3.6](./DISTRIBUTED-DB-SCORING.md#36-mysql-相容群組percona-xtradb-cluster-84pxcgalera跨區-p-ap-b-穩態吞吐量實測2026-08-12)）屬 X-CROSS exploratory scope（`baseline_eligible=false`），不計入加權分數。
+   - 決策影響：不可只比較 22.169s 與 39-44s 這兩個秒數——兩者不是同一種能力，此限制只適用於本次部署設計，不代表 Galera 技術本身沒有區域容錯能力（若改用不同 quorum 加權設計，見 §5.1 下一步建議）。引用 Galera 跨區失敗率時只能當方向性參考，缺 wsrep counter delta，錯誤分類方式也與 TiDB 不同。
 
 ## 關鍵觀察：PostgreSQL 相容路線
 
@@ -149,4 +150,12 @@ flowchart TD
 
 ## 文件限制
 
-- **SSOT inconsistency（已於原檔修正）**：`DISTRIBUTED-DB-SCORING.md` §4.2 與 §5 引言處原寫「其餘 44% 權重」，依 §2.2 權重表加總（80% 適用 − 56% 已測 = 24%）應為 **24%**；已於原檔一併修正為 24%，本檔數字與原檔現已一致。原檔另有數處 Galera 相關敘述（§3.2/§3.3.1/§5.3）在 2026-08-13 補測後過期，亦已一併修正。
+現在仍然有效的限制（不是已修好的歷史）：
+
+- 部分加權分數只覆蓋已測 56% 權重，未測的 34%（MySQL）／24%（PostgreSQL）未計入，不能當完整分數看。
+- S-BASE 多數 cell 為 `N=1`；PostgreSQL 群組的 F2 為 `N=2`（兩次獨立執行互相印證），仍未達 `N=3`。
+- 代表點的併發（thread 數）可能不同，只有明示「同 t=128」的比較才是同口徑，其餘代表點比較是「各自最佳」而非直接對照。
+- Failover 秒數的探測解析度、探測發起位置（皆從 IDC 側）與情境語意（quorum-loss vs 區域 failover）三家不完全相同，不可只比較秒數。
+- 官方文件（docs/whitepaper）是機制推論的輔助來源，不等於本 PoC 實測結果，兩者不可混用。
+
+歷史修正（已完成，不影響現在使用本檔）：`DISTRIBUTED-DB-SCORING.md` 曾有「其餘 44% 權重」筆誤（應為 PostgreSQL 群組 24%）與數處 Galera 補測前的過期敘述，已於原檔一併修正，本檔數字與原檔現已一致。
