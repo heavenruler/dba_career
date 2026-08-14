@@ -38,19 +38,14 @@ flowchart TD
 
 ## 目前證據覆蓋率
 
-**MySQL 相容群組**（[§2.1](./DISTRIBUTED-DB-SCORING.md#21-mysql-相容群組mysql-galera-cluster-vs-tidb)）：
+| 路線 | 群組權重上限 | 已測 | 未測 |
+|---|---:|---:|---:|
+| MySQL 相容群組（[§2.1](./DISTRIBUTED-DB-SCORING.md#21-mysql-相容群組mysql-galera-cluster-vs-tidb)） | 95% | 56% | 34% |
+| PostgreSQL 相容群組（[§2.2](./DISTRIBUTED-DB-SCORING.md#22-postgresql-相容群組yugabytedb-vs-cockroachdb)） | 80% | 56% | 24% |
 
-- 群組權重上限：95%（HTAP #9 5% 對 Galera 為 n/a，不計入「已測」）
-- 已測：56%（#3 單節點延遲＋#4 水平擴展＋#5 高併發穩定性＋#6 Failover）
-- 未測：34%（#1 相容性＋#7 PITR＋#8 Online DDL）
-
-**PostgreSQL 相容群組**（[§2.2](./DISTRIBUTED-DB-SCORING.md#22-postgresql-相容群組yugabytedb-vs-cockroachdb)）：
-
-- 群組權重上限：80%
-- 已測：56%（同上四項）
-- 未測：24%（#2 PostgreSQL 相容性＋#7 PITR＋#8 Online DDL＋#9 Geo-Distribution）
-
-⚠️ 兩組已測權重相同（56%），未測缺口不同（34% vs 24%）；87.5 vs 87.1 的接近分數更不能忽略這 24% 缺口。
+- MySQL 群組：95% 上限含 HTAP #9 5%（對 Galera 為 n/a，不計入「已測」）；已測 56% = #3 單節點延遲＋#4 水平擴展＋#5 高併發穩定性＋#6 Failover；未測 34% = #1 相容性＋#7 PITR＋#8 Online DDL。
+- PostgreSQL 群組：已測 56% 為同上四項；未測 24% = #2 PostgreSQL 相容性＋#7 PITR＋#8 Online DDL＋#9 Geo-Distribution。
+- ⚠️ 兩組已測權重相同（56%），未測缺口不同（34% vs 24%）；87.5 vs 87.1 的接近分數更不能忽略這 24% 缺口。
 
 ## 關鍵觀察：MySQL 相容路線
 
