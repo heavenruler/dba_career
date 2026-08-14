@@ -15,13 +15,25 @@
 
 分散式資料庫的選型**不該只由維運端推動**。建議順序：由產品需求定義協定、RTO/RPO、一致性與跨區工作負載，再據此篩選資料庫架構、產品及部署模式。
 
+## 先選遷移路線，再選產品
+
+```mermaid
+flowchart TD
+    A[既有應用能否離開 MySQL 協定？] -->|否| B["PXC/Galera vs TiDB"]
+    A -->|是| C{是否接受 PostgreSQL 與應用改造？}
+    C -->|是| D["YugabyteDB vs CockroachDB"]
+    C -->|尚未確認| E["先做 SQL/ORM/driver 相容性矩陣"]
+```
+
+- 協定相容性是**選型門檻**，不是普通權重項目——換協定代表應用改造成本。
+
 ## 一頁結論
 
 - 目前 [MySQL](http://pmm.104.com.tw/graph/d/prod-db-mysql/prod-db-mysql-mariadb-pxc) / [PostgreSQL](http://pmm.104.com.tw/graph/d/prod-db-pgpool2/prod-db-pgpool-ii) 叢集數比例: 28 / 4 ; 實際商務邏輯營運趨近 95% / 5%
    - 統計日期: 2026/08/14
    - 單位：資料庫叢集、產品、服務別
    - 來源：現行 Prod 資料庫相關監控彙整
-- 下面兩條的分數是**部分加權試算**：MySQL 群組只把已計分 62% 權重、PostgreSQL 群組只把已計分 82% 權重重新正規化，再依 1-5 星（離散、帶判斷成分的相對評級）換算而來——不是完整產品分數，也不是 confidence-adjusted score，小數點不代表量測精度。
+- 下面兩條相容路線的分數是**部分加權試算**：MySQL 群組只把已計分 62% 權重、PostgreSQL 群組只把已計分 82% 權重重新正規化，再依 1-5 星（離散、帶判斷成分的相對評級）換算而來——不是完整產品分數，也不是 confidence-adjusted score，小數點不代表量測精度。
 
 | 相容路線 | 產品 | 部分加權試算 | 目前判讀 |
 |---|---|---:|---|
@@ -35,18 +47,6 @@
 - `▶ 下一階段：相容性、PITR、Online DDL 驗證`
 - `▶ 最終產品選型：多方採集意見後再進行下一階段結論`
 
-## 先選遷移路線，再選產品
-
-```mermaid
-flowchart TD
-    A[既有應用能否離開 MySQL 協定？] -->|否| B["PXC/Galera vs TiDB"]
-    A -->|是| C{是否接受 PostgreSQL 與應用改造？}
-    C -->|是| D["YugabyteDB vs CockroachDB"]
-    C -->|尚未確認| E["先做 SQL/ORM/driver 相容性矩陣"]
-```
-
-- 協定相容性是**選型門檻**，不是普通權重項目——換協定代表應用改造成本。
-
 ## 目前證據覆蓋率
 
 | 路線 | 群組權重上限 | 已計分 | 尚未計分／不適用 |
@@ -54,9 +54,11 @@ flowchart TD
 | MySQL 相容群組（[§2.1](./DISTRIBUTED-DB-SCORING.md#21-mysql-相容群組mysql-galera-cluster-vs-tidb)） | 100% | 62% | 38% |
 | PostgreSQL 相容群組（[§2.2](./DISTRIBUTED-DB-SCORING.md#22-postgresql-相容群組yugabytedb-vs-cockroachdb)） | 100% | 82% | 18% |
 
-- MySQL 群組：已計分 62% = #2 單節點延遲＋#3 水平擴展＋#4 高併發穩定性。#5 已有原始數據但比較口徑不等價，暫不計分；連同 #1／#6／#7／#8，尚未計分共 38%。PXC/Galera 的 #8 HTAP 為 n/a。
-- PostgreSQL 群組：已計分 82% = #2 單節點延遲＋#3 水平擴展＋#4 高併發穩定性＋#5 Failover；尚未計分 18% = #1 PostgreSQL 相容性＋#6 PITR＋#7 Online DDL＋#8 Geo-Distribution。
-- ⚠️ 兩組權重皆已補足 100%，但已計分比例不同；PostgreSQL 兩家目前同為 87.1，不代表個別能力完全相同。
+- MySQL 群組：已計分 62% = `#2 單節點延遲` ＋ `#3 水平擴展` ＋ `#4 高併發穩定性`。
+   > #5 已有原始數據但比較口徑不等價，暫不計分；連同 #1／#6／#7／#8，尚未計分共 38%。PXC/Galera 的 #8 HTAP 為 n/a。
+- PostgreSQL 群組：已計分 82% = `#2 單節點延遲` ＋ `#3 水平擴展` ＋ `#4 高併發穩定性` ＋ `#5 Failover`；
+   > 尚未計分 18% = #1 PostgreSQL 相容性＋#6 PITR＋#7 Online DDL＋#8 Geo-Distribution。
+
 
 ### 評分總表節錄（星等對照，完整版見 [§2](./DISTRIBUTED-DB-SCORING.md#2-評分總表依協定架構分組)）
 
@@ -74,8 +76,6 @@ flowchart TD
 | 8 | HTAP／TiFlash | 5% | n/a | 待測 |
 | | **合計** | **100%** | | |
 
-MySQL 群組原始配置合計 88%，缺少的 12% 平均補入項目 2～4，因此三項權重由 15%／20%／15% 調整為 19%／24%／19%。
-
 **PostgreSQL 相容群組**（[§2.2](./DISTRIBUTED-DB-SCORING.md#22-postgresql-相容群組yugabytedb-vs-cockroachdb)）：
 
 | # | 項目 | 權重 | YugabyteDB | CockroachDB |
@@ -90,10 +90,9 @@ MySQL 群組原始配置合計 88%，缺少的 12% 平均補入項目 2～4，�
 | 8 | Geo-Distribution | 5% | 待測 | 待測 |
 | | **合計** | **100%** | | |
 
-PostgreSQL 群組原始配置合計 73%，缺少的 27% 平均補入項目 2～4，因此三項權重由 15%／20%／15% 調整為 24%／29%／24%。
+> 星等只在同一張表內比較（同群組）；跨表（MySQL 表 vs PostgreSQL 表）不可比較，見上方一頁結論。
 
-星等只在同一張表內比較（同群組）；跨表（MySQL 表 vs PostgreSQL 表）不可比較，見上方一頁結論。
-
+---
 
 ## PoC 實驗相關規格與平台
 
