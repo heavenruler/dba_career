@@ -47,6 +47,36 @@ flowchart TD
 - PostgreSQL 群組：已測 56% 為同上四項；未測 24% = #2 PostgreSQL 相容性＋#7 PITR＋#8 Online DDL＋#9 Geo-Distribution。
 - ⚠️ 兩組已測權重相同（56%），未測缺口不同（34% vs 24%）；87.5 vs 87.1 的接近分數更不能忽略這 24% 缺口。
 
+### 評分總表節錄（星等對照，完整版見 [§2](./DISTRIBUTED-DB-SCORING.md#2-評分總表依協定架構分組)）
+
+**MySQL 相容群組**（[§2.1](./DISTRIBUTED-DB-SCORING.md#21-mysql-相容群組mysql-galera-cluster-vs-tidb)）：
+
+| # | 項目 | 權重 | PXC/Galera | TiDB |
+|---|---|---:|:---:|:---:|
+| 1 | MySQL 協定相容性 | 20% | 待測 | 待測 |
+| 3 | 單節點/低併發延遲 | 15% | ⭐⭐⭐⭐⭐ | ⭐☆☆☆☆ |
+| 4 | 水平擴展能力 | 20% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ |
+| 5 | 高併發穩定性 | 15% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ |
+| 6 | Failover RTO／RPO | 6% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ |
+| 7 | PITR／備份還原 | 4% | 待測 | 待測 |
+| 8 | Online DDL 與維運工具 | 10% | 待測 | 待測 |
+| 9 | HTAP／TiFlash | 5% | n/a | 待測 |
+
+**PostgreSQL 相容群組**（[§2.2](./DISTRIBUTED-DB-SCORING.md#22-postgresql-相容群組yugabytedb-vs-cockroachdb)）：
+
+| # | 項目 | 權重 | YugabyteDB | CockroachDB |
+|---|---|---:|:---:|:---:|
+| 2 | PostgreSQL 協定相容性 | 5% | 待測 | 待測 |
+| 3 | 單節點/低併發延遲 | 15% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ |
+| 4 | 水平擴展能力 | 20% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
+| 5 | 高併發穩定性 | 15% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
+| 6 | Failover RTO／RPO | 6% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ |
+| 7 | PITR／備份還原 | 4% | 待測 | 待測 |
+| 8 | Online DDL 與維運工具 | 10% | 待測 | 待測 |
+| 9 | Geo-Distribution | 5% | 待測 | 待測 |
+
+星等只在同一張表內比較（同群組）；跨表（MySQL 表 vs PostgreSQL 表）不可比較，見上方一頁結論。
+
 ## 關鍵觀察：MySQL 相容路線
 
 1. **單節點延遲**
