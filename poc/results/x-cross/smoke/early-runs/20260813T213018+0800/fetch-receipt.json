@@ -1,0 +1,52 @@
+{
+  "ts": "20260813T213018+0800",
+  "scope": "phase-crossregion Galera (PXC 8.4) vm-6node chaos/failover — G1-G5 (2026-08-13)",
+  "purpose": "Fill DISTRIBUTED-DB-SCORING.md §2.1 #6 (chaos/failover) and §3.3.1, comparing against TiDB/CockroachDB/YugabyteDB on the same vm-6node crossregion topology (3 IDC + 3 GCP), per Stage 5 of phase-crossregion/GALERA-EXECUTION-PLAN.md.",
+  "design_note": "Galera has no leader/follower concept, so the existing F1/C4/F2/C1/C7 framework was not reused as-is: F1/C4 were replaced by a new scenario (G1, single-node kill with an IDC/GCP region axis instead of leader/follower), F2's mechanism was reused but reinterpreted (G2, quorum-loss rather than regional-failover-survival, since 3/6 nodes is below Galera's 6-node majority of 4), C1 and C7 were reused nearly as-is with a galera branch added (G4, G5), and G3 (dual-write conflict storm) is genuinely new with no equivalent in the other three DBs' framework.",
+  "cells": {
+    "prepare": {
+      "dir": "galera-vm-6node-P-A-rc-20260813T213018+0800",
+      "note": "W=128 TPC-C schema/data load shared by all 5 G-scenarios below; no timed workload run, prepare phase only."
+    },
+    "G1_node_kill": {
+      "dir": "galera-vm-6node-rc-20260813T213018+0800-scenarioG1-gcp-crash",
+      "params": "node_region=gcp kill_mode=crash kill_target=10.160.152.11 query_endpoint=172.24.40.32",
+      "sha256_rto_rpo_json": "0149ac7259cca9f3d1467cad79c2ed1865b4dde15364488500f48c45041cad59",
+      "result_summary": "rto_sec=null (outage_observed=false, 432/432 probes ok), rpo_lost_tx_count=0 — killing 1/6 nodes had zero observable write impact (5/6 still ≥ majority=4).",
+      "note": "An earlier attempt at this same scenario failed due to a probe-rto-driver.sh auth bug (password never passed) and was discarded before being fetched — not preserved locally, superseded by this clean rerun."
+    },
+    "G2_quorum_loss": {
+      "dir": "galera-vm-6node-rc-20260813T213018+0800-scenarioG2-quorumloss",
+      "params": "idc_hosts=172.24.40.32,.33,.34 (all 3 killed simultaneously via systemctl stop mysql) gcp_host=10.160.152.11",
+      "sha256_rto_rpo_json": "e0bff5803ca35b0c3e8af0aeb964bedd0a2abdb206ade615035ed8e75b29bd65",
+      "result_summary": "cluster_rebuild_sec=22.169, write_recovery_sec=22.169 (quorum reform and first successful write coincided). write-reject-validation.txt verdict=UNEXPECTED_WRITE_SUCCEEDED_review_manually — an INSERT/DELETE probe ~14s post-kill actually succeeded (empty/silent mysql output, not an error), most likely because the surviving 3-node GCP minority had not yet detected the peer loss (Galera evs.suspect_timeout/evs.inactive_timeout not yet elapsed) and briefly kept accepting writes before self-demoting to non-Primary. This is a genuine finding about write-reject detection latency, not a script bug — see DISTRIBUTED-DB-SCORING.md for full fact/inference framing.",
+      "destructive_note": "Most destructive scenario — run last per script's own header guidance. Cluster confirmed fully healed (6/6 Primary/Synced) afterward before proceeding to fetch/teardown."
+    },
+    "G3_dualwrite_conflict": {
+      "dir": "galera-vm-6node-P-B-rc-20260813T213018+0800-scenarioG3",
+      "params": "idc_db_host=172.24.40.32 gcp_db_host=10.160.152.11 gcp_client_ssh=root@10.160.152.15 hot_warehouse_count=2 duration_sec=30",
+      "sha256_g3_summary_json": "63889147c8f45c59c58299307403c4971930b1f70e60e75a71733415e9a6c0fb",
+      "sha256_wsrep_delta_json": "b57171a6054b82dbd0ec9da74e257131abbbf14fb730d28f6cf21a3c84d65259",
+      "result_summary": "idc_injector: ok=1048 err=0; gcp_injector: ok=801 err=0. But wsrep counter DELTA (before/after this specific 30s window, first time captured this way rather than a post-run single-point snapshot) shows real conflict: cluster_total_delta wsrep_local_cert_failures=474, wsrep_local_bf_aborts=313 across wsrep_local_commits delta=1849 (~25.6%/~16.9%). Client-visible err=0 despite this is explained by wsrep_retry_autocommit=1 (confirmed via SHOW VARIABLES) transparently retrying single-statement autocommit UPDATEs — go-tpc's multi-statement PAYMENT transactions are not eligible for this auto-retry, which is the most likely explanation for why §3.6.2's real TPC-C run showed much higher client-visible error rates than this synthetic single-statement hammer."
+    },
+    "G4_partition": {
+      "dir": "galera-vm-6node-rc-20260813T213018+0800-scenarioG4-partition",
+      "dir_write_probe": "galera-vm-6node-rc-20260813T213018+0800-scenarioG4-partition-write-probe",
+      "params": "duration=30s, bidirectional iptables DROP between all 3 IDC and all 3 GCP hosts",
+      "sha256_plan_txt": "5c7611a4b8a334118051c40f1e5b683d6e732cfb5e9e2aec225bf1cd6e086281",
+      "result_summary": "error-rate-by-sec.txt (coarse SELECT-1 probe) shows 100% ok throughout — but SELECT 1 never touches InnoDB/wsrep, so this only proves mysqld stayed responsive, not that writes succeeded. A short supplementary manual re-partition (not part of the main C1/G4 script, artifacts in the '-write-probe' dir) directly tested writes: IDC side got 'Error 1213 Deadlock', GCP side got 'Error 1047 WSREP has not yet prepared node for application use' — confirming both 3-node halves correctly refused writes (both below majority=4). Cluster auto-healed back to 6/6 Primary within ~20-30s of restore, no manual intervention needed.",
+      "known_limitation": "This supplementary write-probe used a separate, shorter (~20s) ad-hoc partition rather than reusing the main script's --duration 30 run, since the main run's own probe design (SELECT 1) turned out to be uninformative for write-availability. Both partitions used the same mechanism (iptables DROP, same CIDRs)."
+    },
+    "G5_disk_slow": {
+      "dir": "galera-vm-6node-rc-20260813T213018+0800-scenarioG5-diskslow",
+      "params": "target_host=172.24.40.32 duration=30s fio_jobs=4 fio_iodepth=64 fio_size=2G",
+      "sha256_plan_txt": "5866475cecf0ec47e9c834921a0f71dcdc5ea3223f6f9fdf689511798833a7fd",
+      "result_summary": "fio contention launched successfully (fio_launch_ok=true after installing fio, which was missing on this freshly-built VM); induced latency delta must be read from io-latency-p99.txt/fio-summary.txt directly, no pass/fail verdict computed by this script by design (matches TiDB/CRDB/YBDB's C7 methodology)."
+    }
+  },
+  "environment": {
+    "topology": "vm-6node crossregion (3 IDC: 172.24.40.32/.33/.34, 3 GCP: 10.160.152.11/.12/.13)",
+    "deployed_via": "make phase1 && make phase2 && make phase-galera-deploy (fresh rebuild, 2026-08-13)",
+    "teardown": "terraform destroy on both iac-idc and iac-gcp after this fetch, per established practice."
+  }
+}

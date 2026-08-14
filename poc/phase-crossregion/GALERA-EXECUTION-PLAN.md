@@ -4,9 +4,10 @@
 smoke）、Stage 3 情境 3/4（跨區 P-A×A-S、P-B×A-A 的 W=128 正式量測）、以及
 §2.1/§3.2 同拓樸 `vm-1node`/`vm-3node-haproxy-3s3r` 的 W=128 正式量測已完成並
 回填 `results/x-cross/` 與 `results/galera-tc1/`；環境已 teardown。** **MySQL
-相容群組加權評分（§2.1/§4.1）已完成 #3/#4/#5（50% 權重），仍缺 #1/#6/#7/#8
-（相容性/chaos-failover/PITR/Online DDL，合計 40% 權重）**——詳見
-`DISTRIBUTED-DB-SCORING.md` §2.1/§3.2/§4.1/§5.1。
+相容群組加權評分（§2.1/§4.1）已完成 #3/#4/#5/#6（56% 權重，#6 為 2026-08-13
+G1-G5 chaos/failover 實跑，見下方 Stage 5）；仍缺 #1/#7/#8（相容性/PITR/
+Online DDL，合計 34% 權重）**——詳見 `DISTRIBUTED-DB-SCORING.md`
+§2.1/§3.2/§3.3.1a/§4.1/§5.1。環境已 teardown。
 
 **2026-08-13 設計決策**：§2.1 的 #3/#4/#5 原規劃比照 §7（`S-PXC`，wsrep-off
 control + single-writer + multi-writer 三個 cell）的完整設計，但實際執行時
@@ -128,20 +129,56 @@ PAYMENT 高失敗率觀察，收斂成可證實的因果結論）。
 
 **明確不直接套用既有 leader-based F1（leader kill）/ C4（leader-follower 對照）
 框架**——Galera 沒有 leader 可以 kill，也沒有 follower 可以對照（每個節點都是
-對等的 writer）。需要獨立設計的故障情境（本輪不實作，只列出設計方向）：
+對等的 writer）。2026-08-13 完成設計審查（讀完 `RTO-RPO-methodology.md` +
+`run-vm6-chaos-execute.sh` + `run-vm6-f2-idc-death-execute.sh` +
+`chaos-c1-partition-execute.sh` + `chaos-c7-disk-slow-execute.sh` +
+`wall-clock-wrapper.sh` 五支既有腳本後才決定），確認可重用度分類：
 
-- **節點 kill（非 leader 概念，任一節點）**：kill 一個 IDC 節點 vs kill 一個
-  GCP 節點，觀察 client 端行為差異（wsrep_cluster_size 降到 5、quorum 是否
-  維持、in-flight 交易處理）
-- **Split-brain / quorum loss**：kill 到只剩 3 台（quorum 邊界，6 節點 majority
-  = 4），驗證 Galera 的 quorum 演算法是否正確拒絕繼續接受寫入（避免真正
-  split-brain）
-- **雙寫衝突風暴**：P-B×A-A 情境下人為製造高衝突率負載，觀察
-  `wsrep_local_cert_failures`/`wsrep_local_bf_aborts` 飆升時的降級行為（這是
-  Galera 特有、TiDB/CRDB/YBDB 用悲觀鎖或 leader 序列化寫入所以不會出現的
-  故障模式）
-- **跨區網路分斷（GCP 3 台整體失聯）**：驗證剩餘 IDC 3 台（majority）能否
-  繼續服務，GCP 3 台恢復連線後能否自動 IST/SST 追上而不需要人工介入
+| 新情境 | 對應舊情境 | 重用度 | 說明 |
+|---|---|---|---|
+| **G1** 單節點 kill（IDC vs GCP，graceful/crash 可選） | F1/C4 | 骨架可重用約 70%，核心機制需重寫 | 拿掉 `RESIGN_CMD`/`LEADER_QUERY`/`--kill-role leader\|follower`（Galera 無此概念），改成 `--node-region idc\|gcp`；membership 查詢改用 `gcp-replica-gate.sh` 已有的 wsrep 健康檢查模式；graceful/crash 軸（原本跟 leader/follower 軸疊在一起）仍保留，只是拿掉 leader/follower 軸 |
+| **G2** quorum-loss（殺全部 3 台 IDC） | F2 | 機制可直接沿用 | **語意不同**：TiDB/CRDB/YBDB 殺 3 台 IDC 後靠 PD/Raft 仲裁繼續服務（regional failover 存活測試）；Galera 6 節點 majority=4，殺 3 台後只剩 3/6，**這是 quorum-loss 測試，不是 failover 存活測試**——預期正確行為是全叢集拒絕寫入，`write_correctly_rejected` 判定是本情境核心 |
+| **G3** 雙寫衝突風暴（P-B×A-A） | 無對應 | 全新設計 | 唯一需要 P-B×A-A 特定 placement 的情境（其餘 4 個是純 server 端故障，跟 client routing profile 無關）；核心是補上 §3.2/§3.6 一直缺的**逐次 workload 前後 wsrep counter delta**（不只 post-run 單點 snapshot） |
+| **G4** 跨區網路分斷 | C1 | 機制可直接沿用 | 純網路層 iptables DROP，只需加 galera 的 `PROBE_CMD`；3v3 全斷後兩側都是 minority（跟 TiDB/CRDB/YBDB 的 P-B row 同一種「雙邊拒寫」結果），重點是解除分斷後能否自動 IST/SST 追上 |
+| **G5** disk-slow | C7 | 機制可直接沿用 | 只需加 galera 的 `DATA_DIR`（`/var/lib/mysql`），無需重新設計 |
+
+**範圍與注入時長決策（2026-08-13 確認）**：G1/G2/G4/G5 都是純 server 端故障，
+跟 client 是單寫還是雙寫無關，**只跑 1 次**（不分 P-A/P-B，避免重複測同一件事）；
+G3 因定義上就需要雙寫衝突，**只跑 P-B×A-A**。合計 **5 次注入**（不是 3DB 慣例的
+2 placement×5 情境=10 次）。注入持續時間 **~30s**，比照 `chaos-c1-partition-
+execute.sh`/`chaos-c7-disk-slow-execute.sh` 實際歷史注入值——見下方「已修正
+的過期引用」，先前寫的「`chaos_48injection_campaign` 命名慣例／3 分鐘注入
+上限」**經查證不存在於本 repo 任何其他文件，是本文件自己先前的錯誤引用**，
+已改用真實歷史先例校正。
+
+**✅ 已於 2026-08-13 完成實跑**（重建 3 IDC + 3 GCP，含 GCP，環境已 teardown）。
+5 次注入結果摘要（完整 fact/inference 分析見
+`DISTRIBUTED-DB-SCORING.md` §3.3.1a；raw artifact 見
+[`results/x-cross/smoke/early-runs/20260813T213018+0800/`](../results/x-cross/smoke/early-runs/20260813T213018+0800/)）：
+
+- G1（單節點 crash kill，GCP 側）：`rto_sec=null`（outage_observed=false，
+  432/432 探測全 ok）、`rpo_lost_tx_count=0`——1/6 節點死亡對 client 無可觀測影響。
+- G2（quorum-loss，殺全部 3 台 IDC）：`cluster_rebuild_sec=22.169`、
+  `write_recovery_sec=22.169`；write-reject 驗證出現
+  `UNEXPECTED_WRITE_SUCCEEDED_review_manually`（kill 後 ~14s 一次 INSERT/DELETE
+  實際成功，很可能是存活 3 台 GCP 尚未偵測到 quorum 遺失的偵測延遲窗口，非本次
+  逐秒精確定位）。**22.169s 不能直接跟 TiDB F2 的 39~44s 比較**——兩者量的是不同
+  能力（Galera 是「節點重啟回來 rejoin」，TiDB 是「GCP 端independently 接手」），
+  Galera 在本次 6-node 單叢集設計下沒有真正的區域級 failover 能力。
+- G3（雙寫衝突風暴，P-B×A-A，30s）：首次做到 workload 前後 wsrep counter delta
+  （非 post-run 單點 snapshot）：`wsrep_local_cert_failures` delta=474、
+  `wsrep_local_bf_aborts` delta=313（相對 commits delta=1849，約 25.6%/16.9%）；
+  client 端注入腳本卻回報 0 失敗——已用 `SHOW VARIABLES` 確認
+  `wsrep_retry_autocommit=1`（PXC 預設）可解釋此落差。
+- G4（跨區網路 3v3 全斷，30s + 補測真實寫入）：IDC 側 `Error 1213 Deadlock`、
+  GCP 側 `Error 1047 WSREP has not yet prepared node for application use`——
+  兩側皆正確拒絕寫入；解除分斷後 ~20-30s 內自動 IST/SST 恢復 6/6 Primary。
+- G5（disk-slow，IDC 節點，30s）：fio 干擾成功啟動（新建 VM 需先裝 fio），
+  延遲數字見 raw artifact，比照既有慣例不產出通過/失敗判定。
+
+過程中修的 2 個 bug：`probe-rto-driver.sh` 的 galera 分支最初漏傳密碼給背景
+probe（首次 G1 嘗試因此全部探測 Access-denied，已作廢重跑）；G4 的補充寫入驗證
+heredoc 一開始把輸出檔案寫到錯誤路徑（heredoc escape 疏漏），已手動移正。
 
 ## 尚待人工決策的項目
 
@@ -155,8 +192,15 @@ PAYMENT 高失敗率觀察，收斂成可證實的因果結論）。
   #2c 觀測到的 cert_failures/bf_aborts 與 tpmC 大幅震盪（range/mean 最高
   117.5%）之間的「型態相容但根因未證實」收斂成確定結論的必要步驟，若要正式
   寫入評分依據應優先排入。
-- Stage 5 的具體故障注入時間窗/量測指標，需要比照 chaos_48injection_campaign
-  的既有命名慣例與 3 分鐘注入上限規範重新設計，不是簡單套用 3DB 現有腳本。
-- §2.1 加權評分表已完成 #3/#4/#5（50% 權重，見上方 #2b/#2c），仍缺 #1（相容性
-  20%）/#6（chaos/failover 6%，見 Stage 5）/#7（PITR 4%）/#8（Online DDL 10%）
-  合計 40% 權重，才能產出完整加權總分。
+- ~~Stage 5 的具體故障注入時間窗/量測指標，需要比照 chaos_48injection_campaign
+  的既有命名慣例與 3 分鐘注入上限規範重新設計~~——**2026-08-13 已修正**：查證
+  後確認 repo 內沒有這個命名慣例/時長上限的既有先例（只有本文件自己先前的
+  錯誤引用），已改用 G1-G5 設計＋~30s 注入時長（比照 C1/C7 實際歷史值），見
+  上方 Stage 5 表格。
+- §2.1 加權評分表已完成 #3/#4/#5/#6（56% 權重，見上方 #2b/#2c 與 G1-G5），仍缺
+  #1（相容性 20%）/#7（PITR 4%）/#8（Online DDL 10%）合計 34% 權重，才能產出
+  完整加權總分。
+- G2 的「本次 6-node 單叢集設計沒有區域級 failover」是本次部署選擇的限制，不是
+  Galera 技術本身的能力上限——若要驗證「換一種 quorum 加權設計（如多數席位固定
+  在單一區域、或加 witness/arbiter 節點）能否達到不需 IDC 復原的區域容錯」，需要
+  重新設計部署拓樸，本輪未測試。

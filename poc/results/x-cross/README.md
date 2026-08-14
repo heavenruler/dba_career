@@ -25,7 +25,10 @@
 | Galera P-A | A-S | `smoke/early-runs/20260812T132801+0800/galera-vm-6node-P-A-rc-20260811T201242+0800/` | [DISTRIBUTED-DB-SCORING.md §3.6](../../DISTRIBUTED-DB-SCORING.md#36-mysql-相容群組mysql-galera-cluster-跨區-pap-b穩態吞吐量實測2026-08-12) |
 | Galera P-B | A-A⚠ | `smoke/early-runs/20260812T132801+0800/galera-vm-6node-P-B-aa-rc-20260812T093709+0800/` | 同上；**lineage caveat 見下方** |
 
-P-B 三 workload 彙整見 [XCROSS-PB-ALL-WORKLOADS-SUMMARY.md](../../phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)。**不可**重新命名上述任何目錄；未列入此表的 `smoke/early-runs/` 子目錄一律視為早期 smoke／partial run／中斷重試殘留，不作 X-CROSS 採用數字來源。
+P-B 三 workload 彙整見 [XCROSS-PB-ALL-WORKLOADS-SUMMARY.md](../../phase-crossregion/XCROSS-PB-ALL-WORKLOADS-SUMMARY.md)。**不可**重新命名上述任何目錄；未列入此表的 `smoke/early-runs/` 子目錄一律視為早期 smoke／partial run／中斷重試殘留，不作 X-CROSS 採用數字來源——**例外**：
+`smoke/early-runs/20260813T213018+0800/` 是 2026-08-13 Galera chaos/failover（G1-G5，
+非 W=128 throughput suite，故不適用上表欄位格式）已採用批次，見該目錄下
+`fetch-receipt.json` 與 [DISTRIBUTED-DB-SCORING.md §3.3.1a](../../DISTRIBUTED-DB-SCORING.md#331a-mysql-相容群組galerapxc-8chaosfailover-實測2026-08-13)。
 
 ⚠ **Galera P-B lineage caveat**（詳見該批次目錄下 `fetch-receipt.json` 的
 `lineage_caveat` 欄位）：P-B 沿用同一 6-node 叢集上 P-A 已完成的 W=128 prepare

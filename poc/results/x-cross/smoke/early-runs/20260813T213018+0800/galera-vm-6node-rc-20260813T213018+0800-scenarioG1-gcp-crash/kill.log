@@ -1,0 +1,5 @@
+node_region=gcp kill_mode=crash kill_target=10.160.152.11
+kill_cmd=ssh -o StrictHostKeyChecking=accept-new root@10.160.152.11 'pkill -9 -x mysqld'
+t_kill_start=2026-08-13T15:03:32.960Z
+kill_ssh_exit=0
+post_kill_verify=process_confirmed_down

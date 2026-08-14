@@ -1,0 +1,3 @@
+[probe-rto] db=galera host=172.24.40.32:3306 interval=100ms out=/tmp/poc-tpcc/artifacts/X-CROSS/galera-vm-6node-rc-20260813T213018+0800-scenarioG1-gcp-crash/probe.txt
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[probe-rto] STOP_FILE detected — exiting (seq=448 written=/tmp/poc-tpcc/artifacts/X-CROSS/galera-vm-6node-rc-20260813T213018+0800-scenarioG1-gcp-crash/probe.txt)

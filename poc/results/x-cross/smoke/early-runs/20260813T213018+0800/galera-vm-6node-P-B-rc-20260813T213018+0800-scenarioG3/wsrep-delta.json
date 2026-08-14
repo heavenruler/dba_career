@@ -1,0 +1,45 @@
+{
+  "per_node_delta": {
+    "idc-dbhost-1@172.24.40.32": {
+      "wsrep_local_cert_failures": 357,
+      "wsrep_local_bf_aborts": 199,
+      "wsrep_local_commits": 1048,
+      "wsrep_flow_control_paused_after": "0.121091"
+    },
+    "idc-dbhost-2@172.24.40.33": {
+      "wsrep_local_cert_failures": 0,
+      "wsrep_local_bf_aborts": 0,
+      "wsrep_local_commits": 0,
+      "wsrep_flow_control_paused_after": "0.120054"
+    },
+    "idc-dbhost-3@172.24.40.34": {
+      "wsrep_local_cert_failures": 0,
+      "wsrep_local_bf_aborts": 0,
+      "wsrep_local_commits": 0,
+      "wsrep_flow_control_paused_after": "0.120212"
+    },
+    "gcp-dbhost-1@10.160.152.11": {
+      "wsrep_local_cert_failures": 117,
+      "wsrep_local_bf_aborts": 114,
+      "wsrep_local_commits": 801,
+      "wsrep_flow_control_paused_after": "0"
+    },
+    "gcp-dbhost-2@10.160.152.12": {
+      "wsrep_local_cert_failures": 0,
+      "wsrep_local_bf_aborts": 0,
+      "wsrep_local_commits": 0,
+      "wsrep_flow_control_paused_after": "0.120114"
+    },
+    "gcp-dbhost-3@10.160.152.13": {
+      "wsrep_local_cert_failures": 0,
+      "wsrep_local_bf_aborts": 0,
+      "wsrep_local_commits": 0,
+      "wsrep_flow_control_paused_after": "0.120299"
+    }
+  },
+  "cluster_total_delta": {
+    "wsrep_local_cert_failures": 474,
+    "wsrep_local_bf_aborts": 313,
+    "wsrep_local_commits": 1849
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "phase": "prepare",
+  "db": "galera",
+  "iso": "rc",
+  "topology": "vm-6node-P-A",
+  "ts": "20260813T213018+0800",
+  "db_host": "172.24.40.32",
+  "warehouses": 128,
+  "conn_params": "transaction_isolation=%27READ-COMMITTED%27"
+}

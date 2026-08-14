@@ -98,6 +98,30 @@
   [`DISTRIBUTED-DB-SCORING.md` §3.6](../../DISTRIBUTED-DB-SCORING.md)
 - 效度邊界：X-CROSS `baseline_eligible=false`；`N=1`、Galera 與 TiDB 非同批次執行（相隔近一個月）；§2.1 加權評分項目（同拓樸延遲/擴展、chaos/failover）不受本 cell 影響，仍全數待測
 
+### 2.5 2026-08-13 Galera（PXC 8.4）vm-6node chaos/failover（G1-G5）
+
+| 情境 | 結果摘要 |
+|---|---|
+| G1（單節點 crash kill，GCP） | `rto_sec=null`（outage_observed=false，432/432 ok）、`rpo_lost_tx_count=0` |
+| G2（quorum-loss，殺 3 台 IDC） | `cluster_rebuild_sec`/`write_recovery_sec`=22.169s；write-reject 驗證出現 `UNEXPECTED_WRITE_SUCCEEDED_review_manually`（偵測延遲窗口內一次寫入實際成功） |
+| G3（雙寫衝突風暴，P-B×A-A，30s） | wsrep counter workload 前後 delta：`cert_failures`=474、`bf_aborts`=313（相對 commits delta 1849）；client 端 err=0（`wsrep_retry_autocommit=1` 可解釋） |
+| G4（跨區 3v3 網路全斷，30s+補測寫入） | IDC 側 `Error 1213`、GCP 側 `Error 1047`（兩側皆正確拒寫）；解除後 ~20-30s 自動 IST/SST 恢復 6/6 Primary |
+| G5（disk-slow，IDC，30s） | fio 干擾成功啟動（新建 VM 需先裝 fio），無通過/失敗判定 |
+
+- 來源：`smoke/early-runs/20260813T213018+0800/`（`fetch-receipt.json` + 各情境
+  `rto-rpo.json`/`g3-summary.json`/`wsrep-delta.json`/`plan.txt`）
+- 設計基礎：Galera 無 leader/follower，F1/C4 框架不適用，改設計 G1-G5（詳見
+  [`phase-crossregion/GALERA-EXECUTION-PLAN.md`](../../phase-crossregion/GALERA-EXECUTION-PLAN.md)
+  Stage 5 可重用度分類表）；完整 fact/inference 分析見
+  [`DISTRIBUTED-DB-SCORING.md` §3.3.1a](../../DISTRIBUTED-DB-SCORING.md)
+- **關鍵限制**：G2 的 22.169s 與 TiDB F2 的 39~44s **不是同一種能力的比較**——
+  Galera 在本次 6-node 單叢集設計下沒有真正的區域級 failover 能力（GCP 端永遠
+  無法單獨達到 majority=4），22.169s 量的是「IDC 節點自己重啟回來」，不是「GCP
+  端獨立接手」；G4 主腳本的 SELECT-1 探測不經過 wsrep，對寫入可用性無效，實際
+  寫入驗證是額外的補充測試（非主腳本輸出）
+- 效度邊界：X-CROSS `baseline_eligible=false`；`N=1`，每個情境僅一次注入；環境
+  已 teardown
+
 ---
 
 ## 3. 不採用為正式結果的資料
@@ -145,6 +169,7 @@
 
 | 日期 | 內容 |
 |---|---|
+| 2026-08-13 | §2.5 新增 Galera（PXC 8.4）vm-6node chaos/failover 採用批次（`smoke/early-runs/20260813T213018+0800/`，G1-G5，取代 F1/C4/F2/C1/C7 框架）；`README.md` 同步補例外採用說明；`DISTRIBUTED-DB-SCORING.md` §2.1/§3.3.1a/§4.1/§5.1 回填 |
 | 2026-08-12 | §2.4 新增 Galera（PXC 8.4）P-A/P-B W=128 採用批次（`smoke/early-runs/20260812T132801+0800/`），含 P-B lineage caveat（沿用 P-A prepare、無獨立 collect）；`README.md` 同步補採用批次表 |
 | 2026-07-07 | §4 勘誤：`summary.json` 已存在於 determinism（06-26）+ baseline/w128（07-03），修正舊「目前沒有」陳述（Fable 健檢 P3-2） |
 | 2026-07-03 | §2.3 新增 TiDB P-A A-S W=128 正式口徑 cell（20260703T092243；GCP per-round 300/300 齊）；§3 標註 07-02 輪因網路採樣失敗不採用；§0 目錄表補 baseline/w128 與 compare |

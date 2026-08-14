@@ -93,7 +93,15 @@ done
 # while TiDB's are 30/30 "ok" — that split reflects "does this environment
 # run tidb-4000" not "does this DB tolerate a WAN partition". --db is now
 # required and selects the correct protocol/port/probe query per DB.
-[[ "$DB" =~ ^(tidb|crdb|ybdb)$ ]] || { echo "--db must be tidb|crdb|ybdb" >&2; exit 2; }
+[[ "$DB" =~ ^(tidb|crdb|ybdb|galera)$ ]] || { echo "--db must be tidb|crdb|ybdb|galera" >&2; exit 2; }
+# galera（G4，2026-08-13）：全 6 台皆完整副本、無 shard/leader 概念，partition
+# 後兩側都會失去 majority（6 節點 majority=4，3v3 兩側都是 minority）——跟
+# RTO-RPO-methodology.md §2.1 P-B row 描述的「兩區皆 minority ⇒ 全 cluster
+# 寫拒」是同一種結果，等同 C1 對 Galera 只有一種 placement 可測（不像
+# tidb/crdb/ybdb 有 P-A/P-B 差異）。密碼一律走 GALERA_BENCH_PASSWORD 環境變數。
+if [[ "$DB" == "galera" ]]; then
+  : "${GALERA_BENCH_PASSWORD:?missing GALERA_BENCH_PASSWORD}"
+fi
 
 log() { echo "[c1-execute] $(date -u '+%Y-%m-%dT%H:%M:%S.%3NZ') $*"; }
 
@@ -173,9 +181,10 @@ fi
 # probe" gap — a full bidirectional dual-probe redesign is deferred, not
 # attempted blind in this pass).
 case "$DB" in
-  tidb) PROBE_CMD="timeout 2 mysql -h 172.24.40.32 -P 4000 -u root -e 'SELECT 1'" ;;
-  crdb) PROBE_CMD="timeout 2 cockroach sql --insecure --host=172.24.40.32:26257 -e 'SELECT 1'" ;;
-  ybdb) PROBE_CMD="timeout 2 psql \"host=172.24.40.32 port=5433 user=yugabyte dbname=yugabyte connect_timeout=2\" -c 'SELECT 1'" ;;
+  tidb)   PROBE_CMD="timeout 2 mysql -h 172.24.40.32 -P 4000 -u root -e 'SELECT 1'" ;;
+  crdb)   PROBE_CMD="timeout 2 cockroach sql --insecure --host=172.24.40.32:26257 -e 'SELECT 1'" ;;
+  ybdb)   PROBE_CMD="timeout 2 psql \"host=172.24.40.32 port=5433 user=yugabyte dbname=yugabyte connect_timeout=2\" -c 'SELECT 1'" ;;
+  galera) PROBE_CMD="MYSQL_PWD=\"\$GALERA_BENCH_PASSWORD\" timeout 2 mysql -h 172.24.40.32 -P 3306 -u tpcc_bench -e 'SELECT 1'" ;;
 esac
 
 log "partition active for ${DURATION}s — collecting error-rate-by-sec via probe (best effort, db=$DB)"

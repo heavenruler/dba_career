@@ -1,0 +1,13 @@
+{
+  "scenario": "g3-dualwrite-conflict",
+  "db_kind": "galera",
+  "dry_run": false,
+  "hot_warehouse_count": 2,
+  "duration_sec": 30,
+  "t_inject_start": "2026-08-13T15:05:46.757Z",
+  "t_inject_end": "2026-08-13T15:06:17.038Z",
+  "idc_injector_result": "ok=1048 err=0",
+  "gcp_injector_result": "ok=801 err=0",
+  "wsrep_delta_file": "wsrep-delta.json",
+  "note": "wsrep counter delta is per-node before/after this injection window specifically (not a post-run single-point snapshot spanning the whole suite, unlike prior §3.2/§3.6 measurements)"
+}

@@ -67,13 +67,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 [[ -z "$DB" || -z "$TARGET_HOST" || -z "$DURATION" || -z "$ARTIFACT_DIR" ]] && usage
-[[ "$DB" =~ ^(tidb|crdb|ybdb)$ ]] || { echo "--db must be tidb|crdb|ybdb" >&2; exit 2; }
+[[ "$DB" =~ ^(tidb|crdb|ybdb|galera)$ ]] || { echo "--db must be tidb|crdb|ybdb|galera" >&2; exit 2; }
 [[ "$DURATION" =~ ^[0-9]+$ ]] || { echo "--duration must be integer seconds" >&2; exit 2; }
 
 case "$DB" in
-  tidb) DATA_DIR="/tidb-data/tikv-20160" ;;
-  crdb) DATA_DIR="/var/lib/cockroach" ;;
-  ybdb) DATA_DIR="/var/yugabyte/data" ;;  # 2026-08-08: confirmed real path via `yugabyted status`
+  tidb)   DATA_DIR="/tidb-data/tikv-20160" ;;
+  crdb)   DATA_DIR="/var/lib/cockroach" ;;
+  ybdb)   DATA_DIR="/var/yugabyte/data" ;;  # 2026-08-08: confirmed real path via `yugabyted status`
+  galera) DATA_DIR="/var/lib/mysql" ;;      # G5，2026-08-13：見 ansible/playbooks/galera-vm6.yml，MySQL/PXC 預設 datadir
 esac
 
 mkdir -p "$ARTIFACT_DIR"

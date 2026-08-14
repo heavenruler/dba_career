@@ -1,0 +1,12 @@
+=== SHOW CREATE TABLE warehouse ===
+Table	Create Table
+warehouse	CREATE TABLE `warehouse` (\n  `w_id` int NOT NULL,\n  `w_name` varchar(10) DEFAULT NULL,\n  `w_street_1` varchar(20) DEFAULT NULL,\n  `w_street_2` varchar(20) DEFAULT NULL,\n  `w_city` varchar(20) DEFAULT NULL,\n  `w_state` char(2) DEFAULT NULL,\n  `w_zip` char(9) DEFAULT NULL,\n  `w_tax` decimal(4,4) DEFAULT NULL,\n  `w_ytd` decimal(12,2) DEFAULT NULL,\n  PRIMARY KEY (`w_id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+=== SHOW CREATE TABLE order_line ===
+Table	Create Table
+order_line	CREATE TABLE `order_line` (\n  `ol_o_id` int NOT NULL,\n  `ol_d_id` int NOT NULL,\n  `ol_w_id` int NOT NULL,\n  `ol_number` int NOT NULL,\n  `ol_i_id` int NOT NULL,\n  `ol_supply_w_id` int DEFAULT NULL,\n  `ol_delivery_d` datetime DEFAULT NULL,\n  `ol_quantity` int DEFAULT NULL,\n  `ol_amount` decimal(6,2) DEFAULT NULL,\n  `ol_dist_info` char(24) DEFAULT NULL,\n  PRIMARY KEY (`ol_w_id`,`ol_d_id`,`ol_o_id`,`ol_number`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+=== EXPLAIN: point lookup (warehouse by PK) ===
+id	select_type	table	partitions	type	possible_keys	key	key_len	ref	rows	filtered	Extra
+1	SIMPLE	warehouse	NULL	const	PRIMARY	PRIMARY	4	const	1	100.00	NULL
+=== EXPLAIN: range scan (order_line by warehouse) ===
+id	select_type	table	partitions	type	possible_keys	key	key_len	ref	rows	filtered	Extra
+1	SIMPLE	order_line	NULL	ref	PRIMARY	PRIMARY	4	const	565864	100.00	NULL

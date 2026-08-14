@@ -1,0 +1,13 @@
+{
+  "scenario": "g2-quorum-loss",
+  "db_kind": "galera",
+  "dry_run": false,
+  "t_kill": "2026-08-13T15:14:18.696Z",
+  "t_restart_start": "2026-08-13T15:14:32.625Z",
+  "t_quorum_reformed": "2026-08-13T15:14:40.865Z",
+  "t_first_write_ok": "2026-08-13T15:14:40.865Z",
+  "cluster_rebuild_sec": 22.169,
+  "write_recovery_sec": 22.169,
+  "poll_window_sec": 300,
+  "note": "killing 3/6 nodes breaks Galera majority (need 4/6) — expected correct outcome is cluster-wide write-reject, not regional failover survival; write-reject-validation.txt holds that verdict separately from this recovery-time measurement"
+}
