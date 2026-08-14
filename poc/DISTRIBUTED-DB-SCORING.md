@@ -124,7 +124,8 @@ G1-G5，見 §3.3.1a），合計 56% 權重；#1/#7/#8 仍「待測」**（見 �
 
 星等換算（依 §2 分組規則，僅在 PostgreSQL 相容群組內比較，p99 數值越低越優）：
 YugabyteDB 216ms → ⭐⭐⭐⭐⭐；CockroachDB 440ms（約 2 倍） → ⭐⭐⭐☆☆。TiDB 597ms 為
-MySQL 相容群組成員，因 Galera 尚無數字可比較，暫不評星等（見 §2.1）。**此比較的
+MySQL 相容群組成員，此段落僅評 PostgreSQL 相容群組內部星等；TiDB 與 Galera 的
+內部比較見下方「2026-08-13 補測」段落（見 §2.1）。**此比較的
 代表點 thread 數不同**（YugabyteDB t=32、CockroachDB t=64，各自為該 DB 的飽和甜點），
 是「各自最佳單節點延遲」的比較，不是同 thread 下的直接對照，解讀時需留意。
 
@@ -150,7 +151,8 @@ t=128 的 597ms，不是代表點 thread 數不同造成的錯覺。**Inference�
 
 星等換算（依 §2 分組規則，僅在 PostgreSQL 相容群組內比較，擴展倍率越高越優）：
 CockroachDB 1.65× → ⭐⭐⭐⭐⭐；YugabyteDB 1.37× → ⭐⭐⭐⭐☆。TiDB 2.06× 為 MySQL
-相容群組成員，因 Galera 尚無數字可比較，暫不評星等（見 §2.1）。理論擴展上限為
+相容群組成員，此段落僅評 PostgreSQL 相容群組內部星等；TiDB 與 Galera 的內部比較
+見下方「2026-08-13 補測」段落（見 §2.1）。理論擴展上限為
 3×（3 節點）；三家皆未達理論值，反映 RF=3 寫入 quorum 成本與各自架構的協調開銷。
 
 **MySQL 相容群組星等（2026-08-13 補測）**：TiDB 2.06×（正向擴展） → ⭐⭐⭐⭐⭐；
@@ -184,7 +186,8 @@ P-A×A-S 設計）或以 shard key 分流降低熱點衝突，結果可能截然
 星等換算（依 §2 分組規則，僅在 PostgreSQL 相容群組內比較，range/mean 越低越穩定；
 兩家 error rate 皆 0%，本項不作額外區分）：CockroachDB 6.9% → ⭐⭐⭐⭐⭐；YugabyteDB
 7.1% → ⭐⭐⭐⭐☆（差距在 0.5 個百分點內，實務上可視為同級，僅供參考排序）。TiDB
-7.4% 為 MySQL 相容群組成員，因 Galera 尚無數字可比較，暫不評星等（見 §2.1）。
+7.4% 為 MySQL 相容群組成員，此段落僅評 PostgreSQL 相容群組內部星等；TiDB 與
+Galera 的內部比較見下方「2026-08-13 補測」段落（見 §2.1）。
 
 **MySQL 相容群組星等（2026-08-13 補測）**：TiDB 7.4% → ⭐⭐⭐⭐⭐；Galera 43.2%
 （約 5.8 倍，且 error rate 非 0） → ⭐☆☆☆☆。**Fact**：Galera 的 5-round tpmC
@@ -253,7 +256,8 @@ CockroachDB 單體、YugabyteDB 雙 process），不代表其他拓樸（如 K8s
   主要依據，F1/C4 觀測結果與 write-reject 正確性為輔助判斷）：YugabyteDB F2 最快（~3s）
   且 F1/C4 全數無可觀測中斷、write-reject 乾淨 → ⭐⭐⭐⭐⭐；CockroachDB F2 居中（~7s）
   且 F1/C4 同樣全數無可觀測中斷，但 write-reject 需應用層額外處理 → ⭐⭐⭐⭐☆。
-  **TiDB 為 MySQL 相容群組成員，因 Galera 完全未納入 chaos 測試矩陣，暫不評星等**（見
+  **TiDB 為 MySQL 相容群組成員，此段落僅評 PostgreSQL 相容群組內部星等；Galera 已於
+  2026-08-13 補測 chaos/failover（G1-G5），TiDB 與 Galera 的內部比較見 §3.3.1a**（見
   §2.1）——TiDB 自身的真實數字（F2≈39~44s，F1/C4 有 6.68~8.4s 的真實觀測中斷）仍列於
   上表供未來與 Galera 比較時使用，也可作為「架構差異如何反映在故障恢復行為上」的參考：
   TiDB 因 SQL 層與儲存/共識層分離，單節點 kill 造成的 client 可感知延遲明顯長於
@@ -562,8 +566,9 @@ TiDB 在 P-B 情境下也出現 thread=128 時 IDC 端吞吐量從 th=32 的 8,8
 
 > 計算範例（YugabyteDB）：`(5×15 + 4×20 + 4×15 + 5×6) ÷ (15+20+15+6) × 20
 > = 245 ÷ 56 × 20 = 87.5`。乘以 20 是把 1-5 星換算為百分制的比例常數（5 星 = 100 分）。
-> **兩者差距僅 0.4 分（87.1-87.5），且僅代表 56% 的總權重**——在其餘 44% 權重
-> （相容性、PITR、DDL、Geo-Distribution）補測前，不宜下「YugabyteDB 優於
+> **兩者差距僅 0.4 分（87.1-87.5），且僅代表 56% 的總權重**——在其餘 24% 權重
+> （相容性、PITR、DDL、Geo-Distribution，見 §2.2 權重加總：80% 適用 − 56% 已測 = 24%）
+> 補測前，不宜下「YugabyteDB 優於
 > CockroachDB」或反之的結論。這個 0.4 分的差距本身也遠小於量測不確定度（F1/C4 探測
 > 解析度 100ms 級、單次樣本雜訊，見 §3.3.1 已知限制），**在群組內部兩者也應視為
 > 非常接近，而非有明確優劣**——任一項目的星等微調都可能翻轉排序，這具體示範了本文件
@@ -575,8 +580,8 @@ TiDB 在 P-B 情境下也出現 thread=128 時 IDC 端吞吐量從 th=32 的 8,8
 > 兩組結論**互不比較**——決策情境本身通常也是分岔的：若受限於必須沿用 MySQL 協定
 > （既有應用/工具鏈不可改），比較基礎是 Galera vs TiDB；若能接受換成 PostgreSQL 協定，
 > 比較基礎是 YugabyteDB vs CockroachDB。兩條路線目前都不構成「整體最適合取代
-> MySQL Galera Cluster」的完整答案——相容性、PITR、維運工具（合計 34~39% 權重視群組）
-> 兩組皆完全沒有可用的實測數據。
+> MySQL Galera Cluster」的完整答案——相容性、PITR、維運工具（MySQL 群組合計 34%、
+> PostgreSQL 群組合計 24%，權重視群組不同）兩組皆完全沒有可用的實測數據。
 
 ### 5.1 MySQL 相容群組：Percona XtraDB Cluster 8.4（PXC，Galera）vs TiDB
 
@@ -673,17 +678,18 @@ P-A/P-B placement 探索性數據當作 Geo-Distribution 的正式評分依據�
 
 ### 5.3 兩組共通的下一步建議（依風險與可行性排序）
 
-1. 針對 MySQL Galera Cluster 補一輪與本 PoC §3.2 相同口徑（`vm-1node`/
-   `vm-3node-haproxy-3s3r` 拓樸）的基準測試，以及 §3.3.1 同規格的 chaos/failover
-   測試，否則 MySQL 相容群組永遠無法產出星等或加權總分（見 §5.1）。
-   **2026-08-12 已完成的部分**：跨區（`vm-6node`）P-A/P-B 穩態吞吐量與 TiDB 的
-   實測比較（見 §3.6）——這是不同拓樸/不同維度的資料，不能取代本項待補的
-   `vm-1node`/`vm-3node` 基準測試與 chaos/failover 測試，但已提供了「Galera vs
-   TiDB 同硬體環境比較」的第一手質性證據（吞吐量上限差距、雙寫衝突行為），
-   後續若要補測 chaos/failover，建議設計 §5.3 補充：Galera 無 leader/lease，
-   既有 F1/C4（leader kill）測試框架不能直接套用，需另外設計節點 kill／
-   quorum 邊界測試情境（詳見
+1. **（2026-08-13 已完成）** MySQL Galera Cluster 已補測與本 PoC §3.2 相同口徑
+   （`vm-1node`/`vm-3node-haproxy-3s3r` 拓樸）的基準測試，以及 §3.3.1a 的 G1-G5
+   chaos/failover 測試（Galera 無 leader/lease，既有 F1/C4 框架不能直接套用，改
+   另外設計節點 kill／quorum 邊界測試情境，詳見
    [`GALERA-EXECUTION-PLAN.md`](./phase-crossregion/GALERA-EXECUTION-PLAN.md) §Stage 5）。
+   MySQL 相容群組現已可產出 #3/#4/#5/#6（合計 56%）的星等與 §4.1 加權總分
+   （Galera 41.4／TiDB 78.6）。剩餘待補項目為 #1 相容性、#7 PITR、#8 Online DDL
+   （合計 34%），見下方第 2 項。
+   **2026-08-12 已完成的部分**：跨區（`vm-6node`）P-A/P-B 穩態吞吐量與 TiDB 的
+   實測比較（見 §3.6）——這是不同拓樸/不同維度的探索性資料，不計入 §4.1 加權分數，
+   但提供了「Galera vs TiDB 同硬體環境比較」的第一手質性證據（吞吐量上限差距、
+   雙寫衝突行為）。
 2. 設計並執行 §3.1 相容性矩陣與 §3.4 Online DDL 測試——這兩項在兩個群組合計皆佔
    相當權重，且往往是實際遷移時最先浮現的痛點，優先度應不低於效能測試。
 3. 若條件允許，針對 YugabyteDB 2026-08-08 觀察到的 master 執行緒暴增異常安排更長
@@ -692,7 +698,7 @@ P-A/P-B placement 探索性數據當作 Geo-Distribution 的正式評分依據�
    觸發條件。
 4. 若要進一步細分 CockroachDB／YugabyteDB 單節點 kill 的真實中斷時間（目前只知
    「短於 100ms 探測解析度」），需要更高解析度的探測工具重新設計 F1/C4，非本次範圍。
-5. PostgreSQL 相容群組的 Geo-Distribution（5% 權重）與兩組共通的 PITR（4~9% 視群組）
+5. PostgreSQL 相容群組的 Geo-Distribution（5% 權重）與兩組共通的 PITR（4% 兩組相同）
    合計權重較低，可視資源排在較後順序。
 
 ---
