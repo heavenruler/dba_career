@@ -2,7 +2,7 @@
 
 > 本檔是導讀，**不是**新的評分 SSOT。完整評分規則、公式、原始數字、Fact/Inference 分析與結果檔案連結，一律以 [`DISTRIBUTED-DB-SCORING.md`](./DISTRIBUTED-DB-SCORING.md) 為準；本檔任何數字都可回查該檔對應章節。
 >
-> 資料快照日期：2026-08-14；對應 commit `dab237c6`（`git rev-parse --short HEAD`）。
+> 評分資料基準：`DISTRIBUTED-DB-SCORING.md` @ commit `dab237c6`；資料快照日期：2026-08-14。導讀本身版本以本檔 git history 為準，不綁定單一 commit hash。
 >
 > 本 PoC 是 stress benchmark / TPC-C-derived workload（go-tpc），**不是** audited TPC-C 認證結果，不可與官方 TPC-C 排名直接比較。
 
@@ -17,11 +17,11 @@
 
 ## 一頁結論
 
-- 目前只有**部分評分**，不是最終選型結論；相容性、PITR、Online DDL 等高影響項目仍待測。
+- `⏸ 最終產品選型：證據不足`
+- `▶ 下一階段：相容性、PITR、Online DDL 驗證`
 - MySQL 相容路線：已測 56% 原始權重，`TiDB 78.6` 分 vs `Percona XtraDB Cluster 8.4（PXC，Galera）41.4` 分；TiDB 在水平擴展、高併發穩定性與本次 failover 設計上領先，Galera 在單節點延遲領先。
 - PostgreSQL 相容路線：已測 56% 原始權重，`YugabyteDB 87.5` 分 vs `CockroachDB 87.1` 分；0.4 分差距小於本 PoC 可支持的決策精度，應視為**接近**而非排名勝負。
-- 兩組分數**不可互相比較**——不同協定門檻、不同測試維度，星等只在群組內部有意義。
-- 所有 cell 主要為 `N=1`（僅一次獨立重跑），方向可用，統計嚴謹度不足，對外結論前需 N=3 驗證。
+- 兩組分數不可互相比較，星等僅在群組內部有意義；所有 cell 主要為 `N=1`，方向可用但重現性未驗證——如需提高信心可另補 `N=3`，非本輪完成條件。
 
 ## 先選遷移路線，再選產品
 
@@ -34,32 +34,35 @@ flowchart TD
 ```
 
 - 協定相容性是**選型門檻**，不是普通權重項目——換協定代表應用改造成本，不能用一般加權分數蓋過。
-- 兩個群組使用不同測試維度與拓樸假設，**分數不可互相比較**。
-- 「尚未確認」分支請先做相容性矩陣，不要跳過門檻直接比產品分數。
+- 「尚未確認」分支請先做相容性矩陣，不要跳過門檻直接比產品分數；兩群組分數比較規則見上方一頁結論。
 
 ## 目前證據覆蓋率
 
-| 路線 | 適用權重 | 已測權重 | 尚未量測 | 判讀 |
-|---|---|---|---|---|
-| MySQL 相容群組 | 95%（[§2.1](./DISTRIBUTED-DB-SCORING.md#21-mysql-相容群組mysql-galera-cluster-vs-tidb)） | 56%（#3 單節點延遲＋#4 水平擴展＋#5 高併發穩定性＋#6 Failover） | 34%（#1 相容性＋#7 PITR＋#8 Online DDL）；HTAP #9 5% 對 Galera 為 n/a，不計入已測範圍 | ⚠️ 僅 56% 可作方向判斷，34% 未測前不能下最終結論 |
-| PostgreSQL 相容群組 | 80%（[§2.2](./DISTRIBUTED-DB-SCORING.md#22-postgresql-相容群組yugabytedb-vs-cockroachdb)） | 56%（#3+#4+#5+#6，項目同上） | 24%（#2 PostgreSQL 相容性＋#7 PITR＋#8 Online DDL＋#9 Geo-Distribution） | ⚠️ 同上；接近的 87.5 vs 87.1 更不能忽略未測 24% |
+**MySQL 相容群組**（[§2.1](./DISTRIBUTED-DB-SCORING.md#21-mysql-相容群組mysql-galera-cluster-vs-tidb)）：
 
-**重要（SSOT 內部不一致，待原檔修正）**：
-- `DISTRIBUTED-DB-SCORING.md` §4.2 與 §5 引言處寫「其餘 44% 權重」。
-- 但依 §2.2 權重表實際加總（80% 適用 − 56% 已測 = 24%），正確值應為 **24%**，不是 44%。
-- 本檔採 24%（有直接算式支持的值），未回頭修改原檔，特此列為待釐清的原始文件錯誤，交由原檔負責人後續修正。
+- 群組權重上限：95%（HTAP #9 5% 對 Galera 為 n/a，不計入「已測」）
+- 已測：56%（#3 單節點延遲＋#4 水平擴展＋#5 高併發穩定性＋#6 Failover）
+- 未測：34%（#1 相容性＋#7 PITR＋#8 Online DDL）
+
+**PostgreSQL 相容群組**（[§2.2](./DISTRIBUTED-DB-SCORING.md#22-postgresql-相容群組yugabytedb-vs-cockroachdb)）：
+
+- 群組權重上限：80%
+- 已測：56%（同上四項）
+- 未測：24%（#2 PostgreSQL 相容性＋#7 PITR＋#8 Online DDL＋#9 Geo-Distribution）
+
+⚠️ 兩組已測權重相同（56%），未測缺口不同（34% vs 24%）；87.5 vs 87.1 的接近分數更不能忽略這 24% 缺口。
 
 ## 關鍵觀察：MySQL 相容路線
 
 1. **單節點延遲**
-   - Fact：`PXC/Galera` p99 37.7 ms vs `TiDB` p99 597 ms（[§3.2.1](./DISTRIBUTED-DB-SCORING.md#321-單節點低併發延遲vm-1node-rc)）。
-   - 解讀：Galera 同步多主在低併發單節點下延遲更低。
-   - 決策影響：延遲敏感但併發不高的場景可參考此項；不能單獨當作整體優劣依據。
+   - Fact：`PXC/Galera` t=32 p99 37.7 ms vs `TiDB` t=128 p99 597 ms（[§3.2.1](./DISTRIBUTED-DB-SCORING.md#321-單節點低併發延遲vm-1node-rc)）——代表點不同（thread 數不同），非同 thread 直接對照；若改用 Galera 自己 t=128 的數字（p99=182.8 ms），仍遠優於 TiDB 的 597 ms，方向未變。
+   - 解讀：PXC/Galera 單節點模式下 wsrep 幾乎無遠端複寫成本，接近單機 MySQL/InnoDB；這是 inference，非官方保證機制。
+   - 決策影響：延遲敏感但併發不高的場景可參考此項；不能單獨當作整體優劣依據，此優勢在水平擴展/高併發情境下完全反轉（見下方兩項）。
 
 2. **水平擴展**
-   - Fact：vm-1node → vm-3node-haproxy-3s3r，`PXC/Galera` 0.49× vs `TiDB` 2.06×（[§3.2.2](./DISTRIBUTED-DB-SCORING.md#322-水平擴展能力vm-1node--vm-3node-haproxy-3s3r)）。
+   - Fact：vm-1node → vm-3node-haproxy-3s3r，`PXC/Galera` 0.49× vs `TiDB` 2.06×（[§3.2.2](./DISTRIBUTED-DB-SCORING.md#322-水平擴展能力vm-1node--vm-3node-haproxy-3s3r)，採用代表點倍率）；同 t=128 檢查（51,527.8 → 26,166.2）仍為負向、約 0.51×，方向一致。
    - 解讀：Galera 是 HAProxy round-robin 多寫入節點架構，TiDB 是分散式儲存（TiKV Region）擴展機制，兩者擴展模型本質不同。
-   - 決策影響：預期靠加節點提升吞吐的場景，需先確認架構是否支援真正水平擴展，而非同一套機制的不同參數。
+   - 決策影響：此數字只代表本次 HAProxy round-robin naive multi-writer 拓樸，不是 Galera 產品的普遍擴展上限；若改用單寫或 shard key 分流，結果可能不同（見 §3.6）。預期靠加節點提升吞吐的場景，需先確認架構是否支援真正水平擴展。
 
 3. **高併發穩定性**
    - Fact：t=128 時 5-round range/mean，`PXC/Galera` 43.2% vs `TiDB` 7.4%（[§3.2.3](./DISTRIBUTED-DB-SCORING.md#323-高併發穩定性t1285-round-rangemean-與-error-rate)）。
@@ -67,14 +70,14 @@ flowchart TD
    - 決策影響：對併發穩定性要求高的場景需留意此差異，但單次重跑不足以下定論。
 
 4. **Failover / 跨區**
-   - Fact：`PXC/Galera` G2（quorum-loss，殺光 3 個 IDC 節點）cluster_rebuild_sec ≈ 22.169s（[§3.3.1a](./DISTRIBUTED-DB-SCORING.md#331a-mysql-相容群組galerapxc-84chaosfailover-實測2026-08-13)）；`TiDB` 跨區 F2 場景約 44.3s/39.1s（[§3.3.1](./DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成)）。
-   - 解讀：「Galera 節點 rejoin/quorum 重組」與「TiDB 跨區 leader 接手」**不是同一種能力**，不可直接比數字；跨區 P-A/P-B 穩態吞吐（[§3.6](./DISTRIBUTED-DB-SCORING.md#36-mysql-相容群組percona-xtradb-cluster-84pxcgalera跨區-p-ap-b-穩態吞吐量實測2026-08-12)）屬 X-CROSS exploratory，不計入加權分數。
-   - 決策影響：若引用 Galera P-B 跨區失敗率作技術錨點，只能當方向性參考——缺 wsrep counter delta、Error 1213 不能全部定性為 certification failure，與 TiDB 的錯誤分類方式不同，不能逐一對應。
+   - Fact：`PXC/Galera` G2（quorum-loss，殺光 3 個 IDC 節點）cluster_rebuild_sec ≈ 22.169s，但故障窗內曾出現 `UNEXPECTED_WRITE_SUCCEEDED_review_manually`（kill 後約 14 秒一筆寫入異常成功，屬需人工複核的正確性風險）（[§3.3.1a](./DISTRIBUTED-DB-SCORING.md#331a-mysql-相容群組galerapxc-84chaosfailover-實測2026-08-13)）；`TiDB` 跨區 F2 場景約 44.3s/39.1s（[§3.3.1](./DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成)）。
+   - 解讀：22.169s 是 IDC 節點重啟/rejoin 後的 quorum 重建時間，不是 GCP 端獨立接手服務的 RTO；`TiDB` 展示的才是真正的區域級 failover。跨區 P-A/P-B 穩態吞吐（[§3.6](./DISTRIBUTED-DB-SCORING.md#36-mysql-相容群組percona-xtradb-cluster-84pxcgalera跨區-p-ap-b-穩態吞吐量實測2026-08-12)）屬 X-CROSS exploratory scope（`baseline_eligible=false`），不計入加權分數。
+   - 決策影響：不可因為 22.169s 比 TiDB 的 39-44s 小就認為 Galera 更好——兩者不是同一種能力，Galera 在本次 6-node 設計下沒有真正的區域容錯上限保證。引用 Galera 跨區失敗率時只能當方向性參考，缺 wsrep counter delta，錯誤分類方式也與 TiDB 不同。
 
 ## 關鍵觀察：PostgreSQL 相容路線
 
 - **總分差距**：`YugabyteDB` 87.5 分 vs `CockroachDB` 87.1 分，差距僅 0.4，應視為**接近**而非分出勝負。
-- **Failover 代表點**：`YugabyteDB` 約 2.99s/3.65s、`CockroachDB` 約 7.01s/7.12s（[§3.3.1](./DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成)）；吞吐/穩定性差異請回原檔對應章節查代表數字，不在此複製。
+- **Failover 代表點**：F2（3 台 IDC DB process 同時停止後重啟，到首次成功寫入）——`YugabyteDB` 約 2.99s/3.65s、`CockroachDB` 約 7.01s/7.12s（[§3.3.1](./DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成)），兩者皆有兩次獨立執行互相印證（N=2），但仍不等於正式 SLA；吞吐/穩定性差異請回原檔對應章節查代表數字。
 - **未測缺口**：PostgreSQL 相容性、PITR、Online DDL、正式 Geo-Distribution 排名等 24% 未測權重仍待驗證，不能只看已測 56% 就下結論。
 
 ## 分數能說什麼、不能說什麼
@@ -99,7 +102,7 @@ flowchart TD
    完成後可解除：「線上變更 schema 是否可承受」的風險（兩組各佔 10%，屬未測缺口中權重最高項目之一）。
 
 4. **代表性 cell 補 `N=3`**
-   完成後可解除：「單次重跑波動被誤讀為架構差異」的風險，讓已測 56% 的方向性結論升級為可對外使用的 baseline。
+   完成後可解除：「單次重跑波動被誤讀為架構差異」的風險。本輪統一以 `N=1` 為基礎方向性觀察，`N=3` 可提高重現性信心，但不是本輪完成條件。
 
 5. **依 104 產品情境確認 A/S、A/A Read Only、A/A 是否真有需求**
    完成後可解除：「為不存在的需求付出跨區成本」的風險，避免在未確認需求前就投入跨區部署。
@@ -118,3 +121,7 @@ flowchart TD
 | 部分加權分數怎麼算出來 | [§4.1](./DISTRIBUTED-DB-SCORING.md#41-mysql-相容群組mysql-galera-cluster-vs-tidb)、[§4.2](./DISTRIBUTED-DB-SCORING.md#42-postgresql-相容群組yugabytedb-vs-cockroachdb) |
 | 結論與下一步建議 | [§5.1](./DISTRIBUTED-DB-SCORING.md#51-mysql-相容群組percona-xtradb-cluster-84pxcgaleravs-tidb)、[§5.2](./DISTRIBUTED-DB-SCORING.md#52-postgresql-相容群組yugabytedb-vs-cockroachdb)、[§5.3](./DISTRIBUTED-DB-SCORING.md#53-兩組共通的下一步建議依風險與可行性排序) |
 | 原始測試證據索引 | [`results/README.md`](./results/README.md)、[`results/x-cross/README.md`](./results/x-cross/README.md) |
+
+## 文件限制
+
+- **SSOT inconsistency（已於原檔修正）**：`DISTRIBUTED-DB-SCORING.md` §4.2 與 §5 引言處原寫「其餘 44% 權重」，依 §2.2 權重表加總（80% 適用 − 56% 已測 = 24%）應為 **24%**；已於原檔一併修正為 24%，本檔數字與原檔現已一致。原檔另有數處 Galera 相關敘述（§3.2/§3.3.1/§5.3）在 2026-08-13 補測後過期，亦已一併修正。
