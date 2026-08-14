@@ -21,14 +21,14 @@
    - 統計日期: 2026/08/14
    - 單位：資料庫叢集、產品、服務別
    - 來源：現行 Prod 資料庫相關監控彙整
-- 下面兩條的分數是**部分加權試算**：MySQL 群組只把已計分 50% 權重、PostgreSQL 群組只把已計分 56% 權重重新正規化，再依 1-5 星（離散、帶判斷成分的相對評級）換算而來——不是完整產品分數，也不是 confidence-adjusted score，小數點不代表量測精度。
+- 下面兩條的分數是**部分加權試算**：MySQL 群組只把已計分 62% 權重、PostgreSQL 群組只把已計分 82% 權重重新正規化，再依 1-5 星（離散、帶判斷成分的相對評級）換算而來——不是完整產品分數，也不是 confidence-adjusted score，小數點不代表量測精度。
 
 | 相容路線 | 產品 | 部分加權試算 | 目前判讀 |
 |---|---|---:|---|
-| MySQL | TiDB | 76.0 | 水平擴展與高併發穩定性領先；Failover 待重新評估 |
-| MySQL | Percona XtraDB Cluster 8.4（PXC，Galera） | 44.0 | 單節點延遲領先；Failover 待重新評估 |
-| PostgreSQL | YugabyteDB | 87.5 | 與 CockroachDB 接近，不排名 |
-| PostgreSQL | CockroachDB | 87.1 | 與 YugabyteDB 接近，不排名 |
+| MySQL | TiDB | 75.5 | 水平擴展與高併發穩定性領先；Failover 待重新評估 |
+| MySQL | Percona XtraDB Cluster 8.4（PXC，Galera） | 44.5 | 單節點延遲領先；Failover 待重新評估 |
+| PostgreSQL | YugabyteDB | 87.1 | 與 CockroachDB 同分，不排名 |
+| PostgreSQL | CockroachDB | 87.1 | 與 YugabyteDB 同分，不排名 |
 
 - 兩組分數不可互相比較，星等僅在群組內部有意義。
 - 多數測試案例為 `N=1`；若決策需要更高信心，再對代表案例補 `N=3`，用來提高重現性信心，不預設結果必然一致。
@@ -49,14 +49,14 @@ flowchart TD
 
 ## 目前證據覆蓋率
 
-| 路線 | 群組權重上限 | 已計分 | 尚未計分 |
+| 路線 | 群組權重上限 | 已計分 | 尚未計分／不適用 |
 |---|---:|---:|---:|
-| MySQL 相容群組（[§2.1](./DISTRIBUTED-DB-SCORING.md#21-mysql-相容群組mysql-galera-cluster-vs-tidb)） | 95% | 50% | 40% |
-| PostgreSQL 相容群組（[§2.2](./DISTRIBUTED-DB-SCORING.md#22-postgresql-相容群組yugabytedb-vs-cockroachdb)） | 80% | 56% | 24% |
+| MySQL 相容群組（[§2.1](./DISTRIBUTED-DB-SCORING.md#21-mysql-相容群組mysql-galera-cluster-vs-tidb)） | 100% | 62% | 38% |
+| PostgreSQL 相容群組（[§2.2](./DISTRIBUTED-DB-SCORING.md#22-postgresql-相容群組yugabytedb-vs-cockroachdb)） | 100% | 82% | 18% |
 
-- MySQL 群組：95% 上限含 HTAP #9 5%（對 Galera 為 n/a，不計入「已計分」）；已計分 50% = #3 單節點延遲＋#4 水平擴展＋#5 高併發穩定性。#6 已有原始數據但比較口徑不等價，暫不計分；連同 #1／#7／#8，未計分共 40%。
-- PostgreSQL 群組：已測 56% 為同上四項；未測 24% = #2 PostgreSQL 相容性＋#7 PITR＋#8 Online DDL＋#9 Geo-Distribution。
-- ⚠️ 兩組證據覆蓋不同：MySQL 已計分 50%、未計分 40%；PostgreSQL 已計分 56%、未測 24%。87.5 vs 87.1 的接近分數尤其不能忽略 PostgreSQL 仍有 24% 缺口。
+- MySQL 群組：已計分 62% = #2 單節點延遲＋#3 水平擴展＋#4 高併發穩定性。#5 已有原始數據但比較口徑不等價，暫不計分；連同 #1／#6／#7／#8，尚未計分共 38%。PXC/Galera 的 #8 HTAP 為 n/a。
+- PostgreSQL 群組：已計分 82% = #2 單節點延遲＋#3 水平擴展＋#4 高併發穩定性＋#5 Failover；尚未計分 18% = #1 PostgreSQL 相容性＋#6 PITR＋#7 Online DDL＋#8 Geo-Distribution。
+- ⚠️ 兩組權重皆已補足 100%，但已計分比例不同；PostgreSQL 兩家目前同為 87.1，不代表個別能力完全相同。
 
 ### 評分總表節錄（星等對照，完整版見 [§2](./DISTRIBUTED-DB-SCORING.md#2-評分總表依協定架構分組)）
 
@@ -65,26 +65,32 @@ flowchart TD
 | # | 項目 | 權重 | PXC/Galera | TiDB |
 |---|---|---:|:---:|:---:|
 | 1 | MySQL 協定相容性 | 20% | 待測 | 待測 |
-| 3 | 單節點/低併發延遲 | 15% | ⭐⭐⭐⭐⭐ | ⭐☆☆☆☆ |
-| 4 | 水平擴展能力 | 20% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ |
-| 5 | 高併發穩定性 | 15% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ |
-| 6 | Failover RTO／RPO | 6% | 待重新評估 | 待重新評估 |
-| 7 | PITR／備份還原 | 4% | 待測 | 待測 |
-| 8 | Online DDL 與維運工具 | 10% | 待測 | 待測 |
-| 9 | HTAP／TiFlash | 5% | n/a | 待測 |
+| 2 | 單節點/低併發延遲 | 19% | ⭐⭐⭐⭐⭐ | ⭐☆☆☆☆ |
+| 3 | 水平擴展能力 | 24% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ |
+| 4 | 高併發穩定性 | 19% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ |
+| 5 | Failover RTO／RPO | 5% | 待重新評估 | 待重新評估 |
+| 6 | PITR／備份還原 | 3% | 待測 | 待測 |
+| 7 | Online DDL 與維運工具 | 5% | 待測 | 待測 |
+| 8 | HTAP／TiFlash | 5% | n/a | 待測 |
+| | **合計** | **100%** | | |
+
+MySQL 群組原始配置合計 88%，缺少的 12% 平均補入項目 2～4，因此三項權重由 15%／20%／15% 調整為 19%／24%／19%。
 
 **PostgreSQL 相容群組**（[§2.2](./DISTRIBUTED-DB-SCORING.md#22-postgresql-相容群組yugabytedb-vs-cockroachdb)）：
 
 | # | 項目 | 權重 | YugabyteDB | CockroachDB |
 |---|---|---:|:---:|:---:|
-| 2 | PostgreSQL 協定相容性 | 5% | 待測 | 待測 |
-| 3 | 單節點/低併發延遲 | 15% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ |
-| 4 | 水平擴展能力 | 20% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
-| 5 | 高併發穩定性 | 15% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
-| 6 | Failover RTO／RPO | 6% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ |
-| 7 | PITR／備份還原 | 4% | 待測 | 待測 |
-| 8 | Online DDL 與維運工具 | 10% | 待測 | 待測 |
-| 9 | Geo-Distribution | 5% | 待測 | 待測 |
+| 1 | PostgreSQL 協定相容性 | 5% | 待測 | 待測 |
+| 2 | 單節點/低併發延遲 | 24% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ |
+| 3 | 水平擴展能力 | 29% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
+| 4 | 高併發穩定性 | 24% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
+| 5 | Failover RTO／RPO | 5% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ |
+| 6 | PITR／備份還原 | 3% | 待測 | 待測 |
+| 7 | Online DDL 與維運工具 | 5% | 待測 | 待測 |
+| 8 | Geo-Distribution | 5% | 待測 | 待測 |
+| | **合計** | **100%** | | |
+
+PostgreSQL 群組原始配置合計 73%，缺少的 27% 平均補入項目 2～4，因此三項權重由 15%／20%／15% 調整為 24%／29%／24%。
 
 星等只在同一張表內比較（同群組）；跨表（MySQL 表 vs PostgreSQL 表）不可比較，見上方一頁結論。
 
@@ -181,13 +187,13 @@ PXC／Galera 沒有 leader／follower，因此另設 G1 單節點 kill、G2 quor
 4. **Failover / 跨區**
    - Fact：`PXC/Galera` G2 的 22.169 秒是 `t_kill` 到 `t_first_write_ok`，包含 operator 重啟 IDC 節點；從 `t_restart_start` 到首次寫入約 8.240 秒。`TiDB` F2 的 39.1～44.3 秒是 `t_restart_start` 到 `t_first_write_ok`；若從 `t_kill` 起算則為 198.4～201.7 秒（[§3.3.1a](./DISTRIBUTED-DB-SCORING.md#331a-mysql-相容群組galerapxc-84chaosfailover-實測2026-08-13) ／ evidence: [Galera](./results/x-cross/smoke/early-runs/20260813T213018+0800/galera-vm-6node-rc-20260813T213018+0800-scenarioG2-quorumloss/rto-rpo.json)、[TiDB P-A](./results/x-cross/chaos/tidb-vm-6node-P-A-rc-20260808T075957+0800-scenarioF2/rto-rpo.json)、[TiDB P-B](./results/x-cross/chaos/tidb-vm-6node-P-B-aa-rc-20260808T101720+0800-scenarioF2/rto-rpo.json)）。Galera 故障窗內另有一筆需人工複核的異常成功寫入（[evidence](./results/x-cross/smoke/early-runs/20260813T213018+0800/galera-vm-6node-rc-20260813T213018+0800-scenarioG2-quorumloss/write-reject-validation.txt)）。
    - 解讀：兩個情境都包含 operator 重啟 IDC 節點，均未驗證 GCP 自動接手；計時起點也不同。Galera 在本次 3+3、majority=4 架構下，GCP 3 節點無法獨立形成 Primary Component，屬部署限制；但不能因此把 TiDB F2 解讀成已證明自動區域接手。
-   - 決策影響：第 6 項保留原始證據但撤出 MySQL 群組星等與加權分數，待統一故障邊界、人工介入規則、探測位置及 RTO／RPO 口徑後重測。跨區 P-A／P-B 穩態吞吐（[§3.6](./DISTRIBUTED-DB-SCORING.md#36-mysql-相容群組percona-xtradb-cluster-84pxcgalera跨區-p-ap-b-穩態吞吐量實測2026-08-12)）仍屬 exploratory scope，不計分。
+   - 決策影響：第 5 項保留原始證據但撤出 MySQL 群組星等與加權分數，待統一故障邊界、人工介入規則、探測位置及 RTO／RPO 口徑後重測。跨區 P-A／P-B 穩態吞吐（[§3.6](./DISTRIBUTED-DB-SCORING.md#36-mysql-相容群組percona-xtradb-cluster-84pxcgalera跨區-p-ap-b-穩態吞吐量實測2026-08-12)）仍屬 exploratory scope，不計分。
 
 ## 關鍵觀察：PostgreSQL 相容路線
 
-- **總分差距**：`YugabyteDB` 87.5 分 vs `CockroachDB` 87.1 分，差距僅 0.4，應視為**接近**而非分出勝負。
+- **部分加權總分**：`YugabyteDB` 87.1 分、`CockroachDB` 87.1 分；兩家同分，但各項星等組成不同，不能解讀為能力完全相同。
 - **Failover 代表點**：F2（3 台 IDC DB process 同時停止，再由 operator 重啟，到首次成功寫入）——`YugabyteDB` 約 2.99s/3.65s、`CockroachDB` 約 7.01s/7.12s（[§3.3.1](./DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成)）。兩者各有兩次獨立執行互相印證，但 2026-08-11 CockroachDB 重跑為 W=4、YugabyteDB 為 W=128；這是方向性評分，不是自動區域 Failover、正式 SLA 或精確倍率。
-- **未測缺口**：PostgreSQL 相容性、PITR、Online DDL、正式 Geo-Distribution 排名等 24% 未測權重仍待驗證，不能只看已測 56% 就下結論。
+- **未測缺口**：PostgreSQL 相容性、PITR、Online DDL、正式 Geo-Distribution 排名等 18% 權重仍待驗證，不能只看已計分 82% 就下結論。
 
 ## 分數能說什麼、不能說什麼
 
@@ -197,7 +203,7 @@ PXC／Galera 沒有 leader／follower，因此另設 G1 單節點 kill、G2 quor
 | 指出哪類架構的擴展/穩定性成本需要應用端或維運端承擔 | 把 `N=1` 當統計顯著結果 |
 | 標示哪些權重項目已有實測證據、哪些仍是空白 | 把官方能力宣稱（docs/whitepaper）當作實測結果 |
 | 作為下一輪驗證（N=3、相容性矩陣、PITR）的優先順序依據 | 把 stress benchmark（go-tpc）當作正式 TPC-C 認證 |
-| 在同群組內比較不同拓樸（單節點 vs 三節點）的擴展方向 | 只看部分加權總分而忽略尚未計分的權重（MySQL 40%、PostgreSQL 24%） |
+| 在同群組內比較不同拓樸（單節點 vs 三節點）的擴展方向 | 只看部分加權總分而忽略尚未計分的權重（MySQL 38%、PostgreSQL 18%） |
 
 ## 決策前必補的驗證
 
@@ -205,10 +211,10 @@ PXC／Galera 沒有 leader／follower，因此另設 G1 單節點 kill、G2 quor
    完成後可解除：「協定改造成本未知」的風險，才能判斷是否值得跨出 MySQL 協定。
 
 2. **PITR、備份還原與 RPO 實測**
-   完成後可解除：「災難復原能力未驗證」的風險——這是兩組都尚未量測的高權重項目（各佔 4%）。
+   完成後可解除：「災難復原能力未驗證」的風險——這是兩組都尚未量測的項目（各佔 3%）。
 
 3. **Online DDL 對前台 throughput/latency 的影響**
-   完成後可解除：「線上變更 schema 是否可承受」的風險（兩組各佔 10%，屬未測缺口中權重最高項目之一）。
+   完成後可解除：「線上變更 schema 是否可承受」的風險（兩組各佔 5%）。
 
 4. **代表性 cell 補 `N=3`**
    完成後可解除：「單次重跑波動被誤讀為架構差異」的風險。本輪統一以 `N=1` 為基礎方向性觀察，`N=3` 可提高重現性信心，但不是本輪完成條件。
@@ -235,10 +241,10 @@ PXC／Galera 沒有 leader／follower，因此另設 G1 單節點 kill、G2 quor
 
 現在仍然有效的限制（不是已修好的歷史）：
 
-- 部分加權分數只覆蓋 MySQL 已計分 50%／PostgreSQL 已計分 56% 權重；尚未計分的 40%（MySQL，含口徑待重評的 #6）／24%（PostgreSQL）不能忽略。
+- 部分加權分數只覆蓋 MySQL 已計分 62%／PostgreSQL 已計分 82% 權重；尚未計分的 38%（MySQL，含口徑待重評的 #5）／18%（PostgreSQL）不能忽略。
 - S-BASE 多數 cell 為 `N=1`；PostgreSQL 群組的 F2 為 `N=2`（兩次獨立執行互相印證），仍未達 `N=3`。
 - 代表點的併發（thread 數）可能不同，只有明示「同 t=128」的比較才是同口徑，其餘代表點比較是「各自最佳」而非直接對照。
 - Failover 秒數的探測解析度、探測發起位置（皆從 IDC 側）與情境語意（quorum-loss vs 區域 failover）三家不完全相同，不可只比較秒數。
 - 官方文件（docs/whitepaper）是機制推論的輔助來源，不等於本 PoC 實測結果，兩者不可混用。
 
-歷史修正（已完成，不影響現在使用本檔）：`DISTRIBUTED-DB-SCORING.md` 曾有「其餘 44% 權重」筆誤（應為 PostgreSQL 群組 24%）與數處 Galera 補測前的過期敘述，已於原檔一併修正，本檔數字與原檔現已一致。
+歷史修正（已完成，不影響現在使用本檔）：`DISTRIBUTED-DB-SCORING.md` 曾有舊權重與數處 Galera 補測前的過期敘述，已於原檔一併修正；目前兩個群組均以 100% 權重為基準。
