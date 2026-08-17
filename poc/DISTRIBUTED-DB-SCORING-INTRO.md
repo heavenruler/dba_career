@@ -87,15 +87,22 @@ flowchart TD
 
 | # | 項目 | 權重 | YugabyteDB | CockroachDB |
 |---|---|---:|:---:|:---:|
-| 1 | PostgreSQL 協定相容性 | 5% | 待測 | 待測 |
+| 1 | PostgreSQL 協定相容性 [†](#note-doc-star-pg) | 5% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ |
 | 2 | 單節點/低併發延遲 | 24% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ |
 | 3 | 水平擴展能力 | 29% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
 | 4 | 高併發穩定性 | 24% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
 | 5 | Failover RTO／RPO | 5% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ |
-| 6 | PITR／備份還原 | 3% | 待測 | 待測 |
-| 7 | Online DDL 與維運工具 | 5% | 待測 | 待測 |
+| 6 | PITR／備份還原 [†](#note-doc-star-pg) | 3% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ |
+| 7 | Online DDL 與維運工具 [†](#note-doc-star-pg) | 5% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
 | 8 | Geo-Distribution | 5% | 待測 | 待測 |
 | | **合計** | **100%** | | |
+
+<a id="note-doc-star-pg"></a>† **這 3 項星等基礎是官方文件記載的支援狀況，不是本 PoC 實測結果**，與其餘項目的證據等級不同，不計入 §4 加權分數，也不改變上方「已計分 82%／尚未計分 18%」的權重統計（SSOT `DISTRIBUTED-DB-SCORING.md` 原表這 3 項仍標「待測」）：
+- **#1 PostgreSQL 協定相容性**：YugabyteDB 官方文件明講 YSQL 直接重用 PostgreSQL（v15）查詢層原始碼，「fully compatible with PostgreSQL by construction」，已知不支援項目很少（XML 函式/型別、constraint trigger）→ 5⭐（[YugabyteDB PostgreSQL Compatibility FAQ](https://docs.yugabyte.com/stable/faq/compatibility/)）。CockroachDB 是自行從零實作 SQL 引擎，僅在 wire protocol（pgwire v3.0）層相容，官方文件明講「不是所有 PostgreSQL 功能都能在分散式系統中輕易實作」，並列出如 multiple active portals 等已知落差（v26.2 才以 preview 形式部分支援）→ 3⭐（[CockroachDB PostgreSQL Compatibility](https://www.cockroachlabs.com/docs/v26.2/postgresql-compatibility)）。
+- **#6 PITR／備份還原**：YugabyteDB 官方文件記載原生 snapshot schedule 機制，支援 YSQL／YCQL，精度達微秒級，橫跨自管、YugabyteDB Anywhere、YugabyteDB Aeon 三層部署皆有專屬文件 → 5⭐（[YugabyteDB PITR](https://docs.yugabyte.com/stable/manage/backup-restore/point-in-time-recovery/)）。CockroachDB 提供 `BACKUP ... WITH revision_history` ＋ `RESTORE ... AS OF SYSTEM TIME` 組合方案，官方文件另註記限制：restore 只能還原到指定時間點，不會連同歷史版本一併還原 → 4⭐（[CockroachDB PITR](https://www.cockroachlabs.com/docs/stable/take-backups-with-revision-history-and-restore-from-a-point-in-time)）。
+- **#7 Online DDL 與維運工具**：CockroachDB 官方文件將 Online Schema Changes 定位為「不需額外工具、不鎖表、無停機」的內建能力，並說明其以背景步驟拆解 `CREATE INDEX` 等操作、不阻塞使用者交易 → 5⭐（[CockroachDB Online Schema Changes](https://www.cockroachlabs.com/docs/v26.2/online-schema-changes)）。YugabyteDB 官方文件說明 DDL 變更可跨節點一致傳播且不停機，但同時註記「目前支援的線上 DDL 操作有限，仍持續擴大涵蓋範圍」，代表覆蓋面尚未完整 → 4⭐（[YugabyteDB Online Schema Migrations design doc](https://github.com/yugabyte/yugabyte-db/blob/master/architecture/design/online-schema-migrations.md)）。
+
+**注意**：官方文件基礎的評比中，YugabyteDB 在 #1／#6 領先（YSQL 直接重用 Postgres 原始碼、PITR 涵蓋部署層級較完整），但 #7 換成 CockroachDB 領先——同樣不是單一方向的加分項；真正決策仍需 §3.1／§3.4 的 PoC 實測驗證。
 
 > 星等只在同一張表內比較（同群組）；跨表（MySQL 表 vs PostgreSQL 表）不可比較，見上方一頁結論。
 
