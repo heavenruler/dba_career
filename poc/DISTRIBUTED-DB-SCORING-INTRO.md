@@ -66,15 +66,22 @@ flowchart TD
 
 | # | 項目 | 權重 | PXC/Galera | TiDB |
 |---|---|---:|:---:|:---:|
-| 1 | MySQL 協定相容性 | 20% | 待測 | 待測 |
+| 1 | MySQL 協定相容性 [†](#note-doc-star) | 20% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ |
 | 2 | 單節點/低併發延遲 | 19% | ⭐⭐⭐⭐⭐ | ⭐☆☆☆☆ |
 | 3 | 水平擴展能力 | 24% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ |
 | 4 | 高併發穩定性 | 19% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ |
 | 5 | Failover RTO／RPO | 5% | 待重新評估 | 待重新評估 |
-| 6 | PITR／備份還原 | 3% | 待測 | 待測 |
-| 7 | Online DDL 與維運工具 | 5% | 待測 | 待測 |
+| 6 | PITR／備份還原 [†](#note-doc-star) | 3% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
+| 7 | Online DDL 與維運工具 [†](#note-doc-star) | 5% | ⭐⭐☆☆☆ | ⭐⭐⭐⭐⭐ |
 | 8 | HTAP／TiFlash | 5% | n/a | 待測 |
 | | **合計** | **100%** | | |
+
+<a id="note-doc-star"></a>† **這 3 項星等基礎是官方文件記載的支援狀況，不是本 PoC 實測結果**，與其餘項目的證據等級不同，不計入 §4 加權分數，也不改變上方「已計分 62%／尚未計分 38%」的權重統計（SSOT `DISTRIBUTED-DB-SCORING.md` 原表這 3 項仍標「待測」）：
+- **#1 MySQL 協定相容性**：PXC/Galera 是 MySQL/InnoDB 原生分支，協定與 SQL 語法本身即為 MySQL，官方文件無需額外聲明相容性 → 5⭐。TiDB 官方文件明確聲明「與 MySQL 8.x 常用功能/語法高度相容」，但同時列出不支援項目（如 trigger、stored procedure/function、部分 `ALTER TABLE` 多物件同時變更）→ 4⭐（[TiDB MySQL Compatibility](https://docs.pingcap.com/tidb/stable/mysql-compatibility/)）。
+- **#6 PITR／備份還原**：兩家官方文件皆記載成熟方案。PXC／Galera 依 Percona XtraBackup ＋ binlog replay 標準流程，Percona Operator for MySQL 自 PXC 8.0.21-12.1 起提供自動化 PITR → 4⭐（[Percona Operator PITR](https://docs.percona.com/percona-operator-for-mysql/pxc/backups-pitr.html)、[XtraBackup PITR](https://docs.percona.com/percona-xtrabackup/8.0/point-in-time-recovery.html)）。TiDB 以原生 BR 工具提供整合式 log backup + PITR，官方另有專屬架構文件 → 5⭐（[TiDB PITR Guide](https://docs.pingcap.com/tidb/stable/br-pitr-guide/)）。
+- **#7 Online DDL 與維運工具**：PXC／Galera 官方文件說明 TOI 方式執行 `ALTER TABLE` 會**鎖住整個叢集的寫入**，RSU 方式雖可逐節點滾動變更，但需人工於各節點個別執行且限「向後相容」的變更 → 2⭐（[Percona TOI/RSU 說明](https://www.percona.com/blog/various-ways-to-perform-schema-upgrades-with-percona-xtradb-cluster/)）。TiDB 官方文件明確定位 Online DDL 為原生非阻塞能力：「DDL 執行期間其他 session 的 DML 不受阻塞」→ 5⭐（[TiDB DDL Best Practices](https://docs.pingcap.com/best-practices/ddl-introduction/)）。
+
+**注意**：官方文件基礎的評比在 #7 呈現與 #1 相反的方向（Galera 在協定相容性領先，但在 Online DDL 落後 TiDB）——這代表「官方文件宣稱」本身就不是單一方向的加分項，不能假設同一家在所有維度都比較有利；真正決策仍需 §3.1／§3.4 的 PoC 實測驗證。
 
 **PostgreSQL 相容群組**（[§2.2](./DISTRIBUTED-DB-SCORING.md#22-postgresql-相容群組yugabytedb-vs-cockroachdb)）：
 
