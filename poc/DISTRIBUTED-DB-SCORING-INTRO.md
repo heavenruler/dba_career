@@ -57,7 +57,7 @@ flowchart TD
 - MySQL 群組：已計分 62% = `#2 單節點延遲` ＋ `#3 水平擴展` ＋ `#4 高併發穩定性`。
    > #5 已有原始數據但比較口徑不等價，暫不計分；連同 #1／#6／#7／#8，尚未計分共 38%。PXC/Galera 的 #8 HTAP 為 n/a。
 - PostgreSQL 群組：已計分 82% = `#2 單節點延遲` ＋ `#3 水平擴展` ＋ `#4 高併發穩定性` ＋ `#5 Failover`；
-   > 尚未計分 18% = #1 PostgreSQL 相容性＋#6 PITR＋#7 Online DDL＋#8 Geo-Distribution。
+   > 尚未計分 18% = #1 PostgreSQL 相容性（10%，2026-08-17 已併入原 Geo-Distribution 5% 權重）＋#6 PITR＋#7 Online DDL。Geo-Distribution 已從評分表移除，原因見 SSOT §3.5。
 
 
 ### 評分總表節錄（星等對照，完整版見 [§2](./DISTRIBUTED-DB-SCORING.md#2-評分總表依協定架構分組)）
@@ -87,15 +87,16 @@ flowchart TD
 
 | # | 項目 | 權重 | YugabyteDB | CockroachDB |
 |---|---|---:|:---:|:---:|
-| 1 | PostgreSQL 協定相容性 [†](#note-doc-star-pg) | 5% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ |
+| 1 | PostgreSQL 協定相容性 [†](#note-doc-star-pg) | 10% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ |
 | 2 | 單節點/低併發延遲 | 24% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ |
 | 3 | 水平擴展能力 | 29% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
 | 4 | 高併發穩定性 | 24% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
 | 5 | Failover RTO／RPO | 5% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ |
 | 6 | PITR／備份還原 [†](#note-doc-star-pg) | 3% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ |
 | 7 | Online DDL 與維運工具 [†](#note-doc-star-pg) | 5% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
-| 8 | Geo-Distribution | 5% | 待測 | 待測 |
 | | **合計** | **100%** | | |
+
+> Geo-Distribution 已於 2026-08-17 從本表移除，原 5% 權重併入 #1（詳見 SSOT §3.5）：既有跨區探索性數據比較的是「同一家 DB 內部 P-A vs P-B 兩種 placement 策略」，不是「YugabyteDB vs CockroachDB 跨區能力排名」，且無對應的正式對照實驗，與其長期用「待測」佔位，先移除比較誠實。
 
 <a id="note-doc-star-pg"></a>† **這 3 項星等基礎是官方文件記載的支援狀況，不是本 PoC 實測結果**，與其餘項目的證據等級不同，不計入 §4 加權分數，也不改變上方「已計分 82%／尚未計分 18%」的權重統計（SSOT `DISTRIBUTED-DB-SCORING.md` 原表這 3 項仍標「待測」）：
 - **#1 PostgreSQL 協定相容性**：YugabyteDB 官方文件明講 YSQL 直接重用 PostgreSQL（v15）查詢層原始碼，「fully compatible with PostgreSQL by construction」，已知不支援項目很少（XML 函式/型別、constraint trigger）→ 5⭐（[YugabyteDB PostgreSQL Compatibility FAQ](https://docs.yugabyte.com/stable/faq/compatibility/)）。CockroachDB 是自行從零實作 SQL 引擎，僅在 wire protocol（pgwire v3.0）層相容，官方文件明講「不是所有 PostgreSQL 功能都能在分散式系統中輕易實作」，並列出如 multiple active portals 等已知落差（v26.2 才以 preview 形式部分支援）→ 3⭐（[CockroachDB PostgreSQL Compatibility](https://www.cockroachlabs.com/docs/v26.2/postgresql-compatibility)）。
@@ -206,7 +207,7 @@ PXC／Galera 沒有 leader／follower，因此另設 G1 單節點 kill、G2 quor
 
 - **部分加權總分**：`YugabyteDB` 87.1 分、`CockroachDB` 87.1 分；兩家同分，但各項星等組成不同，不能解讀為能力完全相同。
 - **Failover 代表點**：F2（3 台 IDC DB process 同時停止，再由 operator 重啟，到首次成功寫入）——`YugabyteDB` 約 2.99s/3.65s、`CockroachDB` 約 7.01s/7.12s（[§3.3.1](./DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成)）。兩者各有兩次獨立執行互相印證，但 2026-08-11 CockroachDB 重跑為 W=4、YugabyteDB 為 W=128；這是方向性評分，不是自動區域 Failover、正式 SLA 或精確倍率。
-- **未測缺口**：PostgreSQL 相容性、PITR、Online DDL、正式 Geo-Distribution 排名等 18% 權重仍待驗證，不能只看已計分 82% 就下結論。
+- **未測缺口**：PostgreSQL 相容性（含原 Geo-Distribution 權重，已移除評分項目）、PITR、Online DDL 等 18% 權重仍待驗證，不能只看已計分 82% 就下結論。
 
 ## 分數能說什麼、不能說什麼
 

@@ -69,18 +69,23 @@
 
 | # | 評分細項 | 類別 | 權重 | 驗證方法 | YugabyteDB | CockroachDB |
 |---|---|---|---:|---|:---:|:---:|
-| 1 | PostgreSQL 協定相容性 | PostgreSQL 相容性 | 5% | 既有應用 SQL／ORM 相容性矩陣測試（見 §3.1） | 待測 | 待測 |
+| 1 | PostgreSQL 協定相容性 | PostgreSQL 相容性 | 10% | 既有應用 SQL／ORM 相容性矩陣測試（見 §3.1） | 待測 | 待測 |
 | 2 | 單節點/低併發延遲 | 延遲與水平擴展 | 24% | go-tpc TPC-C，`vm-1node` RC，W=128（見 §3.2.1） | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ |
 | 3 | 水平擴展能力 | 延遲與水平擴展 | 29% | go-tpc TPC-C，`vm-1node`→`vm-3node-haproxy-3s3r` 擴展比（見 §3.2.2） | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
 | 4 | 高併發穩定性 | 延遲與水平擴展 | 24% | go-tpc TPC-C，t=128 5-round range/mean 與 error rate（見 §3.2.3） | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ |
 | 5 | Failover RTO／RPO | Failover、RTO／RPO、PITR | 5% | `phase-crossregion` chaos 實測，2026-08-11 真實重跑完成（見 §3.3.1） | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ |
 | 6 | PITR／備份還原 | Failover、RTO／RPO、PITR | 3% | 尚未排入本 PoC 測試矩陣（見 §3.3.2） | 待測 | 待測 |
 | 7 | Online DDL 與維運工具 | Online DDL 與維運工具 | 5% | 尚未排入本 PoC 測試矩陣（見 §3.4） | 待測 | 待測 |
-| 8 | Geo-Distribution | YugabyteDB／CockroachDB Geo-Distribution | 5% | `phase-crossregion` placement 實測，非正式排名依據（見 §3.5） | 待測 | 待測 |
 | | **合計** | | **100%**‡ | | | |
 
-‡ 原始配置合計 73%，缺少的 27% 平均補入項目 2～4，各增加 9%。**已有星等的項目為
-#2/#3/#4/#5，合計 82% 權重**（見 §4.2 加權總分）。
+‡ 原始配置合計 73%，缺少的 27% 平均補入項目 2～4，各增加 9%。**2026-08-17 移除
+Geo-Distribution 評分項目**（原獨立 5% 權重併入項目 1，PostgreSQL 協定相容性
+5%→10%）——既有 `phase-crossregion` P-A/P-B 探索性數據的比較維度是「同一家 DB
+內部兩種 placement 策略」，不是「YugabyteDB vs CockroachDB 跨區能力排名」，且無
+對應的正式對照實驗，與其長期用「待測」佔位、讓讀者誤以為只是排程未到，不如先
+移除，待設計出「相同 workload/RTT 條件下比較兩家跨區延遲與可用性」的對照實驗後
+再重新獨立列項（見 §3.5）。**已有星等的項目為 #2/#3/#4/#5，合計 82% 權重**（見
+§4.2 加權總分）。
 
 > 註：TiDB 與 YugabyteDB／CockroachDB 的原始效能/RTO 數字仍並列於 §3.2、§3.3.1 供交叉
 > 參考（例如「TiDB 的 p99 是 YBDB 的幾倍」這類數字本身沒有比較基礎的問題），本文件只是
@@ -382,18 +387,20 @@ CockroachDB 單體、YugabyteDB 雙 process），不代表其他拓樸（如 K8s
 - **HTAP／TiFlash（TiDB 特有能力）**：本 PoC 未執行分析型查詢（OLAP-style）
   測試，「待測」。CockroachDB／MySQL Galera Cluster 無對應原生 HTAP 能力，
   標記 `n/a`。
-- **Geo-Distribution**：`phase-crossregion` 已針對 TiDB／YugabyteDB／
+- **Geo-Distribution（2026-08-17 已從 §2.2 評分表移除，原 5% 權重併入 #1
+  PostgreSQL 協定相容性）**：`phase-crossregion` 已針對 TiDB／YugabyteDB／
   CockroachDB 三家執行 P-A（leader 集中單一 region）與 P-B（leader 跨區
   混合分佈）的實測（詳見
   [`XCROSS-PA-VS-PB-FINAL-COMPARISON.md`](./phase-crossregion/XCROSS-PA-VS-PB-FINAL-COMPARISON.md)），
   三家皆已具備跨區 placement 能力的實測證據——**但這批數據屬於
   `baseline_family=crossregion`、`baseline_eligible=false` 的探索性 scope，
   每個 cell 僅 `N=1`，且該報告本身的比較是「P-A vs P-B 兩種 placement 策略」，
-  不是「三家 Geo-Distribution 能力的正式排名」，不可直接搬進本評分表當作
-  已驗證的星等分數**。若要把 Geo-Distribution 正式納入本評分表，需另外設計
-  「以相同 workload/RTT 條件比較三家跨區延遲與可用性權衡」的對照實驗，
-  故本項仍標「待測」。MySQL Galera Cluster 原生不支援跨區散置寫入架構，
-  標記 `n/a`。
+  不是「YugabyteDB vs CockroachDB Geo-Distribution 能力的正式排名」，不能
+  拿來評分**。要正式評分需另外設計「以相同 workload/RTT 條件比較兩家跨區
+  延遲與可用性權衡」的對照實驗；在對照實驗設計出來前先移除此項，不用
+  「待測」長期佔位，避免讀者誤以為只是排程未到。若未來設計出對照實驗，
+  可重新獨立列項並分配權重。MySQL Galera Cluster 原生不支援跨區散置寫入
+  架構，本來就標 `n/a`，不受此次移除影響。
 
 ### 3.6 MySQL 相容群組：Percona XtraDB Cluster 8.4（PXC，Galera）跨區 P-A/P-B 穩態吞吐量實測（2026-08-12）
 
@@ -582,8 +589,9 @@ TiDB 在 P-B 情境下也出現 thread=128 時 IDC 端吞吐量從 th=32 的 8,8
 
 > 計算範例（YugabyteDB）：`(5×24 + 4×29 + 4×24 + 5×5) ÷ (24+29+24+5) × 20
 > = 357 ÷ 82 × 20 = 87.1`。乘以 20 是把 1-5 星換算為百分制的比例常數（5 星 = 100 分）。
-> **兩者在目前 82% 已計分權重下同為 87.1 分**；其餘 18%（相容性、PITR、DDL、
-> Geo-Distribution）補測前，不宜下「YugabyteDB 優於 CockroachDB」或反之的結論。
+> **兩者在目前 82% 已計分權重下同為 87.1 分**；其餘 18%（相容性（含原
+> Geo-Distribution 權重）、PITR、DDL）補測前，不宜下「YugabyteDB 優於
+> CockroachDB」或反之的結論。
 > 任一項目的星等微調都可能改變排序，這具體示範了本文件
 > 加權設計對結論高度敏感的既有風險，使用本表做決策時應同時檢視原始數據而非只看最終
 > 加權分數。
@@ -594,8 +602,8 @@ TiDB 在 P-B 情境下也出現 thread=128 時 IDC 端吞吐量從 th=32 的 8,8
 > （既有應用/工具鏈不可改），比較基礎是 Galera vs TiDB；若能接受換成 PostgreSQL 協定，
 > 比較基礎是 YugabyteDB vs CockroachDB。兩條路線目前都不構成「整體最適合取代
 > MySQL Galera Cluster」的完整答案：MySQL 群組尚未計分 38%，其中 #5 有原始數據但
-> 口徑不等價；PostgreSQL 群組尚未計分 18%。相容性、PITR、Online DDL 及正式
-> Geo-Distribution 等決策資訊仍有缺口。
+> 口徑不等價；PostgreSQL 群組尚未計分 18%。相容性（PostgreSQL 群組含原
+> Geo-Distribution 權重）、PITR、Online DDL 等決策資訊仍有缺口。
 
 ### 5.1 MySQL 相容群組：Percona XtraDB Cluster 8.4（PXC，Galera）vs TiDB
 
@@ -684,8 +692,9 @@ CockroachDB（≈7s），這個方向性排序在兩次獨立執行（2026-08-08
 
 **不能下的結論**：不能因目前部分加權總分同分就判定兩家能力相同——個別項目的優劣
 方向仍不同，且尚有 18% 未計分。不能把 `phase-crossregion` 的
-P-A/P-B placement 探索性數據當作 Geo-Distribution 的正式評分依據（該 scope 本身
-`baseline_eligible=false`，目前仍列「待測」）。
+P-A/P-B placement 探索性數據當作跨區能力已驗證的證據（該 scope 本身
+`baseline_eligible=false`）；Geo-Distribution 已於 2026-08-17 從 §2.2 評分表移除
+（原因見 §3.5），原 5% 權重併入 #1 相容性。
 
 ### 5.3 兩組共通的下一步建議（依風險與可行性排序）
 
@@ -709,8 +718,9 @@ P-A/P-B placement 探索性數據當作 Geo-Distribution 的正式評分依據�
    觸發條件。
 4. 若要進一步細分 CockroachDB／YugabyteDB 單節點 kill 的真實中斷時間（目前只知
    「短於 100ms 探測解析度」），需要更高解析度的探測工具重新設計 F1/C4，非本次範圍。
-5. PostgreSQL 相容群組的 Geo-Distribution（5% 權重）與兩組共通的 PITR（3% 兩組相同）
-   合計權重較低，可視資源排在較後順序。
+5. 若未來要設計對照實驗以重新納入 Geo-Distribution（原 5% 權重，2026-08-17 已
+   從 §2.2 移除，見 §3.5），與兩組共通的 PITR（3% 兩組相同）合計權重較低，可視
+   資源排在較後順序。
 
 ---
 
