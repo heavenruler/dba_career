@@ -214,6 +214,7 @@ style: |
 | PXC／Galera | 8.4.x | LTS line | 官方 EOL 日期尚待確認 | 待確認 |
 
 - YugabyteDB 未查得逐版逐日公告，僅能依官方版本政策推算，非官方承諾日期
+- [YugabyteDB 2026.1 Released @ June 18, 2026](https://www.yugabyte.com/blog/a-postgresql-database-for-every-agent/)
 - PXC／Galera 8.4 的 EOL 日期未見於 Percona 官方 lifecycle 頁面，需向原廠確認
 
 ---
