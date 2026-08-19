@@ -135,12 +135,12 @@ style: |
 
 | 產品 | 官方可追溯的支援入口 | PoC 版本維護狀態 | Pilot 前需向原廠確認 |
 |---|---|---|---|
-| TiDB | [Enterprise ticket／Community](https://docs.pingcap.com/tidb/stable/support/) | v8.5 LTS；Community 維護 2027-12-19／延伸 2028-12-19，Enterprise 維護 2029-12-19／延伸 2030-12-19 | 台灣時區／語言、P1 回應與解決、RCA、升級及現場協作 |
+| TiDB | [Enterprise ticket／Community](https://docs.pingcap.com/tidb/stable/support/) | v8.5 LTS；Community 維護 2027-12-19／延伸 2028-12-19，Enterprise 維護 2029-12-19／延伸 2030-12-19 | 台灣時區／語言、P1 事故的回應與解決時限、根因分析、升級及現場協作 |
 | PXC／Galera | [Percona Support Policy](https://www.percona.com/support-policies/) | 8.4 持續發版中（最新 8.4.10-10，2026-07-27）；官方尚未公布 8.4 的 EOL 日期 | **現有維運人力已可覆蓋，不需原廠協助**；僅需追蹤 8.4 EOL 公告 |
-| YugabyteDB | [Software Support Agreement](https://www.yugabyte.com/yugabyte-software-support-services-agreement/) | 2025.2 LTS 維護至 2027-12-11、EOL 2028-06-11 | Self-managed 支援範圍、回應窗口、RCA 與升級協作 |
-| CockroachDB | [Essentials／Enterprise Policy](https://www.cockroachlabs.com/terms-and-conditions/cockroachdb-support-policy/) | v26.2 GA 維護至 2027-04-27 | 授權、支援時區、P1／P2、RCA、版本升級與自管限制 |
+| YugabyteDB | [Software Support Agreement](https://www.yugabyte.com/yugabyte-software-support-services-agreement/) | 2025.2 LTS 維護至 2027-12-11、EOL 2028-06-11 | 自管環境的支援範圍、回應窗口、根因分析與升級協作 |
+| CockroachDB | [Essentials／Enterprise Policy](https://www.cockroachlabs.com/terms-and-conditions/cockroachdb-support-policy/) | v26.2 GA 維護至 2027-04-27 | 授權、支援時區、P1／P2 事故等級、根因分析、版本升級與自管限制 |
 
-> 「有原廠支援方案」不等於符合公司需求；回應時間也不等於問題解決時間。正式結論需以 RFI／報價與合約條款為準。
+> 「有原廠支援方案」不等於符合公司需求；回應時間也不等於問題解決時間。正式結論需以原廠正式詢價（RFI）、報價與合約條款為準。
 
 ---
 
@@ -154,17 +154,17 @@ style: |
 
    MySQL 相容性、PITR／還原、Online DDL、服務層 Failover、資源與租戶隔離。
 
-3. **所有設計值必須 readback**
+3. **所有設定值都要回讀驗證**
 
-   isolation、replica、placement、近讀與故障注入均需驗證資料面效果，不能只看設定成功。
+   指令執行成功不等於實際生效；隔離級、副本數、資料放置、就近讀取與故障注入，都要再查一次系統實際狀態。
 
-4. **服務恢復時間取代單一 cluster health**
+4. **以服務恢復時間取代單一的叢集健康燈號**
 
-   分開量測叢集恢復、資料可讀寫、終端服務恢復，以及交易是否遺失或出現 ambiguous result。
+   分開量測叢集恢復、資料可讀寫、終端服務恢復，以及交易是否遺失或出現無法確認結果的情況。
 
 5. **A/A 不作預設起點**
 
-   先完成單區主辦與 DR-ready 能力；只有業務提出雙區讀寫契約時才啟動 A/A 驗證。
+   先完成單區主辦與災難復原就緒能力；只有業務提出雙區讀寫需求時才啟動 A/A 驗證。
 
 ---
 
@@ -240,7 +240,7 @@ PostgreSQL 高關鍵度／AI 應用有需求
 2. **由 TSD 指派應用 owner**，提供真實 SQL／ORM／Driver／Transaction 與改造限制。
 3. **確認 Pilot 情境**：一般 MySQL 應用、可移至 EDC 的定期批次，或故障影響範圍較明確的服務。
 4. **定義服務驗收**：一致性優先條件、可接受中斷、資料延遲、降級與回復方式。
-5. **啟動原廠 RFI 與成本資料蒐集**：支援、授權、維運人力及基礎設施。
+5. **啟動原廠正式詢價與成本資料蒐集**：支援、授權、維運人力及基礎設施。
 
 > Promotion Gate 完成後，再決定擴大 TiDB、轉向 PXC 對照，或啟動 PostgreSQL 路線的目標式 Pilot。
 
@@ -297,7 +297,7 @@ PostgreSQL 高關鍵度／AI 應用有需求
 | TiDB | [MySQL 相容性](https://docs.pingcap.com/tidb/stable/mysql-compatibility/)／[PITR](https://docs.pingcap.com/tidb/stable/br-pitr-guide/)／[Online DDL](https://docs.pingcap.com/best-practices/ddl-introduction/) | [Support Resources](https://docs.pingcap.com/tidb/stable/support/)／[Release Support Policy](https://www.pingcap.com/tidb-release-support-policy/) |
 | PXC／Galera | [PITR](https://docs.percona.com/percona-operator-for-mysql/pxc/backups-pitr.html)／[XtraBackup](https://docs.percona.com/percona-xtrabackup/8.0/point-in-time-recovery.html)／[TOI／RSU](https://www.percona.com/blog/various-ways-to-perform-schema-upgrades-with-percona-xtradb-cluster/) | [Support Policy](https://www.percona.com/support-policies/)／[Release Lifecycle](https://www.percona.com/release-lifecycle-overview/) |
 
-> 官方文件只證明功能、版本或支援方案存在；公司環境的相容性、營運效果與合約適用性仍需 Pilot／RFI 驗證。
+> 官方文件只證明功能、版本或支援方案存在；公司環境的相容性、營運效果與合約適用性仍需 Pilot 與原廠正式詢價驗證。
 
 ---
 
@@ -308,7 +308,7 @@ PostgreSQL 高關鍵度／AI 應用有需求
 | YugabyteDB | [PostgreSQL 相容性](https://docs.yugabyte.com/stable/faq/compatibility/)／[PITR](https://docs.yugabyte.com/stable/manage/backup-restore/point-in-time-recovery/) | [Software Support Agreement](https://www.yugabyte.com/yugabyte-software-support-services-agreement/)／[2025.2 LTS](https://docs.yugabyte.com/stable/releases/ybdb-releases/) |
 | CockroachDB | [PostgreSQL 相容性](https://www.cockroachlabs.com/docs/v26.2/postgresql-compatibility)／[PITR](https://www.cockroachlabs.com/docs/stable/take-backups-with-revision-history-and-restore-from-a-point-in-time)／[Online Schema Changes](https://www.cockroachlabs.com/docs/v26.2/online-schema-changes) | [Support Policy](https://www.cockroachlabs.com/terms-and-conditions/cockroachdb-support-policy/)／[Release Policy](https://www.cockroachlabs.com/docs/releases/release-support-policy) |
 
-> 官方文件只證明功能、版本或支援方案存在；公司環境的相容性、營運效果與合約適用性仍需 Pilot／RFI 驗證。
+> 官方文件只證明功能、版本或支援方案存在；公司環境的相容性、營運效果與合約適用性仍需 Pilot 與原廠正式詢價驗證。
 
 ---
 
