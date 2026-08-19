@@ -108,8 +108,6 @@ style: |
 
 已測項目部分加權試算：**YugabyteDB 87.1｜CockroachDB 87.1**（已計分 82%，非產品總分）。
 
-> #5 CockroachDB 在 quorum 遺失時回報 `ambiguous`，需應用層額外處理重試與確認。
-
 ---
 
 # 主張｜下一階段聚焦 MySQL 相容，TiDB 先做快速驗證與 Pilot
