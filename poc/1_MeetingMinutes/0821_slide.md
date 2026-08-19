@@ -85,9 +85,6 @@ style: |
 | 7 | Online DDL 與維運工具 | 5% | ⭐⭐⭐⭐⭐ | ⭐⭐☆☆☆ | 📄 | [§3.4](../DISTRIBUTED-DB-SCORING.md#34-online-ddl-與維運工具) |
 | 8 | HTAP／TiFlash | 5% | 待測 | n/a | ⏳ | [§3.5](../DISTRIBUTED-DB-SCORING.md#35-tidb-htaptiflash-與-yugabytedbcockroachdb-geo-distribution) |
 
-已測項目部分加權試算：**TiDB 75.5｜PXC／Galera 44.5**（已計分 62%，非產品總分）。
-
-> #5 兩家的故障注入與恢復流程不等價，僅列數據、不排名，故未給星等。
 
 ---
 
@@ -103,7 +100,6 @@ style: |
 | 6 | PITR／備份還原 | 3% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ | 📄 | [§3.3.2](../DISTRIBUTED-DB-SCORING.md#332-pitr備份還原) |
 | 7 | Online DDL 與維運工具 | 5% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | 📄 | [§3.4](../DISTRIBUTED-DB-SCORING.md#34-online-ddl-與維運工具) |
 
-已測項目部分加權試算：**YugabyteDB 87.1｜CockroachDB 87.1**（已計分 82%，非產品總分）。
 
 ---
 
