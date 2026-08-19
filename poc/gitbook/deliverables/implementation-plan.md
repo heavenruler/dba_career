@@ -47,6 +47,6 @@ flowchart LR
 | 資安 | 身分、加密、稽核、秘密管理均有證據 | 任一 hard gate 缺證據 |
 | 資料 | 對帳、restore 與 rollback 成功 | 無回復路徑或差異未解 |
 | 維運 | on-call、告警、容量、升級與 runbook 已演練 | 無 owner 或升級路徑 |
-| 商務 | 五年 TCO、合約、退出成本可接受 | 需求假設或責任未定 |
+| 商務 | 三年 TCO、合約、退出成本可接受 | 需求假設或責任未定 |
 
 首波服務、時程、容量與風險接受人仍待核定。詳見[遷移與回滾](../14-migration-and-rollback.md)、[Day-2 與 DR](../13-operations-and-dr.md)及[成本與責任](../15-cost-and-ownership.md)。

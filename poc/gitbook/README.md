@@ -52,7 +52,7 @@ flowchart LR
 |---|---|---|
 | [PoC 對照驗證報告](./deliverables/poc-validation-report.md) | 風險、一致性、延遲、可用性與四類 104 應用適性 | 部分驗證；HA/DR 與服務級契約待補 |
 | [可落地執行計畫](./deliverables/implementation-plan.md) | 架構、部署、遷移、A/S、A/A-RO、A/A、備份與維運交接 | 可審查草案；migration、restore、failover rehearsal 待執行 |
-| [預算評估報告](./deliverables/budget-assessment.md) | 五年 TCO、三情境與最低成本啟動策略 | 模型已建；價格、容量、合約與人力輸入均待 owner 補齊 |
+| [預算評估報告](./deliverables/budget-assessment.md) | 三年 TCO、三情境與最低成本啟動策略 | 模型已建；價格、容量、合約與人力輸入均待 owner 補齊 |
 
 「已覆蓋」表示文件已列出範圍、門檻與缺口，不表示相關技術或商務驗證已完成。
 
