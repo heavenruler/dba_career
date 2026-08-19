@@ -24,8 +24,6 @@ style: |
 
 2026-08-21
 
-對應 [ITDBA-3596](https://104corp.atlassian.net/browse/ITDBA-3596)
-
 ---
 
 # 導覽｜本次簡報六個段落
@@ -110,23 +108,7 @@ style: |
 
 ---
 
-# 主張｜下一階段聚焦 MySQL 相容，TiDB 先做快速驗證與 Pilot
-
-**建議採 Option B：TiDB 快速驗證＋代表性應用 Pilot。**
-
-| 支撐理由 | 階段性判讀 |
-|---|---|
-| 業務適配 | 現行商務邏輯約 95% 使用 MySQL 路線，可先降低協定遷移與應用改造範圍 |
-| 技術方向 | TiDB 在本 PoC 的水平擴展與高併發穩定性較有利；PXC／Galera 保留原生相容與低延遲對照 |
-| TSD 回饋 | 目前重視一致性、服務恢復速度、故障範圍隔離及 Database Self-Service，未要求直接推進跨區 A/A |
-
-**本階段輸出**：應用相容性、PITR／還原、Online DDL、服務恢復、資源隔離、原廠支援與成本效益的可驗收結果。
-
-> 這是下一階段的驗證與推進順序；正式擴大導入由 Pilot Gate 決定。
-
----
-
-# 主張｜兩條路線回答的是不同遷移問題
+# 主張｜先選協定路線：兩條路線回答的是不同遷移問題
 
 | 面向 | MySQL 相容路線 | PostgreSQL 相容路線 | 對決策的影響 |
 |---|---|---|---|
@@ -140,32 +122,40 @@ style: |
 
 ---
 
-# 比較｜MySQL 路線：TiDB 先推進，PXC 保留對照價值
+# 主張｜所以下一階段聚焦 MySQL 相容，由 TiDB 先行
 
-| 面向 | TiDB | PXC／Galera | 對 Pilot 的意義 |
-|---|---|---|---|
-| MySQL 相容性 | 高度相容但有明列差異，須以真實 SQL 驗證 | 原生 MySQL／InnoDB 路線較有利 | PXC 作相容性基準 |
-| 單節點 t128 p99 | 597 ms | 182.8 ms | PXC 在本次低延遲代表點較有利 |
-| 同 t128 水平擴展 | 約 2.06× | 約 0.51× | TiDB 的 scale-out 方向較符合本階段目標 |
-| t128 5-round range／mean | 7.4% | 43.2% | TiDB 在本次高併發波動較低 |
-| 維運能力 | BR／PITR、Online DDL 與分散式元件需實跑 | XtraBackup／PITR、TOI／RSU 行為需實跑 | 兩家都不能只依官方文件決定 |
-| 下一階段角色 | **快速驗證與 Pilot 主路線** | **原生相容、低延遲及 fallback 對照** | 保留反事實比較，不全面重跑 |
+**建議下一階段聚焦 MySQL 相容路線，由 TiDB 先做快速驗證，再導入代表性應用 Pilot。**
 
-> 數字來源：[評分 SSOT §3.2](../DISTRIBUTED-DB-SCORING.md#32-延遲與水平擴展)；raw `summary.json` 見附錄 B。兩家均為 `N=1`，只作方向性判讀。
+| 支撐理由 | 階段性判讀 |
+|---|---|
+| 業務適配 | 現行商務邏輯約 95% 使用 MySQL 路線，可先降低協定遷移與應用改造範圍 |
+| 技術方向 | TiDB 在本 PoC 的水平擴展與高併發穩定性較有利；PXC／Galera 保留原生相容與低延遲對照 |
+| TSD 回饋 | 目前重視一致性、服務恢復速度、故障範圍隔離及 Database Self-Service，未要求直接推進跨區 A/A |
+
+**本階段輸出**：應用相容性、PITR／還原、Online DDL、服務恢復、資源隔離、原廠支援與成本效益的可驗收結果。
+
+> 這是下一階段的驗證與推進順序；正式擴大導入由 Pilot Gate 決定。
 
 ---
 
-# 比較｜PostgreSQL 路線保留為高關鍵度與 AI 應用能力池
+# 比較｜兩條路線的產品取捨
 
-| 面向 | YugabyteDB | CockroachDB | 階段性判讀 |
-|---|---|---|---|
-| PostgreSQL 相容性 | YSQL 重用 PostgreSQL 查詢層，官方相容方向較有利 | pgwire 相容，自行實作 SQL 引擎 | 真實 SQL／extension／ORM 仍需測 |
-| 單節點／低併發延遲 | 本 PoC 較有利 | 次之 | 只適用目前硬體與 workload |
-| 水平擴展／高併發穩定性 | 次之 | 本 PoC 較有利 | 強項分布不同，不以部分指數直接選型 |
-| Failover 代表點 | 本 PoC 方向較有利 | 次之 | 已有兩次執行，但仍非正式 SLA |
-| 推進方式 | 由 TSD 提供頭部／AI 應用需求後，做目標式相容驗證 | 同左 | 不與 TiDB Pilot 同時展開完整矩陣 |
+**MySQL 相容路線（本階段主力）**
 
-> 詳細結果：[評分 SSOT §3.2](../DISTRIBUTED-DB-SCORING.md#32-延遲與水平擴展)／[§3.3.1](../DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成)；兩家已測項目部分指數相同，但能力組成不同。
+| 面向 | TiDB | PXC／Galera |
+|---|---|---|
+| 延遲｜擴展｜穩定性 | 597 ms｜2.06×｜7.4% | 182.8 ms｜0.51×｜43.2% |
+| 相容性 | 高度相容但有明列差異，須以真實 SQL 驗證 | 原生 MySQL／InnoDB，可作相容性基準 |
+| 下一階段角色 | **快速驗證與 Pilot 主路線** | **原生相容、低延遲及 fallback 對照** |
+
+**PostgreSQL 相容路線（保留為能力池）**
+
+| 面向 | YugabyteDB | CockroachDB |
+|---|---|---|
+| 本 PoC 強項 | 相容性、單節點延遲、Failover 恢復 | 水平擴展、高併發穩定性 |
+| 推進方式 | 由 TSD 提供高關鍵度／AI 應用需求後，做目標式相容驗證；不與 TiDB Pilot 同時展開 | 同左 |
+
+> 上表數字為 t=128 同口徑（p99｜擴展倍率｜5-round range／mean），逐項評分見證據段落、原始檔案見附錄 B；兩群組不互相比較，兩家維運能力均須實跑，不依官方文件決定。
 
 ---
 
@@ -227,7 +217,7 @@ style: |
 |---|---|---|---|
 | 0｜保留現況 | 結束本輪 PoC、封存 framework，依既有架構營運 | 不增加遷移與平台成本 | 不解決既有故障域、擴展或服務化問題 |
 | A｜技術補件 | 只補 TiDB 相容性、PITR、Online DDL 與支援資料 | 投入最低、快速補足評分缺口 | 無真實應用與服務生命週期證據 |
-| **B｜快速驗證＋Pilot** | **TiDB 完成技術 Gate，再導入一個代表性 MySQL 應用／批次** | **最快取得應用、維運、Self-Service 與投資報酬證據** | 需 TSD owner、應用樣本與回復窗口 |
+| **B｜快速驗證＋Pilot**（即主張段落提出的方向） | **TiDB 完成技術 Gate，再導入一個代表性 MySQL 應用／批次** | **最快取得應用、維運、Self-Service 與投資報酬證據** | 需 TSD owner、應用樣本與回復窗口 |
 | C｜目標式替代驗證 | TiDB 不適配時驗 PXC；有 PostgreSQL 需求時再驗 YugabyteDB／CockroachDB | 只補與需求直接相關的證據 | 不形成四產品完整排名 |
 | D｜平台與跨區擴展 | Pilot 通過後建 Self-Service；有 DR／EDC 需求再做 A/S 或 A/A-RO | 可把一次性 PoC 轉為長期平台能力 | 需多團隊 owner、治理與持續成本；A/A 不作預設 |
 
@@ -238,19 +228,20 @@ style: |
 # 決策｜投資報酬決策樹：先確認問題，再決定投入深度
 
 ```text
-是否有明確業務問題、受影響服務與具決策責任的 owner？
-├─ 否 → Option 0：保留現況與 PoC framework，定期重審需求
-└─ 是
-   ├─ MySQL 應用為主要範圍？
-   │  ├─ 相容性／還原／DDL 尚未知 → Option A：技術補件
-   │  ├─ Gate 通過且效益可量化       → Option B：TiDB Pilot
-   │  └─ TiDB 不適配或極低延遲優先   → Option C：PXC 目標式對照
-   ├─ PostgreSQL 頭部／AI 應用有需求？
-   │  └─ 是 → Option C：依需求驗 YugabyteDB 或 CockroachDB
-   └─ 平台化或跨區需求成立？
-      ├─ 重複申請／維運成本高 → Option D：Database Self-Service
-      ├─ DR／EDC 活化          → Option D：先 A/S；需要異地讀才評估 A/A-RO
-      └─ 跨區雙寫有明確收益，且衝突契約成立 → 再獨立評估 A/A
+沒有明確業務問題、受影響服務與 owner
+    → Option 0：保留現況與 PoC framework，定期重審需求
+
+MySQL 應用為主要範圍
+    相容性／還原／DDL 尚未知     → Option A：技術補件
+    技術 Gate 通過且效益可量化    → Option B：TiDB Pilot
+    TiDB 不適配或極低延遲優先     → Option C：PXC 目標式對照
+
+PostgreSQL 高關鍵度／AI 應用有需求
+    → Option C：依需求驗 YugabyteDB 或 CockroachDB
+
+平台化或跨區需求成立
+    重複申請／維運成本高         → Option D：Database Self-Service
+    DR／EDC 活化                → Option D：先 A/S，需異地讀再評估 A/A-RO
 ```
 
 > 不以已投入的 PoC 工時作為繼續理由；每個出口都須回到需求、風險降低與可量化收益。
