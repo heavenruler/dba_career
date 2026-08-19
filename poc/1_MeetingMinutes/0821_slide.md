@@ -71,7 +71,7 @@ style: |
 - 📄 官方文件：只佐證產品設計、版本或支援能力，不計入實測分數
 - ⏳ 待驗證：尚未完成公司情境下的實跑
 
-**Failover 欄位以實測秒數呈現**：MySQL 群組兩家的故障情境與計時起點不等價，只列數據、不換算星等；PostgreSQL 群組兩家為同一方法論，數據與星等並列。
+**Failover 欄位以實測秒數呈現**：MySQL 群組兩家的故障注入與恢復流程不等價，只列數據、不給星等；PostgreSQL 群組兩家為同一方法論，數據與星等並列。
 
 ---
 
@@ -83,14 +83,14 @@ style: |
 | 2 | 單節點／低併發延遲 | 19% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ | ✅ | [§3.2.1](../DISTRIBUTED-DB-SCORING.md#321-單節點低併發延遲vm-1node-rc) |
 | 3 | 水平擴展能力 | 24% | ⭐⭐⭐⭐⭐ | ⭐☆☆☆☆ | ✅ | [§3.2.2](../DISTRIBUTED-DB-SCORING.md#322-水平擴展能力vm-1node--vm-3node-haproxy-3s3r) |
 | 4 | 高併發穩定性 | 19% | ⭐⭐⭐⭐⭐ | ⭐☆☆☆☆ | ✅ | [§3.2.3](../DISTRIBUTED-DB-SCORING.md#323-高併發穩定性t1285-round-rangemean-與-error-rate) |
-| 5 | Failover RTO／RPO ※ | 5% | 39.1–44.3s | 8.240s | ✅ | [§3.3.1a](../DISTRIBUTED-DB-SCORING.md#331a-mysql-相容群組galerapxc-84chaosfailover-實測2026-08-13) |
+| 5 | Failover 恢復（重啟→首次寫入） | 5% | 39.1–44.3s | 8.240s | ✅ | [§3.3.1a](../DISTRIBUTED-DB-SCORING.md#331a-mysql-相容群組galerapxc-84chaosfailover-實測2026-08-13) |
 | 6 | PITR／備份還原 | 3% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ | 📄 | [§3.3.2](../DISTRIBUTED-DB-SCORING.md#332-pitr備份還原) |
 | 7 | Online DDL 與維運工具 | 5% | ⭐⭐⭐⭐⭐ | ⭐⭐☆☆☆ | 📄 | [§3.4](../DISTRIBUTED-DB-SCORING.md#34-online-ddl-與維運工具) |
 | 8 | HTAP／TiFlash | 5% | 待測 | n/a | ⏳ | [§3.5](../DISTRIBUTED-DB-SCORING.md#35-tidb-htaptiflash-與-yugabytedbcockroachdb-geo-distribution) |
 
 已測項目部分加權試算：**TiDB 75.5｜PXC／Galera 44.5**（已計分 62%，非產品總分）。
 
-> ※ #5 均為「operator 重啟→首次成功寫入」；若改從 `t_kill` 起算，TiDB 為 198.4–201.7s、PXC／Galera 為 22.169s。兩者故障注入情境與計時起點不等價，**不換算星等、不計入 62%**。
+> #5 兩家的故障注入與恢復流程不等價，僅列數據、不排名，故未給星等。
 
 ---
 
@@ -102,13 +102,13 @@ style: |
 | 2 | 單節點／低併發延遲 | 24% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ | ✅ | [§3.2.1](../DISTRIBUTED-DB-SCORING.md#321-單節點低併發延遲vm-1node-rc) |
 | 3 | 水平擴展能力 | 29% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | ✅ | [§3.2.2](../DISTRIBUTED-DB-SCORING.md#322-水平擴展能力vm-1node--vm-3node-haproxy-3s3r) |
 | 4 | 高併發穩定性 | 24% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | ✅ | [§3.2.3](../DISTRIBUTED-DB-SCORING.md#323-高併發穩定性t1285-round-rangemean-與-error-rate) |
-| 5 | Failover RTO／RPO ※ | 5% | 2.99–3.65s ⭐⭐⭐⭐⭐ | 7.01–7.12s ⭐⭐⭐⭐☆ | ✅ | [§3.3.1](../DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成) |
+| 5 | Failover 恢復（重啟→首次寫入） | 5% | 2.99–3.65s ⭐⭐⭐⭐⭐ | 7.01–7.12s ⭐⭐⭐⭐☆ | ✅ | [§3.3.1](../DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成) |
 | 6 | PITR／備份還原 | 3% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ | 📄 | [§3.3.2](../DISTRIBUTED-DB-SCORING.md#332-pitr備份還原) |
 | 7 | Online DDL 與維運工具 | 5% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | 📄 | [§3.4](../DISTRIBUTED-DB-SCORING.md#34-online-ddl-與維運工具) |
 
 已測項目部分加權試算：**YugabyteDB 87.1｜CockroachDB 87.1**（已計分 82%，非產品總分）。
 
-> ※ #5 為 F2「operator 重啟→首次成功寫入」，數值區間為 P-A／P-B 兩情境；兩家同方法論、各有兩次獨立執行，**已計入 82%**。CockroachDB 的 write-reject 判定為 `ambiguous`，需應用層額外處理。
+> #5 CockroachDB 在 quorum 遺失時回報 `ambiguous`，需應用層額外處理重試與確認。
 
 ---
 
