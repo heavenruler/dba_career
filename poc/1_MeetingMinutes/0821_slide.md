@@ -43,13 +43,13 @@ style: |
 
 # 背景｜從 4 月建立框架，到 8 月形成可推進的候選方向
 
-| 時間 | 主要里程碑 | 內容與成果 |
+| 時間 | 主要里程碑 | 成果 |
 |---|---|---|
-| 4 月 | [範圍與測試鏈建立](../MILESTONES.md#專案時程) | 定義評估面向，建立 VM／Kubernetes／HAProxy／獨立壓測 client |
-| 5 月 | [共同基準完成](../MILESTONES.md#2-單節點三隔離級基準) | 三家統一 go-tpc、隔離級、warmup、round、結果與 active gate |
-| 6 月 | [三節點、Kubernetes、跨區框架](../MILESTONES.md#專案時程) | 完成 shard × replica × HAProxy、6 組 Kubernetes 與 IDC↔GCP pre-flight |
-| 7 月 | [跨區工作負載與效度修正](../phase-crossregion/XCROSS-PA-VS-PB-FINAL-COMPARISON.md) | 完成 P-A／P-B 與 A/S／A/A-RO／A/A；補副本、近讀與量測 fail-closed gate |
-| 8 月 | [故障演練、MySQL 對照與評分](../DISTRIBUTED-DB-SCORING-INTRO.md) | 完成三家 chaos／failover、補 PXC／Galera，形成兩條相容路線評估 |
+| 4 月 | [範圍與測試環境建立](../MILESTONES.md#專案時程) | 確定評估面向，建好可重現的測試環境 |
+| 5 月 | [共同基準完成](../MILESTONES.md#2-單節點三隔離級基準) | 三家改用同一套壓測條件，結果可互相對照 |
+| 6 月 | [多節點與跨機房框架](../MILESTONES.md#專案時程) | 完成多節點、容器化部署與跨機房前置驗證 |
+| 7 月 | [跨機房工作負載](../phase-crossregion/XCROSS-PA-VS-PB-FINAL-COMPARISON.md) | 完成跨機房各種讀寫情境，並修正量測有效性 |
+| 8 月 | [故障演練與評分](../DISTRIBUTED-DB-SCORING-INTRO.md) | 完成故障切換實測，補上 MySQL 對照，形成兩條路線評估 |
 
 > 里程碑的共同成果：把「產品功能宣稱」轉成可追溯的設定、量測、故障與限制證據。
 
