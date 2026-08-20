@@ -134,7 +134,7 @@ style: |
 
 | 產品 | 官方可追溯的支援入口 | PoC 版本維護狀態 | Pilot 前需向原廠確認 |
 |---|---|---|---|
-| TiDB | [Enterprise ticket／Community](https://docs.pingcap.com/tidb/stable/support/) | v8.5 LTS Launch @ 2024-12；Community 維護 2027-12-19／延伸 2028-12-19，Enterprise 維護 2029-12-19／延伸 2030-12-19 | 台灣時區／語言、P1 事故的回應與解決時限、根因分析、升級及現場協作 |
+| TiDB | [Enterprise ticket／Community](https://docs.pingcap.com/tidb/stable/support/) | v8.5 LTS Launch @ 2024-12；Community 維護 2027-12-19／延伸 2028-12-19，Enterprise 維護 2029-12-19／延伸 2030-12-19 | 台灣時區／語言、事故的回應與解決時限、根因分析、升級及現場協作 |
 | PXC／Galera | [Percona Support Policy](https://www.percona.com/support-policies/) | 8.4 持續發版中（最新 8.4.10-10，2026-07-27）；官方尚未公布 8.4 的 EOL 日期 | **現有維運人力已可覆蓋，不需原廠協助**；僅需追蹤 8.4 EOL 公告 |
 | YugabyteDB | [Software Support Agreement](https://www.yugabyte.com/yugabyte-software-support-services-agreement/) | 2025.2 LTS 維護至 2027-12-11、EOL 2028-06-11 | 自管環境的支援範圍、回應窗口、根因分析與升級協作 |
 | CockroachDB | [Essentials／Enterprise Policy](https://www.cockroachlabs.com/terms-and-conditions/cockroachdb-support-policy/) | v26.2 GA 維護至 2027-04-27 | 同 YugabyteDB 困境 |
