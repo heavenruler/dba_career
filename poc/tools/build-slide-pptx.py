@@ -121,31 +121,33 @@ def parse(raw):
                 i += 1
             blocks.append(("note", [x for x in q if x]))
             continue
-        if re.match(r"^[-*] ", s):
-            it = []
-            while i < len(lines) and re.match(r"^[-*] ", lines[i].strip()):
-                it.append(lines[i].strip()[2:].strip())
-                i += 1
-            blocks.append(("bullets", it))
-            continue
-        if re.match(r"^\d+\. ", s):
+        if LIST_ITEM.match(s):
+            kind = "numbers" if s[0].isdigit() else "bullets"
             it = []
             while i < len(lines):
-                m = re.match(r"^(\d+)\. (.*)$", lines[i].strip())
+                cur, st = lines[i], lines[i].strip()
+                m = LIST_ITEM.match(st)
                 if m:
                     it.append(m.group(2).strip())
                     i += 1
-                elif lines[i].strip() and lines[i].startswith("   "):
-                    it[-1] += "\n" + lines[i].strip()
-                    i += 1
-                elif not lines[i].strip():
-                    i += 1
-                    if i < len(lines) and re.match(r"^\d+\. ", lines[i].strip()):
+                    continue
+                if not st:
+                    # A blank line only ends the list when what follows is
+                    # neither another item nor an indented continuation.
+                    j = i + 1
+                    while j < len(lines) and not lines[j].strip():
+                        j += 1
+                    if j < len(lines) and (LIST_ITEM.match(lines[j].strip())
+                                           or lines[j].startswith("  ")):
+                        i = j
                         continue
                     break
-                else:
-                    break
-            blocks.append(("numbers", it))
+                if cur.startswith("  ") and it:
+                    it[-1] += "\n" + st
+                    i += 1
+                    continue
+                break
+            blocks.append((kind, it))
             continue
         if re.fullmatch(r"\*\*.+\*\*", s):
             blocks.append(("label", s.strip("*")))
@@ -157,6 +159,8 @@ def parse(raw):
 
 
 # ------------------------------------------------------------- run rendering
+LIST_ITEM = re.compile(r"^([-*]|\d+\.)\s+(.*)$")
+
 TOKEN = re.compile(r"(\[[^\]]+\]\([^)]*\)|\*\*.+?\*\*|`[^`]+`)")
 
 
