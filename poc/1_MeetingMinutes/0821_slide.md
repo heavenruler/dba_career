@@ -107,7 +107,7 @@ style: |
 |---|---|---|---|
 | 候選順序 | **TiDB**、PXC／Galera | YugabyteDB、CockroachDB | 只在同一群組內比較 |
 | 現行規模 | 28 個叢集、商務邏輯約 95% | 4 個叢集、商務邏輯約 5% | MySQL 路線可先形成較大覆蓋 |
-| 應用變更 | 仍須驗 MySQL 語法差異，但協定遷移較小 | MySQL 應用需改 SQL／ORM／Driver／交易行為 | 相容性是導入 Gate，不是普通效能分數 |
+| 應用變更 | 仍須驗 MySQL 語法差異，但協定遷移較小 | MySQL 應用需改 SQL／ORM／Driver／交易行為 | 相容性是導入門檻，不是普通效能分數 |
 | 架構差異 | TiDB 為計算／儲存分離；PXC 為完整副本與 writeset certification | 兩家皆為 PostgreSQL wire protocol，但 SQL 引擎與相容程度不同 | 同名功能不能直接視為同一機制 |
 | TSD 應用觀察 | 應用數較多、關鍵度需另盤點 | 部分頭部／AI 應用使用 | 「數量」與「業務關鍵度」必須分開 |
 
@@ -179,7 +179,7 @@ style: |
 | **協作**｜誰來做 | **產品期待 Database Self-Service** | **Pilot 同步驗證申請、權限、配額、備份、監控與退場** |
 | | 應用端協作可行，但需清楚 R&R、效益與回復程序 | 協作 TSD 其產品 Owner，確認依賴與改造上限 |
 
-> 粗體三列是本次 Pilot 最關鍵的約束：**選題落在 EDC 定期批次**、**驗收以一致性優先**、**服務化（Self-Service）與效能同等重要**。Infra 改造必須同時說明產品效益、應用改造量與投資報酬；技術可行不等於推進理由。
+> Infra 改造必須同時說明產品效益、應用改造量與投資報酬；技術可行不等於推進理由。
 
 ---
 
@@ -189,7 +189,7 @@ style: |
 |---|---|---|---|
 | 0｜保留現況 | 結束本輪 PoC、封存 framework，依既有架構營運 | 不增加遷移與平台成本 | 不解決既有故障域、擴展或服務化問題 |
 | A｜技術補件 | 只補 TiDB 相容性、PITR、Online DDL 與支援資料 | 投入最低、快速補足評分缺口 | 無真實應用與服務生命週期證據 |
-| **B｜快速驗證＋Pilot** | **TiDB 完成技術 Gate，再導入一個代表性 MySQL 應用／批次** | **最快取得應用、維運、Self-Service 與投資報酬證據** | 需 SSD Infra ; TSD/產品單位 協作共識 |
+| **B｜快速驗證＋Pilot** | **TiDB 完成技術門檻，再導入一個代表性 MySQL 應用／批次** | **最快取得應用、維運、Self-Service 與投資報酬證據** | 需 SSD Infra ; TSD/產品單位 協作共識 |
 | C｜目標式替代驗證 | TiDB 不適配時驗 PXC；有 PostgreSQL 需求時再驗 YugabyteDB／CockroachDB | 只補與需求直接相關的證據 | 不形成四產品完整排名 |
 | D｜平台與跨區擴展 | Pilot 通過後建 Self-Service；有 DR／EDC 需求再做 A/S 或 A/A-RO | 可把一次性 PoC 轉為長期平台能力 | 需多團隊 owner、治理與持續成本；A/A 不作預設 |
 
@@ -197,24 +197,17 @@ style: |
 
 ---
 
-# 決策｜投資報酬決策樹：先確認問題，再決定投入深度
+# 決策｜投資報酬判準：先確認問題，再決定投入深度
 
-```text
-沒有明確業務問題、受影響服務與 owner
-    → Option 0：保留現況與 PoC framework，定期重審需求
-
-MySQL 應用為主要範圍
-    相容性／還原／DDL 尚未知     → Option A：技術補件
-    技術 Gate 通過且效益可量化    → Option B：TiDB Pilot
-    TiDB 不適配或極低延遲優先     → Option C：PXC 目標式對照
-
-PostgreSQL 高關鍵度／AI 應用有需求
-    → Option C：依需求驗 YugabyteDB 或 CockroachDB
-
-平台化或跨區需求成立
-    重複申請／維運成本高         → Option D：Database Self-Service
-    DR／EDC 活化                → Option D：先 A/S，需異地讀再評估 A/A-RO
-```
+| 判斷情境 | 條件 | 出口 |
+|---|---|---|
+| **沒有**明確業務問題、受影響服務與 owner | — | **Option 0**：保留現況與 PoC framework，定期重審需求 |
+| **MySQL 應用**為主要範圍 | 相容性／還原／DDL 尚未知 | **Option A**：技術補件 |
+| | 技術門檻通過且效益可量化 | **Option B**：TiDB Pilot |
+| | TiDB 不適配或極低延遲優先 | **Option C**：PXC 目標式對照 |
+| **PostgreSQL** 高關鍵度／AI 應用有需求 | — | **Option C**：依需求驗 YugabyteDB 或 CockroachDB |
+| **平台化或跨區**需求成立 | 重複申請／維運成本高 | **Option D**：Database Self-Service |
+| | DR／EDC 活化 | **Option D**：先 A/S，需異地讀再評估 A/A-RO |
 
 > 不以已投入的 PoC 工時作為繼續理由；每個出口都須回到需求、風險降低與可量化收益。
 
