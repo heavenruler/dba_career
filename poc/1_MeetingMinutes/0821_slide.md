@@ -45,11 +45,11 @@ style: |
 
 | 時間 | 主要里程碑 | 成果 |
 |---|---|---|
-| 4 月 | [範圍與測試環境建立](../MILESTONES.md#專案時程) | 確定評估面向，建好可重現的測試環境 |
-| 5 月 | [共同基準完成](../MILESTONES.md#2-單節點三隔離級基準) | 三家改用同一套壓測條件，結果可互相對照 |
-| 6 月 | [多節點與跨機房框架](../MILESTONES.md#專案時程) | 完成多節點、容器化部署與跨機房前置驗證 |
-| 7 月 | [跨機房工作負載](../phase-crossregion/XCROSS-PA-VS-PB-FINAL-COMPARISON.md) | 完成跨機房各種讀寫情境，並修正量測有效性 |
-| 8 月 | [故障演練與評分](../DISTRIBUTED-DB-SCORING-INTRO.md) | 完成故障切換實測，補上 MySQL 對照，形成兩條路線評估 |
+| 4 月 | [範圍與測試環境建立](https://github.com/heavenruler/dba_career/blob/master/poc/MILESTONES.md#專案時程) | 確定評估面向，建好可重現的測試環境 |
+| 5 月 | [共同基準完成](https://github.com/heavenruler/dba_career/blob/master/poc/MILESTONES.md#2-單節點三隔離級基準) | 三家改用同一套壓測條件，結果可互相對照 |
+| 6 月 | [多節點與跨機房框架](https://github.com/heavenruler/dba_career/blob/master/poc/MILESTONES.md#專案時程) | 完成多節點、容器化部署與跨機房前置驗證 |
+| 7 月 | [跨機房工作負載](https://github.com/heavenruler/dba_career/blob/master/poc/phase-crossregion/XCROSS-PA-VS-PB-FINAL-COMPARISON.md) | 完成跨機房各種讀寫情境，並修正量測有效性 |
+| 8 月 | [故障演練與評分](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING-INTRO.md) | 完成故障切換實測，補上 MySQL 對照，形成兩條路線評估 |
 
 > 里程碑的共同成果：把「產品功能宣稱」轉成可追溯的設定、量測、故障與限制證據。
 
@@ -76,14 +76,14 @@ style: |
 
 | # | 項目 | 權重 | TiDB | PXC／Galera | 證據 | SSOT |
 |---|---|---:|:---:|:---:|:---:|:---:|
-| 1 | MySQL 協定相容性 | 20% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | 📄 | [§3.1](../DISTRIBUTED-DB-SCORING.md#31-mysqlpostgresql-相容性) |
-| 2 | 單節點／低併發延遲 | 19% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ | ✅ | [§3.2.1](../DISTRIBUTED-DB-SCORING.md#321-單節點低併發延遲vm-1node-rc) |
-| 3 | 水平擴展能力 | 24% | ⭐⭐⭐⭐⭐ | ⭐☆☆☆☆ | ✅ | [§3.2.2](../DISTRIBUTED-DB-SCORING.md#322-水平擴展能力vm-1node--vm-3node-haproxy-3s3r) |
-| 4 | 高併發穩定性 | 19% | ⭐⭐⭐⭐⭐ | ⭐☆☆☆☆ | ✅ | [§3.2.3](../DISTRIBUTED-DB-SCORING.md#323-高併發穩定性t1285-round-rangemean-與-error-rate) |
-| 5 | Failover 恢復（重啟→首次寫入） | 5% | 39.1–44.3s | 8.240s | ✅ | [§3.3.1a](../DISTRIBUTED-DB-SCORING.md#331a-mysql-相容群組galerapxc-84chaosfailover-實測2026-08-13) |
-| 6 | PITR／備份還原 | 3% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ | 📄 | [§3.3.2](../DISTRIBUTED-DB-SCORING.md#332-pitr備份還原) |
-| 7 | Online DDL 與維運工具 | 5% | ⭐⭐⭐⭐⭐ | ⭐⭐☆☆☆ | 📄 | [§3.4](../DISTRIBUTED-DB-SCORING.md#34-online-ddl-與維運工具) |
-| 8 | HTAP／TiFlash | 5% | 待測 | n/a | ⏳ | [§3.5](../DISTRIBUTED-DB-SCORING.md#35-tidb-htaptiflash-與-yugabytedbcockroachdb-geo-distribution) |
+| 1 | MySQL 協定相容性 | 20% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | 📄 | [§3.1](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#31-mysqlpostgresql-相容性) |
+| 2 | 單節點／低併發延遲 | 19% | ⭐☆☆☆☆ | ⭐⭐⭐⭐⭐ | ✅ | [§3.2.1](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#321-單節點低併發延遲vm-1node-rc) |
+| 3 | 水平擴展能力 | 24% | ⭐⭐⭐⭐⭐ | ⭐☆☆☆☆ | ✅ | [§3.2.2](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#322-水平擴展能力vm-1node--vm-3node-haproxy-3s3r) |
+| 4 | 高併發穩定性 | 19% | ⭐⭐⭐⭐⭐ | ⭐☆☆☆☆ | ✅ | [§3.2.3](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#323-高併發穩定性t1285-round-rangemean-與-error-rate) |
+| 5 | Failover 恢復（重啟→首次寫入） | 5% | 39.1–44.3s | 8.240s | ✅ | [§3.3.1a](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#331a-mysql-相容群組galerapxc-84chaosfailover-實測2026-08-13) |
+| 6 | PITR／備份還原 | 3% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ | 📄 | [§3.3.2](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#332-pitr備份還原) |
+| 7 | Online DDL 與維運工具 | 5% | ⭐⭐⭐⭐⭐ | ⭐⭐☆☆☆ | 📄 | [§3.4](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#34-online-ddl-與維運工具) |
+| 8 | HTAP／TiFlash | 5% | 待測 | n/a | ⏳ | [§3.5](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#35-tidb-htaptiflash-與-yugabytedbcockroachdb-geo-distribution) |
 
 ---
 
@@ -91,13 +91,13 @@ style: |
 
 | # | 項目 | 權重 | YugabyteDB | CockroachDB | 證據 | SSOT |
 |---|---|---:|:---:|:---:|:---:|:---:|
-| 1 | PostgreSQL 協定相容性 | 10% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ | 📄 | [§3.1](../DISTRIBUTED-DB-SCORING.md#31-mysqlpostgresql-相容性) |
-| 2 | 單節點／低併發延遲 | 24% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ | ✅ | [§3.2.1](../DISTRIBUTED-DB-SCORING.md#321-單節點低併發延遲vm-1node-rc) |
-| 3 | 水平擴展能力 | 29% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | ✅ | [§3.2.2](../DISTRIBUTED-DB-SCORING.md#322-水平擴展能力vm-1node--vm-3node-haproxy-3s3r) |
-| 4 | 高併發穩定性 | 24% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | ✅ | [§3.2.3](../DISTRIBUTED-DB-SCORING.md#323-高併發穩定性t1285-round-rangemean-與-error-rate) |
-| 5 | Failover 恢復（重啟→首次寫入） | 5% | 2.99–3.65s ⭐⭐⭐⭐⭐ | 7.01–7.12s ⭐⭐⭐⭐☆ | ✅ | [§3.3.1](../DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成) |
-| 6 | PITR／備份還原 | 3% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ | 📄 | [§3.3.2](../DISTRIBUTED-DB-SCORING.md#332-pitr備份還原) |
-| 7 | Online DDL 與維運工具 | 5% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | 📄 | [§3.4](../DISTRIBUTED-DB-SCORING.md#34-online-ddl-與維運工具) |
+| 1 | PostgreSQL 協定相容性 | 10% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ | 📄 | [§3.1](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#31-mysqlpostgresql-相容性) |
+| 2 | 單節點／低併發延遲 | 24% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ | ✅ | [§3.2.1](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#321-單節點低併發延遲vm-1node-rc) |
+| 3 | 水平擴展能力 | 29% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | ✅ | [§3.2.2](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#322-水平擴展能力vm-1node--vm-3node-haproxy-3s3r) |
+| 4 | 高併發穩定性 | 24% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | ✅ | [§3.2.3](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#323-高併發穩定性t1285-round-rangemean-與-error-rate) |
+| 5 | Failover 恢復（重啟→首次寫入） | 5% | 2.99–3.65s ⭐⭐⭐⭐⭐ | 7.01–7.12s ⭐⭐⭐⭐☆ | ✅ | [§3.3.1](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成) |
+| 6 | PITR／備份還原 | 3% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ | 📄 | [§3.3.2](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#332-pitr備份還原) |
+| 7 | Online DDL 與維運工具 | 5% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | 📄 | [§3.4](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#34-online-ddl-與維運工具) |
 
 ---
 
@@ -111,7 +111,7 @@ style: |
 | 架構差異 | TiDB 為計算／儲存分離；PXC 為完整副本與 writeset certification | 兩家皆為 PostgreSQL wire protocol，但 SQL 引擎與相容程度不同 | 同名功能不能直接視為同一機制 |
 | TSD 應用觀察 | 應用數較多、關鍵度需另盤點 | 部分頭部／AI 應用使用 | 「數量」與「業務關鍵度」必須分開 |
 
-> 現況統計日期 2026/08/14；來源為 Prod 監控彙整，見[評分導讀](../DISTRIBUTED-DB-SCORING-INTRO.md#一頁結論)。
+> 現況統計日期 2026/08/14；來源為 Prod 監控彙整，見[評分導讀](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING-INTRO.md#一頁結論)。
 
 ---
 
@@ -250,11 +250,11 @@ PostgreSQL 高關鍵度／AI 應用有需求
 
 `三年投資報酬率 =（三年量化收益 − 三年增量成本）÷ 三年增量成本`
 
-> 採三年為短中期效益檢視窗口，與[預算評估報告](../gitbook/deliverables/budget-assessment.md)的三年總持有成本口徑一致。
+> 採三年為短中期效益檢視窗口，與[預算評估報告](https://github.com/heavenruler/dba_career/blob/master/poc/gitbook/deliverables/budget-assessment.md)的三年總持有成本口徑一致。
 
 **放行條件**：技術硬 Gate 通過、假設有 owner 與範圍、敏感度分析完成，且投資報酬／回收期達公司門檻。現階段價格仍為 TBD，不宣稱已達成正向投資報酬。
 
-> 詳細模型與最低成本啟動策略：[預算評估報告](../gitbook/deliverables/budget-assessment.md)。
+> 詳細模型與最低成本啟動策略：[預算評估報告](https://github.com/heavenruler/dba_career/blob/master/poc/gitbook/deliverables/budget-assessment.md)。
 
 ---
 
@@ -262,17 +262,17 @@ PostgreSQL 高關鍵度／AI 應用有需求
 
 **同機房 S-BASE canonical `summary.json`**
 
-- TiDB：[vm-1node](../results/tidb-tc1/S-BASE/vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/summary.json)／[vm-3node HAProxy 3s3r](../results/tidb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-haproxy-3s3r-rc-20260601T003316+0800/summary.json)
-- PXC／Galera：[vm-1node](../results/galera-tc1/S-BASE/vm-1node-rc/galera-vm-1node-rc-20260813T073744+0800/summary.json)／[vm-3node HAProxy 3s3r](../results/galera-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/galera-vm-3node-haproxy-3s3r-rc-20260813T112044+0800/summary.json)
-- YugabyteDB：[vm-1node](../results/yuga-tc1/S-BASE/vm-1node-rc/ybdb-vm-1node-rc-20260520T134929+0800/summary.json)／[vm-3node HAProxy 3s3r](../results/yuga-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/summary.json)
-- CockroachDB：[vm-1node](../results/crdb-tc1/S-BASE/vm-1node-rc/crdb-vm-1node-rc-20260519T085346+0800/summary.json)／[vm-3node HAProxy 3s3r](../results/crdb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/crdb-vm-3node-haproxy-3s3r-rc-20260602T051500+0800/summary.json)
+- TiDB：[vm-1node](https://github.com/heavenruler/dba_career/blob/master/poc/results/tidb-tc1/S-BASE/vm-1node-rc/tidb-vm-1node-rc-20260518T202009+0800/summary.json)／[vm-3node HAProxy 3s3r](https://github.com/heavenruler/dba_career/blob/master/poc/results/tidb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc-pd-sched-l4r4/tidb-vm-3node-haproxy-3s3r-rc-20260601T003316+0800/summary.json)
+- PXC／Galera：[vm-1node](https://github.com/heavenruler/dba_career/blob/master/poc/results/galera-tc1/S-BASE/vm-1node-rc/galera-vm-1node-rc-20260813T073744+0800/summary.json)／[vm-3node HAProxy 3s3r](https://github.com/heavenruler/dba_career/blob/master/poc/results/galera-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/galera-vm-3node-haproxy-3s3r-rc-20260813T112044+0800/summary.json)
+- YugabyteDB：[vm-1node](https://github.com/heavenruler/dba_career/blob/master/poc/results/yuga-tc1/S-BASE/vm-1node-rc/ybdb-vm-1node-rc-20260520T134929+0800/summary.json)／[vm-3node HAProxy 3s3r](https://github.com/heavenruler/dba_career/blob/master/poc/results/yuga-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/ybdb-vm-3node-haproxy-3s3r-rc-20260525T193740+0800/summary.json)
+- CockroachDB：[vm-1node](https://github.com/heavenruler/dba_career/blob/master/poc/results/crdb-tc1/S-BASE/vm-1node-rc/crdb-vm-1node-rc-20260519T085346+0800/summary.json)／[vm-3node HAProxy 3s3r](https://github.com/heavenruler/dba_career/blob/master/poc/results/crdb-tc1/S-BASE/vm-3node-haproxy-3s3r-rc/crdb-vm-3node-haproxy-3s3r-rc-20260602T051500+0800/summary.json)
 
 **跨區與故障入口**
 
-- [X-CROSS 結果索引](../results/x-cross/README.md)
-- [P-A／P-B 最終比較](../phase-crossregion/XCROSS-PA-VS-PB-FINAL-COMPARISON.md)
-- [三家 Chaos／Failover 比較](../phase-crossregion/XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md)
-- [評分 SSOT](../DISTRIBUTED-DB-SCORING.md)
+- [X-CROSS 結果索引](https://github.com/heavenruler/dba_career/blob/master/poc/results/x-cross/README.md)
+- [P-A／P-B 最終比較](https://github.com/heavenruler/dba_career/blob/master/poc/phase-crossregion/XCROSS-PA-VS-PB-FINAL-COMPARISON.md)
+- [三家 Chaos／Failover 比較](https://github.com/heavenruler/dba_career/blob/master/poc/phase-crossregion/XCROSS-CHAOS-FAILOVER-3DB-COMPARISON.md)
+- [評分 SSOT](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md)
 
 ---
 
@@ -305,4 +305,4 @@ PostgreSQL 高關鍵度／AI 應用有需求
 - 跨區結果屬探索性 scope（`baseline_eligible=false`），不得併入 S-BASE 跨家排名。
 - PXC／Galera 與 TiDB 的複寫、擴展、Failover 情境不同；本輪 Failover 計時口徑不等價，暫不排名。
 - 官方文件星等不計入已測項目加權分數；真正導入結論以應用相容性、營運演練、原廠條款與總持有成本為準。
-- 完整限制、公式與 Fact／Inference 分層以[評分 SSOT](../DISTRIBUTED-DB-SCORING.md)為準。
+- 完整限制、公式與 Fact／Inference 分層以[評分 SSOT](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md)為準。
