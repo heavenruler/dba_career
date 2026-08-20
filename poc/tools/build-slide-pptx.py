@@ -130,6 +130,12 @@ def parse(raw):
             it = []
             while i < len(lines):
                 cur, st = lines[i], lines[i].strip()
+                # Indentation wins over the item pattern: an indented "- x" is
+                # a nested sub-item, not a new top-level entry.
+                if cur.startswith("  ") and it:
+                    it[-1] += "\n" + st
+                    i += 1
+                    continue
                 m = LIST_ITEM.match(st)
                 if m:
                     it.append(m.group(2).strip())

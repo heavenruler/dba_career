@@ -106,8 +106,8 @@ style: |
 | 面向 | MySQL 相容路線 | PostgreSQL 相容路線 | 對決策的影響 |
 |---|---|---|---|
 | 候選順序 | **TiDB**、PXC／Galera | YugabyteDB、CockroachDB | 只在同一群組內比較 |
-| 現行規模 | 28 個叢集、商務邏輯約 95% | 4 個叢集、商務邏輯約 5% | MySQL 路線可先形成較大覆蓋 |
-| 應用變更 | 仍須驗 MySQL 語法差異，但協定遷移較小 | MySQL 應用需改 SQL／ORM／Driver／交易行為 | 相容性是導入門檻，不是普通效能分數 |
+| 現行規模 | **28 個叢集、商務邏輯約 95%** | 4 個叢集、商務邏輯約 5% | **MySQL 路線可先形成較大覆蓋** |
+| 應用變更 | 仍須驗 MySQL 語法差異，但協定遷移較小 | MySQL 應用需改 SQL／ORM／Driver／交易行為 | **相容性是導入門檻，不是普通效能分數** |
 | 架構差異 | TiDB 為計算／儲存分離；PXC 為完整副本與 writeset certification | 兩家皆為 PostgreSQL wire protocol，但 SQL 引擎與相容程度不同 | 同名功能不能直接視為同一機制 |
 | TSD 應用觀察 | 應用數較多、關鍵度需另盤點 | 部分頭部／AI 應用使用 | 「數量」與「業務關鍵度」必須分開 |
 
@@ -125,7 +125,6 @@ style: |
 | 技術方向 | TiDB 在本 PoC 的水平擴展與高併發穩定性較有利；PXC／Galera 保留原生相容與低延遲對照 |
 | TSD 回饋 | 目前重視一致性、服務恢復速度、故障範圍隔離及 Database Self-Service，未要求直接推進跨區 A/A |
 
-**本階段輸出**：應用相容性、PITR／還原、Online DDL、服務恢復、資源隔離、原廠支援與成本效益的可驗收結果。
 
 > 這是下一階段的驗證與推進順序；正式擴大導入由 Pilot 驗收結果決定。
 
@@ -135,7 +134,7 @@ style: |
 
 | 產品 | 官方可追溯的支援入口 | PoC 版本維護狀態 | Pilot 前需向原廠確認 |
 |---|---|---|---|
-| TiDB | [Enterprise ticket／Community](https://docs.pingcap.com/tidb/stable/support/) | v8.5 LTS；Community 維護 2027-12-19／延伸 2028-12-19，Enterprise 維護 2029-12-19／延伸 2030-12-19 | 台灣時區／語言、P1 事故的回應與解決時限、根因分析、升級及現場協作 |
+| TiDB | [Enterprise ticket／Community](https://docs.pingcap.com/tidb/stable/support/) | v8.5 LTS Launch @ 2024-12；Community 維護 2027-12-19／延伸 2028-12-19，Enterprise 維護 2029-12-19／延伸 2030-12-19 | 台灣時區／語言、P1 事故的回應與解決時限、根因分析、升級及現場協作 |
 | PXC／Galera | [Percona Support Policy](https://www.percona.com/support-policies/) | 8.4 持續發版中（最新 8.4.10-10，2026-07-27）；官方尚未公布 8.4 的 EOL 日期 | **現有維運人力已可覆蓋，不需原廠協助**；僅需追蹤 8.4 EOL 公告 |
 | YugabyteDB | [Software Support Agreement](https://www.yugabyte.com/yugabyte-software-support-services-agreement/) | 2025.2 LTS 維護至 2027-12-11、EOL 2028-06-11 | 自管環境的支援範圍、回應窗口、根因分析與升級協作 |
 | CockroachDB | [Essentials／Enterprise Policy](https://www.cockroachlabs.com/terms-and-conditions/cockroachdb-support-policy/) | v26.2 GA 維護至 2027-04-27 | 同 YugabyteDB 困境 |
@@ -185,6 +184,8 @@ style: |
 
 # 決策｜Next Action：PoC 後有五種可執行選項
 
+**建議採 Option B。** PXC／Galera 保留相容與低延遲對照；PostgreSQL 路線等待 TSD 提供高關鍵度／AI 應用需求後再做目標式驗證。
+
 | Option | 做法 | 優點 | 代價／限制 |
 |---|---|---|---|
 | 0｜保留現況 | 結束本輪 PoC、封存 framework，依既有架構營運 | 不增加遷移與平台成本 | 不解決既有故障域、擴展或服務化問題 |
@@ -192,8 +193,6 @@ style: |
 | **B｜快速驗證＋Pilot** | **TiDB 完成技術門檻，再導入一個代表性 MySQL 應用／批次** | **最快取得應用、維運、Self-Service 與投資報酬證據** | 需 SSD Infra ; TSD/產品單位 協作共識 |
 | C｜目標式替代驗證 | TiDB 不適配時驗 PXC；有 PostgreSQL 需求時再驗 YugabyteDB／CockroachDB | 只補與需求直接相關的證據 | 不形成四產品完整排名 |
 | D｜平台與跨區擴展 | Pilot 通過後建 Self-Service；有 DR／EDC 需求再做 A/S 或 A/A-RO | 可把一次性 PoC 轉為長期平台能力 | 需多團隊 owner、治理與持續成本；A/A 不作預設 |
-
-**建議採 Option B。** PXC／Galera 保留相容與低延遲對照；PostgreSQL 路線等待 TSD 提供高關鍵度／AI 應用需求後再做目標式驗證。
 
 ---
 
@@ -218,12 +217,13 @@ style: |
 # 決策｜本次需要確認的事項
 
 1. **是否採 Option B**：TiDB 快速驗證＋代表性應用 Pilot。
-2. **由 TSD 指派應用 owner**，提供真實 SQL／ORM／Driver／Transaction 與改造限制。
-3. **確認 Pilot 情境**：一般 MySQL 應用、可移至 EDC 的定期批次，或故障影響範圍較明確的服務。
-4. **定義服務驗收**：一致性優先條件、可接受中斷、資料延遲、降級與回復方式。
-5. **啟動原廠正式詢價與成本資料蒐集**：支援、授權、維運人力及基礎設施。
 
-> Pilot 驗收完成後，再決定擴大 TiDB、轉向 PXC 對照，或啟動 PostgreSQL 路線的目標式 Pilot。
+2. **其他待討論事項**
+
+   - 由 TSD 指派應用 owner，提供真實 SQL／ORM／Driver／Transaction 與改造限制。
+   - 確認 Pilot 情境：一般 MySQL 應用、可移至 EDC 的定期批次，或故障影響範圍較明確的服務。
+   - 定義服務驗收：一致性優先條件、可接受中斷、資料延遲、降級與回復方式。
+   - 啟動原廠正式詢價與成本資料蒐集：支援、授權、維運人力及基礎設施。
 
 ---
 
