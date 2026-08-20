@@ -207,7 +207,7 @@ style: |
 | **MySQL 應用**為主要範圍 | 相容性／還原／DDL 尚未知 | **Option A**：技術補件 |
 | | 技術門檻通過且效益可量化 | **Option B**：TiDB Pilot |
 | | TiDB 不適配或極低延遲優先 | **Option C**：PXC 目標式對照 |
-| **PostgreSQL** 高關鍵度／AI 應用有需求 | — | **Option C**：依需求驗 YugabyteDB 或 CockroachDB |
+| **PostgreSQL** 高關鍵度／AI 應用有需求 | — | **Option C**：依需求驗 YugabyteDB 或 CockroachDB ; 或延用現有 PostgreSQL 架構 |
 | **平台化或跨區**需求成立 | 重複申請／維運成本高 | **Option D**：Database Self-Service |
 | | DR／EDC 活化 | **Option D**：先 A/S，需異地讀再評估 A/A-RO |
 

@@ -380,30 +380,53 @@ def _draw_flow(slide, rows, y0, size, avail):
     A table forces linear reading, but a decision with shared exits reads as a
     flat list. Grouping the first column across its branches makes the actual
     structure visible.
+
+    Band heights are per row: a uniform height clips whichever branch needs two
+    lines, so each row gets what its longest cell actually needs and the whole
+    stack is then scaled to the space available.
     """
     body = rows[1:] if len(rows) > 1 else rows
     n = len(body)
     gap = int(Inches(0.10))
     arrow_w = int(Inches(0.26))
-    col = [int(CONTENT_W * 0.29), int(CONTENT_W * 0.24), int(CONTENT_W * 0.40)]
+    col = [int(CONTENT_W * 0.29), int(CONTENT_W * 0.24), 0]
     x0 = int(MARGIN_L)
     x1 = x0 + col[0] + arrow_w + gap
     x2 = x1 + col[1] + arrow_w + gap
     col[2] = int(CONTENT_W) - (x2 - x0)
+    pad = int(Inches(0.09))
 
-    # Fit the bands into whatever vertical space is left; shrink the type
-    # rather than run off the slide.
-    band = (avail - gap * (n - 1)) // max(n, 1)
-    band = min(int(Inches(0.80)), band)
-    line = int((size * 1.25 / 72) * 914400)
-    if band < line * 2 + int(Inches(0.10)):
-        size = max(9, size - 2)
-        line = int((size * 1.25 / 72) * 914400)
-    if band < line + int(Inches(0.12)):
+    def plan(sz):
+        lh = int((sz * 1.25 / 72) * 914400)
+        hs = []
+        for r in body:
+            need = 1
+            for c, txt in enumerate((r + ["", ""])[:3]):
+                cw_in = col[c] / 914400.0 - CELL_PAD_IN * 2
+                need = max(need, wrap_lines(txt, cw_in, sz if c != 1 else sz - 1))
+            hs.append(max(need * lh + pad, int(Inches(0.42))))
+        return hs
+
+    for sz in (size, size - 1, size - 2, size - 3):
+        heights = plan(sz)
+        if sum(heights) + gap * (n - 1) <= avail:
+            size = sz
+            break
+    else:
+        # Still too tall: shrink the gap, then scale the bands to fit.
         gap = int(Inches(0.05))
-        band = (avail - gap * (n - 1)) // max(n, 1)
+        heights = plan(max(9, size - 3))
+        size = max(9, size - 3)
+        total = sum(heights) + gap * (n - 1)
+        if total > avail and total > 0:
+            k = (avail - gap * (n - 1)) / float(sum(heights))
+            heights = [max(int(h * k), int(Inches(0.34))) for h in heights]
 
-    # group consecutive rows that share the first column
+    tops, acc = [], y0
+    for h in heights:
+        tops.append(acc)
+        acc += h + gap
+
     groups, cur = [], None
     for idx, r in enumerate(body):
         if _vis(r[0]).strip():
@@ -412,27 +435,26 @@ def _draw_flow(slide, rows, y0, size, avail):
         elif cur:
             cur[1] = idx
 
-    for gi, (a, b, label) in enumerate(groups):
-        gy = y0 + a * (band + gap)
-        gh = (b - a + 1) * band + (b - a) * gap
-        _flow_box(slide, x0, gy, col[0], gh, label, size, bold=True)
+    for a, b, label in groups:
+        gh = tops[b] + heights[b] - tops[a]
+        _flow_box(slide, x0, tops[a], col[0], gh, label, size, bold=True)
 
     for idx, r in enumerate(body):
-        by = y0 + idx * (band + gap)
-        cond, exit_ = r[1] if len(r) > 1 else "", r[2] if len(r) > 2 else ""
+        by, bh = tops[idx], heights[idx]
+        cond = r[1] if len(r) > 1 else ""
+        exit_ = r[2] if len(r) > 2 else ""
         pick = "Option B" in _vis(exit_)
+        mid = by + bh // 2 - int(Inches(0.055))
         if _vis(cond).strip() in ("", "—", "-"):
-            _flow_arrow(slide, x0 + col[0] + gap // 2, by + band // 2 - int(Inches(0.055)),
+            _flow_arrow(slide, x0 + col[0] + gap // 2, mid,
                         col[1] + arrow_w + gap, int(Inches(0.11)))
         else:
-            _flow_arrow(slide, x0 + col[0] + gap // 2, by + band // 2 - int(Inches(0.055)),
-                        arrow_w, int(Inches(0.11)))
-            _flow_box(slide, x1, by, col[1], band, cond, size - 1)
-            _flow_arrow(slide, x1 + col[1] + gap // 2, by + band // 2 - int(Inches(0.055)),
-                        arrow_w, int(Inches(0.11)))
-        _flow_box(slide, x2, by, col[2], band, exit_, size, accent=pick)
+            _flow_arrow(slide, x0 + col[0] + gap // 2, mid, arrow_w, int(Inches(0.11)))
+            _flow_box(slide, x1, by, col[1], bh, cond, size - 1)
+            _flow_arrow(slide, x1 + col[1] + gap // 2, mid, arrow_w, int(Inches(0.11)))
+        _flow_box(slide, x2, by, col[2], bh, exit_, size, accent=pick)
 
-    return n * band + (n - 1) * gap + int(Inches(0.20))
+    return sum(heights) + gap * (n - 1) + int(Inches(0.20))
 
 
 # ---------------------------------------------------------------- build deck
