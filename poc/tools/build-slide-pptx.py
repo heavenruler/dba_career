@@ -38,6 +38,7 @@ from urllib.parse import urlsplit, urlunsplit, quote
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.util import Emu, Inches, Pt
 
@@ -80,7 +81,7 @@ def split_slides(text):
 
 def parse(raw):
     lines = raw.split("\n")
-    blocks, i, lead = [], 0, False
+    blocks, i, lead, as_flow = [], 0, False, False
     while i < len(lines):
         s = lines[i].strip()
         if not s:
@@ -88,6 +89,8 @@ def parse(raw):
             continue
         if s.startswith("<!--"):
             lead = lead or ("lead" in s)
+            if "flow" in s:
+                as_flow = True
             i += 1
             continue
         if s.startswith("# "):
@@ -112,7 +115,8 @@ def parse(raw):
                     continue
                 rows.append([c.strip() for c in r.strip("|").split("|")])
             if rows:
-                blocks.append(("table", rows))
+                blocks.append(("flow" if as_flow else "table", rows))
+                as_flow = False
             continue
         if s.startswith(">"):
             q = []
@@ -337,6 +341,100 @@ def layout_table(rows, total_emu, size):
     return cw, n, norm, heights
 
 
+
+FLOW_FILL = RGBColor(0xF2, 0xF5, 0xF8)
+FLOW_LINE = RGBColor(0xB9, 0xC4, 0xCF)
+FLOW_PICK = RGBColor(0xFD, 0xF1, 0xEF)
+
+
+def _flow_box(slide, x, y, w, h, text, size, bold=False, accent=False):
+    sp = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, int(x), int(y), int(w), int(h))
+    sp.fill.solid()
+    sp.fill.fore_color.rgb = FLOW_PICK if accent else FLOW_FILL
+    sp.line.color.rgb = ACCENT if accent else FLOW_LINE
+    sp.line.width = Pt(1.5 if accent else 0.75)
+    sp.shadow.inherit = False
+    tf = sp.text_frame
+    tf.word_wrap = True
+    tf.margin_left = tf.margin_right = Inches(0.08)
+    tf.margin_top = tf.margin_bottom = Inches(0.04)
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    p = tf.paragraphs[0]
+    p.alignment = PP_ALIGN.LEFT
+    emit(p, text, size, bold=bold)
+    return sp
+
+
+def _flow_arrow(slide, x, y, w, h):
+    a = slide.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, int(x), int(y), int(w), int(h))
+    a.fill.solid()
+    a.fill.fore_color.rgb = FLOW_LINE
+    a.line.fill.background()
+    a.shadow.inherit = False
+    return a
+
+
+def _draw_flow(slide, rows, y0, size, avail):
+    """Render a 3-column markdown table as a branching flow diagram.
+
+    A table forces linear reading, but a decision with shared exits reads as a
+    flat list. Grouping the first column across its branches makes the actual
+    structure visible.
+    """
+    body = rows[1:] if len(rows) > 1 else rows
+    n = len(body)
+    gap = int(Inches(0.10))
+    arrow_w = int(Inches(0.26))
+    col = [int(CONTENT_W * 0.29), int(CONTENT_W * 0.24), int(CONTENT_W * 0.40)]
+    x0 = int(MARGIN_L)
+    x1 = x0 + col[0] + arrow_w + gap
+    x2 = x1 + col[1] + arrow_w + gap
+    col[2] = int(CONTENT_W) - (x2 - x0)
+
+    # Fit the bands into whatever vertical space is left; shrink the type
+    # rather than run off the slide.
+    band = (avail - gap * (n - 1)) // max(n, 1)
+    band = min(int(Inches(0.80)), band)
+    line = int((size * 1.25 / 72) * 914400)
+    if band < line * 2 + int(Inches(0.10)):
+        size = max(9, size - 2)
+        line = int((size * 1.25 / 72) * 914400)
+    if band < line + int(Inches(0.12)):
+        gap = int(Inches(0.05))
+        band = (avail - gap * (n - 1)) // max(n, 1)
+
+    # group consecutive rows that share the first column
+    groups, cur = [], None
+    for idx, r in enumerate(body):
+        if _vis(r[0]).strip():
+            cur = [idx, idx, r[0]]
+            groups.append(cur)
+        elif cur:
+            cur[1] = idx
+
+    for gi, (a, b, label) in enumerate(groups):
+        gy = y0 + a * (band + gap)
+        gh = (b - a + 1) * band + (b - a) * gap
+        _flow_box(slide, x0, gy, col[0], gh, label, size, bold=True)
+
+    for idx, r in enumerate(body):
+        by = y0 + idx * (band + gap)
+        cond, exit_ = r[1] if len(r) > 1 else "", r[2] if len(r) > 2 else ""
+        pick = "Option B" in _vis(exit_)
+        if _vis(cond).strip() in ("", "—", "-"):
+            _flow_arrow(slide, x0 + col[0] + gap // 2, by + band // 2 - int(Inches(0.055)),
+                        col[1] + arrow_w + gap, int(Inches(0.11)))
+        else:
+            _flow_arrow(slide, x0 + col[0] + gap // 2, by + band // 2 - int(Inches(0.055)),
+                        arrow_w, int(Inches(0.11)))
+            _flow_box(slide, x1, by, col[1], band, cond, size - 1)
+            _flow_arrow(slide, x1 + col[1] + gap // 2, by + band // 2 - int(Inches(0.055)),
+                        arrow_w, int(Inches(0.11)))
+        _flow_box(slide, x2, by, col[2], band, exit_, size, accent=pick)
+
+    return n * band + (n - 1) * gap + int(Inches(0.20))
+
+
 # ---------------------------------------------------------------- build deck
 def build():
     prs = Presentation()
@@ -468,6 +566,11 @@ def build():
                 bar.line.fill.background()
                 bar.shadow.inherit = False
                 y += nh + Inches(0.18)
+
+            elif k == "flow":
+                tail = any(kk == "note" for kk, _ in blocks[blocks.index((k, pl)) + 1:])
+                avail = int(Inches(6.45)) - y - (int(Inches(0.55)) if tail else 0)
+                y += _draw_flow(s, pl, y, tbl_sz, avail)
 
             elif k == "table":
                 cw, ncol, norm, rhs = layout_table(pl, int(CONTENT_W), tbl_sz)
