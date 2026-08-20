@@ -34,6 +34,7 @@ paths such as `../FOO.md` will not resolve for the reader.
 import re
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit, quote
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
@@ -65,6 +66,7 @@ SLIDE_W = Inches(13.333)
 SLIDE_H = Inches(7.5)
 MARGIN_L = Inches(0.62)
 CONTENT_W = SLIDE_W - 2 * MARGIN_L
+TEXT_W_IN = CONTENT_W / 914400.0
 FOOT_Y = SLIDE_H - Inches(0.62)
 
 
@@ -158,6 +160,25 @@ def parse(raw):
 TOKEN = re.compile(r"(\[[^\]]+\]\([^)]*\)|\*\*.+?\*\*|`[^`]+`)")
 
 
+def encode_url(url):
+    """Percent-encode non-ASCII path/fragment.
+
+    OOXML relationship targets must be valid URIs. A raw UTF-8 fragment such as
+    `#一頁結論` leaves the link dead in PowerPoint, so encode path and fragment
+    while leaving already-escaped sequences and normal path punctuation intact.
+    """
+    parts = urlsplit(url)
+    if not parts.scheme:
+        return url
+    return urlunsplit((
+        parts.scheme,
+        parts.netloc,
+        quote(parts.path, safe="/-._~+()!*'"),
+        quote(parts.query, safe="=&-._~+"),
+        quote(parts.fragment, safe="-._~"),
+    ))
+
+
 def emit(para, text, size, color=INK, bold=False):
     """Render inline markdown spans as runs; real hyperlinks for [x](url)."""
     for piece in TOKEN.split(text):
@@ -173,7 +194,7 @@ def emit(para, text, size, color=INK, bold=False):
             r.font.size = Pt(size)
             r.font.bold = bold
             if url:
-                r.hyperlink.address = url
+                r.hyperlink.address = encode_url(url)
             r.font.color.rgb = LINK
             r.font.underline = True
             continue
@@ -213,17 +234,71 @@ def fill_cell(cell, text, size, bold, align, bg):
     emit(p, text, size, HEAD if bold else INK, bold=bold)
 
 
-def widths(rows, total):
+def _vis(s):
+    """Text as it will render: markdown markers stripped, link labels kept."""
+    s = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", s)
+    return s.replace("**", "").replace("`", "")
+
+
+def _width_pt(s, size):
+    """Approximate rendered width in points (CJK ~1em, latin ~0.55em)."""
+    return sum(size if ord(ch) > 0x2E80 else size * 0.55 for ch in s)
+
+
+CELL_PAD_IN = 0.07  # matches fill_cell left/right margin
+
+
+def line_h(size, space_after_pt=6.0):
+    """Rendered height of one text line, in EMU (glyph box + paragraph spacing)."""
+    return int(((size * 1.25 + space_after_pt) / 72.0) * 914400)
+
+
+def wrap_lines(text, width_in, size):
+    """Wrapped line count for `text` in a box `width_in` inches wide.
+
+    Must measure the *visible* text: a markdown link carries a long absolute
+    URL that never renders, so counting raw characters wildly overestimates
+    the height and pushes later blocks off the slide.
+    """
+    usable_pt = max(width_in * 72, 1.0)
+    need = _width_pt(_vis(text), size)
+    return max(1, int(need / usable_pt) + (1 if need % usable_pt else 0))
+
+
+def layout_table(rows, total_emu, size):
+    """Column widths plus per-row heights that account for wrapped lines.
+
+    A fixed row height makes tall (wrapped) rows overflow their allotted space,
+    which pushes the rendered table past the geometry we reserved and lets the
+    next block land on top of it. Estimating the wrap per row keeps the flow
+    honest.
+    """
     n = max(len(r) for r in rows)
     norm = [r + [""] * (n - len(r)) for r in rows]
 
-    def vis(s):
-        s = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", s)
-        return len(s.replace("**", "").replace("`", ""))
+    # Dampen the weight so one very long cell cannot starve the other columns.
+    weights = []
+    for c in range(n):
+        cells = [_width_pt(_vis(r[c]), size) for r in norm]
+        weights.append(max(0.6 * max(cells) + 0.4 * (sum(cells) / len(cells)),
+                           size * 3.0))
+    tot = sum(weights)
+    cw = [int(total_emu * w / tot) for w in weights]
 
-    w = [max(max(vis(r[c]) for r in norm), 4) for c in range(n)]
-    tot = sum(w)
-    return [int(total * x / tot) for x in w], n, norm
+    line_pt = size * 1.45
+    pad_emu = int(Inches(0.035) * 2)
+    heights = []
+    for r in norm:
+        lines = 1
+        for c in range(n):
+            usable_pt = (cw[c] / 914400.0) * 72 - CELL_PAD_IN * 72 * 2
+            if usable_pt <= 1:
+                continue
+            need = _width_pt(_vis(r[c]), size)
+            lines = max(lines, int(need / usable_pt) + (1 if need % usable_pt else 0))
+        h = int((lines * line_pt / 72) * 914400) + pad_emu
+        heights.append(max(h, int(Inches(0.34))))
+    return cw, n, norm, heights
 
 
 # ---------------------------------------------------------------- build deck
@@ -255,13 +330,13 @@ def build():
             if k == "table":
                 weight += 2 + len(pl)
             elif k in ("bullets", "numbers"):
-                weight += sum(2 + len(x) // 46 for x in pl)
+                weight += sum(1 + wrap_lines(x, TEXT_W_IN - 0.3, 18) for x in pl)
             elif k == "code":
                 weight += len(pl)
             elif k == "note":
                 weight += len(pl)
             elif k in ("para", "label"):
-                weight += 1 + len(pl) // 46
+                weight += wrap_lines(pl, TEXT_W_IN, 18)
         body_sz = 17 if weight >= 18 else (18 if weight >= 13 else 19)
         tbl_sz = 12 if weight >= 18 else (13 if weight >= 13 else 14)
 
@@ -293,10 +368,10 @@ def build():
                 y += Inches(0.44)
 
             elif k == "para":
-                ln = 1 + len(pl) // 52
-                emit(box(s, MARGIN_L, y, CONTENT_W, Inches(0.32 * ln)).paragraphs[0],
-                     pl, body_sz)
-                y += Inches(0.34 * ln + 0.10)
+                ln = wrap_lines(pl, TEXT_W_IN, body_sz)
+                hh = line_h(body_sz, 0) * ln
+                emit(box(s, MARGIN_L, y, CONTENT_W, hh).paragraphs[0], pl, body_sz)
+                y += hh + Inches(0.14)
 
             elif k in ("bullets", "numbers"):
                 h = Inches(0.0)
@@ -311,7 +386,7 @@ def build():
                     r.font.size = Pt(body_sz)
                     r.font.color.rgb = MUTED
                     emit(p, parts[0], body_sz)
-                    h += Inches(0.34) * (1 + len(parts[0]) // 52)
+                    h += line_h(body_sz) * wrap_lines(parts[0], TEXT_W_IN - 0.3, body_sz)
                     for extra in parts[1:]:
                         p2 = tf.add_paragraph()
                         p2.space_after = Pt(6)
@@ -319,8 +394,8 @@ def build():
                         rr.text = "     "
                         rr.font.size = Pt(body_sz)
                         emit(p2, extra, body_sz - 1, MUTED)
-                        h += Inches(0.32) * (1 + len(extra) // 54)
-                y += h + Inches(0.10)
+                        h += line_h(body_sz - 1) * wrap_lines(extra, TEXT_W_IN - 0.5, body_sz - 1)
+                y += h + Inches(0.12)
 
             elif k == "code":
                 h = Inches(0.26) * len(pl) + Inches(0.24)
@@ -342,39 +417,39 @@ def build():
                 y += h + Inches(0.16)
 
             elif k == "note":
-                nl = len(pl)
+                nsz = body_sz - 3
+                nl = sum(wrap_lines(q, TEXT_W_IN - 0.2, nsz) for q in pl)
+                nh = line_h(nsz, 2) * nl
                 tf = box(s, MARGIN_L + Inches(0.14), y + Inches(0.04),
-                         CONTENT_W - Inches(0.14), Inches(0.30) * nl)
+                         CONTENT_W - Inches(0.14), nh)
                 for n, q in enumerate(pl):
                     p = tf.paragraphs[0] if n == 0 else tf.add_paragraph()
-                    emit(p, q, body_sz - 3, MUTED)
+                    emit(p, q, nsz, MUTED)
                 bar = s.shapes.add_shape(1, MARGIN_L, y + Inches(0.04),
-                                         Emu(26000), Inches(0.30) * nl)
+                                         Emu(26000), nh)
                 bar.fill.solid()
                 bar.fill.fore_color.rgb = RULE
                 bar.line.fill.background()
                 bar.shadow.inherit = False
-                y += Inches(0.32 * nl + 0.16)
+                y += nh + Inches(0.18)
 
             elif k == "table":
-                cw, ncol, norm = widths(pl, int(CONTENT_W))
+                cw, ncol, norm, rhs = layout_table(pl, int(CONTENT_W), tbl_sz)
                 nrow = len(norm)
-                rh = Inches(0.38)
                 tbl = s.shapes.add_table(nrow, ncol, MARGIN_L, y,
-                                         int(CONTENT_W), rh * nrow).table
+                                         int(CONTENT_W), sum(rhs)).table
                 tbl.first_row = True
                 for c in range(ncol):
                     tbl.columns[c].width = cw[c]
                 for r in range(nrow):
-                    tbl.rows[r].height = rh
+                    tbl.rows[r].height = rhs[r]
                     for c in range(ncol):
                         txt = norm[r][c]
                         hd = (r == 0)
-                        plain = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", txt).replace("**", "")
-                        al = PP_ALIGN.CENTER if (hd or len(plain) <= 13) else PP_ALIGN.LEFT
+                        al = PP_ALIGN.CENTER if (hd or len(_vis(txt)) <= 13) else PP_ALIGN.LEFT
                         bg = HDRFILL if hd else (BAND if r % 2 == 0 else WHITE)
                         fill_cell(tbl.cell(r, c), txt, tbl_sz, hd, al, bg)
-                y += rh * nrow + Inches(0.20)
+                y += sum(rhs) + Inches(0.20)
 
     prs.save(DST)
     print(f"wrote {DST}")
