@@ -68,7 +68,7 @@ style: |
 - 📄 官方文件：只佐證產品設計、版本或支援能力，不計入實測分數
 - ⏳ 待驗證：尚未完成公司情境下的實跑
 
-**Failover 欄位以實測秒數呈現**：MySQL 群組兩家的故障注入與恢復流程不等價，只列數據、不給星等；PostgreSQL 群組兩家為同一方法論，數據與星等並列。
+**Failover 欄位一律只列實測秒數**：MySQL 群組兩家的故障注入與恢復流程不等價，不宜換算星等；PostgreSQL 群組雖為同一方法論，仍以秒數直接呈現，避免與其他項目的相對星等混淆。
 
 ---
 
@@ -95,7 +95,7 @@ style: |
 | 2 | 單節點／低併發延遲 | 24% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐☆☆ | ✅ | [§3.2.1](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#321-單節點低併發延遲vm-1node-rc) |
 | 3 | 水平擴展能力 | 29% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | ✅ | [§3.2.2](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#322-水平擴展能力vm-1node--vm-3node-haproxy-3s3r) |
 | 4 | 高併發穩定性 | 24% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | ✅ | [§3.2.3](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#323-高併發穩定性t1285-round-rangemean-與-error-rate) |
-| 5 | Failover 恢復（重啟→首次寫入） | 5% | 2.99–3.65s ⭐⭐⭐⭐⭐ | 7.01–7.12s ⭐⭐⭐⭐☆ | ✅ | [§3.3.1](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成) |
+| 5 | Failover 恢復（重啟→首次寫入） | 5% | 2.99–3.65s | 7.01–7.12s | ✅ | [§3.3.1](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#331-failover-rtorpo--2026-08-11-真實重跑完成) |
 | 6 | PITR／備份還原 | 3% | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐☆ | 📄 | [§3.3.2](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#332-pitr備份還原) |
 | 7 | Online DDL 與維運工具 | 5% | ⭐⭐⭐⭐☆ | ⭐⭐⭐⭐⭐ | 📄 | [§3.4](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING.md#34-online-ddl-與維運工具) |
 
@@ -111,7 +111,7 @@ style: |
 | 架構差異 | TiDB 為計算／儲存分離；PXC 為完整副本與 writeset certification | 兩家皆為 PostgreSQL wire protocol，但 SQL 引擎與相容程度不同 | 同名功能不能直接視為同一機制 |
 | TSD 應用觀察 | 應用數較多、關鍵度需另盤點 | 部分頭部／AI 應用使用 | 「數量」與「業務關鍵度」必須分開 |
 
-> 現況統計日期 2026/08/14；來源為 Prod 監控彙整，見[評分導讀](https://github.com/heavenruler/dba_career/blob/master/poc/DISTRIBUTED-DB-SCORING-INTRO.md#一頁結論)。
+> 現況統計日期 2026/08/14；來源為 Prod 監控彙整。
 
 ---
 
@@ -131,14 +131,14 @@ style: |
 
 ---
 
-# 比較｜原廠技術支援是 Promotion Gate，不是效能加分
+# 比較｜原廠技術支援是 Promotion 門檻，不是效能加分
 
 | 產品 | 官方可追溯的支援入口 | PoC 版本維護狀態 | Pilot 前需向原廠確認 |
 |---|---|---|---|
 | TiDB | [Enterprise ticket／Community](https://docs.pingcap.com/tidb/stable/support/) | v8.5 LTS；Community 維護 2027-12-19／延伸 2028-12-19，Enterprise 維護 2029-12-19／延伸 2030-12-19 | 台灣時區／語言、P1 事故的回應與解決時限、根因分析、升級及現場協作 |
 | PXC／Galera | [Percona Support Policy](https://www.percona.com/support-policies/) | 8.4 持續發版中（最新 8.4.10-10，2026-07-27）；官方尚未公布 8.4 的 EOL 日期 | **現有維運人力已可覆蓋，不需原廠協助**；僅需追蹤 8.4 EOL 公告 |
 | YugabyteDB | [Software Support Agreement](https://www.yugabyte.com/yugabyte-software-support-services-agreement/) | 2025.2 LTS 維護至 2027-12-11、EOL 2028-06-11 | 自管環境的支援範圍、回應窗口、根因分析與升級協作 |
-| CockroachDB | [Essentials／Enterprise Policy](https://www.cockroachlabs.com/terms-and-conditions/cockroachdb-support-policy/) | v26.2 GA 維護至 2027-04-27 | 授權、支援時區、P1／P2 事故等級、根因分析、版本升級與自管限制 |
+| CockroachDB | [Essentials／Enterprise Policy](https://www.cockroachlabs.com/terms-and-conditions/cockroachdb-support-policy/) | v26.2 GA 維護至 2027-04-27 | 同 YugabyteDB 困境 |
 
 > 「有原廠支援方案」不等於符合公司需求；回應時間也不等於問題解決時間。正式結論需以原廠正式詢價（RFI）、報價與合約條款為準。
 
@@ -148,11 +148,11 @@ style: |
 
 1. **以服務故障範圍決定隔離層級**
 
-   先辨識強耦合與共同故障域，再決定單叢集、多叢集、資源池或跨機房配置。
+   先辨識強耦合與共同故障域，再決定單叢集、多叢集、或跨機房配置。
 
 2. **下一階段 TiDB 聚焦五項營運能力**
 
-   MySQL 相容性、PITR／還原、Online DDL、服務層 Failover、資源與租戶隔離。
+   MySQL 相容性、PITR／還原、Online DDL、服務層 Failover、資源管理與多租戶隔離。
 
 3. **所有設定值都要回讀驗證**
 
@@ -160,7 +160,7 @@ style: |
 
 4. **以服務恢復時間取代單一的叢集健康燈號**
 
-   分開量測叢集恢復、資料可讀寫、終端服務恢復，以及交易是否遺失。
+   量測叢集恢復、資料可讀寫、終端服務恢復，以及交易是否遺失。還是 RTO ; 只是更換另一方式描述。
 
 5. **A/A 不作預設起點**
 
@@ -177,7 +177,7 @@ style: |
 | CAP 取捨目前傾向一致性優先（C > A） | 先驗證一致性、拒寫與恢復，不以持續寫入為唯一目標 |
 | DR Site／EDC 具活化價值，但跨區 A/A 尚無強需求 | 可先挑選能移至 EDC 持續運作的定期批次或低風險服務 |
 | 產品期待 Database Self-Service | Pilot 同步驗證申請、權限、配額、備份、監控與退場生命週期 |
-| 應用端協作可行，但需清楚 R&R、效益與回復程序 | 由 TSD 指派 owner，先確認依賴與改造上限 |
+| 應用端協作可行，但需清楚 R&R、效益與回復程序 | 協作 TSD 其產品 Owner，確認依賴與改造上限 |
 
 > Infra 改造必須同時說明產品效益、應用改造量與投資報酬；技術可行不等於推進理由。
 
@@ -189,7 +189,7 @@ style: |
 |---|---|---|---|
 | 0｜保留現況 | 結束本輪 PoC、封存 framework，依既有架構營運 | 不增加遷移與平台成本 | 不解決既有故障域、擴展或服務化問題 |
 | A｜技術補件 | 只補 TiDB 相容性、PITR、Online DDL 與支援資料 | 投入最低、快速補足評分缺口 | 無真實應用與服務生命週期證據 |
-| **B｜快速驗證＋Pilot**（即主張段落提出的方向） | **TiDB 完成技術 Gate，再導入一個代表性 MySQL 應用／批次** | **最快取得應用、維運、Self-Service 與投資報酬證據** | 需 TSD owner、應用樣本與回復窗口 |
+| **B｜快速驗證＋Pilot**（即主張段落提出的方向） | **TiDB 完成技術 Gate，再導入一個代表性 MySQL 應用／批次** | **最快取得應用、維運、Self-Service 與投資報酬證據** | 需 SSD Infra ; TSD/產品單位 協作共識 |
 | C｜目標式替代驗證 | TiDB 不適配時驗 PXC；有 PostgreSQL 需求時再驗 YugabyteDB／CockroachDB | 只補與需求直接相關的證據 | 不形成四產品完整排名 |
 | D｜平台與跨區擴展 | Pilot 通過後建 Self-Service；有 DR／EDC 需求再做 A/S 或 A/A-RO | 可把一次性 PoC 轉為長期平台能力 | 需多團隊 owner、治理與持續成本；A/A 不作預設 |
 

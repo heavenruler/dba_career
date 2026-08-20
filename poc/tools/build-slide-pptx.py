@@ -285,6 +285,38 @@ def layout_table(rows, total_emu, size):
     tot = sum(weights)
     cw = [int(total_emu * w / tot) for w in weights]
 
+    # A column must fit its longest unbreakable token, otherwise latin words
+    # such as "CockroachDB" get split mid-word. CJK wraps anywhere, so only
+    # latin/digit runs matter here. Cap the floor so one long token cannot
+    # swallow the table.
+    pad_emu = int(Inches(CELL_PAD_IN) * 2)
+    cap = int(total_emu * 0.34)
+    floors = []
+    for c in range(n):
+        longest = 0.0
+        for r in norm:
+            for tok in re.findall(r"[0-9A-Za-z][0-9A-Za-z._/＋+-]*", _vis(r[c])):
+                longest = max(longest, _width_pt(tok, size))
+        floors.append(min(int((longest / 72.0) * 914400) + pad_emu, cap))
+
+    # Raise any column below its floor, then reclaim from those with slack.
+    for _ in range(4):
+        deficit = sum(max(0, floors[c] - cw[c]) for c in range(n))
+        if deficit <= 0:
+            break
+        slack = [max(0, cw[c] - floors[c]) for c in range(n)]
+        total_slack = sum(slack)
+        if total_slack <= 0:
+            break
+        for c in range(n):
+            if cw[c] < floors[c]:
+                cw[c] = floors[c]
+            elif slack[c]:
+                cw[c] -= int(deficit * slack[c] / total_slack)
+    # Keep the row total exactly on the table width.
+    drift = total_emu - sum(cw)
+    cw[max(range(n), key=lambda c: cw[c])] += drift
+
     line_pt = size * 1.45
     pad_emu = int(Inches(0.035) * 2)
     heights = []
@@ -441,14 +473,23 @@ def build():
                 tbl.first_row = True
                 for c in range(ncol):
                     tbl.columns[c].width = cw[c]
+                # Alignment is decided per column, not per cell: judging each
+                # cell on its own length leaves a column visually ragged
+                # (short values centred, longer ones flush left).
+                body = norm[1:] or norm
+                aligns = [
+                    PP_ALIGN.CENTER
+                    if max(len(_vis(r[c])) for r in body) <= 14
+                    else PP_ALIGN.LEFT
+                    for c in range(ncol)
+                ]
                 for r in range(nrow):
                     tbl.rows[r].height = rhs[r]
                     for c in range(ncol):
-                        txt = norm[r][c]
                         hd = (r == 0)
-                        al = PP_ALIGN.CENTER if (hd or len(_vis(txt)) <= 13) else PP_ALIGN.LEFT
+                        al = PP_ALIGN.CENTER if hd else aligns[c]
                         bg = HDRFILL if hd else (BAND if r % 2 == 0 else WHITE)
-                        fill_cell(tbl.cell(r, c), txt, tbl_sz, hd, al, bg)
+                        fill_cell(tbl.cell(r, c), norm[r][c], tbl_sz, hd, al, bg)
                 y += sum(rhs) + Inches(0.20)
 
     prs.save(DST)
