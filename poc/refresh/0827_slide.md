@@ -236,7 +236,7 @@ Y26 PoC 立項時的候選是三家分散式 SQL；**MySQL Galera（PXC 8.4）�
 | 大類 | 細項 | A MySQL | B TiDB | C YBDB | D CRDB | 備註 |
 |---|---|:---:|:---:|:---:|:---:|---|
 | **C. 效能擴展** | 單節點延遲（p99） | **37.7 ms** | 597 ms | 216 ms | 440 ms | A 大幅領先 |
-| | 水平擴展倍率 | **0.49×** | **2.06×** | 1.37× | 1.65× | 1node → 3node-haproxy |
+| | 水平擴展倍率 | **0.49×** | **2.06×** | 1.37× | 1.65× | 分母與判讀見下頁 |
 | | 高併發穩定性（range/mean） | 43.2% | 7.4% | 7.1% | 6.9% | t=128 五輪變異 |
 | | all-txn error rate | 0.037% | 0.000% | 0.000% | 0.000% | A 為四家唯一非零 |
 | | 跨區單寫吞吐（P-A×A-S） | 298.8 | 12,526.5 | 12,769.5 | 10,163.4 | tpmC, t=128 |
@@ -248,6 +248,31 @@ Y26 PoC 立項時的候選是三家分散式 SQL；**MySQL Galera（PXC 8.4）�
 | | 跨區雙寫 GCP 側失敗率 | **47.0%** | 0.158% | 0.134% | 0.111% | A 高出 B 約 300 倍 |
 
 > 「區域級停止後復原」口徑不等價：A 從 `t_kill` 起算、B 從 `t_restart` 起算（B 從 `t_kill` 為 198–202 s）。
+
+---
+
+<!-- _class: mid -->
+
+# Y26｜水平擴展：倍率的分母與判讀
+
+**指標定義**
+
+```text
+水平擴展倍率 ＝ 三節點 HAProxy tpmC ÷ 單節點 tpmC
+```
+
+| 資料庫 | 單節點 tpmC | 三節點 tpmC（t=128） | 增減幅 | 擴展倍率 |
+|---|---:|---:|---:|---:|
+| **A** MySQL Galera | 53,791.9 | 26,166.2 | **−51%** | **0.49×** |
+| **B** TiDB | 13,064 | 26,947 | **+106%** | **2.06×** |
+| **C** YugabyteDB | 11,436 | 15,632 | +37% | 1.37× |
+| **D** CockroachDB | 9,134 | 15,033 | +65% | 1.65× |
+
+**判讀**　`> 1×` 加節點後吞吐提高，正向擴展　／　`= 1×` 無增益　／　`< 1×` 加節點後吞吐下降，負向擴展
+
+> Galera 單節點吞吐與延遲占優，但在本次 HAProxy round-robin 多寫配置下呈**負向擴展**；
+> TiDB 單節點成本較高，新增節點後能有效提升吞吐。
+> **注意三節點的絕對吞吐兩者其實接近（26,166 vs 26,947）** —— 倍率描述的是擴展特性，不是跨產品整體排名。
 
 ---
 
@@ -330,6 +355,28 @@ Y26 PoC 立項時的候選是三家分散式 SQL；**MySQL Galera（PXC 8.4）�
 
 ---
 
+<!-- _class: mid -->
+
+# Y26｜Placement 對照：P-A vs P-B（同一 workload）
+
+**A/S 是目前唯一 workload 定義完全相同、可直接觀察 placement 差異的軸** —— 兩者皆為 IDC client 128 threads、GCP client 不發負載。
+
+| 指標（TiDB, threads=128） | P-A × A/S | P-B × A/S | 差異 |
+|---|---:|---:|---:|
+| tpmC | 12,526.5 | **15,107.4** | **P-B +20.6%** |
+| NEW_ORDER p99 | 677.8 ms | **664.4 ms** | P-B −2.0% |
+| all-txn error rate | 0% | 0% | 相同 |
+
+| Placement | 語意 |
+|---|---|
+| **P-A** | leader / lease 固定 IDC，EDC 持 1 份 voter 副本 —— commit quorum 留在 IDC，不等 WAN |
+| **P-B** | leader 跨區混合分布（IDC / EDC 30–70%） |
+
+> **對 S1 的意涵**：單寫情境下 P-B 不但沒有比較慢，反而較快且 p99 略低。**S1 的 placement 不宜僅憑架構直覺預設 P-A**，須納入此對照評估。
+> 跨三家 24 個對照點中 P-B ≥ P-A 為 12/24；但 **TiDB 在 A/S 的四個 thread 檔位全數 P-B 較高**。兩批次日期不同（07-17／07-27），屬階段性觀察。
+
+---
+
 # Y26｜A/A 卡在哪：限制不在資料庫
 
 資料庫層已證明 TiDB 具備雙區寫入能力（跨區雙寫 GCP 側失敗率 0.158%）。**擋住的是周邊 Infra**：
@@ -381,11 +428,12 @@ branch   B1 Self-Service          B2 DB 申請 CI/CD 平台
 | 階段 | 內容 | 進入條件 | 驗收 |
 |---|---|---|---|
 | **S0**<br>IDC Only | TiDB 單區叢集營運，累積維運經驗與架構穩定性 | — | 叢集穩態營運、監控與告警上線、備份可還原 |
-| **S1**<br>IDC+EDC<br>**P-A × A/S** | leader/lease 固定 IDC，EDC 持副本；流量只打 IDC | 相容性矩陣、PITR／備份還原、Online DDL **三項補測通過** | EDC 端確實持有資料副本（**副本存在 gate**）、placement gate 通過、切換演練可回退 |
+| **S1**<br>IDC+EDC<br>**P-A × A/S** | leader/lease 固定 IDC，EDC 持副本；流量只打 IDC | 相容性矩陣、PITR／備份還原、Online DDL **三項補測通過** | EDC 端確實持有資料副本（**副本存在門檻**）、placement 門檻通過、切換演練可回退 |
 | **S2**<br>IDC+EDC<br>**P-A × A/A-RO** | EDC 端就近讀，寫入仍集中 IDC | Failover 等價口徑重測、跨區分斷演練、就近讀 staleness 與 fallback 驗證 | near-read probe 全數通過、staleness 在業務可接受範圍、fallback 有效 |
 | ⛔ **S3**<br>P-B × A/A | 雙區同時寫入 | **不列入本輪** | 業務提出雙區寫入需求，且非 DB 層阻礙解除後再議 |
 
 > **為何先 A/S 再 A/A-RO**：A/S 只需驗「副本真的到 EDC」與「切得回來」；A/A-RO 才要處理就近讀路由、staleness 語意與 fallback。前者是後者的前置，**兩階段失敗模式完全不同，合併會讓問題無法歸因**。
+> **S1 的 placement 待複核**：表列以 P-A 為基準，但 A/S 實測 P-B 較 P-A 高 20.6%（見「Placement 對照」頁），S1 設計時須複核 placement 選擇。
 
 ---
 
@@ -460,11 +508,11 @@ TiDB 原廠（PingCAP）對接已完成，**尚無強需求進行採購**，但�
 |---|---|
 | **目標** | IDC + EDC，leader/lease 固定 IDC，EDC 持副本，流量只打 IDC |
 | **前置** | Phase 0 三項補測通過；跨區專線可用性確認（PingCAP 建議副本間延遲 ~10 ms） |
-| **工作項** | ① placement 設定與 gate 驗證<br>② **副本存在 gate**：逐 region 驗證資料確實到達 EDC，**不能只驗設定存在**<br>③ 切換與回滾演練 |
+| **工作項** | ① placement 設定與門檻驗證<br>② **副本存在門檻**：逐 region 驗證資料確實到達 EDC，**不能只驗設定存在**<br>③ 切換與回滾演練 |
 | **同步啟動** | **B3 EDC 資源活化** —— standby 資料端供商務邏輯讀取 |
-| **驗收** | placement gate + 副本存在 gate 皆通過；切換演練可回退；EDC 端資料可供讀取型商務邏輯使用 |
+| **驗收** | placement 門檻 + 副本存在門檻皆通過；切換演練可回退；EDC 端資料可供讀取型商務邏輯使用 |
 
-> **關鍵教訓**：Y26 PoC 曾發生「設定存在但副本從未實體化」的效度事件 —— zone config 自相矛盾、read-replica 缺 placement_uuid，且探測因缺 DB client **靜默通過**。**gate 必須 fail-closed，不可只驗設定。**
+> **關鍵教訓**：Y26 PoC 曾發生「設定存在但副本從未實體化」的效度事件 —— zone config 自相矛盾、read-replica 缺 placement_uuid，且探測因缺 DB client **靜默通過**。**驗證門檻必須 fail-closed，不可只驗設定。**
 
 ---
 
@@ -536,7 +584,7 @@ Phase 0 補件 ──▶ Phase 1 Pilot（S0）──▶ Phase 2 A/S（S1）─�
 | `poc/DISTRIBUTED-DB-SCORING.md` | 四家評分表、加權總分、逐項證據連結 |
 | `poc/MILESTONES.md` | 專案歷程、可下／不可下結論、下一決策門檻 |
 | `poc/gitbook/` | 17 章結構化交付文件（09 跨區、16 決策框架） |
-| `poc/results/` | 原始 `summary.json`、pipeline-log、gate 證據 |
+| `poc/results/` | 原始 `summary.json`、pipeline-log、驗證門檻證據 |
 | `poc/phase-crossregion/` | 各 placement × workload 結案報告、chaos/failover 比較 |
 | `poc/1_MeetingMinutes/0611-TiDBx104-summary.md` | PingCAP 原廠對接紀錄 |
 | `poc/1_MeetingMinutes/2026-06-09-...-non-technical.md` | D1–D4 拍板紀錄（跨區階梯、TiDB 為主路線） |
