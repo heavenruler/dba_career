@@ -165,7 +165,7 @@ Failover、staleness 與 fallback 的實際成效，仍須在 Pilot 與產品情
 
 TiDB 是 MySQL 相容路線的主線候選；現行架構先採 A/S，再依產品需求與驗收結果進入 A/A (RO)。
 
-### 三個代表證據
+### MySQL 相容主線：三個代表證據
 
 | 證據 | 數值 | 判讀 |
 |---|---:|---|
@@ -173,13 +173,48 @@ TiDB 是 MySQL 相容路線的主線候選；現行架構先採 A/S，再依產�
 | 高併發交易錯誤率 | 0.000% | t=128；五輪 range/mean 7.4% |
 | 跨區實務終點 | A/S → A/A (RO) | A/A 只保留為條件式長期選項 |
 
+### PostgreSQL 相容群組：其他資料庫代表數據
+
+YugabyteDB、CockroachDB 屬於另一條 PostgreSQL 相容路線。下列數據用於說明技術特性與應用選擇條件，不與 MySQL 相容群組計算總排名。
+
+| 候選 | 單節點 p99 | 水平擴展 | P-A × A/S | F2 復原觀察 | 判讀 |
+|---|---:|---:|---:|---:|---|
+| YugabyteDB | 216 ms | 1.37× | 12,769.5 tpmC | 約 3 s | 延遲較低、F2 復原較快；曾觀察到 YB-Master 執行緒暴增，正式採用前需增加長時間穩定性驗證 |
+| CockroachDB | 440 ms | 1.65× | 10,163.4 tpmC | 約 7 s | 擴展倍率較高；quorum 遺失時可能回報 `ambiguous`，應用必須確認交易最終狀態 |
+
+> F2 數字僅在 PostgreSQL 相容群組內作方向性觀察；不得與 TiDB、PXC / Galera 的不同計時方法直接比較。
+
+### 應用層級卡片
+
+#### YugabyteDB｜適用與改造考量
+
+- **適用情境**：已有 PostgreSQL 技術棧，且重視跨區資料分布、較低延遲與區域恢復速度的應用。
+- **必要改造**：現有 MySQL 應用必須更換 PostgreSQL driver / ORM 設定，並重新驗證 SQL、資料型別、序列與 ID 生成方式。
+- **交易處理**：quorum 遺失時本輪觀察為乾淨拒絕；應用仍需具備可重試、冪等與逾時處理。
+- **進入條件**：完成實際產品 SQL / ORM 相容性矩陣，並針對曾觀察到的 YB-Master 執行緒異常進行長時間穩定性測試。
+
+#### CockroachDB｜適用與改造考量
+
+- **適用情境**：已有 PostgreSQL 技術棧，且重視水平擴展、跨區 placement 與一致性控制的應用。
+- **必要改造**：現有 MySQL 應用必須更換 PostgreSQL driver / ORM 設定，並重新驗證 SQL、資料型別與交易語意。
+- **交易處理**：quorum 遺失可能回報 `ambiguous`；應用必須使用冪等鍵、交易狀態查詢或補償流程，不能直接重送並假設前次未提交。
+- **進入條件**：完成實際產品 SQL / ORM 相容性矩陣，並驗證 retry、`ambiguous` 與故障復原流程。
+
+### 分群決策
+
+- **MySQL 相容需求**：比較 PXC / Galera 與 TiDB；目前主線為 TiDB Pilot。
+- **PostgreSQL 相容需求**：比較 YugabyteDB 與 CockroachDB；待實際應用與 RTO 需求觸發。
+- 兩個群組的協定、應用改造量及驗證方法不同，不合併計算整體排名。
+
 ### 決策句
 
 先選代表性 MySQL 應用進行 Pilot；通過後才進入 IDC + EDC 跨區架構。
 
 ### 來源
 
-[SLIDE-BRIEF-2026.md §2.2、§2.4、§4](./SLIDE-BRIEF-2026.md#22-決策表可行性與適配兩級)
+- [SLIDE-BRIEF-2026.md §2.2、§2.4、§4](./SLIDE-BRIEF-2026.md#22-決策表可行性與適配兩級)
+- [DECISION-MATRIX.md §3–§5](./DECISION-MATRIX.md#3-決策表格)
+- [DISTRIBUTED-DB-SCORING.md §3.2、§3.3.1、§5.2](../DISTRIBUTED-DB-SCORING.md#32-量化評分)
 
 ---
 
@@ -268,13 +303,42 @@ PXC / Galera 在低延遲仍有優勢；TiDB 在本次三節點配置的擴展�
 | S2 | A/A (RO) | EDC 就近讀；staleness；fallback |
 | S3 | A/A | 只有非 DB 阻礙解除且出現雙寫需求時才評估 |
 
+### 共同前置｜Phase 0
+
+在 S0 Pilot 前，先完成 SQL / ORM 相容性、PITR / 備份還原與 Online DDL 三項技術補件。若應用改造量或維運缺口超出可接受範圍，回到決策表重新評估，不直接進入 Pilot。
+
+### 各階段驗收目標與非 DBA 協作需求
+
+| 階段 | 驗收目標 | 非 DBA 協作單位 | 協作需求 |
+|---|---|---|---|
+| Phase 0 | 相容性、備份還原、Online DDL 都有可追溯結果與替代方案 | TSD / RD、Infra、SRE、原廠 | 提供真實 SQL、ORM、driver、交易模式與資料量；提供備份儲存、監控及維護窗口 |
+| S0｜IDC Only | 代表性應用完成部署、壓測、故障恢復與退場；以服務恢復時間驗收 | 產品 Owner、TSD / RD、DevOps、SRE | 指定 Pilot 應用與業務 SLO；完成應用改造、CI/CD、監控告警、變更與回復程序 |
+| S1｜A/S | placement 與 EDC 副本實際存在；切換可執行且可回退；EDC 資料可供讀取型工作負載 | Infra / Cloud、Network、產品 Owner、TSD / RD、SRE | 提供跨區網路 SLA 與故障演練窗口；定義 EDC 可承載的讀取或批次工作；確認流量切換與服務恢復驗收點 |
+| S2｜A/A (RO) | near-read 確實命中 EDC；staleness 在業務容忍範圍；fallback 與跨區分斷恢復通過 | 產品 Owner、TSD / RD、Network / LB、SRE | 分離可就近讀的 API / query；定義 staleness 與 read-your-write 需求；完成流量路由、synthetic probe、降級與 fallback |
+| S3｜A/A | 只有雙區寫入需求、ROI 與非 DB 前置條件都成立才重新立項 | 產品 Sponsor、架構治理、TSD / RD、Infra / Network / Storage、SRE | 提出不可由 A/S 或 A/A (RO) 滿足的業務需求；完成冪等、衝突處理與補償設計；解除應用組件、儲存、網路及 failure domain 限制 |
+
+### 非 DBA 協作責任摘要
+
+- **產品 Owner / Sponsor**：定義業務情境、服務恢復時間、資料延遲容忍度、ROI 與退場條件。
+- **TSD / RD**：提供真實應用語法與交易模型，完成 driver / ORM、ID、retry、冪等與 fallback 改造。
+- **Infra / Cloud / Network / Storage**：提供運算、跨區網路、DNS / LB、儲存、時間同步與 failure domain 條件。
+- **DevOps / Platform**：建立部署、變更、版本回復與 Database Self-Service 流程。
+- **SRE / Observability**：以使用者可感知的服務恢復時間、錯誤率、延遲與資料一致性建立監控及演練證據。
+
+### 階段門檻
+
+- 前一階段驗收完成，才允許進入下一階段。
+- 任一階段缺少應用 Owner、業務 SLO、回復程序或跨單位演練窗口，視為尚未具備啟動條件。
+- DBA 負責資料庫與證據門檻，但不能替產品端定義業務需求、資料延遲容忍度或應用改造成本。
+
 ### 結論句
 
 前一階段驗收是下一階段的進入條件；目前 S3 不納入規劃。
 
 ### 來源
 
-[SLIDE-BRIEF-2026.md §3.1–§3.2](./SLIDE-BRIEF-2026.md#3-推進路線三軌)
+- [SLIDE-BRIEF-2026.md §3.1–§3.4](./SLIDE-BRIEF-2026.md#3-推進路線三軌)
+- [SLIDE-BRIEF-2026.md §4.1–§4.6](./SLIDE-BRIEF-2026.md#4-採用-tidb-的分階段實施辦法)
 
 ---
 
