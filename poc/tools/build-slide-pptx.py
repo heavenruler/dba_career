@@ -63,12 +63,20 @@ BAND = RGBColor(0xF7, 0xF9, 0xFA)
 HDRFILL = RGBColor(0xEC, 0xEF, 0xF2)
 WHITE = RGBColor(0xFF, 0xFF, 0xFF)
 
+EMU_PER_IN = 914400.0
+
 SLIDE_W = Inches(13.333)
 SLIDE_H = Inches(7.5)
 MARGIN_L = Inches(0.62)
 CONTENT_W = SLIDE_W - 2 * MARGIN_L
-TEXT_W_IN = CONTENT_W / 914400.0
+TEXT_W_IN = CONTENT_W / EMU_PER_IN
 FOOT_Y = SLIDE_H - Inches(0.62)
+# Lowest y a flow diagram may reach, leaving the footer band clear.
+CONTENT_BOTTOM = Inches(6.45)
+
+# The flow block highlights the exit whose text contains this token. Deck-
+# specific: change it (or clear it) when reusing this script for another deck.
+FLOW_HIGHLIGHT = "Option B"
 
 
 # ---------------------------------------------------------------- md parsing
@@ -89,7 +97,7 @@ def parse(raw):
             continue
         if s.startswith("<!--"):
             lead = lead or ("lead" in s)
-            if "flow" in s:
+            if re.search(r"\bflow\b", s):
                 as_flow = True
             i += 1
             continue
@@ -152,10 +160,6 @@ def parse(raw):
                         i = j
                         continue
                     break
-                if cur.startswith("  ") and it:
-                    it[-1] += "\n" + st
-                    i += 1
-                    continue
                 break
             blocks.append((kind, it))
             continue
@@ -260,11 +264,16 @@ def _width_pt(s, size):
 
 
 CELL_PAD_IN = 0.07  # matches fill_cell left/right margin
+ROW_LINE_FACTOR = 1.45  # table rows: glyph box plus in-cell leading
+TABLE_SZ_DELTA = 5      # table type runs this many pt below body type
+MIN_FLOW_PT = 9         # smallest type a flow diagram will shrink to
+MIN_BAND_EMU = int(Inches(0.34))  # floor for a table row / flow band
+NOTE_RESERVE_EMU = int(Inches(0.55))  # space a flow block leaves for a following note
 
 
 def line_h(size, space_after_pt=6.0):
     """Rendered height of one text line, in EMU (glyph box + paragraph spacing)."""
-    return int(((size * 1.25 + space_after_pt) / 72.0) * 914400)
+    return int(((size * 1.25 + space_after_pt) / 72.0) * EMU_PER_IN)
 
 
 def wrap_lines(text, width_in, size):
@@ -303,7 +312,7 @@ def layout_table(rows, total_emu, size):
     # such as "CockroachDB" get split mid-word. CJK wraps anywhere, so only
     # latin/digit runs matter here. Cap the floor so one long token cannot
     # swallow the table.
-    pad_emu = int(Inches(CELL_PAD_IN) * 2)
+    pad_x_emu = int(Inches(CELL_PAD_IN) * 2)
     cap = int(total_emu * 0.34)
     floors = []
     for c in range(n):
@@ -311,7 +320,7 @@ def layout_table(rows, total_emu, size):
         for r in norm:
             for tok in re.findall(r"[0-9A-Za-z][0-9A-Za-z._/＋+-]*", _vis(r[c])):
                 longest = max(longest, _width_pt(tok, size))
-        floors.append(min(int((longest / 72.0) * 914400) + pad_emu, cap))
+        floors.append(min(int((longest / 72.0) * EMU_PER_IN) + pad_x_emu, cap))
 
     # Raise any column below its floor, then reclaim from those with slack.
     for _ in range(4):
@@ -331,19 +340,20 @@ def layout_table(rows, total_emu, size):
     drift = total_emu - sum(cw)
     cw[max(range(n), key=lambda c: cw[c])] += drift
 
-    line_pt = size * 1.45
-    pad_emu = int(Inches(0.035) * 2)
+    # Row line height carries the cell's own leading, so it is deliberately
+    # looser than line_h()'s paragraph spacing.
+    line_pt = size * ROW_LINE_FACTOR
+    pad_y_emu = int(Inches(0.035) * 2)
     heights = []
     for r in norm:
         lines = 1
         for c in range(n):
-            usable_pt = (cw[c] / 914400.0) * 72 - CELL_PAD_IN * 72 * 2
-            if usable_pt <= 1:
+            usable_in = cw[c] / EMU_PER_IN - CELL_PAD_IN * 2
+            if usable_in * 72 <= 1:
                 continue
-            need = _width_pt(_vis(r[c]), size)
-            lines = max(lines, int(need / usable_pt) + (1 if need % usable_pt else 0))
-        h = int((lines * line_pt / 72) * 914400) + pad_emu
-        heights.append(max(h, int(Inches(0.34))))
+            lines = max(lines, wrap_lines(r[c], usable_in, size))
+        h = int((lines * line_pt / 72) * EMU_PER_IN) + pad_y_emu
+        heights.append(max(h, MIN_BAND_EMU))
     return cw, n, norm, heights
 
 
@@ -403,30 +413,29 @@ def _draw_flow(slide, rows, y0, size, avail):
     pad = int(Inches(0.09))
 
     def plan(sz):
-        lh = int((sz * 1.25 / 72) * 914400)
+        lh = line_h(sz, 0)
         hs = []
         for r in body:
             need = 1
             for c, txt in enumerate((r + ["", ""])[:3]):
-                cw_in = col[c] / 914400.0 - CELL_PAD_IN * 2
+                cw_in = col[c] / EMU_PER_IN - CELL_PAD_IN * 2
                 need = max(need, wrap_lines(txt, cw_in, sz if c != 1 else sz - 1))
             hs.append(max(need * lh + pad, int(Inches(0.42))))
         return hs
 
-    for sz in (size, size - 1, size - 2, size - 3):
+    smallest = max(MIN_FLOW_PT, size - 3)
+    for sz in range(size, smallest - 1, -1):
         heights = plan(sz)
         if sum(heights) + gap * (n - 1) <= avail:
-            size = sz
             break
-    else:
-        # Still too tall: shrink the gap, then scale the bands to fit.
+    size = sz
+    if sum(heights) + gap * (n - 1) > avail:
+        # Still too tall at the smallest type: tighten the gap, then scale.
         gap = int(Inches(0.05))
-        heights = plan(max(9, size - 3))
-        size = max(9, size - 3)
         total = sum(heights) + gap * (n - 1)
-        if total > avail and total > 0:
+        if total > avail:
             k = (avail - gap * (n - 1)) / float(sum(heights))
-            heights = [max(int(h * k), int(Inches(0.34))) for h in heights]
+            heights = [max(int(h * k), MIN_BAND_EMU) for h in heights]
 
     tops, acc = [], y0
     for h in heights:
@@ -449,7 +458,7 @@ def _draw_flow(slide, rows, y0, size, avail):
         by, bh = tops[idx], heights[idx]
         cond = r[1] if len(r) > 1 else ""
         exit_ = r[2] if len(r) > 2 else ""
-        pick = "Option B" in _vis(exit_)
+        pick = bool(FLOW_HIGHLIGHT) and FLOW_HIGHLIGHT in _vis(exit_)
         mid = by + bh // 2 - int(Inches(0.055))
         if _vis(cond).strip() in ("", "—", "-"):
             _flow_arrow(slide, x0 + col[0] + gap // 2, mid,
@@ -493,14 +502,12 @@ def build():
                 weight += 2 + len(pl)
             elif k in ("bullets", "numbers"):
                 weight += sum(1 + wrap_lines(x, TEXT_W_IN - 0.3, 18) for x in pl)
-            elif k == "code":
-                weight += len(pl)
-            elif k == "note":
+            elif k in ("code", "note"):
                 weight += len(pl)
             elif k in ("para", "label"):
                 weight += wrap_lines(pl, TEXT_W_IN, 18)
         body_sz = 17 if weight >= 18 else (18 if weight >= 13 else 19)
-        tbl_sz = 12 if weight >= 18 else (13 if weight >= 13 else 14)
+        tbl_sz = body_sz - TABLE_SZ_DELTA
 
         if lead:
             y = Inches(2.7)
@@ -518,7 +525,7 @@ def build():
             continue
 
         y = Inches(0.95)
-        for k, pl in blocks:
+        for bi, (k, pl) in enumerate(blocks):
             if k == "title":
                 emit(box(s, MARGIN_L, y, CONTENT_W, Inches(0.62)).paragraphs[0],
                      pl, 25, HEAD, bold=True)
@@ -596,8 +603,11 @@ def build():
                 y += nh + Inches(0.18)
 
             elif k == "flow":
-                tail = any(kk == "note" for kk, _ in blocks[blocks.index((k, pl)) + 1:])
-                avail = int(Inches(6.45)) - y - (int(Inches(0.55)) if tail else 0)
+                # Reserve room for a trailing note. Use the loop index, not a
+                # value search: two identical blocks on one slide would
+                # otherwise resolve to the first one's position.
+                tail = any(kk == "note" for kk, _ in blocks[bi + 1:])
+                avail = int(CONTENT_BOTTOM) - y - (NOTE_RESERVE_EMU if tail else 0)
                 y += _draw_flow(s, pl, y, tbl_sz, avail)
 
             elif k == "table":
